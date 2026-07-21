@@ -1,5 +1,5 @@
 /**
- * AlloFlow â€” Hints Modal Module
+ * AlloFlow — Hints Modal Module
  *
  * Modal showing accumulated AI hints + a "Generate Lesson Ideas" CTA.
  * Each hint can be applied (yellow brainstorm hint) or saved to history
@@ -8,15 +8,15 @@
  * Extracted from AlloFlowANTI.txt lines 21632-21694 (May 2026).
  *
  * Required props:
- *   handleApplyHint                â€” apply a brainstorm hint
- *   handleGenerateLessonIdeas      â€” generate new extension ideas
- *   handleSaveExtensionToHistory   â€” save an extension hint to history
- *   handleSetShowHintsModalToFalse â€” close the modal
- *   hintHistory                    â€” array of hint objects
- *   history                        â€” generation history (used to gate the CTA)
- *   isGeneratingExtension          â€” bool for spinner state
- *   renderFormattedText            â€” markdown/format renderer
- *   t                              â€” translation function
+ *   handleApplyHint                — apply a brainstorm hint
+ *   handleGenerateLessonIdeas      — generate new extension ideas
+ *   handleSaveExtensionToHistory   — save an extension hint to history
+ *   handleSetShowHintsModalToFalse — close the modal
+ *   hintHistory                    — array of hint objects
+ *   history                        — generation history (used to gate the CTA)
+ *   isGeneratingExtension          — bool for spinner state
+ *   renderFormattedText            — markdown/format renderer
+ *   t                              — translation function
  *
  * Icons (read from window globals): Lightbulb, RefreshCw, Save, Sparkles, X
  */

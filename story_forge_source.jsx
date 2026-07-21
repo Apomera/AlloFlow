@@ -1,9 +1,9 @@
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// StoryForge â€” Scaffolded Creative Writing with AI Illustration,
+// ═══════════════════════════════════════════════════════════════
+// StoryForge — Scaffolded Creative Writing with AI Illustration,
 // Narration, Grading, and Storybook Export
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════════
 
-// â”€â”€ WCAG 2.4.7 Focus Visible â€” inject scoped focus-ring CSS once per page â”€â”€
+// ── WCAG 2.4.7 Focus Visible — inject scoped focus-ring CSS once per page ──
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-sf-focus-css')) return;
@@ -13,7 +13,7 @@
   if (document.head) document.head.appendChild(st);
 })();
 
-// â”€â”€ WCAG 4.1.3 Status Messages â€” debounced polite-announcer for ephemeral status text â”€â”€
+// ── WCAG 4.1.3 Status Messages — debounced polite-announcer for ephemeral status text ──
 let _sfAnnounceTimer = null;
 function sfAnnounce(text) {
   if (typeof document === 'undefined') return;
@@ -27,7 +27,7 @@ function sfAnnounce(text) {
   }, 25);
 }
 
-// â”€â”€ Utilities â”€â”€
+// ── Utilities ──
 const cleanJson = (str) => {
   if (!str) return '{}';
   let s = str.trim();
@@ -54,7 +54,7 @@ const escapeHtml = (str) => {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 };
 
-// Word-boundary-aware truncation for compact previews â€” cuts at the last space before `max`
+// Word-boundary-aware truncation for compact previews — cuts at the last space before `max`
 // (never mid-word) and appends an ellipsis. Used only for the on-screen comic-panel preview;
 // exports keep the full text so no student writing is lost.
 const smartTruncate = (str, max = 200) => {
@@ -62,12 +62,12 @@ const smartTruncate = (str, max = 200) => {
   if (s.length <= max) return s;
   const slice = s.slice(0, max);
   const lastSpace = slice.lastIndexOf(' ');
-  return (lastSpace > max * 0.6 ? slice.slice(0, lastSpace) : slice).trimEnd() + 'â€¦';
+  return (lastSpace > max * 0.6 ? slice.slice(0, lastSpace) : slice).trimEnd() + '…';
 };
 
-// â”€â”€ Defensive normalizers for UNTRUSTED draft data (imported .json files + restored
+// ── Defensive normalizers for UNTRUSTED draft data (imported .json files + restored
 //    localStorage). Prevents render crashes from malformed paragraph shapes and closes
-//    the stored-XSS vector where imported image URLs are interpolated into export HTML. â”€â”€
+//    the stored-XSS vector where imported image URLs are interpolated into export HTML. ──
 const MAX_DRAFT_PARAGRAPHS = 8; // mirrors the in-app maxParagraphs cap
 const COMIC_SHOT_OPTIONS = [
   { value: '', label: 'Shot' },
@@ -509,8 +509,8 @@ const sanitizePanelStickers = (obj) => {
   return out;
 };
 
-// â”€â”€ Vocab term detection with word-boundary awareness â”€â”€
-// True if `term` appears as a whole word (not a substring) in `text`, case-insensitive â€”
+// ── Vocab term detection with word-boundary awareness ──
+// True if `term` appears as a whole word (not a substring) in `text`, case-insensitive —
 // so "cat" no longer matches "category". Term is regex-escaped first.
 const sanitizePanelLayouts = (obj) => {
   if (!obj || typeof obj !== 'object') return {};
@@ -567,15 +567,15 @@ const isRtl = (langCode) => {
 const useAudioRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
-  const sharedResultPromiseRef = useRef(null); // Phase 3v.MR â€” shared-path result promise
+  const sharedResultPromiseRef = useRef(null); // Phase 3v.MR — shared-path result promise
   const chunksRef = useRef([]);
   const startRecording = async () => {
-    // Phase 3v.MR â€” shared module path with inline fallback. The shared
+    // Phase 3v.MR — shared module path with inline fallback. The shared
     // controller exposes result as a Promise that resolves on stop().
     // We store the promise on a ref so stopRecording can await it.
     if (window.AlloFlowVoice && typeof window.AlloFlowVoice.recordAudioBlob === 'function') {
       const ctrl = window.AlloFlowVoice.recordAudioBlob({
-        // No maxDurationMs â€” caller drives stop. The shared default
+        // No maxDurationMs — caller drives stop. The shared default
         // (60s) would change behavior for callers that expect arbitrary
         // length recording. Use a generous 10-minute cap as a safety net.
         maxDurationMs: 10 * 60 * 1000,
@@ -661,20 +661,20 @@ const useAudioRecorder = () => {
   return { isRecording, startRecording, stopRecording };
 };
 
-// â”€â”€ Speech-to-text dictation hook â”€â”€
+// ── Speech-to-text dictation hook ──
 const useDictation = (onTranscript, lang) => {
   const [isDictating, setIsDictating] = useState(false);
   const isDictatingRef = useRef(false);
   const recognitionRef = useRef(null);
   const startDictation = () => {
-    // Phase 3v.M â€” shared module path with inline fallback. The shared
+    // Phase 3v.M — shared module path with inline fallback. The shared
     // path uses restartOnEnd:true so the recursive restart (legacy
     // line: recognitionRef.current.start() in onend) is handled inside
     // the controller. The onRichResult callback forwards only final
     // text via onTranscript, matching the original useDictation
     // contract that callers rely on.
     if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === 'function') {
-      // Note: NOT using restartOnEnd:true here â€” that would restart even
+      // Note: NOT using restartOnEnd:true here — that would restart even
       // after user-initiated stop. We replicate the legacy manual-restart
       // pattern: on natural end (browser silence timeout) we re-start
       // ourselves only if the user hasn't called stopDictation; on user
@@ -753,7 +753,7 @@ const useDictation = (onTranscript, lang) => {
   return { isDictating, startDictation, stopDictation };
 };
 
-// â”€â”€ Reduced motion detection â”€â”€
+// ── Reduced motion detection ──
 const useReducedMotion = () => {
   const [prefersReduced, setPrefersReduced] = useState(false);
   useEffect(() => {
@@ -768,7 +768,7 @@ const useReducedMotion = () => {
   return prefersReduced;
 };
 
-// â”€â”€ Host theme mirror â”€â”€
+// ── Host theme mirror ──
 // StoryForge renders OUTSIDE the host app's themed <main id="main-content"> (it is a
 // sibling modal), so the host's `.theme-dark` / `.theme-contrast` descendant CSS rules
 // never cascade into it. We read the host's active theme off #main-content's class list
@@ -782,7 +782,7 @@ const readHostTheme = () => {
     const cls = (el && el.className) || '';
     if (/\btheme-contrast\b/.test(cls)) return 'contrast';
     if (/\btheme-dark\b/.test(cls)) return 'dark';
-  } catch (e) { /* SSR / locked-down DOM â€” fall through to default */ }
+  } catch (e) { /* SSR / locked-down DOM — fall through to default */ }
   return 'default';
 };
 const useHostTheme = () => {
@@ -801,10 +801,10 @@ const useHostTheme = () => {
 };
 
 const LAYOUT_MODES = {
-  'prose': { label: 'Prose', emoji: 'ðŸ“„', desc: 'Traditional paragraph layout', writeBg: 'bg-white', writeBorder: 'border-slate-200', accent: 'rose' },
-  'comic': { label: 'Comic', emoji: 'ðŸ’¬', desc: 'Panel grid with speech bubbles', writeBg: 'bg-slate-50', writeBorder: 'border-slate-800', accent: 'blue' },
-  'journal': { label: 'Journal', emoji: 'ðŸ““', desc: 'Lined notebook diary style', writeBg: 'bg-amber-50', writeBorder: 'border-amber-300', accent: 'amber' },
-  'dark': { label: 'Dark', emoji: 'ðŸŒ™', desc: 'Dark mode cyberpunk aesthetic', writeBg: 'bg-slate-900', writeBorder: 'border-slate-600', accent: 'cyan' },
+  'prose': { label: 'Prose', emoji: '📄', desc: 'Traditional paragraph layout', writeBg: 'bg-white', writeBorder: 'border-slate-200', accent: 'rose' },
+  'comic': { label: 'Comic', emoji: '💬', desc: 'Panel grid with speech bubbles', writeBg: 'bg-slate-50', writeBorder: 'border-slate-800', accent: 'blue' },
+  'journal': { label: 'Journal', emoji: '📓', desc: 'Lined notebook diary style', writeBg: 'bg-amber-50', writeBorder: 'border-amber-300', accent: 'amber' },
+  'dark': { label: 'Dark', emoji: '🌙', desc: 'Dark mode cyberpunk aesthetic', writeBg: 'bg-slate-900', writeBorder: 'border-slate-600', accent: 'cyan' },
 };
 
 const COMIC_PAGE_LAYOUTS = {
@@ -851,21 +851,21 @@ const ART_STYLE_MAP = {
 };
 
 const GENRE_TEMPLATES = {
-  'free': { label: 'Free Write', emoji: 'âœï¸', scaffoldHint: '' },
-  'adventure': { label: 'Adventure', emoji: 'ðŸ—ºï¸', scaffoldHint: 'an exciting adventure story with a quest, obstacles, and a triumphant ending' },
-  'mystery': { label: 'Mystery', emoji: 'ðŸ”', scaffoldHint: 'a mystery story with clues, a suspect, suspense, and a surprising reveal' },
-  'fairy-tale': { label: 'Fairy Tale', emoji: 'ðŸ°', scaffoldHint: 'a fairy tale with magical elements, a hero, a villain, and a moral lesson' },
-  'sci-fi': { label: 'Sci-Fi', emoji: 'ðŸš€', scaffoldHint: 'a science fiction story set in the future or space with technology and discovery' },
-  'historical': { label: 'Historical', emoji: 'ðŸ“œ', scaffoldHint: 'a historical fiction story set in a real time period with accurate details and a fictional character' },
-  'persuasive': { label: 'Persuasive Narrative', emoji: 'ðŸ’¬', scaffoldHint: 'a persuasive narrative that argues a point through a character\'s experience and storytelling' },
+  'free': { label: 'Free Write', emoji: '✏️', scaffoldHint: '' },
+  'adventure': { label: 'Adventure', emoji: '🗺️ºï¸', scaffoldHint: 'an exciting adventure story with a quest, obstacles, and a triumphant ending' },
+  'mystery': { label: 'Mystery', emoji: '🔍', scaffoldHint: 'a mystery story with clues, a suspect, suspense, and a surprising reveal' },
+  'fairy-tale': { label: 'Fairy Tale', emoji: '🏰°', scaffoldHint: 'a fairy tale with magical elements, a hero, a villain, and a moral lesson' },
+  'sci-fi': { label: 'Sci-Fi', emoji: '🚀', scaffoldHint: 'a science fiction story set in the future or space with technology and discovery' },
+  'historical': { label: 'Historical', emoji: '📜', scaffoldHint: 'a historical fiction story set in a real time period with accurate details and a fictional character' },
+  'persuasive': { label: 'Persuasive Narrative', emoji: '💬', scaffoldHint: 'a persuasive narrative that argues a point through a character\'s experience and storytelling' },
 };
 
 const SAVE_KEY_BASE = 'alloflow_storyforge_draft';
 
 // Narrative beat options for the per-paragraph Plot Structure dropdown.
-// Empty value means "unset" â€” students can leave blank.
+// Empty value means "unset" — students can leave blank.
 const PLOT_BEATS = [
-  { value: '', label: 'â€” Choose beat â€”' },
+  { value: '', label: '— Choose beat —' },
   { value: 'setup', label: 'Setup' },
   { value: 'inciting', label: 'Inciting Incident' },
   { value: 'rising', label: 'Rising Action' },
@@ -874,17 +874,17 @@ const PLOT_BEATS = [
   { value: 'resolution', label: 'Resolution' },
 ];
 
-// â”€â”€ Story Shapes (Kurt Vonnegut's "Shapes of Stories" â€” fortune plotted over time) â”€â”€
+// ── Story Shapes (Kurt Vonnegut's "Shapes of Stories" — fortune plotted over time) ──
 // A craft LENS, not a fixed taxonomy. The six below align with both Vonnegut's shapes and
 // the six emotional arcs Reagan et al. (2016) found empirically across ~1,300 stories.
-// `curve` is a 0-1 fortune sparkline (lowâ†’high); `scaffoldHint` steers the AI scaffold prompt.
+// `curve` is a 0-1 fortune sparkline (low→high); `scaffoldHint` steers the AI scaffold prompt.
 const STORY_SHAPES = {
-  manInHole:      { label: 'Man in a Hole', emoji: 'ðŸ•³ï¸', desc: 'Things are okay â€” then trouble â€” then the hero climbs out stronger.', curve: [0.65, 0.45, 0.15, 0.5, 0.85], scaffoldHint: 'an emotional shape where the character starts in an okay place, falls into real trouble in the middle, then climbs out better off than they began (a fall, then a rise)' },
-  cinderella:     { label: 'Cinderella', emoji: 'ðŸ‘‘', desc: 'Up, then a sudden setback, then better than ever.', curve: [0.25, 0.55, 0.8, 0.2, 0.95], scaffoldHint: 'a riseâ€“fallâ€“rise shape: things improve, a sudden setback dashes hopes, then a turnaround ends higher than ever' },
-  boyMeetsGirl:   { label: 'Boy Meets Girl', emoji: 'ðŸ’ž', desc: 'Find something wonderful, lose it, then win it back.', curve: [0.45, 0.85, 0.2, 0.9], scaffoldHint: 'the character gains something wonderful, loses it, and finally gets it back (up, down, up)' },
-  ragsToRiches:   { label: 'Rags to Riches', emoji: 'ðŸ“ˆ', desc: 'A steady climb â€” things keep getting better.', curve: [0.15, 0.4, 0.65, 0.9], scaffoldHint: 'a steady rise from a hard or low start to a happy, successful ending (mostly upward)' },
-  icarus:         { label: 'Icarus', emoji: 'ðŸª½', desc: 'A great rise â€” then a fall. A cautionary tale.', curve: [0.2, 0.55, 0.9, 0.5, 0.15], scaffoldHint: 'a rise then a fall: things soar, but risk or mistakes bring a downturn by the end (up, then down)' },
-  fromBadToWorse: { label: 'From Bad to Worse', emoji: 'ðŸŒ§ï¸', desc: 'A hard start that gets harder â€” ending on a hard-won lesson.', curve: [0.55, 0.4, 0.25, 0.12], scaffoldHint: 'a downward shape where the situation steadily worsens; end on a reflective, hard-won lesson rather than a tidy happy ending' },
+  manInHole:      { label: 'Man in a Hole', emoji: '🕳️³ï¸', desc: 'Things are okay — then trouble — then the hero climbs out stronger.', curve: [0.65, 0.45, 0.15, 0.5, 0.85], scaffoldHint: 'an emotional shape where the character starts in an okay place, falls into real trouble in the middle, then climbs out better off than they began (a fall, then a rise)' },
+  cinderella:     { label: 'Cinderella', emoji: '👑', desc: 'Up, then a sudden setback, then better than ever.', curve: [0.25, 0.55, 0.8, 0.2, 0.95], scaffoldHint: 'a rise–fall–rise shape: things improve, a sudden setback dashes hopes, then a turnaround ends higher than ever' },
+  boyMeetsGirl:   { label: 'Boy Meets Girl', emoji: '💞', desc: 'Find something wonderful, lose it, then win it back.', curve: [0.45, 0.85, 0.2, 0.9], scaffoldHint: 'the character gains something wonderful, loses it, and finally gets it back (up, down, up)' },
+  ragsToRiches:   { label: 'Rags to Riches', emoji: '📈', desc: 'A steady climb — things keep getting better.', curve: [0.15, 0.4, 0.65, 0.9], scaffoldHint: 'a steady rise from a hard or low start to a happy, successful ending (mostly upward)' },
+  icarus:         { label: 'Icarus', emoji: '🪽', desc: 'A great rise — then a fall. A cautionary tale.', curve: [0.2, 0.55, 0.9, 0.5, 0.15], scaffoldHint: 'a rise then a fall: things soar, but risk or mistakes bring a downturn by the end (up, then down)' },
+  fromBadToWorse: { label: 'From Bad to Worse', emoji: '🌧️§ï¸', desc: 'A hard start that gets harder — ending on a hard-won lesson.', curve: [0.55, 0.4, 0.25, 0.12], scaffoldHint: 'a downward shape where the situation steadily worsens; end on a reflective, hard-won lesson rather than a tidy happy ending' },
 };
 
 // Resample a 0-1 curve to K points via linear interpolation (so curves of different
@@ -918,14 +918,14 @@ const closestStoryShape = (norm) => {
 
 const STORY_STARTERS = {
   'adventure': [
-    'The map had been hidden in the library for a hundred years â€” until today.',
+    'The map had been hidden in the library for a hundred years — until today.',
     'Nobody believed the old bridge led anywhere, but I had to find out.',
     'The compass needle spun wildly, then pointed somewhere no compass should point.',
   ],
   'mystery': [
     'The classroom was empty, but someone had left a coded message on the whiteboard.',
     'Every night at exactly 8:13 PM, the light in the abandoned house flickered on.',
-    'The package arrived with no return address â€” and it was addressed to someone who didn\'t exist.',
+    'The package arrived with no return address — and it was addressed to someone who didn\'t exist.',
   ],
   'fairy-tale': [
     'In a kingdom where music was forbidden, one child hummed a melody that changed everything.',
@@ -933,9 +933,9 @@ const STORY_STARTERS = {
     'Once upon a time, a girl found a door in the forest that only appeared on rainy days.',
   ],
   'sci-fi': [
-    'The new student at school wasn\'t from another country â€” they were from another century.',
+    'The new student at school wasn\'t from another country — they were from another century.',
     'When the power grid went dark, the robots didn\'t shut down. They woke up.',
-    'The telescope showed a planet that wasn\'t on any map â€” and it was getting closer.',
+    'The telescope showed a planet that wasn\'t on any map — and it was getting closer.',
   ],
   'historical': [
     'The year was 1776, and a young apprentice overheard something that could change history.',
@@ -943,13 +943,13 @@ const STORY_STARTERS = {
     'In the heart of the ancient city, a child discovered a scroll that rewrote everything scholars believed.',
   ],
   'persuasive': [
-    'Everyone told Maya her idea was impossible â€” but she had evidence they hadn\'t seen.',
+    'Everyone told Maya her idea was impossible — but she had evidence they hadn\'t seen.',
     'The town council was about to make a decision that would affect every student, and one voice rose to speak.',
     'After what happened at recess, I knew I had to convince my classmates that things needed to change.',
   ],
 };
 
-// â”€â”€ Reading level calculation â”€â”€
+// ── Reading level calculation ──
 const computeReadingLevel = (text) => {
   if (!text || text.trim().length < 20) return null;
   const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
@@ -976,7 +976,7 @@ const computeReadingLevel = (text) => {
 // Map a grade-level LABEL (e.g. 'Kindergarten', 'K', 'Pre-K', '5th Grade', 'Grade 5', 'College')
 // to a numeric grade for comparison. Returns null when the label can't be interpreted, so
 // callers can omit an on/above-target verdict rather than show a misleading one.
-// (parseInt('Kindergarten') is NaN, which silently broke the old comparison â†’ always "above target".)
+// (parseInt('Kindergarten') is NaN, which silently broke the old comparison → always "above target".)
 const gradeLevelToNumber = (label) => {
   if (typeof label !== 'string') return null;
   const s = label.trim().toLowerCase();
@@ -987,12 +987,12 @@ const gradeLevelToNumber = (label) => {
   return m ? parseInt(m[0], 10) : null;
 };
 
-// â”€â”€ Penmanship triangulation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Penmanship triangulation ──────────────────────────────────────────────
 // Re-applies the document builder's multi-auditor pattern (doc_pipeline_module.js) to
 // handwriting: run N independent vision reviews under different lenses, re-derive each
 // total from its four 0-25 sub-scores (not the model's gestalt number), then report the
 // MEAN with an honest uncertainty band. We deliberately AVOID the labels "SEM"/"ICC"/
-// "Cronbach's Î±" â€” agreement across AI re-reads of one sample is not a normed psychometric
+// "Cronbach's α" — agreement across AI re-reads of one sample is not a normed psychometric
 // instrument. This is a formative AI estimate, not a graded/normed measure.
 const PENMANSHIP_LENSES = [
   'You are an encouraging elementary teacher giving kind, grade-appropriate handwriting feedback.',
@@ -1034,29 +1034,29 @@ const PHASES = ['configure', 'write', 'illustrate', 'narrate', 'review', 'export
 const PHASE_LABELS = ['Setup', 'Write', 'Illustrate', 'Narrate', 'Review', 'Export'];
 const LANG_OPTIONS = [
   { code: 'en', label: 'English', bcp47: 'en-US' },
-  { code: 'es', label: 'EspaÃ±ol', bcp47: 'es-ES' },
-  { code: 'fr', label: 'FranÃ§ais', bcp47: 'fr-FR' },
+  { code: 'es', label: 'Español', bcp47: 'es-ES' },
+  { code: 'fr', label: 'Français', bcp47: 'fr-FR' },
   { code: 'de', label: 'Deutsch', bcp47: 'de-DE' },
-  { code: 'pt', label: 'PortuguÃªs', bcp47: 'pt-BR' },
-  { code: 'zh', label: 'ä¸­æ–‡', bcp47: 'zh-CN' },
-  { code: 'ja', label: 'æ—¥æœ¬èªž', bcp47: 'ja-JP' },
-  { code: 'ko', label: 'í•œêµ­ì–´', bcp47: 'ko-KR' },
-  { code: 'ar', label: 'Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©', bcp47: 'ar-SA' },
-  { code: 'hi', label: 'à¤¹à¤¿à¤¨à¥à¤¦à¥€', bcp47: 'hi-IN' },
-  { code: 'vi', label: 'Tiáº¿ng Viá»‡t', bcp47: 'vi-VN' },
+  { code: 'pt', label: 'Português', bcp47: 'pt-BR' },
+  { code: 'zh', label: '中文', bcp47: 'zh-CN' },
+  { code: 'ja', label: '日本語', bcp47: 'ja-JP' },
+  { code: 'ko', label: '한국어', bcp47: 'ko-KR' },
+  { code: 'ar', label: 'العربية', bcp47: 'ar-SA' },
+  { code: 'hi', label: 'हिन्दी', bcp47: 'hi-IN' },
+  { code: 'vi', label: 'Tiếng Việt', bcp47: 'vi-VN' },
   { code: 'tl', label: 'Filipino', bcp47: 'tl-PH' },
-  { code: 'uk', label: 'Ð£ÐºÑ€Ð°Ñ—Ð½ÑÑŒÐºÐ°', bcp47: 'uk-UA' },
-  { code: 'ru', label: 'Ð ÑƒÑÑÐºÐ¸Ð¹', bcp47: 'ru-RU' },
+  { code: 'uk', label: 'Українська', bcp47: 'uk-UA' },
+  { code: 'ru', label: 'Русский', bcp47: 'ru-RU' },
   { code: 'it', label: 'Italiano', bcp47: 'it-IT' },
   { code: 'pl', label: 'Polski', bcp47: 'pl-PL' },
-  { code: 'tr', label: 'TÃ¼rkÃ§e', bcp47: 'tr-TR' },
-  { code: 'th', label: 'à¹„à¸—à¸¢', bcp47: 'th-TH' },
-  { code: 'other', label: 'Otherâ€¦', bcp47: 'en-US' },
+  { code: 'tr', label: 'Türkçe', bcp47: 'tr-TR' },
+  { code: 'th', label: 'ไทย', bcp47: 'th-TH' },
+  { code: 'other', label: 'Other…', bcp47: 'en-US' },
 ];
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════════
 // MAIN COMPONENT
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════════
 
 const _storyForgeUseFocusTrap = (typeof window !== 'undefined' && window.__alloHooks && window.__alloHooks.useFocusTrap) || function(){};
 
@@ -1076,26 +1076,26 @@ const StoryForge = React.memo(({
   t: tFunc,
   isCanvasEnv,
   liveSession,
-  // â”€â”€ Resource integration props â”€â”€
+  // ── Resource integration props ──
   initialConfig,        // Pre-loaded storyforge-config from teacher assignment
   onSaveConfig,         // Callback to save config as resource: (configObj) => void
   onSaveSubmission,     // Callback to save completed story as resource: (submissionObj) => void
   lessonResources,      // Array of available lesson resources for "Import from Lesson"
-  codename,             // Student codename (e.g., "Bright Tiger") â€” used instead of real name
-  onAnalyzeFluency,     // Optional: (audioBase64, mimeType, referenceText) => Promise<result> â€” ORF analysis
+  codename,             // Student codename (e.g., "Bright Tiger") — used instead of real name
+  onAnalyzeFluency,     // Optional: (audioBase64, mimeType, referenceText) => Promise<result> — ORF analysis
 }) => {
-  // â”€â”€ Safe translate â”€â”€
+  // ── Safe translate ──
   const t = tFunc || ((k) => k);
 
-  // â”€â”€ Phase state â”€â”€
+  // ── Phase state ──
   const [phase, setPhase] = useState('configure');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // â”€â”€ Configure state â”€â”€
+  // ── Configure state ──
   const [storyTitle, setStoryTitle] = useState('');
   const authorName = codename || 'Creative Writer';
-  // Per-student draft key â€” namespaced by codename so a shared classroom device doesn't
-  // surface another student's in-progress draft (was one global key â†’ cross-student leak).
+  // Per-student draft key — namespaced by codename so a shared classroom device doesn't
+  // surface another student's in-progress draft (was one global key → cross-student leak).
   const SAVE_KEY = SAVE_KEY_BASE + '_' + (String(codename || 'anon').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-+|-+$)/g, '') || 'anon');
   const [genre, setGenre] = useState('free');
   const [storyShape, setStoryShape] = useState(''); // optional Vonnegut-style emotional shape (scaffolding lens)
@@ -1109,7 +1109,7 @@ const StoryForge = React.memo(({
   const [minParagraphs] = useState(3);
   const [maxParagraphs] = useState(8);
 
-  // â”€â”€ Write state â”€â”€
+  // ── Write state ──
   const [paragraphs, setParagraphs] = useState([{ id: 'p-0', text: '', scaffoldFrame: '', plotBeat: '' }]);
   const [scaffoldsGenerated, setScaffoldsGenerated] = useState(false);
   const [helpMeResult, setHelpMeResult] = useState(null);
@@ -1123,27 +1123,27 @@ const StoryForge = React.memo(({
   const [customLanguage, setCustomLanguage] = useState('');
   const [hasExported, setHasExported] = useState(false);
 
-  // â”€â”€ Writing timer â”€â”€
+  // ── Writing timer ──
   const [timerActive, setTimerActive] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerDuration, setTimerDuration] = useState(300); // 5 min default
   const timerRef = useRef(null);
 
-  // â”€â”€ Revision tracking â”€â”€
+  // ── Revision tracking ──
   const [revisionSnapshot, setRevisionSnapshot] = useState(null);
 
-  // â”€â”€ Grammar/style checker â”€â”€
+  // ── Grammar/style checker ──
   const [grammarResults, setGrammarResults] = useState({}); // keyed by paragraph id
   const [grammarLoading, setGrammarLoading] = useState(false);
 
-  // â”€â”€ XP & Streaks â”€â”€
+  // ── XP & Streaks ──
   const XP_KEY = 'alloflow_storyforge_xp';
   const LEVELS = [
-    { name: 'Apprentice', min: 0, emoji: 'âœï¸' },
-    { name: 'Storyteller', min: 50, emoji: 'ðŸ“–' },
-    { name: 'Author', min: 150, emoji: 'ðŸ“š' },
-    { name: 'Master Author', min: 300, emoji: 'ðŸ…' },
-    { name: 'Legend', min: 500, emoji: 'ðŸ‘‘' },
+    { name: 'Apprentice', min: 0, emoji: '✏️' },
+    { name: 'Storyteller', min: 50, emoji: '📖' },
+    { name: 'Author', min: 150, emoji: '📚' },
+    { name: 'Master Author', min: 300, emoji: '🏅…' },
+    { name: 'Legend', min: 500, emoji: '👑' },
   ];
   const [xpData, setXpData] = useState(() => {
     try {
@@ -1153,7 +1153,7 @@ const StoryForge = React.memo(({
     return { totalXP: 0, streak: 0, lastWriteDate: null, xpLog: [] };
   });
 
-  // Local calendar day as YYYY-MM-DD (NOT UTC) â€” so evening sessions don't land on the wrong day.
+  // Local calendar day as YYYY-MM-DD (NOT UTC) — so evening sessions don't land on the wrong day.
   const getLocalDayKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   const awardXP = (amount, reason) => {
     setXpData(prev => {
@@ -1178,10 +1178,10 @@ const StoryForge = React.memo(({
     return idx < LEVELS.length - 1 ? LEVELS[idx + 1] : null;
   }, [currentLevel]);
 
-  // â”€â”€ Image refinement â”€â”€
+  // ── Image refinement ──
   const [imageEditState, setImageEditState] = useState(null); // { paragraphId, prompt }
 
-  // â”€â”€ Comic panel stickers + dialogue/thought/narration per panel â”€â”€
+  // ── Comic panel stickers + dialogue/thought/narration per panel ──
   const [panelStickers, setPanelStickers] = useState({});
   const [panelDialogue, setPanelDialogue] = useState({}); // keyed by paragraph id: { speaker, speech, thought, sfx }
   const [panelDirections, setPanelDirections] = useState({}); // keyed by paragraph id: { shot, angle, mood, transition }
@@ -1538,17 +1538,17 @@ const StoryForge = React.memo(({
     panelStickers: sanitizePanelStickers(panelStickers),
   });
 
-  // â”€â”€ Illustrate state â”€â”€
+  // ── Illustrate state ──
   const [illustrations, setIllustrations] = useState({});
   const [coverArt, setCoverArt] = useState(null);
   const [coverArtLoading, setCoverArtLoading] = useState(false);
   const characterPortraitRef = useRef(null);
 
-  // â”€â”€ Ref for async loops (prevents stale closure over paragraphs) â”€â”€
+  // ── Ref for async loops (prevents stale closure over paragraphs) ──
   const paragraphsRef = useRef(paragraphs);
   useEffect(() => { paragraphsRef.current = paragraphs; }, [paragraphs]);
 
-  // â”€â”€ Narrate state â”€â”€
+  // ── Narrate state ──
   const [characters, setCharacters] = useState([]);
   const [audioSegments, setAudioSegments] = useState({});
   // Live mirror of audioSegments so the unmount cleanup (which must keep [] deps to run
@@ -1561,7 +1561,7 @@ const StoryForge = React.memo(({
   const recorder = useAudioRecorder();
   const [recordingParagraphId, setRecordingParagraphId] = useState(null);
 
-  // â”€â”€ Sentence splitter for karaoke narration â”€â”€
+  // ── Sentence splitter for karaoke narration ──
   const splitSentences = (text) => {
     if (!text) return [''];
     // Split on sentence-ending punctuation followed by space or end of string
@@ -1571,10 +1571,10 @@ const StoryForge = React.memo(({
     return raw.map(s => s.trim()).filter(s => s.length > 0);
   };
 
-  // â”€â”€ Narration voice â”€â”€
+  // ── Narration voice ──
   const [narratorVoice, setNarratorVoice] = useState(selectedVoice || 'Puck');
 
-  // â”€â”€ ORF Fluency Reading â”€â”€
+  // ── ORF Fluency Reading ──
   const [fluencyReadingId, setFluencyReadingId] = useState(null);
   const [fluencyResult, setFluencyResult] = useState(null);
   const [fluencyRecording, setFluencyRecording] = useState(false);
@@ -1629,7 +1629,7 @@ const StoryForge = React.memo(({
     });
   };
 
-  // â”€â”€ Handwriting Capture â”€â”€
+  // ── Handwriting Capture ──
   const [hwPenmanshipOn, setHwPenmanshipOn] = useState(false);
   const [hwLoading, setHwLoading] = useState(false);
   const [hwResult, setHwResult] = useState(null);
@@ -1648,13 +1648,13 @@ const StoryForge = React.memo(({
       const showPenmanship = hwPenmanshipOn;
       const gl = gradeLevel || '5th Grade';
 
-      const transcribeTask = 'TASK 1 â€” TRANSCRIBE: Extract ALL handwritten text from this document exactly as written. ' +
-        'Preserve the student\'s original wording, spelling, and punctuation â€” do NOT correct anything. ' +
+      const transcribeTask = 'TASK 1 — TRANSCRIBE: Extract ALL handwritten text from this document exactly as written. ' +
+        'Preserve the student\'s original wording, spelling, and punctuation — do NOT correct anything. ' +
         'If text is unclear, make your best guess and note uncertainty with [?].\n\n';
-      const penmanshipTask = 'TASK 2 â€” PENMANSHIP EVALUATION:\n' +
+      const penmanshipTask = 'TASK 2 — PENMANSHIP EVALUATION:\n' +
         'This student is in ' + gl + '.\n' +
         'CRITICAL: Score relative to what is EXPECTED at ' + gl + ' level, NOT against adult writing.\n' +
-        'Score each area 0-25 (do NOT report a total â€” it is computed from these):\n' +
+        'Score each area 0-25 (do NOT report a total — it is computed from these):\n' +
         '- LETTER FORMATION (0-25): Are letters shaped correctly for this grade level?\n' +
         '- SPACING (0-25): Appropriate space between words?\n' +
         '- ALIGNMENT (0-25): Writing follows the line? Consistent baseline?\n' +
@@ -1670,7 +1670,7 @@ const StoryForge = React.memo(({
 
       try {
         if (!showPenmanship) {
-          // Single transcription pass â€” penmanship feedback not requested.
+          // Single transcription pass — penmanship feedback not requested.
           const result = await onCallGeminiVision('You are an expert at reading student handwriting.\n\n' + transcribeTask + 'Return ONLY JSON:\n{"text":"the transcribed handwriting exactly as written"}', base64, mimeType);
           const parsed = parseVision(result);
           if (parsed.text && paragraphIdx != null) updateParagraph(paragraphIdx, parsed.text);
@@ -1679,7 +1679,7 @@ const StoryForge = React.memo(({
           if (addToast) addToast(t('toasts.handwriting_converted'), 'success');
           return;
         }
-        // â”€â”€ Penmanship requested: triangulate across N independent reviewer lenses â”€â”€
+        // ── Penmanship requested: triangulate across N independent reviewer lenses ──
         // (mirrors the document-builder multi-auditor pattern to cut single-pass variance).
         const reviews = (await Promise.all(
           PENMANSHIP_LENSES.map(lens =>
@@ -1707,7 +1707,7 @@ const StoryForge = React.memo(({
     reader.readAsDataURL(file);
   };
 
-  // â”€â”€ Unsaved changes guard â”€â”€
+  // ── Unsaved changes guard ──
   const [isDirty, setIsDirty] = useState(false);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const closeConfirmDialogRef = useRef(null);
@@ -1734,28 +1734,28 @@ const StoryForge = React.memo(({
     }
   };
 
-  // â”€â”€ Advanced config collapse â”€â”€
+  // ── Advanced config collapse ──
   const [showAdvancedConfig, setShowAdvancedConfig] = useState(false);
 
-  // â”€â”€ Image prompt preview/edit state â”€â”€
+  // ── Image prompt preview/edit state ──
   const [promptPreview, setPromptPreview] = useState(null); // { paragraphId, text, idx, prompt }
 
-  // â”€â”€ Phase content ref for focus management â”€â”€
+  // ── Phase content ref for focus management ──
   const phaseContentRef = useRef(null);
 
-  // â”€â”€ Modal focus-management refs (focus trap + restore) â”€â”€
+  // ── Modal focus-management refs (focus trap + restore) ──
   const modalRootRef = useRef(null);
   const previouslyFocusedRef = useRef(null);
 
-  // â”€â”€ Accessibility â”€â”€
+  // ── Accessibility ──
   const prefersReducedMotion = useReducedMotion();
   const animClass = prefersReducedMotion ? '' : 'animate-in fade-in duration-300';
 
-  // â”€â”€ Theme: mirror the host app's dark / high-contrast theme onto our own modal root,
-  //    so the host's existing `.theme-dark .bg-white {â€¦}` / `.theme-contrast â€¦` rules apply. â”€â”€
+  // ── Theme: mirror the host app's dark / high-contrast theme onto our own modal root,
+  //    so the host's existing `.theme-dark .bg-white {…}` / `.theme-contrast …` rules apply. ──
   const hostTheme = useHostTheme();
 
-  // â”€â”€ Cleanup on unmount â€” stop capture and revoke any blob: URLs we created â”€â”€
+  // ── Cleanup on unmount — stop capture and revoke any blob: URLs we created ──
   // NB: deps MUST stay [] so this runs only on unmount. We read live state via
   // audioSegmentsRef because a [] closure would otherwise capture the initial empty {}.
   useEffect(() => {
@@ -1765,7 +1765,7 @@ const StoryForge = React.memo(({
       if (recorder.isRecording) recorder.stopRecording();
       // Release the ORF fluency microphone if a reading is still in progress
       try { fluencyRecorderRef.current?.stream?.getTracks().forEach(tr => tr.stop()); } catch (e) {}
-      // Revoke every blob: URL held in audioSegments â€” student recordings AND AI/TTS
+      // Revoke every blob: URL held in audioSegments — student recordings AND AI/TTS
       // narration (legacy aiAudioUrl + the per-sentence sentenceAudios array). These
       // accumulate across a long writing session and never get freed otherwise.
       const revoke = (u) => { if (typeof u === 'string' && u.startsWith('blob:')) { try { URL.revokeObjectURL(u); } catch (e) {} } };
@@ -1778,7 +1778,7 @@ const StoryForge = React.memo(({
     };
   }, []);
 
-  // â”€â”€ Dictation â”€â”€
+  // ── Dictation ──
   const langLabel = language === 'other' ? customLanguage : (LANG_OPTIONS.find(l => l.code === language)?.label || 'English');
   const langBcp47 = language === 'other' ? 'en-US' : (LANG_OPTIONS.find(l => l.code === language)?.bcp47 || 'en-US');
   const langInstruction = language !== 'en' ? `\nIMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLabel}.` : '';
@@ -1805,35 +1805,35 @@ const StoryForge = React.memo(({
     }
   };
 
-  // â”€â”€ Review state â”€â”€
+  // ── Review state ──
   const [gradingResult, setGradingResult] = useState(null);
   // Senses Check (sensory imagery audit, ported from PoetTree)
   const [sensesResult, setSensesResult] = useState(null);
   const [sensesLoading, setSensesLoading] = useState(false);
-  // Pre-grade Self-Assessment â€” student rates self before AI grade for metacognition
+  // Pre-grade Self-Assessment — student rates self before AI grade for metacognition
   const [selfAssessment, setSelfAssessment] = useState({});
   const [selfAssessmentSubmitted, setSelfAssessmentSubmitted] = useState(false);
-  // Mentor Match â€” Serper-grounded recommendation of a public-domain short-story excerpt
+  // Mentor Match — Serper-grounded recommendation of a public-domain short-story excerpt
   const [mentorMatch, setMentorMatch] = useState(null);
   const [mentorLoading, setMentorLoading] = useState(false);
-  // Show-Don't-Tell coach â€” flags sentences that name emotion/state outright
+  // Show-Don't-Tell coach — flags sentences that name emotion/state outright
   const [showTellResult, setShowTellResult] = useState(null);
   const [showTellLoading, setShowTellLoading] = useState(false);
-  // Character Arc Tracker â€” per-character introduction/want/change/resolution audit
+  // Character Arc Tracker — per-character introduction/want/change/resolution audit
   const [arcReport, setArcReport] = useState(null);
   const [arcLoading, setArcLoading] = useState(false);
-  // Revision Plan â€” synthesizes whichever helpers ran into one prioritized to-do list
+  // Revision Plan — synthesizes whichever helpers ran into one prioritized to-do list
   const [revisionPlan, setRevisionPlan] = useState(null);
   const [revisionPlanLoading, setRevisionPlanLoading] = useState(false);
-  // Dialogue Tag Tune-Up â€” counts tag usage, flags overuse of "said", proposes context-aware swaps
+  // Dialogue Tag Tune-Up — counts tag usage, flags overuse of "said", proposes context-aware swaps
   const [dialogueReport, setDialogueReport] = useState(null);
   const [dialogueLoading, setDialogueLoading] = useState(false);
-  // Comic Flow Audit â€” checks panel pacing, visual readiness, lettering load, and shot variety
+  // Comic Flow Audit — checks panel pacing, visual readiness, lettering load, and shot variety
   const [comicFlowReport, setComicFlowReport] = useState(null);
   const [comicFlowLoading, setComicFlowLoading] = useState(false);
   const [draftCount, setDraftCount] = useState(1);
 
-  // â”€â”€ Init vocab from glossary â”€â”€
+  // ── Init vocab from glossary ──
   useEffect(() => {
     if (glossaryTerms && glossaryTerms.length > 0 && vocabTerms.length === 0) {
       setVocabTerms(glossaryTerms.map(g => ({
@@ -1843,7 +1843,7 @@ const StoryForge = React.memo(({
     }
   }, [glossaryTerms]);
 
-  // â”€â”€ Vocab usage tracking â”€â”€
+  // ── Vocab usage tracking ──
   const vocabUsage = useMemo(() => {
     const fullText = paragraphs.map(p => p.text).join(' ');
     const usage = {};
@@ -1856,13 +1856,13 @@ const StoryForge = React.memo(({
   const vocabUsedCount = useMemo(() => Object.values(vocabUsage).filter(Boolean).length, [vocabUsage]);
   const totalWords = useMemo(() => paragraphs.reduce((sum, p) => sum + p.text.trim().split(/\s+/).filter(Boolean).length, 0), [paragraphs]);
 
-  // â”€â”€ Reading level â”€â”€
+  // ── Reading level ──
   const readingLevel = useMemo(() => {
     const fullText = paragraphs.map(p => p.text).join(' ');
     return computeReadingLevel(fullText);
   }, [paragraphs]);
 
-  // â”€â”€ Per-paragraph stats â”€â”€
+  // ── Per-paragraph stats ──
   const paragraphStats = useMemo(() => paragraphs.map(p => {
     const words = p.text.trim().split(/\s+/).filter(Boolean);
     const sentences = p.text.split(/[.!?]+/).filter(s => s.trim().length > 0);
@@ -1870,7 +1870,7 @@ const StoryForge = React.memo(({
     return { wordCount: words.length, sentenceCount: sentences.length, vocabUsed: pVocab.length };
   }), [paragraphs, vocabTerms]);
 
-  // â”€â”€ Word frequency analysis (for Review phase) â”€â”€
+  // ── Word frequency analysis (for Review phase) ──
   const wordFrequency = useMemo(() => {
     const fullText = paragraphs.map(p => p.text).join(' ');
     const words = fullText.toLowerCase().replace(/[^a-z\s'-]/g, '').split(/\s+/).filter(w => w.length > 3);
@@ -1882,7 +1882,7 @@ const StoryForge = React.memo(({
 
   const overusedWords = useMemo(() => wordFrequency.filter(([, count]) => count >= 4).map(([word]) => word), [wordFrequency]);
 
-  // â”€â”€ Sentence variety analysis â”€â”€
+  // ── Sentence variety analysis ──
   const sentenceVariety = useMemo(() => paragraphs.map(p => {
     const sentences = p.text.split(/[.!?]+/).filter(s => s.trim().length > 0);
     if (sentences.length < 3) return { varied: true, issues: [] };
@@ -1892,16 +1892,16 @@ const StoryForge = React.memo(({
     const starterCounts = {};
     starters.forEach(s => { if (s) starterCounts[s] = (starterCounts[s] || 0) + 1; });
     const repeated = Object.entries(starterCounts).filter(([, c]) => c >= 3).map(([w]) => w);
-    if (repeated.length > 0) issues.push(`Sentences often start with "${repeated[0]}" â€” try varying your openings`);
+    if (repeated.length > 0) issues.push(`Sentences often start with "${repeated[0]}" — try varying your openings`);
     // Check sentence length uniformity
     const lengths = sentences.map(s => s.trim().split(/\s+/).length);
     const avgLen = lengths.reduce((a, b) => a + b, 0) / lengths.length;
     const allSimilar = lengths.every(l => Math.abs(l - avgLen) < 3);
-    if (allSimilar && sentences.length >= 3) issues.push('Sentences are similar length â€” mix short punchy ones with longer descriptive ones');
+    if (allSimilar && sentences.length >= 3) issues.push('Sentences are similar length — mix short punchy ones with longer descriptive ones');
     return { varied: issues.length === 0, issues };
   }), [paragraphs]);
 
-  // â”€â”€ Character name consistency check â”€â”€
+  // ── Character name consistency check ──
   const characterIssues = useMemo(() => {
     if (characters.length === 0) return [];
     const issues = [];
@@ -1932,7 +1932,7 @@ const StoryForge = React.memo(({
     return issues;
   }, [paragraphs, characters]);
 
-  // â”€â”€ Transition words â”€â”€
+  // ── Transition words ──
   const TRANSITIONS = ['Furthermore,', 'Meanwhile,', 'However,', 'Suddenly,', 'After that,', 'In addition,', 'As a result,', 'Eventually,', 'On the other hand,', 'Despite this,', 'Soon after,', 'At the same time,', 'In contrast,', 'Therefore,', 'Finally,'];
   const suggestTransition = (idx) => {
     if (idx === 0) return null;
@@ -1947,7 +1947,7 @@ const StoryForge = React.memo(({
     return TRANSITIONS[idx % TRANSITIONS.length];
   };
 
-  // â”€â”€ Writing timer â”€â”€
+  // ── Writing timer ──
   useEffect(() => {
     if (timerActive && timerSeconds < timerDuration) {
       timerRef.current = setTimeout(() => setTimerSeconds(s => s + 1), 1000);
@@ -1971,7 +1971,7 @@ const StoryForge = React.memo(({
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
-  // â”€â”€ Keyboard shortcuts â”€â”€
+  // ── Keyboard shortcuts ──
   useEffect(() => {
     const handler = (e) => {
       if (e.key === 'Escape' && isOpen) {
@@ -1997,8 +1997,8 @@ const StoryForge = React.memo(({
     return () => window.removeEventListener('keydown', handler);
   }, [isOpen, exportConsent, showCloseConfirm, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers]);
 
-  // â”€â”€ Focus management: move focus into the dialog on open, trap Tab inside it, and
-  //    restore focus to the trigger on close (WCAG 2.4.3 Focus Order / 2.1.2 No Keyboard Trap escape). â”€â”€
+  // ── Focus management: move focus into the dialog on open, trap Tab inside it, and
+  //    restore focus to the trigger on close (WCAG 2.4.3 Focus Order / 2.1.2 No Keyboard Trap escape). ──
   useEffect(() => {
     if (!isOpen) return undefined;
     const root = modalRootRef.current;
@@ -2031,12 +2031,12 @@ const StoryForge = React.memo(({
       root.removeEventListener('keydown', onKeyDown);
       const prev = previouslyFocusedRef.current;
       if (prev && typeof prev.focus === 'function' && document.contains(prev)) {
-        try { prev.focus(); } catch (e) { /* element gone â€” nothing to restore to */ }
+        try { prev.focus(); } catch (e) { /* element gone — nothing to restore to */ }
       }
     };
   }, [isOpen]);
 
-  // â”€â”€ Auto-save to localStorage â”€â”€
+  // ── Auto-save to localStorage ──
   const saveTimerRef = useRef(null);
   useEffect(() => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -2049,7 +2049,7 @@ const StoryForge = React.memo(({
     return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
   }, [storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers]);
 
-  // â”€â”€ Load saved draft on mount â”€â”€
+  // ── Load saved draft on mount ──
   const savedDraftRef = useRef(null);
   _storyForgeUseFocusTrap(restorePromptDialogRef, showRestorePrompt, () => setShowRestorePrompt(false));
   _storyForgeUseFocusTrap(closeConfirmDialogRef, showCloseConfirm, () => setShowCloseConfirm(false));
@@ -2108,7 +2108,7 @@ const StoryForge = React.memo(({
     setShowRestorePrompt(false);
   };
 
-  // â”€â”€ Load initial config from teacher assignment â”€â”€
+  // ── Load initial config from teacher assignment ──
   useEffect(() => {
     if (initialConfig && initialConfig.vocabTerms) {
       if (initialConfig.storyTitle) setStoryTitle(initialConfig.storyTitle);
@@ -2134,7 +2134,7 @@ const StoryForge = React.memo(({
     }
   }, [initialConfig]);
 
-  // â”€â”€ Save as teacher assignment (config resource) â”€â”€
+  // ── Save as teacher assignment (config resource) ──
   const saveAsConfig = () => {
     if (!onSaveConfig) return;
     const config = {
@@ -2213,7 +2213,7 @@ const StoryForge = React.memo(({
     return null;
   };
 
-  // â”€â”€ Save completed story as submission resource â”€â”€
+  // ── Save completed story as submission resource ──
   const saveAsSubmission = () => {
     if (!onSaveSubmission) return;
     const submission = {
@@ -2254,7 +2254,7 @@ const StoryForge = React.memo(({
     awardXP(10, 'Saved story to portfolio');
   };
 
-  // â”€â”€ Import from lesson resources â”€â”€
+  // ── Import from lesson resources ──
   const importFromResource = (resource) => {
     if (!resource) return;
     if (resource.type === 'glossary') {
@@ -2293,7 +2293,7 @@ const StoryForge = React.memo(({
     }
   };
 
-  // â”€â”€ Phase navigation with focus management â”€â”€
+  // ── Phase navigation with focus management ──
   const phaseIdx = PHASES.indexOf(phase);
   const canGoNext = () => {
     if (phase === 'configure') return vocabTerms.length > 0;
@@ -2319,9 +2319,9 @@ const StoryForge = React.memo(({
     if (idx > 0) changePhase(PHASES[idx - 1]);
   };
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   // CONFIGURE PHASE FUNCTIONS
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
 
   const [newTerm, setNewTerm] = useState('');
   const [newDef, setNewDef] = useState('');
@@ -2341,9 +2341,9 @@ const StoryForge = React.memo(({
     if (removed) sfAnnounce(`Term removed: ${removed.term}`);
   };
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   // WRITE PHASE FUNCTIONS
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
 
   const updateParagraph = (idx, text) => {
     setParagraphs(prev => prev.map((p, i) => i === idx ? { ...p, text } : p));
@@ -2412,11 +2412,11 @@ const StoryForge = React.memo(({
     if (paragraphs.length <= 1) return;
     const removedId = paragraphs[idx]?.id;
     if (removedId) {
-      // Revoke this paragraph's audio blob: URLs (same pattern as the unmount cleanup)â€¦
+      // Revoke this paragraph's audio blob: URLs (same pattern as the unmount cleanup)…
       const revoke = (u) => { if (typeof u === 'string' && u.startsWith('blob:')) { try { URL.revokeObjectURL(u); } catch (e) {} } };
       const seg = audioSegments[removedId];
       if (seg) { revoke(seg.studentAudioUrl); revoke(seg.aiAudioUrl); if (Array.isArray(seg.sentenceAudios)) seg.sentenceAudios.forEach(revoke); }
-      // â€¦then prune every per-paragraph keyed map so deleted data isn't kept or re-serialized.
+      // …then prune every per-paragraph keyed map so deleted data isn't kept or re-serialized.
       setAudioSegments(prev => { const n = { ...prev }; delete n[removedId]; return n; });
       setIllustrations(prev => { const n = { ...prev }; delete n[removedId]; return n; });
       setPanelDialogue(prev => { const n = { ...prev }; delete n[removedId]; return n; });
@@ -2462,7 +2462,7 @@ Required vocabulary terms the student must use: ${vocabTerms.map(v => v.term).jo
 ${storyPrompt ? `Story theme/prompt: "${storyPrompt}"` : ''}
 ${genreHint ? `Genre: Use the structure of ${genreHint}.` : ''}
 ${shapeHint ? `Story shape: Trace the emotional arc as ${shapeHint}. Spread this rise and fall across the panels from beginning to end.` : ''}
-Page layout: ${COMIC_PAGE_LAYOUTS[comicPageLayout]?.label || 'Grid'} â€” ${COMIC_PAGE_LAYOUTS[comicPageLayout]?.desc || COMIC_PAGE_LAYOUTS.grid.desc}
+Page layout: ${COMIC_PAGE_LAYOUTS[comicPageLayout]?.label || 'Grid'} — ${COMIC_PAGE_LAYOUTS[comicPageLayout]?.desc || COMIC_PAGE_LAYOUTS.grid.desc}
 Issue plan: ${comicPageGroups.length} page${comicPageGroups.length === 1 ? '' : 's'}, ${sanitizeComicPageComposer(comicPageComposer).panelsPerPage} panel${sanitizeComicPageComposer(comicPageComposer).panelsPerPage === 1 ? '' : 's'} per page. Use page turns as natural reveals, pauses, or payoffs when the story needs them.
 Print profile: ${getComicPrintFormatLabel(sanitizeComicPrintSafety(comicPrintSafety).format)} with ${getComicPrintGutterLabel(sanitizeComicPrintSafety(comicPrintSafety).gutter).toLowerCase()}. Keep speech bubbles inside safe text zones and away from binding gutters.
 
@@ -2571,7 +2571,7 @@ Return ONLY JSON: { "frames": ["Frame 1 text...", "Frame 2 text...", ...] }`;
     setIsProcessing(false);
   };
 
-  // â”€â”€ Help Me Write â€” AI coaching per paragraph â”€â”€
+  // ── Help Me Write — AI coaching per paragraph ──
   const helpMeWrite = async (idx) => {
     if (!onCallGemini) return;
     setHelpMeParagraphIdx(idx);
@@ -2601,9 +2601,9 @@ Return ONLY JSON: { "suggestions": ["Suggestion 1", "Suggestion 2", "Suggestion 
     }
   };
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   // GRAMMAR / STYLE CHECKER + SHOW DON'T TELL
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
 
   const draftComicBubbles = async (targetIdx = null) => {
     if (!onCallGemini) return;
@@ -2987,9 +2987,9 @@ Return ONLY JSON:
       const fullText = paragraphs.map((p, i) => `[P${i + 1}] ${p.text}`).join('\n\n');
       const prompt = `You are an expert writing coach for a ${gradeLevel || '5th grade'} student. Analyze this creative story for:
 1. Grammar and spelling errors
-2. Weak or vague verbs (e.g., "walked" â†’ "strolled", "said" â†’ "whispered")
+2. Weak or vague verbs (e.g., "walked" → "strolled", "said" → "whispered")
 3. Passive voice that could be active
-4. "Telling" instead of "showing" (e.g., "She was sad" â†’ "Her shoulders slumped and she stared at the floor")
+4. "Telling" instead of "showing" (e.g., "She was sad" → "Her shoulders slumped and she stared at the floor")
 5. Sentence variety issues (repeated starters, monotonous rhythm)
 
 Story:
@@ -2997,7 +2997,7 @@ Story:
 ${fullText}
 """
 ${langInstruction}
-For each issue found, specify which paragraph it's in. Be encouraging â€” frame suggestions positively. Max 3 issues per paragraph, max 15 total. Only flag genuine improvements, not style preferences.
+For each issue found, specify which paragraph it's in. Be encouraging — frame suggestions positively. Max 3 issues per paragraph, max 15 total. Only flag genuine improvements, not style preferences.
 
 Return ONLY JSON:
 {
@@ -3029,9 +3029,9 @@ Return ONLY JSON:
     setGrammarLoading(false);
   };
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   // ILLUSTRATE PHASE FUNCTIONS
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
 
   const getStyleDesc = () => {
     if (artStyle === 'custom' && customArtStyle) return customArtStyle;
@@ -3360,7 +3360,7 @@ Return ONLY JSON:
     });
   };
 
-  // â”€â”€ Student-directed image refinement â”€â”€
+  // ── Student-directed image refinement ──
   const refineIllustration = async (paragraphId, editPrompt) => {
     if (!onCallGeminiImageEdit) { if (addToast) addToast(t('toasts.image_editing_available'), 'error'); return; }
     const current = illustrations[paragraphId];
@@ -3396,7 +3396,7 @@ Return ONLY JSON:
       const title = storyTitle || sourceTopic || 'My Story';
       const storySnippet = paragraphs.map(p => p.text).join(' ').substring(0, 300);
       const promptResult = await onCallGemini(
-        `Create a book cover image prompt for a story titled "${title}". Story excerpt: "${storySnippet}". Art style: ${style}. The image should be a dramatic, eye-catching book cover scene that captures the story's essence. Do NOT include any text, title, or words in the image â€” just the visual scene. Max 80 words. Return ONLY the image prompt text.`
+        `Create a book cover image prompt for a story titled "${title}". Story excerpt: "${storySnippet}". Art style: ${style}. The image should be a dramatic, eye-catching book cover scene that captures the story's essence. Do NOT include any text, title, or words in the image — just the visual scene. Max 80 words. Return ONLY the image prompt text.`
       );
       const imgPrompt = promptResult.trim() + ' STRICTLY NO TEXT, NO TITLE, NO WORDS IN THE IMAGE. Book cover composition.';
       const imageUrl = await onCallImagen(imgPrompt, 400, 0.9);
@@ -3408,9 +3408,9 @@ Return ONLY JSON:
     setCoverArtLoading(false);
   };
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   // NARRATE PHASE FUNCTIONS
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
 
   const detectCharacters = async () => {
     if (!onCallGemini) return;
@@ -3504,7 +3504,7 @@ Return ONLY JSON:
     setRecordingParagraphId(null);
   };
 
-  // â”€â”€ Playback (sentence-level with paragraph chaining) â”€â”€
+  // ── Playback (sentence-level with paragraph chaining) ──
   useEffect(() => {
     if (playbackIdx < 0 || playbackIdx >= paragraphs.length) return;
     const pid = paragraphs[playbackIdx].id;
@@ -3519,11 +3519,11 @@ Return ONLY JSON:
         audioRef.current.play().catch(() => {});
         return;
       }
-      // This sentence has no audio â€” skip to next
+      // This sentence has no audio — skip to next
       if (safeIdx < seg.sentenceAudios.length - 1) {
         setSentenceIdx(safeIdx + 1);
       } else {
-        // End of paragraph â€” advance
+        // End of paragraph — advance
         if (playbackIdx < paragraphs.length - 1) { setPlaybackIdx(playbackIdx + 1); setSentenceIdx(0); }
         else { setPlaybackIdx(-1); setSentenceIdx(0); }
       }
@@ -3536,7 +3536,7 @@ Return ONLY JSON:
       audioRef.current.src = src;
       audioRef.current.play().catch(() => {});
     } else {
-      // No audio for this paragraph â€” skip
+      // No audio for this paragraph — skip
       if (playbackIdx < paragraphs.length - 1) { setPlaybackIdx(playbackIdx + 1); setSentenceIdx(0); }
       else { setPlaybackIdx(-1); setSentenceIdx(0); }
     }
@@ -3554,14 +3554,14 @@ Return ONLY JSON:
         return;
       }
     }
-    // End of paragraph â€” advance to next paragraph
+    // End of paragraph — advance to next paragraph
     if (playbackIdx < paragraphs.length - 1) { setPlaybackIdx(playbackIdx + 1); setSentenceIdx(0); }
     else { setPlaybackIdx(-1); setSentenceIdx(0); }
   };
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   // REVIEW PHASE FUNCTIONS
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
 
   const gradeStory = async () => {
     if (!onCallGemini) return;
@@ -3643,10 +3643,10 @@ Return ONLY JSON:
     changePhase('write');
   };
 
-  // â”€â”€ Mentor Match: pair the student's story with a public-domain master excerpt â”€â”€
+  // ── Mentor Match: pair the student's story with a public-domain master excerpt ──
   // Same proven pattern as PoetTree (commit 574767a):
   //   1. Gemini extracts 3-5 keywords from the student's draft
-  //   2. WebSearchProvider (Serper â†’ SearXNG â†’ DDG) fetches real PD candidates
+  //   2. WebSearchProvider (Serper → SearXNG → DDG) fetches real PD candidates
   //   3. Gemini picks the best mentor, anchored to a real sourceUrl
   // Anti-fabrication: hard-restricts to authors-died-pre-1929 + traditional/anonymous;
   // uncertain flag asks Gemini to skip text rather than invent.
@@ -3660,7 +3660,7 @@ Return ONLY JSON:
     setMentorLoading(true);
     setMentorMatch(null);
     try {
-      // Stage 1 â€” extract keywords
+      // Stage 1 — extract keywords
       let keywords = '';
       try {
         const queryPrompt = `Extract 3-5 keywords from this story draft that would help find a similar PUBLIC-DOMAIN master short story online. Focus on concrete images, themes, setting, character archetype, and emotional tone, not function words. Return JSON: {"keywords":["...","..."]}\n\nStory:\n"""\n${fullText.slice(0, 2400)}\n"""`;
@@ -3669,18 +3669,18 @@ Return ONLY JSON:
         keywords = (queryParsed.keywords || []).slice(0, 5).join(' ');
       } catch (e) { console.warn('Mentor keyword extract failed:', e && e.message); }
 
-      // Stage 2 â€” Serper-grounded web search for real PD short fiction
+      // Stage 2 — Serper-grounded web search for real PD short fiction
       let searchContext = '';
       let searchResults = [];
       if (window.WebSearchProvider && keywords) {
         try {
           const genreLabel = GENRE_TEMPLATES[genre]?.label || '';
           const searchQuery = `${keywords} ${genreLabel ? genreLabel + ' ' : ''}famous public domain short story excerpt gutenberg`;
-          sfAnnounce('Searching for similar master storiesâ€¦');
+          sfAnnounce('Searching for similar master stories…');
           const searchResult = await window.WebSearchProvider.search(searchQuery, 8);
           if (searchResult && searchResult.results && searchResult.results.length > 0) {
             searchResults = searchResult.results.slice(0, 8);
-            searchContext = '\n\nWeb search results for similar public-domain short fiction. Treat these as your candidate set â€” strongly prefer suggesting a story from this list because the URL anchors the recommendation in something the student can actually read. Reject results that are clearly behind a paywall, modern (post-1929), or not actually fiction (e.g. study guides, summaries).\n\n'
+            searchContext = '\n\nWeb search results for similar public-domain short fiction. Treat these as your candidate set — strongly prefer suggesting a story from this list because the URL anchors the recommendation in something the student can actually read. Reject results that are clearly behind a paywall, modern (post-1929), or not actually fiction (e.g. study guides, summaries).\n\n'
               + searchResults.map((r, i) =>
                 `${i + 1}. ${r.title || 'Untitled'}\n   URL: ${r.url || r.link || ''}\n   ${String(r.snippet || '').slice(0, 220)}`
               ).join('\n\n');
@@ -3690,7 +3690,7 @@ Return ONLY JSON:
         }
       }
 
-      // Stage 3 â€” Gemini picks the best mentor, ideally from the real results
+      // Stage 3 — Gemini picks the best mentor, ideally from the real results
       const genreLabel = GENRE_TEMPLATES[genre]?.label || 'creative';
       const targetGrade = gradeLevel || '5th grade';
       const prompt = `You are a writing mentor for a ${targetGrade} student. Pair their story with ONE public-domain master short-story excerpt that they could study alongside their own work.
@@ -3702,8 +3702,8 @@ ${fullText}
 
 CRITICAL anti-fabrication rules:
 - ONLY suggest authors who died before 1929 (US PD-safe), anonymous traditional folk tales, or canonical translations of pre-modern works (Aesop, Grimm Brothers, Hans Christian Andersen, Andrew Lang fairy tale collections, etc.).
-- Safe bets by genre: Adventure â†’ Twain, Stevenson, Conan Doyle (early), Kipling (early). Mystery â†’ Poe, Conan Doyle (early). Fairy tale â†’ Grimms, Andersen, Lang. Sci-fi â†’ H.G. Wells, Jules Verne. Historical â†’ Hawthorne, Dickens. Persuasive â†’ Aesop's fables.
-${searchContext ? '- Strongly prefer one of the search results above. Include its URL in "sourceUrl".\n' : ''}- Choose ONE short, vivid excerpt (40-150 words), not a summary. If you cannot supply an exact attributed excerpt, set "uncertain":true and LEAVE THE TEXT FIELD BLANK â€” describe the story in prose. Never fabricate.
+- Safe bets by genre: Adventure → Twain, Stevenson, Conan Doyle (early), Kipling (early). Mystery → Poe, Conan Doyle (early). Fairy tale → Grimms, Andersen, Lang. Sci-fi → H.G. Wells, Jules Verne. Historical → Hawthorne, Dickens. Persuasive → Aesop's fables.
+${searchContext ? '- Strongly prefer one of the search results above. Include its URL in "sourceUrl".\n' : ''}- Choose ONE short, vivid excerpt (40-150 words), not a summary. If you cannot supply an exact attributed excerpt, set "uncertain":true and LEAVE THE TEXT FIELD BLANK — describe the story in prose. Never fabricate.
 
 Return JSON:
 {
@@ -3715,8 +3715,8 @@ Return JSON:
     "sourceUrl": "<URL from search results, or null>",
     "uncertain": false
   },
-  "sharedTheme": "<one sentence on what your two stories share â€” image, conflict, character type, mood>",
-  "craftToBorrow": "<one specific craft move from the master worth trying â€” sentence rhythm, dialogue tag, sensory detail, etc.>",
+  "sharedTheme": "<one sentence on what your two stories share — image, conflict, character type, mood>",
+  "craftToBorrow": "<one specific craft move from the master worth trying — sentence rhythm, dialogue tag, sensory detail, etc.>",
   "studentEcho": "<where the student is already doing something similar, with a quoted phrase from their own story>"
 }
 
@@ -3727,7 +3727,7 @@ Match register and reading level to a ${targetGrade} student. Be specific, be ho
       parsed._grounding = { searchUsed: searchResults.length > 0, resultCount: searchResults.length, keywords: keywords };
       setMentorMatch(parsed);
       if (addToast) addToast(t('toasts.mentor_story_found'), 'success');
-      sfAnnounce('Mentor story found: ' + (parsed.mentor && parsed.mentor.title) + ' by ' + (parsed.mentor && parsed.mentor.author) + (searchResults.length > 0 ? ' â€” verified via web search.' : '.'));
+      sfAnnounce('Mentor story found: ' + (parsed.mentor && parsed.mentor.title) + ' by ' + (parsed.mentor && parsed.mentor.author) + (searchResults.length > 0 ? ' — verified via web search.' : '.'));
       awardXP(8, 'Studied a mentor text');
     } catch (err) {
       console.warn('Mentor match failed:', err && err.message);
@@ -3737,8 +3737,8 @@ Match register and reading level to a ${targetGrade} student. Be specific, be ho
     setMentorLoading(false);
   };
 
-  // â”€â”€ Senses & Imagery Checker (ported from PoetTree, retargeted for prose) â”€â”€
-  // â”€â”€ AI-suggest the emotional fortune of each paragraph (Story Arc curve) â”€â”€
+  // ── Senses & Imagery Checker (ported from PoetTree, retargeted for prose) ──
+  // ── AI-suggest the emotional fortune of each paragraph (Story Arc curve) ──
   const suggestValenceArc = async () => {
     if (!onCallGemini) return;
     const written = paragraphs.filter(p => p.text.trim().length > 0);
@@ -3746,18 +3746,18 @@ Match register and reading level to a ${targetGrade} student. Be specific, be ho
     setValenceLoading(true);
     try {
       const numbered = paragraphs.map((p, i) => `[${i + 1}] ${p.text.trim() || '(empty)'}`).join('\n\n');
-      const prompt = `For each numbered paragraph below, rate the main character's FORTUNE / emotional tone on an integer scale from -5 (very bad â€” lowest point) to +5 (very good â€” triumphant). Judge the emotional ups and downs of the story, NOT the writing quality.\n\nParagraphs:\n${numbered}\n\nReturn ONLY JSON: {"valence":[n1, n2, ...]} with exactly ${paragraphs.length} integers from -5 to 5, in paragraph order.`;
+      const prompt = `For each numbered paragraph below, rate the main character's FORTUNE / emotional tone on an integer scale from -5 (very bad — lowest point) to +5 (very good — triumphant). Judge the emotional ups and downs of the story, NOT the writing quality.\n\nParagraphs:\n${numbered}\n\nReturn ONLY JSON: {"valence":[n1, n2, ...]} with exactly ${paragraphs.length} integers from -5 to 5, in paragraph order.`;
       const result = await onCallGemini(prompt, true);
       const data = JSON.parse(cleanJson(result));
       if (Array.isArray(data.valence)) {
         const next = {};
         paragraphs.forEach((p, i) => { const v = Number(data.valence[i]); if (!Number.isNaN(v)) next[p.id] = Math.max(-5, Math.min(5, Math.round(v))); });
         setValenceByPara(next);
-        if (addToast) addToast('Emotional arc suggested â€” drag any point to match your story.', 'success');
+        if (addToast) addToast('Emotional arc suggested — drag any point to match your story.', 'success');
         sfAnnounce('Emotional arc suggested.');
       }
     } catch (e) {
-      if (addToast) addToast('Could not suggest an arc â€” try again.', 'error');
+      if (addToast) addToast('Could not suggest an arc — try again.', 'error');
     }
     setValenceLoading(false);
   };
@@ -3810,7 +3810,7 @@ Return ONLY JSON in this shape:
     setSensesLoading(false);
   };
 
-  // â”€â”€ Show, Don't Tell coach â”€â”€
+  // ── Show, Don't Tell coach ──
   // Flags sentences that name an emotion/state outright ("she was scared")
   // and offers a concrete sensory/action revision ("she pressed her back to
   // the wall, holding her breath"). Foundational craft move for grades 4-8.
@@ -3841,7 +3841,7 @@ Return ONLY JSON:
   "tellings": [
     { "telling": "<exact telling sentence from the student>", "showing": "<concrete sensory/action revision>", "why": "<one short sentence on what changed>" }
   ],
-  "summary": "<one short sentence â€” encouraging if list is empty, gentle if not>"
+  "summary": "<one short sentence — encouraging if list is empty, gentle if not>"
 }`;
 
       const result = await onCallGemini(prompt, true);
@@ -3858,9 +3858,9 @@ Return ONLY JSON:
     setShowTellLoading(false);
   };
 
-  // â”€â”€ Character Arc Tracker â”€â”€
+  // ── Character Arc Tracker ──
   // Builds on detectCharacters: evaluates each named character on the four-beat
-  // arc (introduction â†’ want/conflict â†’ change â†’ resolution) and surfaces one
+  // arc (introduction → want/conflict → change → resolution) and surfaces one
   // specific revision suggestion per character. Skips arc analysis for stories
   // with no named characters (returns an encouraging note instead).
   const analyzeCharacterArcs = async () => {
@@ -3877,10 +3877,10 @@ Return ONLY JSON:
       const prompt = `You are a writing coach analyzing character arcs for a ${targetGrade} student.
 
 A complete narrative character arc has four beats:
-1. INTRODUCTION â€” the character is established (name, role, defining trait).
-2. WANT â€” what the character wants, fears, or has at stake (the engine of the story for them).
-3. CHANGE â€” how the character is tested, learns, or shifts because of the story's events.
-4. RESOLUTION â€” how their arc lands (succeed, fail, transform, hold steady on purpose).
+1. INTRODUCTION — the character is established (name, role, defining trait).
+2. WANT — what the character wants, fears, or has at stake (the engine of the story for them).
+3. CHANGE — how the character is tested, learns, or shifts because of the story's events.
+4. RESOLUTION — how their arc lands (succeed, fail, transform, hold steady on purpose).
 
 Story:
 """
@@ -3922,7 +3922,7 @@ Return ONLY JSON:
     setArcLoading(false);
   };
 
-  // â”€â”€ Dialogue Tag Tune-Up â”€â”€
+  // ── Dialogue Tag Tune-Up ──
   // Surfaces dialogue mechanics issues that middle-school writers commonly miss:
   // overuse of a single tag (especially "said"), untagged dialogue where the
   // speaker is unclear, and lack of action beats around long exchanges.
@@ -3930,7 +3930,7 @@ Return ONLY JSON:
   const analyzeDialogue = async () => {
     if (!onCallGemini) return;
     const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join('\n\n');
-    if (!fullText.includes('"') && !fullText.includes('â€œ') && !fullText.includes('â€')) {
+    if (!fullText.includes('"') && !fullText.includes('“') && !fullText.includes('”')) {
       if (addToast) addToast(t('toasts.dialogue_detected_try_adding_quoted'), 'info');
       setDialogueReport({ tagCounts: {}, overusedTag: null, issues: [], summary: 'No dialogue found yet.' });
       return;
@@ -3946,8 +3946,8 @@ ${fullText}
 """
 
 Tasks:
-1. Count occurrences of each dialogue tag verb (said, asked, replied, whispered, shouted, etc.). Treat "said" specially â€” it's invisible and grade-appropriate, but using it more than ~70% of the time signals overuse. List counts in descending order.
-2. Identify up to 3 specific dialogue lines where the tag could be more precise (offer ONE concrete in-context swap per line â€” match tone, don't go thesaurus-purple). Include the original line verbatim and the proposed revision.
+1. Count occurrences of each dialogue tag verb (said, asked, replied, whispered, shouted, etc.). Treat "said" specially — it's invisible and grade-appropriate, but using it more than ~70% of the time signals overuse. List counts in descending order.
+2. Identify up to 3 specific dialogue lines where the tag could be more precise (offer ONE concrete in-context swap per line — match tone, don't go thesaurus-purple). Include the original line verbatim and the proposed revision.
 3. Flag up to 2 lines where the speaker is unclear (untagged dialogue with no nearby attribution).
 4. If there is no dialogue at all, return empty arrays and an encouraging note that adding even one line of dialogue can make characters come alive.
 
@@ -3959,7 +3959,7 @@ Return ONLY JSON:
     { "type": "tag-swap", "line": "<exact dialogue line>", "suggestion": "<replacement with new tag>", "why": "<short reason>" },
     { "type": "missing-tag", "line": "<exact dialogue line>", "suggestion": "<add tag/action beat>", "why": "<short reason>" }
   ],
-  "summary": "<one short sentence â€” encouraging if dialogue is strong, gentle if not>"
+  "summary": "<one short sentence — encouraging if dialogue is strong, gentle if not>"
 }`;
 
       const result = await onCallGemini(prompt, true);
@@ -3976,11 +3976,11 @@ Return ONLY JSON:
     setDialogueLoading(false);
   };
 
-  // â”€â”€ Revision Plan synthesizer â”€â”€
+  // ── Revision Plan synthesizer ──
   // Pulls together whichever helpers have run (Senses, Show-vs-Tell, Character
   // Arcs, Mentor Match, Self-Assessment) into a single prioritized 3-item
   // revision plan. Pedagogical aim: teach synthesis as its own meta-skill.
-  // Only available when â‰¥2 helpers have produced output (not before).
+  // Only available when ≥2 helpers have produced output (not before).
   const buildComicFlowSnapshot = () => {
     const continuity = sanitizeComicContinuity(comicContinuity);
     const printSafety = sanitizeComicPrintSafety(comicPrintSafety);
@@ -4012,7 +4012,7 @@ Return ONLY JSON:
         focalPoint: rough.focalPoint || '',
         letteringSpace: rough.letteringSpace || '',
         frame: layoutFrame.frame || '',
-        frameLabel: `${getComicPanelFrameLabel(layoutFrame.frame)} Â· ${getComicPanelSpanLabel(layoutFrame, comicPageLayout, idx)}`,
+        frameLabel: `${getComicPanelFrameLabel(layoutFrame.frame)} · ${getComicPanelSpanLabel(layoutFrame, comicPageLayout, idx)}`,
         layoutSpan: getComicPanelSpanLabel(layoutFrame, comicPageLayout, idx),
         hasCustomLayout: Boolean(layoutFrame.frame || layoutFrame.colSpan || layoutFrame.rowSpan),
         beat: p.plotBeat || '',
@@ -4279,7 +4279,7 @@ Return ONLY JSON:
         helperContext.push(`SENSES CHECK:\n  strongest: ${sensesResult.strongest || 'unknown'}\n  missing: ${sensesResult.missing || 'unknown'}\n  suggestion: ${sensesResult.suggestion || ''}`);
       }
       if (showTellResult && (showTellResult.tellings || []).length > 0) {
-        const top = showTellResult.tellings.slice(0, 3).map(t => `  - "${t.telling}" â†’ "${t.showing}"`).join('\n');
+        const top = showTellResult.tellings.slice(0, 3).map(t => `  - "${t.telling}" → "${t.showing}"`).join('\n');
         helperContext.push(`SHOW vs TELL:\n${top}`);
       }
       if (arcReport && (arcReport.characters || []).length > 0) {
@@ -4293,7 +4293,7 @@ Return ONLY JSON:
         helperContext.push(`MENTOR MATCH:\n  reading: ${mentorMatch.mentor?.title || 'unknown'} by ${mentorMatch.mentor?.author || 'unknown'}\n  craft to borrow: ${mentorMatch.craftToBorrow}`);
       }
       if (dialogueReport && (dialogueReport.issues || []).length > 0) {
-        const top = dialogueReport.issues.slice(0, 3).map(i => `  - ${i.type}: "${i.line}" â†’ ${i.suggestion}`).join('\n');
+        const top = dialogueReport.issues.slice(0, 3).map(i => `  - ${i.type}: "${i.line}" → ${i.suggestion}`).join('\n');
         helperContext.push(`DIALOGUE TUNE-UP:\n  overused tag: ${dialogueReport.overusedTag || 'none'}\n${top}`);
       }
       if (comicFlowReport && layoutMode === 'comic') {
@@ -4319,7 +4319,7 @@ ${fullText}
 Build a prioritized revision plan with EXACTLY 3 tasks. Each task should:
 - Be small enough to do in a single revision session.
 - Be specific (name a paragraph, character, or sentence when possible).
-- Pull from the helper outputs above when relevant â€” don't repeat what the helpers said, *synthesize* across them.
+- Pull from the helper outputs above when relevant — don't repeat what the helpers said, *synthesize* across them.
 - Be ranked by impact (most-impactful first).
 - Include a one-sentence "why" so the student understands the craft reason.
 
@@ -4372,7 +4372,7 @@ Return ONLY JSON:
   };
 
   // Tolerant lookup of a student's self-rating for an AI-named criterion. The model often
-  // rewords a rubric criterion (e.g. "Story Structure" â†’ "Structure" or "Plot & Structure"),
+  // rewords a rubric criterion (e.g. "Story Structure" → "Structure" or "Plot & Structure"),
   // which made an exact selfAssessment[s.criteria] lookup silently return undefined and drop
   // the You-vs-AI comparison. Try exact, then case/space-normalized, then loose token overlap.
   const lookupSelfScore = (aiCriteria) => {
@@ -4395,13 +4395,13 @@ Return ONLY JSON:
     return null;
   };
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   // EXPORT PHASE FUNCTIONS
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
 
   const exportStorybook = async () => {
     // FERPA reminder: the storybook is de-identified (codename, never a real name), but it
-    // bundles the student's full story and â€” if they recorded it â€” their VOICE narration in a
+    // bundles the student's full story and — if they recorded it — their VOICE narration in a
     // single downloadable file, so a local download is a confirmed, informed action (mirrors
     // the exportDraftJSON gate below).
     if (!(await requestExportConsent({ title: 'Export storybook?', message: 'This de-identified file uses the student codename, but it contains the complete story and any recorded voice narration. Save it only to a school-approved location and follow district student-records policy.', confirmLabel: 'Export storybook' }))) return;
@@ -4422,8 +4422,8 @@ Return ONLY JSON:
       const firstPage = exportedComicPages[0] || { page: 1, startPanel: 1, endPanel: paragraphs.length, layout: comicLayout, turn: '', note: '' };
       const firstGutter = getComicPageGutterSide(firstPage.page, firstPage.layout, storybookPrintSafety);
       chaptersHtml += `<section class="comic-page comic-print-${storybookPrintSafety.format} ${storybookPrintSafety.showGuides ? 'comic-print-guides' : ''} comic-gutter-${firstGutter || 'none'} ${storybookPrintSafety.includeBleed ? 'comic-bleed-on' : 'comic-bleed-off'}" aria-label="Comic page ${firstPage.page}">`;
-      chaptersHtml += `<header class="comic-page-heading"><span>Page ${firstPage.page}</span><strong>${escapeHtml(getComicPageLayoutLabel(firstPage.layout))}</strong><em>Panels ${firstPage.startPanel}-${firstPage.endPanel} Â· ${escapeHtml(getComicPrintFormatLabel(storybookPrintSafety.format))}</em></header>`;
-      chaptersHtml += `<div class="comic-reading-guide">${escapeHtml(getComicReadingOrderLabel(firstPage.layout))} Â· Follow the numbered panels</div>`;
+      chaptersHtml += `<header class="comic-page-heading"><span>Page ${firstPage.page}</span><strong>${escapeHtml(getComicPageLayoutLabel(firstPage.layout))}</strong><em>Panels ${firstPage.startPanel}-${firstPage.endPanel} · ${escapeHtml(getComicPrintFormatLabel(storybookPrintSafety.format))}</em></header>`;
+      chaptersHtml += `<div class="comic-reading-guide">${escapeHtml(getComicReadingOrderLabel(firstPage.layout))} · Follow the numbered panels</div>`;
       chaptersHtml += `<div class="comic-grid comic-layout-${firstPage.layout}">`;
     }
     paragraphs.forEach((p, idx) => {
@@ -4436,14 +4436,14 @@ Return ONLY JSON:
             const prevTurnLabel = getComicPageTurnLabel(prevPage.turn);
             const prevNote = prevPage.note ? escapeHtml(prevPage.note) : '';
             if (prevTurnLabel || prevNote) {
-              chaptersHtml += `<div class="comic-page-turn"><strong>Page turn:</strong> ${prevTurnLabel ? escapeHtml(prevTurnLabel) : 'Production note'}${prevNote ? ` Â· ${prevNote}` : ''}</div>`;
+              chaptersHtml += `<div class="comic-page-turn"><strong>Page turn:</strong> ${prevTurnLabel ? escapeHtml(prevTurnLabel) : 'Production note'}${prevNote ? ` · ${prevNote}` : ''}</div>`;
             }
           }
           chaptersHtml += `</section>`;
           const nextGutter = getComicPageGutterSide(nextPage.page, nextPage.layout, storybookPrintSafety);
           chaptersHtml += `<section class="comic-page comic-print-${storybookPrintSafety.format} ${storybookPrintSafety.showGuides ? 'comic-print-guides' : ''} comic-gutter-${nextGutter || 'none'} ${storybookPrintSafety.includeBleed ? 'comic-bleed-on' : 'comic-bleed-off'}" aria-label="Comic page ${nextPage.page}">`;
-          chaptersHtml += `<header class="comic-page-heading"><span>Page ${nextPage.page}</span><strong>${escapeHtml(getComicPageLayoutLabel(nextPage.layout))}</strong><em>Panels ${nextPage.startPanel}-${nextPage.endPanel} Â· ${escapeHtml(getComicPrintFormatLabel(storybookPrintSafety.format))}</em></header>`;
-          chaptersHtml += `<div class="comic-reading-guide">${escapeHtml(getComicReadingOrderLabel(nextPage.layout))} Â· Follow the numbered panels</div>`;
+          chaptersHtml += `<header class="comic-page-heading"><span>Page ${nextPage.page}</span><strong>${escapeHtml(getComicPageLayoutLabel(nextPage.layout))}</strong><em>Panels ${nextPage.startPanel}-${nextPage.endPanel} · ${escapeHtml(getComicPrintFormatLabel(storybookPrintSafety.format))}</em></header>`;
+          chaptersHtml += `<div class="comic-reading-guide">${escapeHtml(getComicReadingOrderLabel(nextPage.layout))} · Follow the numbered panels</div>`;
           chaptersHtml += `<div class="comic-grid comic-layout-${nextPage.layout}">`;
         }
       }
@@ -4451,7 +4451,7 @@ Return ONLY JSON:
       const audio = audioSegments[p.id];
       const safeText = escapeHtml(isComic ? (p.text || p.scaffoldFrame || '') : p.text);
       if (isComic) {
-        // Pull dialogue/sticker overlay data â€” these were rendered in-app but previously dropped on export.
+        // Pull dialogue/sticker overlay data — these were rendered in-app but previously dropped on export.
         const panel = panelDialogue[p.id] || {};
         const safeSpeaker = panel.speaker ? escapeHtml(panel.speaker) : '';
         const safeSpeech = panel.speech ? escapeHtml(panel.speech) : '';
@@ -4487,7 +4487,7 @@ Return ONLY JSON:
           chaptersHtml += `<div class="dialogue-speech">${safeSpeech}</div>`;
           chaptersHtml += `</div>`;
         }
-        if (safeThought) chaptersHtml += `<div class="thought-bubble" aria-label="Inner thought">ðŸ’­ ${safeThought}</div>`;
+        if (safeThought) chaptersHtml += `<div class="thought-bubble" aria-label="Inner thought">💭 ${safeThought}</div>`;
         chaptersHtml += `<div class="speech-bubble panel-caption">${safeText.replace(/\n/g, '<br/>')}</div>`;
         chaptersHtml += `</article>`;
       } else {
@@ -4512,7 +4512,7 @@ Return ONLY JSON:
         const lastTurnLabel = getComicPageTurnLabel(lastPage.turn);
         const lastNote = lastPage.note ? escapeHtml(lastPage.note) : '';
         if (lastTurnLabel || lastNote) {
-          chaptersHtml += `<div class="comic-page-turn"><strong>Page note:</strong> ${lastTurnLabel ? escapeHtml(lastTurnLabel) : 'Production note'}${lastNote ? ` Â· ${lastNote}` : ''}</div>`;
+          chaptersHtml += `<div class="comic-page-turn"><strong>Page note:</strong> ${lastTurnLabel ? escapeHtml(lastTurnLabel) : 'Production note'}${lastNote ? ` · ${lastNote}` : ''}</div>`;
         }
       }
       chaptersHtml += '</section>';
@@ -4521,18 +4521,18 @@ Return ONLY JSON:
     let vocabHtml = `<div class="vocab-section"><h2 id="vocab-heading">${escapeHtml(t("ui_common.vocab_terms_used"))}</h2><div class="vocab-grid">`;
     vocabTerms.forEach(v => {
       const used = vocabUsage[v.term];
-      vocabHtml += `<div class="vocab-chip ${used ? 'used' : 'unused'}">${used ? 'âœ“' : 'âœ—'} ${escapeHtml(v.term)}</div>`;
+      vocabHtml += `<div class="vocab-chip ${used ? 'used' : 'unused'}">${used ? '✓' : '✗'} ${escapeHtml(v.term)}</div>`;
     });
     vocabHtml += '</div></div>';
 
     let feedbackHtml = '';
     if (gradingResult) {
       feedbackHtml = `<div class="feedback-section">
-        <h2 id="feedback-heading">Feedback (AI-generated draft â€” not a final grade)</h2>
+        <h2 id="feedback-heading">Feedback (AI-generated draft — not a final grade)</h2>
         <div class="score-badge" aria-label="${escapeHtml(t("a11y.score_n", { score: gradingResult.totalScore || '' }))}" title="AI-generated estimate, not a final grade">${escapeHtml(gradingResult.totalScore || '')}</div>
         <div class="glow-grow">
-          <div class="glow"><strong>âœ¨ Glow:</strong> ${escapeHtml(gradingResult.feedback?.glow || '')}</div>
-          <div class="grow"><strong>ðŸŒ± Grow:</strong> ${escapeHtml(gradingResult.feedback?.grow || '')}</div>
+          <div class="glow"><strong>✨ Glow:</strong> ${escapeHtml(gradingResult.feedback?.glow || '')}</div>
+          <div class="grow"><strong>🌱 Grow:</strong> ${escapeHtml(gradingResult.feedback?.grow || '')}</div>
         </div>
       </div>`;
     }
@@ -4627,12 +4627,12 @@ main{display:block}
 @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 </style></head><body>
 <a class="skip-link" href="#story-content">${escapeHtml(t("ui_common.skip_to_story"))}</a>
-<button type="button" class="print-btn" onclick="window.print()" aria-label="${escapeHtml(t("a11y.story_print"))}">ðŸ–¨ï¸ Print</button>
+<button type="button" class="print-btn" onclick="window.print()" aria-label="${escapeHtml(t("a11y.story_print"))}">🖨️¨ï¸ Print</button>
 <header class="cover" role="banner">
   ${coverArt ? `<img src="${escapeHtml(coverArt)}" style="max-width:300px;border-radius:12px;margin:0 auto 16px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15)" alt="Cover illustration for ${title}" />` : ''}
   <h1 id="story-title">${title}</h1>
   <p class="meta">Written by ${author}</p>
-  <p class="meta">${escapeHtml(date)} Â· ${escapeHtml(GENRE_TEMPLATES[genre]?.label || 'Creative Writing')} Â· Art style: ${escapeHtml(artStyle)}${isComic ? ` Â· Layout: ${escapeHtml(COMIC_PAGE_LAYOUTS[comicLayout]?.label || 'Grid')} Â· Pages: ${escapeHtml(exportedComicPages.length || 1)} Â· Print: ${escapeHtml(getComicPrintFormatLabel(storybookPrintSafety.format))} Â· ${escapeHtml(getComicReadingOrderLabel(comicLayout))}` : ''}</p>
+  <p class="meta">${escapeHtml(date)} · ${escapeHtml(GENRE_TEMPLATES[genre]?.label || 'Creative Writing')} · Art style: ${escapeHtml(artStyle)}${isComic ? ` · Layout: ${escapeHtml(COMIC_PAGE_LAYOUTS[comicLayout]?.label || 'Grid')} · Pages: ${escapeHtml(exportedComicPages.length || 1)} · Print: ${escapeHtml(getComicPrintFormatLabel(storybookPrintSafety.format))} · ${escapeHtml(getComicReadingOrderLabel(comicLayout))}` : ''}</p>
 </header>
 <main id="story-content" role="main" aria-labelledby="story-title">
 ${chaptersHtml}
@@ -4641,7 +4641,7 @@ ${chaptersHtml}
 ${vocabHtml}
 </aside>
 ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${feedbackHtml}</aside>` : ''}
-<footer class="colophon" role="contentinfo">Created with StoryForge Â· AlloFlow</footer>
+<footer class="colophon" role="contentinfo">Created with StoryForge · AlloFlow</footer>
 </body></html>`;
 
     try {
@@ -4653,9 +4653,9 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
     }
   };
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   // SLIDESHOW EXPORT
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
 
   const exportComicScript = async () => {
     if (layoutMode !== 'comic') return;
@@ -4680,8 +4680,8 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
       const turnLabel = getComicPageTurnLabel(page.turn);
       return `<div class="page-row">
         <strong>Page ${page.page}</strong>
-        <span>${escapeHtml(getComicPageLayoutLabel(page.layout))} Â· Panels ${page.startPanel}-${page.endPanel}</span>
-        <em>${turnLabel ? escapeHtml(turnLabel) : (page.page < scriptPages.length ? 'Turn unset' : 'Final page')}${page.note ? ` Â· ${escapeHtml(page.note)}` : ''}</em>
+        <span>${escapeHtml(getComicPageLayoutLabel(page.layout))} · Panels ${page.startPanel}-${page.endPanel}</span>
+        <em>${turnLabel ? escapeHtml(turnLabel) : (page.page < scriptPages.length ? 'Turn unset' : 'Final page')}${page.note ? ` · ${escapeHtml(page.note)}` : ''}</em>
       </div>`;
     }).join('')}</section>`;
     const panelsHtml = paragraphs.map((p, idx) => {
@@ -4705,7 +4705,7 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
         <header><h2>Panel ${idx + 1}</h2>${beatLabel ? `<span>${escapeHtml(beatLabel)}</span>` : ''}</header>
         <dl>
           <dt>Caption</dt><dd>${escapeHtml(caption).replace(/\n/g, '<br/>') || '<em>Not written yet</em>'}</dd>
-          <dt>Frame</dt><dd>${escapeHtml(getComicPanelFrameLabel(layoutFrame.frame))} Â· ${escapeHtml(getComicPanelSpanLabel(layoutFrame, panelPage?.layout || comicLayout, panelPageIndex))}</dd>
+          <dt>Frame</dt><dd>${escapeHtml(getComicPanelFrameLabel(layoutFrame.frame))} · ${escapeHtml(getComicPanelSpanLabel(layoutFrame, panelPage?.layout || comicLayout, panelPageIndex))}</dd>
           <dt>Visual Direction</dt><dd>${directionText ? escapeHtml(directionText) : '<em>None</em>'}</dd>
           <dt>Thumbnail Rough</dt><dd>${rough.focalPoint || rough.composition || rough.letteringSpace || rough.sketchNote ? [
             rough.focalPoint ? `Focal point: ${rough.focalPoint}` : '',
@@ -4721,14 +4721,14 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
         </dl>
       </section>`;
     }).join('');
-    const html = `<!DOCTYPE html><html lang="${langBcp47}" dir="${isRtl(langBcp47) ? 'rtl' : 'ltr'}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} â€” Comic Script</title>
+    const html = `<!DOCTYPE html><html lang="${langBcp47}" dir="${isRtl(langBcp47) ? 'rtl' : 'ltr'}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} — Comic Script</title>
 <style>
 *{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;line-height:1.5;color:#111827;max-width:900px;margin:0 auto;padding:32px 20px;background:#f8fafc}h1{font-size:2rem;margin:0 0 4px}.meta{color:#475569;font-size:.9rem;margin-bottom:24px}.continuity-sheet,.page-plan{background:#f5f3ff;border:2px solid #c4b5fd;border-radius:8px;margin:16px 0 20px;overflow:hidden}.continuity-sheet h2,.page-plan h2{font-size:1rem;margin:0;padding:8px 12px;background:#4c1d95;color:white}.page-row{display:grid;grid-template-columns:90px 1fr 1.2fr;gap:8px;padding:8px 12px;border-top:1px solid #ddd6fe;background:white}.page-row strong{color:#111827}.page-row span{color:#1d4ed8;font-weight:800}.page-row em{font-style:normal}.script-panel{background:white;border:2px solid #111827;border-radius:8px;margin:16px 0;break-inside:avoid;overflow:hidden}.script-panel header{display:flex;align-items:center;justify-content:space-between;background:#111827;color:white;padding:8px 12px}.script-panel h2{font-size:1rem;margin:0}.script-panel header span{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:#fde68a}dl{display:grid;grid-template-columns:120px 1fr;margin:0}dt{font-weight:800;background:#f1f5f9;border-top:1px solid #e2e8f0;padding:8px 10px}dd{margin:0;border-top:1px solid #e2e8f0;padding:8px 10px}em{color:#64748b}.print-btn{position:fixed;top:16px;right:16px;padding:8px 16px;background:#111827;color:white;border:0;border-radius:8px;font-weight:800;cursor:pointer}@media print{body{background:white}.print-btn{display:none}.script-panel,.continuity-sheet,.page-plan{break-inside:avoid}}
 .page-plan-row{display:grid;grid-template-columns:90px 1fr 110px 1.4fr;gap:8px;align-items:start;border:1px solid #dbeafe;background:#eff6ff;border-radius:8px;padding:9px 10px;margin:8px 0}.page-plan-row strong{color:#0f172a}.page-plan-row span{font-weight:800;color:#1d4ed8}.page-plan-row em{font-style:normal;color:#475569}@media(max-width:760px){.page-plan-row{grid-template-columns:1fr}}
 </style></head><body>
 <button type="button" class="print-btn" onclick="window.print()">Print</button>
 <h1>${title}</h1>
-<div class="meta">Comic script by ${author} Â· Layout: ${layoutLabel} Â· Pages: ${escapeHtml(scriptPages.length || 1)} Â· Print: ${escapeHtml(getComicPrintFormatLabel(scriptPrintSafety.format))} Â· ${escapeHtml(getComicReadingOrderLabel(comicLayout))} Â· ${escapeHtml(new Date().toLocaleDateString())}</div>
+<div class="meta">Comic script by ${author} · Layout: ${layoutLabel} · Pages: ${escapeHtml(scriptPages.length || 1)} · Print: ${escapeHtml(getComicPrintFormatLabel(scriptPrintSafety.format))} · ${escapeHtml(getComicReadingOrderLabel(comicLayout))} · ${escapeHtml(new Date().toLocaleDateString())}</div>
 ${continuityHtml}
 ${pagePlanHtml}
 ${panelsHtml}
@@ -4845,7 +4845,7 @@ ${panelsHtml}
             </div>
             <dl>
               <dt>Caption</dt><dd>${caption ? escapeHtml(caption).replace(/\n/g, '<br/>') : '<em>Not written yet</em>'}</dd>
-              <dt>Frame</dt><dd>${escapeHtml(getComicPanelFrameLabel(layoutFrame.frame))} Â· ${escapeHtml(getComicPanelSpanLabel(layoutFrame, panelPage?.layout || comicLayout, panelPageIndex))}</dd>
+              <dt>Frame</dt><dd>${escapeHtml(getComicPanelFrameLabel(layoutFrame.frame))} · ${escapeHtml(getComicPanelSpanLabel(layoutFrame, panelPage?.layout || comicLayout, panelPageIndex))}</dd>
               <dt>Direction</dt><dd>${directionRows.map(([label, value]) => `<span class="dir-chip">${escapeHtml(label)}: ${value ? escapeHtml(value) : 'Unset'}</span>`).join('')}</dd>
               <dt>Thumbnail Rough</dt><dd>${rough.focalPoint || rough.composition || rough.letteringSpace || rough.sketchNote ? [
                 rough.focalPoint ? `Focal point: ${rough.focalPoint}` : '',
@@ -4958,23 +4958,23 @@ ${panelsHtml}
     slidesHtml += `<div class="slide vocab-slide"><h2>${escapeHtml(t("ui_common.vocabulary_used"))}</h2><div class="vocab-flex">`;
     vocabTerms.forEach(v => {
       const used = vocabUsage[v.term];
-      slidesHtml += `<span class="v-chip ${used ? 'used' : ''}">${used ? 'âœ“' : 'âœ—'} ${escapeHtml(v.term)}</span>`;
+      slidesHtml += `<span class="v-chip ${used ? 'used' : ''}">${used ? '✓' : '✗'} ${escapeHtml(v.term)}</span>`;
     });
     slidesHtml += `</div></div>`;
 
     if (gradingResult) {
       slidesHtml += `<div class="slide feedback-slide">
-        <h2>Feedback (AI-generated draft â€” not a final grade)</h2>
+        <h2>Feedback (AI-generated draft — not a final grade)</h2>
         <div class="score" title="AI-generated estimate, not a final grade">${escapeHtml(gradingResult.totalScore || '')}</div>
         <div class="fb-grid">
-          <div class="fb-glow">âœ¨ ${escapeHtml(gradingResult.feedback?.glow || '')}</div>
-          <div class="fb-grow">ðŸŒ± ${escapeHtml(gradingResult.feedback?.grow || '')}</div>
+          <div class="fb-glow">✨ ${escapeHtml(gradingResult.feedback?.glow || '')}</div>
+          <div class="fb-grow">🌱 ${escapeHtml(gradingResult.feedback?.grow || '')}</div>
         </div>
       </div>`;
     }
 
     const dirAttr = isRtl(langBcp47) ? 'rtl' : 'ltr';
-    const html = `<!DOCTYPE html><html lang="${langBcp47}" dir="${dirAttr}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} â€” Slideshow</title>
+    const html = `<!DOCTYPE html><html lang="${langBcp47}" dir="${dirAttr}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} — Slideshow</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f172a;color:white;overflow:hidden;height:100vh}
@@ -5005,8 +5005,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f172a;color:white;
 </style></head><body>
 ${slidesHtml}
 <div class="nav">
-  <button type="button" class="prev" onclick="go(-1)">â† Back</button>
-  <button type="button" class="next" onclick="go(1)">Next â†’</button>
+  <button type="button" class="prev" onclick="go(-1)">← Back</button>
+  <button type="button" class="next" onclick="go(1)">Next →</button>
 </div>
 <script>
 var slides=document.querySelectorAll('.slide'),idx=0;
@@ -5025,9 +5025,9 @@ show();
     }
   };
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   // SHARE TO TEACHER DASHBOARD
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
 
   const shareToSession = async () => {
     if (!liveSession || !liveSession.push) return;
@@ -5081,18 +5081,18 @@ show();
     }
   };
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   // COLLABORATIVE JSON SAVE / LOAD ("Pass the Torch")
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
 
   const exportDraftJSON = async () => {
     // FERPA reminder: this draft is de-identified (codename, never a real name), but it still
-    // carries the student's full writing, the AI feedback/grade, and progress analytics â€” so a
+    // carries the student's full writing, the AI feedback/grade, and progress analytics — so a
     // local download is a confirmed, informed action. (Network egress stays gated in shareToSession.)
     if (!(await requestExportConsent({ title: 'Export full draft?', message: 'This de-identified file uses the student codename, but it contains complete writing, AI feedback or grades, and progress analytics. Save it only to a school-approved location and follow district student-records policy.', confirmLabel: 'Export full draft' }))) return;
     const draft = {
       _storyForgeVersion: 2,
-      // â”€â”€ Story content â”€â”€
+      // ── Story content ──
       storyTitle, codename: authorName, genre, language, vocabTerms, artStyle, customArtStyle,
       storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, storyShape, valenceByPara,
       layoutMode, comicPageLayout,
@@ -5109,7 +5109,7 @@ show();
         Object.entries(illustrations).filter(([, v]) => v?.imageUrl).map(([k, v]) => [k, { imageUrl: v.imageUrl, prompt: v.prompt }])
       ),
       coverArt,
-      // â”€â”€ Progress & analytics data (for teacher review) â”€â”€
+      // ── Progress & analytics data (for teacher review) ──
       gradingResult,
       analytics: {
         totalWords,
@@ -5124,18 +5124,18 @@ show();
         characterIssues: characterIssues.length > 0 ? characterIssues : null,
         characters: characters.length > 0 ? characters : null,
       },
-      // â”€â”€ Achievement & XP data â”€â”€
+      // ── Achievement & XP data ──
       achievements: achievements.map(a => ({ id: a.id, name: a.name, earned: a.earned })),
       xp: { totalXP: xpData.totalXP, level: currentLevel.name, streak: xpData.streak },
-      // â”€â”€ Narration status â”€â”€
+      // ── Narration status ──
       narration: {
         aiNarratedCount: Object.values(audioSegments).filter(s => s?.aiAudioUrl).length,
         studentRecordedCount: Object.values(audioSegments).filter(s => s?.studentAudioUrl).length,
         narratorVoice,
       },
-      // â”€â”€ Grammar check results (if any) â”€â”€
+      // ── Grammar check results (if any) ──
       grammarResults: Object.keys(grammarResults).length > 1 ? grammarResults : null,
-      // â”€â”€ Export metadata â”€â”€
+      // ── Export metadata ──
       exportedAt: new Date().toISOString(),
       exportedBy: authorName || 'Student',
     };
@@ -5165,7 +5165,7 @@ show();
           const d = JSON.parse(ev.target.result);
           if (!d._storyForgeVersion) { if (addToast) addToast(t('toasts.invalid_storyforge_file'), 'error'); return; }
           if (d.storyTitle) setStoryTitle(d.storyTitle);
-          // authorName derived from codename prop â€” no need to restore
+          // authorName derived from codename prop — no need to restore
           if (d.genre) setGenre(d.genre);
           if (d.language) setLanguage(d.language);
           { const cv = sanitizeVocabTerms(d.vocabTerms); if (cv) setVocabTerms(cv); }
@@ -5197,10 +5197,10 @@ show();
           // If this is a v2 file with analytics, go to review phase so teacher can see progress
           if (d._storyForgeVersion >= 2 && d.analytics) {
             setPhase('review');
-            if (addToast) addToast(`Student progress loaded from ${d.exportedBy || 'student'} â€” review their work!`, 'success');
+            if (addToast) addToast(`Student progress loaded from ${d.exportedBy || 'student'} — review their work!`, 'success');
           } else {
             setPhase('write');
-            if (addToast) addToast(`Draft loaded from ${d.exportedBy || 'classmate'} â€” keep writing!`, 'success');
+            if (addToast) addToast(`Draft loaded from ${d.exportedBy || 'classmate'} — keep writing!`, 'success');
           }
         } catch (err) {
           if (addToast) addToast(t('toasts.could_read_file'), 'error');
@@ -5211,33 +5211,33 @@ show();
     input.click();
   };
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   // ACHIEVEMENT BADGES
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
 
   const achievements = useMemo(() => {
     const illustratedCount = Object.values(illustrations).filter(ill => ill?.imageUrl).length;
     const narratedCount = Object.values(audioSegments).filter(seg => seg?.aiAudioUrl || seg?.studentAudioUrl).length;
     const recordedCount = Object.values(audioSegments).filter(seg => seg?.studentAudioUrl).length;
     return [
-      { id: 'first_words', name: 'First Words', icon: 'âœï¸', desc: 'Write 50+ words', earned: totalWords >= 50 },
-      { id: 'storyteller', name: 'Storyteller', icon: 'ðŸ“–', desc: 'Write 200+ words', earned: totalWords >= 200 },
-      { id: 'novelist', name: 'Novelist', icon: 'ðŸ“š', desc: 'Write 500+ words', earned: totalWords >= 500 },
-      { id: 'vocab_star', name: 'Vocab Star', icon: 'â­', desc: 'Use all vocabulary terms', earned: vocabTerms.length > 0 && vocabUsedCount === vocabTerms.length },
-      { id: 'illustrator', name: 'Illustrator', icon: 'ðŸŽ¨', desc: 'Generate an illustration', earned: illustratedCount > 0 },
-      { id: 'gallery', name: 'Full Gallery', icon: 'ðŸ–¼ï¸', desc: 'Illustrate every paragraph', earned: illustratedCount >= paragraphs.length && paragraphs.length > 0 },
-      { id: 'narrator', name: 'Narrator', icon: 'ðŸŽ™ï¸', desc: 'Narrate a paragraph', earned: narratedCount > 0 },
-      { id: 'voice_actor', name: 'Voice Actor', icon: 'ðŸŽ¤', desc: 'Record your own voice', earned: recordedCount > 0 },
-      { id: 'reviser', name: 'Reviser', icon: 'ðŸ”„', desc: 'Write multiple drafts', earned: draftCount >= 2 },
-      { id: 'published', name: 'Published Author', icon: 'ðŸ†', desc: 'Export your storybook', earned: hasExported },
+      { id: 'first_words', name: 'First Words', icon: '✏️', desc: 'Write 50+ words', earned: totalWords >= 50 },
+      { id: 'storyteller', name: 'Storyteller', icon: '📖', desc: 'Write 200+ words', earned: totalWords >= 200 },
+      { id: 'novelist', name: 'Novelist', icon: '📚', desc: 'Write 500+ words', earned: totalWords >= 500 },
+      { id: 'vocab_star', name: 'Vocab Star', icon: '⭐', desc: 'Use all vocabulary terms', earned: vocabTerms.length > 0 && vocabUsedCount === vocabTerms.length },
+      { id: 'illustrator', name: 'Illustrator', icon: '🎨', desc: 'Generate an illustration', earned: illustratedCount > 0 },
+      { id: 'gallery', name: 'Full Gallery', icon: '🖼️¼ï¸', desc: 'Illustrate every paragraph', earned: illustratedCount >= paragraphs.length && paragraphs.length > 0 },
+      { id: 'narrator', name: 'Narrator', icon: '🎙️¸', desc: 'Narrate a paragraph', earned: narratedCount > 0 },
+      { id: 'voice_actor', name: 'Voice Actor', icon: '🎤', desc: 'Record your own voice', earned: recordedCount > 0 },
+      { id: 'reviser', name: 'Reviser', icon: '🔄', desc: 'Write multiple drafts', earned: draftCount >= 2 },
+      { id: 'published', name: 'Published Author', icon: '🏆†', desc: 'Export your storybook', earned: hasExported },
     ];
   }, [totalWords, vocabUsedCount, vocabTerms.length, illustrations, audioSegments, paragraphs.length, draftCount, hasExported]);
 
   const earnedCount = useMemo(() => achievements.filter(a => a.earned).length, [achievements]);
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   // RENDER
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
 
   if (!isOpen) return null;
 
@@ -5375,12 +5375,12 @@ show();
           )}
           {(panelDialogue[p.id] || {}).thought && (
             <div className="bg-purple-50 border-2 border-purple-300 rounded-2xl p-2 text-[11px] text-purple-700 italic leading-relaxed" style={{ borderRadius: '20px', borderStyle: 'dashed' }}>
-              ðŸ’­ {panelDialogue[p.id].thought}
+              💭 {panelDialogue[p.id].thought}
             </div>
           )}
           <div className="flex items-center justify-between mt-1">
             <div className="flex gap-0.5">
-              {['ðŸ’¥', 'â¤ï¸', 'â­', 'ðŸ˜‚', 'ðŸ˜±', 'ðŸ”¥', 'ðŸ’€', 'ðŸŒŸ'].map(emoji => (
+              {['💥', '❤️', '⭐', '😂', '😱', '🔥', '💀', '🌟'].map(emoji => (
                 <button type="button" key={emoji} onClick={() => setPanelStickers(prev => ({ ...prev, [p.id]: prev[p.id] === emoji ? null : emoji }))} className={`text-sm hover:scale-125 transition-transform ${panelStickers[p.id] === emoji ? 'scale-125' : 'opacity-50 hover:opacity-100'}`} title={`Add ${emoji} sticker`}>{emoji}</button>
               ))}
             </div>
@@ -5393,7 +5393,7 @@ show();
 
   // Canvas is theme-aware (2026-07-05, maintainer report "light mode = too much dark background"):
   // the header/stepper/footer chrome is already light, but the content canvas was hardcoded
-  // bg-slate-900/95 â€” so light mode showed white bars sandwiching a near-black canvas, and the
+  // bg-slate-900/95 — so light mode showed white bars sandwiching a near-black canvas, and the
   // phase headings (text-slate-800, directly on the canvas) were dark-on-dark. Light ('default')
   // now gets a soft slate-100 canvas; dark/contrast keep the dark canvas (host remap handles text).
   return (
@@ -5407,9 +5407,9 @@ show();
           `Now reading paragraph ${playbackIdx + 1}${audioSegments[paragraphs[playbackIdx].id]?.sentences?.[sentenceIdx] ? ': ' + audioSegments[paragraphs[playbackIdx].id].sentences[sentenceIdx] : ''}`
         ) : ''}
       </div>
-      {/* WCAG 4.1.3 â€” top-level announcer for ephemeral status messages (sfAnnounce target) */}
+      {/* WCAG 4.1.3 — top-level announcer for ephemeral status messages (sfAnnounce target) */}
       <div id="allo-live-storyforge" aria-live="polite" aria-atomic="true" className="sr-only" />
-      {/* WCAG 2.3.3 â€” reduced-motion safety net: kills persistent animations within StoryForge under prefers-reduced-motion */}
+      {/* WCAG 2.3.3 — reduced-motion safety net: kills persistent animations within StoryForge under prefers-reduced-motion */}
       <style>{`
         .sf-modal-root button{min-width:24px;min-height:24px}
         @media (prefers-reduced-motion: reduce){ .sf-modal-root .animate-pulse,.sf-modal-root .animate-spin,.sf-modal-root .animate-bounce,.sf-modal-root .animate-in{animation:none!important}.sf-modal-root [class*="transition-"]{transition:none!important} }
@@ -5450,11 +5450,11 @@ show();
         .sf-modal-root.theme-contrast .sf-bubble-width-slider{accent-color:#0f0}
       `}</style>
 
-      {/* â”€â”€ Restore Draft Prompt â”€â”€ */}
+      {/* ── Restore Draft Prompt ── */}
       {showRestorePrompt && (
         <div ref={restorePromptDialogRef} tabIndex={-1} className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200" role="dialog" aria-modal="true" aria-labelledby="sf-restore-title" aria-describedby="sf-restore-description">
           <div className="sf-dialog-card bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center">
-            <div className="text-3xl mb-3" aria-hidden="true">ðŸ“–</div>
+            <div className="text-3xl mb-3" aria-hidden="true">📖</div>
             <h3 id="sf-restore-title" className="text-lg font-black text-slate-800 mb-2">{t("ui_common.continue_where_left")}</h3>
             <p id="sf-restore-description" className="text-sm text-slate-600 mb-4">A saved draft was found. Would you like to restore it?</p>
             <div className="flex gap-3 justify-center">
@@ -5465,7 +5465,7 @@ show();
         </div>
       )}
 
-      {/* â”€â”€ Unsaved changes confirmation â”€â”€ */}
+      {/* ── Unsaved changes confirmation ── */}
       {showCloseConfirm && (
         <div ref={closeConfirmDialogRef} tabIndex={-1} className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200" role="dialog" aria-modal="true" aria-labelledby="sf-close-confirm-title" aria-describedby="sf-close-confirm-description">
           <div className="sf-dialog-card bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center">
@@ -5494,7 +5494,7 @@ show();
           </div>
         </div>
       )}
-      {/* â”€â”€ Header â”€â”€ */}
+      {/* ── Header ── */}
       <div className="bg-gradient-to-r from-rose-600 to-pink-600 p-4 text-white flex justify-between items-center shadow-lg shrink-0">
         <div className="flex items-center gap-3">
           <BookOpen size={24} />
@@ -5505,10 +5505,10 @@ show();
         </div>
         <div className="flex items-center gap-4">
           {/* XP / Level badge */}
-          <div className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2" title={`${xpData.totalXP} XP Â· ${currentLevel.name}${xpData.streak > 1 ? ` Â· ${xpData.streak}-day streak` : ''}`}>
+          <div className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2" title={`${xpData.totalXP} XP · ${currentLevel.name}${xpData.streak > 1 ? ` · ${xpData.streak}-day streak` : ''}`}>
             <span>{currentLevel.emoji} {currentLevel.name}</span>
             <span className="text-rose-200">{xpData.totalXP} XP</span>
-            {xpData.streak > 1 && <span className="text-amber-700">ðŸ”¥{xpData.streak}</span>}
+            {xpData.streak > 1 && <span className="text-amber-700">🔥{xpData.streak}</span>}
             {nextLevel && (
               <div className="w-12 h-1.5 bg-white/20 rounded-full overflow-hidden">
                 <div className="h-full bg-amber-300 rounded-full transition-all" style={{ width: `${Math.min(100, ((xpData.totalXP - currentLevel.min) / (nextLevel.min - currentLevel.min)) * 100)}%` }} />
@@ -5518,9 +5518,9 @@ show();
           {totalWords > 0 && (
             <div className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2">
               <span>{totalWords} words</span>
-              <span>Â·</span>
+              <span>·</span>
               <span>{vocabUsedCount}/{vocabTerms.length} terms</span>
-              {readingLevel && <><span>Â·</span><span>Grade {readingLevel.grade}</span></>}
+              {readingLevel && <><span>·</span><span>Grade {readingLevel.grade}</span></>}
             </div>
           )}
           <button type="button"
@@ -5538,7 +5538,7 @@ show();
         </div>
       </div>
 
-      {/* â”€â”€ Stepper â”€â”€ */}
+      {/* ── Stepper ── */}
       <nav className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-center gap-1 shrink-0 overflow-x-auto" role="navigation" aria-label={t("a11y.story_creation_phases")}>
         {PHASES.map((p, i) => {
           const Icon = phaseIcons[i];
@@ -5567,11 +5567,11 @@ show();
         })}
       </nav>
 
-      {/* â”€â”€ Phase Content â”€â”€ */}
+      {/* ── Phase Content ── */}
       <div className="flex-grow overflow-y-auto" ref={phaseContentRef} tabIndex={-1} role="region" aria-label={`${PHASE_LABELS[phaseIdx]} phase`}>
         <div className="max-w-4xl mx-auto p-6">
 
-          {/* â•â•â• CONFIGURE PHASE â•â•â• */}
+          {/* ═══ CONFIGURE PHASE ═══ */}
           {phase === 'configure' && (
             <div className={`space-y-6 ${animClass}`}>
               <div className="text-center mb-6">
@@ -5589,7 +5589,7 @@ show();
                 </div>
               </div>
 
-              {/* â”€â”€ Import from Lesson Resources â”€â”€ */}
+              {/* ── Import from Lesson Resources ── */}
               {lessonResources && lessonResources.length > 0 && (
                 <div className="bg-gradient-to-r from-indigo-50 to-violet-50 border-2 border-indigo-200 rounded-2xl p-4">
                   <h4 className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2">
@@ -5602,7 +5602,7 @@ show();
                         onClick={() => importFromResource(r)}
                         className="px-3 py-1.5 bg-white border border-indigo-200 rounded-lg text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors flex items-center gap-1.5"
                       >
-                        {r.type === 'glossary' ? 'ðŸ“–' : r.type === 'simplified' ? 'ðŸ“„' : r.type === 'sentence-frames' ? 'âœï¸' : r.type === 'lesson-plan' ? 'ðŸ“‹' : 'ðŸ“…'}
+                        {r.type === 'glossary' ? '📖' : r.type === 'simplified' ? '📄' : r.type === 'sentence-frames' ? '✏️' : r.type === 'lesson-plan' ? '📋' : '📅'}
                         {r.title || r.type}
                       </button>
                     ))}
@@ -5626,9 +5626,9 @@ show();
                   <div>
                     <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{t("labels.pen_name")}</label>
                     <div className="w-full text-sm p-2.5 border border-slate-400 rounded-lg bg-slate-50 font-bold text-slate-700 flex items-center gap-2">
-                      <span className="text-base">âœï¸</span> {authorName}
+                      <span className="text-base">✍️</span> {authorName}
                     </div>
-                    <p className="text-[11px] text-slate-500 mt-1">Your codename is your pen name â€” it keeps your identity private</p>
+                    <p className="text-[11px] text-slate-500 mt-1">Your codename is your pen name — it keeps your identity private</p>
                   </div>
                 </div>
               </div>
@@ -5699,12 +5699,12 @@ show();
                 )}
               </div>
 
-              {/* Story Shape Picker â€” Vonnegut-style emotional shapes (optional craft lens) */}
+              {/* Story Shape Picker — Vonnegut-style emotional shapes (optional craft lens) */}
               <div className="bg-white rounded-2xl border-2 border-violet-100 p-5 shadow-sm">
                 <h4 className="text-sm font-bold text-violet-700 uppercase tracking-wider mb-1 flex items-center gap-2">
-                  <Sparkles size={16} /> Story Shape <span className="text-[10px] font-medium text-slate-500 normal-case tracking-normal">(optional â€” the emotional ups &amp; downs)</span>
+                  <Sparkles size={16} /> Story Shape <span className="text-[10px] font-medium text-slate-500 normal-case tracking-normal">(optional — the emotional ups &amp; downs)</span>
                 </h4>
-                <p className="text-[11px] text-slate-500 mb-3">Pick the shape of your character's fortune over time â€” a lens to play with. Great stories bend the rules!</p>
+                <p className="text-[11px] text-slate-500 mb-3">Pick the shape of your character's fortune over time — a lens to play with. Great stories bend the rules!</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {Object.entries(STORY_SHAPES).map(([key, sh]) => {
                     const active = storyShape === key;
@@ -5747,7 +5747,7 @@ show();
                     </div>
                   ))}
                   {vocabTerms.length === 0 && (
-                    <p className="text-slate-500 text-sm italic">No vocabulary terms yet â€” add some below or they'll come from your glossary</p>
+                    <p className="text-slate-500 text-sm italic">No vocabulary terms yet — add some below or they'll come from your glossary</p>
                   )}
                 </div>
                 <div className="flex gap-2">
@@ -5778,7 +5778,7 @@ show();
                 aria-expanded={showAdvancedConfig}
               >
                 <span className="flex items-center gap-2"><Palette size={16} /> Advanced Settings</span>
-                <span className={`transition-transform ${showAdvancedConfig ? 'rotate-180' : ''}`}>â–¼</span>
+                <span className={`transition-transform ${showAdvancedConfig ? 'rotate-180' : ''}`}>▼</span>
               </button>
 
               {showAdvancedConfig && (
@@ -5798,7 +5798,7 @@ show();
                         artStyle === style ? 'border-purple-500 bg-purple-50 text-purple-700 shadow-md' : 'border-slate-200 text-slate-600 hover:border-purple-300'
                       }`}
                     >
-                      {style === 'storybook' ? 'ðŸ“š' : style === 'pixel' ? 'ðŸ‘¾' : style === 'cinematic' ? 'ðŸŽ¬' : style === 'anime' ? 'âœ¨' : 'ðŸ–ï¸'}<br/>{style}
+                      {style === 'storybook' ? '📚' : style === 'pixel' ? '👾' : style === 'cinematic' ? '🎬' : style === 'anime' ? '✨' : '🖍️ï¸'}<br/>{style}
                     </button>
                   ))}
                   <button type="button"
@@ -5807,7 +5807,7 @@ show();
                       artStyle === 'custom' ? 'border-purple-500 bg-purple-50 text-purple-700 shadow-md' : 'border-slate-200 text-slate-600 hover:border-purple-300'
                     }`}
                   >
-                    ðŸŽ¨<br/>Custom
+                    🎨<br/>Custom
                   </button>
                 </div>
                 {artStyle === 'custom' && (
@@ -5864,7 +5864,7 @@ show();
                 {/* Story Starters */}
                 {genre !== 'free' && STORY_STARTERS[genre] && (
                   <div className="mt-3 pt-3 border-t border-amber-100">
-                    <div className="text-[11px] font-bold text-amber-500 uppercase tracking-widest mb-2">ðŸ’¡ {GENRE_TEMPLATES[genre]?.label} Story Starters â€” click to use</div>
+                    <div className="text-[11px] font-bold text-amber-500 uppercase tracking-widest mb-2">💡 {GENRE_TEMPLATES[genre]?.label} Story Starters — click to use</div>
                     <div className="space-y-2">
                       {STORY_STARTERS[genre].map((starter, si) => (
                         <button type="button"
@@ -5903,7 +5903,7 @@ show();
             </div>
           )}
 
-          {/* â•â•â• WRITE PHASE â•â•â• */}
+          {/* ═══ WRITE PHASE ═══ */}
           {phase === 'write' && (
             <div className={`space-y-4 ${animClass}`}>
               <div className="flex items-center justify-between mb-4">
@@ -5911,7 +5911,7 @@ show();
                   <h3 className="text-2xl font-black text-slate-800">{t("ui_common.write_your_story")}</h3>
                   <p className="text-slate-600 text-sm mt-1">
                     Use your vocabulary ingredients in each paragraph
-                    {revisionSnapshot && <span className="text-indigo-500 ml-2">Draft #{draftCount} â€” revising!</span>}
+                    {revisionSnapshot && <span className="text-indigo-500 ml-2">Draft #{draftCount} — revising!</span>}
                   </p>
                 </div>
                 <div className="flex gap-2 items-center">
@@ -5995,13 +5995,13 @@ show();
                       ? (scaffoldsGenerated ? 'Regenerate Panel Plan' : 'Generate Panel Plan')
                       : (scaffoldsGenerated ? 'Regenerate Scaffolds' : 'Generate Scaffolds')}
                   </button>
-                  {/* Focus Mode Toggle â€” write one paragraph at a time */}
+                  {/* Focus Mode Toggle — write one paragraph at a time */}
                   <button type="button"
                     onClick={() => { setFocusMode(!focusMode); setFocusParagraphIdx(0); }}
                     className={`px-4 py-2 rounded-full text-xs font-bold transition-colors flex items-center gap-2 ${
                       focusMode ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200'
                     }`}
-                    title={focusMode ? 'Show all paragraphs at once' : 'Focus on one paragraph at a time â€” less overwhelming!'}
+                    title={focusMode ? 'Show all paragraphs at once' : 'Focus on one paragraph at a time — less overwhelming!'}
                   >
                     <Target size={14} /> {focusMode ? 'Focus ON' : 'Focus Mode'}
                   </button>
@@ -6029,10 +6029,10 @@ show();
                 </div>
               )}
 
-              {/* Vocab Ingredients Bar â€” STICKY so it's always visible while writing */}
+              {/* Vocab Ingredients Bar — STICKY so it's always visible while writing */}
               <div className="bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-2xl p-3 sticky top-0 z-30 shadow-sm" style={{ backdropFilter: 'blur(8px)', background: 'rgba(255,241,242,0.92)' }}>
                 <div className="flex items-center justify-between mb-1.5">
-                  <div className="text-[11px] font-bold text-rose-500 uppercase tracking-widest">Story Ingredients â€” click to copy</div>
+                  <div className="text-[11px] font-bold text-rose-500 uppercase tracking-widest">Story Ingredients — click to copy</div>
                   <div className="text-[11px] font-bold text-rose-700">
                     {vocabTerms.filter(v => vocabUsage[v.term]).length}/{vocabTerms.length} used
                   </div>
@@ -6053,24 +6053,24 @@ show();
                           type="button"
                           data-sf-focusable
                           aria-describedby={`sf-vocab-tip-${i}`}
-                          aria-label={`${v.term}${used ? ' â€” used' : ' â€” not yet used'}. ${t("a11y.copy_vocab_term") || 'Copy term to paste into your story'}`}
+                          aria-label={`${v.term}${used ? ' — used' : ' — not yet used'}. ${t("a11y.copy_vocab_term") || 'Copy term to paste into your story'}`}
                           className={`px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all cursor-pointer select-none ${
                             used ? 'bg-green-100 border-green-400 text-green-800 shadow-sm' : 'bg-white border-rose-200 text-rose-700 hover:bg-rose-50 hover:border-rose-400'
                           }`}
                           onClick={async () => {
-                            if (!navigator.clipboard?.writeText) { if (addToast) addToast(`Copy "${v.term}" manually â€” clipboard unavailable`, 'error'); return; }
-                            try { const ok = window.alloCopyText ? await window.alloCopyText(v.term) : false; if (!ok) throw new Error('copy unavailable'); if (addToast) addToast(`"${v.term}" copied â€” paste into your story!`, 'success'); }
-                            catch (err) { console.warn('Clipboard write failed:', err); if (addToast) addToast(`Couldn't copy â€” please copy "${v.term}" manually`, 'error'); }
+                            if (!navigator.clipboard?.writeText) { if (addToast) addToast(`Copy "${v.term}" manually — clipboard unavailable`, 'error'); return; }
+                            try { const ok = window.alloCopyText ? await window.alloCopyText(v.term) : false; if (!ok) throw new Error('copy unavailable'); if (addToast) addToast(`"${v.term}" copied — paste into your story!`, 'success'); }
+                            catch (err) { console.warn('Clipboard write failed:', err); if (addToast) addToast(`Couldn't copy — please copy "${v.term}" manually`, 'error'); }
                           }}
                         >
                           {used ? <CheckCircle2 size={11} className="inline mr-1" /> : <span aria-hidden="true" className="inline-block w-2 h-2 rounded-full bg-rose-300 mr-1.5" />}
                           {v.term}
                         </button>
-                        {/* Word-bank definition â€” revealed on hover AND keyboard focus */}
+                        {/* Word-bank definition — revealed on hover AND keyboard focus */}
                         <div id={`sf-vocab-tip-${i}`} role="tooltip" className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-slate-800 text-white rounded-xl p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all z-50 pointer-events-none">
                           <div className="text-xs font-bold text-amber-300 mb-1">{v.term}</div>
                           {v.definition && <div className="text-[11px] text-slate-200 leading-relaxed mb-1">{v.definition}</div>}
-                          <div className="text-[11px] text-slate-300 italic">Click to copy Â· Paste into your paragraph</div>
+                          <div className="text-[11px] text-slate-300 italic">Click to copy · Paste into your paragraph</div>
                           <div aria-hidden="true" className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-slate-800" />
                         </div>
                       </div>
@@ -6165,7 +6165,7 @@ show();
                     disabled={focusParagraphIdx === 0}
                     className="px-3 py-1.5 bg-white border border-indigo-200 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-100 disabled:opacity-30 transition-colors flex items-center gap-1"
                   >
-                    â† Previous
+                    ← Previous
                   </button>
                   <div className="text-center">
                     <div className="text-xs font-bold text-indigo-700">Paragraph {focusParagraphIdx + 1} of {paragraphs.length}</div>
@@ -6199,7 +6199,7 @@ show();
                     }}
                     className="px-3 py-1.5 bg-white border border-indigo-200 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-100 transition-colors flex items-center gap-1"
                   >
-                    {focusParagraphIdx >= paragraphs.length - 1 ? '+ New Â¶' : 'Next â†’'}
+                    {focusParagraphIdx >= paragraphs.length - 1 ? '+ New ¶' : 'Next →'}
                   </button>
                 </div>
               )}
@@ -6219,8 +6219,8 @@ show();
                       <span className="text-xs font-bold text-slate-600">Paragraph {idx + 1}</span>
                       {/* Reorder buttons */}
                       <div className="flex gap-0.5">
-                        <button type="button" onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={t("a11y.move_paragraph_up")} title={t("ui_common.move_up")}>â–²</button>
-                        <button type="button" onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={t("a11y.move_paragraph_down")} title={t("ui_common.move_down")}>â–¼</button>
+                        <button type="button" onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={t("a11y.move_paragraph_up")} title={t("ui_common.move_up")}>▲</button>
+                        <button type="button" onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={t("a11y.move_paragraph_down")} title={t("ui_common.move_down")}>▼</button>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -6259,11 +6259,11 @@ show();
                       <HelpCircle size={12} className="shrink-0" /> {p.scaffoldFrame}
                     </div>
                   )}
-                  {/* â”€â”€ Plot Structure beat (optional narrative-arc tag) â”€â”€ */}
+                  {/* ── Plot Structure beat (optional narrative-arc tag) ── */}
                   {genre !== 'free' && (
                     <div className="px-4 py-2 bg-indigo-50/60 border-b border-indigo-100 flex items-center gap-2">
                       <label htmlFor={`sf-beat-${p.id}`} className="text-[11px] font-bold text-indigo-700 uppercase tracking-widest shrink-0">
-                        ðŸ“ Plot Beat
+                        📍 Plot Beat
                       </label>
                       <select
                         id={`sf-beat-${p.id}`}
@@ -6288,7 +6288,7 @@ show();
                       <div className="space-y-1.5">
                         {helpMeResult.map((s, si) => (
                           <div key={si} className="text-xs text-amber-800 flex items-start gap-2">
-                            <span className="text-amber-400 mt-0.5">ðŸ’¡</span>
+                            <span className="text-amber-400 mt-0.5">💡</span>
                             <span>{s}</span>
                           </div>
                         ))}
@@ -6297,7 +6297,7 @@ show();
                     </div>
                   )}
                   {layoutMode === 'comic' ? (
-                    /* â”€â”€ Comic Panel Writing Mode â€” dialogue, thought, narration fields â”€â”€ */
+                    /* ── Comic Panel Writing Mode — dialogue, thought, narration fields ── */
                     <div className="p-3 space-y-2 bg-gradient-to-b from-slate-50 to-white">
                       <div className="flex items-center justify-between gap-2">
                         <div className="text-[11px] font-black text-slate-700 uppercase tracking-widest">Panel {idx + 1} Bubbles</div>
@@ -6313,7 +6313,7 @@ show();
                           </button>
                         )}
                       </div>
-                      {/* Narration caption â€” top yellow bar */}
+                      {/* Narration caption — top yellow bar */}
                       <div className="rounded-lg border border-slate-200 bg-white p-2">
                         <div className="flex items-center justify-between gap-2 mb-1">
                           <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Panel Direction</div>
@@ -6406,7 +6406,7 @@ show();
                       </div>
                       <div>
                         <label className="text-[11px] font-bold text-amber-600 uppercase tracking-widest flex items-center gap-1 mb-0.5">
-                          ðŸ“– Narration Caption
+                          📖 Narration Caption
                         </label>
                         <textarea
                           value={p.text}
@@ -6420,7 +6420,7 @@ show();
                       {/* Speech bubble */}
                       <div>
                         <label className="text-[11px] font-bold text-blue-600 uppercase tracking-widest flex items-center gap-1 mb-0.5">
-                          ðŸ’¬ Speech Bubble
+                          💬 Speech Bubble
                         </label>
                         <div className="flex gap-2">
                           <input
@@ -6444,7 +6444,7 @@ show();
                       {/* Thought bubble */}
                       <div>
                         <label className="text-[11px] font-bold text-purple-600 uppercase tracking-widest flex items-center gap-1 mb-0.5">
-                          ðŸ’­ Thought Bubble
+                          💭 Thought Bubble
                         </label>
                         <textarea
                           value={(panelDialogue[p.id] || {}).thought || ''}
@@ -6457,7 +6457,7 @@ show();
                       </div>
                       {/* Sound effect */}
                       <div className="flex items-center gap-2">
-                        <label className="text-[11px] font-bold text-red-500 uppercase tracking-widest">ðŸ’¥ SFX</label>
+                        <label className="text-[11px] font-bold text-red-500 uppercase tracking-widest">💥 SFX</label>
                         <input
                           type="text"
                           value={(panelDialogue[p.id] || {}).sfx || ''}
@@ -6487,7 +6487,7 @@ show();
                                   Tighten
                                 </button>
                               )}
-                              <span className={`text-[10px] font-black ${textColor}`}>{lettering.words}/{lettering.limit} words Â· {lettering.label}</span>
+                              <span className={`text-[10px] font-black ${textColor}`}>{lettering.words}/{lettering.limit} words · {lettering.label}</span>
                             </div>
                             <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
                               <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
@@ -6500,7 +6500,7 @@ show();
                       })()}
                     </div>
                   ) : (
-                    /* â”€â”€ Prose / Journal / Dark Writing Mode â€” styled textarea â”€â”€ */
+                    /* ── Prose / Journal / Dark Writing Mode — styled textarea ── */
                     <textarea
                       value={p.text}
                       onChange={(e) => updateParagraph(idx, e.target.value)}
@@ -6522,7 +6522,7 @@ show();
                       aria-label={`Paragraph ${idx + 1} text`}
                     />
                   )}
-                  {/* â”€â”€ Handwriting Capture Row â”€â”€ */}
+                  {/* ── Handwriting Capture Row ── */}
                   {onCallGeminiVision && (
                     <div className={`px-4 py-1.5 border-t flex items-center gap-2 flex-wrap ${
                       layoutMode === 'dark' ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-100'
@@ -6543,7 +6543,7 @@ show();
                           disabled={hwLoading}
                           aria-hidden="true"
                         />
-                        {hwLoading && hwTargetParagraph === idx ? <span className="animate-spin motion-reduce:animate-none">â³</span> : 'ðŸ“·'}
+                        {hwLoading && hwTargetParagraph === idx ? <span className="animate-spin motion-reduce:animate-none">⏳</span> : '📷'}
                         {hwLoading && hwTargetParagraph === idx ? ' Reading...' : ' Snap Your Writing'}
                       </label>
                       <button type="button"
@@ -6556,7 +6556,7 @@ show();
                             : (layoutMode === 'dark' ? 'bg-slate-800 border-slate-600 text-slate-300 hover:border-cyan-600' : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-violet-300 hover:text-violet-500')
                         }`}
                       >
-                        âœï¸ Penmanship Tips {hwPenmanshipOn ? 'ON' : 'OFF'}
+                        ✏️ Penmanship Tips {hwPenmanshipOn ? 'ON' : 'OFF'}
                       </button>
                     </div>
                   )}
@@ -6569,13 +6569,13 @@ show();
                       layoutMode === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-r from-violet-50 to-fuchsia-50 border-violet-200'
                     }`} role="region" aria-label="Penmanship feedback">
                       <div className="flex items-center justify-between mb-1">
-                        <span className={`text-[11px] font-bold uppercase tracking-widest ${layoutMode === 'dark' ? 'text-cyan-400' : 'text-violet-600'}`}>âœï¸ Penmanship Feedback</span>
+                        <span className={`text-[11px] font-bold uppercase tracking-widest ${layoutMode === 'dark' ? 'text-cyan-400' : 'text-violet-600'}`}>✏️ Penmanship Feedback</span>
                         <span className="text-xs font-black px-2 py-0.5 rounded-full text-white" style={{ background: bandColor }}>{pm.band}</span>
                       </div>
                       <p className="text-[11px] text-slate-500 mb-2">
                         {pm.auditorCount > 1
-                          ? `AI estimate Â· ~${pm.score}/100 (likely ${pm.ci[0]}â€“${pm.ci[1]}) Â· averaged across ${pm.auditorCount} reviewers Â· ${pm.agreement} agreement`
-                          : `AI estimate Â· ~${pm.score}/100 (single pass)`}
+                          ? `AI estimate · ~${pm.score}/100 (likely ${pm.ci[0]}–${pm.ci[1]}) · averaged across ${pm.auditorCount} reviewers · ${pm.agreement} agreement`
+                          : `AI estimate · ~${pm.score}/100 (single pass)`}
                       </p>
                       <div className="flex gap-2 mb-2">
                         {[['letterFormation', 'Letters'], ['spacing', 'Spacing'], ['alignment', 'Alignment'], ['neatness', 'Neatness']].map(([key, label]) => (
@@ -6587,9 +6587,9 @@ show();
                           </div>
                         ))}
                       </div>
-                      {pm.strengths && <p className="text-xs text-green-700 font-medium mb-1">ðŸ’ª {pm.strengths}</p>}
-                      {pm.tips && <p className={`text-xs font-medium ${layoutMode === 'dark' ? 'text-cyan-400' : 'text-violet-600'}`}>ðŸ’¡ {pm.tips}</p>}
-                      <p className="text-[10px] text-slate-500 italic mt-1">Formative AI feedback to guide practice â€” not a graded or normed score.</p>
+                      {pm.strengths && <p className="text-xs text-green-700 font-medium mb-1">💪 {pm.strengths}</p>}
+                      {pm.tips && <p className={`text-xs font-medium ${layoutMode === 'dark' ? 'text-cyan-400' : 'text-violet-600'}`}>💡 {pm.tips}</p>}
+                      <p className="text-[10px] text-slate-500 italic mt-1">Formative AI feedback to guide practice — not a graded or normed score.</p>
                       <button type="button" onClick={() => setHwResult(null)} className="text-[11px] text-slate-500 hover:text-slate-600 font-bold mt-1" aria-label={t("a11y.dismiss_penmanship_feedback")}>{t("ui_common.dismiss")}</button>
                     </div>
                     );
@@ -6600,19 +6600,19 @@ show();
                       layoutMode === 'dark' ? 'bg-slate-900 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-100 text-slate-500'
                     }`}>
                       <span>{paragraphStats[idx]?.wordCount || 0} words</span>
-                      <span>Â·</span>
+                      <span>·</span>
                       <span>{paragraphStats[idx]?.sentenceCount || 0} sentences</span>
-                      <span>Â·</span>
+                      <span>·</span>
                       <span className={paragraphStats[idx]?.vocabUsed > 0 ? 'text-green-500' : 'text-slate-500'}>{paragraphStats[idx]?.vocabUsed || 0} vocab terms</span>
                       {overusedWords.length > 0 && p.text.toLowerCase().split(/\s+/).some(w => overusedWords.includes(w.replace(/[^a-z'-]/g, ''))) && (
-                        <span className="text-amber-500" title={`Overused: ${overusedWords.join(', ')}`}>Â· Repeated words</span>
+                        <span className="text-amber-500" title={`Overused: ${overusedWords.join(', ')}`}>· Repeated words</span>
                       )}
                       {sentenceVariety[idx] && !sentenceVariety[idx].varied && (
-                        <span className="text-orange-500" title={sentenceVariety[idx].issues.join('; ')}>Â· Vary sentences</span>
+                        <span className="text-orange-500" title={sentenceVariety[idx].issues.join('; ')}>· Vary sentences</span>
                       )}
                     </div>
                   )}
-                  {/* Vocab still needed â€” shows unused terms as a gentle reminder */}
+                  {/* Vocab still needed — shows unused terms as a gentle reminder */}
                   {vocabTerms.length > 0 && (() => {
                     const allText = paragraphs.map(pp => pp.text).join(' ');
                     const unused = vocabTerms.filter(v => !termUsed(allText, v.term));
@@ -6626,9 +6626,9 @@ show();
                           <span key={vi}>
                             <button type="button"
                               onClick={async () => {
-                                if (!navigator.clipboard?.writeText) { if (addToast) addToast(`Copy "${v.term}" manually â€” clipboard unavailable`, 'error'); return; }
+                                if (!navigator.clipboard?.writeText) { if (addToast) addToast(`Copy "${v.term}" manually — clipboard unavailable`, 'error'); return; }
                                 try { const ok = window.alloCopyText ? await window.alloCopyText(v.term) : false; if (!ok) throw new Error('copy unavailable'); if (addToast) addToast(`"${v.term}" copied!`, 'success'); }
-                                catch (err) { console.warn('Clipboard write failed:', err); if (addToast) addToast(`Couldn't copy â€” please copy "${v.term}" manually`, 'error'); }
+                                catch (err) { console.warn('Clipboard write failed:', err); if (addToast) addToast(`Couldn't copy — please copy "${v.term}" manually`, 'error'); }
                               }}
                               className={`font-bold underline decoration-dotted cursor-pointer ${layoutMode === 'dark' ? 'text-cyan-500 hover:text-cyan-300' : 'text-rose-600 hover:text-rose-800'}`}
                               title={v.definition || 'Click to copy'}
@@ -6653,7 +6653,7 @@ show();
                           }`}>{issue.type === 'show_dont_tell' ? 'show' : issue.type?.replace('_', ' ') || 'tip'}</span>
                           <div className="flex-1">
                             {issue.original && <span className="line-through text-slate-500 mr-1">"{issue.original}"</span>}
-                            {issue.suggestion && <span className="text-emerald-700 font-bold">â†’ "{issue.suggestion}"</span>}
+                            {issue.suggestion && <span className="text-emerald-700 font-bold">→ "{issue.suggestion}"</span>}
                             {issue.tip && <div className="text-slate-600 mt-0.5">{issue.tip}</div>}
                           </div>
                         </div>
@@ -6685,7 +6685,7 @@ show();
             </div>
           )}
 
-          {/* â•â•â• ILLUSTRATE PHASE â•â•â• */}
+          {/* ═══ ILLUSTRATE PHASE ═══ */}
           {phase === 'illustrate' && (
             <div className={`space-y-4 ${animClass}`}>
               <div className="flex items-center justify-between mb-4">
@@ -6775,7 +6775,7 @@ show();
               {promptPreview && (
                 <div className="bg-purple-50 border-2 border-purple-300 rounded-2xl p-5 shadow-lg">
                   <div className="text-xs font-bold text-purple-600 uppercase tracking-widest mb-2 flex items-center gap-2">
-                    <Eye size={14} /> Preview Image Prompt â€” {layoutMode === 'comic' ? 'Panel' : 'Paragraph'} {promptPreview.idx + 1}
+                    <Eye size={14} /> Preview Image Prompt — {layoutMode === 'comic' ? 'Panel' : 'Paragraph'} {promptPreview.idx + 1}
                   </div>
                   <p className="text-[11px] text-slate-600 mb-2">Edit the prompt below before generating, or click Generate to proceed.</p>
                   <textarea
@@ -6914,13 +6914,13 @@ show();
             </div>
           )}
 
-          {/* â•â•â• NARRATE PHASE â•â•â• */}
+          {/* ═══ NARRATE PHASE ═══ */}
           {phase === 'narrate' && (
             <div className={`space-y-4 ${animClass}`}>
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-2xl font-black text-slate-800">{t("headings.narrate_story")}</h3>
-                  <p className="text-slate-600 text-sm mt-1">AI reads your story aloud â€” or record your own voice</p>
+                  <p className="text-slate-600 text-sm mt-1">AI reads your story aloud — or record your own voice</p>
                 </div>
                 <div className="flex gap-2 items-center">
                   {/* Voice selector */}
@@ -7017,7 +7017,7 @@ show();
                             }`}
                             aria-label={fluencyReadingId === p.id ? (t('a11y.stop_fluency_reading') || 'Stop fluency reading') : (t('a11y.read_aloud_fluency_practice') || 'Read aloud for fluency practice')}
                           >
-                            <BookOpen size={12} /> {fluencyReadingId === p.id && fluencyRecording ? 'Stop Reading' : 'ðŸ“– Read Aloud'}
+                            <BookOpen size={12} /> {fluencyReadingId === p.id && fluencyRecording ? 'Stop Reading' : '📖 Read Aloud'}
                           </button>
                         )}
                       </div>
@@ -7077,12 +7077,12 @@ show();
                             </div>
                           )}
                         </div>
-                        <div className="text-[11px] text-slate-500 italic mb-1">AI estimate from one read-aloud â€” practice feedback, not a normed ORF benchmark or a teacher-administered DIBELS score.</div>
+                        <div className="text-[11px] text-slate-500 italic mb-1">AI estimate from one read-aloud — practice feedback, not a normed ORF benchmark or a teacher-administered DIBELS score.</div>
                         {/* Word-by-word display */}
                         {fluencyResult.wordData && (
                           <div className="flex flex-wrap gap-1 mt-2">
                             {fluencyResult.wordData.map((w, wi) => (
-                              <span key={wi} title={w.said ? `Said: "${w.said}"${w.lowConfidence ? ' (âš  uncertain)' : ''}` : (w.lowConfidence ? 'âš  AI uncertain' : '')}
+                              <span key={wi} title={w.said ? `Said: "${w.said}"${w.lowConfidence ? ' (⚠ uncertain)' : ''}` : (w.lowConfidence ? '⚠ AI uncertain' : '')}
                                 className={`px-1 py-0.5 rounded text-xs font-medium ${w.lowConfidence ? 'ring-1 ring-amber-400 ' : ''}${
                                   w.status === 'correct' ? 'text-green-700 bg-green-100' :
                                   w.status === 'missed' ? 'text-white bg-red-500' :
@@ -7098,7 +7098,7 @@ show();
                           <div className="mt-2 text-[11px] text-slate-600 italic">{fluencyResult.confidence.note}</div>
                         )}
                         {fluencyResult.confidence?.accentDetected && (
-                          <div className="mt-1 text-[11px] text-teal-600 font-medium">ðŸŒ Accent patterns detected â€” scores adjusted conservatively to respect linguistic diversity.</div>
+                          <div className="mt-1 text-[11px] text-teal-600 font-medium">🌍 Accent patterns detected — scores adjusted conservatively to respect linguistic diversity.</div>
                         )}
                         {fluencyResult.feedback && (
                           <div className="mt-2 text-xs text-teal-800 bg-white rounded-lg p-2 border border-teal-200">{fluencyResult.feedback}</div>
@@ -7112,38 +7112,38 @@ show();
             </div>
           )}
 
-          {/* â•â•â• REVIEW PHASE â•â•â• */}
+          {/* ═══ REVIEW PHASE ═══ */}
           {phase === 'review' && (
             <div className={`space-y-6 ${animClass}`}>
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-2xl font-black text-slate-800">{t("headings.review_feedback")}</h3>
-                  <p className="text-slate-600 text-sm mt-1">Draft #{draftCount} â€” Get AI feedback on your story</p>
+                  <p className="text-slate-600 text-sm mt-1">Draft #{draftCount} — Get AI feedback on your story</p>
                 </div>
                 <div className="flex gap-2 flex-wrap">
                   {!gradingResult && (
                     <button type="button" onClick={checkSenses} disabled={sensesLoading || isProcessing} className="px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200" title={t("tooltips.check_sensory")}>
-                      ðŸŒˆ {sensesLoading ? 'Checking...' : 'Senses Check'}
+                      🌈 {sensesLoading ? 'Checking...' : 'Senses Check'}
                     </button>
                   )}
                   {!gradingResult && (
                     <button type="button" onClick={findMentorStory} disabled={mentorLoading || isProcessing} className="px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200" title={t("tooltips.find_mentor_story")}>
-                      ðŸŽ“ {mentorLoading ? 'Searching...' : (mentorMatch && !mentorMatch.error ? 'Find another' : 'Mentor Match')}
+                      🎓 {mentorLoading ? 'Searching...' : (mentorMatch && !mentorMatch.error ? 'Find another' : 'Mentor Match')}
                     </button>
                   )}
                   {!gradingResult && (
                     <button type="button" onClick={analyzeShowTell} disabled={showTellLoading || isProcessing} className="px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200" title={t("tooltips.find_telling_sentences")}>
-                      ðŸŽ­ {showTellLoading ? 'Analyzing...' : 'Show vs Tell'}
+                      🎭 {showTellLoading ? 'Analyzing...' : 'Show vs Tell'}
                     </button>
                   )}
                   {!gradingResult && (
                     <button type="button" onClick={analyzeCharacterArcs} disabled={arcLoading || isProcessing} className="px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200" title={t("tooltips.audit_character_arc")}>
-                      ðŸŽ¬ {arcLoading ? 'Analyzing...' : 'Character Arcs'}
+                      🎬 {arcLoading ? 'Analyzing...' : 'Character Arcs'}
                     </button>
                   )}
                   {!gradingResult && (
                     <button type="button" onClick={analyzeDialogue} disabled={dialogueLoading || isProcessing} className="px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200" title={t("tooltips.tune_dialogue")}>
-                      ðŸ’¬ {dialogueLoading ? 'Analyzing...' : 'Dialogue Tune-Up'}
+                      💬 {dialogueLoading ? 'Analyzing...' : 'Dialogue Tune-Up'}
                     </button>
                   )}
                   {!gradingResult && layoutMode === 'comic' && (
@@ -7153,7 +7153,7 @@ show();
                   )}
                   {!gradingResult && helpersAvailableForPlan() && (
                     <button type="button" onClick={synthesizeRevisionPlan} disabled={revisionPlanLoading || isProcessing} className="px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200" title={t("tooltips.synthesize_revision_plan")}>
-                      ðŸ—ºï¸ {revisionPlanLoading ? 'Synthesizing...' : 'Revision Plan'}
+                      🗺️ºï¸ {revisionPlanLoading ? 'Synthesizing...' : 'Revision Plan'}
                     </button>
                   )}
                   {!gradingResult && (
@@ -7169,7 +7169,7 @@ show();
                 </div>
               </div>
 
-              {/* â•â•â• Pre-grade Self-Assessment â•â•â• */}
+              {/* ═══ Pre-grade Self-Assessment ═══ */}
               {!gradingResult && !selfAssessmentSubmitted && (
                 <div className="bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5">
                   <div className="flex items-start justify-between gap-3 mb-3">
@@ -7221,17 +7221,17 @@ show();
                 </div>
               )}
 
-              {/* â•â•â• Senses Check Result â•â•â• */}
+              {/* ═══ Senses Check Result ═══ */}
               {sensesResult && (
                 <div className="bg-white border-2 border-rose-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-sm font-bold text-rose-700 uppercase tracking-wider flex items-center gap-2">ðŸŒˆ Senses & Imagery</h4>
+                    <h4 className="text-sm font-bold text-rose-700 uppercase tracking-wider flex items-center gap-2">🌈 Senses & Imagery</h4>
                     <button type="button" onClick={() => setSensesResult(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_senses_result")}>{t("ui_common.dismiss")}</button>
                   </div>
                   {(() => {
                     const counts = sensesResult.counts || {};
                     const max = Math.max(1, ...Object.values(counts).map(n => Number(n) || 0));
-                    const SENSE_LABELS = { sight: 'ðŸ‘ï¸ Sight', sound: 'ðŸ‘‚ Sound', smell: 'ðŸ‘ƒ Smell', taste: 'ðŸ‘… Taste', touch: 'âœ‹ Touch', motion: 'ðŸƒ Motion', emotion: 'ðŸ’— Emotion' };
+                    const SENSE_LABELS = { sight: '👁️ï¸ Sight', sound: '👂 Sound', smell: '👃 Smell', taste: '👅 Taste', touch: '✋ Touch', motion: '🏃ƒ Motion', emotion: '💗 Emotion' };
                     return (
                       <div className="space-y-1.5">
                         {Object.entries(SENSE_LABELS).map(([k, label]) => {
@@ -7262,11 +7262,11 @@ show();
                 </div>
               )}
 
-              {/* â•â•â• Mentor Match Result â•â•â• */}
+              {/* ═══ Mentor Match Result ═══ */}
               {mentorMatch && (
                 <div role="region" aria-label={t("a11y.mentor_story_analysis")} className="bg-white border-2 border-fuchsia-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-sm font-bold text-fuchsia-700 uppercase tracking-wider flex items-center gap-2">ðŸŽ“ Mentor Match</h4>
+                    <h4 className="text-sm font-bold text-fuchsia-700 uppercase tracking-wider flex items-center gap-2">🎓 Mentor Match</h4>
                     <button type="button" onClick={() => setMentorMatch(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_mentor_match")}>{t("ui_common.dismiss")}</button>
                   </div>
                   {mentorMatch.error && (
@@ -7278,24 +7278,24 @@ show();
                         <article className="bg-fuchsia-50/40 border border-fuchsia-100 rounded-xl p-4">
                           <div className="mb-2">
                             <h5 className="text-base font-black text-fuchsia-900">{mentorMatch.mentor.title || 'Untitled'}</h5>
-                            <p className="text-[11px] text-slate-600 italic mt-0.5">â€” {mentorMatch.mentor.author || 'Unknown'}{mentorMatch.mentor.year ? `, ${mentorMatch.mentor.year}` : ''} (public domain)</p>
+                            <p className="text-[11px] text-slate-600 italic mt-0.5">— {mentorMatch.mentor.author || 'Unknown'}{mentorMatch.mentor.year ? `, ${mentorMatch.mentor.year}` : ''} (public domain)</p>
                           </div>
                           {mentorMatch.mentor.uncertain
-                            ? <p className="text-xs text-slate-700 italic leading-relaxed">{mentorMatch.mentor.text || 'Excerpt withheld â€” open the source link to read in context.'}</p>
+                            ? <p className="text-xs text-slate-700 italic leading-relaxed">{mentorMatch.mentor.text || 'Excerpt withheld — open the source link to read in context.'}</p>
                             : <pre className="whitespace-pre-wrap font-serif text-sm text-slate-800 leading-relaxed bg-white border border-fuchsia-100 rounded-lg p-3">{mentorMatch.mentor.text || ''}</pre>
                           }
                           {mentorMatch.mentor.sourceUrl && (
                             <p className="text-[11px] mt-2">
                               <a href={mentorMatch.mentor.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-fuchsia-700 hover:text-fuchsia-900 font-bold underline" aria-label={`Open source for ${mentorMatch.mentor.title || 'mentor story'} in a new tab`}>
-                                Read the full story â†—
+                                Read the full story ↗
                               </a>
                             </p>
                           )}
                           {mentorMatch._grounding && (
                             <p className="text-[10px] text-slate-500 italic mt-2">
                               {mentorMatch._grounding.searchUsed
-                                ? `âœ“ Verified via web search (${mentorMatch._grounding.resultCount} candidates considered, keywords: "${mentorMatch._grounding.keywords}")`
-                                : 'âš  No web search available â€” recommendation comes from the model\'s memory, please double-check.'}
+                                ? `✓ Verified via web search (${mentorMatch._grounding.resultCount} candidates considered, keywords: "${mentorMatch._grounding.keywords}")`
+                                : '⚠ No web search available — recommendation comes from the model\'s memory, please double-check.'}
                             </p>
                           )}
                         </article>
@@ -7323,11 +7323,11 @@ show();
                 </div>
               )}
 
-              {/* â•â•â• Show vs Tell Result â•â•â• */}
+              {/* ═══ Show vs Tell Result ═══ */}
               {showTellResult && (
                 <div className="bg-white border-2 border-emerald-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-2">ðŸŽ­ Show vs Tell</h4>
+                    <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-2">🎭 Show vs Tell</h4>
                     <button type="button" onClick={() => setShowTellResult(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_show_vs_tell")}>{t("ui_common.dismiss")}</button>
                   </div>
                   {showTellResult.summary && (
@@ -7335,7 +7335,7 @@ show();
                   )}
                   {(showTellResult.tellings || []).length === 0 ? (
                     <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-900 leading-relaxed">
-                      âœ¨ Strong showing throughout â€” keep it up!
+                      ✨ Strong showing throughout — keep it up!
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -7355,11 +7355,11 @@ show();
                 </div>
               )}
 
-              {/* â•â•â• Character Arc Tracker Result â•â•â• */}
+              {/* ═══ Character Arc Tracker Result ═══ */}
               {arcReport && (
                 <div className="bg-white border-2 border-sky-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-sm font-bold text-sky-700 uppercase tracking-wider flex items-center gap-2">ðŸŽ¬ Character Arcs</h4>
+                    <h4 className="text-sm font-bold text-sky-700 uppercase tracking-wider flex items-center gap-2">🎬 Character Arcs</h4>
                     <button type="button" onClick={() => setArcReport(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_character_arcs")}>{t("ui_common.dismiss")}</button>
                   </div>
                   {arcReport.summary && (
@@ -7418,11 +7418,11 @@ show();
                 </div>
               )}
 
-              {/* â•â•â• Dialogue Tune-Up Result â•â•â• */}
+              {/* ═══ Dialogue Tune-Up Result ═══ */}
               {dialogueReport && (
                 <div className="bg-white border-2 border-orange-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-sm font-bold text-orange-700 uppercase tracking-wider flex items-center gap-2">ðŸ’¬ Dialogue Tune-Up</h4>
+                    <h4 className="text-sm font-bold text-orange-700 uppercase tracking-wider flex items-center gap-2">💬 Dialogue Tune-Up</h4>
                     <button type="button" onClick={() => setDialogueReport(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_dialogue_tuneup")}>{t("ui_common.dismiss")}</button>
                   </div>
                   {dialogueReport.summary && (
@@ -7476,14 +7476,14 @@ show();
                   ) : (
                     !dialogueReport.tagCounts || Object.keys(dialogueReport.tagCounts).length === 0 ? null : (
                       <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-900 leading-relaxed">
-                        âœ¨ Dialogue mechanics look strong â€” no specific suggestions.
+                        ✨ Dialogue mechanics look strong — no specific suggestions.
                       </div>
                     )
                   )}
                 </div>
               )}
 
-              {/* â•â•â• Revision Plan Result (synthesis capstone) â•â•â• */}
+              {/* ═══ Revision Plan Result (synthesis capstone) ═══ */}
               {comicFlowReport && layoutMode === 'comic' && (
                 <div className="bg-white border-2 border-blue-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
@@ -7573,12 +7573,12 @@ show();
               {revisionPlan && (
                 <div className="bg-gradient-to-br from-purple-50 to-violet-50 border-2 border-purple-300 rounded-2xl p-5 shadow-md">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-base font-black text-purple-800 flex items-center gap-2">ðŸ—ºï¸ Your Revision Plan</h4>
+                    <h4 className="text-base font-black text-purple-800 flex items-center gap-2">🗺️ºï¸ Your Revision Plan</h4>
                     <button type="button" onClick={() => setRevisionPlan(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_revision_plan")}>{t("ui_common.dismiss")}</button>
                   </div>
                   {revisionPlan.encouragement && (
                     <div className="bg-white border border-green-200 rounded-xl p-3 mb-4 text-xs text-green-900 leading-relaxed">
-                      âœ¨ {revisionPlan.encouragement}
+                      ✨ {revisionPlan.encouragement}
                     </div>
                   )}
                   <ol className="space-y-3" aria-label={t("a11y.prioritized_revision_tasks")}>
@@ -7638,7 +7638,7 @@ show();
                           </span>
                           {readingLevel && revisionSnapshot.grade && (
                             <span className="text-xs font-bold text-indigo-600">
-                              Grade level: {revisionSnapshot.grade} â†’ {readingLevel.grade}
+                              Grade level: {revisionSnapshot.grade} → {readingLevel.grade}
                             </span>
                           )}
                         </>
@@ -7670,30 +7670,30 @@ show();
                   </div>
                   <div className="text-center p-3 bg-slate-50 rounded-xl">
                     <div className={`text-2xl font-black ${readingLevel ? 'text-indigo-600' : 'text-slate-300'}`}>
-                      {readingLevel ? `${readingLevel.grade}` : 'â€”'}
+                      {readingLevel ? `${readingLevel.grade}` : '—'}
                     </div>
                     <div className="text-[11px] text-slate-600 font-bold">Reading Grade</div>
                   </div>
                 </div>
                 {readingLevel && (
                   <div className="mt-3 text-xs text-slate-600">
-                    Avg {readingLevel.avgWordsPerSentence} words/sentence Â· Flesch-Kincaid Grade Level: {readingLevel.grade}
+                    Avg {readingLevel.avgWordsPerSentence} words/sentence · Flesch-Kincaid Grade Level: {readingLevel.grade}
                     {(() => {
                       const target = gradeLevelToNumber(gradeLevel);
-                      if (target == null) return null; // unknown grade label â€” don't show a misleading verdict
-                      return <span>{readingLevel.grade <= target + 1 ? ' Â· âœ“ On target' : ' Â· âš  May be above target level'}</span>;
+                      if (target == null) return null; // unknown grade label — don't show a misleading verdict
+                      return <span>{readingLevel.grade <= target + 1 ? ' · ✓ On target' : ' · ⚠ May be above target level'}</span>;
                     })()}
                   </div>
                 )}
 
-                {/* Story Arc â€” emotional fortune curve (Vonnegut shapes) */}
+                {/* Story Arc — emotional fortune curve (Vonnegut shapes) */}
                 <div className="mt-4 pt-4 border-t border-slate-100">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">Story Arc <span className="normal-case tracking-normal text-slate-500 font-medium">Â· fortune over time</span></div>
+                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">Story Arc <span className="normal-case tracking-normal text-slate-500 font-medium">· fortune over time</span></div>
                     {onCallGemini && (
                       <button type="button" data-sf-focusable onClick={suggestValenceArc} disabled={valenceLoading}
                         className="text-[11px] font-bold text-violet-600 hover:text-violet-800 disabled:opacity-50 inline-flex items-center gap-1">
-                        {valenceLoading ? <span className="animate-spin motion-reduce:animate-none">â³</span> : <Sparkles size={12} />} {valenceLoading ? 'Readingâ€¦' : 'Suggest arc'}
+                        {valenceLoading ? <span className="animate-spin motion-reduce:animate-none">⏳</span> : <Sparkles size={12} />} {valenceLoading ? 'Reading…' : 'Suggest arc'}
                       </button>
                     )}
                   </div>
@@ -7711,8 +7711,8 @@ show();
                       <>
                         <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label="Emotional fortune of the story across paragraphs" className="overflow-visible">
                           <line x1={pad} y1={py(0)} x2={W - pad} y2={py(0)} stroke="#e2e8f0" strokeWidth="1" strokeDasharray="3 3" />
-                          <text x={pad} y={py(5) + 2} fontSize="7" fill="#94a3b8">ðŸ˜€ good</text>
-                          <text x={pad} y={py(-5)} fontSize="7" fill="#94a3b8">ðŸ˜Ÿ bad</text>
+                          <text x={pad} y={py(5) + 2} fontSize="7" fill="#94a3b8">😀 good</text>
+                          <text x={pad} y={py(-5)} fontSize="7" fill="#94a3b8">😟 bad</text>
                           <polyline fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={pts} />
                           {vals.map((v, i) => <circle key={i} cx={px(i)} cy={py(v)} r="3" fill="#7c3aed" />)}
                         </svg>
@@ -7734,7 +7734,7 @@ show();
                         </div>
                         {anySet && match ? (
                           <div className="mt-2 text-[11px] text-violet-700 bg-violet-50 border border-violet-200 rounded-lg px-2 py-1.5">
-                            {match.weak ? 'Closest shape (loosely): ' : 'Your story looks like a '}<span className="font-black">{match.emoji} {match.label}</span>{match.weak ? '' : '!'} <span className="text-slate-500 font-medium">â€” a craft lens, not a rule.</span>
+                            {match.weak ? 'Closest shape (loosely): ' : 'Your story looks like a '}<span className="font-black">{match.emoji} {match.label}</span>{match.weak ? '' : '!'} <span className="text-slate-500 font-medium">— a craft lens, not a rule.</span>
                           </div>
                         ) : (
                           <div className="mt-2 text-[11px] text-slate-500 italic">Drag a point or tap "Suggest arc" to map your story's emotional ups &amp; downs.</div>
@@ -7754,13 +7754,13 @@ show();
                       <div key={word} className={`px-3 py-1.5 rounded-full text-xs font-bold border-2 ${
                         count >= 4 ? 'bg-amber-100 border-amber-300 text-amber-800' : 'bg-slate-50 border-slate-200 text-slate-600'
                       }`} title={`"${word}" used ${count} times`}>
-                        {word} <span className="text-[11px] opacity-60">Ã—{count}</span>
+                        {word} <span className="text-[11px] opacity-60">×{count}</span>
                       </div>
                     ))}
                   </div>
                   {overusedWords.length > 0 && (
                     <p className="mt-2 text-[11px] text-amber-600 font-medium">
-                      Tip: Try varying your word choice â€” <strong>{overusedWords.join(', ')}</strong> {overusedWords.length === 1 ? 'appears' : 'appear'} 4+ times. Use synonyms for variety!
+                      Tip: Try varying your word choice — <strong>{overusedWords.join(', ')}</strong> {overusedWords.length === 1 ? 'appears' : 'appear'} 4+ times. Use synonyms for variety!
                     </p>
                   )}
                 </div>
@@ -7784,10 +7784,10 @@ show();
                 <div className="space-y-4">
                   {/* Score Badge */}
                   <div className="text-center">
-                    <div className="inline-block bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-2xl text-2xl font-black shadow-lg" title="AI-generated estimate â€” draft feedback, not a final grade">
+                    <div className="inline-block bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-2xl text-2xl font-black shadow-lg" title="AI-generated estimate — draft feedback, not a final grade">
                       {gradingResult.totalScore}
                     </div>
-                    <div className="text-[11px] text-slate-500 mt-1.5 font-medium">AI estimate Â· draft feedback, not a final grade</div>
+                    <div className="text-[11px] text-slate-500 mt-1.5 font-medium">AI estimate · draft feedback, not a final grade</div>
                   </div>
 
                   {/* Glow / Grow */}
@@ -7836,7 +7836,7 @@ show();
                               {showCompare ? (
                                 <div className="flex items-center gap-2 shrink-0">
                                   <div className="bg-violet-100 text-violet-800 px-2 py-0.5 rounded-full text-xs font-bold" title={t("tooltips.your_self_rating")}>{selfScore}/5</div>
-                                  <span className="text-slate-500 text-xs">â†’</span>
+                                  <span className="text-slate-500 text-xs">→</span>
                                   <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold" title={t("tooltips.ai_score")}>{s.score}</div>
                                   {Math.abs(delta) >= 1 && (
                                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${delta > 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`} title={delta > 0 ? 'AI rated higher than you did' : 'AI rated lower than you did'}>
@@ -7867,7 +7867,7 @@ show();
                             vs.status === 'partial' ? 'bg-amber-100 border-amber-300 text-amber-800' :
                             'bg-red-100 border-red-300 text-red-800'
                           }`} title={vs.comment}>
-                            {vs.status === 'correct' ? 'âœ“' : vs.status === 'partial' ? '~' : 'âœ—'} {vs.term}
+                            {vs.status === 'correct' ? '✓' : vs.status === 'partial' ? '~' : '✗'} {vs.term}
                           </div>
                         ))}
                       </div>
@@ -7878,7 +7878,7 @@ show();
             </div>
           )}
 
-          {/* â•â•â• EXPORT PHASE â•â•â• */}
+          {/* ═══ EXPORT PHASE ═══ */}
           {phase === 'export' && (
             <div className={`space-y-6 ${animClass}`}>
               <div className="text-center mb-8">
@@ -7924,7 +7924,7 @@ show();
                       <div className="text-[11px] font-black text-blue-700 uppercase tracking-widest flex items-center gap-2">
                         <BookOpen size={14} /> Page Composer
                       </div>
-                      <div className="text-xs text-slate-500 mt-1">{comicPageGroups.length} page{comicPageGroups.length === 1 ? '' : 's'} Â· {paragraphs.length} panel{paragraphs.length === 1 ? '' : 's'}</div>
+                      <div className="text-xs text-slate-500 mt-1">{comicPageGroups.length} page{comicPageGroups.length === 1 ? '' : 's'} · {paragraphs.length} panel{paragraphs.length === 1 ? '' : 's'}</div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Panels/page</span>
@@ -8033,7 +8033,7 @@ show();
                         <div className="text-[11px] font-black text-emerald-700 uppercase tracking-widest flex items-center gap-2">
                           <CheckCircle2 size={14} /> Print Safety
                         </div>
-                        <div className="text-xs text-slate-500 mt-1">{COMIC_PRINT_FORMATS[printSafety.format]?.trim || 'Screen'} Â· {COMIC_PRINT_FORMATS[printSafety.format]?.safe || 'Safe area'}</div>
+                        <div className="text-xs text-slate-500 mt-1">{COMIC_PRINT_FORMATS[printSafety.format]?.trim || 'Screen'} · {COMIC_PRINT_FORMATS[printSafety.format]?.safe || 'Safe area'}</div>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         <button
@@ -8067,7 +8067,7 @@ show();
                               onClick={() => updateComicPrintSafety('format', key)}
                               aria-pressed={printSafety.format === key}
                               className={`px-3 py-2 rounded-lg text-xs font-bold border text-left transition-all ${printSafety.format === key ? 'bg-emerald-700 border-emerald-700 text-white shadow-sm' : 'bg-white border-emerald-100 text-slate-700 hover:border-emerald-300'}`}
-                              title={`${item.trim} Â· ${item.safe}`}
+                              title={`${item.trim} · ${item.safe}`}
                             >
                               {item.label}
                             </button>
@@ -8151,7 +8151,7 @@ show();
                                 <Plus size={11} /> Duplicate
                               </button>
                               <div className="sf-comic-status-pill text-[11px] font-bold text-fuchsia-700 bg-white border border-fuchsia-100 px-2 py-1 rounded-full">
-                                {getComicPanelFrameLabel(frame)} Â· {getComicPanelSpanLabel(layoutFrame, comicPageLayout, idx)}
+                                {getComicPanelFrameLabel(frame)} · {getComicPanelSpanLabel(layoutFrame, comicPageLayout, idx)}
                               </div>
                             </div>
                           </div>
@@ -8253,7 +8253,7 @@ show();
                   {coverArt && <img src={coverArt} alt={t("alts.book_cover")} className="max-w-[200px] mx-auto rounded-xl shadow-lg mb-4 border-2 border-amber-200" />}
                   <h3 className="text-3xl font-black text-amber-900">{storyTitle || storyPrompt || sourceTopic || 'My Story'}</h3>
                   {authorName && <p className="text-amber-800 text-sm mt-1 font-bold">By {authorName}</p>}
-                  <p className="text-amber-700 text-sm mt-1 italic">{GENRE_TEMPLATES[genre]?.label || 'Creative Writing'} Â· {vocabTerms.length} vocabulary terms</p>
+                  <p className="text-amber-700 text-sm mt-1 italic">{GENRE_TEMPLATES[genre]?.label || 'Creative Writing'} · {vocabTerms.length} vocabulary terms</p>
                 </div>
 
                 {layoutMode === 'comic' ? (
@@ -8306,7 +8306,7 @@ show();
                   </div>
                   </>
                 ) : (
-                  /* â”€â”€ Prose Layout â”€â”€ */
+                  /* ── Prose Layout ── */
                   <div className="p-6 space-y-6">
                     {paragraphs.map((p, idx) => (
                       <div key={p.id} className="flex flex-col items-center gap-4">
@@ -8314,7 +8314,7 @@ show();
                           <img src={illustrations[p.id].imageUrl} alt={`Scene ${idx + 1}`} className="max-w-md rounded-xl shadow-md" />
                         )}
                         <p className="text-sm text-slate-800 leading-relaxed max-w-lg text-center" style={{ textIndent: '2em', textAlign: 'left' }}>{p.text}</p>
-                        {idx < paragraphs.length - 1 && <div className="text-amber-400 text-lg">â€”</div>}
+                        {idx < paragraphs.length - 1 && <div className="text-amber-400 text-lg">—</div>}
                       </div>
                     ))}
                   </div>
@@ -8385,9 +8385,9 @@ show();
                   </button>
                 )}
               </div>
-              <p className="text-slate-500 text-xs text-center">Storybook & slideshow open in new tabs â€” print or save as PDF</p>
+              <p className="text-slate-500 text-xs text-center">Storybook & slideshow open in new tabs — print or save as PDF</p>
 
-              {/* â”€â”€ Class Portfolio Gallery (teacher view) â”€â”€ */}
+              {/* ── Class Portfolio Gallery (teacher view) ── */}
               {liveSession && !isCanvasEnv && (
                 <div className="bg-white rounded-2xl border-2 border-violet-200 p-5 shadow-sm">
                   <h4 className="text-sm font-bold text-violet-700 uppercase tracking-wider mb-2 flex items-center gap-2">
@@ -8404,12 +8404,12 @@ show();
                 </div>
               )}
 
-              {/* â”€â”€ Pass the Torch â€” Collaborative JSON Save/Load â”€â”€ */}
+              {/* ── Pass the Torch — Collaborative JSON Save/Load ── */}
               <div className="bg-white rounded-2xl border-2 border-cyan-200 p-5 shadow-sm">
                 <h4 className="text-sm font-bold text-cyan-700 uppercase tracking-wider mb-2 flex items-center gap-2">
                   <RefreshCw size={16} /> Pass the Torch
                 </h4>
-                <p className="text-xs text-slate-600 mb-3">Export your draft as a file and share it with a classmate â€” they can continue where you left off!</p>
+                <p className="text-xs text-slate-600 mb-3">Export your draft as a file and share it with a classmate — they can continue where you left off!</p>
                 <div className="flex gap-3">
                   <button type="button" onClick={exportDraftJSON} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors flex items-center gap-2">
                     <Download size={14} /> Export Draft (.json)
@@ -8424,7 +8424,7 @@ show();
         </div>
       </div>
 
-      {/* â”€â”€ Footer Navigation â”€â”€ */}
+      {/* ── Footer Navigation ── */}
       <div className="bg-white border-t border-slate-200 p-4 flex justify-between items-center shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         <button type="button"
           onClick={goBack}
@@ -8434,7 +8434,7 @@ show();
           <ArrowLeft size={16} /> Back
         </button>
         <div className="text-xs text-slate-500 font-medium">
-          {PHASE_LABELS[phaseIdx]} Â· Step {phaseIdx + 1} of {PHASES.length}
+          {PHASE_LABELS[phaseIdx]} · Step {phaseIdx + 1} of {PHASES.length}
         </div>
         {phaseIdx < PHASES.length - 1 ? (
           <button type="button"

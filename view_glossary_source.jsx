@@ -727,10 +727,10 @@
     className="min-h-11 min-w-0 flex flex-1 items-center justify-between gap-2 rounded-md px-2 text-left hover:bg-amber-100/50 transition-colors  focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2"
   >
     <span className="flex min-w-0 flex-wrap items-center gap-2">
-      <span className="text-lg" aria-hidden="true">ðŸ“Š</span>
+      <span className="text-lg" aria-hidden="true">📊</span>
       <span id="glossary-health-check-title" className="font-bold text-amber-900 text-sm">{t('glossary_health.composite_accuracy') || 'Glossary Health Check'}</span>
       {isRunningHealthCheck && <RefreshCw size={14} className="animate-spin motion-reduce:animate-none text-amber-600" aria-hidden="true" />}
-      {glossaryHealthCheck && !glossaryHealthCheck.error && !isRunningHealthCheck && <span className="text-xs text-amber-700 bg-amber-200/60 px-2 py-0.5 rounded-full font-medium">{glossaryHealthCheck.overallScore ? `${glossaryHealthCheck.overallScore}/5` : ''} â€” {glossaryHealthCheck.definitionGradeLevel || 'Analyzed'}</span>}
+      {glossaryHealthCheck && !glossaryHealthCheck.error && !isRunningHealthCheck && <span className="text-xs text-amber-700 bg-amber-200/60 px-2 py-0.5 rounded-full font-medium">{glossaryHealthCheck.overallScore ? `${glossaryHealthCheck.overallScore}/5` : ''} — {glossaryHealthCheck.definitionGradeLevel || 'Analyzed'}</span>}
     </span>
     <ChevronDown size={16} aria-hidden="true" className={`shrink-0 text-amber-600 transition-transform motion-reduce:transition-none ${showHealthCheckPanel ? 'rotate-180' : ''}`} />
   </button>

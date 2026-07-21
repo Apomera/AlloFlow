@@ -112,7 +112,7 @@ ${studentWork ? 'STUDENT WORK SO FAR: ' + studentWork : 'Student has not started
 ${prevHints ? 'PREVIOUS HINTS GIVEN:\n' + prevHints : ''}
 Give HINT #${hintLevel} of 3 (progressive difficulty):
 - Hint 1: A gentle nudge about what strategy or concept to use. Do NOT reveal numbers or the answer.
-- Hint 2: More specific guidance â€” point to the key step or operation needed. Still don't give the answer.
+- Hint 2: More specific guidance — point to the key step or operation needed. Still don't give the answer.
 - Hint 3: Walk through the first step explicitly and set up the equation. Stop just before the final answer.
 Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it under 2 sentences. Be encouraging.`;
         const hintText = await callGemini(prompt, true);
@@ -129,7 +129,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     } catch (err) {
         warnLog("Hint generation failed:", err);
         setMathHintData(prev => ({ ...prev, [hintKey]: { ...existing, loading: false } }));
-        addToast('Could not generate hint â€” try again', 'error');
+        addToast('Could not generate hint — try again', 'error');
     }
 };
 
