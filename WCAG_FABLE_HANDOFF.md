@@ -52,6 +52,9 @@ These sections were independently committed:
 | Free-focusById crash class, six components | `784de7477` |
 | Class Roster | `af9d66ecc` |
 | Mood Tracker (+ UTC-date fix) | `d7fc7b751` |
+| UTC-date class (brain dump, flashcards, evening-fragile tests) | `cb9e7eb54` |
+| Quote Collector | `df9a0a876` |
+| Worry Time | `b746c083a` |
 
 The most recently completed section, Personal Reference Sheet Builder, passed:
 
@@ -103,9 +106,15 @@ Four more sections completed and committed, all with the standard gate (focused 
 - **Mood Tracker** `d7fc7b751`: standard wave PLUS a real data-honesty bug — the 14-day chart derived dates via `toISOString().slice(0,10)` (UTC) while entries save with local `todayISO()`, so evening check-ins (US timezones) disappeared from the chart. Now built from local date parts; regression-tested. Removed silent 20-entry cap; `ratingOf` clamps malformed mood/energy; added optional/non-notification/no-target framing plus a gentle talk-to-someone nudge. Mirror SHA-256 after commit: `A617F60176899558D9DAE26B919188F4F69FDE7F1A4ED1EA44974E31F87E634E`. Full suite 2,212/2,212.
 - **NEW BUG CLASS FLAGGED — UTC date derivation.** `grep "toISOString().slice(0, 10)"` still hits 5 sites (~lines 5355, 5975, 6419, 6910, 16994 — Focus Timer/Study Planner/Exam Prep/Habit Tracker regions and one later component). Each compares or buckets against local `todayISO()` dates, so the same evening-shift bug likely applies. Fix each as its section is audited (convert to local `getFullYear/getMonth/getDate` parts like todayISO), or as a dedicated class commit.
 
+## Session notes (2026-07-20 evening, Fable — fifth continuation)
+
+- **UTC-date class RESOLVED** `cb9e7eb54`: of the 5 flagged `toISOString().slice(0,10)` sites, 2 were real (brain dump relative dates; flashcard spaced-repetition `nextDue` — evening reviews scheduled a day late) — both now use the new shared `localISODate()` helper (`todayISO` delegates to it). The other 3 are verified-safe UTC round-trips on local ISO strings (isoFromDayNumber pairs, routine streak cursor) and a guard test in `learning_lab_toolkit_helpers_foundation_a11y` pins the count at exactly 3. ALSO: two TEST fixtures computed "today" in UTC (`challenge_board_render` failed every evening after ~8pm ET; `exam_prep_render` was noon-anchored/fragile) — both fixed to local date parts. **The suite now passes in the evening; before this it reliably failed 4 hours per day.**
+- **Quote Collector** `df9a0a876`: standard wave (rawQuotes/isRecord/textValue guards — a non-array `quotes` value or a null entry crashed render/search; local-save guidance; 10px→12px; catalog stat guard).
+- **Worry Time** `b746c083a`: standard wave; null entries crashed the open/resolved filters; removed silent 10-cap on processed worries; guarded the catalog "open worries" stat (crashed on null entries too); added "saving does not send them to or notify anyone." Full suite 2,228/2,228. Mirror SHA-256: `C06207A435FD3222490E94F64EDD8485012420308D68AC9F205B32348F5E8A74`.
+
 ## Next section
 
-Continue with the next unaudited Learning Lab component after `PersonalVocabBuilder` (in file order: `PersonalMemoryPalace` region / whatever follows — check for an existing `learning_lab_*_a11y` test to see if it had a prior structural pass), then the remaining app areas, one independently tested and committed section at a time. Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
+Remaining unaudited (crash-fixed but not fully audited): **Energy Tracker, Career Explorer, Future Self** — then Memory Palace, Identity Map, and the rest of the no-render-test list (Question Log, Success Log, Teacher Email, Body Check, Achievement Wall, Affirmations, Role Models, Self Assessment, Learning Contract, Emotion Regulator...). One independently tested and committed section at a time. Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
 
 ## Completed section reference: Optional Support Request Notes
 
