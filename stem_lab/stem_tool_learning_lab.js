@@ -13255,8 +13255,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // locations, and practice walking through the route.
   function PersonalMemoryPalace(props) {
     if (!R) return null;
-    var data = props.data || { palaces: [] };
+    var data = props.data && typeof props.data === 'object' ? props.data : { palaces: [] };
     var setData = props.setData;
+    var isRecord = function(value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
+    var textValue = function(value) { return typeof value === 'string' ? value : (typeof value === 'number' ? String(value) : ''); };
+    var lociOf = function(palace) { return (palace && Array.isArray(palace.loci) ? palace.loci : []).filter(isRecord); };
+    var rawPalaces = Array.isArray(data.palaces) ? data.palaces : [];
     var vs = R.useState('list'); var view = vs[0]; var setView = vs[1];
     var as = R.useState(null); var activeId = as[0]; var setActiveId = as[1];
     var ns = R.useState({ name: '', description: '' });
@@ -13267,10 +13271,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var les = R.useState({ location: '', item: '' }); var locErrors = les[0]; var setLocErrors = les[1];
     var ts = R.useState(false); var practicing = ts[0]; var setPracticing = ts[1];
     var ws = R.useState(0); var walkIdx = ws[0]; var setWalkIdx = ws[1];
+    var pfp = R.useState(''); var pendingFocusId = pfp[0]; var setPendingFocusId = pfp[1];
 
-    function focusById(id) {
-      setTimeout(function() { var target = document.getElementById(id); if (target) target.focus(); }, 0);
-    }
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, view, practicing, walkIdx, data]);
+
+    function focusById(id) { setPendingFocusId(id); }
     function createPalace() {
       var name = newP.name.trim();
       if (!name) {
@@ -13279,7 +13290,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return;
       }
       var palace = { id: tkId(), name: name, description: newP.description.trim(), loci: [], createdAt: todayISO() };
-      setData(Object.assign({}, data, { palaces: [palace].concat(data.palaces || []) }));
+      setData(Object.assign({}, data, { palaces: [palace].concat(rawPalaces) }));
       setActiveId(palace.id);
       setNewP({ name: '', description: '' });
       setPalaceError('');
@@ -13287,18 +13298,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       llAnnounce('Memory palace created: ' + palace.name + '.');
       focusById('learning-lab-palace-editor-heading');
     }
-    function getPalace() { return (data.palaces || []).filter(function(palace) { return palace.id === activeId; })[0]; }
+    function getPalace() { return rawPalaces.filter(function(palace) { return isRecord(palace) && palace.id === activeId; })[0]; }
     function updatePalace(patch) {
       setData(Object.assign({}, data, {
-        palaces: (data.palaces || []).map(function(palace) { return palace.id === activeId ? Object.assign({}, palace, patch) : palace; })
+        palaces: rawPalaces.map(function(palace) { return isRecord(palace) && palace.id === activeId ? Object.assign({}, palace, patch) : palace; })
       }));
     }
     async function removePalace(id) {
-      var palace = (data.palaces || []).filter(function(item) { return item.id === id; })[0];
-      if (!(await askLearningLabConfirmation('This permanently removes' + (palace ? ' "' + palace.name + '" and every stop' : ' this memory palace') + '.', {
+      var palace = rawPalaces.filter(function(item) { return isRecord(item) && item.id === id; })[0];
+      var palaceName = palace ? textValue(palace.name).trim() : '';
+      if (!(await askLearningLabConfirmation('This permanently removes' + (palaceName ? ' "' + palaceName + '" and every stop' : ' this memory palace and every stop') + '.', {
         title: 'Delete this memory palace?', confirmText: 'Delete palace'
       }))) return;
-      setData(Object.assign({}, data, { palaces: (data.palaces || []).filter(function(item) { return item.id !== id; }) }));
+      setData(Object.assign({}, data, { palaces: rawPalaces.filter(function(item) { return !(isRecord(item) && item.id === id); }) }));
       llAnnounce('Memory palace deleted.');
       focusById('learning-lab-palace-new-name');
     }
@@ -13315,7 +13327,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var palace = getPalace();
       if (!palace) return;
       var locus = { id: tkId(), location: locForm.location.trim(), item: locForm.item.trim(), vivid: locForm.vivid.trim() };
-      updatePalace({ loci: (palace.loci || []).concat([locus]) });
+      updatePalace({ loci: lociOf(palace).concat([locus]) });
       setLocForm({ location: '', item: '', vivid: '' });
       setLocErrors({ location: '', item: '' });
       llAnnounce('Memory palace stop added: ' + locus.location + '.');
@@ -13324,11 +13336,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     async function removeLocus(id) {
       var palace = getPalace();
       if (!palace) return;
-      var locus = (palace.loci || []).filter(function(item) { return item.id === id; })[0];
-      if (!(await askLearningLabConfirmation('This permanently removes the stop' + (locus ? ' "' + locus.location + '" and its memory item' : '') + '.', {
+      var locus = lociOf(palace).filter(function(item) { return item.id === id; })[0];
+      var locusLocation = locus ? textValue(locus.location).trim() : '';
+      if (!(await askLearningLabConfirmation('This permanently removes the stop' + (locusLocation ? ' "' + locusLocation + '" and its memory item' : '') + '.', {
         title: 'Delete this palace stop?', confirmText: 'Delete stop'
       }))) return;
-      updatePalace({ loci: (palace.loci || []).filter(function(item) { return item.id !== id; }) });
+      updatePalace({ loci: lociOf(palace).filter(function(item) { return item.id !== id; }) });
       llAnnounce('Memory palace stop deleted.');
       focusById('learning-lab-palace-location');
     }
@@ -13346,16 +13359,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       focusById('learning-lab-palace-open-' + previousId);
     }
     function startWalk(palace) {
-      if (!(palace.loci || []).length) return;
+      var stops = lociOf(palace);
+      if (!stops.length) return;
       setPracticing(true);
       setWalkIdx(0);
-      llAnnounce('Memory walk started. Stop 1 of ' + palace.loci.length + '.');
+      llAnnounce('Memory walk started. Stop 1 of ' + stops.length + '.');
       focusById('learning-lab-palace-walk-heading');
     }
     function nextStop(palace) {
-      var nextIndex = Math.min(palace.loci.length - 1, walkIdx + 1);
+      var stops = lociOf(palace);
+      var nextIndex = Math.min(stops.length - 1, walkIdx + 1);
       setWalkIdx(nextIndex);
-      llAnnounce('Stop ' + (nextIndex + 1) + ' of ' + palace.loci.length + '.');
+      llAnnounce('Stop ' + (nextIndex + 1) + ' of ' + stops.length + '.');
       focusById('learning-lab-palace-walk-heading');
     }
     function endWalk(palace, completed) {
@@ -13366,32 +13381,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     }
 
     var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 7, border: '1px solid rgba(168,85,247,0.50)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
-    var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#d8b4fe', textTransform: 'uppercase', marginBottom: 4 };
+    var labelStyle = { display: 'block', fontSize: 12, fontWeight: 800, color: '#d8b4fe', textTransform: 'uppercase', marginBottom: 4 };
     var hiddenLabelStyle = { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 };
 
     if (view === 'edit') {
       var activePalace = getPalace();
       if (!activePalace) return hh('div', { role: 'status', style: { padding: 20, color: 'var(--allo-stem-text, #e2e8f0)' } }, 'This memory palace is not available. Return to the palace list and choose another.');
-      var loci = activePalace.loci || [];
+      var activePalaceName = textValue(activePalace.name).trim() || 'Untitled palace';
+      var loci = lociOf(activePalace);
       if (practicing && loci.length > 0) {
         var safeIndex = Math.max(0, Math.min(loci.length - 1, walkIdx));
         var current = loci[safeIndex];
         var progress = Math.round((safeIndex + 1) / loci.length * 100);
         return hh('div', { style: { padding: 14 } },
-          tkSectionHeader('🚶', 'Walking through ' + activePalace.name, 'Stop ' + (safeIndex + 1) + ' of ' + loci.length, '#10b981'),
+          tkSectionHeader('🚶', 'Walking through ' + activePalaceName, 'Stop ' + (safeIndex + 1) + ' of ' + loci.length, '#10b981'),
           hh('section', { 'aria-labelledby': 'learning-lab-palace-walk-heading' },
-            hh('h2', { id: 'learning-lab-palace-walk-heading', tabIndex: -1, style: hiddenLabelStyle }, 'Stop ' + (safeIndex + 1) + ' of ' + loci.length + ': ' + current.location),
+            hh('h2', { id: 'learning-lab-palace-walk-heading', tabIndex: -1, style: hiddenLabelStyle }, 'Stop ' + (safeIndex + 1) + ' of ' + loci.length + ': ' + textValue(current.location)),
             hh('div', { role: 'progressbar', 'aria-label': 'Memory walk progress', 'aria-valuemin': 1, 'aria-valuemax': loci.length, 'aria-valuenow': safeIndex + 1, 'aria-valuetext': 'Stop ' + (safeIndex + 1) + ' of ' + loci.length, style: { height: 10, background: 'rgba(15,23,42,0.7)', borderRadius: 5, overflow: 'hidden', marginBottom: 10 } },
               hh('div', { 'aria-hidden': 'true', style: { width: progress + '%', height: '100%', background: '#10b981' } })
             ),
             hh('article', { 'aria-label': 'Memory stop ' + (safeIndex + 1), style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(16,185,129,0.20), rgba(15,23,42,0.7))', border: '2px solid #10b981', marginBottom: 14 } },
               hh('h3', { style: { fontSize: 11, color: '#6ee7b7', fontWeight: 800, textTransform: 'uppercase', margin: '0 0 8px' } }, 'Location'),
-              hh('p', { style: { fontSize: 18, color: 'var(--allo-stem-text, #e2e8f0)', margin: '0 0 14px', lineHeight: 1.5 } }, current.location),
+              hh('p', { style: { fontSize: 18, color: 'var(--allo-stem-text, #e2e8f0)', margin: '0 0 14px', lineHeight: 1.5 } }, textValue(current.location)),
               hh('h3', { style: { fontSize: 11, color: '#6ee7b7', fontWeight: 800, textTransform: 'uppercase', margin: '0 0 8px' } }, 'Item to remember'),
-              hh('p', { style: { fontSize: 16, color: 'var(--allo-stem-text, #cbd5e1)', margin: '0 0 12px', lineHeight: 1.5, fontStyle: 'italic' } }, current.item),
-              current.vivid ? hh('div', null,
+              hh('p', { style: { fontSize: 16, color: 'var(--allo-stem-text, #cbd5e1)', margin: '0 0 12px', lineHeight: 1.5, fontStyle: 'italic' } }, textValue(current.item)),
+              textValue(current.vivid).trim() ? hh('div', null,
                 hh('h3', { style: { fontSize: 11, color: '#6ee7b7', fontWeight: 800, textTransform: 'uppercase', margin: '0 0 6px' } }, 'Vivid image'),
-                hh('p', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, margin: 0 } }, current.vivid)
+                hh('p', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, margin: 0 } }, textValue(current.vivid).trim())
               ) : null
             )
           ),
@@ -13404,8 +13420,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         );
       }
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('🏛', activePalace.name, (activePalace.description ? activePalace.description + ' · ' : '') + loci.length + (loci.length === 1 ? ' stop' : ' stops'), '#a855f7'),
-        hh('h2', { id: 'learning-lab-palace-editor-heading', tabIndex: -1, style: hiddenLabelStyle }, 'Editing memory palace: ' + activePalace.name),
+        tkSectionHeader('🏛', activePalaceName, (textValue(activePalace.description).trim() ? textValue(activePalace.description).trim() + ' · ' : '') + loci.length + (loci.length === 1 ? ' stop' : ' stops'), '#a855f7'),
+        hh('h2', { id: 'learning-lab-palace-editor-heading', tabIndex: -1, style: hiddenLabelStyle }, 'Editing memory palace: ' + activePalaceName),
         hh('div', { role: 'group', 'aria-label': 'Memory palace actions', style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
           hh('button', { type: 'button', onClick: backToPalaces, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, '← All palaces'),
           loci.length > 0 ? hh('button', { id: 'learning-lab-palace-start-walk', type: 'button', onClick: function() { startWalk(activePalace); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #a7f3d0', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Start memory walk') : null
@@ -13427,14 +13443,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         loci.length === 0 ? tkEmptyState('🏛', 'No stops yet. Add 5 to 15 specific locations on your mental walk.', null, null)
         : hh('ol', { 'aria-label': 'Memory palace route', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
             loci.map(function(locus, index) {
+              var locusLocation = textValue(locus.location).trim() || 'Unnamed location';
               return hh('li', { key: 'lc-' + locus.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #a855f7' } },
                 hh('article', { 'aria-labelledby': 'learning-lab-palace-locus-' + locus.id },
                   hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 4 } },
-                    hh('h3', { id: 'learning-lab-palace-locus-' + locus.id, style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800, margin: 0 } }, (index + 1) + '. ' + locus.location),
-                    hh('button', { type: 'button', 'aria-label': 'Delete memory stop ' + (index + 1) + ': ' + locus.location, onClick: function() { removeLocus(locus.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
+                    hh('h3', { id: 'learning-lab-palace-locus-' + locus.id, style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800, margin: 0 } }, (index + 1) + '. ' + locusLocation),
+                    hh('button', { type: 'button', 'aria-label': 'Delete memory stop ' + (index + 1) + ': ' + locusLocation, onClick: function() { removeLocus(locus.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
                   ),
-                  hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', margin: locus.vivid ? '0 0 4px' : 0 } }, 'Item: ' + locus.item),
-                  locus.vivid ? hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', margin: 0 } }, 'Vivid image: ' + locus.vivid) : null
+                  hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', margin: textValue(locus.vivid).trim() ? '0 0 4px' : 0 } }, 'Item: ' + textValue(locus.item)),
+                  textValue(locus.vivid).trim() ? hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', margin: 0 } }, 'Vivid image: ' + textValue(locus.vivid).trim()) : null
                 )
               );
             })
@@ -13442,9 +13459,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       );
     }
 
-    var palaces = data.palaces || [];
+    var palaces = rawPalaces.filter(isRecord);
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🏛', 'Memory Palace Builder', 'Use a familiar route and attach information to specific locations.', '#a855f7'),
+      hh('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, margin: '0 0 12px' } }, 'Palaces are saved only in your Personal Toolkit and are not shared with or sent to anyone.'),
       tkCard('#a855f7',
         hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); createPalace(); }, 'aria-labelledby': 'learning-lab-palace-new-heading' },
           hh('h3', { id: 'learning-lab-palace-new-heading', style: { fontSize: 12, fontWeight: 800, color: '#d8b4fe', margin: '0 0 8px' } }, 'New memory palace'),
@@ -13459,15 +13477,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       palaces.length === 0 ? tkEmptyState('🏛', 'No memory palaces yet. Pick a place you know well to start.', null, null)
       : hh('ul', { 'aria-label': 'Memory palaces', style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
           palaces.map(function(palace) {
+            var palaceName = textValue(palace.name).trim() || 'Untitled palace';
             return hh('li', { key: 'pa-' + palace.id, style: { padding: 12, borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(168,85,247,0.45)', borderLeft: '4px solid #a855f7' } },
               hh('article', { 'aria-labelledby': 'learning-lab-palace-name-' + palace.id },
                 hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
-                  hh('h3', { id: 'learning-lab-palace-name-' + palace.id, style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', margin: 0 } }, hh('span', { 'aria-hidden': 'true' }, '🏛 '), palace.name),
-                  hh('button', { type: 'button', 'aria-label': 'Delete memory palace: ' + palace.name, onClick: function() { removePalace(palace.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
+                  hh('h3', { id: 'learning-lab-palace-name-' + palace.id, style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', margin: 0 } }, hh('span', { 'aria-hidden': 'true' }, '🏛 '), palaceName),
+                  hh('button', { type: 'button', 'aria-label': 'Delete memory palace: ' + palaceName, onClick: function() { removePalace(palace.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
                 ),
-                palace.description ? hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '4px 0', fontStyle: 'italic' } }, palace.description) : null,
-                hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '4px 0 8px' } }, (palace.loci || []).length + ((palace.loci || []).length === 1 ? ' stop' : ' stops')),
-                hh('button', { id: 'learning-lab-palace-open-' + palace.id, type: 'button', 'aria-label': 'Open memory palace: ' + palace.name, onClick: function() { openPalace(palace.id); }, 'data-ll-focusable': true, style: { width: '100%', minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid #d8b4fe', background: '#6b21a8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Open palace')
+                textValue(palace.description).trim() ? hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '4px 0', fontStyle: 'italic' } }, textValue(palace.description).trim()) : null,
+                hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '4px 0 8px' } }, lociOf(palace).length + (lociOf(palace).length === 1 ? ' stop' : ' stops')),
+                hh('button', { id: 'learning-lab-palace-open-' + palace.id, type: 'button', 'aria-label': 'Open memory palace: ' + palaceName, onClick: function() { openPalace(palace.id); }, 'data-ll-focusable': true, style: { width: '100%', minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid #d8b4fe', background: '#6b21a8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Open palace')
               )
             );
           })
@@ -20707,7 +20726,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkVocab',    icon: '🔤', label: 'Vocab Builder',        color: '#3b82f6', desc: 'Subject vocab lists with self-quiz',
         stat: (Array.isArray((data.mytkVocab || {}).lists) ? (data.mytkVocab || {}).lists.length : 0) + ' lists', cta: 'Build vocab' },
       { id: 'mytkPalace',   icon: '🏛', label: 'Memory Palace',        color: '#a855f7', desc: 'Method of loci — ancient + research-supported',
-        stat: ((data.mytkPalace || {}).palaces || []).length + ' palaces', cta: 'Build a palace' },
+        stat: (Array.isArray((data.mytkPalace || {}).palaces) ? (data.mytkPalace || {}).palaces.length : 0) + ' palaces', cta: 'Build a palace' },
       { id: 'mytkRoster',   icon: '🎒', label: 'My Class Roster',      color: '#3b82f6', desc: 'Classes, teachers, periods, rooms, friends',
         stat: (Array.isArray((data.mytkRoster || {}).classes) ? (data.mytkRoster || {}).classes.length : 0) + ' classes', cta: 'Track classes' },
       { id: 'mytkQuote',    icon: '💭', label: 'Quote Collector',      color: '#fbbf24', desc: 'Save quotes that matter — your personal library',

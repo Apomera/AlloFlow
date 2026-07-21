@@ -44,9 +44,9 @@ describe('Learning Lab Memory Palace accessibility', () => {
   });
 
   it('preserves unrelated section data for create, update, and deletion', () => {
-    expect(palace).toContain("setData(Object.assign({}, data, { palaces: [palace].concat(data.palaces || []) }))");
+    expect(palace).toContain("setData(Object.assign({}, data, { palaces: [palace].concat(rawPalaces) }))");
     expect(palace).toContain("setData(Object.assign({}, data, {");
-    expect(palace).toContain("setData(Object.assign({}, data, { palaces: (data.palaces || []).filter");
+    expect(palace).toContain("setData(Object.assign({}, data, { palaces: rawPalaces.filter");
   });
 
   it('confirms palace and stop deletion in app dialogs', () => {
@@ -56,8 +56,8 @@ describe('Learning Lab Memory Palace accessibility', () => {
   });
 
   it('uses separate open and delete controls instead of nested interaction', () => {
-    expect(palace).toContain("'aria-label': 'Delete memory palace: ' + palace.name");
-    expect(palace).toContain("'aria-label': 'Open memory palace: ' + palace.name");
+    expect(palace).toContain("'aria-label': 'Delete memory palace: ' + palaceName");
+    expect(palace).toContain("'aria-label': 'Open memory palace: ' + palaceName");
     expect(palace).not.toContain('e.stopPropagation()');
   });
 
@@ -119,6 +119,25 @@ describe('Learning Lab Memory Palace accessibility', () => {
 
   it('exposes method guidance as a named aside', () => {
     expect(palace).toContain("hh('aside', { 'aria-label': 'About the method of loci'");
+  });
+
+  it('handles malformed legacy palace data without crashing', () => {
+    expect(palace).toContain('var rawPalaces = Array.isArray(data.palaces) ? data.palaces : [];');
+    expect(palace).toContain("var lociOf = function(palace) { return (palace && Array.isArray(palace.loci) ? palace.loci : []).filter(isRecord); };");
+    expect(palace).toContain('var palaces = rawPalaces.filter(isRecord);');
+    expect(palace).toContain("var palaceName = textValue(palace.name).trim() || 'Untitled palace';");
+    expect(source).toContain("stat: (Array.isArray((data.mytkPalace || {}).palaces) ? (data.mytkPalace || {}).palaces.length : 0) + ' palaces'");
+  });
+
+  it('synchronizes focus with rendered state instead of a focus timer', () => {
+    expect(palace).toContain('if (!pendingFocusId) return;');
+    expect(palace).toContain('var target = document.getElementById(pendingFocusId);');
+    expect(palace).toContain('function focusById(id) { setPendingFocusId(id); }');
+    expect(palace).not.toContain('setTimeout');
+  });
+
+  it('explains local-only saving', () => {
+    expect(palace).toContain('Palaces are saved only in your Personal Toolkit and are not shared with or sent to anyone.');
   });
 
   it('keeps the deployed mirror identical', () => {
