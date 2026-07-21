@@ -1,0 +1,247 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "The Constitution — Rules for the Rule-Makers",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "8th Grade",
+    "standards": "C3 D2.Civ.4.6-8 (explain the powers and limits of government institutions); C3 D2.Civ.3.6-8 (examine the origins and purposes of rules, laws, and key constitutional provisions); CCSS.ELA-LITERACY.RH.6-8.2 (determine the central ideas of a primary or secondary source)",
+    "createdAt": "2026-07-21T04:00:00.000Z",
+    "imageShotList": "allopacks/constitution_grade8.IMAGES.md"
+  },
+  "sourceTopic": "The United States Constitution",
+  "history": [
+    {
+      "id": "ct-directions",
+      "type": "directions",
+      "title": "Design a Government That Cannot Be Trusted",
+      "timestamp": "2026-07-21T04:00:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nThe framers had a strange design problem: build a government strong enough to work, but assume the people running it will eventually be selfish, ambitious, or wrong. Everything in the Constitution follows from that assumption.\n\n1. Read **Rules for the Rule-Makers** — look for the phrase \"what if the wrong person wins?\"\n2. Learn the terms in the **Glossary**, then win the **Crossword**.\n3. Use the **Three Branches** chart as your map while you work.\n4. Walk the **Road to Ratification** timeline — the arguments are still being had today.\n5. Sort the powers in **Who Can Do That?**\n6. Take the quiz — it asks you to reason like a framer, not recite.\n7. Take a position in the **Sentence Frames**. Disagreeing with the framers is allowed if you can argue it.\n\nBig question to hold the whole time: is a slow government a broken one, or a safe one? ⚖️",
+        "objectives": [
+          { "id": "ct-goal-crossword", "label": "Win the Crossword", "kind": "game", "gameType": "crossword", "resourceRef": "ct-glossary" },
+          { "id": "ct-goal-xp", "label": "Earn 35 XP", "kind": "xp", "amount": 35 },
+          { "id": "ct-goal-argue", "label": "I explained checks and balances to someone using a real example from the news", "kind": "manual" }
+        ]
+      },
+      "meta": "8th Grade • 3 goals • argument-focused"
+    },
+    {
+      "id": "ct-reading",
+      "type": "simplified",
+      "title": "Rules for the Rule-Makers",
+      "timestamp": "2026-07-21T04:00:01.000Z",
+      "data": "## Rules for the Rule-Makers\n\nIn the summer of 1787, fifty-five men locked themselves in a hot Philadelphia room with the windows nailed shut so nobody could overhear. They had been sent to patch up the failing Articles of Confederation. Instead they threw them out and started over.\n\nTheir problem was not how to build a government. Their problem was how to build one that would still be safe when the wrong people were running it.\n\nThe Articles had produced a government too weak to function: no power to tax, no national court, no way to enforce anything. But the framers had just fought a war against a king, and a strong government sounded like the thing they had escaped. So they invented a machine designed to work while distrusting its own operators.\n\nFirst they split power three ways. **Congress** writes laws. The **President** carries them out. The **Courts** decide what they mean. This is **separation of powers**, and its logic is simple: no single person or group ever holds the whole thing.\n\nThen they went further and gave each branch weapons against the others — **checks and balances**. Congress passes a bill; the President can veto it; Congress can override that veto with two-thirds. The President appoints judges; the Senate must confirm them. Courts can strike down laws as unconstitutional. Congress can impeach and remove a President or a judge.\n\nThey also split power a second way, between the national government and the states — **federalism** — so that even a captured national government does not control everything.\n\nAll of this makes government slow. That is not a bug. James Madison argued in Federalist No. 51 that \"ambition must be made to counteract ambition\" — that the safest system is one where powerful people are constantly blocked by other powerful people who want something different.\n\nIt is worth naming honestly what this document did not do. It counted enslaved people as three-fifths of a person for representation while denying them any rights at all. It left voting rules to states that restricted them to white men with property. Women could not vote. The framers built a machine for limiting power that excluded most of the people living under it — and the amendment process they included is how later generations forced it open.\n\nThat is the real inheritance: not a perfect document, but a repairable one, plus the argument about how to repair it. That argument is still running, and you are now in it.",
+      "meta": "8th Grade • Leveled reading • ~460 words",
+      "imageSlot": "ct-img-three-branches"
+    },
+    {
+      "id": "ct-glossary",
+      "type": "glossary",
+      "title": "Constitutional Vocabulary",
+      "timestamp": "2026-07-21T04:00:02.000Z",
+      "data": [
+        { "term": "Constitution", "def": "The document that sets up a government and limits what it may do.", "tier": "Domain-Specific" },
+        { "term": "Legislative", "def": "The branch that writes laws — in the US, Congress.", "tier": "Domain-Specific" },
+        { "term": "Executive", "def": "The branch that carries out laws — headed by the President.", "tier": "Domain-Specific" },
+        { "term": "Judicial", "def": "The branch that interprets laws and decides what they mean — the courts.", "tier": "Domain-Specific" },
+        { "term": "Veto", "def": "The President's power to reject a bill passed by Congress.", "tier": "Domain-Specific" },
+        { "term": "Override", "def": "Congress passing a bill anyway, over a veto, with a two-thirds vote.", "tier": "Domain-Specific" },
+        { "term": "Federalism", "def": "Splitting power between the national government and the states.", "tier": "Domain-Specific" },
+        { "term": "Amendment", "def": "An official change or addition to the Constitution.", "tier": "Domain-Specific" },
+        { "term": "Ratify", "def": "To formally approve something so it takes effect.", "tier": "Academic" },
+        { "term": "Impeach", "def": "To formally charge an official with misconduct — the first step toward removal.", "tier": "Domain-Specific" },
+        { "term": "Unconstitutional", "def": "Against the rules the Constitution sets, and therefore not allowed.", "tier": "Academic" },
+        { "term": "Compromise", "def": "An agreement where each side gives up something to reach a deal.", "tier": "Academic" }
+      ],
+      "meta": "12 terms • Tiered"
+    },
+    {
+      "id": "ct-anchor",
+      "type": "anchor-chart",
+      "title": "Three Branches, One Machine",
+      "timestamp": "2026-07-21T04:00:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "AMBITION CHECKS AMBITION",
+        "sections": [
+          { "label": "LEGISLATIVE", "bullets": ["Congress: House + Senate", "Writes laws, controls spending", "Can override a veto (2/3) and impeach"], "iconPrompt": "a capitol dome" },
+          { "label": "EXECUTIVE", "bullets": ["President and agencies", "Carries out laws, commands the military", "Can veto bills and appoint judges"], "iconPrompt": "a desk with a pen and seal" },
+          { "label": "JUDICIAL", "bullets": ["Supreme Court and lower courts", "Interprets laws and the Constitution", "Can rule a law unconstitutional"], "iconPrompt": "a balance scale" },
+          { "label": "FEDERALISM", "bullets": ["Power also splits nation vs states", "States run elections and schools", "Two locks, not one"], "iconPrompt": "a map divided into states" },
+          { "label": "THE POINT", "bullets": ["Slow by design, not by accident", "No branch can act completely alone", "Amendments let later generations fix it"], "iconPrompt": "three gears that must turn together" }
+        ]
+      },
+      "meta": "5 sections • branch-powers reference"
+    },
+    {
+      "id": "ct-timeline",
+      "type": "timeline",
+      "title": "Road to Ratification",
+      "timestamp": "2026-07-21T04:00:04.000Z",
+      "data": {
+        "progressionLabel": "TIMELINE: Independence (1776) → Bill of Rights (1791)",
+        "items": [
+          { "date": "1776", "event": "The Declaration of Independence announces separation from Britain, but creates no working national government." },
+          { "date": "1781", "event": "The Articles of Confederation take effect, giving Congress no power to tax and no national courts." },
+          { "date": "1786-87", "event": "Shays' Rebellion in Massachusetts exposes how little the national government can do in a crisis." },
+          { "date": "May 1787", "event": "Delegates gather in Philadelphia to revise the Articles and decide instead to write a new constitution." },
+          { "date": "July 1787", "event": "The Great Compromise settles representation: a House based on population and a Senate with two seats per state." },
+          { "date": "September 1787", "event": "Thirty-nine delegates sign the finished Constitution and send it to the states for ratification." },
+          { "date": "1787-88", "event": "Federalists and Anti-Federalists argue publicly; the Federalist Papers make the case for the new design." },
+          { "date": "June 1788", "event": "New Hampshire becomes the ninth state to ratify, putting the Constitution into effect." },
+          { "date": "1791", "event": "The Bill of Rights is ratified — ten amendments added to answer Anti-Federalist demands for explicit protections." }
+        ]
+      },
+      "meta": "9 events • 1776-1791 • ratification arc"
+    },
+    {
+      "id": "ct-sort",
+      "type": "concept-sort",
+      "title": "Who Can Do That?",
+      "timestamp": "2026-07-21T04:00:05.000Z",
+      "data": {
+        "categories": [
+          { "id": "ct-leg", "label": "Legislative (Congress)", "color": "bg-indigo-500" },
+          { "id": "ct-exe", "label": "Executive (President)", "color": "bg-rose-500" },
+          { "id": "ct-jud", "label": "Judicial (Courts)", "color": "bg-emerald-500" }
+        ],
+        "items": [
+          { "id": "ct1", "content": "Declare war", "categoryId": "ct-leg" },
+          { "id": "ct2", "content": "Veto a bill", "categoryId": "ct-exe" },
+          { "id": "ct3", "content": "Decide whether a law is unconstitutional", "categoryId": "ct-jud" },
+          { "id": "ct4", "content": "Collect taxes and control federal spending", "categoryId": "ct-leg" },
+          { "id": "ct5", "content": "Command the armed forces", "categoryId": "ct-exe" },
+          { "id": "ct6", "content": "Interpret what a law actually means in a dispute", "categoryId": "ct-jud" },
+          { "id": "ct7", "content": "Confirm or reject the President's judicial appointments", "categoryId": "ct-leg" },
+          { "id": "ct8", "content": "Nominate Supreme Court justices", "categoryId": "ct-exe" },
+          { "id": "ct9", "content": "Override a veto with a two-thirds vote", "categoryId": "ct-leg" },
+          { "id": "ct10", "content": "Preside over an impeachment trial of a President", "categoryId": "ct-jud" }
+        ]
+      },
+      "meta": "3 branches • 10 powers • overlap traps included"
+    },
+    {
+      "id": "ct-quiz",
+      "type": "quiz",
+      "title": "Think Like a Framer",
+      "timestamp": "2026-07-21T04:00:06.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Why did the framers deliberately design a government that acts slowly?",
+            "options": [
+              "So that no single group could seize control quickly or act unchecked",
+              "Because communication in the 1780s was slow anyway",
+              "To give states time to ignore federal laws",
+              "Because they expected the country to stay small"
+            ],
+            "correctAnswer": "So that no single group could seize control quickly or act unchecked",
+            "conceptLabel": "purpose of checks"
+          },
+          {
+            "type": "mcq",
+            "question": "Congress passes a bill and the President vetoes it. What can Congress do next?",
+            "options": [
+              "Override the veto with a two-thirds vote in both chambers",
+              "Ask the Supreme Court to sign the bill instead",
+              "Nothing — a veto is final",
+              "Send it to the states for ratification"
+            ],
+            "correctAnswer": "Override the veto with a two-thirds vote in both chambers",
+            "conceptLabel": "veto and override"
+          },
+          {
+            "type": "mcq",
+            "question": "What was the main weakness of the Articles of Confederation?",
+            "options": [
+              "The national government could not tax or enforce its own laws",
+              "It gave the President too much military power",
+              "It created too many federal courts",
+              "It required unanimous state elections"
+            ],
+            "correctAnswer": "The national government could not tax or enforce its own laws",
+            "conceptLabel": "articles weakness"
+          },
+          {
+            "type": "mcq",
+            "question": "The Great Compromise settled a fight between large and small states. What did it create?",
+            "options": [
+              "A House based on population and a Senate with equal seats per state",
+              "A single chamber where every state had one vote",
+              "A council of governors that could veto Congress",
+              "A rule that the President must come from a small state"
+            ],
+            "correctAnswer": "A House based on population and a Senate with equal seats per state",
+            "conceptLabel": "great compromise"
+          },
+          {
+            "type": "mcq",
+            "question": "Which statement about the original Constitution is accurate?",
+            "options": [
+              "It counted enslaved people as three-fifths of a person for representation while denying them rights",
+              "It guaranteed voting rights to all adult citizens",
+              "It immediately outlawed slavery in every state",
+              "It gave women the same political rights as men"
+            ],
+            "correctAnswer": "It counted enslaved people as three-fifths of a person for representation while denying them rights",
+            "conceptLabel": "constitution limits and exclusions"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Madison wrote that 'ambition must be made to counteract ambition.' Explain what he meant and give one example from the Constitution.",
+            "expectedAnswer": "He meant the system should use officials' self-interest against each other rather than relying on them to be good. Example: the President wants power but Congress can override vetoes and impeach, and courts can strike down laws — each branch's ambition blocks the others.",
+            "conceptLabel": "purpose of checks"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "The reading calls the Constitution 'not a perfect document, but a repairable one.' Explain what makes it repairable and name one repair later generations made.",
+            "expectedAnswer": "The amendment process lets later generations change it. Examples: the 13th Amendment ended slavery, the 15th and 19th extended voting rights to Black men and to women, and the Bill of Rights itself was an early repair.",
+            "conceptLabel": "amendment process"
+          }
+        ],
+        "reflections": [
+          { "text": "Is a slow government a broken one or a safe one? Take a side and give your strongest reason." },
+          { "text": "If you could add one amendment today, what would it say — and which branch would it limit?" }
+        ]
+      },
+      "meta": "5 MCQ + 2 short answer • includes honest exclusions"
+    },
+    {
+      "id": "ct-frames",
+      "type": "sentence-frames",
+      "title": "Take a Position",
+      "timestamp": "2026-07-21T04:00:07.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          { "text": "The ____ branch can check the ____ branch by ____." },
+          { "text": "The framers separated powers because they assumed ____." },
+          { "text": "The Articles of Confederation failed because ____, which we can see in ____." },
+          { "text": "One thing the original Constitution got wrong was ____, and it was later repaired by ____." },
+          { "text": "I think a slow government is ____ because ____." },
+          { "text": "If I could add one amendment, it would ____, because ____." }
+        ],
+        "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Historian |\n|---|---|---|---|\n| Evidence | Opinion only | One fact from the lesson | Multiple specific facts, correctly used |\n| Vocabulary | Everyday words | Some civic terms | Precise civic terms used naturally |\n| Argument | States a side | Gives one reason | Gives reasons AND addresses the strongest objection |"
+      },
+      "meta": "6 frames • rubric • counterargument required at level 5"
+    },
+    {
+      "id": "ct-faq",
+      "type": "faq",
+      "title": "Questions About the Constitution",
+      "timestamp": "2026-07-21T04:00:08.000Z",
+      "data": [
+        { "question": "Why did they nail the windows shut in Philadelphia? 🪟", "answer": "Secrecy. They wanted delegates to argue and change their minds freely without newspapers reporting every shift. It also made the room brutally hot all summer, which some historians think hurried the work along." },
+        { "question": "Has the Constitution ever been rewritten?", "answer": "Never rewritten — only amended, 27 times so far. Ten of those came at once as the Bill of Rights in 1791. Thousands of amendments have been proposed and rejected." },
+        { "question": "Why is amending it so hard?", "answer": "Two-thirds of both chambers of Congress plus three-quarters of the states. The framers wanted change to be possible but not easy — a rule that cuts both ways, blocking bad ideas and good ones alike." },
+        { "question": "Who decides what the Constitution 'means'? ⚖️", "answer": "The courts, ultimately the Supreme Court — a power called judicial review that the document does not explicitly grant. The Court claimed it in Marbury v. Madison in 1803, and it stuck." },
+        { "question": "Did everyone in 1787 like this plan?", "answer": "Definitely not. Anti-Federalists warned it created a national government too strong and lacking explicit protections for individuals. They lost the ratification fight but won the Bill of Rights, which exists because of their pressure." },
+        { "question": "Is the Constitution the oldest one in the world?", "answer": "It is the oldest written national constitution still in force, which is a real distinction — though several countries have older uncodified constitutional traditions." }
+      ],
+      "meta": "6 questions • includes the Anti-Federalist case"
+    }
+  ]
+}

@@ -163,8 +163,13 @@ describe.each(files)('AlloPack: %s', (file) => {
 
   it('authoring rules: privacy, size, no embedded images, Agent Core contract', () => {
     const s = JSON.stringify(pack).toLowerCase();
-    for (const banned of ['iep', '504 plan', 'accommodation', 'low group', 'high group', 'sped']) {
-      expect(s, 'banned term in pack: ' + banned).not.toContain(banned);
+    // WORD-BOUNDARY matched: a substring scan false-positives on innocent prose
+    // ('iep' hides inside other words). Bare 'sped' is NOT listed: after lowercasing it is
+    // indistinguishable from the ordinary past tense of speed, so it produced false positives
+    // on innocent prose. The unambiguous phrases below carry the rule.
+    for (const banned of ['iep', 'ieps', '504 plan', 'accommodation', 'accommodations', 'low group', 'high group', 'special ed', 'special education', 'reading level group']) {
+      const re = new RegExp('(^|[^a-z])' + banned.replace(/ /g, '\s+') + '([^a-z]|$)');
+      expect(re.test(s), 'banned disclosure term in pack: ' + banned).toBe(false);
     }
     expect(JSON.stringify(pack).length).toBeLessThan(500000);
     expect(JSON.stringify(pack)).not.toMatch(/data:image\//);

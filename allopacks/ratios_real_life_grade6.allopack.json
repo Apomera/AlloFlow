@@ -1,0 +1,274 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Ratios in Real Life — Recipes, Maps, and Best Buys",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "6th Grade",
+    "standards": "CCSS.MATH.CONTENT.6.RP.A.1 (understand the concept of a ratio and use ratio language); CCSS.MATH.CONTENT.6.RP.A.2 (understand the concept of a unit rate); CCSS.MATH.CONTENT.6.RP.A.3 (use ratio and rate reasoning to solve real-world problems)",
+    "createdAt": "2026-07-21T06:00:00.000Z",
+    "imageShotList": "allopacks/ratios_real_life_grade6.IMAGES.md"
+  },
+  "sourceTopic": "Ratios and Unit Rates",
+  "history": [
+    {
+      "id": "rt-directions",
+      "type": "directions",
+      "title": "Become the Person Who Cannot Be Fooled",
+      "timestamp": "2026-07-21T06:00:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nStores count on you not doing this math. The bigger box is not always the better deal, and today you learn the one move that settles it in about four seconds.\n\n1. Read **The Four-Second Trick**.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Ratio Moves** chart open — it lists every move you need.\n4. Work the **Practice Problems**. Do the unit rate FIRST every time.\n5. Sort the cards in **Same Ratio or Not?**\n6. Take the quiz — question 5 is the one stores are counting on.\n\nHomework challenge: find two sizes of the same product at home and figure out which is actually the better buy. Bring the numbers. 🛒",
+        "objectives": [
+          { "id": "rt-goal-scramble", "label": "Win the Word Scramble", "kind": "game", "gameType": "wordScramble", "resourceRef": "rt-glossary" },
+          { "id": "rt-goal-xp", "label": "Earn 30 XP", "kind": "xp", "amount": 30 },
+          { "id": "rt-goal-shop", "label": "I compared two real product sizes at home and found the better buy", "kind": "manual" }
+        ]
+      },
+      "meta": "6th Grade • 3 goals • real-world challenge"
+    },
+    {
+      "id": "rt-reading",
+      "type": "simplified",
+      "title": "The Four-Second Trick",
+      "timestamp": "2026-07-21T06:00:01.000Z",
+      "data": "## The Four-Second Trick\n\nTwo boxes of cereal sit on the shelf. The 12-ounce box costs $3.60. The 18-ounce box costs $5.76. Which one is the better deal?\n\nMost people grab the big one because bigger usually means cheaper per ounce. Most people are guessing. You are about to stop guessing.\n\nA **ratio** compares two amounts. Here it is dollars to ounces. Ratios can be written as 12 to 18, as 12:18, or as the fraction 12/18 — three notations for the same relationship.\n\nThe move that makes ratios useful is turning them into a **unit rate**: how much for exactly ONE of something. Divide the price by the number of ounces.\n\nBox A: $3.60 ÷ 12 = **$0.30 per ounce**.\nBox B: $5.76 ÷ 18 = **$0.32 per ounce**.\n\nThe smaller box is the better deal. The store is counting on you not checking. This happens constantly in real stores — bulk sizes are usually cheaper per unit, but not always, and \"usually\" is exactly the assumption that costs you money.\n\nUnit rates are everywhere once you look. Miles per hour is a unit rate: distance for one hour. Words per minute. Points per game. Price per ounce. Each one answers the same question — how much per ONE — and that is what makes different-sized things comparable.\n\nRatios also stay true when you scale them. A pancake recipe using 2 cups of flour to 3 cups of milk has a 2:3 ratio. Doubling to 4 cups and 6 cups keeps the ratio identical, and the pancakes taste the same. These are **equivalent ratios**, and they are why recipes work for four people or forty.\n\nMaps run on the same idea. A scale of 1 inch : 50 miles means every inch on paper stands for 50 real miles. Measure 3.5 inches between two towns and you know the distance is 175 miles without driving it.\n\nHere is the thing worth remembering: ratio reasoning is not really a math topic. It is a habit — the habit of asking *per what?* When someone tells you a number, ask what it is being compared to. That question is most of the work.",
+      "meta": "6th Grade • Leveled reading • ~400 words",
+      "imageSlot": "rt-img-unit-price"
+    },
+    {
+      "id": "rt-glossary",
+      "type": "glossary",
+      "title": "Ratio and Rate Words",
+      "timestamp": "2026-07-21T06:00:02.000Z",
+      "data": [
+        { "term": "Ratio", "def": "A comparison of two amounts, written as 3 to 4, 3:4, or 3/4.", "tier": "Domain-Specific" },
+        { "term": "Rate", "def": "A ratio comparing two different kinds of units, like miles and hours.", "tier": "Domain-Specific" },
+        { "term": "Unit rate", "def": "How much for exactly ONE — found by dividing.", "tier": "Domain-Specific" },
+        { "term": "Equivalent", "def": "Equal in value — 2:3 and 4:6 describe the same relationship.", "tier": "Academic" },
+        { "term": "Scale", "def": "The ratio between a drawing or map and the real thing it represents.", "tier": "Domain-Specific" },
+        { "term": "Proportion", "def": "A statement that two ratios are equal.", "tier": "Domain-Specific" },
+        { "term": "Per", "def": "For each one — the word that signals a unit rate.", "tier": "Academic" },
+        { "term": "Quantity", "def": "An amount of something that can be measured or counted.", "tier": "Academic" },
+        { "term": "Compare", "def": "To examine two amounts to see how they relate.", "tier": "Academic" },
+        { "term": "Convert", "def": "To change a measurement into different units without changing the amount.", "tier": "Academic" }
+      ],
+      "meta": "10 terms • Tiered"
+    },
+    {
+      "id": "rt-anchor",
+      "type": "anchor-chart",
+      "title": "Ratio Moves",
+      "timestamp": "2026-07-21T06:00:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "ASK: PER WHAT?",
+        "sections": [
+          { "label": "WRITE IT", "bullets": ["3 to 4, or 3:4, or 3/4", "Say the units out loud: dollars per ounce", "Order matters — keep it consistent"], "iconPrompt": "two labeled jars side by side" },
+          { "label": "UNIT RATE", "bullets": ["Divide to get 'for exactly ONE'", "$5.76 for 18 oz = $0.32 per oz", "This is the move that compares anything"], "iconPrompt": "a division symbol over a single item" },
+          { "label": "SCALE UP OR DOWN", "bullets": ["Multiply or divide BOTH parts", "2:3 = 4:6 = 20:30", "Recipes and maps run on this"], "iconPrompt": "a small triangle and a larger identical triangle" },
+          { "label": "CHECK YOURSELF", "bullets": ["Does the answer make sense in real life?", "Bigger box is NOT always cheaper per unit", "If units disappear, you made an error"], "iconPrompt": "a checkmark beside a shopping receipt" }
+        ]
+      },
+      "meta": "4 moves • problem-solving reference"
+    },
+    {
+      "id": "rt-math",
+      "type": "math",
+      "title": "Practice Problems",
+      "timestamp": "2026-07-21T06:00:04.000Z",
+      "data": {
+        "title": "Ratios, Rates, and Best Buys",
+        "problems": [
+          {
+            "question": "A 12-ounce box of cereal costs $3.60. What is the price per ounce?",
+            "answer": "$0.30 per ounce",
+            "steps": [
+              { "explanation": "A unit rate means the cost for exactly one ounce, so divide the price by the ounces.", "latex": "" },
+              { "explanation": "3.60 divided by 12 equals 0.30.", "latex": "" },
+              { "explanation": "So the unit rate is $0.30 per ounce.", "latex": "" }
+            ],
+            "realWorld": "Reading the tiny unit-price label on a grocery shelf tag."
+          },
+          {
+            "question": "An 18-ounce box costs $5.76. Is it a better deal than the 12-ounce box at $3.60?",
+            "answer": "No — the 12-ounce box is cheaper per ounce",
+            "steps": [
+              { "explanation": "Find the unit rate for the big box: 5.76 divided by 18 equals 0.32.", "latex": "" },
+              { "explanation": "Compare to the small box's rate of 0.30 per ounce.", "latex": "" },
+              { "explanation": "$0.30 is less than $0.32, so the SMALLER box is the better buy." , "latex": "" }
+            ],
+            "realWorld": "Bulk sizes are usually cheaper per unit — but not always, which is why you check."
+          },
+          {
+            "question": "A pancake recipe uses 2 cups of flour to 3 cups of milk. You want to use 6 cups of flour. How much milk?",
+            "answer": "9 cups of milk",
+            "steps": [
+              { "explanation": "The ratio of flour to milk is 2:3 and must stay the same.", "latex": "" },
+              { "explanation": "6 cups of flour is 3 times the original 2 cups, so multiply BOTH parts by 3.", "latex": "" },
+              { "explanation": "3 cups of milk times 3 equals 9 cups.", "latex": "" }
+            ],
+            "realWorld": "Scaling a recipe up for a family gathering."
+          },
+          {
+            "question": "A car travels 150 miles in 3 hours. What is its speed in miles per hour?",
+            "answer": "50 miles per hour",
+            "steps": [
+              { "explanation": "Speed is a unit rate: distance for exactly one hour.", "latex": "" },
+              { "explanation": "Divide 150 miles by 3 hours.", "latex": "" },
+              { "explanation": "The result is 50 miles per hour.", "latex": "" }
+            ],
+            "realWorld": "Estimating arrival time on a road trip."
+          },
+          {
+            "question": "A map uses a scale of 1 inch : 50 miles. Two towns are 3.5 inches apart on the map. How far apart are they in reality?",
+            "answer": "175 miles",
+            "steps": [
+              { "explanation": "Every inch on the map stands for 50 real miles.", "latex": "" },
+              { "explanation": "Multiply 3.5 inches by 50 miles per inch.", "latex": "" },
+              { "explanation": "3.5 times 50 equals 175 miles.", "latex": "" }
+            ],
+            "realWorld": "Planning a drive using a paper map or a scale bar on a trail sign."
+          },
+          {
+            "question": "Two players: one scores 48 points in 6 games, the other 65 points in 10 games. Who has the better scoring average?",
+            "answer": "The first player (8 points per game vs 6.5)",
+            "steps": [
+              { "explanation": "Totals cannot be compared directly because the players played different numbers of games.", "latex": "" },
+              { "explanation": "First player: 48 divided by 6 equals 8 points per game.", "latex": "" },
+              { "explanation": "Second player: 65 divided by 10 equals 6.5 points per game, so the first player has the better rate.", "latex": "" }
+            ],
+            "realWorld": "Comparing athletes who have played different numbers of games."
+          }
+        ],
+        "graphData": null
+      },
+      "meta": "6 problems • worked steps • unit-rate first"
+    },
+    {
+      "id": "rt-sort",
+      "type": "concept-sort",
+      "title": "Same Ratio or Not?",
+      "timestamp": "2026-07-21T06:00:05.000Z",
+      "data": {
+        "categories": [
+          { "id": "rt-same", "label": "Equivalent to 2:3", "color": "bg-emerald-500" },
+          { "id": "rt-diff", "label": "NOT equivalent to 2:3", "color": "bg-rose-500" }
+        ],
+        "items": [
+          { "id": "r1", "content": "4 : 6", "categoryId": "rt-same" },
+          { "id": "r2", "content": "6 : 9", "categoryId": "rt-same" },
+          { "id": "r3", "content": "3 : 4", "categoryId": "rt-diff" },
+          { "id": "r4", "content": "20 : 30", "categoryId": "rt-same" },
+          { "id": "r5", "content": "2 : 4", "categoryId": "rt-diff" },
+          { "id": "r6", "content": "10 : 15", "categoryId": "rt-same" },
+          { "id": "r7", "content": "4 : 5 (added 2 to each part)", "categoryId": "rt-diff" },
+          { "id": "r8", "content": "1 : 1.5", "categoryId": "rt-same" }
+        ]
+      },
+      "meta": "2 buckets • 8 ratios • the add-instead-of-multiply trap"
+    },
+    {
+      "id": "rt-quiz",
+      "type": "quiz",
+      "title": "Rate Reasoning Check",
+      "timestamp": "2026-07-21T06:00:06.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What is a UNIT RATE?",
+            "options": [
+              "How much there is for exactly one of something",
+              "Any comparison of two numbers",
+              "The larger of two amounts being compared",
+              "A ratio written with a colon"
+            ],
+            "correctAnswer": "How much there is for exactly one of something",
+            "conceptLabel": "unit rate meaning"
+          },
+          {
+            "type": "mcq",
+            "question": "8 apples cost $4.00. What is the unit rate?",
+            "options": [
+              "$0.50 per apple",
+              "$2.00 per apple",
+              "8 apples per dollar",
+              "$32.00 per apple"
+            ],
+            "correctAnswer": "$0.50 per apple",
+            "conceptLabel": "computing unit rate"
+          },
+          {
+            "type": "mcq",
+            "question": "Which ratio is equivalent to 2:3?",
+            "options": [
+              "10:15",
+              "4:5",
+              "3:2",
+              "2:6"
+            ],
+            "correctAnswer": "10:15",
+            "conceptLabel": "equivalent ratios"
+          },
+          {
+            "type": "mcq",
+            "question": "A recipe uses a 3:1 ratio of water to rice. If you use 6 cups of water, how much rice do you need?",
+            "options": [
+              "2 cups",
+              "18 cups",
+              "3 cups",
+              "6 cups"
+            ],
+            "correctAnswer": "2 cups",
+            "conceptLabel": "scaling ratios"
+          },
+          {
+            "type": "mcq",
+            "question": "A 10-oz bottle costs $2.50 and a 16-oz bottle costs $4.32. Which is the better buy?",
+            "options": [
+              "The 10-oz bottle, at $0.25 per ounce versus $0.27",
+              "The 16-oz bottle, because bigger is always cheaper per unit",
+              "They cost exactly the same per ounce",
+              "You cannot compare bottles of different sizes"
+            ],
+            "correctAnswer": "The 10-oz bottle, at $0.25 per ounce versus $0.27",
+            "conceptLabel": "best buy comparison"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Your friend says 4:5 is equivalent to 2:3 because 'you just add 2 to each side.' Explain the error.",
+            "expectedAnswer": "Equivalent ratios come from multiplying or dividing BOTH parts by the same number, not adding. Multiplying 2:3 by 2 gives 4:6, not 4:5. Adding changes the relationship between the parts.",
+            "conceptLabel": "equivalent ratios"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Explain why you cannot decide who is the better free-throw shooter just by comparing total makes.",
+            "expectedAnswer": "Totals ignore how many attempts each player took. You need a rate — makes per attempt — because a player with more makes might also have taken far more shots.",
+            "conceptLabel": "why rates beat totals"
+          }
+        ],
+        "reflections": [
+          { "text": "Where have you seen a 'deal' that was not actually a deal? What made it look good?" },
+          { "text": "Name a unit rate you use without thinking about it. What two things does it compare?" }
+        ]
+      },
+      "meta": "5 MCQ + 2 short answer • Q5 is the store trap"
+    },
+    {
+      "id": "rt-faq",
+      "type": "faq",
+      "title": "Ratio Questions",
+      "timestamp": "2026-07-21T06:00:07.000Z",
+      "data": [
+        { "question": "Why do stores print unit prices on the shelf tag? 🏷️", "answer": "Many states require it, precisely because comparing sizes is hard in your head. The tiny number in the corner is doing the four-second trick for you — and it is worth learning to read." },
+        { "question": "Is a ratio the same thing as a fraction?", "answer": "Related but not identical. 2/3 as a fraction means two of three parts of one whole. As a ratio, 2:3 can mean two things compared to three other things — like 2 cups flour to 3 cups milk, which is 5 cups total." },
+        { "question": "Does order matter in a ratio?", "answer": "Very much. 2:3 flour to milk is a totally different recipe from 3:2 flour to milk. Always say the units out loud with the numbers." },
+        { "question": "Why is it 'miles per hour' and not 'hours per mile'? 🚗", "answer": "Both are legitimate rates! We usually pick the one that gives a convenient number. Hours per mile would be 0.02 for highway driving, which is harder to picture than 50." },
+        { "question": "Are bulk sizes ever a bad deal on purpose?", "answer": "It happens more than you would expect — sometimes from pricing errors, sometimes because a package is on promotion, sometimes because shoppers assume bigger is cheaper and stop checking." },
+        { "question": "Where will I use this after school? 📈", "answer": "Nutrition labels, gas mileage, pay rates, currency exchange, medicine doses, mixing paint or fuel, and every single sports statistic. Rate reasoning outlasts almost everything else in the math curriculum." }
+      ],
+      "meta": "6 questions • consumer-math angle"
+    }
+  ]
+}
