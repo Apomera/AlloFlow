@@ -1,5 +1,5 @@
 {
-  "french": {
+  "french_canadian": {
     "opened": " ouvert.",
     "build_an_equivalent_ratio_family": "Construis une famille de rapports équivalents",
     "first_quantity": "Première quantité",
@@ -24,7 +24,7 @@
     "per_interval_for": " par intervalle pendant ",
     "intervals": " intervalles.",
     "bottom": "Bas",
-    "enter_an_amount_greater_than_zero_for_": "Saisis une quantité supérieure à zéro pour les deux options.",
+    "enter_an_amount_greater_than_zero_for_": "Entre une quantité supérieure à zéro pour les deux options.",
     "both_options_have_the_same_cost_per_un": "Les deux options ont le même coût par unité.",
     "option_a_has_the_lower_cost_per_unit": "L'option A a le coût par unité le plus bas.",
     "option_b_has_the_lower_cost_per_unit": "L'option B a le coût par unité le plus bas.",
@@ -45,8 +45,8 @@
     "part": "Partie",
     "this_example_is_above_the_1000_learnin": "Cet exemple dépasse la limite de 1000 % du modèle d'apprentissage. Ajuste la partie ou le tout.",
     "this_result_is_above_the_1_000_000_qua": "Ce résultat dépasse la limite de quantité de 1 000 000. Ajuste les valeurs de l'exemple.",
-    "the_percent_is_not_defined_when_the_wh": "Le pourcentage n'est pas défini quand le tout vaut zéro. Saisis un tout positif pour construire la bande.",
-    "the_whole_is_not_defined_when_the_perc": "Le tout n'est pas défini quand le pourcentage vaut zéro. Saisis un pourcentage positif pour construire la bande.",
+    "the_percent_is_not_defined_when_the_wh": "Le pourcentage n'est pas défini quand le tout vaut zéro. Entre un tout positif pour construire la bande.",
+    "the_whole_is_not_defined_when_the_perc": "Le tout n'est pas défini quand le pourcentage vaut zéro. Entre un pourcentage positif pour construire la bande.",
     "ten_equal_sections_each_represent_10_o": "Dix sections égales représentent chacune 10 % d'une unité entière. ",
     "sections_are_completely_filled": " sections sont entièrement remplies.",
     "the_next_section_is": " La section suivante est remplie à ",
@@ -68,7 +68,7 @@
     "whole_is": "entier est",
     "wholes_are": "entiers sont",
     "summarized_above": " est résumé ci-dessus.",
-    "enter_at_least_two_valid_coordinate_pa": "Saisis au moins deux couples de coordonnées valides, dont un avec une valeur de x non nulle.",
+    "enter_at_least_two_valid_coordinate_pa": "Entre au moins deux couples de coordonnées valides, dont un avec une valeur de x non nulle.",
     "proportional_the_unit_rate_is_constant": "Proportionnel : le taux unitaire est constant.",
     "not_proportional_the_evidence_does_not": "Non proportionnel : les indices ne montrent pas un seul taux unitaire constant passant par l'origine.",
     "proportional": "Proportionnel",
@@ -94,11 +94,11 @@
     "no_complete_set_of_points_is_available": "Aucun ensemble complet de points n'est disponible pour tracer le graphique. ",
     "table_evidence_all_defined_y_x_values_": "Indices du tableau : toutes les valeurs définies de y ÷ x sont égales à ",
     "graph_evidence": ". Indices du graphique : ",
-    "the_entered_points_include_0_0_and_fol": "les points saisis comprennent (0,0) et suivent la demi-droite du modèle.",
-    "the_model_ray_extends_the_constant_rel": "la demi-droite du modèle prolonge la relation constante à travers (0,0), même si l'origine n'a pas été saisie.",
+    "the_entered_points_include_0_0_and_fol": "les points entre comprennent (0,0) et suivent la demi-droite du modèle.",
+    "the_model_ray_extends_the_constant_rel": "la demi-droite du modèle prolonge la relation constante à travers (0,0), même si l'origine n'a pas été entrée.",
     "check_for_changing_y_x_values_a_nonzer": "Vérifie s'il y a des valeurs de y ÷ x qui changent, une valeur de y non nulle quand x = 0, ou des points qui ne sont pas alignés sur une même droite passant par l'origine.",
     "solved_previously": "Résolu précédemment. ",
-    "enter_an_answer_before_checking": "Saisis une réponse avant de vérifier.",
+    "enter_an_answer_before_checking": "Entre une réponse avant de faire la vérification.",
     "correct": "Correct ! ",
     "correct_2": "Correct. ",
     "ratio_lab_challenge": "Défi du Labo des rapports",
@@ -120,7 +120,7 @@
     "next_challenge": "Défi suivant",
     "challenge_answer": "Réponse au défi",
     "type_your_answer": "Écris ta réponse",
-    "enter_a_number": "Saisis un nombre",
+    "enter_a_number": "Entre un nombre",
     "solved_2": "Résolu",
     "check_answer": "Vérifier la réponse",
     "representation_strategy_guide": "Guide des stratégies de représentation",
@@ -130,7 +130,7 @@
     "a_ratio_measured_against_a_whole_of_10": "Un rapport mesuré par rapport à un tout de 100 ; utilise partie = pourcentage × tout.",
     "proportional_graph": "Graphique proportionnel",
     "a_straight_line_through_the_origin_sho": "Une droite passant par l'origine montre un seul multiplicateur constant de x à y.",
-    "reasonableness_check": "Vérification de la vraisemblance",
+    "reasonableness_check": "Vérification du caractère raisonnable",
     "estimate_first_preserve_units_and_ask_": "Estime d'abord, conserve les unités et demande-toi si les deux quantités ont changé de façon multiplicative."
   }
 }
