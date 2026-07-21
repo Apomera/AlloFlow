@@ -456,3 +456,8 @@ Recent validation from the desktop work:
 - Updated canonical app copies, generated project-settings/FAB/misc modules, and matching public mirrors. Public/root generated module hashes match.
 - Verification: `npx vitest run tests/project_save_settings.test.js tests/qr_student_shell.test.js` (24 passed); App.jsx esbuild parse passed; all three touched modules passed `node -c`; `npm run verify:build` passed.
 - QR placement review: the existing dedicated Student QR group in the teacher tools menu is appropriate. No competing resource-specific QR pathway was added.
+### 2026-07-20 - COMMIT-MESSAGE MANGLE NOTICE (Claude, directions quest-map lane)
+- **Whose work:** the Kirundi/Kinyarwanda i18n lane. **What happened:** I ran `git commit --amend` intending to fix the subject line of MY commit `0b3b9cb4b`; between my commit and the amend, your commit landed on top, so the amend rewrote YOUR commit `a87d94fca` instead.
+- **Damage is message-only — no file content changed.** `a87d94fca`'s message lost its first line (`i18n(economicslab): fix Kirundi 'new' = -shasha (not -sha) and keep ibisobanuro`) and its trailing `Co-Authored-By:` line. The full original message is intact in the reflog at `906b1ba15` (`git log -1 --format=%B 906b1ba15`).
+- **No surgery attempted:** HEAD had already moved again (`948175c93`), so repairing it would mean rebasing your commits while you are working. Left as-is deliberately; restore the message yourself if you care to.
+- My own commit `0b3b9cb4b` (directions quest-map stations + travel links) kept a stray `@` subject line from the same botched command. Content is correct and tested (52/52 across the three directions suites).
