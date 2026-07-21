@@ -12007,18 +12007,18 @@
       "wavelength": "Wavelength λ",
       "log_this_configuration": "📋 Hi configuration log",
       "reset": "Reset",
-      "your_hypothesis_where_exactly_does_tir": "Na hypothesis (TIR cu khoika ah a thawk, zeicah diamond nih glass nakin a fak deuh in TIR a tuah?)",
+      "your_hypothesis_where_exactly_does_tir": "Na hypothesis (TIR cu khoika ah a thawk, zeiruangah diamond nih glass nakin a fak deuh in TIR a tuah?)",
       "e_g_diamond_has_critical_angle_24_vs_g": "tahchunhnak, diamond nih critical angle ~24° a ngei, glass ~42°, cucaah angle a har deuh paoh nih TIR a tuah...",
       "i_m_stuck_show_open_questions": "🤔 Ka dinh — questions a onghmi langhter",
       "open_questions_no_answer_key": "Questions a onghmi (answer key a um lo)",
-      "why_is_there_no_critical_angle_when_go": "Zeicah less-dense in more-dense ah na kal tik ah critical angle a um lo?",
-      "set_water_air_n_1_33_n_1_00_what_s_the": "Water→air set (n₁=1.33 n₂=1.00). Critical angle cu zeidah a si? Zeicah nga hna nih vawlei cu a cunglei cone ah i chihmi bantuk in an hmuh?",
-      "in_a_rainbow_why_does_red_bend_less_th": "Rainbow chungah, zeicah asen nih a hram nakin a tlawm deuh in a kaw? Wavelength slider he pehtlaih.",
+      "why_is_there_no_critical_angle_when_go": "Zeiruangah less-dense in more-dense ah na kal tik ah critical angle a um lo?",
+      "set_water_air_n_1_33_n_1_00_what_s_the": "Water→air set (n₁=1.33 n₂=1.00). Critical angle cu zeidah a si? Zeiruangah nga hna nih vawlei cu a cunglei cone ah i chihmi bantuk in an hmuh?",
+      "in_a_rainbow_why_does_red_bend_less_th": "Rainbow chungah, zeiruangah asen nih a hram nakin a tlawm deuh in a kaw? Wavelength slider he pehtlaih.",
       "how_does_a_prism_separate_white_light_": "Wavelengths vialte nih Snell's law pakhat an zulh ahcun prism nih white light zeitin dah a ṭhen?",
       "i_can_explain_why_this_n_n_combination": "Hi n₁/n₂/θ combination nih hi refraction state a chuahter kong ka fianter khawh.",
       "explain_in_your_own_words": "Namah bia in fianter...",
       "inquiry_widget_no_score_no_reveal_no_a": "Inquiry widget — score a um lo, reveal a um lo, answer dump a um lo. Dispersion model cu langhternak a si (Cauchy-like first-order); dispersion curves taktak cu material-specific (Sellmeier coefficients).",
-      "concept_locked_in": "Concept a ngan tein a khih"
+      "concept_locked_in": "Concept a lian tein a khih"
     },
     "music": {
       "edm_lead": "EDM Lead",
