@@ -1959,6 +1959,19 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
               2. Do the same for reflections (text -> text_en).
               Return ONLY the updated valid JSON object.
           `;
+  } else if (item.type === "directions") {
+    const _dirIsObj = item.data && typeof item.data === "object" && !Array.isArray(item.data);
+    const _dirBody = _dirIsObj ? String(item.data.body || "") : String(item.data || "");
+    const _dirLabels = _dirIsObj && Array.isArray(item.data.objectives) ? item.data.objectives.map((o) => String(o && o.label || "")) : [];
+    prompt = `
+              You are an expert translator for educators.
+              Task: Translate these student-facing assignment directions into ${targetLanguage}.
+              Input JSON: ${JSON.stringify({ title: item.title || "", body: _dirBody, labels: _dirLabels })}
+              Rules:
+              1. Translate "title", "body" (keep the markdown structure, including any **Due:** line), and every entry of "labels".
+              2. Keep each label SHORT \u2014 they are checklist goals a child reads at a glance.
+              3. Return ONLY valid JSON of the exact same shape: {"title": "...", "body": "...", "labels": ["..."]}.
+          `;
   } else {
     prompt = `
               Translate the content of this JSON object into ${targetLanguage}.
@@ -2035,6 +2048,20 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
         else if (newData.activities && Array.isArray(newData.activities)) newData = newData.activities;
         else newData = [];
       }
+    }
+    if (item.type === "directions") {
+      const _dSrc = item.data;
+      const _dIsObj = _dSrc && typeof _dSrc === "object" && !Array.isArray(_dSrc);
+      const _dBody = newData && typeof newData.body === "string" && newData.body.trim() ? newData.body : _dIsObj ? String(_dSrc.body || "") : String(_dSrc || "");
+      const _dLbls = newData && Array.isArray(newData.labels) ? newData.labels : [];
+      const _dTitle = newData && typeof newData.title === "string" && newData.title.trim() ? newData.title : item.title;
+      const _dData = _dIsObj ? { ..._dSrc, body: _dBody, objectives: (Array.isArray(_dSrc.objectives) ? _dSrc.objectives : []).map((o, i) => ({ ...o, label: typeof _dLbls[i] === "string" && _dLbls[i].trim() ? _dLbls[i] : o && o.label })) } : _dBody;
+      return {
+        ...item,
+        data: _dData,
+        title: `${_dTitle} (${targetLanguage})`,
+        meta: item.meta && typeof item.meta === "object" ? { ...item.meta, translatedTo: targetLanguage } : item.meta
+      };
     }
     return {
       ...item,

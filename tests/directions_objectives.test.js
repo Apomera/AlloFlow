@@ -131,6 +131,32 @@ describe('wiring pins', () => {
     // the very next statements after the nudge block ARE the open (unconditional)
     expect(slice).toContain('setGeneratedContent({ ...item,');
   });
+  it('QUEST MAP: the knowledge web renders from the SAME signals as the checklist, checklist stays primary', () => {
+    // visited marking is device-local, reserved-key, set on resource OPEN
+    expect(anti).toContain("const vis = (prev._visited && typeof prev._visited === 'object') ? prev._visited : {};");
+    // the map is an accessible IMAGE with a spoken progress summary; the checklist remains the interactive primary
+    expect(anti).toMatch(/svg role="img" aria-label=\{\(t\('directions\.map_summary'\)/);
+    // STEM stations get a distinct shape; completion lighting reuses _visitedMap + the evaluator output
+    expect(anti).toContain("const _isStemStation = (tp) => ['math', 'stem', 'manipulative-resource', 'concept-sort', 'timeline'].includes(tp);");
+    expect(anti).toMatch(/_goalRefIdx\(_dir\.objectives\[j\] \|\| \{\}\)/); // resourceRef'd goals tether to their station
+    // map items = student-safe pack only, bounded
+    expect(anti).toContain(".filter(h => h && h.id && h.type && h.type !== 'directions' && !TEACHER_ONLY_TYPES.includes(h.type)).slice(0, 12);");
+  });
+  it('TRANSLATION: directions branch translates prose + labels ONLY, machinery + meta object survive', () => {
+    const pk = readFileSync(resolve(process.cwd(), 'phase_k_helpers_source.jsx'), 'utf8');
+    const pkm = readFileSync(resolve(process.cwd(), 'phase_k_helpers_module.js'), 'utf8');
+    // exact pins on the SOURCE; formatting-tolerant markers on the BUILT module (the build
+    // normalizes quotes/spacing, so exact-string pins only hold on the source).
+    expect(pk).toContain('Translate these student-facing assignment directions into');
+    expect(pk).toContain('{"title": "...", "body": "...", "labels": ["..."]}');
+    // labels merge back BY INDEX with per-entry fallback; ids/kinds/amounts spread through untouched
+    expect(pk).toMatch(/objectives: \(Array\.isArray\(_dSrc\.objectives\) \? _dSrc\.objectives : \[\]\)\.map\(\(o, i\) =>/);
+    // meta OBJECT preserved (the generic return would stringify derivedFrom provenance)
+    expect(pk).toContain("meta: (item.meta && typeof item.meta === 'object') ? { ...item.meta, translatedTo: targetLanguage } : item.meta,");
+    expect(pkm).toContain('Translate these student-facing assignment directions into');
+    expect(pkm).toMatch(/translatedTo: targetLanguage/);
+    expect(pkm).toMatch(/_dLbls\[i\]/);
+  });
   it('mirror parity', () => {
     expect(mirror).toBe(anti);
   });

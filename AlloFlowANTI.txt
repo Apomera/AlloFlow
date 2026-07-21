@@ -15762,6 +15762,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // student-side once-per-resource soft-gate nudge tracker.
   const [mbHwEvidence, setMbHwEvidence] = useState({});
   const _softGateNudgedRef = useRef(new Set());
+  const [showQuestMap, setShowQuestMap] = useState(true); // the directions view's knowledge-web toggle
   useEffect(() => {
       let cancelled = false;
       (async () => {
@@ -25958,6 +25959,16 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           addToast('Video transcript loaded into Source. Use the existing quiz and support tools from there.', 'success');
           return;
       }
+      // Quest map: remember which pack resources this device has OPENED (the map's nodes light
+      // up as students travel the web). Reserved '_visited' key in the progress store — NOT a
+      // per-directions record. Device-local like everything else here.
+      if (!isTeacherMode && item && item.id) {
+          setDirectionsProgress(prev => {
+              const vis = (prev._visited && typeof prev._visited === 'object') ? prev._visited : {};
+              if (vis[item.id]) return prev;
+              return { ...prev, _visited: { ...vis, [item.id]: true } };
+          });
+      }
       // Phase 2 SOFT gate: a once-per-resource friendly tip when the teacher asked students to
       // finish goals first. Purely informational — the open proceeds unconditionally below
       // (hard gates are Phase 3, opt-in, with a recorded escape hatch).
@@ -35233,13 +35244,78 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     const _dirProg = directionsProgress[generatedContent.id] || {};
                     const _evald = _alloEvaluateObjectives(_dir.objectives, { globalPoints, gameCompletions }, _dirProg);
                     const _doneCount = _evald.filter(o => o.done).length;
+                    // ── Quest map (knowledge web): pack resources as stations on a trail, goals as
+                    // satellites, completion lighting from the SAME signals as the checklist. The
+                    // checklist stays the accessible PRIMARY; the map is its visual twin (role=img
+                    // with a spoken progress summary), so screen-reader students lose nothing.
+                    const _visitedMap = (directionsProgress._visited && typeof directionsProgress._visited === 'object') ? directionsProgress._visited : {};
+                    const _mapItems = (Array.isArray(history) ? history : []).filter(h => h && h.id && h.type && h.type !== 'directions' && !TEACHER_ONLY_TYPES.includes(h.type)).slice(0, 12);
+                    const _isStemStation = (tp) => ['math', 'stem', 'manipulative-resource', 'concept-sort', 'timeline'].includes(tp);
+                    const _visitedCount = _mapItems.filter(it => _visitedMap[it.id]).length;
+                    const _mapW = Math.max(340, 100 + _mapItems.length * 88);
+                    const _nodeX = (i) => 100 + i * 88;
+                    const _nodeY = (i) => 50 + (i % 2) * 26;
+                    const _goalX = (j) => 70 + j * 92;
+                    const _goalRefIdx = (o) => (o.resourceRef ? _mapItems.findIndex(it => it.id === o.resourceRef) : -1);
                     return (
                         <div className="max-w-2xl mx-auto p-4">
                             <div className="bg-white rounded-2xl border-2 border-amber-200 shadow-lg p-5">
                                 <div className="flex items-center gap-2 mb-3">
                                     <ClipboardList size={20} className="text-amber-600" aria-hidden="true" />
-                                    <h1 className="text-lg font-bold text-slate-800">{generatedContent.title || (t('directions.title') || 'Assignment Directions')}</h1>
+                                    <h1 className="text-lg font-bold text-slate-800 flex-1">{generatedContent.title || (t('directions.title') || 'Assignment Directions')}</h1>
+                                    {_mapItems.length > 0 && (
+                                        <button onClick={() => setShowQuestMap(v => !v)} aria-pressed={showQuestMap} className="text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 rounded-lg px-2 py-1 transition-all flex-shrink-0">
+                                            🗺️ {showQuestMap ? (t('directions.map_hide') || 'Hide map') : (t('directions.map_show') || 'Quest map')}
+                                        </button>
+                                    )}
                                 </div>
+                                {showQuestMap && _mapItems.length > 0 && (
+                                    <div className="mb-4 overflow-x-auto rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/60 to-amber-50/40 p-2">
+                                        <svg role="img" aria-label={(t('directions.map_summary') || 'Quest map') + ': ' + _visitedCount + '/' + _mapItems.length + ' ' + (t('directions.map_stations') || 'stations visited') + (_evald.length ? (', ' + _doneCount + '/' + _evald.length + ' ' + (t('takehome.evidence_goals') || 'goals')) : '')}
+                                             viewBox={'0 0 ' + _mapW + ' ' + (_evald.length ? 178 : 118)} style={{ minWidth: _mapW * 0.75 + 'px' }} className="w-full h-auto">
+                                            {/* trail edges: directions → r0 → r1 → … (brighten once BOTH ends are visited) */}
+                                            <line x1="34" y1="62" x2={_nodeX(0)} y2={_nodeY(0)} stroke={_visitedMap[_mapItems[0] && _mapItems[0].id] ? '#059669' : '#cbd5e1'} strokeWidth="2.5" strokeDasharray={_visitedMap[_mapItems[0] && _mapItems[0].id] ? 'none' : '4 3'} />
+                                            {_mapItems.slice(0, -1).map((it, i) => (
+                                                <line key={'e' + it.id} x1={_nodeX(i)} y1={_nodeY(i)} x2={_nodeX(i + 1)} y2={_nodeY(i + 1)}
+                                                      stroke={(_visitedMap[it.id] && _visitedMap[_mapItems[i + 1].id]) ? '#059669' : '#cbd5e1'} strokeWidth="2.5"
+                                                      strokeDasharray={(_visitedMap[it.id] && _visitedMap[_mapItems[i + 1].id]) ? 'none' : '4 3'} />
+                                            ))}
+                                            {/* goal satellite edges: resourceRef'd goals tether to their station, others to the directions node */}
+                                            {_evald.map((o, j) => {
+                                                const ri = _goalRefIdx(_dir.objectives[j] || {});
+                                                const gx = _goalX(j), gy = 150;
+                                                const tx = ri >= 0 ? _nodeX(ri) : 34, ty = ri >= 0 ? _nodeY(ri) + 12 : 74;
+                                                return <line key={'ge' + o.id} x1={gx} y1={gy - 10} x2={tx} y2={ty} stroke={o.done ? '#059669' : '#e2e8f0'} strokeWidth="1.5" strokeDasharray="2 3" />;
+                                            })}
+                                            {/* the directions node (start of the trail) */}
+                                            <circle cx="34" cy="62" r="15" fill="#fef3c7" stroke="#d97706" strokeWidth="2.5" />
+                                            <text x="34" y="67" textAnchor="middle" fontSize="13" aria-hidden="true">🧭</text>
+                                            <text x="34" y="92" textAnchor="middle" fontSize="7.5" fill="#92400e" fontWeight="bold">{(t('directions.map_start') || 'Start here')}</text>
+                                            {/* resource stations: circles; STEM stations get a rounded-square badge shape */}
+                                            {_mapItems.map((it, i) => {
+                                                const vis = !!_visitedMap[it.id];
+                                                const stem = _isStemStation(it.type);
+                                                const x = _nodeX(i), y = _nodeY(i);
+                                                return (
+                                                    <g key={it.id}>
+                                                        {stem
+                                                            ? <rect x={x - 12} y={y - 12} width="24" height="24" rx="6" fill={vis ? '#d1fae5' : '#ffffff'} stroke={vis ? '#059669' : '#94a3b8'} strokeWidth="2.5" />
+                                                            : <circle cx={x} cy={y} r="13" fill={vis ? '#d1fae5' : '#ffffff'} stroke={vis ? '#059669' : '#94a3b8'} strokeWidth="2.5" />}
+                                                        <text x={x} y={y + 4} textAnchor="middle" fontSize="11" aria-hidden="true">{vis ? '✓' : (stem ? '🔬' : '📖')}</text>
+                                                        <text x={x} y={y + 26} textAnchor="middle" fontSize="7" fill="#475569">{String(it.title || it.type).slice(0, 14)}</text>
+                                                    </g>
+                                                );
+                                            })}
+                                            {/* goal satellites along the bottom rail */}
+                                            {_evald.map((o, j) => (
+                                                <g key={'g' + o.id}>
+                                                    <rect x={_goalX(j) - 34} y={140} width="68" height="20" rx="10" fill={o.done ? '#d1fae5' : '#ffffff'} stroke={o.done ? '#059669' : '#cbd5e1'} strokeWidth="1.5" />
+                                                    <text x={_goalX(j)} y={153} textAnchor="middle" fontSize="7.5" fill={o.done ? '#065f46' : '#475569'} fontWeight={o.done ? 'bold' : 'normal'}>{(o.done ? '✓ ' : '') + String(o.label).slice(0, 14)}</text>
+                                                </g>
+                                            ))}
+                                        </svg>
+                                    </div>
+                                )}
                                 {_dir.body && <div className="prose prose-sm max-w-none text-slate-700 mb-4" dangerouslySetInnerHTML={{ __html: parseMarkdownToHTML(_dir.body) }} />}
                                 {_evald.length > 0 && (
                                     <div className="border-t border-amber-100 pt-3" role="group" aria-label={t('directions.your_goals') || 'Your goals'}>
