@@ -18,12 +18,33 @@
       "title": "Find What It Is Really About",
       "timestamp": "2026-07-21T10:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nHere is a skill that shows up on every test you will ever take, and in every article you will ever read: figuring out what a text is *really* about.\n\n1. Read **The Suitcase Test** — it gives you a trick you can use forever.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Main Idea Moves** chart open while you work.\n4. Practice on **Which Detail Does Not Belong?**\n5. Take the quiz — it uses short paragraphs, so read each one twice.\n6. Use the **Sentence Frames** to write your own main-idea statements.\n\nWatch out for the most common trap: the topic is not the main idea. \"Dogs\" is a topic. \"Dogs can be trained to detect illness\" is a main idea. 🧳",
+        "body": "**Due:** (your teacher will tell you)\n\nHere is a skill that shows up on every test you will ever take, and in every article you will ever read: figuring out what a text is *really* about.\n\n1. Read **The Suitcase Test** — it gives you a trick you can use forever.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Main Idea Moves** chart open while you work.\n4. Practice on **Which Detail Does Not Belong?**\n5. Take the quiz — it uses short paragraphs, so read each one twice.\n6. Use the **Sentence Frames** to write your own main-idea statements.\n7. Read **Reading Questions** if you are wondering how this works on videos, or what to do when you disagree with an author.\n\nWatch out for the most common trap: the topic is not the main idea. \"Dogs\" is a topic. \"Dogs can be trained to detect illness\" is a main idea. 🧳",
         "objectives": [
-          { "id": "mi-goal-scramble", "label": "Win the Word Scramble", "kind": "game", "gameType": "wordScramble", "resourceRef": "mi-glossary" },
-          { "id": "mi-goal-crossword", "label": "Win the Crossword", "kind": "game", "gameType": "crossword", "resourceRef": "mi-glossary" },
-          { "id": "mi-goal-xp", "label": "Earn 25 XP", "kind": "xp", "amount": 25 },
-          { "id": "mi-goal-apply", "label": "I found the main idea of something I read outside of school", "kind": "manual" }
+          {
+            "id": "mi-goal-scramble",
+            "label": "Win the Word Scramble",
+            "kind": "game",
+            "gameType": "wordScramble",
+            "resourceRef": "mi-glossary"
+          },
+          {
+            "id": "mi-goal-crossword",
+            "label": "Win the Crossword",
+            "kind": "game",
+            "gameType": "crossword",
+            "resourceRef": "mi-glossary"
+          },
+          {
+            "id": "mi-goal-xp",
+            "label": "Earn 25 XP",
+            "kind": "xp",
+            "amount": 25
+          },
+          {
+            "id": "mi-goal-apply",
+            "label": "I found the main idea of something I read outside of school",
+            "kind": "manual"
+          }
         ]
       },
       "meta": "4th-5th Grade • 4 goals • transferable skill"
@@ -43,16 +64,56 @@
       "title": "Reading Words",
       "timestamp": "2026-07-21T10:00:02.000Z",
       "data": [
-        { "term": "Main idea", "def": "The most important point a text makes — a complete thought, not one word.", "tier": "Domain-Specific" },
-        { "term": "Topic", "def": "What a text is about in a word or short phrase.", "tier": "Domain-Specific" },
-        { "term": "Detail", "def": "A smaller piece of information that supports the main idea.", "tier": "Domain-Specific" },
-        { "term": "Support", "def": "To help prove or explain a bigger point.", "tier": "Academic" },
-        { "term": "Summary", "def": "A short retelling of the most important parts.", "tier": "Domain-Specific" },
-        { "term": "Stated", "def": "Written directly in the text where you can point to it.", "tier": "Academic" },
-        { "term": "Implied", "def": "Suggested but not written down — you build it from clues.", "tier": "Academic" },
-        { "term": "Evidence", "def": "The specific words or facts from a text that back up an answer.", "tier": "Academic" },
-        { "term": "Paragraph", "def": "A group of sentences that work together on one idea.", "tier": "Academic" },
-        { "term": "Relevant", "def": "Actually related to the point being made.", "tier": "Academic" }
+        {
+          "term": "Main idea",
+          "def": "The most important point a text makes — a complete thought, not one word.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Topic",
+          "def": "What a text is about in a word or short phrase.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Detail",
+          "def": "A smaller piece of information that supports the main idea.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Support",
+          "def": "To help prove or explain a bigger point.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Summary",
+          "def": "A short retelling of the most important parts.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Stated",
+          "def": "Written directly in the text where you can point to it.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Implied",
+          "def": "Suggested but not written down — you build it from clues.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Evidence",
+          "def": "The specific words or facts from a text that back up an answer.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Paragraph",
+          "def": "A group of sentences that work together on one idea.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Relevant",
+          "def": "Actually related to the point being made.",
+          "tier": "Academic"
+        }
       ],
       "meta": "10 terms • Tiered"
     },
@@ -65,10 +126,42 @@
         "chartType": "reference",
         "title": "PACK THE SUITCASE",
         "sections": [
-          { "label": "TOPIC vs IDEA", "bullets": ["Topic = a word ('dogs')", "Main idea = a SENTENCE about it", "If you can say it in one word, keep going"], "iconPrompt": "a single word tag beside a full sentence" },
-          { "label": "LOOK FIRST AND LAST", "bullets": ["Often stated in sentence 1 or the last one", "But not always — sometimes it is implied", "Implied still counts and is still findable"], "iconPrompt": "a paragraph with the first and last lines highlighted" },
-          { "label": "THE COVER TEST", "bullets": ["Read it, cover it, say one sentence", "What you say out loud is usually close", "Then check it against the details"], "iconPrompt": "a hand covering a page" },
-          { "label": "CHECK THE DETAILS", "bullets": ["Every detail should support the idea", "If one does not fit, your idea may be too narrow", "Interesting is NOT the same as important"], "iconPrompt": "three suitcase items with checkmarks and one with an x" }
+          {
+            "label": "TOPIC vs IDEA",
+            "bullets": [
+              "Topic = a word ('dogs')",
+              "Main idea = a SENTENCE about it",
+              "If you can say it in one word, keep going"
+            ],
+            "iconPrompt": "a single word tag beside a full sentence"
+          },
+          {
+            "label": "LOOK FIRST AND LAST",
+            "bullets": [
+              "Often stated in sentence 1 or the last one",
+              "But not always — sometimes it is implied",
+              "Implied still counts and is still findable"
+            ],
+            "iconPrompt": "a paragraph with the first and last lines highlighted"
+          },
+          {
+            "label": "THE COVER TEST",
+            "bullets": [
+              "Read it, cover it, say one sentence",
+              "What you say out loud is usually close",
+              "Then check it against the details"
+            ],
+            "iconPrompt": "a hand covering a page"
+          },
+          {
+            "label": "CHECK THE DETAILS",
+            "bullets": [
+              "Every detail should support the idea",
+              "If one does not fit, your idea may be too narrow",
+              "Interesting is NOT the same as important"
+            ],
+            "iconPrompt": "three suitcase items with checkmarks and one with an x"
+          }
         ]
       },
       "meta": "4 moves • strategy reference"
@@ -80,18 +173,58 @@
       "timestamp": "2026-07-21T10:00:04.000Z",
       "data": {
         "categories": [
-          { "id": "mi-supports", "label": "Supports: 'Bees matter to our food supply'", "color": "bg-emerald-500" },
-          { "id": "mi-offtopic", "label": "True, but does NOT support that idea", "color": "bg-rose-500" }
+          {
+            "id": "mi-supports",
+            "label": "Supports: 'Bees matter to our food supply'",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "mi-offtopic",
+            "label": "True, but does NOT support that idea",
+            "color": "bg-rose-500"
+          }
         ],
         "items": [
-          { "id": "mi1", "content": "Pollen sticks to bees and travels between flowers", "categoryId": "mi-supports" },
-          { "id": "mi2", "content": "About one in three bites of our food depends on pollinators", "categoryId": "mi-supports" },
-          { "id": "mi3", "content": "Bees have five eyes", "categoryId": "mi-offtopic" },
-          { "id": "mi4", "content": "Almond farmers rent beehives during flowering season", "categoryId": "mi-supports" },
-          { "id": "mi5", "content": "A bee's wings beat over 200 times per second", "categoryId": "mi-offtopic" },
-          { "id": "mi6", "content": "Without pollination, many crops would produce far less fruit", "categoryId": "mi-supports" },
-          { "id": "mi7", "content": "Honey has been found in ancient tombs, still edible", "categoryId": "mi-offtopic" },
-          { "id": "mi8", "content": "Blueberry yields drop sharply when bee populations fall", "categoryId": "mi-supports" }
+          {
+            "id": "mi1",
+            "content": "Pollen sticks to bees and travels between flowers",
+            "categoryId": "mi-supports"
+          },
+          {
+            "id": "mi2",
+            "content": "About one in three bites of our food depends on pollinators",
+            "categoryId": "mi-supports"
+          },
+          {
+            "id": "mi3",
+            "content": "Bees have five eyes",
+            "categoryId": "mi-offtopic"
+          },
+          {
+            "id": "mi4",
+            "content": "Almond farmers rent beehives during flowering season",
+            "categoryId": "mi-supports"
+          },
+          {
+            "id": "mi5",
+            "content": "A bee's wings beat over 200 times per second",
+            "categoryId": "mi-offtopic"
+          },
+          {
+            "id": "mi6",
+            "content": "Without pollination, many crops would produce far less fruit",
+            "categoryId": "mi-supports"
+          },
+          {
+            "id": "mi7",
+            "content": "Honey has been found in ancient tombs, still edible",
+            "categoryId": "mi-offtopic"
+          },
+          {
+            "id": "mi8",
+            "content": "Blueberry yields drop sharply when bee populations fall",
+            "categoryId": "mi-supports"
+          }
         ]
       },
       "meta": "2 buckets • 8 details • all TRUE, only some relevant"
@@ -177,8 +310,12 @@
           }
         ],
         "reflections": [
-          { "text": "What is the main idea of the last thing you read outside of school?" },
-          { "text": "Which is harder for you: finding a stated main idea or an implied one? Why?" }
+          {
+            "text": "What is the main idea of the last thing you read outside of school?"
+          },
+          {
+            "text": "Which is harder for you: finding a stated main idea or an implied one? Why?"
+          }
         ]
       },
       "meta": "5 MCQ + 2 short answer • real paragraphs to analyze"
@@ -191,12 +328,24 @@
       "data": {
         "mode": "list",
         "items": [
-          { "text": "The topic of this text is ____." },
-          { "text": "The main idea is that ____." },
-          { "text": "One detail that supports this is ____." },
-          { "text": "Another detail that supports this is ____." },
-          { "text": "The detail about ____ is interesting, but it does not support the main idea because ____." },
-          { "text": "I think the main idea is stated / implied because ____." }
+          {
+            "text": "The topic of this text is ____."
+          },
+          {
+            "text": "The main idea is that ____."
+          },
+          {
+            "text": "One detail that supports this is ____."
+          },
+          {
+            "text": "Another detail that supports this is ____."
+          },
+          {
+            "text": "The detail about ____ is interesting, but it does not support the main idea because ____."
+          },
+          {
+            "text": "I think the main idea is stated / implied because ____."
+          }
         ],
         "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Strong Reader |\n|---|---|---|---|\n| Main idea | Gives a topic word | A sentence, but too narrow or too broad | A sentence that covers the whole text exactly |\n| Evidence | No details cited | One supporting detail | Two or more details quoted or paraphrased accurately |\n| Judgment | Treats all details equally | Notices one off-topic detail | Explains WHY a detail does or does not support the idea |"
       },
@@ -208,12 +357,30 @@
       "title": "Reading Questions",
       "timestamp": "2026-07-21T10:00:07.000Z",
       "data": [
-        { "question": "Can a paragraph have more than one main idea? 🤔", "answer": "A single paragraph usually has one. Whole articles often have several, one per section — which is exactly what the 5th grade standard asks you to handle." },
-        { "question": "Is the first sentence always the main idea?", "answer": "Often, but definitely not always. Writers sometimes build up to it and put it last, and sometimes never state it at all. Check the details before trusting the first line." },
-        { "question": "What is the difference between a main idea and a summary? 📝", "answer": "The main idea is the single biggest point. A summary is short but includes the main idea PLUS the most important supporting details." },
-        { "question": "Why do tests love this skill so much?", "answer": "Because it is the skill underneath almost every other reading skill. If you can find what a text is really about, you can answer most questions about it." },
-        { "question": "What if I disagree with the author's main idea?", "answer": "Totally allowed — and identifying it accurately is what makes disagreeing possible. You cannot argue with a point you have not correctly understood first." },
-        { "question": "Does this work on videos and podcasts too? 🎧", "answer": "Exactly the same. Ask what one sentence captures the whole thing. The suitcase test does not care what format the ideas arrive in." }
+        {
+          "question": "Can a paragraph have more than one main idea? 🤔",
+          "answer": "A single paragraph usually has one. Whole articles often have several, one per section — which is exactly what the 5th grade standard asks you to handle."
+        },
+        {
+          "question": "Is the first sentence always the main idea?",
+          "answer": "Often, but definitely not always. Writers sometimes build up to it and put it last, and sometimes never state it at all. Check the details before trusting the first line."
+        },
+        {
+          "question": "What is the difference between a main idea and a summary? 📝",
+          "answer": "The main idea is the single biggest point. A summary is short but includes the main idea PLUS the most important supporting details."
+        },
+        {
+          "question": "Why do tests love this skill so much?",
+          "answer": "Because it is the skill underneath almost every other reading skill. If you can find what a text is really about, you can answer most questions about it."
+        },
+        {
+          "question": "What if I disagree with the author's main idea?",
+          "answer": "Totally allowed — and identifying it accurately is what makes disagreeing possible. You cannot argue with a point you have not correctly understood first."
+        },
+        {
+          "question": "Does this work on videos and podcasts too? 🎧",
+          "answer": "Exactly the same. Ask what one sentence captures the whole thing. The suitcase test does not care what format the ideas arrive in."
+        }
       ],
       "meta": "6 questions • transfer beyond print"
     }
