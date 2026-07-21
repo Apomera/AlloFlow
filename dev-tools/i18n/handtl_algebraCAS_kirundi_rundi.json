@@ -1,0 +1,27 @@
+{
+  "kirundi": {
+    "word_problem": "📖 Ikibazo c'amagambo",
+    "tutor": "🤖 Umwigisha",
+    "algebra_cas_sections": "Ibice vya Aljebra CAS",
+    "your_answer": "Igisubizo cawe...",
+    "practice_answer_input": "Iyinjizwa ry'igisubizo c'imyitozo",
+    "new_problem": "Ikibazo gishasha",
+    "new_problem_2": "🔄 Ikibazo gishasha",
+    "your_equation_click_tile_to_remove": "Ingingo yawe (fyonda ikaro kugira ngo ukure)",
+    "click_tiles_above_to_build_an_equation": "Fyonda amakaro ari hejuru kugira ngo wubake ingingo...",
+    "apply_to_both_sides": "Shira ku mpande zombi",
+    "value_to_apply_to_both_sides": "Agaciro ko gushira ku mpande zombi",
+    "steps_applied": "Intambwe zashizweho:",
+    "new_equation": "Ingingo nshasha",
+    "new_equation_2": "🔄 Ingingo nshasha",
+    "ask_the_ai_tutor_anything_about_algebr": "Baza umwigisha AI ikintu cose kuri aljebra!",
+    "tutor_2": "🤖 Umwigisha",
+    "ask_the_algebra_tutor": "Baza umwigisha wa aljebra",
+    "linear_quadratic_factoring_system_simp": "Umurongo, kareya, gusesengura, sisitemu, korosha. AI igaragaza buri ntambwe + itanga izina ry'imiterere yakoreshejwe (igabanya, guhuza ibice bisa, FOIL). Ibibazo bisanzwe vya AP / SAT / Aljebra 1 vyose bigabanuka kugeza ku mihindagurikire ~8.",
+    "multi_difficulty_problem_sets_the_ai_c": "Imitwe y'ibibazo y'ubukana butandukanye. AI igenzura igisubizo cawe kandi inyura mu gisubizo cuzuye kugira ngo ubone neza aho intambwe zawe zatandukaniye. Yubaka akamenyero ko kwandika imibare, atari ugukeka gusa.",
+    "pick_variables_operations_target_value": "Toranya impinduka + ibikorwa + agaciro intego; sisitemu ikora ikibazo ca aljebra gihuye n'igishushanyo cawe. Ifite akamaro ku bigisha bakora amapaji y'akazi n'abanyeshure basesengura inyuma \"ico gituma ikibazo kigora.\"",
+    "drag_weights_onto_a_balance_to_model_x": "Kurura ibiro ku minzani kugira ngo werekane x + 3 = 7 mu buryo bugaragara. Ubushishozi bw'ingirakamaro cane kuri aljebra yo hambere — ingingo ni iminzani, si imyanya yuzuye yo kuzuza. Ico ukora ku ruhande rumwe, gikore ku rundi.",
+    "tutor_ask_ai_for_help": "Umwigisha — saba AI ubufasha",
+    "ask_the_tutor_about_any_algebra_concep": "Baza umwigisha kuri iciyumviro cose ca aljebra canke intambwe yakwamye. Umwigisha azi urwego rw'ishure ryawe, kugerageza vuba aha, n'ikibazo gikora. Ciza cane ku bibazo \"kuki uburyo bwanje butakoze?\""
+  }
+}
