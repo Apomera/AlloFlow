@@ -40,8 +40,8 @@ describe('Learning Lab Quote Collector accessibility', () => {
   });
 
   it('preserves unrelated section data when saving and deleting', () => {
-    expect(collector).toContain("setData(Object.assign({}, data, { quotes: [quote].concat(data.quotes || []) }))");
-    expect(collector).toContain("setData(Object.assign({}, data, { quotes: (data.quotes || []).filter");
+    expect(collector).toContain("setData(Object.assign({}, data, { quotes: [quote].concat(rawQuotes) }))");
+    expect(collector).toContain("setData(Object.assign({}, data, { quotes: rawQuotes.filter");
   });
 
   it('confirms removal through the accessible app dialog', () => {
@@ -57,7 +57,7 @@ describe('Learning Lab Quote Collector accessibility', () => {
   });
 
   it('searches quote context in addition to quote, source, and tag', () => {
-    expect(collector).toContain("(q.context || '').toLowerCase().indexOf(normalizedSearch)");
+    expect(collector).toContain("textValue(q.context).toLowerCase().indexOf(normalizedSearch)");
     expect(collector).toContain("search.trim().toLowerCase()");
   });
 
@@ -69,9 +69,9 @@ describe('Learning Lab Quote Collector accessibility', () => {
 
   it('uses semantic quotation and citation markup', () => {
     expect(collector).toContain("hh('blockquote'");
-    expect(collector).toContain("hh('cite', null, random.source)");
-    expect(collector).toContain("hh('cite', null, q.source)");
-    expect(collector).toContain("hh('time', { dateTime: q.date }");
+    expect(collector).toContain("hh('cite', null, textValue(random.source).trim())");
+    expect(collector).toContain("hh('cite', null, textValue(q.source).trim())");
+    expect(collector).toContain("hh('time', { dateTime: textValue(q.date).trim() }");
   });
 
   it('uses a semantic results list with labeled articles', () => {
@@ -103,6 +103,18 @@ describe('Learning Lab Quote Collector accessibility', () => {
     expect(collector).toContain("width: '100%', minHeight: 44");
     expect(collector).toContain('minWidth: 44, minHeight: 44');
     expect(collector).toContain("minHeight: 44, padding: '9px 12px'");
+  });
+
+  it('handles malformed legacy quote data without crashing', () => {
+    expect(collector).toContain('var rawQuotes = Array.isArray(data.quotes) ? data.quotes : [];');
+    expect(collector).toContain('var quotes = rawQuotes.filter(isRecord);');
+    expect(collector).toContain('var initialQuotes = rawQuotes.filter(isRecord);');
+    expect(collector).toContain("var quoteLabel = textValue(q.text).trim() || 'Untitled quote';");
+    expect(source).toContain("stat: (Array.isArray((data.mytkQuote || {}).quotes) ? (data.mytkQuote || {}).quotes.length : 0) + ' quotes'");
+  });
+
+  it('explains local-only saving', () => {
+    expect(collector).toContain('Your collection is saved only in your Personal Toolkit and is not shared with or sent to anyone.');
   });
 
   it('keeps the deployed mirror identical', () => {

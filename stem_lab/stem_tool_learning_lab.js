@@ -13649,14 +13649,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // library of words that matter.
   function PersonalQuoteCollector(props) {
     if (!R) return null;
-    var data = props.data || { quotes: [] };
+    var data = props.data && typeof props.data === 'object' ? props.data : { quotes: [] };
     var setData = props.setData;
+    var isRecord = function(value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
+    var textValue = function(value) { return typeof value === 'string' ? value : (typeof value === 'number' ? String(value) : ''); };
+    var rawQuotes = Array.isArray(data.quotes) ? data.quotes : [];
     var emptyForm = function() { return { text: '', source: '', context: '', tag: '' }; };
     var fs = R.useState(emptyForm());
     var form = fs[0]; var setForm = fs[1];
     var qs = R.useState(''); var search = qs[0]; var setSearch = qs[1];
     var es = R.useState(''); var quoteError = es[0]; var setQuoteError = es[1];
-    var initialQuotes = data.quotes || [];
+    var initialQuotes = rawQuotes.filter(isRecord);
     var rs = R.useState(function() {
       return initialQuotes.length ? initialQuotes[Math.floor(Math.random() * initialQuotes.length)].id : null;
     });
@@ -13694,7 +13697,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         context: form.context.trim(),
         tag: form.tag.trim().replace(/^#/, '')
       };
-      setData(Object.assign({}, data, { quotes: [quote].concat(data.quotes || []) }));
+      setData(Object.assign({}, data, { quotes: [quote].concat(rawQuotes) }));
       setForm(emptyForm());
       setQuoteError('');
       if (!featuredId) setFeaturedId(quote.id);
@@ -13702,12 +13705,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       focusById('learning-lab-quote-text');
     }
     async function remove(quote) {
-      var label = (quote.text || 'this quote').trim();
+      var label = textValue(quote.text).trim() || 'this quote';
       if (label.length > 80) label = label.slice(0, 77) + '...';
       if (!(await askLearningLabConfirmation('This permanently removes “' + label + '” from your collection.', {
         title: 'Remove this quote?', confirmText: 'Remove quote'
       }))) return;
-      setData(Object.assign({}, data, { quotes: (data.quotes || []).filter(function(item) { return item.id !== quote.id; }) }));
+      setData(Object.assign({}, data, { quotes: rawQuotes.filter(function(item) { return !(isRecord(item) && item.id === quote.id); }) }));
       if (featuredId === quote.id) setFeaturedId(null);
       llAnnounce('Quote removed.');
       focusById('learning-lab-quote-search');
@@ -13725,17 +13728,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       focusById('learning-lab-quote-search');
     }
 
-    var quotes = data.quotes || [];
+    var quotes = rawQuotes.filter(isRecord);
     var normalizedSearch = search.trim().toLowerCase();
     var filtered = normalizedSearch ? quotes.filter(function(q) {
-      return (q.text || '').toLowerCase().indexOf(normalizedSearch) >= 0 ||
-             (q.source || '').toLowerCase().indexOf(normalizedSearch) >= 0 ||
-             (q.context || '').toLowerCase().indexOf(normalizedSearch) >= 0 ||
-             (q.tag || '').toLowerCase().indexOf(normalizedSearch) >= 0;
+      return textValue(q.text).toLowerCase().indexOf(normalizedSearch) >= 0 ||
+             textValue(q.source).toLowerCase().indexOf(normalizedSearch) >= 0 ||
+             textValue(q.context).toLowerCase().indexOf(normalizedSearch) >= 0 ||
+             textValue(q.tag).toLowerCase().indexOf(normalizedSearch) >= 0;
     }) : quotes;
     var random = quotes.filter(function(quote) { return quote.id === featuredId; })[0] || quotes[0] || null;
     var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 7, border: '1px solid rgba(251,191,36,0.65)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
-    var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#fde68a', textTransform: 'uppercase', marginBottom: 4 };
+    var labelStyle = { display: 'block', fontSize: 12, fontWeight: 800, color: '#fde68a', textTransform: 'uppercase', marginBottom: 4 };
     var actionStyle = { minWidth: 44, minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid #fde68a', background: 'rgba(120,53,15,0.35)', color: '#fef3c7', fontWeight: 800, cursor: 'pointer' };
 
     function textField(id, label, key, placeholder) {
@@ -13746,13 +13749,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('💭', 'Quote Collector', 'Save lines from books + classes + conversations + anywhere. Browse on hard days.', '#fbbf24'),
+      tkSectionHeader('💭', 'Quote Collector', 'Save lines from books, classes, conversations, and anywhere else. Browse on hard days.', '#fbbf24'),
+      hh('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, margin: '0 0 12px' } }, 'Your collection is saved only in your Personal Toolkit and is not shared with or sent to anyone.'),
 
       random ? hh('aside', { 'aria-labelledby': 'learning-lab-featured-quote-heading', style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.20), rgba(15,23,42,0.7))', border: '2px solid #fbbf24', marginBottom: 14 } },
         hh('h3', { id: 'learning-lab-featured-quote-heading', style: { fontSize: 11, color: '#fde68a', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' } }, hh('span', { 'aria-hidden': 'true' }, '✨ '), 'From your collection'),
         hh('blockquote', { style: { margin: 0 } },
-          hh('p', { style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, fontStyle: 'italic', margin: 0 } }, random.text),
-          random.source ? hh('footer', { style: { fontSize: 11, color: '#fde68a', marginTop: 8, fontFamily: 'Georgia, serif' } }, '— ', hh('cite', null, random.source)) : null
+          hh('p', { style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, fontStyle: 'italic', margin: 0 } }, textValue(random.text)),
+          textValue(random.source).trim() ? hh('footer', { style: { fontSize: 11, color: '#fde68a', marginTop: 8, fontFamily: 'Georgia, serif' } }, '— ', hh('cite', null, textValue(random.source).trim())) : null
         ),
         quotes.length > 1 ? hh('button', { type: 'button', onClick: showAnother, 'data-ll-focusable': true, style: Object.assign({}, actionStyle, { marginTop: 10 }) }, 'Show another quote') : null
       ) : null,
@@ -13762,7 +13766,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           hh('h3', { id: 'learning-lab-quote-form-heading', style: { fontSize: 12, fontWeight: 800, color: '#fde68a', margin: '0 0 8px' } }, 'Save a quote'),
           hh('div', { style: { marginBottom: 8 } },
             hh('label', { htmlFor: 'learning-lab-quote-text', style: labelStyle }, 'Quote (required)'),
-            hh('div', { id: 'learning-lab-quote-text-help', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', marginBottom: 4 } }, 'Enter the words without adding quotation marks.'),
+            hh('div', { id: 'learning-lab-quote-text-help', style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', marginBottom: 4 } }, 'Enter the words without adding quotation marks.'),
             hh('textarea', { id: 'learning-lab-quote-text', value: form.text, required: true, rows: 3, maxLength: 3000, placeholder: 'The words you want to remember', 'aria-invalid': quoteError ? 'true' : undefined, 'aria-describedby': quoteError ? 'learning-lab-quote-text-help learning-lab-quote-text-error' : 'learning-lab-quote-text-help', onChange: function(event) { updateForm('text', event.target.value); }, style: Object.assign({}, fieldStyle, { minHeight: 88, resize: 'vertical' }) }),
             hh('div', { id: 'learning-lab-quote-text-error', role: 'alert', style: { minHeight: quoteError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginTop: quoteError ? 4 : 0 } }, quoteError)
           ),
@@ -13791,21 +13795,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         filtered.length === 0 ? tkEmptyState('💭', quotes.length === 0 ? 'No quotes saved yet.' : 'No quotes match your search.', null, null)
         : hh('ul', { 'aria-label': 'Saved quote results', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 } },
             filtered.map(function(q) {
-              var quoteLabel = (q.text || 'Untitled quote').trim();
+              var quoteLabel = textValue(q.text).trim() || 'Untitled quote';
               if (quoteLabel.length > 60) quoteLabel = quoteLabel.slice(0, 57) + '...';
               return hh('li', { key: 'qu-' + q.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #fbbf24' } },
                 hh('article', { 'aria-labelledby': 'learning-lab-quote-heading-' + q.id },
                   hh('h4', { id: 'learning-lab-quote-heading-' + q.id, style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 } }, 'Saved quote: ' + quoteLabel),
                   hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
                     hh('blockquote', { style: { flex: 1, margin: 0 } },
-                      hh('p', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, fontStyle: 'italic', fontFamily: 'Georgia, serif', margin: 0 } }, q.text),
-                      q.source ? hh('footer', { style: { fontSize: 11, color: '#fde68a', marginTop: 6, fontWeight: 700 } }, '— ', hh('cite', null, q.source)) : null
+                      hh('p', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, fontStyle: 'italic', fontFamily: 'Georgia, serif', margin: 0 } }, textValue(q.text)),
+                      textValue(q.source).trim() ? hh('footer', { style: { fontSize: 11, color: '#fde68a', marginTop: 6, fontWeight: 700 } }, '— ', hh('cite', null, textValue(q.source).trim())) : null
                     ),
                     hh('button', { type: 'button', 'aria-label': 'Remove quote: ' + quoteLabel, onClick: function() { remove(q); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: '1px solid transparent', color: 'var(--allo-stem-text-soft, #cbd5e1)', fontSize: 15, cursor: 'pointer' } }, '×')
                   ),
-                  q.context ? hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '6px 0 0', fontStyle: 'italic' } }, 'Context: ' + q.context) : null,
-                  q.tag ? hh('p', { style: { margin: '6px 0 0' } }, hh('span', { style: { display: 'inline-block', padding: '3px 8px', borderRadius: 999, background: 'rgba(251,191,36,0.15)', color: '#fde68a', fontSize: 10, fontWeight: 700 } }, 'Tag: ' + q.tag.replace(/^#/, ''))) : null,
-                  q.date ? hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '6px 0 0' } }, hh('time', { dateTime: q.date }, 'Saved ' + q.date)) : null
+                  textValue(q.context).trim() ? hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '6px 0 0', fontStyle: 'italic' } }, 'Context: ' + textValue(q.context).trim()) : null,
+                  textValue(q.tag).trim() ? hh('p', { style: { margin: '6px 0 0' } }, hh('span', { style: { display: 'inline-block', padding: '3px 8px', borderRadius: 999, background: 'rgba(251,191,36,0.15)', color: '#fde68a', fontSize: 12, fontWeight: 700 } }, 'Tag: ' + textValue(q.tag).trim().replace(/^#/, ''))) : null,
+                  textValue(q.date).trim() ? hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '6px 0 0' } }, hh('time', { dateTime: textValue(q.date).trim() }, 'Saved ' + textValue(q.date).trim())) : null
                 )
               );
             })
@@ -20680,7 +20684,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkRoster',   icon: '🎒', label: 'My Class Roster',      color: '#3b82f6', desc: 'Classes, teachers, periods, rooms, friends',
         stat: (Array.isArray((data.mytkRoster || {}).classes) ? (data.mytkRoster || {}).classes.length : 0) + ' classes', cta: 'Track classes' },
       { id: 'mytkQuote',    icon: '💭', label: 'Quote Collector',      color: '#fbbf24', desc: 'Save quotes that matter — your personal library',
-        stat: ((data.mytkQuote || {}).quotes || []).length + ' quotes', cta: 'Collect quotes' },
+        stat: (Array.isArray((data.mytkQuote || {}).quotes) ? (data.mytkQuote || {}).quotes.length : 0) + ' quotes', cta: 'Collect quotes' },
       { id: 'mytkCrisis',   icon: '🛡', label: 'My Crisis Plan',       color: '#ef4444', desc: 'A private safety plan you control',
         stat: 'plan ready', cta: 'Build my plan' },
       { id: 'mytkIdent',    icon: '🪞', label: 'My Identity Map',      color: '#a855f7', desc: '8-dimension self-snapshot (Erikson identity work)',
