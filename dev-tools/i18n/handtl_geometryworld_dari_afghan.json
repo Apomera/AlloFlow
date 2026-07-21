@@ -1,0 +1,15 @@
+{
+  "dari": {
+    "class_worlds": "جهان‌های صنف",
+    "print_a_card_to_build_this_structure_w": "یک کارت چاپ کن تا این سازه را با مکعب‌های فزیکی بسازی",
+    "student_home_language_for_bilingual_np": "زبان مادری شاگرد برای گفتار دوزبانهٔ NPC",
+    "student_home_language_npcs_will_speak_": "زبان مادری شاگرد — NPCها دوزبانه صحبت خواهند کرد",
+    "student_build": "ساختهٔ شاگرد",
+    "share_this_world_to_the_class_library": "این جهان را در کتابخانهٔ صنف به اشتراک بگذار",
+    "browse_worlds_shared_by_classmates": "مرور جهان‌هایی که هم‌صنفی‌ها به اشتراک گذاشته‌اند",
+    "npc_compass_strip_showing_relative_dir": "نوار قطب‌نمای NPC که جهت نسبی هر NPC را از جهت کمره نشان می‌دهد",
+    "npc_question_optional": "سوال NPC (اختیاری)",
+    "question_optional_e_g_what_is_the_volu": "سوال (اختیاری، مثلاً «حجم چقدر است؟»)",
+    "close_class_worlds_browser": "مرورگر جهان‌های صنف را ببند"
+  }
+}
