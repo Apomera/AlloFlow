@@ -1,1 +1,14 @@
-{}
+{
+  "back_to_tools": "Back to tools",
+  "solution_set_studio": "Solution-set studio",
+  "inequality_grapher": "Inequality Grapher",
+  "tool_intro_blurb": "Test values, represent solution sets, and justify boundaries with algebraic and graphical evidence.",
+  "recommended_next_move": "Recommended next move",
+  "metric_view": "View",
+  "metric_tests": "Tests",
+  "metric_solved": "Solved",
+  "badges": "Badges",
+  "ai_inequality_tutor": "AI Inequality Tutor",
+  "thinking": "Thinking...",
+  "ask_again": "Ask Again"
+}

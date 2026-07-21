@@ -140,6 +140,9 @@ window.StemLab = window.StemLab || {
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
+      // i18n: __alloT(key, englishFallback) → ctx.t if available, else the English string.
+      // Keys are stem.inequality.<snake_case>; harvested by dev-tools/i18n/extract_stem_tool_en.cjs.
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var setStemLabTool = ctx.setStemLabTool;
       var addToast = ctx.addToast;
@@ -555,23 +558,23 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
               h('div', { className: 'min-w-0' },
                 h('div', { className: 'flex flex-wrap items-center gap-2' },
-                  h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-fuchsia-300', 'aria-label': 'Back to tools' }, h(ArrowLeft, { size: 18 })),
-                  h('span', { className: 'rounded-full bg-fuchsia-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-fuchsia-100 ring-1 ring-fuchsia-200/30' }, 'Solution-set studio'),
+                  h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-fuchsia-300', 'aria-label': __alloT('stem.inequality.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
+                  h('span', { className: 'rounded-full bg-fuchsia-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-fuchsia-100 ring-1 ring-fuchsia-200/30' }, __alloT('stem.inequality.solution_set_studio', 'Solution-set studio')),
                   earnedCount > 0 && h('button', { onClick: function() { upd('showBadges', !showBadges); }, className: 'rounded-full border border-amber-300/40 bg-amber-300/15 px-2.5 py-1 text-[10px] font-bold text-amber-100' }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
                   h('button', { onClick: askAI, className: 'rounded-full border border-violet-300/40 bg-violet-300/15 px-2.5 py-1 text-[10px] font-bold text-violet-100' }, '\uD83E\uDDE0 AI')
                 ),
-                h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, '\uD83C\uDFA8 Inequality Grapher'),
-                h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-fuchsia-100' }, 'Test values, represent solution sets, and justify boundaries with algebraic and graphical evidence.'),
+                h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, '\uD83C\uDFA8 ' + __alloT('stem.inequality.inequality_grapher', 'Inequality Grapher')),
+                h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-fuchsia-100' }, __alloT('stem.inequality.tool_intro_blurb', 'Test values, represent solution sets, and justify boundaries with algebraic and graphical evidence.')),
                 h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-white/10 p-3' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-fuchsia-200' }, 'Recommended next move'),
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-fuchsia-200' }, __alloT('stem.inequality.recommended_next_move', 'Recommended next move')),
                   h('p', { className: 'mt-1 text-sm font-semibold text-white' }, inequalityNext)
                 )
               ),
               h('div', { className: 'grid grid-cols-3 gap-2 lg:w-[22rem]' },
                 [
-                  { label: 'View', value: inequalityModeLabel },
-                  { label: 'Tests', value: String(testCount) },
-                  { label: 'Solved', value: String(solverCount) }
+                  { label: __alloT('stem.inequality.metric_view', 'View'), value: inequalityModeLabel },
+                  { label: __alloT('stem.inequality.metric_tests', 'Tests'), value: String(testCount) },
+                  { label: __alloT('stem.inequality.metric_solved', 'Solved'), value: String(solverCount) }
                 ].map(function(metric) {
                   return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
                     h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
@@ -598,7 +601,7 @@ window.StemLab = window.StemLab || {
         // ── Badge panel ──
         showBadges && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200 mb-3' },
           h('div', { className: 'flex items-center justify-between mb-2' },
-            h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
+            h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 ' + __alloT('stem.inequality.badges', 'Badges') + ' (' + earnedCount + '/' + BADGES.length + ')'),
             h('button', { onClick: function() { upd('showBadges', false); }, className: 'text-xs text-slate-600 hover:text-slate-800' }, '\u2715')
           ),
           h('div', { className: 'grid grid-cols-3 sm:grid-cols-5 gap-2' },
@@ -620,19 +623,19 @@ window.StemLab = window.StemLab || {
         // ── AI Tutor panel ──
         showAI && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200 mb-3' },
           h('div', { className: 'flex items-center justify-between mb-2' },
-            h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 AI Inequality Tutor'),
+            h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 ' + __alloT('stem.inequality.ai_inequality_tutor', 'AI Inequality Tutor')),
             h('button', { onClick: function() { upd('showAI', false); }, className: 'text-xs text-slate-600 hover:text-slate-800' }, '\u2715')
           ),
           aiLoading
             ? h('div', { className: 'flex items-center gap-2' },
                 h('div', { className: 'w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin' }),
-                h('span', { className: 'text-xs text-purple-600' }, 'Thinking...')
+                h('span', { className: 'text-xs text-purple-600' }, __alloT('stem.inequality.thinking', 'Thinking...'))
               )
             : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, aiResponse),
-          !aiLoading && h('button', { 'aria-label': 'Ask Again',
+          !aiLoading && h('button', { 'aria-label': __alloT('stem.inequality.ask_again', 'Ask Again'),
             onClick: askAI,
             className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-600 transition-all'
-          }, '\uD83D\uDD04 Ask Again')
+          }, '\uD83D\uDD04 ' + __alloT('stem.inequality.ask_again', 'Ask Again'))
         ),
 
         h('p', { className: 'text-xs text-slate-600 italic -mt-1 mb-3' },
