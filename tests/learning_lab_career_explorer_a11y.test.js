@@ -76,10 +76,21 @@ describe('Learning Lab Personal Career Explorer accessibility', () => {
     expect(explorer).toContain("'Matched ' + career.score + ' of ' + career.match.length + ' career themes.'");
   });
 
-  it('implements save controls as named, stateful toggles', () => {
-    expect(explorer).toContain("'aria-pressed': isSaved ? 'true' : 'false'");
+  it('implements save controls with label-based state instead of aria-pressed on a changing label', () => {
     expect(explorer).toContain("'aria-label': (isSaved ? 'Remove ' : 'Save ') + career.label");
+    expect(explorer).toContain("isSaved ? 'Saved — remove' : 'Save to explore'");
+    expect(explorer).not.toContain("'aria-pressed'");
     expect(explorer).toContain("onClick: function() { toggleCareer(career, isSaved); }");
+  });
+
+  it('handles malformed legacy saved-career data without crashing', () => {
+    expect(explorer).toContain('var rawSaved = (Array.isArray(data.saved) ? data.saved : []).filter(isRecord);');
+    expect(explorer).toContain("savedAt: textValue(saved.savedAt).trim()");
+    expect(source).toContain("stat: (Array.isArray((data.mytkCareer || {}).saved) ? (data.mytkCareer || {}).saved.length : 0) + ' saved'");
+  });
+
+  it('explains local-only saving without external communication', () => {
+    expect(explorer).toContain('Answers and saved careers stay only in your Personal Toolkit; nothing here is shared with or sent to a teacher, school, counselor, or family member.');
   });
 
   it('announces career save and removal state changes', () => {

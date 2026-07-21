@@ -13977,8 +13977,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // strengths + values → curated suggestions across 30+ paths.
   function PersonalCareerExplorer(props) {
     if (!R) return null;
-    var data = props.data || { saved: [], notes: '' };
+    var data = props.data && typeof props.data === 'object' ? props.data : { saved: [], notes: '' };
     var setData = props.setData;
+    var isRecord = function(value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
+    var textValue = function(value) { return typeof value === 'string' ? value : (typeof value === 'number' ? String(value) : ''); };
+    var rawSaved = (Array.isArray(data.saved) ? data.saved : []).filter(isRecord);
     var vs = R.useState('quiz'); var view = vs[0]; var setView = vs[1];
     var fs = R.useState({}); var answers = fs[0]; var setAnswers = fs[1];
     var pfc = R.useState(''); var pendingFocusId = pfc[0]; var setPendingFocusId = pfc[1];
@@ -14053,7 +14056,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       focusById('learning-lab-career-q1-people');
     }
     function toggleCareer(career, isSaved) {
-      var saved = data.saved || [];
+      var saved = rawSaved;
       if (isSaved) {
         saved = saved.filter(function(item) { return item.id !== career.id; });
         llAnnounce(career.label + ' removed from careers to explore.');
@@ -14069,22 +14072,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var answeredCount = QUESTIONS.filter(function(question) { return !!answers[question.id]; }).length;
     var completed = answeredCount === QUESTIONS.length;
     var matches = results();
-    var savedCareers = (data.saved || []).map(function(saved) {
+    var savedCareers = rawSaved.map(function(saved) {
       var career = CAREERS.filter(function(item) { return item.id === saved.id; })[0];
-      return career ? { career: career, savedAt: saved.savedAt } : null;
+      return career ? { career: career, savedAt: textValue(saved.savedAt).trim() } : null;
     }).filter(Boolean);
-    var primaryButtonStyle = { minHeight: 44, minWidth: 44, minHeight: 44, padding: '10px 16px', borderRadius: 8, border: '1px solid #a7f3d0', background: completed ? '#047857' : 'rgba(71,85,105,0.55)', color: completed ? '#fff' : '#cbd5e1', fontWeight: 800, cursor: completed ? 'pointer' : 'not-allowed' };
+    var primaryButtonStyle = { minWidth: 44, minHeight: 44, padding: '10px 16px', borderRadius: 8, border: '1px solid #a7f3d0', background: completed ? '#047857' : 'rgba(71,85,105,0.55)', color: completed ? '#fff' : '#cbd5e1', fontWeight: 800, cursor: completed ? 'pointer' : 'not-allowed' };
     var secondaryButtonStyle = { minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid #a7f3d0', background: 'rgba(6,78,59,0.45)', color: '#d1fae5', fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🎯', 'Career Explorer', 'Five-question interest inventory with career suggestions. Use it as a starting point, not a decision or prediction.', '#10b981'),
+      hh('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, margin: '0 0 12px' } }, 'Answers and saved careers stay only in your Personal Toolkit; nothing here is shared with or sent to a teacher, school, counselor, or family member.'),
 
       view === 'quiz' ? hh('form', { onSubmit: showResults, 'aria-labelledby': 'learning-lab-career-quiz-heading' },
         tkCard('#10b981',
           hh('div', null,
             hh('h3', { id: 'learning-lab-career-quiz-heading', style: { fontSize: 14, color: '#a7f3d0', margin: '0 0 4px' } }, 'Career interest questions'),
-            hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, margin: '0 0 8px' } }, 'Choose one answer for each question. There are no right or wrong answers.'),
-            hh('p', { id: 'learning-lab-career-progress', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 11, color: '#d1fae5', fontWeight: 800, margin: '0 0 14px' } }, answeredCount + ' of ' + QUESTIONS.length + ' questions answered.'),
+            hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, margin: '0 0 8px' } }, 'Choose one answer for each question. There are no right or wrong answers.'),
+            hh('p', { id: 'learning-lab-career-progress', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 12, color: '#d1fae5', fontWeight: 800, margin: '0 0 14px' } }, answeredCount + ' of ' + QUESTIONS.length + ' questions answered.'),
             QUESTIONS.map(function(question, questionIndex) {
               return hh('fieldset', { key: 'qq-' + question.id, style: { border: '1px solid rgba(167,243,208,0.45)', borderRadius: 10, padding: 10, margin: '0 0 14px' } },
                 hh('legend', { style: { padding: '0 5px', fontSize: 12, fontWeight: 800, color: '#a7f3d0' } }, (questionIndex + 1) + '. ' + question.text),
@@ -14106,18 +14110,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       ) : hh('section', { 'aria-labelledby': 'learning-lab-career-results-heading' },
         hh('button', { type: 'button', onClick: retakeQuiz, 'data-ll-focusable': true, style: secondaryButtonStyle }, 'Retake career quiz'),
         hh('h3', { id: 'learning-lab-career-results-heading', tabIndex: -1, style: { fontSize: 14, color: '#a7f3d0', margin: '14px 0 4px' } }, hh('span', { 'aria-hidden': 'true' }, '🎯 '), 'Your top career matches'),
-        hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, margin: '0 0 10px' } }, 'These suggestions reflect overlapping themes in your answers. They are ideas to investigate, not a measure of ability or a recommendation to choose a specific career.'),
+        hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, margin: '0 0 10px' } }, 'These suggestions reflect overlapping themes in your answers. They are ideas to investigate, not a measure of ability or a recommendation to choose a specific career.'),
         hh('ul', { 'aria-label': 'Career suggestions', style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
           matches.map(function(career) {
-            var isSaved = (data.saved || []).some(function(saved) { return saved.id === career.id; });
+            var isSaved = rawSaved.some(function(saved) { return saved.id === career.id; });
             var headingId = 'learning-lab-career-match-' + career.id;
             return hh('li', { key: 'cr-' + career.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #10b981' } },
               hh('article', { 'aria-labelledby': headingId },
                 hh('div', { 'aria-hidden': 'true', style: { fontSize: 22, marginBottom: 4 } }, career.icon),
                 hh('h4', { id: headingId, style: { fontSize: 13, color: '#a7f3d0', margin: 0 } }, career.label),
                 hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '4px 0 0' } }, career.desc),
-                hh('p', { style: { margin: '6px 0 0', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Matched ' + career.score + ' of ' + career.match.length + ' career themes.'),
-                hh('button', { type: 'button', 'aria-pressed': isSaved ? 'true' : 'false', 'aria-label': (isSaved ? 'Remove ' : 'Save ') + career.label + (isSaved ? ' from careers to explore' : ' to careers to explore'), onClick: function() { toggleCareer(career, isSaved); }, 'data-ll-focusable': true, style: Object.assign({}, secondaryButtonStyle, { marginTop: 8, width: '100%' }) }, isSaved ? 'Saved — remove' : 'Save to explore')
+                hh('p', { style: { margin: '6px 0 0', fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Matched ' + career.score + ' of ' + career.match.length + ' career themes.'),
+                hh('button', { type: 'button', 'aria-label': (isSaved ? 'Remove ' : 'Save ') + career.label + (isSaved ? ' from careers to explore' : ' to careers to explore'), onClick: function() { toggleCareer(career, isSaved); }, 'data-ll-focusable': true, style: Object.assign({}, secondaryButtonStyle, { marginTop: 8, width: '100%' }) }, isSaved ? 'Saved — remove' : 'Save to explore')
               )
             );
           })
@@ -20703,7 +20707,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkIdent',    icon: '🪞', label: 'My Identity Map',      color: '#a855f7', desc: '8-dimension self-snapshot (Erikson identity work)',
         stat: 'evolving', cta: 'Map identity' },
       { id: 'mytkCareer',   icon: '🎯', label: 'Career Explorer',      color: '#10b981', desc: '5-question quiz → curated 18+ career paths',
-        stat: ((data.mytkCareer || {}).saved || []).length + ' saved', cta: 'Explore careers' },
+        stat: (Array.isArray((data.mytkCareer || {}).saved) ? (data.mytkCareer || {}).saved.length : 0) + ' saved', cta: 'Explore careers' },
       { id: 'mytkMood',     icon: '🌈', label: 'Mood Tracker',         color: '#ec4899', desc: 'Daily mood + energy log, 14-day trend',
         stat: (Array.isArray((data.mytkMood || {}).logs) ? (data.mytkMood || {}).logs.length : 0) + ' logs', cta: 'Log mood' },
       { id: 'mytkFut',      icon: '💌', label: 'Letters to Future Self', color: '#a855f7', desc: 'Hershfield 2011 — connection to future self',
