@@ -41,7 +41,7 @@ describe('Learning Lab Personal Identity Map accessibility', () => {
   });
 
   it('discloses automatic saving and privacy considerations', () => {
-    expect(map).toContain('Each response is optional and saves automatically in this browser.');
+    expect(map).toContain('Each response is optional and saves automatically in this browser; saving does not send or show your map to anyone.');
     expect(map).toContain('Identity information can be personal');
     expect(map).toContain('use a device and account you trust');
   });
@@ -84,6 +84,13 @@ describe('Learning Lab Personal Identity Map accessibility', () => {
     expect(map).toContain("hh('aside', { 'aria-labelledby': 'learning-lab-identity-intro-heading'");
     expect(map).toContain("hh('aside', { 'aria-labelledby': 'learning-lab-identity-use-heading'");
     expect(map).toContain('You control whether and with whom you share this map.');
+  });
+
+  it('handles malformed legacy map data without crashing or corrupting saves', () => {
+    expect(map).toContain("var data = props.data && typeof props.data === 'object' ? props.data : { map: {} };");
+    expect(map).toContain("var m = data.map && typeof data.map === 'object' && !Array.isArray(data.map) ? data.map : {};");
+    expect(map).toContain("function fieldText(value) { return typeof value === 'string' ? value : ''; }");
+    expect(map).toContain('value: fieldText(m[d.id])');
   });
 
   it('keeps the deployed mirror identical', () => {

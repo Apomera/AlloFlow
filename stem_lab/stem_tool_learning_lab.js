@@ -13915,9 +13915,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // development (Erikson). Critical for marginalized students.
   function PersonalIdentityMap(props) {
     if (!R) return null;
-    var data = props.data || { map: {} };
+    var data = props.data && typeof props.data === 'object' ? props.data : { map: {} };
     var setData = props.setData;
-    var m = data.map || {};
+    var m = data.map && typeof data.map === 'object' && !Array.isArray(data.map) ? data.map : {};
+    function fieldText(value) { return typeof value === 'string' ? value : ''; }
 
     function update(key, val) {
       var patch = {}; patch[key] = val;
@@ -13957,7 +13958,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🪞', 'My Identity Map', 'A snapshot of who you are right now. For you first, and shareable only when you choose.', '#a855f7'),
 
-      hh('aside', { 'aria-labelledby': 'learning-lab-identity-intro-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(88,28,135,0.35)', border: '1px solid #c4b5fd', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 14 } },
+      hh('aside', { 'aria-labelledby': 'learning-lab-identity-intro-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(88,28,135,0.35)', border: '1px solid #c4b5fd', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 14 } },
         hh('h3', { id: 'learning-lab-identity-intro-heading', style: { color: '#ddd6fe', fontSize: 12, margin: '0 0 4px' } }, hh('span', { 'aria-hidden': 'true' }, '🪞 '), 'Identity can change and grow'),
         hh('p', { style: { margin: 0 } }, 'There are no wrong answers. Describe who you are now while staying open to who you are becoming. You control whether and with whom you share this map.')
       ),
@@ -13968,7 +13969,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       hh('section', { 'aria-labelledby': 'learning-lab-identity-dimensions-heading' },
         hh('h3', { id: 'learning-lab-identity-dimensions-heading', style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', margin: '0 0 4px' } }, 'Explore eight parts of your identity'),
-        hh('p', { id: 'learning-lab-identity-save-note', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 12px' } }, 'Each response is optional and saves automatically in this browser. Identity information can be personal, so use a device and account you trust.'),
+        hh('p', { id: 'learning-lab-identity-save-note', style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 12px' } }, 'Each response is optional and saves automatically in this browser; saving does not send or show your map to anyone. Identity information can be personal, so use a device and account you trust.'),
         hh('ul', { 'aria-label': 'Identity map dimensions', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 } },
           DIMENSIONS.map(function(d) {
             var fieldId = 'learning-lab-identity-' + d.id;
@@ -13977,14 +13978,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('h4', { style: { margin: '0 0 4px' } },
                 hh('label', { htmlFor: fieldId, style: { display: 'block', fontSize: 12, fontWeight: 800, color: d.textColor } }, hh('span', { 'aria-hidden': 'true' }, d.icon + ' '), d.label, ' (optional)')
               ),
-              hh('p', { id: promptId, style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', fontStyle: 'italic', lineHeight: 1.5, margin: '0 0 8px' } }, d.prompt),
-              hh('textarea', { id: fieldId, value: m[d.id] || '', rows: 4, maxLength: 4000, 'aria-describedby': promptId + ' learning-lab-identity-save-note', onChange: function(event) { update(d.id, event.target.value); }, onBlur: function() { llAnnounce(d.label + ' saved automatically.'); }, 'data-ll-focusable': true, style: textareaStyle })
+              hh('p', { id: promptId, style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', fontStyle: 'italic', lineHeight: 1.5, margin: '0 0 8px' } }, d.prompt),
+              hh('textarea', { id: fieldId, value: fieldText(m[d.id]), rows: 4, maxLength: 4000, 'aria-describedby': promptId + ' learning-lab-identity-save-note', onChange: function(event) { update(d.id, event.target.value); }, onBlur: function() { llAnnounce(d.label + ' saved automatically.'); }, 'data-ll-focusable': true, style: textareaStyle })
             );
           })
         )
       ),
 
-      hh('aside', { 'aria-labelledby': 'learning-lab-identity-use-heading', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(88,28,135,0.30)', border: '1px solid #c4b5fd', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
+      hh('aside', { 'aria-labelledby': 'learning-lab-identity-use-heading', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(88,28,135,0.30)', border: '1px solid #c4b5fd', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
         hh('h3', { id: 'learning-lab-identity-use-heading', style: { color: '#ddd6fe', fontSize: 12, margin: '0 0 4px' } }, hh('span', { 'aria-hidden': 'true' }, '💡 '), 'Ways to use your map'),
         hh('p', { style: { margin: 0 } }, 'Revisit it when something shifts or at the start of a school year. You may choose to share selected parts with a trusted mentor, counselor, family member, or support team.')
       )
