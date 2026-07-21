@@ -1,0 +1,22 @@
+{
+  "dari": {
+    "stuck_show_open_prompts": "🤔 گیر کرده‌اید — نمایش سوال‌های باز",
+    "vibrato_lab": "لابراتوار ویبراتو",
+    "resonance_lab": "لابراتوار طنین",
+    "start_range_test": "🎯 شروع امتحان گستره",
+    "cancel_vocal_range_test_low_range": "لغو امتحان گستره صوتی (گستره پایین)",
+    "cancel_vocal_range_test_high_range": "لغو امتحان گستره صوتی (گستره بالا)",
+    "restart_vocal_range_test": "شروع مجدد امتحان گستره صوتی",
+    "test_again": "🔁 امتحان مجدد",
+    "beautiful_rate_and_depth_are_in_the_id": "زیبا! نرخ و عمق در محدوده ایده‌آل استند.",
+    "getting_there_aim_for_5_7_hz_rate_and_": "در حال رسیدن استید! به نرخ 5-7 Hz و عمق 30-80 cents هدف بگیرید.",
+    "understanding_these_conditions_helps_y": "درک این وضعیت‌ها به شما کمک می‌کند نشانه‌های هشدار را زودتر تشخیص دهید. اگر علائم پایدار را تجربه کردید، به داکتر مراجعه کنید.",
+    "this_information_is_educational_only_i": "👨‍⚕️ این معلومات صرفاً آموزشی است. توصیه طبی نیست. اگر درباره صدای خود نگرانی دارید، به متخصص گوش و حلق و بینی یا گفتاردرمانگر مراجعه کنید.",
+    "singing_and_vocal_lab": "لابراتوار آواز و صدا",
+    "singing_lab": "لابراتوار آواز",
+    "singing_lab_sections": "بخش‌های لابراتوار آواز",
+    "sing_into_the_mic_the_lab_tracks_frequ": "در میکروفون بخوانید؛ لابراتوار فرکانس را بی‌درنگ ردیابی می‌کند. خوانندگان آموزش‌دیده زیر و بمی را در محدوده ±5 cents (1/20 نیم‌پرده) نگه می‌دارند — کوک کامل این‌گونه به نظر می‌رسد.",
+    "vibrato_lab_2": "لابراتوار ویبراتو",
+    "resonance_lab_discover_your_vocal_tone": "لابراتوار طنین — رنگ صدای خود را کشف کنید"
+  }
+}
