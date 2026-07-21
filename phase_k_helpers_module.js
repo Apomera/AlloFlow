@@ -783,7 +783,16 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
     isSystemAudioActiveRef.current = false;
     return;
   }
-  const effectiveText = !text.includes(" ") && text.length < 100 ? t(text) : text;
+  const _looksLikeTranslationKey = !text.includes(" ") && text.length < 100;
+  const effectiveText = (_looksLikeTranslationKey ? t(text) : text) || text;
+  const _isSequenceRead = !!contentId && (contentId === "simplified-main" || contentId === "adventure-active" || contentId === "faq-active" || contentId.startsWith("persona-message-"));
+  if (!_isSequenceRead && !sanitizeTtsText(effectiveText).replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\p{P}\p{S}\s]/gu, "")) {
+    isPlayingRef.current = false;
+    isSystemAudioActiveRef.current = false;
+    setIsPlaying(false);
+    setPlayingContentId(null);
+    return;
+  }
   if (text && text.includes(" ") && text.length < 50 && !isSystemAudioActiveRef.current && !_isCanvasEnv) {
     const parts = text.split(" ").map((w) => w.trim().replace(/[^a-zA-Z]/g, "")).filter((w) => w.length > 2);
     if (parts.length > 1 && parts.length < 5) {
