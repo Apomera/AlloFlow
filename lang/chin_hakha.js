@@ -11132,7 +11132,7 @@
       "reset_2": "↺ Reset",
       "hypothesis_how_does_phase_shift_affect": "Hypothesis: Phase shift nih a langmi wave zeitin a thabot?",
       "stuck_show_open_prompts": "🤔 A dawhter — open prompt langhter",
-      "find_two_settings_that_produce_visuall": "A langin aa lomi wave a chuahtermi setting pahnih hmuh.",
+      "find_two_settings_that_produce_visuall": "A langin aa lawnmi wave a chuahtermi setting pahnih hmuh.",
       "what_does_negative_amplitude_do": "Negative amplitude nih zeidah a tuah?",
       "i_understand_explain_in_own_words": "Ka hngalh — namah biafang in fianter",
       "explain_how_each_parameter_shapes_a_si": "Parameter cio nih sine wave zeitin a lim a sak timi fianter.",
