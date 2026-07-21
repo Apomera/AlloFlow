@@ -1,0 +1,205 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "States of Matter — Same Stuff, Different Behavior",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "4th-5th Grade",
+    "standards": "NGSS 5-PS1-1 (develop a model to describe that matter is made of particles too small to be seen); NGSS 2-PS1-4 (construct an argument that some changes caused by heating or cooling can be reversed); CCSS.ELA-LITERACY.RI.4.3 (explain events, procedures, or concepts in a scientific text)",
+    "createdAt": "2026-07-21T09:00:00.000Z",
+    "imageShotList": "allopacks/states_of_matter_grade4.IMAGES.md"
+  },
+  "sourceTopic": "States of Matter",
+  "history": [
+    {
+      "id": "sm-directions",
+      "type": "directions",
+      "title": "Same Stuff, Different Rules",
+      "timestamp": "2026-07-21T09:00:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nIce, water, and steam look like three different things. They are the exact same stuff. The only difference is how fast the tiny pieces are moving.\n\n1. Read **The Dance Floor** — the whole lesson is in that one comparison.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Keep the **Three States** chart nearby.\n4. Sort the cards in **Solid, Liquid, or Gas?**\n5. Take the quiz. Question 3 is the one that catches almost everybody.\n\nOne thing to watch for all lesson: nothing is created or destroyed when matter changes state. It only rearranges. ❄️💧☁️",
+        "objectives": [
+          { "id": "sm-goal-matching", "label": "Win the Matching game", "kind": "game", "gameType": "matching", "resourceRef": "sm-glossary" },
+          { "id": "sm-goal-xp", "label": "Earn 25 XP", "kind": "xp", "amount": 25 },
+          { "id": "sm-goal-home", "label": "I watched a state change happen at home and described it", "kind": "manual" }
+        ]
+      },
+      "meta": "4th-5th Grade • 3 goals • observation challenge"
+    },
+    {
+      "id": "sm-reading",
+      "type": "simplified",
+      "title": "The Dance Floor",
+      "timestamp": "2026-07-21T09:00:01.000Z",
+      "data": "## The Dance Floor\n\nEverything around you is made of pieces far too small to see, called **particles**. What makes ice different from water is not what the particles are. It is how they are moving.\n\nPicture a crowded dance floor.\n\nIn a **solid**, everyone is packed shoulder to shoulder and only shivering in place. Nobody moves past anybody. That is why a solid keeps its own shape — an ice cube stays a cube whether you put it in a bowl, a cup, or your hand.\n\nIn a **liquid**, the music starts and people begin sliding past each other, still touching but no longer locked. That is why water flows and takes the shape of whatever holds it, but the amount stays the same. Pour a cup of water into a bowl and you still have a cup of water.\n\nIn a **gas**, everyone breaks loose and bounces around the whole room, far apart and moving fast. That is why a gas spreads out to fill any container completely. Steam does not sit in a puddle in the air.\n\nWhat moves particles between these states is **energy** — usually heat. Add heat and the particles move faster. Take heat away and they slow down.\n\nHeat ice and it **melts** into water. Keep heating and it **evaporates** (or boils) into water vapor. Cool that vapor and it **condenses** back into liquid — that is the fog on a bathroom mirror. Cool the liquid further and it **freezes** back into a solid.\n\nHere is the part that trips people up. When the pot boils, the cloudy stuff you see rising is not steam in the scientific sense — real water vapor is completely invisible. What you see is tiny liquid droplets that formed when hot vapor hit cooler air and condensed. Look right at the spout and you will notice a small clear gap before the cloud starts. That gap is the actual gas.\n\nAnd nothing disappears. A melted ice cube weighs exactly what it weighed frozen. A puddle that dries up did not vanish — its particles spread into the air. Matter changes how it behaves, not how much of it there is. That rule holds everywhere, which is why scientists trust it enough to build on it.",
+      "meta": "4th-5th Grade • Leveled reading • ~400 words",
+      "imageSlot": "sm-img-particle-states"
+    },
+    {
+      "id": "sm-glossary",
+      "type": "glossary",
+      "title": "Matter Words",
+      "timestamp": "2026-07-21T09:00:02.000Z",
+      "data": [
+        { "term": "Matter", "def": "Anything that takes up space and has mass.", "tier": "Domain-Specific" },
+        { "term": "Particle", "def": "One of the tiny pieces that all matter is made of, too small to see.", "tier": "Domain-Specific" },
+        { "term": "Solid", "def": "Matter whose particles are packed tightly and hold their own shape.", "tier": "Domain-Specific" },
+        { "term": "Liquid", "def": "Matter whose particles slide past each other, taking the shape of the container.", "tier": "Domain-Specific" },
+        { "term": "Gas", "def": "Matter whose particles are far apart and spread to fill any space.", "tier": "Domain-Specific" },
+        { "term": "Melt", "def": "To change from a solid into a liquid by adding heat.", "tier": "Domain-Specific" },
+        { "term": "Freeze", "def": "To change from a liquid into a solid by removing heat.", "tier": "Domain-Specific" },
+        { "term": "Evaporate", "def": "To change from a liquid into a gas.", "tier": "Domain-Specific" },
+        { "term": "Condense", "def": "To change from a gas back into a liquid.", "tier": "Domain-Specific" },
+        { "term": "Energy", "def": "What makes particles move — adding heat adds energy.", "tier": "Academic" },
+        { "term": "Volume", "def": "How much space something takes up.", "tier": "Academic" }
+      ],
+      "meta": "11 terms • Tiered"
+    },
+    {
+      "id": "sm-anchor",
+      "type": "anchor-chart",
+      "title": "Three States, One Rule",
+      "timestamp": "2026-07-21T09:00:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "IT IS ALL ABOUT MOVEMENT",
+        "sections": [
+          { "label": "SOLID", "bullets": ["Particles packed tight, shivering in place", "Keeps its OWN shape", "Ice, wood, a rock"], "iconPrompt": "tightly packed dots in a neat grid" },
+          { "label": "LIQUID", "bullets": ["Particles slide past each other", "Takes the container's shape", "Water, milk, juice"], "iconPrompt": "loose dots flowing in a curved container" },
+          { "label": "GAS", "bullets": ["Particles far apart, bouncing fast", "Fills the whole space", "Water vapor, air, helium"], "iconPrompt": "widely scattered dots with motion arrows" },
+          { "label": "CHANGES", "bullets": ["Add heat: melt, then evaporate", "Remove heat: condense, then freeze", "All of these can be reversed"], "iconPrompt": "a thermometer with arrows up and down" },
+          { "label": "THE BIG RULE", "bullets": ["Nothing is created or destroyed", "A melted ice cube weighs the same", "Matter rearranges, it does not vanish"], "iconPrompt": "a balance scale holding ice on one side and water on the other" }
+        ]
+      },
+      "meta": "5 sections • states + conservation rule"
+    },
+    {
+      "id": "sm-sort",
+      "type": "concept-sort",
+      "title": "Solid, Liquid, or Gas?",
+      "timestamp": "2026-07-21T09:00:04.000Z",
+      "data": {
+        "categories": [
+          { "id": "sm-sol", "label": "Solid", "color": "bg-indigo-500" },
+          { "id": "sm-liq", "label": "Liquid", "color": "bg-sky-500" },
+          { "id": "sm-gas", "label": "Gas", "color": "bg-amber-500" }
+        ],
+        "items": [
+          { "id": "s1", "content": "An ice cube", "categoryId": "sm-sol" },
+          { "id": "s2", "content": "Milk in a glass", "categoryId": "sm-liq" },
+          { "id": "s3", "content": "The helium inside a balloon", "categoryId": "sm-gas" },
+          { "id": "s4", "content": "A wooden pencil", "categoryId": "sm-sol" },
+          { "id": "s5", "content": "Honey (very slow, but it flows)", "categoryId": "sm-liq" },
+          { "id": "s6", "content": "Water vapor in the air", "categoryId": "sm-gas" },
+          { "id": "s7", "content": "Sand in a bucket (each grain is solid)", "categoryId": "sm-sol" },
+          { "id": "s8", "content": "The air in this room", "categoryId": "sm-gas" },
+          { "id": "s9", "content": "Melted butter in a pan", "categoryId": "sm-liq" }
+        ]
+      },
+      "meta": "3 states • 9 items • sand and honey start arguments"
+    },
+    {
+      "id": "sm-quiz",
+      "type": "quiz",
+      "title": "Matter Check",
+      "timestamp": "2026-07-21T09:00:05.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What is the real difference between ice and liquid water?",
+            "options": [
+              "How fast the particles are moving",
+              "They are made of completely different particles",
+              "Ice has more particles packed inside it",
+              "Water has energy and ice has none at all"
+            ],
+            "correctAnswer": "How fast the particles are moving",
+            "conceptLabel": "states and particle motion"
+          },
+          {
+            "type": "mcq",
+            "question": "Why does a gas fill its whole container while a liquid does not?",
+            "options": [
+              "Gas particles are far apart and bounce around the entire space",
+              "Gas is lighter than the container",
+              "Liquids are attracted to the bottom by magnetism",
+              "Gas particles are much larger than liquid particles"
+            ],
+            "correctAnswer": "Gas particles are far apart and bounce around the entire space",
+            "conceptLabel": "gas behavior"
+          },
+          {
+            "type": "mcq",
+            "question": "You see a white cloud above a boiling pot. What is it?",
+            "options": [
+              "Tiny liquid droplets that formed when hot vapor cooled",
+              "Pure water vapor, which is white",
+              "Smoke from the heat of the burner",
+              "Air being pushed out of the pot"
+            ],
+            "correctAnswer": "Tiny liquid droplets that formed when hot vapor cooled",
+            "conceptLabel": "steam misconception"
+          },
+          {
+            "type": "mcq",
+            "question": "An ice cube melts completely in a sealed container. What happens to its mass?",
+            "options": [
+              "It stays exactly the same",
+              "It gets lighter because ice is heavier",
+              "It gets heavier because water is denser",
+              "The mass disappears with the shape"
+            ],
+            "correctAnswer": "It stays exactly the same",
+            "conceptLabel": "conservation of matter"
+          },
+          {
+            "type": "mcq",
+            "question": "Water droplets appear on the outside of a cold glass on a hot day. What happened?",
+            "options": [
+              "Water vapor in the air condensed on the cold surface",
+              "Water leaked out through tiny holes in the glass",
+              "The glass melted slightly and dripped",
+              "The ice inside evaporated through the glass"
+            ],
+            "correctAnswer": "Water vapor in the air condensed on the cold surface",
+            "conceptLabel": "condensation"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "A puddle on the sidewalk disappears after a sunny afternoon. Explain where the water went using the word particles.",
+            "expectedAnswer": "The Sun added energy, so the water particles moved faster and escaped into the air as invisible water vapor. The water did not disappear — it evaporated and its particles spread out into the air.",
+            "conceptLabel": "evaporation"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Use the dance-floor comparison to explain the difference between a solid and a liquid to a younger student.",
+            "expectedAnswer": "In a solid, people are packed shoulder to shoulder and only shiver in place, so the shape stays the same. In a liquid, they slide past each other while still touching, so it flows and takes the shape of its container.",
+            "conceptLabel": "states and particle motion"
+          }
+        ],
+        "reflections": [
+          { "text": "Describe one state change you have seen at home this week." },
+          { "text": "Which state would you rather be a particle in — solid, liquid, or gas? Explain your choice." }
+        ]
+      },
+      "meta": "5 MCQ + 2 short answer • Q3 is the steam trap"
+    },
+    {
+      "id": "sm-faq",
+      "type": "faq",
+      "title": "Matter Questions",
+      "timestamp": "2026-07-21T09:00:06.000Z",
+      "data": [
+        { "question": "Is there a fourth state of matter? 🔥", "answer": "Yes — plasma, where particles get so much energy that their pieces come apart. Lightning, neon signs, and the Sun are all plasma. Most of the visible universe is plasma, which makes solid, liquid, and gas the unusual ones." },
+        { "question": "Is glass a very slow liquid?", "answer": "A famous claim, and it is basically a myth. Old windows are thicker at the bottom because of how glass used to be made, not because it flowed. Glass at room temperature behaves as a solid." },
+        { "question": "Why does ice float when most solids sink in their own liquid? 🧊", "answer": "Water is strange. When it freezes, the particles lock into a pattern with extra space in it, so ice is less dense than water. If it worked the normal way, lakes would freeze from the bottom up and life in them would be very different." },
+        { "question": "Can something be two states at once?", "answer": "At exactly the melting or boiling point, yes — ice water sitting at zero degrees Celsius is solid and liquid together while the change is happening." },
+        { "question": "What is dry ice? ❄️", "answer": "Frozen carbon dioxide. It skips the liquid stage entirely and goes straight from solid to gas, which is called sublimation. That is why it makes fog without ever making a puddle." },
+        { "question": "Does air really weigh something?", "answer": "It does. The air in an average classroom weighs roughly as much as a large adult. You do not feel it because it presses on you evenly from every direction." }
+      ],
+      "meta": "6 questions • busts the glass-flows myth"
+    }
+  ]
+}

@@ -1,0 +1,212 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Food Webs — Who Eats Whom, and What Happens Next",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "5th Grade",
+    "standards": "NGSS 5-LS2-1 (develop a model to describe the movement of matter among plants, animals, decomposers, and the environment); NGSS 5-PS3-1 (use models to describe that energy in animals' food was once energy from the sun); CCSS.ELA-LITERACY.RI.5.3 (explain relationships between concepts in a scientific text)",
+    "createdAt": "2026-07-21T08:00:00.000Z",
+    "imageShotList": "allopacks/ecosystems_food_webs_grade5.IMAGES.md"
+  },
+  "sourceTopic": "Food Webs and Ecosystems",
+  "history": [
+    {
+      "id": "ec-directions",
+      "type": "directions",
+      "title": "Pull One Thread",
+      "timestamp": "2026-07-21T08:00:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nIn 1958, people tried to help a forest by removing one animal they thought was a pest. The forest fell apart. Today you learn why pulling one thread moves the whole web.\n\n1. Read **Pull One Thread** — the wolf story at the end is true.\n2. Learn the words in the **Glossary**, then win the **Bingo** round.\n3. Study the **Web Roles** chart — every living thing has a job.\n4. Sort the organisms in **What's Your Job?**\n5. Take the quiz — question 4 asks you to predict a chain reaction.\n6. Use the **Sentence Frames** to explain a food web in your own words.\n\nBig idea to carry: in an ecosystem there is no such thing as doing only one thing. 🐺🌲",
+        "objectives": [
+          { "id": "ec-goal-bingo", "label": "Win a round of Bingo", "kind": "game", "gameType": "bingo", "resourceRef": "ec-glossary" },
+          { "id": "ec-goal-memory", "label": "Win the Memory game", "kind": "game", "gameType": "memory", "resourceRef": "ec-glossary" },
+          { "id": "ec-goal-xp", "label": "Earn 30 XP", "kind": "xp", "amount": 30 },
+          { "id": "ec-goal-local", "label": "I named three living things from my own neighborhood and their roles", "kind": "manual" }
+        ]
+      },
+      "meta": "5th Grade • 4 goals • systems thinking"
+    },
+    {
+      "id": "ec-reading",
+      "type": "simplified",
+      "title": "Pull One Thread",
+      "timestamp": "2026-07-21T08:00:01.000Z",
+      "data": "## Pull One Thread\n\nEvery living thing has to get energy from somewhere. Follow that energy far enough back and it always ends in the same place: sunlight.\n\n**Producers** make their own food. Plants, algae, and some bacteria capture sunlight and build sugar. Everything else on Earth is a customer.\n\n**Consumers** eat other living things. Herbivores like deer and grasshoppers eat producers. Carnivores like hawks and wolves eat other consumers. Omnivores like bears and humans do both. Each step is a **trophic level** — a rung on the energy ladder.\n\n**Decomposers** get the least attention and do the most essential work. Fungi, bacteria, and worms break down dead plants and animals and waste, releasing nutrients back into the soil where producers can use them again. Without decomposers, an ecosystem would bury itself in its own dead material and starve, because the nutrients would never get back into circulation.\n\nA **food chain** is one straight path: grass → grasshopper → mouse → hawk. Real nature almost never works that neatly. A hawk eats mice, snakes, and rabbits. A mouse eats seeds, insects, and berries. When you draw all those connections at once, you get a **food web**, and a web behaves very differently from a chain.\n\nHere is the part worth remembering: energy leaks. Only about **ten percent** of the energy at one level makes it to the next. The rest is spent moving, breathing, and staying warm, and much of it escapes as heat. That single fact explains why a meadow can support thousands of grasshoppers, hundreds of mice, and only a couple of hawks. Big predators are rare because the energy math will not support more of them.\n\nNow the thread-pulling. Wolves were hunted out of Yellowstone by the 1920s. Without them, elk populations grew and grazed heavily along rivers, stripping young willows and aspens. Beavers lost their building material. Songbirds lost nesting cover. Riverbanks eroded without roots holding the soil.\n\nWolves were reintroduced in 1995, and much of that reversed: willows recovered in places, beavers returned, and some riverbanks stabilized. Scientists still debate exactly how much of the change the wolves caused directly versus other factors like weather and bear populations — ecosystems are complicated, and honest scientists argue about the details. But the core lesson holds and is not in dispute: **you cannot remove one species and change only one thing.**",
+      "meta": "5th Grade • Leveled reading • ~440 words",
+      "imageSlot": "ec-img-food-web"
+    },
+    {
+      "id": "ec-glossary",
+      "type": "glossary",
+      "title": "Ecosystem Words",
+      "timestamp": "2026-07-21T08:00:02.000Z",
+      "data": [
+        { "term": "Producer", "def": "A living thing that makes its own food from sunlight, like a plant.", "tier": "Domain-Specific" },
+        { "term": "Consumer", "def": "A living thing that eats other living things for energy.", "tier": "Domain-Specific" },
+        { "term": "Decomposer", "def": "A living thing that breaks down dead material and returns nutrients to the soil.", "tier": "Domain-Specific" },
+        { "term": "Herbivore", "def": "An animal that eats only plants.", "tier": "Domain-Specific" },
+        { "term": "Carnivore", "def": "An animal that eats other animals.", "tier": "Domain-Specific" },
+        { "term": "Omnivore", "def": "An animal that eats both plants and animals.", "tier": "Domain-Specific" },
+        { "term": "Food chain", "def": "One single path showing who eats whom.", "tier": "Domain-Specific" },
+        { "term": "Food web", "def": "All the feeding connections in an ecosystem drawn together.", "tier": "Domain-Specific" },
+        { "term": "Ecosystem", "def": "All the living and nonliving things in an area, interacting.", "tier": "Domain-Specific" },
+        { "term": "Energy", "def": "What living things need to move, grow, and stay alive — originally from the Sun.", "tier": "Academic" },
+        { "term": "Nutrient", "def": "A substance living things need to grow, recycled by decomposers.", "tier": "Academic" },
+        { "term": "Population", "def": "All the members of one species living in an area.", "tier": "Academic" }
+      ],
+      "meta": "12 terms • Tiered"
+    },
+    {
+      "id": "ec-anchor",
+      "type": "anchor-chart",
+      "title": "Web Roles",
+      "timestamp": "2026-07-21T08:00:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "EVERYBODY HAS A JOB",
+        "sections": [
+          { "label": "PRODUCERS", "bullets": ["Make food from sunlight", "Plants, algae, some bacteria", "Every food web starts here"], "iconPrompt": "a green leafy plant under the sun" },
+          { "label": "CONSUMERS", "bullets": ["Herbivores eat plants", "Carnivores eat animals", "Omnivores eat both"], "iconPrompt": "a deer and a hawk facing each other" },
+          { "label": "DECOMPOSERS", "bullets": ["Break down dead things and waste", "Fungi, bacteria, worms", "Send nutrients back to the soil"], "iconPrompt": "mushrooms growing on a fallen log" },
+          { "label": "THE 10% RULE", "bullets": ["Only ~10% of energy moves up a level", "The rest is used up or lost as heat", "This is why top predators are rare"], "iconPrompt": "a shrinking energy pyramid" },
+          { "label": "WEBS, NOT CHAINS", "bullets": ["Most animals eat several things", "Remove one species and many change", "There is no doing only one thing"], "iconPrompt": "a web of connected arrows" }
+        ]
+      },
+      "meta": "5 sections • roles + the 10% rule"
+    },
+    {
+      "id": "ec-sort",
+      "type": "concept-sort",
+      "title": "What's Your Job?",
+      "timestamp": "2026-07-21T08:00:04.000Z",
+      "data": {
+        "categories": [
+          { "id": "ec-prod", "label": "Producer", "color": "bg-emerald-500" },
+          { "id": "ec-cons", "label": "Consumer", "color": "bg-amber-500" },
+          { "id": "ec-dec", "label": "Decomposer", "color": "bg-indigo-500" }
+        ],
+        "items": [
+          { "id": "e1", "content": "Oak tree", "categoryId": "ec-prod" },
+          { "id": "e2", "content": "Grasshopper", "categoryId": "ec-cons" },
+          { "id": "e3", "content": "Mushroom growing on a dead log", "categoryId": "ec-dec" },
+          { "id": "e4", "content": "Algae floating in a pond", "categoryId": "ec-prod" },
+          { "id": "e5", "content": "Red-tailed hawk", "categoryId": "ec-cons" },
+          { "id": "e6", "content": "Earthworm eating leaf litter", "categoryId": "ec-dec" },
+          { "id": "e7", "content": "Grass in a meadow", "categoryId": "ec-prod" },
+          { "id": "e8", "content": "Black bear eating berries and fish", "categoryId": "ec-cons" },
+          { "id": "e9", "content": "Bacteria breaking down a dead deer", "categoryId": "ec-dec" },
+          { "id": "e10", "content": "Venus flytrap (a plant that also traps insects)", "categoryId": "ec-prod" }
+        ]
+      },
+      "meta": "3 roles • 10 organisms • the flytrap is the argument-starter"
+    },
+    {
+      "id": "ec-quiz",
+      "type": "quiz",
+      "title": "Systems Check",
+      "timestamp": "2026-07-21T08:00:05.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Trace the energy in a hawk's body far enough back. Where did it originally come from?",
+            "options": [
+              "The Sun",
+              "The soil",
+              "The hawk's own body heat",
+              "Water in the ecosystem"
+            ],
+            "correctAnswer": "The Sun",
+            "conceptLabel": "energy origin"
+          },
+          {
+            "type": "mcq",
+            "question": "Why does an ecosystem need decomposers?",
+            "options": [
+              "They return nutrients from dead material back to the soil for producers",
+              "They keep predator populations from growing too large",
+              "They make food from sunlight when plants cannot",
+              "They provide most of the energy for consumers"
+            ],
+            "correctAnswer": "They return nutrients from dead material back to the soil for producers",
+            "conceptLabel": "decomposer role"
+          },
+          {
+            "type": "mcq",
+            "question": "Why are there far fewer hawks than grasshoppers in a meadow?",
+            "options": [
+              "Only about 10% of energy passes to each higher level",
+              "Hawks reproduce only once every ten years",
+              "Grasshoppers are better at hiding than hawks",
+              "Hawks eat only plants, which are scarce"
+            ],
+            "correctAnswer": "Only about 10% of energy passes to each higher level",
+            "conceptLabel": "ten percent rule"
+          },
+          {
+            "type": "mcq",
+            "question": "A disease wipes out most of the mice in a meadow. Predict the most likely chain reaction.",
+            "options": [
+              "Hawk numbers drop and seed-eating insects may increase",
+              "Nothing else changes, since only mice were affected",
+              "Grass immediately dies without mice to eat it",
+              "Decomposers disappear because they only eat mice"
+            ],
+            "correctAnswer": "Hawk numbers drop and seed-eating insects may increase",
+            "conceptLabel": "chain reactions"
+          },
+          {
+            "type": "mcq",
+            "question": "What is the difference between a food chain and a food web?",
+            "options": [
+              "A chain shows one path; a web shows all the connections at once",
+              "A chain is for land and a web is for water",
+              "A web only includes producers and decomposers",
+              "There is no difference — they are two names for one thing"
+            ],
+            "correctAnswer": "A chain shows one path; a web shows all the connections at once",
+            "conceptLabel": "chain vs web"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Explain what happened in Yellowstone after wolves were removed, and what scientists still debate about it.",
+            "expectedAnswer": "Without wolves, elk grazed heavily along rivers and stripped young willows and aspens, which affected beavers, songbirds, and riverbank erosion. After wolves returned in 1995 much of this reversed. Scientists still debate how much of the change wolves caused directly versus other factors like weather and bears.",
+            "conceptLabel": "chain reactions"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Is a Venus flytrap a producer or a consumer? Defend your answer.",
+            "expectedAnswer": "It is a producer, because it makes its own food by photosynthesis. It traps insects for extra nutrients like nitrogen in poor soil, not for energy — so it feeds like a plant and supplements like a consumer.",
+            "conceptLabel": "producer definition"
+          }
+        ],
+        "reflections": [
+          { "text": "Pick one animal near where you live. What eats it, and what does it eat?" },
+          { "text": "If humans disappeared from your local ecosystem tomorrow, name two things that would change." }
+        ]
+      },
+      "meta": "5 MCQ + 2 short answer • prediction + honest debate"
+    },
+    {
+      "id": "ec-frames",
+      "type": "sentence-frames",
+      "title": "Explain the Web",
+      "timestamp": "2026-07-21T08:00:06.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          { "text": "____ is a producer because ____." },
+          { "text": "Energy moves from ____ to ____ when ____." },
+          { "text": "Decomposers matter because without them ____." },
+          { "text": "There are fewer ____ than ____ because ____." },
+          { "text": "If ____ disappeared from this ecosystem, then ____, and then ____." },
+          { "text": "A food web is different from a food chain because ____." }
+        ],
+        "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Ecologist |\n|---|---|---|---|\n| Roles | Names organisms only | Uses producer/consumer/decomposer | Uses all roles precisely, including trophic levels |\n| Energy | Does not mention energy | Says energy moves | Explains energy loss and why predators are rare |\n| Systems thinking | One-step effect | Two-step chain | Traces effects through 3+ connections in a web |"
+      },
+      "meta": "6 frames • rubric • chain-reaction reasoning"
+    }
+  ]
+}
