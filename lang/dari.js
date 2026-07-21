@@ -13371,7 +13371,7 @@
       "euler_s_polyhedron_formula_for_any_con": "فرمول چندوجهی اویلر: برای هر چندوجهی محدب، V − E + F = 2",
       "euler_s_formula": "فرمول اویلر",
       "webgl_is_disabled_or_unsupported": "WebGL غیرفعال یا پشتیبانی‌نشده است",
-      "alloflow_requires_hardware_acceleratio": "AlloFlow برای نمایش گرافیک سه‌بعدی به شتاب‌دهی سخت‌افزاری نیاز دارد. لطفاً WebGL را در تنظیمات مرورگر خود فعال کنید تا با این آزمایشگاه تعامل کنید.",
+      "alloflow_requires_hardware_acceleratio": "AlloFlow برای نمایش گرافیک سه‌بعدی به شتاب‌دهی سخت‌افزاری نیاز دارد. لطفاً WebGL را در تنظیمات مرورگر خود فعال کنید تا با این لابراتوار تعامل کنید.",
       "retry": "تلاش دوباره",
       "interactive_geometry_sandbox_3d_visual": "تجسم سه‌بعدی جعبه‌شنی هندسه تعاملی",
       "drag_rotate_scroll_zoom_right_click_pa": "🖱️ کشیدن: چرخش • پیمایش: بزرگ‌نمایی • کلیک راست: جابه‌جایی",
@@ -13383,7 +13383,7 @@
       "next_challenge": "چالش بعدی",
       "next_challenge_2": "➡ چالش بعدی",
       "tip_your_answer_must_be_within_5_of_th": "💡 نکته: پاسخ شما باید در محدوده 5% از مقدار دقیق باشد. از π ≈ 3.14159 استفاده کنید",
-      "stl_files_are_unit_less_most_3d_printe": "💡 فایل‌های STL بدون واحد هستند. بیشتر برش‌دهنده‌های چاپگر سه‌بعدی (Cura, PrusaSlicer) به‌طور پیش‌فرض از میلی‌متر استفاده می‌کنند. شکلی با عرض=5 با عرض 5mm چاپ می‌شود."
+      "stl_files_are_unit_less_most_3d_printe": "💡 فایل‌های STL بدون واحد استند. بیشتر برش‌دهنده‌های پرنتر سه‌بعدی (Cura, PrusaSlicer) به‌طور پیش‌فرض از میلی‌متر استفاده می‌کنند. شکلی با عرض=5 با عرض 5mm چاپ می‌شود."
     },
     "algebraCAS": {
       "solve": "🔍 حل کن",
