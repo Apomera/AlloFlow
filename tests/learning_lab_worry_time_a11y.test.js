@@ -31,8 +31,8 @@ describe('Learning Lab Personal Worry Time accessibility', () => {
   });
 
   it('preserves unrelated data when adding, processing, and deleting worries', () => {
-    expect(worry).toContain("setData(Object.assign({}, data, { worries: [worry].concat(data.worries || []) }))");
-    expect(worry).toContain("setData(Object.assign({}, data, { worries: (data.worries || []).filter");
+    expect(worry).toContain("setData(Object.assign({}, data, { worries: [worry].concat(rawWorries) }))");
+    expect(worry).toContain("setData(Object.assign({}, data, { worries: rawWorries.filter");
     expect(worry).toContain("setData(Object.assign({}, data, {");
   });
 
@@ -115,8 +115,8 @@ describe('Learning Lab Personal Worry Time accessibility', () => {
   });
 
   it('provides named action groups and deletion controls for open worries', () => {
-    expect(worry).toContain("'aria-label': 'Actions for worry: ' + worry.text");
-    expect(worry).toContain("'aria-label': 'Remove worry: ' + worry.text");
+    expect(worry).toContain("'aria-label': 'Actions for worry: ' + worryText");
+    expect(worry).toContain("'aria-label': 'Remove worry: ' + worryText");
     expect(worry).toContain("id: 'learning-lab-worry-process-' + worry.id");
   });
 
@@ -139,6 +139,19 @@ describe('Learning Lab Personal Worry Time accessibility', () => {
     expect(worry).toContain("width: '100%', minHeight: 44");
     expect(worry).toContain("minHeight: 44, padding: '9px 13px'");
     expect(worry).toContain("minWidth: 44, minHeight: 44");
+  });
+
+  it('handles malformed legacy worry data and renders all processed worries', () => {
+    expect(worry).toContain('var rawWorries = Array.isArray(data.worries) ? data.worries : [];');
+    expect(worry).toContain("var openWorries = rawWorries.filter(function(worry) { return isRecord(worry) && !worry.resolved; });");
+    expect(worry).toContain("var resolvedWorries = rawWorries.filter(function(worry) { return isRecord(worry) && worry.resolved; });");
+    expect(worry).toContain("var worryText = textValue(worry.text).trim() || 'Saved worry';");
+    expect(worry).toContain('resolvedWorries.map(function(worry)');
+    expect(worry).not.toContain('.slice(0, 10)');
+  });
+
+  it('states that saving never sends or notifies anyone', () => {
+    expect(worry).toContain('saving does not send them to or notify anyone');
   });
 
   it('keeps the deployed mirror identical', () => {

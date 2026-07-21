@@ -14708,8 +14708,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // process them at scheduled worry time.
   function PersonalWorryTime(props) {
     if (!R) return null;
-    var data = props.data || { worries: [], settings: { worryHour: 17 } };
+    var data = props.data && typeof props.data === 'object' ? props.data : { worries: [], settings: { worryHour: 17 } };
     var setData = props.setData;
+    var isRecord = function(value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
+    var textValue = function(value) { return typeof value === 'string' ? value : (typeof value === 'number' ? String(value) : ''); };
+    var rawWorries = Array.isArray(data.worries) ? data.worries : [];
     var fs = R.useState(''); var newWorry = fs[0]; var setNewWorry = fs[1];
     var es = R.useState(''); var worryError = es[0]; var setWorryError = es[1];
     var ws = R.useState(null); var working = ws[0]; var setWorking = ws[1];
@@ -14737,19 +14740,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return;
       }
       var worry = { id: tkId(), text: text, createdAt: Date.now(), resolved: false, action: '' };
-      setData(Object.assign({}, data, { worries: [worry].concat(data.worries || []) }));
+      setData(Object.assign({}, data, { worries: [worry].concat(rawWorries) }));
       setNewWorry('');
       setWorryError('');
       llAnnounce('Worry saved for worry time.');
       focusById('learning-lab-worry-input');
     }
     async function removeWorry(worry) {
-      var label = worry.text || 'this worry';
+      var label = textValue(worry.text).trim() || 'this worry';
       if (label.length > 80) label = label.slice(0, 77) + '...';
       if (!(await askLearningLabConfirmation('This permanently removes “' + label + '”.', {
         title: 'Remove this worry?', confirmText: 'Remove worry'
       }))) return;
-      setData(Object.assign({}, data, { worries: (data.worries || []).filter(function(item) { return item.id !== worry.id; }) }));
+      setData(Object.assign({}, data, { worries: rawWorries.filter(function(item) { return !(isRecord(item) && item.id === worry.id); }) }));
       if (working === worry.id) setWorking(null);
       llAnnounce('Worry removed.');
       focusById('learning-lab-worry-input');
@@ -14761,8 +14764,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     }
     function processWorry(worry, status, action) {
       setData(Object.assign({}, data, {
-        worries: (data.worries || []).map(function(item) {
-          return item.id === worry.id ? Object.assign({}, item, { resolved: true, status: status, action: (action || '').trim(), processedAt: Date.now() }) : item;
+        worries: rawWorries.map(function(item) {
+          return isRecord(item) && item.id === worry.id ? Object.assign({}, item, { resolved: true, status: status, action: (action || '').trim(), processedAt: Date.now() }) : item;
         })
       }));
       setWorking(null);
@@ -14810,8 +14813,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       return function() { clearTimeout(timer); };
     }, [running, secsLeft]);
 
-    var openWorries = (data.worries || []).filter(function(worry) { return !worry.resolved; });
-    var resolvedWorries = (data.worries || []).filter(function(worry) { return worry.resolved; });
+    var openWorries = rawWorries.filter(function(worry) { return isRecord(worry) && !worry.resolved; });
+    var resolvedWorries = rawWorries.filter(function(worry) { return isRecord(worry) && worry.resolved; });
     var workingWorry = openWorries.filter(function(worry) { return worry.id === working; })[0] || null;
     var minutes = Math.floor(secsLeft / 60);
     var seconds = secsLeft % 60;
@@ -14831,7 +14834,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         tkSectionHeader('🤔', 'Worry processor', 'Consider one worry, identify what you can influence, and choose whether to make a small plan.', '#3b82f6'),
         hh('section', { 'aria-labelledby': 'learning-lab-worry-processor-heading', style: { padding: 18, borderRadius: 12, background: 'rgba(30,64,175,0.28)', border: '2px solid #93c5fd', marginBottom: 14 } },
           hh('h3', { id: 'learning-lab-worry-processor-heading', tabIndex: -1, style: { fontSize: 12, color: '#bfdbfe', fontWeight: 800, margin: '0 0 8px' } }, 'Worry to consider'),
-          hh('blockquote', { style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, margin: 0 } }, workingWorry.text)
+          hh('blockquote', { style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, margin: 0 } }, textValue(workingWorry.text))
         ),
         tkCard('#3b82f6',
           hh('form', { onSubmit: function(event) { event.preventDefault(); if (selectedStatus) processWorry(workingWorry, selectedStatus, currentThinking.action); }, 'aria-labelledby': 'learning-lab-worry-control-heading' },
@@ -14849,7 +14852,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               )
             ),
             selectedStatus === 'inMyControl' || selectedStatus === 'partlyControl' ? hh('div', { style: { marginBottom: 10 } },
-              hh('label', { htmlFor: 'learning-lab-worry-next-action', style: { display: 'block', fontSize: 10, fontWeight: 800, color: '#bfdbfe', textTransform: 'uppercase', marginBottom: 4 } }, 'Small next action (optional)'),
+              hh('label', { htmlFor: 'learning-lab-worry-next-action', style: { display: 'block', fontSize: 12, fontWeight: 800, color: '#bfdbfe', textTransform: 'uppercase', marginBottom: 4 } }, 'Small next action (optional)'),
               hh('textarea', { id: 'learning-lab-worry-next-action', value: currentThinking.action, rows: 3, maxLength: 2000, placeholder: 'A specific, realistic action you could take', onChange: function(event) { updateThinking(workingWorry.id, { action: event.target.value }); }, style: Object.assign({}, fieldStyle, { minHeight: 82, resize: 'vertical' }) })
             ) : selectedStatus === 'notControl' ? hh('aside', { 'aria-label': 'Not in my control guidance', style: { padding: 10, borderRadius: 8, background: 'rgba(127,29,29,0.38)', border: '1px solid #fca5a5', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 10 } }, 'You have identified that this is not something you can change right now. You might acknowledge the worry, shift attention to the present, or talk with someone you trust.') : null,
             hh('div', { role: 'group', 'aria-label': 'Worry processing actions', style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
@@ -14863,20 +14866,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('⏰', 'Worry Time', 'Write worries down, then revisit them during a short scheduled period.', '#a855f7'),
-      hh('aside', { 'aria-labelledby': 'learning-lab-worry-guidance-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(76,29,149,0.30)', border: '1px solid #c4b5fd', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 14 } },
+      hh('aside', { 'aria-labelledby': 'learning-lab-worry-guidance-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(76,29,149,0.30)', border: '1px solid #c4b5fd', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 14 } },
         hh('h3', { id: 'learning-lab-worry-guidance-heading', style: { color: '#ddd6fe', fontSize: 12, margin: '0 0 4px' } }, hh('span', { 'aria-hidden': 'true' }, '💡 '), 'A self-help practice, not crisis support'),
         hh('p', { style: { margin: '0 0 6px' } }, 'Some people find it useful to write worries down, set aside 10 to 15 minutes to review them, and distinguish actionable problems from worries they cannot change right now.'),
-        hh('p', { style: { margin: 0 } }, 'Worries save in this browser and may be private. Use a device and account you trust. If anxiety feels overwhelming, interferes with daily life, or involves immediate safety, contact a qualified professional or appropriate crisis service.')
+        hh('p', { style: { margin: 0 } }, 'Worries save in this browser and may be private; saving does not send them to or notify anyone. Use a device and account you trust. If anxiety feels overwhelming, interferes with daily life, or involves immediate safety, contact a qualified professional or appropriate crisis service.')
       ),
 
       tkCard('#9333ea',
         hh('form', { onSubmit: function(event) { event.preventDefault(); addWorry(); }, 'aria-labelledby': 'learning-lab-worry-capture-heading' },
           hh('h3', { id: 'learning-lab-worry-capture-heading', style: { fontSize: 12, fontWeight: 800, color: '#ddd6fe', margin: '0 0 4px' } }, 'Capture a worry'),
-          hh('label', { htmlFor: 'learning-lab-worry-input', style: { display: 'block', fontSize: 10, fontWeight: 800, color: '#ddd6fe', textTransform: 'uppercase', marginBottom: 4 } }, 'Worry (required)'),
+          hh('label', { htmlFor: 'learning-lab-worry-input', style: { display: 'block', fontSize: 12, fontWeight: 800, color: '#ddd6fe', textTransform: 'uppercase', marginBottom: 4 } }, 'Worry (required)'),
           hh('div', { style: { display: 'flex', gap: 6, alignItems: 'flex-start', flexWrap: 'wrap' } },
             hh('div', { style: { flex: '1 1 240px' } },
               hh('input', { id: 'learning-lab-worry-input', type: 'text', value: newWorry, maxLength: 2000, placeholder: 'Write the worry without trying to solve it yet', 'aria-invalid': worryError ? 'true' : undefined, 'aria-describedby': worryError ? 'learning-lab-worry-input-help learning-lab-worry-input-error' : 'learning-lab-worry-input-help', onChange: function(event) { setNewWorry(event.target.value); if (worryError) setWorryError(''); }, style: fieldStyle }),
-              hh('p', { id: 'learning-lab-worry-input-help', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '4px 0 0' } }, 'You can return to it during worry time.'),
+              hh('p', { id: 'learning-lab-worry-input-help', style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '4px 0 0' } }, 'You can return to it during worry time.'),
               hh('div', { id: 'learning-lab-worry-input-error', role: 'alert', style: { minHeight: worryError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginTop: worryError ? 4 : 0 } }, worryError)
             ),
             hh('button', { type: 'submit', 'data-ll-focusable': true, style: buttonStyle }, 'Save for worry time')
@@ -14900,12 +14903,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
           openWorries.map(function(worry) {
             var headingId = 'learning-lab-worry-open-' + worry.id;
+            var worryText = textValue(worry.text).trim() || 'Saved worry';
             return hh('li', { key: 'ow-' + worry.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #a855f7' } },
               hh('article', { 'aria-labelledby': headingId },
-                hh('h4', { id: headingId, style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, margin: '0 0 7px' } }, worry.text),
-                hh('div', { role: 'group', 'aria-label': 'Actions for worry: ' + worry.text, style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                hh('h4', { id: headingId, style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, margin: '0 0 7px' } }, worryText),
+                hh('div', { role: 'group', 'aria-label': 'Actions for worry: ' + worryText, style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                   hh('button', { id: 'learning-lab-worry-process-' + worry.id, type: 'button', onClick: function() { openProcessor(worry); }, 'data-ll-focusable': true, style: buttonStyle }, 'Process worry'),
-                  hh('button', { type: 'button', 'aria-label': 'Remove worry: ' + worry.text, onClick: function() { removeWorry(worry); }, 'data-ll-focusable': true, style: Object.assign({}, secondaryButtonStyle, { minWidth: 44 }) }, 'Remove')
+                  hh('button', { type: 'button', 'aria-label': 'Remove worry: ' + worryText, onClick: function() { removeWorry(worry); }, 'data-ll-focusable': true, style: Object.assign({}, secondaryButtonStyle, { minWidth: 44 }) }, 'Remove')
                 )
               )
             );
@@ -14916,20 +14920,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       resolvedWorries.length ? hh('section', { 'aria-labelledby': 'learning-lab-worry-processed-heading', style: { marginTop: 14 } },
         hh('h3', { id: 'learning-lab-worry-processed-heading', style: { fontSize: 12, fontWeight: 800, color: '#a7f3d0', margin: '0 0 8px' } }, 'Processed worries'),
         hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
-          resolvedWorries.slice(0, 10).map(function(worry) {
+          resolvedWorries.map(function(worry) {
             var headingId = 'learning-lab-worry-processed-' + worry.id;
             var statusLabels = { inMyControl: 'In my control', partlyControl: 'Partly in my control', notControl: 'Not in my control right now' };
+            var worryText = textValue(worry.text).trim() || 'Processed worry';
             return hh('li', { key: 'rw-' + worry.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.55)', borderLeft: '4px solid #10b981' } },
               hh('article', { 'aria-labelledby': headingId },
                 hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
-                  hh('h4', { id: headingId, style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', margin: 0 } }, worry.text),
-                  hh('button', { type: 'button', 'aria-label': 'Remove processed worry: ' + worry.text, onClick: function() { removeWorry(worry); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: '1px solid transparent', color: 'var(--allo-stem-text-soft, #cbd5e1)', cursor: 'pointer' } }, '×')
+                  hh('h4', { id: headingId, style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', margin: 0 } }, worryText),
+                  hh('button', { type: 'button', 'aria-label': 'Remove processed worry: ' + worryText, onClick: function() { removeWorry(worry); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: '1px solid transparent', color: 'var(--allo-stem-text-soft, #cbd5e1)', cursor: 'pointer' } }, '×')
                 ),
-                hh('dl', { style: { display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '3px 8px', margin: '6px 0 0', fontSize: 10 } },
+                hh('dl', { style: { display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '3px 8px', margin: '6px 0 0', fontSize: 12 } },
                   hh('dt', { style: { color: 'var(--allo-stem-text-soft, #cbd5e1)', fontWeight: 800 } }, 'Control'),
                   hh('dd', { style: { margin: 0, color: '#a7f3d0' } }, statusLabels[worry.status] || 'Processed'),
-                  worry.action ? hh('dt', { style: { color: 'var(--allo-stem-text-soft, #cbd5e1)', fontWeight: 800 } }, 'Next action') : null,
-                  worry.action ? hh('dd', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)' } }, worry.action) : null
+                  textValue(worry.action).trim() ? hh('dt', { style: { color: 'var(--allo-stem-text-soft, #cbd5e1)', fontWeight: 800 } }, 'Next action') : null,
+                  textValue(worry.action).trim() ? hh('dd', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)' } }, textValue(worry.action).trim()) : null
                 )
               )
             );
@@ -20700,7 +20705,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkAudio',    icon: '🎧', label: 'Focus Audio',          color: '#a855f7', desc: '8 categories — rate what works for YOU',
         stat: 'experiment', cta: 'Pick audio' },
       { id: 'mytkWorry',    icon: '⏰', label: 'Worry Time',           color: '#a855f7', desc: '15-min scheduled worry vs all-day (Borkovec 1983)',
-        stat: ((data.mytkWorry || {}).worries || []).filter(function(w) { return !w.resolved; }).length + ' open', cta: 'Capture a worry' },
+        stat: (Array.isArray((data.mytkWorry || {}).worries) ? (data.mytkWorry || {}).worries.filter(function(w) { return !!w && typeof w === 'object' && !w.resolved; }).length : 0) + ' open', cta: 'Capture a worry' },
       { id: 'mytkEnergy',   icon: '⚡', label: 'Energy Tracker',       color: '#fbbf24', desc: 'Log energy by hour, find your peak window',
         stat: ((data.mytkEnergy || {}).logs || []).length + ' logs', cta: 'Log energy' },
       { id: 'mytkQuest',    icon: '❓', label: 'Question Log',         color: '#06b6d4', desc: 'Capture wonders mid-class, process later',
