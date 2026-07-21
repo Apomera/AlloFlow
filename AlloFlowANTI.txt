@@ -5967,10 +5967,66 @@ const ALLOHAVEN_CLASSROOM_REWARD_REASONS = Object.freeze([
   { id: 'repaired_harm', label: 'Restorative repair' },
   { id: 'self_regulation', label: 'Self-regulation' },
   { id: 'goal_progress', label: 'Individual goal progress' },
+  // Class Goals fan-out (docs/GROUP_CONTINGENCY_DESIGN.md, Ring A): the ONLY
+  // thing that crosses the backend for a group contingency is this enum id —
+  // the teacher's goal label stays device-local in rosterKey.classGoals.
+  { id: 'group_goal', label: 'Class goal achieved' },
 ]);
 const ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS = new Set(ALLOHAVEN_CLASSROOM_REWARD_REASONS.map(reason => reason.id));
 const ALLOHAVEN_RECOGNITION_CAPS = Object.freeze([2, 4, 6, 8]);
 const DEFAULT_ALLOHAVEN_RECOGNITION_CONFIG = Object.freeze({ enabled: false, perStudentTokenCap: 4, updatedAt: 0 });
+// ── Class Goals (docs/GROUP_CONTINGENCY_DESIGN.md, Ring A) ──
+// Whole-class interdependent contingencies, EARN-ONLY, teacher-observed
+// criteria. Goals live in rosterKey.classGoals (device-local, travels with
+// the roster export); awarding fans out ordinary individual havenRewards
+// events with reasonId 'group_goal' through the existing cap/validator
+// machinery, so nothing new crosses the backend. Templates are starting
+// points, not a taxonomy — every label names a positive class
+// accomplishment, never the absence of a problem; the teacher can rewrite
+// the label freely because it never leaves the device.
+const CLASS_GOAL_TEMPLATES = Object.freeze([
+  { id: 'transition_smooth', label: 'Smooth transition' },
+  { id: 'voice_level', label: 'Voice level maintained' },
+  { id: 'on_task', label: 'On-task work period' },
+  { id: 'materials_ready', label: 'Materials ready' },
+  { id: 'clean_up', label: 'Space reset & cleaned up' },
+  { id: 'participation', label: 'Everyone participated' },
+  { id: 'peer_support', label: 'Peer helping observed' },
+  { id: 'kindness', label: 'Acts of kindness observed' },
+  { id: 'routine_followed', label: 'Class routine followed' },
+  { id: 'custom', label: 'Custom goal…' },
+]);
+const CLASS_GOAL_TEMPLATE_IDS = new Set(CLASS_GOAL_TEMPLATES.map(item => item.id));
+const normalizeClassGoal = (goal) => {
+  if (!goal || typeof goal !== 'object' || Array.isArray(goal)) return null;
+  const id = typeof goal.id === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(goal.id) ? goal.id : null;
+  if (!id) return null;
+  const label = goal.label != null ? String(goal.label).slice(0, 80).trim() : '';
+  if (!label) return null;
+  return {
+    id,
+    label,
+    templateId: CLASS_GOAL_TEMPLATE_IDS.has(goal.templateId) ? goal.templateId : 'custom',
+    tokens: Number(goal.tokens) === 2 ? 2 : 1,
+    // GBG-style can't-do allowance: "met with up to N exceptions." Guidance
+    // for the teacher's judgment call in Ring A (teacher-observed criteria);
+    // no student is ever named as the exception anywhere.
+    allowance: Math.max(0, Math.min(5, Math.floor(Number(goal.allowance) || 0))),
+    active: goal.active !== false,
+    metCount: Math.max(0, Math.floor(Number(goal.metCount) || 0)),
+    lastMetAt: Number(goal.lastMetAt) > 0 ? Number(goal.lastMetAt) : null,
+  };
+};
+const normalizeClassGoals = (raw) => {
+  const list = Array.isArray(raw) ? raw : [];
+  const seen = new Set();
+  const out = [];
+  list.forEach(item => {
+    const goal = normalizeClassGoal(item);
+    if (goal && !seen.has(goal.id)) { seen.add(goal.id); out.push(goal); }
+  });
+  return out.slice(0, 20);
+};
 
 const normalizeAlloHavenClassroomReward = (reward) => {
   if (!reward || typeof reward !== 'object' || Array.isArray(reward)) return null;
@@ -11486,6 +11542,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [havenConfigBusy, setHavenConfigBusy] = useState(false);
   const [havenRewardReceipt, setHavenRewardReceipt] = useState(null);
   const [showHavenRewardAudit, setShowHavenRewardAudit] = useState(false);
+  const [classGoalDraft, setClassGoalDraft] = useState(null);
   const [livePollPreset, setLivePollPreset] = useState(null);
   const [showStudentSignals, setShowStudentSignals] = useState(false);
   // sessionData useState moved up here (was at line ~5868) so the
@@ -24166,12 +24223,17 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
   };
 
-  const handleRecognizeStudents = async (uids, scopeLabel = 'students') => {
+  const handleRecognizeStudents = async (uids, scopeLabel = 'students', overrides = null) => {
+      // overrides {reasonId, amount}: used by Class Goals to fan out
+      // 'group_goal' events without disturbing the teacher's selected
+      // individual-recognition reason. Same caps, same validators.
+      const effectiveReasonId = (overrides && ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS.has(overrides.reasonId))
+          ? overrides.reasonId : havenRewardReasonId;
       if (!havenRecognitionConfig.enabled) {
           addToast('Enable AlloHaven recognition for this session before sending an award.', 'info');
           return;
       }
-      if (havenRewardSendLockRef.current || havenRewardBusy || !activeSessionCode || !ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS.has(havenRewardReasonId)) return;
+      if (havenRewardSendLockRef.current || havenRewardBusy || !activeSessionCode || !ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS.has(effectiveReasonId)) return;
       const roster = (sessionData && sessionData.roster) || {};
       const targetUids = Array.from(new Set(Array.isArray(uids) ? uids : []))
           .filter(uid => uid && roster[uid]);
@@ -24179,7 +24241,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           addToast('No connected students are available for this recognition.', 'info');
           return;
       }
-      const amount = havenRewardAmount === 2 ? 2 : 1;
+      const amount = (overrides ? Number(overrides.amount) : havenRewardAmount) === 2 ? 2 : 1;
       const awardedAt = Date.now();
       let cappedCount = 0;
       const prepared = targetUids.map((uid, index) => {
@@ -24193,7 +24255,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           }
           const reward = {
               id: 'haven-' + awardedAt.toString(36) + '-' + index.toString(36) + '-' + Math.random().toString(36).slice(2, 8),
-              reasonId: havenRewardReasonId,
+              reasonId: effectiveReasonId,
               amount,
               at: awardedAt
           };
@@ -24228,7 +24290,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               batch.forEach(item => { havenRewardDraftsRef.current[item.uid] = item.rewards; });
               delivered += batch.length;
           }
-          const reason = ALLOHAVEN_CLASSROOM_REWARD_REASONS.find(item => item.id === havenRewardReasonId);
+          const reason = ALLOHAVEN_CLASSROOM_REWARD_REASONS.find(item => item.id === effectiveReasonId);
           setHavenRewardReceipt({
               count: delivered,
               scopeLabel: scopeLabel || 'students',
@@ -24247,7 +24309,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       } catch (error) {
           warnLog('Could not finish the batched AlloHaven recognition.', error);
           if (delivered > 0) {
-              const reason = ALLOHAVEN_CLASSROOM_REWARD_REASONS.find(item => item.id === havenRewardReasonId);
+              const reason = ALLOHAVEN_CLASSROOM_REWARD_REASONS.find(item => item.id === effectiveReasonId);
               setHavenRewardReceipt({
                   count: delivered,
                   scopeLabel: 'students reached before interruption',
@@ -24268,6 +24330,31 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           havenRewardSendLockRef.current = false;
           setHavenRewardBusy(false);
       }
+      return delivered;
+  };
+  // ── Class Goals (Ring A) ── mark a goal met → fan out ONE group_goal
+  // recognition event to every connected student via the standard batched
+  // path (same caps, same validators, same receipts). The goal's label
+  // stays device-local in rosterKey.classGoals; only the enum id crosses.
+  const handleAwardClassGoal = async (goalId) => {
+      const goals = normalizeClassGoals(rosterKey && rosterKey.classGoals);
+      const goal = goals.find(item => item.id === goalId);
+      if (!goal) return;
+      const delivered = await handleRecognizeStudents(
+          Object.keys((sessionData && sessionData.roster) || {}),
+          'students · class goal met',
+          { reasonId: 'group_goal', amount: goal.tokens }
+      );
+      if (!delivered) return;
+      setRosterKey(prev => {
+          const prevGoals = normalizeClassGoals(prev && prev.classGoals);
+          return {
+              ...(prev || { groups: {}, students: {} }),
+              classGoals: prevGoals.map(item => item.id === goalId
+                  ? { ...item, metCount: item.metCount + 1, lastMetAt: Date.now() }
+                  : item),
+          };
+      });
   };
   // Plan T Slice Ta: student-side response submission to live session.
   // Writes to a NEW field `quizState.allResponses[uid][questionIdx]` so the
@@ -36927,7 +37014,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                       aria-label="AlloHaven recognition reason"
                       style={{minWidth:0,width:'100%',border:'1px solid #86efac',borderRadius:6,background:'white',color:'#14532d',padding:'0.3rem',fontSize:'0.72rem'}}
                     >
-                      {ALLOHAVEN_CLASSROOM_REWARD_REASONS.map(reason => (
+                      {ALLOHAVEN_CLASSROOM_REWARD_REASONS.filter(reason => reason.id !== 'group_goal').map(reason => (
                         <option key={reason.id} value={reason.id}>{reason.label}</option>
                       ))}
                     </select>
@@ -37012,6 +37099,131 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     </div>
                   ) : null}
                 </div>
+                <div style={dockGroupLabel}>Class Goals</div>
+                {(() => {
+                  // Class Goals (docs/GROUP_CONTINGENCY_DESIGN.md, Ring A):
+                  // whole-class interdependent contingencies, earn-only,
+                  // teacher-observed. "Met" fans out ONE private group_goal
+                  // recognition to every connected student through the same
+                  // capped path as Recognize. Goal names never leave this
+                  // device — students only ever see "Class goal achieved."
+                  const goals = normalizeClassGoals(rosterKey && rosterKey.classGoals);
+                  const activeGoals = goals.filter(goal => goal.active);
+                  const saveGoals = (next) => setRosterKey(prev => ({ ...(prev || { groups: {}, students: {} }), classGoals: next }));
+                  const draft = classGoalDraft;
+                  const goalBtnDisabled = !havenRecognitionConfig.enabled || havenConfigBusy || havenRewardBusy || Object.keys(rosterEntries).length === 0;
+                  return (
+                    <div style={{display:'flex',flexDirection:'column',gap:6,padding:'0.45rem',background:'#f0f9ff',border:'1px solid #bae6fd',borderRadius:9}}>
+                      <p style={{margin:0,fontSize:'0.61rem',lineHeight:1.35,color:'#0c4a6e'}}>
+                        Whole-class goals, earn-only. Goal names stay on this device; students privately receive “Class goal achieved.”
+                        {!havenRecognitionConfig.enabled ? ' Enable recognition above to award.' : ''}
+                      </p>
+                      {activeGoals.map(goal => (
+                        <div key={goal.id} style={{display:'grid',gridTemplateColumns:'1fr auto auto',gap:5,alignItems:'center',padding:'0.32rem 0.4rem',borderRadius:7,background:'white',border:'1px solid #bae6fd'}}>
+                          <span style={{fontSize:'0.66rem',fontWeight:800,color:'#0c4a6e',overflow:'hidden',textOverflow:'ellipsis'}}>
+                            {goal.label}
+                            <span style={{fontWeight:600,color:'#0369a1'}}>
+                              {(goal.allowance ? ' · ok with up to ' + goal.allowance + ' exception' + (goal.allowance === 1 ? '' : 's') : '')
+                                + (goal.metCount ? ' · met ×' + goal.metCount : '')}
+                            </span>
+                          </span>
+                          <button
+                            type="button"
+                            disabled={goalBtnDisabled}
+                            onClick={() => handleAwardClassGoal(goal.id)}
+                            title={havenRecognitionConfig.enabled ? 'Criterion met — privately award +' + goal.tokens + ' AlloHaven token' + (goal.tokens === 1 ? '' : 's') + ' to every connected student.' : 'Enable recognition above first.'}
+                            aria-label={'Class goal met: ' + goal.label + ' — award ' + goal.tokens + ' token' + (goal.tokens === 1 ? '' : 's') + ' to every connected student'}
+                            style={{border:'1px solid #0369a1',borderRadius:7,background:'#0284c7',color:'white',padding:'0.28rem 0.45rem',fontSize:'0.66rem',fontWeight:800,cursor:goalBtnDisabled?'not-allowed':'pointer',opacity:goalBtnDisabled?0.55:1}}
+                          >
+                            🎯 Met · +{goal.tokens}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => saveGoals(goals.filter(item => item.id !== goal.id))}
+                            aria-label={'Remove class goal ' + goal.label}
+                            style={{border:'none',background:'transparent',color:'#64748b',fontSize:'0.72rem',fontWeight:900,cursor:'pointer',padding:'0.1rem 0.2rem'}}
+                          >✕</button>
+                        </div>
+                      ))}
+                      {activeGoals.length === 0 && !draft ? (
+                        <p style={{margin:0,fontSize:'0.62rem',color:'#64748b',fontStyle:'italic'}}>No class goals yet — add one to recognize whole-class accomplishments.</p>
+                      ) : null}
+                      {draft ? (
+                        <div style={{display:'flex',flexDirection:'column',gap:4,padding:'0.4rem',borderRadius:7,background:'white',border:'1px solid #bae6fd'}}>
+                          <label style={{display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}}>
+                            Starting point
+                            <select
+                              value={draft.templateId}
+                              onChange={(event) => {
+                                const template = CLASS_GOAL_TEMPLATES.find(item => item.id === event.target.value) || CLASS_GOAL_TEMPLATES[0];
+                                setClassGoalDraft({ ...draft, templateId: template.id, label: template.id === 'custom' ? '' : template.label });
+                              }}
+                              aria-label="Class goal starting template"
+                              style={{border:'1px solid #bae6fd',borderRadius:6,background:'white',color:'#0c4a6e',padding:'0.25rem',fontSize:'0.68rem'}}
+                            >
+                              {CLASS_GOAL_TEMPLATES.map(template => <option key={template.id} value={template.id}>{template.label}</option>)}
+                            </select>
+                          </label>
+                          <label style={{display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}}>
+                            Goal name (stays on this device)
+                            <input
+                              type="text"
+                              value={draft.label}
+                              maxLength={80}
+                              onChange={(event) => setClassGoalDraft({ ...draft, label: event.target.value })}
+                              placeholder="e.g., Lined up ready in under 2 minutes"
+                              aria-label="Class goal name — kept on this device only"
+                              style={{border:'1px solid #bae6fd',borderRadius:6,padding:'0.28rem',fontSize:'0.68rem',color:'#0c4a6e'}}
+                            />
+                          </label>
+                          <div style={{display:'flex',gap:6}}>
+                            <label style={{flex:1,display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}}>
+                              Tokens
+                              <select value={draft.tokens} onChange={(event) => setClassGoalDraft({ ...draft, tokens: Number(event.target.value) === 2 ? 2 : 1 })} aria-label="Tokens awarded per student when this goal is met" style={{border:'1px solid #bae6fd',borderRadius:6,background:'white',color:'#0c4a6e',padding:'0.25rem',fontSize:'0.68rem'}}>
+                                <option value={1}>+1</option>
+                                <option value={2}>+2</option>
+                              </select>
+                            </label>
+                            <label style={{flex:1,display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}} title="Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.">
+                              Allowance
+                              <select value={draft.allowance} onChange={(event) => setClassGoalDraft({ ...draft, allowance: Math.max(0, Math.min(5, Number(event.target.value) || 0)) })} aria-label="Exceptions allowed while still meeting the goal" style={{border:'1px solid #bae6fd',borderRadius:6,background:'white',color:'#0c4a6e',padding:'0.25rem',fontSize:'0.68rem'}}>
+                                {[0,1,2,3,4,5].map(n => <option key={n} value={n}>{n === 0 ? 'None' : 'Up to ' + n}</option>)}
+                              </select>
+                            </label>
+                          </div>
+                          <div style={{display:'flex',gap:6,justifyContent:'flex-end'}}>
+                            <button type="button" onClick={() => setClassGoalDraft(null)} style={{border:'1px solid #cbd5e1',borderRadius:7,background:'white',color:'#475569',padding:'0.26rem 0.5rem',fontSize:'0.66rem',fontWeight:800,cursor:'pointer'}}>Cancel</button>
+                            <button
+                              type="button"
+                              disabled={!draft.label.trim()}
+                              onClick={() => {
+                                const label = draft.label.trim().slice(0, 80);
+                                if (!label) return;
+                                const goal = normalizeClassGoal({
+                                  id: 'goal-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
+                                  label,
+                                  templateId: draft.templateId,
+                                  tokens: draft.tokens,
+                                  allowance: draft.allowance,
+                                  active: true,
+                                });
+                                if (goal) saveGoals(goals.concat([goal]).slice(0, 20));
+                                setClassGoalDraft(null);
+                              }}
+                              style={{border:'1px solid #0369a1',borderRadius:7,background:'#0284c7',color:'white',padding:'0.26rem 0.5rem',fontSize:'0.66rem',fontWeight:800,cursor:'pointer',opacity:!draft.label.trim()?0.5:1}}
+                            >Add goal</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setClassGoalDraft({ templateId: 'transition_smooth', label: 'Smooth transition', tokens: 1, allowance: 1 })}
+                          style={{alignSelf:'flex-start',border:'1px dashed #7dd3fc',borderRadius:7,background:'white',color:'#0369a1',padding:'0.28rem 0.5rem',fontSize:'0.66rem',fontWeight:800,cursor:'pointer'}}
+                        >＋ Add class goal</button>
+                      )}
+                    </div>
+                  );
+                })()}
                 {(() => {
                   // Students: delivery status (which resource each student is
                   // actually viewing vs their target) + per-student push of the

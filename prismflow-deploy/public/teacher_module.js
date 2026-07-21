@@ -174,7 +174,9 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             ...data.submissionKey?.publicJwk ? { submissionKey: data.submissionKey } : {},
             // Seating charts + constraints travel with the roster (the seating
             // module re-validates this blob with normalizeSeating on read).
-            ...data.seating && typeof data.seating === "object" && !Array.isArray(data.seating) ? { seating: data.seating } : {}
+            ...data.seating && typeof data.seating === "object" && !Array.isArray(data.seating) ? { seating: data.seating } : {},
+            // Class Goals travel too (re-validated by normalizeClassGoals on read).
+            ...Array.isArray(data.classGoals) ? { classGoals: data.classGoals } : {}
           });
           if (window.AlloFlowUX) window.AlloFlowUX.toast("Roster imported, including class settings and submission setup.", "success");
         }

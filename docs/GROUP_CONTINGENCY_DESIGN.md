@@ -1,7 +1,8 @@
 # Group Contingencies in AlloFlow — Design Note
 
-**Date:** 2026-07-21 · **Status:** REVIEWED with Aaron (decisions §5 agreed
-except the criterion enum list, which awaits his red pen) — nothing built.
+**Date:** 2026-07-21 · **Status:** Ring A BUILT 2026-07-21 ("Class Goals" in
+the Live Dock; templates generalized per Aaron — flexible starting points,
+not a district-specific taxonomy). Rings B/C not built.
 **Prompted by:** seating-chart follow-up ("does the current system support
 independent / interdependent / dependent group contingencies?"). Short answer
 today: **no** — reinforcement is individual everywhere. This note maps what
@@ -122,11 +123,14 @@ backend surface.
 2. **Teams: whole class only in Ring A.** Pods/groups arrive in Ring B and
    are NON-COMPETITIVE (every team that meets criterion earns — teams play
    against the standard, never each other; no pod-vs-pod displays).
-3. **Criterion enum — STILL OPEN for Aaron's red pen.** Proposed:
-   transition_smooth, voice_level, on_task_interval, materials_ready,
-   kindness_observed, custom(teacher-side-label-only). Design rule: every
-   label names a positive class accomplishment, never the absence of a
-   problem ("voice level maintained," not "no call-outs").
+3. **Criterion templates — RESOLVED (Aaron 2026-07-21): generalize, don't
+   calibrate to one school.** Shipped as 9 broad templates + custom
+   (transition_smooth, voice_level, on_task, materials_ready, clean_up,
+   participation, peer_support, kindness, routine_followed) — and because
+   goal labels are device-local, the template list is just a starting point:
+   teachers can rewrite any label freely. Design rule held: every label
+   names a positive class accomplishment, never the absence of a problem
+   (a test pins this).
 4. **TokenBoard stays fully separate.** Clinical instrument, different
    consent context; the psychologist is the only bridge (same principle as
    the seating↔BehaviorLens bridge).

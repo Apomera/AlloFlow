@@ -475,7 +475,10 @@
       collaboration: 1,
       repaired_harm: 1,
       self_regulation: 1,
-      goal_progress: 1
+      goal_progress: 1,
+      // Class Goals fan-out (whole-class interdependent contingency, Ring A).
+      // Keep in sync with ALLOHAVEN_CLASSROOM_REWARD_REASONS in AlloFlowANTI.txt.
+      group_goal: 1
     };
     var amount = Math.floor(Number(reward.amount) || 0);
     var at = Number(reward.at) || 0;
@@ -544,7 +547,8 @@
       collaboration: 'Collaboration',
       repaired_harm: 'Restorative repair',
       self_regulation: 'Self-regulation',
-      goal_progress: 'Individual goal progress'
+      goal_progress: 'Individual goal progress',
+      group_goal: 'Class goal achieved'
     };
     return labels[String(reasonId || '')] || 'Positive progress';
   }
