@@ -1,0 +1,413 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Central Idea and Evidence — Reading Like a Detective",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "7th Grade",
+    "standards": "CCSS.ELA-LITERACY.RI.7.2 (determine two or more central ideas in a text and analyze their development over the course of the text); CCSS.ELA-LITERACY.RI.7.1 (cite several pieces of textual evidence to support analysis of what the text says explicitly as well as inferences); CCSS.ELA-LITERACY.RI.7.8 (trace and evaluate the argument and specific claims in a text)",
+    "createdAt": "2026-07-21T14:00:00.000Z",
+    "imageShotList": "allopacks/central_idea_grade7.IMAGES.md"
+  },
+  "sourceTopic": "Central Idea, Evidence, and Argument",
+  "history": [
+    {
+      "id": "ci-directions",
+      "type": "directions",
+      "title": "Read Like a Detective",
+      "timestamp": "2026-07-21T14:00:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nIn elementary school you found THE main idea. In middle school, texts get harder: they carry more than one central idea, and they build those ideas across paragraphs. You are moving from finding to tracing.\n\n1. Read **More Than One Thread** — it upgrades everything you already knew.\n2. Learn the terms in the **Glossary**, then win the **Crossword**.\n3. Keep the **Evidence Moves** chart open while you work.\n4. Sort the statements in **Claim, Evidence, or Neither?**\n5. Take the quiz — it uses real passages and asks you to CITE, not just pick.\n6. Build an argument with the **Sentence Frames**.\n7. Read the FAQ if you are curious how this works on things designed to persuade you.\n\nThe upgrade this year: never say 'the text says' without pointing to WHERE. Evidence has an address. 🔎",
+        "objectives": [
+          {
+            "id": "ci-goal-crossword",
+            "label": "Win the Crossword",
+            "kind": "game",
+            "gameType": "crossword",
+            "resourceRef": "ci-glossary"
+          },
+          {
+            "id": "ci-goal-scramble",
+            "label": "Win the Word Scramble",
+            "kind": "game",
+            "gameType": "wordScramble",
+            "resourceRef": "ci-glossary"
+          },
+          {
+            "id": "ci-goal-xp",
+            "label": "Earn 30 XP",
+            "kind": "xp",
+            "amount": 30
+          },
+          {
+            "id": "ci-goal-cite",
+            "label": "I backed up a claim about something I read by quoting exact words from it",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "7th Grade • 4 goals • citing evidence"
+    },
+    {
+      "id": "ci-reading",
+      "type": "simplified",
+      "title": "More Than One Thread",
+      "timestamp": "2026-07-21T14:00:01.000Z",
+      "data": "## More Than One Thread\n\nIn earlier grades you learned to find the main idea. That skill still works. But middle-school texts raise the difficulty in two ways, and this year you meet both.\n\nFirst, a longer text usually has more than one **central idea** running through it at once. An article about a river cleanup might carry one central idea about pollution science and another about a community organizing itself. Neither is wrong. A good reader tracks both threads.\n\nSecond, ideas **develop** across a text. A writer might introduce a claim in paragraph one, complicate it in the middle, and qualify it at the end. Where a paragraph has one main idea, a whole article has ideas that move and change. Your job is to trace how, not just to name what.\n\nNow the part that separates strong readers from guessers: **evidence has an address.**\n\nA **claim** is a statement someone wants you to accept. \"Bike lanes make streets safer.\" **Evidence** is the specific proof offered for it: a statistic, a study, an example, a quotation. A claim without evidence is just an opinion wearing a confident voice.\n\nWhen you answer a question about a text, you are making a small claim of your own, and it needs the same thing you would demand of anyone else. Not \"the text says pollution went down.\" Instead: \"In paragraph four, the author states that fish returned within two years, which shows the cleanup worked.\" You named where, you quoted what, you explained why it matters. That is **citing evidence**, and it is the core skill of every subject you will ever study, not just English.\n\nBe careful of a common trap. Evidence must actually support the claim, not just sit near it. A detail can be true, on-topic, and still not prove the point. If the claim is \"the cleanup worked\" and the evidence is \"the river is 30 miles long,\" that fact is true and about the river, but it proves nothing about the cleanup. Relevance is not the same as relatedness.\n\nOne more move for this year: writers of persuasion mix claims with **loaded language** and leave out inconvenient facts. Reading like a detective means asking not only \"what is the central idea?\" but \"what evidence is offered, is it relevant, and what has been left out?\" That question protects you far beyond any test.\n\nSo the upgrade is small to say and large to do: find the threads, watch them develop, and never accept a claim without checking its evidence — including your own.",
+      "meta": "7th Grade • Leveled reading • ~420 words",
+      "imageSlot": "ci-img-claim-evidence"
+    },
+    {
+      "id": "ci-glossary",
+      "type": "glossary",
+      "title": "Reading and Argument Words",
+      "timestamp": "2026-07-21T14:00:02.000Z",
+      "data": [
+        {
+          "term": "Central idea",
+          "def": "A main point that runs through a text — longer texts often have more than one.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Claim",
+          "def": "A statement someone wants you to accept as true.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Evidence",
+          "def": "Specific proof offered for a claim: a fact, example, statistic, or quotation.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Cite",
+          "def": "To point to the exact place in a text that supports your answer.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Relevant",
+          "def": "Actually proving the claim, not just related to the topic.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Develop",
+          "def": "How an idea grows or changes across a text.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Inference",
+          "def": "A conclusion you build from clues the text does not state outright.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Argument",
+          "def": "A claim backed by reasons and evidence.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Objective",
+          "def": "Based on facts, not personal feelings.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Bias",
+          "def": "A leaning toward one side that can shape what a writer includes or leaves out.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Quotation",
+          "def": "The exact words from a text, shown inside quotation marks.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Support",
+          "def": "To back up a claim with evidence and reasoning.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "12 terms • Tiered"
+    },
+    {
+      "id": "ci-anchor",
+      "type": "anchor-chart",
+      "title": "Evidence Moves",
+      "timestamp": "2026-07-21T14:00:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "EVIDENCE HAS AN ADDRESS",
+        "sections": [
+          {
+            "label": "NAME THE CLAIM",
+            "bullets": [
+              "A claim is what someone wants you to accept",
+              "State it in one clear sentence",
+              "Your answers are small claims too"
+            ],
+            "iconPrompt": "a speech bubble with a bold sentence"
+          },
+          {
+            "label": "POINT TO IT",
+            "bullets": [
+              "Say WHERE: 'in paragraph four...'",
+              "Quote the exact words",
+              "Never say 'the text says' without pointing"
+            ],
+            "iconPrompt": "a finger pointing at a highlighted line"
+          },
+          {
+            "label": "EXPLAIN WHY",
+            "bullets": [
+              "Connect the evidence to the claim",
+              "'...which shows...' is the magic phrase",
+              "Evidence without explanation is half an answer"
+            ],
+            "iconPrompt": "an arrow linking a quote to a claim"
+          },
+          {
+            "label": "CHECK RELEVANCE",
+            "bullets": [
+              "True and on-topic is NOT enough",
+              "Ask: does this actually prove the claim?",
+              "Also ask: what has been left out?"
+            ],
+            "iconPrompt": "a checkmark and a question mark side by side"
+          }
+        ]
+      },
+      "meta": "4 moves • claim-evidence-reasoning"
+    },
+    {
+      "id": "ci-sort",
+      "type": "concept-sort",
+      "title": "Claim, Evidence, or Neither?",
+      "timestamp": "2026-07-21T14:00:04.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "ci-claim",
+            "label": "A CLAIM (wants you to agree)",
+            "color": "bg-indigo-500"
+          },
+          {
+            "id": "ci-ev",
+            "label": "EVIDENCE (specific proof)",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "ci-neither",
+            "label": "Neither — just a fact off the point",
+            "color": "bg-slate-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "cc1",
+            "content": "Our town should build more bike lanes",
+            "categoryId": "ci-claim"
+          },
+          {
+            "id": "cc2",
+            "content": "A study found bike-lane streets had 40% fewer injuries",
+            "categoryId": "ci-ev"
+          },
+          {
+            "id": "cc3",
+            "content": "The town was founded in 1847",
+            "categoryId": "ci-neither"
+          },
+          {
+            "id": "cc4",
+            "content": "Recycling programs are worth the cost",
+            "categoryId": "ci-claim"
+          },
+          {
+            "id": "cc5",
+            "content": "The city recovered $2 for every $1 spent on recycling last year",
+            "categoryId": "ci-ev"
+          },
+          {
+            "id": "cc6",
+            "content": "The recycling trucks are painted green",
+            "categoryId": "ci-neither"
+          },
+          {
+            "id": "cc7",
+            "content": "Later school start times improve teen health",
+            "categoryId": "ci-claim"
+          },
+          {
+            "id": "cc8",
+            "content": "In the trial schools, average sleep rose by 34 minutes a night",
+            "categoryId": "ci-ev"
+          },
+          {
+            "id": "cc9",
+            "content": "The school building has three floors",
+            "categoryId": "ci-neither"
+          },
+          {
+            "id": "cc10",
+            "content": "Doctors surveyed reported fewer sick days after the change",
+            "categoryId": "ci-ev"
+          }
+        ]
+      },
+      "meta": "3 buckets • 10 statements • relevance vs relatedness"
+    },
+    {
+      "id": "ci-quiz",
+      "type": "quiz",
+      "title": "Cite It or Lose It",
+      "timestamp": "2026-07-21T14:00:05.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "How is a 7th-grade central-idea task different from a younger main-idea task?",
+            "options": [
+              "A text can have more than one central idea, and ideas develop across the text",
+              "There is no difference — it is the same skill renamed",
+              "You no longer need to use evidence",
+              "Central ideas are always stated in the first sentence"
+            ],
+            "correctAnswer": "A text can have more than one central idea, and ideas develop across the text",
+            "conceptLabel": "central idea vs main idea"
+          },
+          {
+            "type": "mcq",
+            "question": "What is the difference between a claim and evidence?",
+            "options": [
+              "A claim is what someone wants you to accept; evidence is the specific proof for it",
+              "A claim is always false and evidence is always true",
+              "A claim is longer than evidence",
+              "They are two words for the same thing"
+            ],
+            "correctAnswer": "A claim is what someone wants you to accept; evidence is the specific proof for it",
+            "conceptLabel": "claim vs evidence"
+          },
+          {
+            "type": "mcq",
+            "question": "Passage: 'The garden club planted 200 trees downtown. Within five years, summer street temperatures there dropped by three degrees.' Which sentence is the best EVIDENCE that the trees cooled the streets?",
+            "options": [
+              "'Within five years, summer street temperatures there dropped by three degrees'",
+              "'The garden club planted 200 trees downtown'",
+              "Neither sentence is evidence",
+              "Both sentences are claims"
+            ],
+            "correctAnswer": "'Within five years, summer street temperatures there dropped by three degrees'",
+            "conceptLabel": "identifying evidence"
+          },
+          {
+            "type": "mcq",
+            "question": "A claim states 'the new library hours help working families.' Which fact is NOT relevant evidence, even though it is true?",
+            "options": [
+              "The library building was repainted last spring",
+              "Evening visits by parents rose 60% after the hours changed",
+              "A survey shows most weekday visitors now come after 5 p.m.",
+              "Checkouts of children's books increased on weeknights"
+            ],
+            "correctAnswer": "The library building was repainted last spring",
+            "conceptLabel": "relevance of evidence"
+          },
+          {
+            "type": "mcq",
+            "question": "Which answer CITES evidence properly?",
+            "options": [
+              "In paragraph two, the author writes that 'attendance doubled,' which shows the program was popular",
+              "The text basically says people liked it",
+              "I just feel like the program worked",
+              "Everyone knows programs like this are popular"
+            ],
+            "correctAnswer": "In paragraph two, the author writes that 'attendance doubled,' which shows the program was popular",
+            "conceptLabel": "citing evidence"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Passage: 'Scientists tagged 50 sea turtles. Every one returned to the exact beach where it hatched to lay its own eggs, some traveling over 1,000 miles.' State one central idea and cite the specific evidence for it.",
+            "expectedAnswer": "Central idea: sea turtles return to their birth beach to nest. Evidence: 'Every one returned to the exact beach where it hatched to lay its own eggs, some traveling over 1,000 miles.' The all-50 result and the long distances show the behavior is consistent and deliberate.",
+            "conceptLabel": "citing evidence"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "The reading says 'relevance is not the same as relatedness.' Explain the difference and give your own example of a true but irrelevant detail.",
+            "expectedAnswer": "A detail can be about the same topic yet not prove the claim. For a claim that 'the new bus route saves students time,' the detail 'the buses are yellow' is related to buses but does not support the claim about time. Relevant evidence would be actual travel-time data.",
+            "conceptLabel": "relevance of evidence"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Think of an advertisement you have seen. What was its claim, and what evidence (if any) did it actually offer?"
+          },
+          {
+            "text": "When is it hardest for you to find evidence in a text: long passages, or ideas that are only implied? Why?"
+          }
+        ]
+      },
+      "meta": "5 MCQ + 2 short answer • real passages, citing required"
+    },
+    {
+      "id": "ci-frames",
+      "type": "sentence-frames",
+      "title": "Build an Argument",
+      "timestamp": "2026-07-21T14:00:06.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "One central idea of this text is ____."
+          },
+          {
+            "text": "The author develops this idea by first ____, then ____."
+          },
+          {
+            "text": "In paragraph ____, the text states '____,' which shows ____."
+          },
+          {
+            "text": "A second piece of evidence is '____,' and it supports the claim because ____."
+          },
+          {
+            "text": "The detail about ____ is true but not relevant, because ____."
+          },
+          {
+            "text": "What the author leaves out is ____, which matters because ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Analyst |\n|---|---|---|---|\n| Central idea | Gives a topic word | A central-idea sentence | Identifies a central idea AND how it develops |\n| Evidence | No citation | Quotes once, no location | Cites 2+ times with location and exact words |\n| Reasoning | Restates the quote | Links evidence to claim once | Explains each link AND tests relevance |"
+      },
+      "meta": "6 frames • rubric • two citations required at level 5"
+    },
+    {
+      "id": "ci-faq",
+      "type": "faq",
+      "title": "Reading and Argument Questions",
+      "timestamp": "2026-07-21T14:00:07.000Z",
+      "data": [
+        {
+          "question": "Can a text really have two main ideas without contradicting itself? 🤔",
+          "answer": "Yes — they are usually about different aspects of the same topic. An article on a hurricane might carry one central idea about the storm's science and another about how a community recovered. Both are true and both matter."
+        },
+        {
+          "question": "What is the difference between evidence and just an opinion?",
+          "answer": "Evidence can be checked by someone else: a statistic, a study, a quotation, an observation. An opinion is a preference. 'This is the best song' is opinion; 'this song spent ten weeks at number one' is evidence."
+        },
+        {
+          "question": "Why do teachers care so much about citing WHERE? 📍",
+          "answer": "Because it is the difference between reading and remembering. Pointing to the exact spot proves you got it from the text, and it lets someone check your reasoning. Every field — science, law, history — runs on this."
+        },
+        {
+          "question": "How does this help me with ads and social media?",
+          "answer": "Enormously. Persuasion mixes real claims with loaded language and missing facts. Asking 'what is the evidence, is it relevant, and what got left out?' is a defense you will use your whole life."
+        },
+        {
+          "question": "What if the central idea is never actually stated?",
+          "answer": "Then you build it by inference — a conclusion from the clues. That is harder and completely legitimate; you just have to be able to point to the clues you used."
+        },
+        {
+          "question": "Is it cheating to quote the text instead of using my own words? ✍️",
+          "answer": "The opposite — quoting the exact words IS the skill. You quote the evidence, then add your own words to explain why it supports your point. Both parts are required."
+        }
+      ],
+      "meta": "6 questions • media-literacy transfer"
+    }
+  ]
+}

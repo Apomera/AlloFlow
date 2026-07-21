@@ -1,0 +1,504 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Linear Equations — Slope, Start, and the Story a Line Tells",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "8th Grade",
+    "standards": "CCSS.MATH.CONTENT.8.EE.B.5 (graph proportional relationships, interpreting the unit rate as the slope); CCSS.MATH.CONTENT.8.EE.B.6 (use similar triangles to explain why the slope is the same; derive y = mx + b); CCSS.MATH.CONTENT.8.F.B.4 (construct a function to model a linear relationship, determining rate of change and initial value)",
+    "createdAt": "2026-07-21T16:00:00.000Z",
+    "imageShotList": "allopacks/linear_equations_grade8.IMAGES.md"
+  },
+  "sourceTopic": "Linear Equations and Slope",
+  "history": [
+    {
+      "id": "le-directions",
+      "type": "directions",
+      "title": "Every Line Tells a Story",
+      "timestamp": "2026-07-21T16:00:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nLast year you learned proportional relationships — lines through the origin. This year lines get a starting point too, and once you can read the two numbers in y = mx + b, you can read the story any line is telling.\n\n1. Read **Slope and Start** — the phone-plan example unlocks the whole idea.\n2. Learn the terms in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Reading a Line** chart open while you work.\n4. Do the **Practice Problems** — always name the slope AND the start.\n5. Sort the equations in **Same Slope, Different Start?**\n6. Take the quiz — question 5 asks you to translate a word problem into y = mx + b.\n\nThe two numbers that run everything: m is the rate of change (how fast), b is the initial value (where it begins). Find those two and you understand the line. 📉📈",
+        "objectives": [
+          {
+            "id": "le-goal-scramble",
+            "label": "Win the Word Scramble",
+            "kind": "game",
+            "gameType": "wordScramble",
+            "resourceRef": "le-glossary"
+          },
+          {
+            "id": "le-goal-crossword",
+            "label": "Win the Crossword",
+            "kind": "game",
+            "gameType": "crossword",
+            "resourceRef": "le-glossary"
+          },
+          {
+            "id": "le-goal-xp",
+            "label": "Earn 40 XP",
+            "kind": "xp",
+            "amount": 40
+          },
+          {
+            "id": "le-goal-story",
+            "label": "I described a real situation using slope and starting value",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "8th Grade • 4 goals • builds on proportions"
+    },
+    {
+      "id": "le-reading",
+      "type": "simplified",
+      "title": "Slope and Start",
+      "timestamp": "2026-07-21T16:00:01.000Z",
+      "data": "## Slope and Start\n\nLast year, proportional relationships gave you lines through the origin. This year lines get to start anywhere, and that small change unlocks almost every real situation you will ever model.\n\nConsider two phone plans. Plan A charges 2 dollars per gigabyte, nothing else. Plan B charges a 10 dollar monthly fee plus 1 dollar per gigabyte. Plan A is proportional: no data, no cost. Plan B is not, because even with zero data you still owe 10 dollars. That starting fee is exactly what proportional relationships were not allowed to have. Now it is allowed, and it has a name.\n\nEvery straight line can be written as **y = mx + b**, and the whole year lives in those two letters.\n\nThe **m** is the **slope**, also called the rate of change. It answers: how much does y change every time x goes up by one? For Plan B, m is 1 — each gigabyte adds one dollar. Slope is steepness, and you calculate it as rise over run: how far the line goes up divided by how far it goes across between any two points.\n\nThe **b** is the **y-intercept**, also called the initial value or starting point. It answers: where does the line begin, when x is zero? For Plan B, b is 10 — the cost before you use any data at all. On a graph, b is the exact spot where the line crosses the y-axis.\n\nOnce you know m and b, you know everything. Plan B's equation is y = 1x + 10, or just y = x + 10. Want the cost of 15 gigabytes? Multiply 15 by the slope 1, then add the start 10, for 25 dollars. Every linear problem is that same two-step move: rate times amount, plus starting value.\n\nSlope also has a sign, and the sign is a direction. A positive slope rises to the right — savings growing, a plant getting taller. A negative slope falls to the right — a phone battery draining, water leaving a tub. A slope of zero is a flat line: nothing changing, like a savings account you never touch. Reading the sign is reading whether the story goes up, down, or holds steady.\n\nHere is why this matters beyond math class. Almost any steady real-world change is linear: a rate that repeats, added to a starting amount. Wages, fuel, distance, temperature drops, subscription costs. When you can look at y = mx + b and say out loud what m and b mean in the real situation, you are not doing arithmetic anymore. You are reading the story the line is telling.",
+      "meta": "8th Grade • Leveled reading • ~420 words",
+      "imageSlot": "le-img-slope-intercept"
+    },
+    {
+      "id": "le-glossary",
+      "type": "glossary",
+      "title": "Linear Equation Words",
+      "timestamp": "2026-07-21T16:00:02.000Z",
+      "data": [
+        {
+          "term": "Linear",
+          "def": "Forming a straight line when graphed.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Slope",
+          "def": "How steep a line is — how much y changes for each step in x.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Intercept",
+          "def": "Where a line crosses the y-axis, the value of y when x is zero.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Rise",
+          "def": "How far a line goes up between two points.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Run",
+          "def": "How far a line goes across between two points.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Rate",
+          "def": "How fast one quantity changes compared to another — the same as slope.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Origin",
+          "def": "The point (0, 0) where the axes cross.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Variable",
+          "def": "A letter standing for a number that can change, like x or y.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Positive",
+          "def": "A slope that rises to the right — the quantity is growing.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Negative",
+          "def": "A slope that falls to the right — the quantity is shrinking.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Function",
+          "def": "A rule that gives exactly one output for each input.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Model",
+          "def": "A math description of a real situation.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "12 terms • Tiered"
+    },
+    {
+      "id": "le-anchor",
+      "type": "anchor-chart",
+      "title": "Reading a Line",
+      "timestamp": "2026-07-21T16:00:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "y = mx + b",
+        "sections": [
+          {
+            "label": "m = SLOPE",
+            "bullets": [
+              "How fast y changes per step of x",
+              "Rise over run between two points",
+              "The rate of change"
+            ],
+            "iconPrompt": "a line with a rise-over-run triangle marked"
+          },
+          {
+            "label": "b = START",
+            "bullets": [
+              "Where the line crosses the y-axis",
+              "The value of y when x = 0",
+              "The initial value"
+            ],
+            "iconPrompt": "a dot where a line meets the vertical axis"
+          },
+          {
+            "label": "SLOPE HAS A SIGN",
+            "bullets": [
+              "Positive: rises to the right (growing)",
+              "Negative: falls to the right (shrinking)",
+              "Zero: flat line (no change)"
+            ],
+            "iconPrompt": "three small lines rising, falling, and flat"
+          },
+          {
+            "label": "USE IT",
+            "bullets": [
+              "Any value: multiply by m, then add b",
+              "Proportional = the special case where b = 0",
+              "Say what m and b MEAN in the story"
+            ],
+            "iconPrompt": "a word problem with an arrow to an equation"
+          }
+        ]
+      },
+      "meta": "4 sections • slope-intercept reference"
+    },
+    {
+      "id": "le-math",
+      "type": "math",
+      "title": "Practice Problems",
+      "timestamp": "2026-07-21T16:00:04.000Z",
+      "data": {
+        "title": "Linear Equations and Slope",
+        "problems": [
+          {
+            "question": "A line passes through (0, 4) and (2, 10). Find the slope and the y-intercept.",
+            "answer": "Slope 3, intercept 4",
+            "steps": [
+              {
+                "explanation": "The y-intercept is the y-value when x is 0, which the point (0, 4) gives directly: 4.",
+                "latex": ""
+              },
+              {
+                "explanation": "Slope is rise over run. From (0,4) to (2,10), rise is 10 minus 4 = 6, run is 2 minus 0 = 2.",
+                "latex": ""
+              },
+              {
+                "explanation": "6 divided by 2 is 3, so the slope is 3 and the equation is y = 3x + 4.",
+                "latex": ""
+              }
+            ],
+            "realWorld": "A tank that starts with 4 liters and gains 3 liters each minute."
+          },
+          {
+            "question": "A phone plan is y = 1x + 10, where x is gigabytes. What does the 10 represent, and the 1?",
+            "answer": "10 is the monthly fee (start); 1 is the cost per gigabyte (slope)",
+            "steps": [
+              {
+                "explanation": "b is the value when x is 0 — the cost before using any data, so 10 is the flat monthly fee.",
+                "latex": ""
+              },
+              {
+                "explanation": "m is how much cost rises per gigabyte, so 1 means one dollar per gigabyte.",
+                "latex": ""
+              },
+              {
+                "explanation": "Together: start at $10, add $1 for each gigabyte.",
+                "latex": ""
+              }
+            ],
+            "realWorld": "Comparing phone or streaming plans with a base fee plus usage."
+          },
+          {
+            "question": "Using y = 1x + 10, what does 15 gigabytes cost?",
+            "answer": "$25",
+            "steps": [
+              {
+                "explanation": "Multiply the amount by the slope: 15 times 1 is 15.",
+                "latex": ""
+              },
+              {
+                "explanation": "Add the starting value: 15 plus 10.",
+                "latex": ""
+              },
+              {
+                "explanation": "The total is $25.",
+                "latex": ""
+              }
+            ],
+            "realWorld": "Predicting next month's bill from your data use."
+          },
+          {
+            "question": "A candle is 20 cm tall and burns down 4 cm per hour. Write an equation for its height y after x hours.",
+            "answer": "y = -4x + 20",
+            "steps": [
+              {
+                "explanation": "The starting height is 20, so b is 20.",
+                "latex": ""
+              },
+              {
+                "explanation": "It gets SHORTER by 4 cm each hour, so the slope is negative: -4.",
+                "latex": ""
+              },
+              {
+                "explanation": "The equation is y = -4x + 20.",
+                "latex": ""
+              }
+            ],
+            "realWorld": "Modeling anything that decreases steadily, like a draining battery."
+          },
+          {
+            "question": "Two lines are y = 2x + 3 and y = 2x + 7. How are they alike and different?",
+            "answer": "Same slope (2), different starting values (3 and 7)",
+            "steps": [
+              {
+                "explanation": "Both have slope 2, so they rise at the same rate and are parallel.",
+                "latex": ""
+              },
+              {
+                "explanation": "Their intercepts differ: one starts at 3, the other at 7.",
+                "latex": ""
+              },
+              {
+                "explanation": "Same steepness, different starting points — parallel lines.",
+                "latex": ""
+              }
+            ],
+            "realWorld": "Two savings plans that add money at the same rate but started with different amounts."
+          },
+          {
+            "question": "A gym charges a $25 sign-up fee plus $15 per month. Write the equation for total cost y after x months, then find the cost after 6 months.",
+            "answer": "y = 15x + 25; $115 after 6 months",
+            "steps": [
+              {
+                "explanation": "The sign-up fee is a one-time starting value, so b is 25.",
+                "latex": ""
+              },
+              {
+                "explanation": "The monthly charge is the rate, so m is 15: y = 15x + 25.",
+                "latex": ""
+              },
+              {
+                "explanation": "For 6 months: 15 times 6 is 90, plus 25 is $115.",
+                "latex": ""
+              }
+            ],
+            "realWorld": "Any membership with a joining fee plus a recurring charge."
+          }
+        ],
+        "graphData": null
+      },
+      "meta": "6 problems • name slope AND start every time"
+    },
+    {
+      "id": "le-sort",
+      "type": "concept-sort",
+      "title": "Same Slope, Different Start?",
+      "timestamp": "2026-07-21T16:00:05.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "le-pos",
+            "label": "Positive slope (rising)",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "le-neg",
+            "label": "Negative slope (falling)",
+            "color": "bg-rose-500"
+          },
+          {
+            "id": "le-zero",
+            "label": "Zero slope (flat)",
+            "color": "bg-slate-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "le1",
+            "content": "y = 3x + 2",
+            "categoryId": "le-pos"
+          },
+          {
+            "id": "le2",
+            "content": "y = -5x + 100 (a draining tank)",
+            "categoryId": "le-neg"
+          },
+          {
+            "id": "le3",
+            "content": "y = 7 (a constant temperature)",
+            "categoryId": "le-zero"
+          },
+          {
+            "id": "le4",
+            "content": "A savings account growing $20 a week",
+            "categoryId": "le-pos"
+          },
+          {
+            "id": "le5",
+            "content": "A candle burning down 2 cm per hour",
+            "categoryId": "le-neg"
+          },
+          {
+            "id": "le6",
+            "content": "A phone battery losing 8% per hour",
+            "categoryId": "le-neg"
+          },
+          {
+            "id": "le7",
+            "content": "y = 0.5x - 3",
+            "categoryId": "le-pos"
+          },
+          {
+            "id": "le8",
+            "content": "A parked car's distance from home over time",
+            "categoryId": "le-zero"
+          },
+          {
+            "id": "le9",
+            "content": "A plant growing 1 cm each day",
+            "categoryId": "le-pos"
+          }
+        ]
+      },
+      "meta": "3 slope signs • 9 lines & stories • read the direction"
+    },
+    {
+      "id": "le-quiz",
+      "type": "quiz",
+      "title": "Line Story Check",
+      "timestamp": "2026-07-21T16:00:06.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "In y = mx + b, what does m represent?",
+            "options": [
+              "The slope — how fast y changes for each step in x",
+              "The starting value when x is zero",
+              "The point where the line ends",
+              "The number of solutions"
+            ],
+            "correctAnswer": "The slope — how fast y changes for each step in x",
+            "conceptLabel": "meaning of m"
+          },
+          {
+            "type": "mcq",
+            "question": "In y = mx + b, what does b represent?",
+            "options": [
+              "The y-intercept — the value of y when x is zero",
+              "The steepness of the line",
+              "How far the line goes to the right",
+              "Always zero"
+            ],
+            "correctAnswer": "The y-intercept — the value of y when x is zero",
+            "conceptLabel": "meaning of b"
+          },
+          {
+            "type": "mcq",
+            "question": "A line falls from left to right on a graph. What must be true?",
+            "options": [
+              "Its slope is negative",
+              "Its slope is positive",
+              "Its slope is zero",
+              "It has no y-intercept"
+            ],
+            "correctAnswer": "Its slope is negative",
+            "conceptLabel": "sign of slope"
+          },
+          {
+            "type": "mcq",
+            "question": "A line goes through (0, 6) and (3, 12). What is its slope?",
+            "options": [
+              "2",
+              "6",
+              "3",
+              "18"
+            ],
+            "correctAnswer": "2",
+            "conceptLabel": "computing slope"
+          },
+          {
+            "type": "mcq",
+            "question": "A taxi charges $3 to start plus $2 per mile. Which equation models the total cost y for x miles?",
+            "options": [
+              "y = 2x + 3",
+              "y = 3x + 2",
+              "y = 5x",
+              "y = 2x - 3"
+            ],
+            "correctAnswer": "y = 2x + 3",
+            "conceptLabel": "writing an equation"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "A pool has 50 gallons and drains 5 gallons per minute. Write the equation for gallons y after x minutes, and explain what the slope and intercept mean here.",
+            "expectedAnswer": "The equation is y = -5x + 50. The intercept 50 is the starting amount of water. The slope -5 is negative because water is leaving at 5 gallons per minute, so the line falls.",
+            "conceptLabel": "modeling a situation"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "How is a proportional relationship a special case of y = mx + b? Explain what b must equal and why.",
+            "expectedAnswer": "A proportional relationship is y = mx + b where b equals 0. It has no starting amount, so zero input gives zero output and the line passes through the origin. Proportional relationships are the linear equations with b = 0.",
+            "conceptLabel": "proportional as special case"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Describe something in your life that changes at a steady rate. What is its slope, and what is its starting value?"
+          },
+          {
+            "text": "Which is easier for you to find first from a graph: the slope or the y-intercept? Why?"
+          }
+        ]
+      },
+      "meta": "5 MCQ + 2 short answer • Q5 word-problem to equation"
+    },
+    {
+      "id": "le-faq",
+      "type": "faq",
+      "title": "Linear Equation Questions",
+      "timestamp": "2026-07-21T16:00:07.000Z",
+      "data": [
+        {
+          "question": "Why is it called slope? ⛰️",
+          "answer": "Because it measures steepness, exactly like the slope of a hill or a roof. A big slope is a steep climb; a small slope is a gentle one; a negative slope goes downhill."
+        },
+        {
+          "question": "What is the difference between this year and last year's proportions?",
+          "answer": "Last year every line went through the origin (b = 0). This year lines can start anywhere, which is the +b part. Proportional relationships are just the special case where the starting value is zero."
+        },
+        {
+          "question": "Can slope be a fraction? 🤔",
+          "answer": "Absolutely. A slope of 1/2 means y rises 1 for every 2 that x moves across — a gentle climb. Fractional slopes are everywhere, like a wheelchair ramp's gentle rise."
+        },
+        {
+          "question": "What does a slope of zero look like?",
+          "answer": "A perfectly flat, horizontal line. Nothing is changing: a thermostat holding one temperature, or a parked car staying the same distance from home no matter how much time passes."
+        },
+        {
+          "question": "How do parallel lines relate to slope? 📐",
+          "answer": "Parallel lines have the exact same slope and never meet. They rise at the same rate but start at different y-intercepts, like two savings plans adding money equally fast from different starting balances."
+        },
+        {
+          "question": "Where does y = mx + b actually get used?",
+          "answer": "Constantly: pricing plans, wages, fuel use, depreciation, temperature change, budgets, and nearly every trend line in science and economics. It may be the single most-used equation in everyday life."
+        }
+      ],
+      "meta": "6 questions • connects back to proportions"
+    }
+  ]
+}

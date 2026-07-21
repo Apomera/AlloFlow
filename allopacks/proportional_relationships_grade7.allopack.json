@@ -1,0 +1,492 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Proportional Relationships — When Doubling One Doubles the Other",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "7th Grade",
+    "standards": "CCSS.MATH.CONTENT.7.RP.A.2 (recognize and represent proportional relationships between quantities); CCSS.MATH.CONTENT.7.RP.A.2.B (identify the constant of proportionality in tables, graphs, equations, and verbal descriptions); CCSS.MATH.CONTENT.7.RP.A.3 (use proportional relationships to solve multistep ratio and percent problems)",
+    "createdAt": "2026-07-21T15:00:00.000Z",
+    "imageShotList": "allopacks/proportional_relationships_grade7.IMAGES.md"
+  },
+  "sourceTopic": "Proportional Relationships",
+  "history": [
+    {
+      "id": "pr-directions",
+      "type": "directions",
+      "title": "Spot the Straight Line",
+      "timestamp": "2026-07-21T15:00:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nLast year you learned ratios and unit rates. This year those become a superpower: if you can spot a proportional relationship, you can predict any value in it and graph the whole thing from a single number.\n\n1. Read **When Doubling One Doubles the Other**.\n2. Learn the terms in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Proportion Moves** chart open while you work.\n4. Do the **Practice Problems** — find the constant of proportionality FIRST every time.\n5. Sort the tables in **Proportional or Not?**\n6. Take the quiz — question 4 is a table that looks proportional but is not.\n\nThe one test that settles everything: is y divided by x the same for every pair? If yes, it is proportional, and that answer is your constant. 📈",
+        "objectives": [
+          {
+            "id": "pr-goal-scramble",
+            "label": "Win the Word Scramble",
+            "kind": "game",
+            "gameType": "wordScramble",
+            "resourceRef": "pr-glossary"
+          },
+          {
+            "id": "pr-goal-xp",
+            "label": "Earn 35 XP",
+            "kind": "xp",
+            "amount": 35
+          },
+          {
+            "id": "pr-goal-find",
+            "label": "I found a proportional relationship in real life and named its constant",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "7th Grade • 3 goals • builds on ratios"
+    },
+    {
+      "id": "pr-reading",
+      "type": "simplified",
+      "title": "When Doubling One Doubles the Other",
+      "timestamp": "2026-07-21T15:00:01.000Z",
+      "data": "## When Doubling One Doubles the Other\n\nHere is a relationship you already understand. If one taco costs 3 dollars, then 2 tacos cost 6, and 4 tacos cost 12. Double the tacos, double the price. That is a **proportional relationship**, and this year you learn to recognize it anywhere and use it like a tool.\n\nTwo quantities are proportional when they always change by the same factor. Multiply one by any number and the other multiplies by the same number. The price of tacos is proportional to the count of tacos. The distance a car travels at steady speed is proportional to the time. The amount of flour in a recipe is proportional to the number of batches.\n\nEvery proportional relationship hides one special number called the **constant of proportionality**. You find it by dividing: output divided by input. For the tacos, 3 divided by 1 is 3, 6 divided by 2 is 3, 12 divided by 4 is 3. Same answer every time. That 3 is the constant, and it is really just the unit rate wearing a fancier name: 3 dollars per taco.\n\nThat single number is powerful. Once you have it, you can find ANY value. Want the cost of 9 tacos? Multiply 9 by the constant 3 to get 27. You never need a new calculation method, just that one number.\n\nHere is the test that settles every question: divide output by input for each pair. If you get the same answer every time, the relationship is proportional and that answer is your constant. If the answers differ, it is not proportional, no matter how neat the numbers look.\n\nThat test matters because some relationships fool you. Imagine a pool being filled that already had 10 gallons in it before you started, then gains 5 gallons a minute. After 1 minute: 15 gallons. After 2 minutes: 20. The numbers rise steadily, but divide and you get 15, then 10, then less. Not the same. Not proportional. That starting 10 gallons breaks it. Proportional relationships must pass through zero: zero input, zero output. Zero tacos cost zero dollars.\n\nThere is one more reason this idea is worth mastering. On a graph, every proportional relationship is a **straight line through the origin**, and the constant of proportionality is its steepness. So the same idea shows up three ways at once: as a table where output over input is constant, as an equation y equals kx, and as a straight line through zero. Learn to move between those three and you have most of middle-school math in your hands.",
+      "meta": "7th Grade • Leveled reading • ~400 words",
+      "imageSlot": "pr-img-three-forms"
+    },
+    {
+      "id": "pr-glossary",
+      "type": "glossary",
+      "title": "Proportion Words",
+      "timestamp": "2026-07-21T15:00:02.000Z",
+      "data": [
+        {
+          "term": "Proportional",
+          "def": "Two quantities that always change by the same factor.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Ratio",
+          "def": "A comparison of two quantities.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Constant",
+          "def": "The fixed number you multiply the input by — output divided by input.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Origin",
+          "def": "The point (0, 0) on a graph, where a proportional line must pass.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Unit rate",
+          "def": "How much for exactly one — the same value as the constant.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Equation",
+          "def": "A math statement with an equals sign, like y equals kx.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Input",
+          "def": "The quantity you start with, often called x.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Output",
+          "def": "The quantity that results, often called y.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Table",
+          "def": "Rows of paired input and output values.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Origin",
+          "def": "The (0,0) point every proportional graph passes through.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Factor",
+          "def": "A number you multiply by.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Steepness",
+          "def": "How quickly a line rises — set by the constant of proportionality.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "12 terms • Tiered"
+    },
+    {
+      "id": "pr-anchor",
+      "type": "anchor-chart",
+      "title": "Proportion Moves",
+      "timestamp": "2026-07-21T15:00:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "SAME ANSWER EVERY TIME",
+        "sections": [
+          {
+            "label": "THE TEST",
+            "bullets": [
+              "Divide output by input for each pair",
+              "Same answer every time = proportional",
+              "Different answers = NOT proportional"
+            ],
+            "iconPrompt": "a division sign checking two table rows"
+          },
+          {
+            "label": "THE CONSTANT",
+            "bullets": [
+              "That same answer IS the constant",
+              "It equals the unit rate",
+              "One number predicts every value"
+            ],
+            "iconPrompt": "a single boxed number labeled k"
+          },
+          {
+            "label": "MUST HIT ZERO",
+            "bullets": [
+              "Zero input must give zero output",
+              "0 tacos cost $0",
+              "A starting amount breaks proportionality"
+            ],
+            "iconPrompt": "a graph line passing through the origin"
+          },
+          {
+            "label": "THREE FORMS",
+            "bullets": [
+              "Table: output over input is constant",
+              "Equation: y = kx",
+              "Graph: straight line through the origin"
+            ],
+            "iconPrompt": "a table, an equation, and a line side by side"
+          }
+        ]
+      },
+      "meta": "4 moves • table-equation-graph link"
+    },
+    {
+      "id": "pr-math",
+      "type": "math",
+      "title": "Practice Problems",
+      "timestamp": "2026-07-21T15:00:04.000Z",
+      "data": {
+        "title": "Proportional Relationships",
+        "problems": [
+          {
+            "question": "A table shows 2 hours worked earns $30, and 5 hours earns $75. What is the constant of proportionality (dollars per hour)?",
+            "answer": "15 dollars per hour",
+            "steps": [
+              {
+                "explanation": "The constant is output divided by input, so divide dollars by hours.",
+                "latex": ""
+              },
+              {
+                "explanation": "30 divided by 2 equals 15, and 75 divided by 5 equals 15 — same answer.",
+                "latex": ""
+              },
+              {
+                "explanation": "The constant of proportionality is 15 dollars per hour.",
+                "latex": ""
+              }
+            ],
+            "realWorld": "Figuring out a pay rate from a partial timesheet."
+          },
+          {
+            "question": "Using that same job, how much would 8 hours earn?",
+            "answer": "$120",
+            "steps": [
+              {
+                "explanation": "Once you have the constant, multiply the input by it.",
+                "latex": ""
+              },
+              {
+                "explanation": "8 hours times 15 dollars per hour.",
+                "latex": ""
+              },
+              {
+                "explanation": "That equals $120.",
+                "latex": ""
+              }
+            ],
+            "realWorld": "Predicting a paycheck before it arrives."
+          },
+          {
+            "question": "Write the equation for a relationship where y is always 4 times x.",
+            "answer": "y = 4x",
+            "steps": [
+              {
+                "explanation": "A proportional relationship has the form y equals k times x.",
+                "latex": ""
+              },
+              {
+                "explanation": "Here the constant k is 4.",
+                "latex": ""
+              },
+              {
+                "explanation": "So the equation is y = 4x.",
+                "latex": ""
+              }
+            ],
+            "realWorld": "Describing 'each box holds 4 items' as a formula."
+          },
+          {
+            "question": "Is this table proportional? (1, 5), (2, 10), (3, 15). If so, give the constant.",
+            "answer": "Yes; constant is 5",
+            "steps": [
+              {
+                "explanation": "Divide output by input for each pair: 5/1, 10/2, 15/3.",
+                "latex": ""
+              },
+              {
+                "explanation": "Each equals 5 — the same answer every time.",
+                "latex": ""
+              },
+              {
+                "explanation": "So it is proportional with a constant of 5.",
+                "latex": ""
+              }
+            ],
+            "realWorld": "Checking whether a price chart uses one steady rate."
+          },
+          {
+            "question": "Is this table proportional? (1, 8), (2, 11), (3, 14). Explain.",
+            "answer": "No — it is not proportional",
+            "steps": [
+              {
+                "explanation": "Divide output by input: 8/1 = 8, 11/2 = 5.5, 14/3 is about 4.67.",
+                "latex": ""
+              },
+              {
+                "explanation": "The answers are different, so the relationship is NOT proportional.",
+                "latex": ""
+              },
+              {
+                "explanation": "It rises by 3 each step but started at 8, not 0 — a starting amount breaks proportionality.",
+                "latex": ""
+              }
+            ],
+            "realWorld": "Spotting a plan with a flat fee plus a per-use charge."
+          },
+          {
+            "question": "A recipe is proportional: 3 cups of rice feeds 12 people. How many cups feed 20 people?",
+            "answer": "5 cups",
+            "steps": [
+              {
+                "explanation": "Find the constant: people per cup is 12 divided by 3, which is 4 people per cup.",
+                "latex": ""
+              },
+              {
+                "explanation": "To feed 20 people, divide 20 by 4 people per cup.",
+                "latex": ""
+              },
+              {
+                "explanation": "That is 5 cups of rice.",
+                "latex": ""
+              }
+            ],
+            "realWorld": "Scaling a recipe for a larger group."
+          }
+        ],
+        "graphData": null
+      },
+      "meta": "6 problems • constant-first method"
+    },
+    {
+      "id": "pr-sort",
+      "type": "concept-sort",
+      "title": "Proportional or Not?",
+      "timestamp": "2026-07-21T15:00:05.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "pr-yes",
+            "label": "Proportional",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "pr-no",
+            "label": "NOT proportional",
+            "color": "bg-rose-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "pp1",
+            "content": "Table: (1,3), (2,6), (4,12)",
+            "categoryId": "pr-yes"
+          },
+          {
+            "id": "pp2",
+            "content": "Table: (1,5), (2,7), (3,9)",
+            "categoryId": "pr-no"
+          },
+          {
+            "id": "pp3",
+            "content": "y = 7x",
+            "categoryId": "pr-yes"
+          },
+          {
+            "id": "pp4",
+            "content": "y = 2x + 5",
+            "categoryId": "pr-no"
+          },
+          {
+            "id": "pp5",
+            "content": "A line through the origin on a graph",
+            "categoryId": "pr-yes"
+          },
+          {
+            "id": "pp6",
+            "content": "A line that crosses the y-axis at 4, not 0",
+            "categoryId": "pr-no"
+          },
+          {
+            "id": "pp7",
+            "content": "Cost of gas that is $3.50 per gallon with no fees",
+            "categoryId": "pr-yes"
+          },
+          {
+            "id": "pp8",
+            "content": "A phone plan: $10 flat plus $2 per gigabyte",
+            "categoryId": "pr-no"
+          },
+          {
+            "id": "pp9",
+            "content": "Distance at a steady 60 miles per hour",
+            "categoryId": "pr-yes"
+          }
+        ]
+      },
+      "meta": "2 buckets • 9 relationships • the +b ones are the trap"
+    },
+    {
+      "id": "pr-quiz",
+      "type": "quiz",
+      "title": "Constant Check",
+      "timestamp": "2026-07-21T15:00:06.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What is the test for whether a relationship is proportional?",
+            "options": [
+              "Output divided by input is the same for every pair",
+              "The numbers always go up",
+              "The two quantities are measured in the same units",
+              "One quantity is always larger than the other"
+            ],
+            "correctAnswer": "Output divided by input is the same for every pair",
+            "conceptLabel": "proportionality test"
+          },
+          {
+            "type": "mcq",
+            "question": "In the equation y = 6x, what is the constant of proportionality?",
+            "options": [
+              "6",
+              "x",
+              "y",
+              "0"
+            ],
+            "correctAnswer": "6",
+            "conceptLabel": "identifying the constant"
+          },
+          {
+            "type": "mcq",
+            "question": "A proportional relationship, graphed, always looks like what?",
+            "options": [
+              "A straight line passing through the origin (0, 0)",
+              "A curve that bends upward",
+              "A straight line crossing the y-axis above zero",
+              "A horizontal line"
+            ],
+            "correctAnswer": "A straight line passing through the origin (0, 0)",
+            "conceptLabel": "proportional graphs"
+          },
+          {
+            "type": "mcq",
+            "question": "Table: (2, 9), (4, 18), (6, 27). Divide to check — is it proportional, and what is the constant?",
+            "options": [
+              "Yes, constant is 4.5",
+              "Yes, constant is 2",
+              "No, it is not proportional",
+              "Yes, constant is 9"
+            ],
+            "correctAnswer": "Yes, constant is 4.5",
+            "conceptLabel": "finding the constant"
+          },
+          {
+            "type": "mcq",
+            "question": "Why is y = 3x + 2 NOT a proportional relationship?",
+            "options": [
+              "When x is 0, y is 2, not 0 — it does not pass through the origin",
+              "Because it uses the letter x",
+              "Because 3 is an odd number",
+              "It actually is proportional"
+            ],
+            "correctAnswer": "When x is 0, y is 2, not 0 — it does not pass through the origin",
+            "conceptLabel": "why not proportional"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "A pool starts with 10 gallons and gains 5 gallons per minute. Explain why the amount of water is NOT proportional to time, using the zero test.",
+            "expectedAnswer": "Proportional relationships must give zero output for zero input. At 0 minutes the pool already holds 10 gallons, not 0, so it fails the zero test. Also, dividing gallons by minutes gives different answers (15, 10, and so on), which confirms it is not proportional.",
+            "conceptLabel": "why not proportional"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "You earn $45 for 3 hours of work in a proportional pay setup. Find the constant, then predict your pay for 7 hours. Show your reasoning.",
+            "expectedAnswer": "The constant is output divided by input: 45 divided by 3 equals 15 dollars per hour. For 7 hours, multiply 7 by 15 to get $105.",
+            "conceptLabel": "using the constant"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Where in your life have you seen a proportional relationship? What is its constant?"
+          },
+          {
+            "text": "Which of the three forms — table, equation, or graph — helps you understand proportionality best? Why?"
+          }
+        ]
+      },
+      "meta": "5 MCQ + 2 short answer • Q4 divide-to-check, Q5 the +b trap"
+    },
+    {
+      "id": "pr-faq",
+      "type": "faq",
+      "title": "Proportion Questions",
+      "timestamp": "2026-07-21T15:00:07.000Z",
+      "data": [
+        {
+          "question": "Is the constant of proportionality just the unit rate again? 🤔",
+          "answer": "Yes — they are the same number. 'Constant of proportionality' is the version used with equations and graphs; 'unit rate' is the version used with shopping and cooking. One idea, two names for two contexts."
+        },
+        {
+          "question": "Why does the line HAVE to go through zero?",
+          "answer": "Because proportional means zero input gives zero output. Zero tacos cost zero dollars. If a graph crosses the y-axis anywhere but the origin, something extra (a fee, a head start) has been added, and that breaks proportionality."
+        },
+        {
+          "question": "What is the difference between y = kx and y = kx + b? 📊",
+          "answer": "The +b is a starting amount. y = kx is proportional (through the origin); y = kx + b is linear but NOT proportional. You will study the second kind, called linear relationships, very soon."
+        },
+        {
+          "question": "Can a relationship be proportional going down?",
+          "answer": "Yes. If the constant is a fraction like 0.5, then y is always half of x — still proportional, still a line through the origin, just a gentler slope."
+        },
+        {
+          "question": "How do I quickly tell from a table? ⚡",
+          "answer": "Pick any two rows and divide output by input. Do it for a couple more. If you keep getting the same number, it is proportional and that number is your constant. If not, it is not."
+        },
+        {
+          "question": "Where will I actually use this?",
+          "answer": "Currency exchange, scaling recipes, unit conversions, speed and distance, pay rates, mixing ratios, and reading almost any graph. Proportional reasoning is one of the most reused ideas in all of math."
+        }
+      ],
+      "meta": "6 questions • connects to linear relationships next"
+    }
+  ]
+}

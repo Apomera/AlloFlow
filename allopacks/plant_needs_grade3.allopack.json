@@ -1,0 +1,355 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "What Plants Need — The Quiet Life of a Seed",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "3rd Grade",
+    "standards": "NGSS 2-LS2-1 (plan and conduct an investigation to determine if plants need sunlight and water to grow); NGSS 3-LS1-1 (develop models to describe that organisms have unique and diverse life cycles); CCSS.ELA-LITERACY.RI.3.1 (ask and answer questions to demonstrate understanding of a text)",
+    "createdAt": "2026-07-21T18:00:00.000Z",
+    "imageShotList": "allopacks/plant_needs_grade3.IMAGES.md"
+  },
+  "sourceTopic": "What Plants Need to Grow",
+  "history": [
+    {
+      "id": "pl-directions",
+      "type": "directions",
+      "title": "Help a Seed Grow",
+      "timestamp": "2026-07-21T18:00:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nA seed looks like a tiny dead pebble. It is not. It is alive and waiting, and if you give it four things, it will grow into a whole plant.\n\n1. Read **The Quiet Life of a Seed**.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Look at the **What a Plant Needs** chart.\n4. Sort the cards in **Need or Not?**\n5. Take the quiz — say each answer out loud first.\n\nYour goal this week: watch a real plant or seed and notice what it does. Plants are slow, but they are always working. 🌱",
+        "objectives": [
+          {
+            "id": "pl-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "pl-glossary"
+          },
+          {
+            "id": "pl-goal-xp",
+            "label": "Earn 20 XP",
+            "kind": "xp",
+            "amount": 20
+          },
+          {
+            "id": "pl-goal-watch",
+            "label": "I looked at a real plant and told someone what it needs",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "3rd Grade • 3 goals • observe a real plant"
+    },
+    {
+      "id": "pl-reading",
+      "type": "simplified",
+      "title": "The Quiet Life of a Seed",
+      "timestamp": "2026-07-21T18:00:01.000Z",
+      "data": "## The Quiet Life of a Seed\n\nHold a seed in your hand. It feels like a tiny stone. But a seed is alive, and inside it a baby plant is asleep, waiting.\n\nGive a seed what it needs and it wakes up. It needs four things.\n\nFirst, a seed needs **water**. Water softens the hard shell and wakes the tiny plant inside. Without water, the seed stays asleep forever.\n\nSecond, it needs **warmth**. Most seeds wait for the soil to feel warm, like spring. That is how a seed knows it is a safe time to grow and not the cold of winter.\n\nWhen a seed wakes up, it sends a tiny **root** down into the soil. The root drinks water and holds the plant in place. Then it pushes a small green **stem** up toward the light. The plant is on its way.\n\nNow the growing plant needs a third thing: **sunlight**. Leaves catch light and use it to make their own food. This is the plant's superpower. A plant does not eat the way you do. It makes its food from sunlight, water, and air, right inside its green leaves. A plant left in a dark closet will grow pale and weak and finally die, even with plenty of water, because it cannot make food in the dark.\n\nThe fourth thing is **air**. Leaves take in a gas from the air called carbon dioxide and use it to make food. Roots need air too, which is why a plant drowned in too much water can die — the roots cannot breathe.\n\nSo the four needs are water, warmth, sunlight, and air. Take away any one and the plant struggles.\n\nHere is something surprising. Plants do more than take. While a plant makes its food, it lets out a gas called **oxygen** — the very gas you need to breathe. Every tree and blade of grass is quietly cleaning the air for you. You breathe because plants breathe out.\n\nA seed is slow. It does not grow while you watch. But give it water, warmth, sunlight, and air, and come back in a few days. The quiet little pebble will have become something alive and green and reaching for the sky.",
+      "meta": "3rd Grade • Leveled reading • ~370 words",
+      "imageSlot": "pl-img-seed-to-plant"
+    },
+    {
+      "id": "pl-glossary",
+      "type": "glossary",
+      "title": "Plant Words",
+      "timestamp": "2026-07-21T18:00:02.000Z",
+      "data": [
+        {
+          "term": "Seed",
+          "def": "A tiny living thing that can grow into a new plant.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Root",
+          "def": "The part that grows down to drink water and hold the plant in place.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Stem",
+          "def": "The part that grows up and holds the plant toward the light.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Leaf",
+          "def": "The flat green part that catches sunlight to make food.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Sunlight",
+          "def": "Light from the Sun that a plant uses to make its food.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Water",
+          "def": "The liquid a plant needs to wake up and grow.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Warmth",
+          "def": "Gentle heat that tells a seed it is time to grow.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Air",
+          "def": "The gases around us; plants use one of them to make food and need air at their roots.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Grow",
+          "def": "To get bigger and change over time.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Oxygen",
+          "def": "The gas plants let out that people need to breathe.",
+          "tier": "Domain-Specific"
+        }
+      ],
+      "meta": "10 terms • Tiered"
+    },
+    {
+      "id": "pl-anchor",
+      "type": "anchor-chart",
+      "title": "What a Plant Needs",
+      "timestamp": "2026-07-21T18:00:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "FOUR THINGS TO GROW",
+        "sections": [
+          {
+            "label": "WATER",
+            "bullets": [
+              "Wakes the sleeping seed",
+              "Roots drink it up",
+              "Too much can drown the roots"
+            ],
+            "iconPrompt": "a watering can over a small sprout"
+          },
+          {
+            "label": "SUNLIGHT",
+            "bullets": [
+              "Leaves catch the light",
+              "Used to make food",
+              "A plant in the dark grows pale"
+            ],
+            "iconPrompt": "a sun shining on a leaf"
+          },
+          {
+            "label": "AIR",
+            "bullets": [
+              "Leaves take in carbon dioxide",
+              "Roots need air too",
+              "Plants let out oxygen for us"
+            ],
+            "iconPrompt": "leaves with little air arrows"
+          },
+          {
+            "label": "WARMTH",
+            "bullets": [
+              "Warm soil tells a seed to grow",
+              "Like spring, not winter",
+              "Then a root and stem appear"
+            ],
+            "iconPrompt": "a thermometer beside a sprouting seed"
+          }
+        ]
+      },
+      "meta": "4 needs • simple picture reference"
+    },
+    {
+      "id": "pl-sort",
+      "type": "concept-sort",
+      "title": "Need or Not?",
+      "timestamp": "2026-07-21T18:00:04.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "pl-need",
+            "label": "A plant NEEDS this",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "pl-notneed",
+            "label": "A plant does NOT need this",
+            "color": "bg-slate-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "pl1",
+            "content": "Water",
+            "categoryId": "pl-need"
+          },
+          {
+            "id": "pl2",
+            "content": "Sunlight",
+            "categoryId": "pl-need"
+          },
+          {
+            "id": "pl3",
+            "content": "Air",
+            "categoryId": "pl-need"
+          },
+          {
+            "id": "pl4",
+            "content": "Warmth",
+            "categoryId": "pl-need"
+          },
+          {
+            "id": "pl5",
+            "content": "Music",
+            "categoryId": "pl-notneed"
+          },
+          {
+            "id": "pl6",
+            "content": "A cozy blanket",
+            "categoryId": "pl-notneed"
+          },
+          {
+            "id": "pl7",
+            "content": "Soil to hold its roots",
+            "categoryId": "pl-need"
+          },
+          {
+            "id": "pl8",
+            "content": "Toys",
+            "categoryId": "pl-notneed"
+          },
+          {
+            "id": "pl9",
+            "content": "A name",
+            "categoryId": "pl-notneed"
+          }
+        ]
+      },
+      "meta": "2 buckets • 9 cards • silly ones make them think"
+    },
+    {
+      "id": "pl-quiz",
+      "type": "quiz",
+      "title": "Plant Check",
+      "timestamp": "2026-07-21T18:00:05.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What wakes a sleeping seed up so it can grow?",
+            "options": [
+              "Water",
+              "Music",
+              "A blanket",
+              "Being held"
+            ],
+            "correctAnswer": "Water",
+            "conceptLabel": "seeds need water"
+          },
+          {
+            "type": "mcq",
+            "question": "Which part of a plant grows DOWN to drink water?",
+            "options": [
+              "The root",
+              "The leaf",
+              "The stem",
+              "The flower"
+            ],
+            "correctAnswer": "The root",
+            "conceptLabel": "plant parts"
+          },
+          {
+            "type": "mcq",
+            "question": "A plant is kept in a dark closet with plenty of water. What happens?",
+            "options": [
+              "It grows pale and weak because it cannot make food without light",
+              "It grows faster because it is resting",
+              "It turns bright green and healthy",
+              "Nothing changes at all"
+            ],
+            "correctAnswer": "It grows pale and weak because it cannot make food without light",
+            "conceptLabel": "plants need sunlight"
+          },
+          {
+            "type": "mcq",
+            "question": "How does a plant get its food?",
+            "options": [
+              "It makes its own food using sunlight, water, and air",
+              "It eats bugs from the soil",
+              "It drinks food through its roots like a straw",
+              "It does not need food"
+            ],
+            "correctAnswer": "It makes its own food using sunlight, water, and air",
+            "conceptLabel": "plants make food"
+          },
+          {
+            "type": "mcq",
+            "question": "What gas do plants let out that people need to breathe?",
+            "options": [
+              "Oxygen",
+              "Smoke",
+              "Water",
+              "Sunlight"
+            ],
+            "correctAnswer": "Oxygen",
+            "conceptLabel": "plants make oxygen"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Name the four things a plant needs to grow.",
+            "expectedAnswer": "A plant needs water, sunlight, air, and warmth.",
+            "conceptLabel": "four plant needs"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Your friend keeps a plant in a dark corner and waters it every day, but it is turning pale. What is missing, and why does it matter?",
+            "expectedAnswer": "The plant is missing sunlight. Plants use sunlight to make their own food, so even with plenty of water a plant in the dark cannot make food and grows pale and weak.",
+            "conceptLabel": "plants need sunlight"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "What is one plant you have seen this week? Where was it growing?"
+          },
+          {
+            "text": "If you could grow any plant, what would it be, and how would you take care of it?"
+          }
+        ]
+      },
+      "meta": "5 MCQ + 2 short answer • simple, read-aloud friendly"
+    },
+    {
+      "id": "pl-faq",
+      "type": "faq",
+      "title": "Plant Questions Kids Ask",
+      "timestamp": "2026-07-21T18:00:06.000Z",
+      "data": [
+        {
+          "question": "Can a plant get too much water? 💧",
+          "answer": "Yes! Roots need air as well as water. If the soil stays soaking wet, the roots cannot breathe and the plant can drown. Plants like a drink, not a swim."
+        },
+        {
+          "question": "Do plants sleep at night? 🌙",
+          "answer": "Not like you do, but many plants do change at night. Some flowers close up, and leaves may droop a little. They cannot make food in the dark, so nighttime is a kind of rest."
+        },
+        {
+          "question": "Why are leaves green? 🍃",
+          "answer": "Leaves are full of a green stuff called chlorophyll that catches sunlight to make food. The green color is a clue that the leaf is doing its most important job."
+        },
+        {
+          "question": "Can plants grow without soil?",
+          "answer": "Some can! A few plants grow with their roots in water instead of soil, as long as they still get the things they need. But most plants use soil to hold their roots and store water."
+        },
+        {
+          "question": "How do big trees start? 🌳",
+          "answer": "From a tiny seed, just like a flower. A giant oak tree began as an acorn small enough to hold. It only needed water, warmth, sunlight, and air, plus a lot of time."
+        },
+        {
+          "question": "Do plants really help me breathe?",
+          "answer": "They truly do. While plants make their food, they let out oxygen, the gas your body needs. Every tree and blade of grass is quietly making air for you to breathe."
+        }
+      ],
+      "meta": "6 questions • gentle and wonder-filled"
+    }
+  ]
+}

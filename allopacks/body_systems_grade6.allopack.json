@@ -1,0 +1,474 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Body Systems — The Team That Keeps You Alive",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "6th Grade",
+    "standards": "NGSS MS-LS1-3 (use argument supported by evidence for how the body is a system of interacting subsystems composed of groups of cells); CCSS.ELA-LITERACY.RST.6-8.4 (determine the meaning of domain-specific words and phrases); CCSS.ELA-LITERACY.RST.6-8.7 (integrate quantitative or technical information expressed in words with a version expressed visually)",
+    "createdAt": "2026-07-21T17:00:00.000Z",
+    "imageShotList": "allopacks/body_systems_grade6.IMAGES.md"
+  },
+  "sourceTopic": "Human Body Systems",
+  "history": [
+    {
+      "id": "bs-directions",
+      "type": "directions",
+      "title": "Meet the Team Inside You",
+      "timestamp": "2026-07-21T17:00:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nNo system in your body works alone. Take a single breath and eat a single bite, and at least four systems have to cooperate to turn them into energy for your cells. Today you learn the team, and how they pass the ball.\n\n1. Read **The Relay Race** — follow one oxygen molecule to a muscle cell.\n2. Learn the systems in the **Glossary**, then win the **Matching** game.\n3. Study the **Who Does What** chart.\n4. Sort the jobs in **Which System Handles This?**\n5. Take the quiz — the last two questions ask how systems WORK TOGETHER.\n6. Fill in the **Cornell Notes** in your own words.\n\nBig idea to carry: your body is not a collection of parts. It is a system of systems, and the handoffs between them are the whole point. 🫀🫁",
+        "objectives": [
+          {
+            "id": "bs-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "bs-glossary"
+          },
+          {
+            "id": "bs-goal-memory",
+            "label": "Win the Memory game",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "bs-glossary"
+          },
+          {
+            "id": "bs-goal-xp",
+            "label": "Earn 30 XP",
+            "kind": "xp",
+            "amount": 30
+          },
+          {
+            "id": "bs-goal-trace",
+            "label": "I traced how two body systems worked together during something I did today",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "6th Grade • 4 goals • systems interaction"
+    },
+    {
+      "id": "bs-reading",
+      "type": "simplified",
+      "title": "The Relay Race",
+      "timestamp": "2026-07-21T17:00:01.000Z",
+      "data": "## The Relay Race\n\nRight now your body is running a relay race it never finishes. To keep one muscle cell alive, several systems have to pass materials from one to the next without dropping the baton. Follow a single breath and see how many teammates it takes.\n\nIt begins in the **respiratory system**. You breathe in, and air travels down to your lungs, into tiny sacs called alveoli. Oxygen slips out of those sacs and into your blood. Carbon dioxide, a waste gas, moves the other way, out to be exhaled. The lungs are where the outside air meets the inside of your body.\n\nNow the **circulatory system** takes the baton. Your heart pumps that oxygen-rich blood through a vast network of vessels — arteries carrying it out, veins bringing it back. If you stretched all your blood vessels end to end, they would wrap around the Earth twice. Blood delivers oxygen to every cell and carries waste away.\n\nBut oxygen alone is not food. That comes from the **digestive system**. When you eat, your body breaks food down over a long journey — mouth, stomach, and especially the small intestine, where nutrients pass into the blood. So the circulatory system is now carrying two things to your cells: oxygen from the lungs and nutrients from the gut.\n\nInside the muscle cell, oxygen and nutrients combine to release energy. That is the payoff of the whole relay. The cell can now contract, and you can move.\n\nAnd who told the muscle to move in the first place? The **nervous system**. Your brain sent a signal down nerves faster than you could think about it. The nervous system is the coordinator, sending electrical messages that control nearly everything, often without you noticing.\n\nHolding it all up is the **skeletal system** — 206 bones giving you structure, protecting your organs, and anchoring the muscles of the **muscular system** that actually pull your body into motion.\n\nHere is the lesson underneath all of it. You could memorize each system alone and still miss the point. The point is the handoffs. Breathe during exercise and your respiratory and circulatory systems speed up together, because your muscles are demanding more oxygen and your nervous system noticed. Get scared and your heart races before you decide anything, because your nervous system triggered it. No system is an island. Your body is a system of systems, and staying alive is the sum of a million handoffs happening every minute, most of them without a single thought from you.",
+      "meta": "6th Grade • Leveled reading • ~420 words",
+      "imageSlot": "bs-img-systems-relay"
+    },
+    {
+      "id": "bs-glossary",
+      "type": "glossary",
+      "title": "Body System Words",
+      "timestamp": "2026-07-21T17:00:02.000Z",
+      "data": [
+        {
+          "term": "System",
+          "def": "A group of parts that work together to do a job.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Respiratory",
+          "def": "The breathing system — lungs that take in oxygen and release carbon dioxide.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Circulatory",
+          "def": "The heart-and-blood system that delivers oxygen and nutrients to cells.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Digestive",
+          "def": "The system that breaks food into nutrients the body can absorb.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Nervous",
+          "def": "The system that sends signals to control and coordinate the body.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Skeletal",
+          "def": "The system of bones that gives structure and protects organs.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Muscular",
+          "def": "The system of muscles that move the body.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Oxygen",
+          "def": "The gas cells need to release energy from food.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Nutrient",
+          "def": "A useful substance from food that cells use for energy and growth.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Organ",
+          "def": "A body part made of tissues that does a specific job, like the heart.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Vessel",
+          "def": "A tube that carries blood through the body.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Coordinate",
+          "def": "To make different parts work together at the right time.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "12 terms • Tiered"
+    },
+    {
+      "id": "bs-anchor",
+      "type": "anchor-chart",
+      "title": "Who Does What",
+      "timestamp": "2026-07-21T17:00:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "A SYSTEM OF SYSTEMS",
+        "sections": [
+          {
+            "label": "TAKE IN",
+            "bullets": [
+              "Respiratory: brings in oxygen",
+              "Digestive: breaks food into nutrients",
+              "Both hand their goods to the blood"
+            ],
+            "iconPrompt": "lungs and a stomach with arrows to a blood drop"
+          },
+          {
+            "label": "DELIVER",
+            "bullets": [
+              "Circulatory: heart pumps blood everywhere",
+              "Carries oxygen AND nutrients to cells",
+              "Carries waste away"
+            ],
+            "iconPrompt": "a heart with vessels branching out"
+          },
+          {
+            "label": "CONTROL & MOVE",
+            "bullets": [
+              "Nervous: sends the signals",
+              "Muscular: pulls the body into motion",
+              "Skeletal: the frame that holds it up"
+            ],
+            "iconPrompt": "a brain, a muscle, and a bone"
+          },
+          {
+            "label": "THE POINT",
+            "bullets": [
+              "No system works alone",
+              "Exercise speeds breathing AND heartbeat",
+              "The handoffs are the whole story"
+            ],
+            "iconPrompt": "gears meshing together"
+          }
+        ]
+      },
+      "meta": "4 sections • systems-and-handoffs reference"
+    },
+    {
+      "id": "bs-sort",
+      "type": "concept-sort",
+      "title": "Which System Handles This?",
+      "timestamp": "2026-07-21T17:00:04.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "bs-resp",
+            "label": "Respiratory",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "bs-circ",
+            "label": "Circulatory",
+            "color": "bg-rose-500"
+          },
+          {
+            "id": "bs-dig",
+            "label": "Digestive",
+            "color": "bg-amber-500"
+          },
+          {
+            "id": "bs-nerv",
+            "label": "Nervous",
+            "color": "bg-indigo-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "bs1",
+            "content": "Taking oxygen out of the air in the lungs",
+            "categoryId": "bs-resp"
+          },
+          {
+            "id": "bs2",
+            "content": "Pumping blood to every part of the body",
+            "categoryId": "bs-circ"
+          },
+          {
+            "id": "bs3",
+            "content": "Breaking a sandwich down into nutrients",
+            "categoryId": "bs-dig"
+          },
+          {
+            "id": "bs4",
+            "content": "Sending the signal to pull your hand off a hot stove",
+            "categoryId": "bs-nerv"
+          },
+          {
+            "id": "bs5",
+            "content": "Exhaling carbon dioxide",
+            "categoryId": "bs-resp"
+          },
+          {
+            "id": "bs6",
+            "content": "Absorbing nutrients in the small intestine",
+            "categoryId": "bs-dig"
+          },
+          {
+            "id": "bs7",
+            "content": "Carrying oxygen from the lungs to a muscle",
+            "categoryId": "bs-circ"
+          },
+          {
+            "id": "bs8",
+            "content": "Controlling your heartbeat without you thinking",
+            "categoryId": "bs-nerv"
+          },
+          {
+            "id": "bs9",
+            "content": "Bringing waste in the blood back from the cells",
+            "categoryId": "bs-circ"
+          },
+          {
+            "id": "bs10",
+            "content": "Telling your muscles when to contract",
+            "categoryId": "bs-nerv"
+          }
+        ]
+      },
+      "meta": "4 systems • 10 jobs • some are teamwork"
+    },
+    {
+      "id": "bs-quiz",
+      "type": "quiz",
+      "title": "Systems Working Together",
+      "timestamp": "2026-07-21T17:00:05.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Which system takes oxygen out of the air and passes it to the blood?",
+            "options": [
+              "The respiratory system",
+              "The digestive system",
+              "The skeletal system",
+              "The muscular system"
+            ],
+            "correctAnswer": "The respiratory system",
+            "conceptLabel": "respiratory function"
+          },
+          {
+            "type": "mcq",
+            "question": "The circulatory system delivers two things to your cells. What are they?",
+            "options": [
+              "Oxygen from the lungs and nutrients from the digestive system",
+              "Oxygen and bones",
+              "Nerve signals and muscles",
+              "Water and carbon dioxide only"
+            ],
+            "correctAnswer": "Oxygen from the lungs and nutrients from the digestive system",
+            "conceptLabel": "circulatory teamwork"
+          },
+          {
+            "type": "mcq",
+            "question": "You touch something hot and jerk your hand away before you even think. Which system made that happen so fast?",
+            "options": [
+              "The nervous system",
+              "The digestive system",
+              "The respiratory system",
+              "The skeletal system"
+            ],
+            "correctAnswer": "The nervous system",
+            "conceptLabel": "nervous coordination"
+          },
+          {
+            "type": "mcq",
+            "question": "Why is the body called 'a system of systems'?",
+            "options": [
+              "Because the systems constantly work together and hand materials to each other",
+              "Because each system works completely alone",
+              "Because there is one giant system with no parts",
+              "Because the systems compete with each other"
+            ],
+            "correctAnswer": "Because the systems constantly work together and hand materials to each other",
+            "conceptLabel": "systems interaction"
+          },
+          {
+            "type": "mcq",
+            "question": "When you sprint, your breathing AND your heartbeat both speed up. Why do BOTH change together?",
+            "options": [
+              "Your muscles need more oxygen, so respiratory and circulatory systems ramp up together",
+              "The two systems are actually the same system",
+              "Only the heart changes; breathing stays the same",
+              "The skeletal system forces them to"
+            ],
+            "correctAnswer": "Your muscles need more oxygen, so respiratory and circulatory systems ramp up together",
+            "conceptLabel": "systems interaction"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Trace one oxygen molecule from the air to a muscle cell, naming every system it passes through.",
+            "expectedAnswer": "It enters through the respiratory system (lungs), crosses into the blood, then the circulatory system (heart and vessels) carries it to a muscle cell. The nervous system controlled the breathing and heartbeat that moved it, and the muscular system uses the oxygen to move.",
+            "conceptLabel": "tracing across systems"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "A person eats lunch and then goes for a run. Name two body systems that must work together for the food to power the run, and explain the handoff.",
+            "expectedAnswer": "The digestive system breaks the lunch into nutrients and passes them into the blood. The circulatory system then carries those nutrients to the muscles, where they combine with oxygen to release energy for running. The handoff is nutrients moving from the gut into the bloodstream.",
+            "conceptLabel": "systems interaction"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which body system would you most want to learn more about, and why?"
+          },
+          {
+            "text": "Pick something you did today. Which body systems worked together to make it happen?"
+          }
+        ]
+      },
+      "meta": "5 MCQ + 2 short answer • interaction is the target idea"
+    },
+    {
+      "id": "bs-notes",
+      "type": "note-taking",
+      "title": "Body Systems Cornell Notes",
+      "timestamp": "2026-07-21T17:00:06.000Z",
+      "data": {
+        "templateType": "cornell-notes",
+        "title": "Body Systems — The Team That Keeps You Alive",
+        "cues": [
+          {
+            "id": "cue-bs-1",
+            "text": "Respiratory job?"
+          },
+          {
+            "id": "cue-bs-2",
+            "text": "Circulatory job?"
+          },
+          {
+            "id": "cue-bs-3",
+            "text": "Digestive job?"
+          },
+          {
+            "id": "cue-bs-4",
+            "text": "Nervous job?"
+          },
+          {
+            "id": "cue-bs-5",
+            "text": "Skeletal + muscular?"
+          },
+          {
+            "id": "cue-bs-6",
+            "text": "Oxygen's path to a cell"
+          },
+          {
+            "id": "cue-bs-7",
+            "text": "Why speed up together in exercise?"
+          },
+          {
+            "id": "cue-bs-8",
+            "text": "'System of systems' means?"
+          },
+          {
+            "id": "cue-bs-9",
+            "text": "My question"
+          }
+        ],
+        "notes": [
+          {
+            "id": "note-bs-1",
+            "text": ""
+          },
+          {
+            "id": "note-bs-2",
+            "text": ""
+          },
+          {
+            "id": "note-bs-3",
+            "text": ""
+          },
+          {
+            "id": "note-bs-4",
+            "text": ""
+          },
+          {
+            "id": "note-bs-5",
+            "text": ""
+          },
+          {
+            "id": "note-bs-6",
+            "text": ""
+          },
+          {
+            "id": "note-bs-7",
+            "text": ""
+          },
+          {
+            "id": "note-bs-8",
+            "text": ""
+          },
+          {
+            "id": "note-bs-9",
+            "text": ""
+          }
+        ]
+      },
+      "meta": "Cornell template • 9 cues"
+    },
+    {
+      "id": "bs-faq",
+      "type": "faq",
+      "title": "Body Questions",
+      "timestamp": "2026-07-21T17:00:07.000Z",
+      "data": [
+        {
+          "question": "Are blood vessels really long enough to wrap around Earth? 🌍",
+          "answer": "Stretched end to end, an adult's blood vessels reach roughly 60,000 miles — more than twice around the planet. Most of that length is microscopic capillaries thinner than a hair."
+        },
+        {
+          "question": "How fast do nerve signals travel? ⚡",
+          "answer": "The fastest ones move over 250 miles per hour. That is why you pull your hand off something hot before you consciously feel the pain — the reflex signal takes a shortcut through your spinal cord."
+        },
+        {
+          "question": "Why does my heart beat faster when I am scared?",
+          "answer": "Your nervous system detects a threat and triggers it automatically, releasing signals that speed the heart to rush oxygen to your muscles — getting you ready to run or react before you have decided anything."
+        },
+        {
+          "question": "Do all my systems ever rest? 😴",
+          "answer": "Not fully. Even in deep sleep your heart pumps, your lungs breathe, and your nervous system keeps them coordinated. Some systems slow down, but the life-support handoffs never stop."
+        },
+        {
+          "question": "How many bones do I have? 🦴",
+          "answer": "About 206 as an adult. Babies are born with around 300, and many fuse together as they grow — which is why the count goes down, not up."
+        },
+        {
+          "question": "Which system is the most important?",
+          "answer": "A trick question, and a good one. You cannot rank them, because they depend on each other. Remove any one and the whole team fails. That interdependence is the real lesson."
+        }
+      ],
+      "meta": "6 questions • reinforces interdependence"
+    }
+  ]
+}
