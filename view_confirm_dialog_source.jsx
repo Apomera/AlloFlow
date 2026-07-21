@@ -56,6 +56,13 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
     const previousFocus = document.activeElement;
+    // Register on the shared trap stack so a useFocusTrap-owned parent modal
+    // (e.g. the Class Mailbox panel) defers while this dialog is on top —
+    // otherwise its document-level handler yanks Tab focus back and its
+    // Escape closes the parent underneath this dialog.
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: dialog };
+    trapStack.push(trap);
     (cancelBtnRef.current || dialog).focus();
     const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
     const onKeyDown = (event) => {
@@ -71,6 +78,8 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
     dialog.addEventListener('keydown', onKeyDown);
     return () => {
       dialog.removeEventListener('keydown', onKeyDown);
+      const trapIndex = trapStack.indexOf(trap);
+      if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
       if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
     };
   }, [handleCancel]);

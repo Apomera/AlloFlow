@@ -15676,6 +15676,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [qrShareSvg, setQrShareSvg] = useState('');
   const [qrShareError, setQrShareError] = useState(false);
   const homeworkQrDialogRef = useRef(null);
+  const recentQrSharesDialogRef = useRef(null);
+  useFocusTrap(recentQrSharesDialogRef, showRecentQrShares, () => setShowRecentQrShares(false));
   const [pendingQrAssignmentResource, setPendingQrAssignmentResource] = useState(null);
   const buildAlloShareUrl = useCallback((params = {}) => {
       try {
@@ -15713,7 +15715,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       const dialog = homeworkQrDialogRef.current;
       if (!dialog) return undefined;
       const previousFocus = document.activeElement;
-      const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'));
+      // Selector must match useFocusTrap's: the readOnly link input is the
+      // LAST tabbable element on hosted-assignment modals, and omitting
+      // inputs let Tab walk out of this aria-modal dialog from there.
+      const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
       const focusable = getFocusable();
       (focusable[0] || dialog).focus();
       const onKeyDown = (event) => {
@@ -16133,7 +16138,17 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [mbConfig]);
   const closeAllMailboxSessions = useCallback(async () => {
       if (!mbConfig?.url || !mbConfig?.admin) return;
-      if (typeof window !== 'undefined' && !window.confirm('Close every live session remembered by this mailbox? Students will be disconnected.')) return;
+      // In-app dialog, not window.confirm: the sandboxed Canvas iframe can
+      // silently return false from confirm(), leaving a dead button.
+      const confirmed = await new Promise(resolve => setConfirmDialog({
+          title: 'Close all mailbox sessions?',
+          message: 'Close every live session remembered by this mailbox? Students will be disconnected.',
+          confirmText: 'Close all sessions',
+          tone: 'danger',
+          onConfirm: () => resolve(true),
+          onCancel: () => resolve(false),
+      }));
+      if (!confirmed) return;
       setMbBusy(true);
       try {
           const result = await _alloMailboxCall(mbConfig.url, { a: 'closeall', admin: mbConfig.admin });
@@ -17114,7 +17129,17 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const revokeHomeworkAssignment = useCallback(async () => {
       const current = qrShareModal;
       if (!current || current.type === 'assignment-pack') return;
-      if (typeof window !== 'undefined' && !window.confirm('Revoke this homework link now? Students will no longer be able to open it.')) return;
+      // In-app dialog, not window.confirm: the sandboxed Canvas iframe can
+      // silently return false from confirm(), leaving a dead button.
+      const confirmed = await new Promise(resolve => setConfirmDialog({
+          title: 'Revoke homework link?',
+          message: 'Revoke this homework link now? Students will no longer be able to open it.',
+          confirmText: 'Revoke link',
+          tone: 'danger',
+          onConfirm: () => resolve(true),
+          onCancel: () => resolve(false),
+      }));
+      if (!confirmed) return;
       try {
           if (current.type === 'assignment-pack-hosted') {
               if (!mbConfig?.url || !mbConfig?.admin || !current.packId) throw new Error('Mailbox connection is unavailable');
@@ -32357,7 +32382,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       </div>
       {showRecentQrShares && (
         <div className="fixed inset-0 z-[151] flex items-center justify-center bg-slate-950/80 p-4 no-print" role="dialog" aria-modal="true" aria-labelledby="recent-homework-links-title" onClick={() => setShowRecentQrShares(false)}>
-          <div className="relative max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl" onClick={event => event.stopPropagation()}>
+          <div ref={recentQrSharesDialogRef} className="relative max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl" onClick={event => event.stopPropagation()}>
             <button onClick={() => setShowRecentQrShares(false)} className="absolute right-3 top-3 rounded-full p-2 text-slate-600 hover:bg-slate-100" aria-label="Close recent homework links"><X size={20}/></button>
             <h2 id="recent-homework-links-title" className="pr-10 text-xl font-black text-slate-900">Recent homework links</h2>
             <p className="mt-1 text-xs text-slate-600">Saved only on this teacher device. Reopen a link to print, test, or revoke it.</p>
