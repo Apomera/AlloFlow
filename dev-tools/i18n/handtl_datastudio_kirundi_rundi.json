@@ -1,0 +1,22 @@
+{
+  "kirundi": {
+    "line_graph": "Igishushanyo c'umurongo",
+    "scatter_plot": "Ishusho y'ivyatatanye",
+    "monthly_temps_f": "🌡️ Ubushuhe bwa buri kwezi (°F)",
+    "monthly_temperature": "Ubushuhe bwa buri kwezi",
+    "class_grades": "📚 Amanota y'ishure",
+    "clear_all": "Siba vyose",
+    "clear_all_2": "🗑 Siba vyose",
+    "plain_language": "Ururimi rworoshe",
+    "click_tell_the_story_to_have_the_ai_tu": "Fyonda «Vuga inkuru» kugira ngo umwigisha wa AI asigure ico ishusho yawe yerekana ku rwego rwo gusoma wahisemo.",
+    "over_zoomed_lose_context": "🔍 Kwagura cane (gutakaza imiterere)",
+    "too_broad_lose_detail": "🔭 Vyagutse cane (gutakaza ibisobanuro)",
+    "reset": "↺ Subiramwo",
+    "hypothesis_when_is_a_chart_most_legibl": "Iciyumviro: Ni ryari ishusho isomeka cane?",
+    "stuck_show_open_prompts": "🤔 Wahagaze — erekana ibibazo vyugurutse",
+    "tufte_rules_maximize_data_ink_ratio_wh": "Amategeko ya Tufte: ongera igipimo ca data-wino. Ibi bisigura iki?",
+    "i_understand_explain_in_own_words": "Ndavyumva — sigura mu magambo yanje",
+    "explain_chart_visualization_principles": "Sigura amahame yo kwerekana ishusho.",
+    "design_note_discrete_4_state_visual_ma": "Inyandiko y'igishushanyo: ikimenyetso c'ishusho mu bihe 4 bitandukanye; nta manota y'ubwiza; nta kugaragaza — nk'uko vyateguwe."
+  }
+}
