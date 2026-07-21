@@ -5197,7 +5197,14 @@ const ALLO_WORKSPACE_RECOVERY_NAMESPACE = 'workspace_recovery';
 const ALLO_WORKSPACE_RECOVERY_KEY = 'store_v1';
 const ALLO_WORKSPACE_RECOVERY = (() => {
   const VERSION = 1;
-  const MAX_SNAPSHOTS = 3;
+  // 3 was a UX floor ("Start Fresh must be nondestructive"), never a measured
+  // storage budget — IndexedDB has room for far more. The real constraint is
+  // BYTES: snapshots embed karaoke base64 audio, and when the device refuses a
+  // write, stripLargeAssets guts the audio out of the snapshot BEING SAVED.
+  // So the count cap is paired with a size budget and the store drops the
+  // OLDEST workspace before the device can strip the NEWEST one's read-aloud.
+  const MAX_SNAPSHOTS = 8;
+  const MAX_TOTAL_BYTES = 150 * 1024 * 1024;
   const emptyStore = () => ({ version: VERSION, legacyMigrationComplete: false, removedSnapshotIds: {}, snapshots: [] });
   const newId = () => {
     try {
@@ -5227,6 +5234,9 @@ const ALLO_WORKSPACE_RECOVERY = (() => {
       assetPolicy: candidate.assetPolicy === 'text-only' ? 'text-only' : 'full',
       omittedAssets: Math.max(0, Number(candidate.omittedAssets) || 0),
       omittedAssetManifest: Array.isArray(candidate.omittedAssetManifest) ? candidate.omittedAssetManifest.slice(0, 500) : [],
+      // Stamped once at upsert (see measureBytes) and carried thereafter, so
+      // the eviction pass never re-serializes the whole store to weigh it.
+      approximateBytes: Math.max(0, Number(candidate.approximateBytes) || 0),
       workspace: { ...workspace, history }
     };
   };
@@ -5256,11 +5266,25 @@ const ALLO_WORKSPACE_RECOVERY = (() => {
       });
     }
     const seen = new Set();
-    const snapshots = source.map(normalizeSnapshot).filter(snapshot => {
+    const ordered = source.map(normalizeSnapshot).filter(snapshot => {
       if (!snapshot || hasRemovedSnapshotId(snapshot.id) || seen.has(snapshot.id)) return false;
       seen.add(snapshot.id);
       return true;
-    }).sort((a, b) => Date.parse(b.savedAt) - Date.parse(a.savedAt)).slice(0, MAX_SNAPSHOTS);
+    }).sort((a, b) => Date.parse(b.savedAt) - Date.parse(a.savedAt));
+    // Newest-first, stop at the first workspace that does not fit — the kept
+    // set stays contiguous ("the 6 most recent"), never a confusing gap.
+    // The newest is ALWAYS kept even if it alone exceeds the budget: dropping
+    // the save a teacher just made would be worse than running over, and the
+    // save-site quota ladder is the real backstop.
+    const kept = [];
+    let keptBytes = 0;
+    for (let i = 0; i < ordered.length && i < MAX_SNAPSHOTS; i++) {
+      const size = Math.max(0, Number(ordered[i].approximateBytes) || 0);
+      if (i > 0 && keptBytes + size > MAX_TOTAL_BYTES) break;
+      keptBytes += size;
+      kept.push(ordered[i]);
+    }
+    const snapshots = kept;
     return {
       version: VERSION,
       legacyMigrationComplete: Boolean(candidate && candidate.legacyMigrationComplete),
@@ -5268,8 +5292,17 @@ const ALLO_WORKSPACE_RECOVERY = (() => {
       snapshots
     };
   };
+  // One stringify of the record being written (the storage layer serializes it
+  // anyway). UTF-16 code units, not true bytes — base64 media is ASCII so the
+  // two agree closely enough to budget against, hence "approximate".
+  const measureBytes = (snapshot) => {
+    try { return JSON.stringify(snapshot).length; } catch (_) { return 0; }
+  };
+  const totalBytes = (store) => (store && Array.isArray(store.snapshots) ? store.snapshots : [])
+    .reduce((sum, snapshot) => sum + Math.max(0, Number(snapshot && snapshot.approximateBytes) || 0), 0);
   const upsert = (store, snapshot) => {
-    const normalized = normalizeSnapshot(snapshot);
+    const measured = normalizeSnapshot(snapshot);
+    const normalized = measured && { ...measured, approximateBytes: measureBytes(measured) };
     const current = normalizeStore(store);
     if (!normalized || Object.prototype.hasOwnProperty.call(current.removedSnapshotIds, normalized.id)) return current;
     const existing = current.snapshots.find(item => item.id === normalized.id);
@@ -5381,11 +5414,20 @@ const ALLO_WORKSPACE_RECOVERY = (() => {
       savedAt: normalized.savedAt,
       resourceCount: normalized.resourceCount,
       assetPolicy: normalized.assetPolicy,
-      omittedAssets: normalized.omittedAssets
+      omittedAssets: normalized.omittedAssets,
+      approximateBytes: normalized.approximateBytes
     };
   };
-  return { VERSION, MAX_SNAPSHOTS, emptyStore, newId, isSupportedPayload, normalizeSnapshot, normalizeStore, upsert, remove, stripSessionOnlyAssets, stripLargeAssets, summary };
+  return { VERSION, MAX_SNAPSHOTS, MAX_TOTAL_BYTES, emptyStore, newId, isSupportedPayload, normalizeSnapshot, normalizeStore, upsert, remove, stripSessionOnlyAssets, stripLargeAssets, summary, measureBytes, totalBytes };
 })();
+// Teacher-facing size label for saved workspaces. Deliberately coarse: the
+// number exists to explain WHY an old workspace was dropped, not to audit.
+const _alloFormatWorkspaceBytes = (bytes) => {
+  const n = Math.max(0, Number(bytes) || 0);
+  if (n < 1024) return n + ' B';
+  if (n < 1024 * 1024) return Math.round(n / 1024) + ' KB';
+  return (n / (1024 * 1024)).toFixed(n < 10 * 1024 * 1024 ? 1 : 0) + ' MB';
+};
 const _alloCreateDefaultStudentProjectSettings = () => ({
   hideStudentAiFeatures: false,
   allowStudentByokAi: false,
@@ -5498,7 +5540,7 @@ const _alloGetCanvasDeviceStorage = async () => {
       ? Promise.resolve(window.alloDeviceStorage)
       : new Promise((resolve, reject) => {
           const script = document.createElement('script');
-          script.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds1-recovery-atomic1';
+          script.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds2-slots8';
           script.onload = () => window.alloDeviceStorage
             ? resolve(window.alloDeviceStorage)
             : reject(new Error('Device storage module did not register.'));
@@ -12574,7 +12616,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           ? Promise.resolve(window.alloDeviceStorage)
           : new Promise((resolve, reject) => {
               const script = document.createElement('script');
-              script.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds1-recovery-atomic1';
+              script.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds2-slots8';
               script.onload = () => window.alloDeviceStorage ? resolve(window.alloDeviceStorage) : reject(new Error('device storage unavailable'));
               script.onerror = () => reject(new Error('device storage failed to load'));
               document.head.appendChild(script);
@@ -32005,7 +32047,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     </button>
                     <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={openCanvasRecoveryManager}
                       className="min-h-12 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 font-bold text-indigo-800 hover:bg-indigo-100">
-                      Manage saved work ({canvasRecoveryStore.snapshots.length})
+                      Manage saved work ({canvasRecoveryStore.snapshots.length} of {ALLO_WORKSPACE_RECOVERY.MAX_SNAPSHOTS})
                     </button>
                     <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
                       onClick={() => canvasRecoveryImportInputRef.current?.click()}
@@ -32014,7 +32056,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     </button>
                   </div>
                   <p className="mt-3 text-xs text-slate-500">
-                    AlloFlow keeps the 3 most recent device workspaces. Export important work before creating a fourth.
+                    AlloFlow keeps the {ALLO_WORKSPACE_RECOVERY.MAX_SNAPSHOTS} most recent device workspaces on this browser
+                    ({_alloFormatWorkspaceBytes(ALLO_WORKSPACE_RECOVERY.totalBytes(canvasRecoveryStore))} used). Saving beyond that
+                    removes the oldest — so export anything you want to keep for good.
                   </p>
                   <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950">
                     Shared computer? Saved work can be opened by another person using this browser profile. Export anything important, then erase it from Manage saved work.
@@ -32032,6 +32076,13 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                       </button>
                     </div>
                   )}
+                {canvasRecoveryStore.snapshots.length > 0 && (
+                  <p className="mb-3 rounded-xl bg-slate-50 px-4 py-3 text-xs text-slate-700">
+                    Using <strong>{_alloFormatWorkspaceBytes(ALLO_WORKSPACE_RECOVERY.totalBytes(canvasRecoveryStore))}</strong> of this
+                    browser's storage across {canvasRecoveryStore.snapshots.length} of {ALLO_WORKSPACE_RECOVERY.MAX_SNAPSHOTS} workspaces.
+                    When space runs short AlloFlow erases the oldest workspace rather than dropping the newest one's read-aloud audio.
+                  </p>
+                )}
                 <div className="space-y-3">
                   {canvasRecoveryStore.snapshots.length === 0 && (
                     <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-700">No saved work remains on this device.</p>
@@ -32043,6 +32094,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                           <div className="font-black text-slate-900">{snapshot.title}</div>
                           <div className="mt-1 text-xs text-slate-600">
                             {snapshot.resourceCount} {snapshot.resourceCount === 1 ? 'resource' : 'resources'} · {new Date(snapshot.savedAt).toLocaleString()}
+                            {snapshot.approximateBytes > 0 && (' · ' + _alloFormatWorkspaceBytes(snapshot.approximateBytes))}
                           </div>
                           <div className={'mt-2 inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ' + (snapshot.assetPolicy === 'full' ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900')}>
                             {snapshot.assetPolicy === 'full' ? 'Resource pack saved with supported media' : 'Resource history and settings saved; omissions recorded'}

@@ -161,6 +161,46 @@ describe('device storage bridge — file contracts', () => {
     }
     expect(tuDeployed).toBe(tuModule);
   });
+
+  // 2026-07-20: slots 3 → 8 with a size budget. The eviction rule lives in
+  // THREE independent copies (app monolith, this adapter, the bridge page);
+  // drift means the bridge silently discards workspaces the app still shows.
+  it('all three copies of the recovery cap agree (8 slots + size budget)', () => {
+    const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+    expect(anti).toContain('const MAX_SNAPSHOTS = 8;');
+    expect(anti).toContain('const MAX_TOTAL_BYTES = 150 * 1024 * 1024;');
+    for (const src of [moduleSrc, bridgeSrc]) {
+      expect(src).toContain('var RECOVERY_MAX_SNAPSHOTS = 8;');
+      expect(src).toContain('var RECOVERY_MAX_TOTAL_BYTES = 150 * 1024 * 1024;');
+      expect(src).toContain('snapshots: capRecoverySnapshots(snapshots)');
+      expect(src).toContain('function capRecoverySnapshots(snapshots)');
+      // the incoming record is weighed once, at write time
+      expect(src).toContain('snapshot.approximateBytes = JSON.stringify(snapshot).length;');
+    }
+    // no stale count-only slice survives in either copy
+    expect(moduleSrc).not.toContain('snapshots.slice(0, RECOVERY_MAX_SNAPSHOTS)');
+    expect(bridgeSrc).not.toContain('snapshots.slice(0, RECOVERY_MAX_SNAPSHOTS)');
+  });
+
+  it('the bridge cache-buster was bumped so caches refetch the new rule', () => {
+    // The bridge is loaded from the CDN, so a stale ?v= would keep enforcing
+    // the OLD 3-slot cap for anyone whose browser cached the page.
+    expect(moduleSrc).toContain('storage_bridge.html?v=ds2-slots8');
+    expect(moduleSrc).not.toContain('ds1-recovery-atomic1');
+    const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+    expect(anti).toContain('allo_device_storage_module.js?v=ds2-slots8');
+    expect(anti).not.toContain('ds1-recovery-atomic1');
+  });
+
+  it('teacher-facing copy states the real number instead of a hardcoded 3', () => {
+    const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+    expect(anti).not.toContain('AlloFlow keeps the 3 most recent device workspaces');
+    expect(anti).toContain('AlloFlow keeps the {ALLO_WORKSPACE_RECOVERY.MAX_SNAPSHOTS} most recent device workspaces');
+    expect(anti).toContain('Manage saved work ({canvasRecoveryStore.snapshots.length} of {ALLO_WORKSPACE_RECOVERY.MAX_SNAPSHOTS})');
+    // and it explains WHY an old workspace disappears, in teacher language
+    expect(anti).toContain('erases the oldest workspace rather than dropping the newest one');
+    expect(anti).toContain('const _alloFormatWorkspaceBytes = (bytes) => {');
+  });
 });
 
 describe('device storage adapter — behavior', () => {
@@ -225,16 +265,39 @@ describe('device storage adapter — behavior', () => {
     await api.set(ns, key, { version: 1, legacyMigrationComplete: false, removedSnapshotIds: {}, snapshots: [] });
     const snapshot = (id, savedAt, marker) => ({ version: 1, id, savedAt, marker, workspace: { history: [{ id: marker }] } });
 
-    for (const [id, day] of [['workspace-a', '01'], ['workspace-b', '02'], ['workspace-c', '03'], ['workspace-d', '04']]) {
+    // 2026-07-20: nine saves against the 8-slot cap — only the oldest goes.
+    const days = ['01', '02', '03', '04', '05', '06', '07', '08', '09'];
+    for (let i = 0; i < days.length; i++) {
+      const id = 'workspace-' + String.fromCharCode(97 + i); // a..i
       const result = await api.mutateRecovery(ns, key, {
         version: 1,
         action: 'upsert',
-        snapshot: snapshot(id, `2026-07-${day}T12:00:00.000Z`, id)
+        snapshot: snapshot(id, `2026-07-${days[i]}T12:00:00.000Z`, id)
       }, { queue: false });
       expect(result).toMatchObject({ applied: true, reason: 'upserted' });
     }
     const capped = await api.get(ns, key);
-    expect(capped.snapshots.map(item => item.id)).toEqual(['workspace-d', 'workspace-c', 'workspace-b']);
+    expect(capped.snapshots).toHaveLength(8);
+    expect(capped.snapshots.map(item => item.id)).toEqual([
+      'workspace-i', 'workspace-h', 'workspace-g', 'workspace-f',
+      'workspace-e', 'workspace-d', 'workspace-c', 'workspace-b'
+    ]);
+    expect(capped.snapshots.some(item => item.id === 'workspace-a')).toBe(false);
+    // every stored record carries its measured size for byte-aware eviction
+    expect(capped.snapshots.every(item => Number(item.approximateBytes) > 0)).toBe(true);
+
+    // A workspace bigger than the whole budget still lands, and still evicts
+    // older ones rather than being refused (the newest is never dropped).
+    const huge = snapshot('workspace-huge', '2026-07-10T12:00:00.000Z', 'huge');
+    huge.approximateBytes = 400 * 1024 * 1024;
+    const heavy = await api.mutateRecovery(ns, key, { version: 1, action: 'upsert', snapshot: huge }, { queue: false });
+    expect(heavy).toMatchObject({ applied: true, reason: 'upserted' });
+    expect(heavy.store.snapshots.map(item => item.id)).toEqual(['workspace-huge']);
+    // clean slate for the stale-write assertions below
+    await api.set(ns, key, { version: 1, legacyMigrationComplete: false, removedSnapshotIds: {}, snapshots: [] });
+    await api.mutateRecovery(ns, key, {
+      version: 1, action: 'upsert', snapshot: snapshot('workspace-d', '2026-07-04T12:00:00.000Z', 'workspace-d')
+    }, { queue: false });
 
     const stale = await api.mutateRecovery(ns, key, {
       version: 1,

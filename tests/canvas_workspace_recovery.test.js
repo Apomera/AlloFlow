@@ -51,14 +51,84 @@ describe('Canvas workspace recovery helpers', () => {
     expect(store.snapshots[0].workspace.activeResourceId).toBe('full-resource-59');
   });
 
-  it('keeps up to three separate workspaces so Start Fresh is nondestructive', () => {
+  // 2026-07-20: raised 3 → 8 at Aaron's request. 3 was only ever a UX floor
+  // ("Start Fresh must be nondestructive"), never a measured storage budget.
+  it('keeps up to MAX_SNAPSHOTS workspaces, newest first, so Start Fresh is nondestructive', () => {
+    expect(recovery.MAX_SNAPSHOTS).toBe(8);
     let store = recovery.emptyStore();
-    store = recovery.upsert(store, snapshot('old', '2026-07-15T12:00:00.000Z'));
-    store = recovery.upsert(store, snapshot('middle', '2026-07-16T12:00:00.000Z'));
-    store = recovery.upsert(store, snapshot('recent', '2026-07-17T12:00:00.000Z'));
-    store = recovery.upsert(store, snapshot('fresh', '2026-07-18T12:00:00.000Z'));
-    expect(store.snapshots.map(item => item.id)).toEqual(['fresh', 'recent', 'middle']);
-    expect(store.snapshots.some(item => item.id === 'recent')).toBe(true);
+    // nine saves, oldest first — the ninth must push exactly one out
+    const ids = ['w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'w7', 'w8', 'w9'];
+    ids.forEach((id, index) => {
+      store = recovery.upsert(store, snapshot(id, `2026-07-${String(10 + index).padStart(2, '0')}T12:00:00.000Z`));
+    });
+    expect(store.snapshots).toHaveLength(8);
+    expect(store.snapshots.map(item => item.id)).toEqual(['w9', 'w8', 'w7', 'w6', 'w5', 'w4', 'w3', 'w2']);
+    expect(store.snapshots.some(item => item.id === 'w1')).toBe(false); // oldest evicted
+  });
+
+  describe('byte-aware eviction: a tight device drops the OLDEST workspace', () => {
+    // The failure this prevents: without a size budget, the browser refuses the
+    // write and the save-site ladder strips karaoke audio out of the snapshot
+    // BEING SAVED — silently losing read-aloud the teacher just vetted.
+    const heavy = (id, savedAt, bytes) => {
+      const snap = snapshot(id, savedAt);
+      snap.approximateBytes = bytes;
+      return snap;
+    };
+    const MB = 1024 * 1024;
+
+    it('stops adding older workspaces once the size budget is spent', () => {
+      const store = recovery.normalizeStore({
+        version: 1,
+        snapshots: [
+          heavy('newest', '2026-07-18T12:00:00.000Z', 80 * MB),
+          heavy('mid', '2026-07-17T12:00:00.000Z', 60 * MB),
+          heavy('oldest', '2026-07-16T12:00:00.000Z', 60 * MB) // 200MB total > 150MB budget
+        ]
+      });
+      expect(store.snapshots.map(item => item.id)).toEqual(['newest', 'mid']);
+    });
+
+    it('ALWAYS keeps the newest workspace even when it alone blows the budget', () => {
+      const store = recovery.normalizeStore({
+        version: 1,
+        snapshots: [
+          heavy('enormous', '2026-07-18T12:00:00.000Z', 400 * MB),
+          heavy('older', '2026-07-17T12:00:00.000Z', 1 * MB)
+        ]
+      });
+      // dropping the save a teacher just made would be worse than running over
+      expect(store.snapshots.map(item => item.id)).toEqual(['enormous']);
+    });
+
+    it('keeps the set CONTIGUOUS — never skips a big one to fit a later small one', () => {
+      const store = recovery.normalizeStore({
+        version: 1,
+        snapshots: [
+          heavy('a', '2026-07-18T12:00:00.000Z', 100 * MB),
+          heavy('b', '2026-07-17T12:00:00.000Z', 100 * MB), // does not fit
+          heavy('tiny', '2026-07-16T12:00:00.000Z', 1)      // would fit, but comes after
+        ]
+      });
+      expect(store.snapshots.map(item => item.id)).toEqual(['a']);
+    });
+
+    it('light text-only workspaces all survive — the budget never bites in normal use', () => {
+      let store = recovery.emptyStore();
+      for (let i = 0; i < 8; i++) {
+        store = recovery.upsert(store, snapshot('light' + i, `2026-07-${String(10 + i).padStart(2, '0')}T12:00:00.000Z`));
+      }
+      expect(store.snapshots).toHaveLength(8);
+      expect(recovery.totalBytes(store)).toBeLessThan(recovery.MAX_TOTAL_BYTES);
+    });
+
+    it('upsert measures and stamps the record so eviction never re-weighs the store', () => {
+      const store = recovery.upsert(recovery.emptyStore(), snapshot('measured', '2026-07-18T12:00:00.000Z', 5));
+      expect(store.snapshots[0].approximateBytes).toBeGreaterThan(0);
+      expect(recovery.totalBytes(store)).toBe(store.snapshots[0].approximateBytes);
+      // summaries carry it too (the manage-list UI reads size from here)
+      expect(recovery.summary(store.snapshots[0]).approximateBytes).toBeGreaterThan(0);
+    });
   });
 
   it('removes only large media on quota fallback and records an omission manifest', () => {

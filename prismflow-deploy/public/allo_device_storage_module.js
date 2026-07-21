@@ -32,7 +32,7 @@
   }
 
   var PROTO = 'ds1';
-  var DEFAULT_BRIDGE_URL = 'https://alloflow-cdn.pages.dev/storage_bridge.html?v=ds1-recovery-atomic1';
+  var DEFAULT_BRIDGE_URL = 'https://alloflow-cdn.pages.dev/storage_bridge.html?v=ds2-slots8';
   var NS_RE = /^[a-z0-9_.-]{1,64}$/i;
   var REQUEST_TIMEOUT_MS = 8000;
   var CONNECT_TIMEOUT_MS = 12000;
@@ -70,7 +70,11 @@
   var RECOVERY_NAMESPACE = 'workspace_recovery';
   var RECOVERY_KEY = 'store_v1';
   var RECOVERY_VERSION = 1;
-  var RECOVERY_MAX_SNAPSHOTS = 3;
+  var RECOVERY_MAX_SNAPSHOTS = 8;
+  // Paired size budget: snapshots embed karaoke base64 audio, so a pure count
+  // cap lets a tight device force the app to strip the NEWEST workspace's
+  // read-aloud. Evict the oldest instead. Mirrors ALLO_WORKSPACE_RECOVERY.
+  var RECOVERY_MAX_TOTAL_BYTES = 150 * 1024 * 1024;
   var RECOVERY_EPOCH = '1970-01-01T00:00:00.000Z';
   function recoveryError(code, message) {
     return storageError(code, message);
@@ -137,6 +141,20 @@
     });
     return tombstones;
   }
+  // Newest-first, stop at the first workspace that does not fit so the kept
+  // set stays contiguous. The newest is always kept even when it alone
+  // exceeds the budget — never drop the save the teacher just made.
+  function capRecoverySnapshots(snapshots) {
+    var kept = [];
+    var keptBytes = 0;
+    for (var i = 0; i < snapshots.length && i < RECOVERY_MAX_SNAPSHOTS; i++) {
+      var size = Math.max(0, Number(snapshots[i] && snapshots[i].approximateBytes) || 0);
+      if (i > 0 && keptBytes + size > RECOVERY_MAX_TOTAL_BYTES) break;
+      keptBytes += size;
+      kept.push(snapshots[i]);
+    }
+    return kept;
+  }
   function normalizeRecoveryStore(candidate) {
     if (candidate != null && (typeof candidate !== 'object' || Array.isArray(candidate))) {
       throw recoveryError('allo/recovery-store-invalid', 'Recovery store must be an object.');
@@ -164,12 +182,15 @@
       version: RECOVERY_VERSION,
       legacyMigrationComplete: !!candidate.legacyMigrationComplete,
       removedSnapshotIds: tombstones,
-      snapshots: snapshots.slice(0, RECOVERY_MAX_SNAPSHOTS)
+      snapshots: capRecoverySnapshots(snapshots)
     };
   }
   function applyRecoveryUpsert(store, snapshot) {
     if (own(store.removedSnapshotIds, snapshot.id)) {
       return { store: store, applied: false, reason: 'removed-snapshot' };
+    }
+    if (!(Number(snapshot.approximateBytes) > 0)) {
+      try { snapshot.approximateBytes = JSON.stringify(snapshot).length; } catch (_e) { snapshot.approximateBytes = 0; }
     }
     var existing = null;
     for (var i = 0; i < store.snapshots.length; i++) {
