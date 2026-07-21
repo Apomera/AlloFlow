@@ -45,7 +45,7 @@ describe('Learning Lab Personal Question Log accessibility', () => {
     expect(questionLog).toContain('var questionText = form.text.trim();');
     expect(questionLog).toContain('subject: form.subject.trim()');
     expect(questionLog).toContain('context: form.context.trim()');
-    expect(questionLog).toContain("setData(Object.assign({}, data, { questions: [q].concat(data.questions || []) }))");
+    expect(questionLog).toContain("setData(Object.assign({}, data, { questions: [q].concat(rawQuestions) }))");
   });
 
   it('announces a saved question and restores a predictable capture focus', () => {
@@ -54,7 +54,7 @@ describe('Learning Lab Personal Question Log accessibility', () => {
   });
 
   it('discloses browser storage and shared-device privacy considerations', () => {
-    expect(questionLog).toContain('Questions and answers save in this browser.');
+    expect(questionLog).toContain('Questions and answers save in this browser only; saving does not send them to or notify anyone.');
     expect(questionLog).toContain('if other people use this device.');
     expect(questionLog).toContain("'aria-describedby': 'learning-lab-question-privacy-note'");
   });
@@ -95,12 +95,12 @@ describe('Learning Lab Personal Question Log accessibility', () => {
 
   it('saves a trimmed answer while preserving unrelated section data', () => {
     expect(questionLog).toContain("var answerText = String(answerDrafts[q.id] || '').trim()");
-    expect(questionLog).toContain("setData(Object.assign({}, data, { questions: (data.questions || []).map");
+    expect(questionLog).toContain("setData(Object.assign({}, data, { questions: rawQuestions.map");
     expect(questionLog).toContain("answered: true, answer: answerText, answeredAt: todayISO()");
   });
 
   it('announces status changes and restores focus after an item leaves the open view', () => {
-    expect(questionLog).toContain("llAnnounce('Question marked answered: ' + q.text)");
+    expect(questionLog).toContain("llAnnounce('Question marked answered: ' + textValue(q.text))");
     expect(questionLog).toContain("focusById(filter === 'open' ? 'learning-lab-question-results-heading'");
   });
 
@@ -119,14 +119,14 @@ describe('Learning Lab Personal Question Log accessibility', () => {
 
   it('uses definition-list and time semantics for question details', () => {
     expect(questionLog).toContain("hh('dl', { 'aria-label': 'Question details'");
-    expect(questionLog).toContain("hh('time', { dateTime: q.createdAt || undefined }");
-    expect(questionLog).toContain("hh('time', { dateTime: q.answeredAt }");
+    expect(questionLog).toContain("hh('time', { dateTime: textValue(q.createdAt).trim() || undefined }");
+    expect(questionLog).toContain("hh('time', { dateTime: textValue(q.answeredAt).trim() }");
   });
 
   it('presents recorded answers as a named section without losing whitespace', () => {
     expect(questionLog).toContain("hh('section', { 'aria-label': 'Answer'");
     expect(questionLog).toContain("whiteSpace: 'pre-wrap'");
-    expect(questionLog).toContain("String(q.answer || 'No answer recorded.')");
+    expect(questionLog).toContain("textValue(q.answer).trim() || 'No answer recorded.'");
   });
 
   it('confirms deletion through the accessible app dialog', () => {
@@ -136,8 +136,8 @@ describe('Learning Lab Personal Question Log accessibility', () => {
   });
 
   it('names removal controls, preserves data, announces removal, and restores focus', () => {
-    expect(questionLog).toContain("'aria-label': 'Remove question: ' + q.text");
-    expect(questionLog).toContain("setData(Object.assign({}, data, { questions: (data.questions || []).filter");
+    expect(questionLog).toContain("'aria-label': 'Remove question: ' + (textValue(q.text).trim() || 'Untitled question')");
+    expect(questionLog).toContain("setData(Object.assign({}, data, { questions: rawQuestions.filter");
     expect(questionLog).toContain("llAnnounce('Question removed.')");
     expect(questionLog).toContain("focusById('learning-lab-question-results-heading')");
   });
@@ -147,6 +147,19 @@ describe('Learning Lab Personal Question Log accessibility', () => {
     expect(questionLog).toContain("width: '100%', minHeight: 44");
     expect(questionLog).toContain("minWidth: 44, minHeight: 44");
     expect(questionLog).toContain("minHeight: 88");
+  });
+
+  it('handles malformed legacy question data without crashing', () => {
+    expect(questionLog).toContain('var rawQuestions = Array.isArray(data.questions) ? data.questions : [];');
+    expect(questionLog).toContain('var questions = rawQuestions.filter(isRecord);');
+    expect(questionLog).toContain("textValue(q.text).trim() || 'Untitled question'");
+    expect(source).toContain("stat: (Array.isArray((data.mytkQuest || {}).questions) ? (data.mytkQuest || {}).questions.filter(function(q) { return !!q && typeof q === 'object' && !q.answered; }).length : 0) + ' open'");
+  });
+
+  it('synchronizes focus with rendered state instead of a focus timer', () => {
+    expect(questionLog).toContain('if (!pendingFocusId) return;');
+    expect(questionLog).toContain('function focusById(id) { setPendingFocusId(id); }');
+    expect(questionLog).not.toContain('setTimeout');
   });
 
   it('keeps the deployed mirror identical', () => {

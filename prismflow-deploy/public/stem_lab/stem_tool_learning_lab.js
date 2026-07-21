@@ -15143,8 +15143,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // process during study or in office hours. Builds the asking muscle.
   function PersonalQuestionLog(props) {
     if (!R) return null;
-    var data = props.data || { questions: [] };
+    var data = props.data && typeof props.data === 'object' ? props.data : { questions: [] };
     var setData = props.setData;
+    var isRecord = function(value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
+    var textValue = function(value) { return typeof value === 'string' ? value : (typeof value === 'number' ? String(value) : ''); };
+    var rawQuestions = Array.isArray(data.questions) ? data.questions : [];
     var emptyForm = { text: '', subject: '', context: '' };
     var fs = R.useState(emptyForm);
     var form = fs[0]; var setForm = fs[1];
@@ -15152,14 +15155,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var fe = R.useState(''); var formError = fe[0]; var setFormError = fe[1];
     var ad = R.useState({}); var answerDrafts = ad[0]; var setAnswerDrafts = ad[1];
     var ae = R.useState({}); var answerErrors = ae[0]; var setAnswerErrors = ae[1];
+    var pfq = R.useState(''); var pendingFocusId = pfq[0]; var setPendingFocusId = pfq[1];
 
-    function focusById(id) {
-      setTimeout(function() {
-        if (typeof document === 'undefined') return;
-        var target = document.getElementById(id);
-        if (target && typeof target.focus === 'function') target.focus();
-      }, 0);
-    }
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, filter, data]);
+
+    function focusById(id) { setPendingFocusId(id); }
 
     function save() {
       var questionText = form.text.trim();
@@ -15178,7 +15184,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         subject: form.subject.trim(),
         context: form.context.trim()
       };
-      setData(Object.assign({}, data, { questions: [q].concat(data.questions || []) }));
+      setData(Object.assign({}, data, { questions: [q].concat(rawQuestions) }));
       setForm(emptyForm);
       setFormError('');
       llAnnounce('Question saved: ' + questionText);
@@ -15193,8 +15199,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         focusById('learning-lab-question-answer-' + q.id);
         return;
       }
-      setData(Object.assign({}, data, { questions: (data.questions || []).map(function(item) {
-        return item.id === q.id ? Object.assign({}, item, { answered: true, answer: answerText, answeredAt: todayISO() }) : item;
+      setData(Object.assign({}, data, { questions: rawQuestions.map(function(item) {
+        return isRecord(item) && item.id === q.id ? Object.assign({}, item, { answered: true, answer: answerText, answeredAt: todayISO() }) : item;
       }) }));
       setAnswerDrafts(function(current) {
         var next = Object.assign({}, current); delete next[q.id]; return next;
@@ -15202,18 +15208,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setAnswerErrors(function(current) {
         var next = Object.assign({}, current); delete next[q.id]; return next;
       });
-      llAnnounce('Question marked answered: ' + q.text);
+      llAnnounce('Question marked answered: ' + textValue(q.text));
       focusById(filter === 'open' ? 'learning-lab-question-results-heading' : 'learning-lab-question-heading-' + q.id);
     }
 
     function removeQuestion(q) {
-      var shortQuestion = String(q.text || 'this question');
+      var shortQuestion = textValue(q.text).trim() || 'this question';
       if (shortQuestion.length > 160) shortQuestion = shortQuestion.slice(0, 157) + '...';
       askLearningLabConfirmation('Remove “' + shortQuestion + '”? This cannot be undone.', {
         title: 'Remove this question?', confirmText: 'Remove question'
       }).then(function(accepted) {
         if (!accepted) return;
-        setData(Object.assign({}, data, { questions: (data.questions || []).filter(function(item) { return item.id !== q.id; }) }));
+        setData(Object.assign({}, data, { questions: rawQuestions.filter(function(item) { return !(isRecord(item) && item.id === q.id); }) }));
         setAnswerDrafts(function(current) {
           var next = Object.assign({}, current); delete next[q.id]; return next;
         });
@@ -15225,7 +15231,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       });
     }
 
-    var questions = data.questions || [];
+    var questions = rawQuestions.filter(isRecord);
     function questionsFor(nextFilter) {
       if (nextFilter === 'open') return questions.filter(function(q) { return !q.answered; });
       if (nextFilter === 'answered') return questions.filter(function(q) { return q.answered; });
@@ -15244,8 +15250,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
     var labelStyle = { display: 'block', fontSize: 12, fontWeight: 800, color: '#cffafe', marginBottom: 5 };
     var inputStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid rgba(103,232,249,0.55)', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
-    var helpStyle = { margin: '5px 0 10px', fontSize: 11, lineHeight: 1.5, color: 'var(--allo-stem-text, #cbd5e1)' };
-    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var helpStyle = { margin: '5px 0 10px', fontSize: 12, lineHeight: 1.5, color: 'var(--allo-stem-text, #cbd5e1)' };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 12, fontWeight: 700 };
 
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('❓', 'Question Log', 'Questions you want to ask but did not. Capture them now and answer them later.', '#06b6d4'),
@@ -15257,7 +15263,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           'aria-describedby': 'learning-lab-question-privacy-note'
         },
           hh('h2', { id: 'learning-lab-question-form-heading', style: { margin: '0 0 8px', fontSize: 15, fontWeight: 800, color: '#67e8f9' } }, 'Capture a question'),
-          hh('p', { id: 'learning-lab-question-privacy-note', style: helpStyle }, 'Questions and answers save in this browser. Avoid including private information if other people use this device.'),
+          hh('p', { id: 'learning-lab-question-privacy-note', style: helpStyle }, 'Questions and answers save in this browser only; saving does not send them to or notify anyone. Avoid including private information if other people use this device.'),
 
           hh('label', { htmlFor: 'learning-lab-question-text', style: labelStyle }, 'Question (required)'),
           hh('textarea', {
@@ -15323,7 +15329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       hh('section', { 'aria-labelledby': 'learning-lab-question-results-heading' },
         hh('h2', { id: 'learning-lab-question-results-heading', tabIndex: -1, style: { margin: '0 0 4px', fontSize: 15, color: '#cffafe' } }, 'Question history'),
-        hh('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '0 0 12px', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, resultText),
+        hh('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '0 0 12px', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, resultText),
         filtered.length === 0
           ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #475569', color: '#e2e8f0' } }, 'No questions in this view.')
           : hh('ul', { 'aria-label': resultText, style: { display: 'flex', flexDirection: 'column', gap: 10, margin: 0, padding: 0, listStyle: 'none' } },
@@ -15340,28 +15346,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   },
                     hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 8 } },
                       hh('div', null,
-                        hh('p', { style: { margin: '0 0 4px', color: q.answered ? '#6ee7b7' : '#67e8f9', fontSize: 11, fontWeight: 800 } }, q.answered ? 'Answered question' : 'Open question'),
-                        hh('h3', { id: headingId, tabIndex: -1, style: { margin: 0, fontSize: 14, lineHeight: 1.5, color: '#f8fafc' } }, q.text)
+                        hh('p', { style: { margin: '0 0 4px', color: q.answered ? '#6ee7b7' : '#67e8f9', fontSize: 12, fontWeight: 800 } }, q.answered ? 'Answered question' : 'Open question'),
+                        hh('h3', { id: headingId, tabIndex: -1, style: { margin: 0, fontSize: 14, lineHeight: 1.5, color: '#f8fafc' } }, textValue(q.text).trim() || 'Untitled question')
                       ),
                       hh('button', {
                         type: 'button', onClick: function() { removeQuestion(q); },
-                        'aria-label': 'Remove question: ' + q.text,
+                        'aria-label': 'Remove question: ' + (textValue(q.text).trim() || 'Untitled question'),
                         style: { flex: '0 0 auto', minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
                       }, 'Remove')
                     ),
-                    hh('dl', { 'aria-label': 'Question details', style: { display: 'grid', gridTemplateColumns: 'max-content 1fr', columnGap: 8, rowGap: 4, margin: '0 0 10px', fontSize: 11, color: '#e2e8f0' } },
-                      q.subject ? hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Subject'), hh('dd', { style: { margin: 0 } }, q.subject)) : null,
-                      q.context ? hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Context'), hh('dd', { style: { margin: 0 } }, q.context)) : null,
+                    hh('dl', { 'aria-label': 'Question details', style: { display: 'grid', gridTemplateColumns: 'max-content 1fr', columnGap: 8, rowGap: 4, margin: '0 0 10px', fontSize: 12, color: '#e2e8f0' } },
+                      textValue(q.subject).trim() ? hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Subject'), hh('dd', { style: { margin: 0 } }, textValue(q.subject).trim())) : null,
+                      textValue(q.context).trim() ? hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Context'), hh('dd', { style: { margin: 0 } }, textValue(q.context).trim())) : null,
                       hh('div', { style: { display: 'contents' } },
                         hh('dt', { style: { fontWeight: 800 } }, 'Recorded'),
-                        hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: q.createdAt || undefined }, relDate(q.createdAt)))
+                        hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: textValue(q.createdAt).trim() || undefined }, relDate(textValue(q.createdAt).trim())))
                       )
                     ),
                     q.answered
                       ? hh('section', { 'aria-label': 'Answer', style: { padding: 10, borderRadius: 7, background: 'rgba(16,185,129,0.12)', border: '1px solid #34d399' } },
                           hh('h4', { style: { margin: '0 0 5px', color: '#6ee7b7', fontSize: 12 } }, 'Answer'),
-                          hh('p', { style: { margin: 0, color: '#f1f5f9', fontSize: 12, lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, String(q.answer || 'No answer recorded.')),
-                          q.answeredAt ? hh('p', { style: { margin: '7px 0 0', color: '#cbd5e1', fontSize: 10 } }, 'Answered ', hh('time', { dateTime: q.answeredAt }, relDate(q.answeredAt))) : null
+                          hh('p', { style: { margin: 0, color: '#f1f5f9', fontSize: 12, lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, textValue(q.answer).trim() || 'No answer recorded.'),
+                          textValue(q.answeredAt).trim() ? hh('p', { style: { margin: '7px 0 0', color: '#cbd5e1', fontSize: 12 } }, 'Answered ', hh('time', { dateTime: textValue(q.answeredAt).trim() }, relDate(textValue(q.answeredAt).trim()))) : null
                         )
                       : hh('form', {
                           onSubmit: function(event) { event.preventDefault(); answerQuestion(q); },
@@ -20751,7 +20757,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkEnergy',   icon: '⚡', label: 'Energy Tracker',       color: '#fbbf24', desc: 'Log energy by hour, find your peak window',
         stat: (Array.isArray((data.mytkEnergy || {}).logs) ? (data.mytkEnergy || {}).logs.length : 0) + ' logs', cta: 'Log energy' },
       { id: 'mytkQuest',    icon: '❓', label: 'Question Log',         color: '#06b6d4', desc: 'Capture wonders mid-class, process later',
-        stat: ((data.mytkQuest || {}).questions || []).filter(function(q) { return !q.answered; }).length + ' open', cta: 'Log a question' },
+        stat: (Array.isArray((data.mytkQuest || {}).questions) ? (data.mytkQuest || {}).questions.filter(function(q) { return !!q && typeof q === 'object' && !q.answered; }).length : 0) + ' open', cta: 'Log a question' },
       { id: 'mytkSuccess',  icon: '🏆', label: 'Success Log',          color: '#10b981', desc: 'Log wins, tiny + big (Goldman 2020)',
         stat: ((data.mytkSuccess || {}).successes || []).length + ' wins', cta: 'Log a win' },
       { id: 'mytkEmail',    icon: '📧', label: 'Teacher Email Builder',color: '#3b82f6', desc: '6 templates for common student emails',
