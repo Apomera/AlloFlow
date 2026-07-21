@@ -60,6 +60,8 @@ These sections were independently committed:
 | Letters to Future Self | `6a62cc745` |
 | Memory Palace | `85d6c9b8e` |
 | Identity Map | `5b375c3cb` |
+| Question Log | `5da6940cc` |
+| Success Log | `175920ca7` |
 
 The most recently completed section, Personal Reference Sheet Builder, passed:
 
@@ -132,9 +134,16 @@ Three more sections with the standard wave, all gate-verified (full suite 2,250/
 - Full suite 2,263/2,263. Mirror SHA-256: `9C91D118760167E9D31B89E7A72DE040FD3382D3F9F2F374B653E79060FAF7F2`.
 - **CORRECTION to the earlier "3 remaining setTimeout-focus sites" note:** that count used a narrow regex. The broader variant (`setTimeout(function() { if (typeof document === 'undefined') return; var tar…`) exists at ~28 sites in later components/regions of this file (SEL-adjacent tools etc.). Same conversion applies as each section is audited; the focus-binding gate only catches UNBOUND calls, not timer-based ones, so don't rely on it for this.
 
+## Session notes (2026-07-21, Fable — eighth continuation)
+
+- **Question Log** `5da6940cc`: standard wave — timer-focus → pendingFocusId, rawQuestions/isRecord guards (null entries crashed the open/answered filters), textValue fallbacks incl. "Untitled question", guarded catalog "N open" stat, non-notification wording, 11px→12px. Render test covers filters with live status, blank-question and blank-answer error paths, answer-and-move flow, and confirmed removal.
+- **Success Log** `175920ca7`: same wave. NOTE: its 50-entry cap is explicitly disclosed in the UI ("Showing the 50 most recent entries out of N.") so it was KEPT — the convention forbids *silent* caps only. Null entries crashed `categoryFor`; bogus size/category ids fall back to defaults (render-tested).
+- Full suite 2,277/2,277. Mirror SHA-256: `AFDAB149DBD60A77994C1E0BB175CAB9ACC4308809FABE4E98F9AFF77C69B86D`.
+- Process tip that saved time twice this session: patch contract tests via a small Node script written to the scratchpad (PowerShell mangles quotes in inline `node -e` args).
+
 ## Next section
 
-Remaining unaudited (no-render-test list): **Question Log, Success Log, Teacher Email, Body Check, Achievement Wall, Affirmations, Role Models, Self Assessment, Learning Contract, Emotion Regulator, Mood/Class-adjacent leftovers** — plus the ~28 timer-focus conversions as their sections come up. One independently tested and committed section at a time. Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
+Remaining unaudited (no-render-test list): **Teacher Email, Body Check, Achievement Wall, Affirmations, Role Models, Self Assessment, Learning Contract, Emotion Regulator** — plus the ~28 timer-focus conversions as their sections come up. One independently tested and committed section at a time. Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
 
 ## Completed section reference: Optional Support Request Notes
 
