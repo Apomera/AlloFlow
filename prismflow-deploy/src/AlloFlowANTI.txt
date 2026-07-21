@@ -36487,6 +36487,37 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 <button onClick={() => { setShowLiveDock(false); setShowSessionModal(true); }} style={{background:'none',border:'none',padding:0,cursor:'pointer',fontFamily:'monospace',fontWeight:800,color:'#1e3a8a',fontSize:'0.85rem'}} aria-label={t('live_dock.session_code_aria') || 'Show session code'}>
                   {(t('live_dock.code_label') || 'Code:') + ' ' + activeSessionCode}
                 </button>
+                {(() => {
+                  // At-a-glance session health (2026-07-20): the question a
+                  // teacher actually has mid-lesson is 'are students getting
+                  // what I share?' — answered from the live roster + the
+                  // session-sync trace, one tap from the full Session log.
+                  try {
+                    const rosterCount = Object.keys((sessionData && sessionData.roster) || {}).length;
+                    const transportLabel = _alloMbBridgeActive() ? (t('live_dock.transport_mailbox') || 'Class Mailbox') : 'Firebase';
+                    const trace = (typeof window !== 'undefined' && window.__alloSessionSyncTrace) || [];
+                    let lastSync = null; let lastProblem = null;
+                    for (let i = trace.length - 1; i >= 0; i--) {
+                      const ev = trace[i];
+                      if (!lastSync && (ev.event === 'sync:write-ok' || ev.event === 'mailbox:pack-cycle')) lastSync = ev;
+                      if (!lastProblem && /REFUSED|write-failed|transport-unavailable/.test(ev.event)) lastProblem = ev;
+                      if (lastSync && lastProblem) break;
+                    }
+                    const problemIsCurrent = lastProblem && (!lastSync || lastProblem.at > lastSync.at);
+                    const ageSec = lastSync ? Math.max(0, Math.round((Date.now() - lastSync.at) / 1000)) : null;
+                    return (
+                      <button type="button" onClick={() => { try { if (window.__alloOpenDiagnosticsLog) window.__alloOpenDiagnosticsLog('session'); } catch (e) {} }}
+                        aria-label={t('live_dock.health_aria') || 'Session health — open the session log'}
+                        style={{display:'flex',alignItems:'center',gap:6,width:'100%',textAlign:'left',padding:'0.4rem 0.55rem',marginBottom:6,borderRadius:8,cursor:'pointer',fontSize:'0.72rem',fontWeight:700,fontFamily:'inherit',border:'1px solid ' + (problemIsCurrent ? '#fecaca' : '#bbf7d0'),background:problemIsCurrent ? '#fef2f2' : '#f0fdf4',color:problemIsCurrent ? '#991b1b' : '#166534'}}>
+                        <span aria-hidden="true">{problemIsCurrent ? '⚠️' : '🟢'}</span>
+                        <span>{rosterCount + ' ' + (rosterCount === 1 ? (t('live_dock.student') || 'student') : (t('live_dock.students') || 'students')) + ' · ' + transportLabel}</span>
+                        <span style={{marginLeft:'auto',fontWeight:600,opacity:0.85}}>
+                          {problemIsCurrent ? (t('live_dock.sync_problem') || 'sync problem — tap') : (lastSync ? ((t('live_dock.synced') || 'synced') + ' ' + (ageSec < 90 ? ageSec + 's' : Math.round(ageSec / 60) + 'm') + ' ' + (t('live_dock.ago') || 'ago')) : (t('live_dock.no_sync_yet') || 'no sync yet'))}
+                        </span>
+                      </button>
+                    );
+                  } catch (e) { return null; }
+                })()}
                 <div style={dockGroupLabel}>{t('live_dock.group_run') || 'Run'}</div>
                 <div style={{display:'flex',flexDirection:'column',gap:6}}>
                   <button style={dockCardStyle} onClick={() => { setLivePollPreset(null); setShowLivePollingPanel(true); setShowLiveDock(false); }}>

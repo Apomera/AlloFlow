@@ -262,6 +262,13 @@ describe('ANTI wiring pins', () => {
     expect(anti).not.toContain('const resourcesToUpload = _alloStudentSafeResources(history);');
   });
 
+  it('the Live Dock surfaces session health (roster + transport + last sync) with a diagnostics deep link', () => {
+    expect(anti).toContain("window.__alloOpenDiagnosticsLog('session')"); // deep link
+    expect(anti).toMatch(/rosterCount \+ ' ' \+ \(rosterCount === 1/);
+    expect(anti).toContain("/REFUSED|write-failed|transport-unavailable/.test(ev.event)");
+    expect(anti).toContain("problemIsCurrent ? '⚠️' : '🟢'");
+  });
+
   it('the mailbox pack effect routes through the module-owned cycle (stage 2)', () => {
     expect(anti).toContain('_stMb.createMailboxTransport({');
     expect(anti).toContain('typeof _stMb.runMailboxPackCycle === ');
