@@ -1,0 +1,200 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "The Water Cycle — Earth's Recycling System",
+    "author": "AlloFlow flagship (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "6th Grade",
+    "createdAt": "2026-07-20T00:00:00.000Z",
+    "imageShotList": "allopacks/water_cycle_grade6.IMAGES.md"
+  },
+  "sourceTopic": "The Water Cycle",
+  "history": [
+    {
+      "id": "wc-directions",
+      "type": "directions",
+      "title": "Your Water Cycle Mission",
+      "timestamp": "2026-07-20T00:00:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nWater has been recycling itself on Earth for about four billion years — the water in your bottle once floated in a cloud, and maybe once sat in a glacier. Tonight you become a water-cycle expert.\n\n1. Read **Journey of a Raindrop** first. Read it out loud if you can — or use the Read Aloud button.\n2. Open the **Glossary** and play the **Crossword** and the **Word Scramble** until you win each one.\n3. Try the **Sort It: Where Is the Water Going?** activity — drag each card to the right stage.\n4. Take the **Check Your Understanding** quiz. It is not a grade — wrong answers just show us what to practice.\n5. Use the **Sentence Frames** to write two sentences about the water cycle in your own words.\n\nWhen every goal below has a checkmark, you are done — and you have earned it. 🌧️➡️☀️",
+        "objectives": [
+          { "id": "wc-goal-crossword", "label": "Win the glossary Crossword", "kind": "game", "gameType": "crossword", "resourceRef": "wc-glossary" },
+          { "id": "wc-goal-scramble", "label": "Win the Word Scramble", "kind": "game", "gameType": "wordScramble", "resourceRef": "wc-glossary" },
+          { "id": "wc-goal-xp", "label": "Earn 30 XP tonight", "kind": "xp", "amount": 30 },
+          { "id": "wc-goal-teach", "label": "I taught someone at home one new word", "kind": "manual" }
+        ]
+      }
+    },
+    {
+      "id": "wc-reading",
+      "type": "simplified",
+      "title": "Journey of a Raindrop",
+      "timestamp": "2026-07-20T00:00:01.000Z",
+      "data": "## Journey of a Raindrop\n\nRight now, the Sun is lifting water into the sky — and it does not even touch it. Sunlight warms oceans, lakes, and puddles until some of the water changes from a liquid into an invisible gas called **water vapor**. This change is called **evaporation**. You have seen its results every time a puddle \"disappears\" on a sunny sidewalk. The puddle did not vanish. It moved.\n\nPlants join in, too. Water travels up from the roots and escapes through tiny holes in the leaves — a process called **transpiration**. A single large tree can send hundreds of liters of water into the air on a hot day, like a slow, silent fountain.\n\nHigh in the sky, the air is much colder. Cold air cannot hold as much water vapor, so the vapor changes back into liquid — billions of droplets so small they float. This is **condensation**, and a cloud is exactly that: a crowd of floating droplets. A cloud is not made of smoke or cotton. It is water you can fly through.\n\nInside a cloud, droplets bump into each other and merge, growing heavier and heavier. When they become too heavy for the air to hold, gravity wins. Water falls as rain, snow, sleet, or hail — all of these are **precipitation**. Whether you get rain or snow depends mostly on how cold the air is on the way down.\n\nWhere does the fallen water go? Some of it flows downhill across the surface as **runoff**, joining streams and rivers that carry it back toward the ocean. Some soaks into the ground and becomes **groundwater**, filling the spaces between soil and rock like water filling a sponge. Lakes, rivers, oceans, and underground layers store the water in **collection** — until the Sun lifts it again.\n\nHere is the amazing part: Earth almost never gets new water. The same water has been evaporating, condensing, falling, and collecting for about **four billion years**. The water in your water bottle may once have been in a dinosaur's pond, a Roman fountain, or a cloud over the ocean. The water cycle is Earth's original recycling system — powered by the Sun, pulled by gravity, and it never stops.",
+      "meta": { "imageSlot": "wc-img-cycle-diagram" }
+    },
+    {
+      "id": "wc-glossary",
+      "type": "glossary",
+      "title": "Water Cycle Words",
+      "timestamp": "2026-07-20T00:00:02.000Z",
+      "data": [
+        { "term": "Evaporation", "def": "The change of liquid water into water vapor (a gas), usually caused by heat from the Sun.", "tier": "Domain-Specific", "translations": { "Spanish": "Evaporación: El cambio del agua líquida a vapor de agua (un gas), normalmente causado por el calor del Sol." } },
+        { "term": "Condensation", "def": "The change of water vapor back into liquid droplets — this is how clouds form.", "tier": "Domain-Specific", "translations": { "Spanish": "Condensación: El cambio del vapor de agua a gotitas líquidas — así se forman las nubes." } },
+        { "term": "Precipitation", "def": "Water falling from clouds as rain, snow, sleet, or hail.", "tier": "Domain-Specific", "translations": { "Spanish": "Precipitación: Agua que cae de las nubes como lluvia, nieve, aguanieve o granizo." } },
+        { "term": "Collection", "def": "Water gathering in oceans, lakes, rivers, and underground after it falls.", "tier": "Academic", "translations": { "Spanish": "Recolección: El agua que se junta en océanos, lagos, ríos y bajo tierra después de caer." } },
+        { "term": "Transpiration", "def": "Water leaving a plant through tiny holes in its leaves and entering the air as vapor.", "tier": "Domain-Specific", "translations": { "Spanish": "Transpiración: Agua que sale de una planta por pequeños poros de sus hojas y entra al aire como vapor." } },
+        { "term": "Runoff", "def": "Water that flows over the land surface into streams and rivers instead of soaking in.", "tier": "Domain-Specific", "translations": { "Spanish": "Escorrentía: Agua que fluye sobre la superficie del terreno hacia arroyos y ríos en lugar de filtrarse." } },
+        { "term": "Groundwater", "def": "Water stored underground in the spaces between soil and rock.", "tier": "Domain-Specific", "translations": { "Spanish": "Agua subterránea: Agua almacenada bajo tierra en los espacios entre el suelo y las rocas." } },
+        { "term": "Vapor", "def": "Water in its gas form — invisible and mixed into the air.", "tier": "Academic", "translations": { "Spanish": "Vapor: Agua en su forma de gas — invisible y mezclada con el aire." } },
+        { "term": "Gravity", "def": "The force that pulls precipitation down to Earth and pulls rivers toward the ocean.", "tier": "Academic", "translations": { "Spanish": "Gravedad: La fuerza que atrae la precipitación hacia la Tierra y lleva los ríos hacia el océano." } },
+        { "term": "Cycle", "def": "A set of events that repeats in the same order, over and over, with no end.", "tier": "Academic", "translations": { "Spanish": "Ciclo: Un conjunto de eventos que se repite en el mismo orden, una y otra vez, sin fin." } }
+      ]
+    },
+    {
+      "id": "wc-sort",
+      "type": "concept-sort",
+      "title": "Sort It: Where Is the Water Going?",
+      "timestamp": "2026-07-20T00:00:03.000Z",
+      "data": {
+        "categories": [
+          { "id": "c-evap", "label": "Going UP (Evaporation & Transpiration)", "color": "bg-amber-500" },
+          { "id": "c-cond", "label": "Forming CLOUDS (Condensation)", "color": "bg-indigo-500" },
+          { "id": "c-precip", "label": "Coming DOWN (Precipitation)", "color": "bg-sky-500" },
+          { "id": "c-collect", "label": "Being STORED (Collection)", "color": "bg-emerald-500" }
+        ],
+        "items": [
+          { "id": "i1", "content": "A puddle shrinks on a sunny sidewalk", "categoryId": "c-evap" },
+          { "id": "i2", "content": "A tree releases water through its leaves", "categoryId": "c-evap" },
+          { "id": "i3", "content": "Your cold drink glass gets wet on the outside", "categoryId": "c-cond" },
+          { "id": "i4", "content": "Tiny floating droplets crowd together in the sky", "categoryId": "c-cond" },
+          { "id": "i5", "content": "Snow falls on a mountain", "categoryId": "c-precip" },
+          { "id": "i6", "content": "Hail bounces off a car roof", "categoryId": "c-precip" },
+          { "id": "i7", "content": "Rainwater soaks deep between soil and rock", "categoryId": "c-collect" },
+          { "id": "i8", "content": "A river carries water toward the ocean", "categoryId": "c-collect" },
+          { "id": "i9", "content": "Steam rises from a hot pot of soup", "categoryId": "c-evap" },
+          { "id": "i10", "content": "Fog forms over a cold field in the morning", "categoryId": "c-cond" }
+        ]
+      }
+    },
+    {
+      "id": "wc-quiz",
+      "type": "quiz",
+      "title": "Check Your Understanding",
+      "timestamp": "2026-07-20T00:00:04.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "A puddle disappears on a sunny day. What actually happened to the water?",
+            "options": [
+              "It changed into water vapor and mixed into the air",
+              "It soaked completely into the concrete",
+              "The Sun destroyed the water",
+              "It turned into oxygen"
+            ],
+            "correctAnswer": "It changed into water vapor and mixed into the air",
+            "conceptLabel": "evaporation basics"
+          },
+          {
+            "type": "mcq",
+            "question": "What is a cloud made of?",
+            "options": [
+              "Billions of tiny floating water droplets",
+              "Smoke collected from the ground",
+              "Water vapor only, with no liquid at all",
+              "Cotton-like fibers of frozen air"
+            ],
+            "correctAnswer": "Billions of tiny floating water droplets",
+            "conceptLabel": "condensation and clouds"
+          },
+          {
+            "type": "mcq",
+            "question": "Why does condensation happen high in the sky?",
+            "options": [
+              "Cold air cannot hold as much water vapor as warm air",
+              "The sky pushes water droplets together",
+              "There is no gravity high in the sky",
+              "Clouds attract water from the ocean"
+            ],
+            "correctAnswer": "Cold air cannot hold as much water vapor as warm air",
+            "conceptLabel": "condensation and clouds"
+          },
+          {
+            "type": "mcq",
+            "question": "Which of these is NOT a form of precipitation?",
+            "options": [
+              "Fog sitting over a field",
+              "Snow falling on a mountain",
+              "Hail bouncing off a roof",
+              "Sleet hitting a window"
+            ],
+            "correctAnswer": "Fog sitting over a field",
+            "conceptLabel": "precipitation forms"
+          },
+          {
+            "type": "mcq",
+            "question": "About how old is the water you drank today?",
+            "options": [
+              "About four billion years — Earth keeps recycling the same water",
+              "Brand new — rain makes fresh water from nothing",
+              "About one hundred years old",
+              "As old as the pipes it traveled through"
+            ],
+            "correctAnswer": "About four billion years — Earth keeps recycling the same water",
+            "conceptLabel": "water conservation cycle"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Explain the difference between runoff and groundwater. Where does each kind of water go?",
+            "expectedAnswer": "Runoff flows over the surface of the land into streams and rivers (and toward the ocean). Groundwater soaks into the ground and is stored in spaces between soil and rock.",
+            "conceptLabel": "collection and storage"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "The water cycle is powered by two things: one lifts water up, one pulls it down. Name both and say what each one does.",
+            "expectedAnswer": "The Sun powers evaporation by warming water so it rises as vapor; gravity pulls precipitation down to Earth and pulls rivers toward the ocean.",
+            "conceptLabel": "cycle energy sources"
+          }
+        ],
+        "reflections": [
+          { "text": "What surprised you most about where your drinking water has been?" },
+          { "text": "Describe one place in your neighborhood where you could SEE part of the water cycle happening this week." }
+        ]
+      }
+    },
+    {
+      "id": "wc-frames",
+      "type": "sentence-frames",
+      "title": "Say It Like a Scientist",
+      "timestamp": "2026-07-20T00:00:05.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          { "text": "When the Sun warms water, it changes into ____ through a process called ____." },
+          { "text": "Clouds form when water vapor ____ because the air high up is ____." },
+          { "text": "Precipitation can fall as ____, ____, or ____, depending on ____." },
+          { "text": "After rain falls, some water becomes runoff, which means it ____, and some becomes groundwater, which means it ____." },
+          { "text": "The water cycle never makes new water; instead, it ____ the same water because ____." },
+          { "text": "One place I saw the water cycle in real life was ____, where I noticed ____." }
+        ],
+        "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Scientist |\n|---|---|---|---|\n| Vocabulary | Uses everyday words only | Uses 1-2 glossary words correctly | Uses 3+ glossary words correctly and naturally |\n| Accuracy | Ideas partly mixed up | Mostly correct with one slip | Every statement scientifically correct |\n| Completeness | Fills some blanks | Fills all blanks simply | Fills all blanks with detail and connects ideas |"
+      }
+    },
+    {
+      "id": "wc-faq",
+      "type": "faq",
+      "title": "But Wait — Water Questions Kids Actually Ask",
+      "timestamp": "2026-07-20T00:00:06.000Z",
+      "data": [
+        { "question": "Is it true I might be drinking dinosaur water? 🦕", "answer": "Pretty much! Earth has been recycling the same water for about four billion years, so the molecules in your bottle have been through countless clouds, rivers, and yes — probably a dinosaur or two." },
+        { "question": "Why doesn't the ocean overflow if rivers keep pouring into it?", "answer": "Because the Sun is constantly lifting water OUT of the ocean by evaporation — roughly as fast as rivers pour it in. The cycle keeps it balanced." },
+        { "question": "Why is rain fresh water when it evaporates from the salty ocean? 🧂", "answer": "Great catch — when water evaporates, the salt gets left behind. Only the water molecules rise as vapor, so clouds (and rain) are salt-free." },
+        { "question": "Can the water cycle ever just stop?", "answer": "Not while the Sun shines and gravity pulls. It would take losing one of those to stop it — and neither is going anywhere for billions of years." },
+        { "question": "Where does my breath fog go on a cold day?", "answer": "That IS the water cycle, in miniature! Warm water vapor from your lungs hits cold air and condenses into tiny droplets — a little personal cloud — then evaporates again into the air." },
+        { "question": "Is snow just frozen rain?", "answer": "Not exactly. Snow forms when water vapor turns straight into ice crystals inside a very cold cloud. Sleet is closer to frozen rain — raindrops that freeze on the way down." }
+      ]
+    }
+  ]
+}
