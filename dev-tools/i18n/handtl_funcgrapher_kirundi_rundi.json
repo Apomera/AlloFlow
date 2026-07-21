@@ -1,0 +1,28 @@
+{
+  "kirundi": {
+    "reflected_over_x_axis": "Vyagaragajwe ku murongo x",
+    "function_grapher_keyboard_shortcuts_1_": "Igikoresho co gushushanya fonction. Amahinguriro ya keyboard: 1 kugeza 6 bitoranya ubwoko bwa fonction, D derivée, A ubuso, T imbonerahamwe, L kwiga.",
+    "function_grapher": "📈 Igikoresho co gushushanya fonction",
+    "understanding_functions": "📖 Gutahura fonction",
+    "where_the_function_crosses_the_y_axis_": "Aho fonction inyura ku murongo y. Iyi ni agaciro ka f(0) — shiramwo gusa x = 0.",
+    "the_derivative_measures_the_rate_of_ch": "Derivée ipima igipimo c'impinduka. Yifungure kugira ngo urabe uko umanuko uhinduka ku fonction. Aho f′(x) = 0, fonction ifite agaciro gakomeye canke gato k'ahantu.",
+    "the_shaded_area_represents_the_integra": "Ahantu hijimye hagaragaza intégrale — «ihurizwahamwe» rusange rya f(x). Mu buzima nyabwo, ibi bishobora gusigura intera yagenzwe, ingufu zakoreshejwe, canke ubushobozi.",
+    "when_a_0_the_parabola_opens_up_when_a_": "Iyo a > 0, parabole yugurura hejuru (⏣). Iyo a < 0, yugurura hasi (⏢). Sommet ni ingingo yo guhindukira. Gerageza guhindura 'a' kugira ngo urabe!",
+    "ai_explanation": "🧠 Ibisobanuro vya AI",
+    "start_challenge": "Tangura ikibazo",
+    "plain": "Vyoroshe",
+    "using_simple_everyday_words_and_short_": "hakoreshejwe amagambo yoroshe ya buri munsi n'interuro ngufi, nta magambo y'ubuhanga",
+    "for_a_5th_grade_student": "ku munyeshure w'umwaka wa 5",
+    "high_school": "Amashure yisumbuye",
+    "for_a_high_school_algebra_or_pre_calc_": "ku munyeshure w'amashure yisumbuye muri algèbre canke pré-calcul, hamwe n'amagambo nka umanuko, aho inyura, sommet, période, na amplitude",
+    "explain_at_my_level": "✨ Sigura ku rwego rwanje",
+    "click_explain_for_the_ai_tutor_to_desc": "Fyonda «Sigura» kugira ngo mwigisha AI asigure iyi fonction ku rwego rwo gusoma watoranije.",
+    "tall_fast_intense": "🌊 Ndende + vyihuse (bikomeye)",
+    "sliders_for_amplitude_frequency_phase_": "Sliders za amplitude, fréquence, phase. Iciciro discrète c'imimerere 5. Nta manota, nta kugaragaza.",
+    "hypothesis_how_does_phase_shift_affect": "Iciyumviro: Ni gute phase shift igira ingaruka ku muraba ugaragara?",
+    "stuck_show_open_prompts": "🤔 Wafashwe — erekana ibibazo vyugurutse",
+    "i_understand_explain_in_own_words": "Ndavyumva — sigura mu magambo yawe",
+    "explain_how_each_parameter_shapes_a_si": "Sigura uko buri paramètre ishushanya umuraba sinus.",
+    "design_note_discrete_5_state_marker_no": "Inyandiko y'igishushanyo: ikimenyetso discrète c'imimerere 5; nta manota y'umuraba; nta kugaragaza — ku bushake bw'igishushanyo."
+  }
+}
