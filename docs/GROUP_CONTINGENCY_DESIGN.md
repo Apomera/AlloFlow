@@ -1,6 +1,7 @@
 # Group Contingencies in AlloFlow — Design Note
 
-**Date:** 2026-07-21 · **Status:** DRAFT for Aaron's review — nothing built.
+**Date:** 2026-07-21 · **Status:** REVIEWED with Aaron (decisions §5 agreed
+except the criterion enum list, which awaits his red pen) — nothing built.
 **Prompted by:** seating-chart follow-up ("does the current system support
 independent / interdependent / dependent group contingencies?"). Short answer
 today: **no** — reinforcement is individual everywhere. This note maps what
@@ -85,26 +86,64 @@ backend surface.
      leaderboard of failures.
    - **Caps respected.** `group_goal` events count against the existing
      per-student session cap (recommend keeping this; it bounds total flow).
-5. **Explicitly out of scope v1:** dependent/hero contingencies; automatic
-   criterion detection (teacher judges, always); any AI involvement.
+5. **Explicitly out of scope v1:** dependent/hero contingencies; any AI
+   involvement.
+6. **Criterion sources — the notify-confirm rule (agreed 2026-07-21).**
+   Two lanes, matching the platform's existing split:
+   - **`teacher-observed`** (default): behaviors that happen in the room.
+     The teacher marks the criterion met; the app just fans out.
+   - **`app-tracked`**: criteria the app can measure (practice-set
+     completion, session XP, submissions — the live session already streams
+     `roster.{uid}.wsProgress` / xp / submission state). These show a live
+     progress indicator ("14/17 finished") and, at threshold, a quiet
+     dashboard prompt: *"Class Goal criterion met — award?"* **One tap
+     confirms; the app NEVER fans out a group award silently.**
 
-## 5. Open decisions for Aaron
+   Why notify-confirm and not auto-award: (a) teacher delivery + labeled
+   praise is an active ingredient of group contingencies (much of GBG's
+   effect runs through teacher attention to the criterion), not overhead to
+   automate away; (b) the interdependent can't-do allowance is a judgment
+   call — a dead Chromebook shouldn't fail the class, and no rule set makes
+   that call safely; (c) app-trackable proxies are gameable (completion ≠
+   practice) — as a readiness *signal* they're useful, as a *trigger* they
+   teach speed-clicking; (d) consistency: everywhere else in AlloFlow,
+   automation informs and the educator decides.
 
-1. Do `group_goal` awards share the per-student cap or get their own (§4.4)?
-2. Interdependent v1 team default: whole class only, or pods/groups too?
-3. Is the criterion enum list right? Proposed: transition_smooth,
-   voice_level, on_task_interval, materials_ready, kindness_observed,
-   custom(teacher-side-label-only).
-4. Does the TokenBoard (BehaviorLens, clinical) stay fully separate from
-   classroom contingencies (recommended: yes — different consent contexts)?
-5. Naming in the teacher UI: "Class Goals"? ("Group contingency" is jargon;
-   "team points" invites competition framing we're avoiding.)
+   **Carve-out (unchanged):** AlloHaven's existing individual auto-earn lane
+   (pomodoro/reflection/quiz earnings, daily caps) stays fully automatic —
+   that is a student's private economy for their own engagement, not a
+   social contingency, and it is not duplicated or altered by Class Goals.
 
-## 6. Rough build shape (post-decision)
+## 5. Decisions (reviewed with Aaron 2026-07-21 — agreed to leanings)
 
-- **Ring A:** contingency CRUD + class-wide interdependent + fan-out award
-  (1 session; mostly teacher-side UI + one enum).
-- **Ring B:** pods/groups as teams + seating-chart Ring 2 tap-a-pod.
+1. **Cap: shared.** `group_goal` events count against the existing
+   per-student session cap. Conservative default; revisit with pilot data
+   if the "everyone earned it but me" moment proves to sting.
+2. **Teams: whole class only in Ring A.** Pods/groups arrive in Ring B and
+   are NON-COMPETITIVE (every team that meets criterion earns — teams play
+   against the standard, never each other; no pod-vs-pod displays).
+3. **Criterion enum — STILL OPEN for Aaron's red pen.** Proposed:
+   transition_smooth, voice_level, on_task_interval, materials_ready,
+   kindness_observed, custom(teacher-side-label-only). Design rule: every
+   label names a positive class accomplishment, never the absence of a
+   problem ("voice level maintained," not "no call-outs").
+4. **TokenBoard stays fully separate.** Clinical instrument, different
+   consent context; the psychologist is the only bridge (same principle as
+   the seating↔BehaviorLens bridge).
+5. **UI name: "Class Goals."** Doc keeps the technical taxonomy for
+   evidence lineage (UMaine/pilot conversations). When pods arrive in
+   Ring B, the surface just says "Goals" — no "Team" anywhere.
+6. **Award mechanics: notify-confirm, never silent auto-award** (§4.6).
+
+## 6. Rough build shape
+
+- **Ring A:** "Class Goals" CRUD + class-wide interdependent,
+  teacher-observed criteria only + fan-out award (1 session; teacher-side
+  UI + one enum reason).
+- **Ring B:** pods/groups as non-competitive teams + seating-chart Ring 2
+  tap-a-pod; **app-tracked criterion sources with the notify-confirm
+  prompt** (lands here because the live-session overlay is where the
+  progress data already flows).
 - **Ring C:** independent criterion mode (per-student checklist view).
 
 *Related: docs/allohaven_cozy_world_design.md (economy + no-guilt framing),
