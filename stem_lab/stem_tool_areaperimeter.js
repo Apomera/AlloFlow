@@ -199,6 +199,10 @@
     ],
 
     render: function(ctx) {
+      var t = function (key, fallback) {
+        try { var translated = typeof ctx.t === 'function' ? ctx.t(key, fallback) : null; return translated == null ? fallback : translated; }
+        catch (_) { return fallback; }
+      };
       ctx = ctx || {};
       var React = ctx.React;
       if (!React || typeof React.createElement !== 'function') return null;
@@ -275,25 +279,25 @@
       if (!isValidTileKey(focusedTile, width, height)) focusedTile = '0-0';
 
       var MODES = [
-        { id: 'explore', icon: '\uD83E\uDDF1', label: 'Tile Explorer', short: 'Tile' },
-        { id: 'compare', icon: '\u2696\uFE0F', label: 'Compare Shapes', short: 'Compare' },
-        { id: 'composite', icon: '\uD83E\uDDE9', label: 'Composite Shapes', short: 'Composite' },
-        { id: 'investigate', icon: '\uD83D\uDD0E', label: 'Same Area Lab', short: 'Investigate' },
-        { id: 'challenge', icon: '\uD83C\uDFAF', label: 'Challenges', short: 'Challenge' }
+        { id: 'explore', icon: '\uD83E\uDDF1', label: t('stem.areaperimeter.tile_explorer', "Tile Explorer"), short: t('stem.areaperimeter.tile', "Tile") },
+        { id: 'compare', icon: '\u2696\uFE0F', label: t('stem.areaperimeter.compare_shapes', "Compare Shapes"), short: t('stem.areaperimeter.compare', "Compare") },
+        { id: 'composite', icon: '\uD83E\uDDE9', label: t('stem.areaperimeter.composite_shapes', "Composite Shapes"), short: t('stem.areaperimeter.composite', "Composite") },
+        { id: 'investigate', icon: '\uD83D\uDD0E', label: t('stem.areaperimeter.same_area_lab', "Same Area Lab"), short: t('stem.areaperimeter.investigate', "Investigate") },
+        { id: 'challenge', icon: '\uD83C\uDFAF', label: t('stem.areaperimeter.challenges', "Challenges"), short: t('stem.areaperimeter.challenge', "Challenge") }
       ];
       if (!MODES.some(function(item) { return item.id === mode; })) mode = 'explore';
 
       var CHALLENGES = [
-        { id: 'garden-area', difficulty: 'foundations', prompt: 'A rectangular garden is 7 m long and 4 m wide. What is its area?', answer: 28, unit: 'm\u00B2', kind: 'rect', w: 7, h: 4, find: 'Area', explanation: 'Area = length \u00D7 width = 7 \u00D7 4 = 28 m\u00B2.' },
-        { id: 'frame-perimeter', difficulty: 'foundations', prompt: 'A picture frame is 9 cm long and 3 cm wide. What is its perimeter?', answer: 24, unit: 'cm', kind: 'rect', w: 9, h: 3, find: 'Perimeter', explanation: 'Perimeter = 2(9 + 3) = 24 cm.' },
-        { id: 'missing-length', difficulty: 'reasoning', prompt: 'A rectangle has area 48 ft\u00B2 and width 6 ft. What is its missing length?', answer: 8, unit: 'ft', kind: 'missing', w: 6, h: 8, missing: 'length', missingAxis: 'h', find: 'Missing length', explanation: 'Missing length = area \u00F7 width = 48 \u00F7 6 = 8 ft.' },
-        { id: 'missing-width-perimeter', difficulty: 'reasoning', prompt: 'A rectangle has perimeter 30 yd and length 9 yd. What is its missing width?', answer: 6, unit: 'yd', kind: 'missing', w: 9, h: 6, missing: 'width', missingAxis: 'h', find: 'Missing width', explanation: '30 = 2(9 + w), so 15 = 9 + w and w = 6 yd.' },
-        { id: 'l-shape-area', difficulty: 'stretch', prompt: 'An L-shape starts as a 10 by 8 rectangle. A 4 by 3 corner is removed. What is the remaining area?', answer: 68, unit: 'units\u00B2', kind: 'composite', outerW: 10, outerH: 8, cutW: 4, cutH: 3, find: 'Composite area', explanation: 'Whole area 10 \u00D7 8 = 80. Removed area 4 \u00D7 3 = 12. Remaining area = 80 - 12 = 68 units\u00B2.' },
-        { id: 'equal-area-perimeters', difficulty: 'stretch', prompt: 'Rectangles 3 by 8 and 4 by 6 have equal area. How much greater is the first perimeter?', answer: 2, unit: 'units', kind: 'compare', w: 3, h: 8, w2: 4, h2: 6, find: 'Perimeter difference', explanation: 'Their perimeters are 22 and 20 units, so the first is 2 units greater.' },
-        { id: 'missing-width-area', difficulty: 'reasoning', prompt: 'A rectangle has area 63 in\u00B2 and height 7 in. What is its width?', answer: 9, unit: 'in', kind: 'missing', w: 9, h: 7, missing: 'width', missingAxis: 'w', find: 'Missing width', explanation: 'Width = area \u00F7 height = 63 \u00F7 7 = 9 in.' },
-        { id: 'rug-trim', difficulty: 'foundations', prompt: 'A rug is 5 ft by 11 ft. How many feet of trim go around its edge?', answer: 32, unit: 'ft', kind: 'rect', w: 11, h: 5, find: 'Perimeter', explanation: 'Trim follows the perimeter: 2(11 + 5) = 32 ft.' },
-        { id: 'square-side', difficulty: 'reasoning', prompt: 'A square playground has perimeter 36 m. What is the length of one side?', answer: 9, unit: 'm', kind: 'missing', w: 9, h: 9, missing: 'side', find: 'Side length', explanation: 'A square has four equal sides, so 36 \u00F7 4 = 9 m.' },
-        { id: 'corner-cut-area', difficulty: 'stretch', prompt: 'A 12 by 7 rectangle loses a 5 by 2 corner. What area remains?', answer: 74, unit: 'units\u00B2', kind: 'composite', outerW: 12, outerH: 7, cutW: 5, cutH: 2, find: 'Composite area', explanation: 'Whole area 84 minus removed area 10 leaves 74 units\u00B2.' }
+        { id: 'garden-area', difficulty: 'foundations', prompt: t('stem.areaperimeter.a_rectangular_garden_is_7_m_long_and_4', "A rectangular garden is 7 m long and 4 m wide. What is its area?"), answer: 28, unit: 'm\u00B2', kind: 'rect', w: 7, h: 4, find: t('stem.areaperimeter.area', "Area"), explanation: t('stem.areaperimeter.area_length_width_7_4_28_m', "Area = length × width = 7 × 4 = 28 m².") },
+        { id: 'frame-perimeter', difficulty: 'foundations', prompt: t('stem.areaperimeter.a_picture_frame_is_9_cm_long_and_3_cm_', "A picture frame is 9 cm long and 3 cm wide. What is its perimeter?"), answer: 24, unit: 'cm', kind: 'rect', w: 9, h: 3, find: t('stem.areaperimeter.perimeter', "Perimeter"), explanation: t('stem.areaperimeter.perimeter_2_9_3_24_cm', "Perimeter = 2(9 + 3) = 24 cm.") },
+        { id: 'missing-length', difficulty: 'reasoning', prompt: t('stem.areaperimeter.a_rectangle_has_area_48_ft_and_width_6', "A rectangle has area 48 ft² and width 6 ft. What is its missing length?"), answer: 8, unit: 'ft', kind: 'missing', w: 6, h: 8, missing: 'length', missingAxis: 'h', find: t('stem.areaperimeter.missing_length', "Missing length"), explanation: t('stem.areaperimeter.missing_length_area_width_48_6_8_ft', "Missing length = area ÷ width = 48 ÷ 6 = 8 ft.") },
+        { id: 'missing-width-perimeter', difficulty: 'reasoning', prompt: t('stem.areaperimeter.a_rectangle_has_perimeter_30_yd_and_le', "A rectangle has perimeter 30 yd and length 9 yd. What is its missing width?"), answer: 6, unit: 'yd', kind: 'missing', w: 9, h: 6, missing: 'width', missingAxis: 'h', find: t('stem.areaperimeter.missing_width', "Missing width"), explanation: t('stem.areaperimeter.n_30_2_9_w_so_15_9_w_and_w_6_yd', "30 = 2(9 + w), so 15 = 9 + w and w = 6 yd.") },
+        { id: 'l-shape-area', difficulty: 'stretch', prompt: t('stem.areaperimeter.an_l_shape_starts_as_a_10_by_8_rectang', "An L-shape starts as a 10 by 8 rectangle. A 4 by 3 corner is removed. What is the remaining area?"), answer: 68, unit: 'units\u00B2', kind: 'composite', outerW: 10, outerH: 8, cutW: 4, cutH: 3, find: t('stem.areaperimeter.composite_area', "Composite area"), explanation: t('stem.areaperimeter.whole_area_10_8_80_removed_area_4_3_12', "Whole area 10 × 8 = 80. Removed area 4 × 3 = 12. Remaining area = 80 - 12 = 68 units².") },
+        { id: 'equal-area-perimeters', difficulty: 'stretch', prompt: t('stem.areaperimeter.rectangles_3_by_8_and_4_by_6_have_equa', "Rectangles 3 by 8 and 4 by 6 have equal area. How much greater is the first perimeter?"), answer: 2, unit: 'units', kind: 'compare', w: 3, h: 8, w2: 4, h2: 6, find: t('stem.areaperimeter.perimeter_difference', "Perimeter difference"), explanation: t('stem.areaperimeter.their_perimeters_are_22_and_20_units_s', "Their perimeters are 22 and 20 units, so the first is 2 units greater.") },
+        { id: 'missing-width-area', difficulty: 'reasoning', prompt: t('stem.areaperimeter.a_rectangle_has_area_63_in_and_height_', "A rectangle has area 63 in² and height 7 in. What is its width?"), answer: 9, unit: 'in', kind: 'missing', w: 9, h: 7, missing: 'width', missingAxis: 'w', find: t('stem.areaperimeter.missing_width', "Missing width"), explanation: t('stem.areaperimeter.width_area_height_63_7_9_in', "Width = area ÷ height = 63 ÷ 7 = 9 in.") },
+        { id: 'rug-trim', difficulty: 'foundations', prompt: t('stem.areaperimeter.a_rug_is_5_ft_by_11_ft_how_many_feet_o', "A rug is 5 ft by 11 ft. How many feet of trim go around its edge?"), answer: 32, unit: 'ft', kind: 'rect', w: 11, h: 5, find: t('stem.areaperimeter.perimeter', "Perimeter"), explanation: t('stem.areaperimeter.trim_follows_the_perimeter_2_11_5_32_f', "Trim follows the perimeter: 2(11 + 5) = 32 ft.") },
+        { id: 'square-side', difficulty: 'reasoning', prompt: t('stem.areaperimeter.a_square_playground_has_perimeter_36_m', "A square playground has perimeter 36 m. What is the length of one side?"), answer: 9, unit: 'm', kind: 'missing', w: 9, h: 9, missing: 'side', find: t('stem.areaperimeter.side_length', "Side length"), explanation: t('stem.areaperimeter.a_square_has_four_equal_sides_so_36_4_', "A square has four equal sides, so 36 ÷ 4 = 9 m.") },
+        { id: 'corner-cut-area', difficulty: 'stretch', prompt: t('stem.areaperimeter.a_12_by_7_rectangle_loses_a_5_by_2_cor', "A 12 by 7 rectangle loses a 5 by 2 corner. What area remains?"), answer: 74, unit: 'units\u00B2', kind: 'composite', outerW: 12, outerH: 7, cutW: 5, cutH: 2, find: t('stem.areaperimeter.composite_area', "Composite area"), explanation: t('stem.areaperimeter.whole_area_84_minus_removed_area_10_le', "Whole area 84 minus removed area 10 leaves 74 units².") }
       ];
       var requestedChallengeIndex = clamp(state.challengeIndex == null ? 0 : state.challengeIndex, 0, CHALLENGES.length - 1);
       var requestedChallengeId = typeof state.challengeId === 'string' ? state.challengeId : '';
@@ -338,7 +342,7 @@
           style: { borderColor: COLORS.border, background: COLORS.panelAlt, padding: '14px', minWidth: 0 }
         }, [
           h('div', { key: 'label', style: { color: COLORS.muted, fontSize: '0.82rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, label),
-          h('div', { key: 'value', style: { color: accent || COLORS.tealDark, fontSize: 'clamp(1.45rem, 4vw, 2rem)', fontWeight: 800, lineHeight: 1.2 } }, value),
+          h('div', { key: 'value', style: { color: accent || COLORS.tealDark, fontSize: t('stem.areaperimeter.clamp_1_45rem_4vw_2rem', "clamp(1.45rem, 4vw, 2rem)"), fontWeight: 800, lineHeight: 1.2 } }, value),
           h('div', { key: 'formula', style: { color: COLORS.muted, fontSize: '0.9rem', marginTop: '4px' } }, formula)
         ]);
       }
@@ -363,7 +367,7 @@
         return h('div', { key: 'formula-' + caption, style: { overflowX: 'auto', marginTop: '14px' } },
           h('table', { style: { width: '100%', borderCollapse: 'collapse', color: COLORS.text, minWidth: '420px' } }, [
             h('caption', { key: 'cap', style: { textAlign: 'left', fontWeight: 800, marginBottom: '8px', color: COLORS.text } }, caption),
-            h('thead', { key: 'head' }, h('tr', null, ['Measure', 'How it is found', 'Result'].map(function(item) {
+            h('thead', { key: 'head' }, h('tr', null, [t('stem.areaperimeter.measure', "Measure"), t('stem.areaperimeter.how_it_is_found', "How it is found"), t('stem.areaperimeter.result', "Result")].map(function(item) {
               return h('th', { key: item, scope: 'col', style: { borderBottom: '2px solid ' + COLORS.border, padding: '9px', textAlign: 'left' } }, item);
             }))),
             h('tbody', { key: 'body' }, rows.map(function(row, index) {
@@ -394,7 +398,7 @@
         }
         patch(next);
         var selected = MODES.filter(function(item) { return item.id === nextMode; })[0];
-        speak((selected ? selected.label : nextMode) + ' selected.');
+        speak((selected ? selected.label : nextMode) + t('stem.areaperimeter.selected', " selected."));
       }
 
       function handleModeKeyDown(event, index) {
@@ -424,7 +428,7 @@
         if (nextTiles[key]) delete nextTiles[key]; else nextTiles[key] = true;
         var count = countValidTiles(nextTiles, width, height);
         patch({ revealedTiles: nextTiles, revealedBest: Math.max(state.revealedBest || 0, count) });
-        speak((nextTiles[key] ? 'Revealed' : 'Hid') + ' unit square at column ' + (column + 1) + ', row ' + (row + 1) + '. ' + count + ' of ' + area + ' revealed.');
+        speak((nextTiles[key] ? t('stem.areaperimeter.revealed', "Revealed") : 'Hid') + t('stem.areaperimeter.unit_square_at_column', " unit square at column ") + (column + 1) + t('stem.areaperimeter.row', ", row ") + (row + 1) + '. ' + count + t('stem.areaperimeter.of', " of ") + area + t('stem.areaperimeter.revealed_2', " revealed."));
       }
 
       function revealAll() {
@@ -433,7 +437,7 @@
           for (var column = 0; column < width; column += 1) all[column + '-' + row] = true;
         }
         patch({ revealedTiles: all, revealedBest: Math.max(state.revealedBest || 0, area) });
-        speak('All ' + area + ' unit squares revealed.');
+        speak(t('stem.areaperimeter.all', "All ") + area + t('stem.areaperimeter.unit_squares_revealed', " unit squares revealed."));
       }
 
       function rectangleSvg() {
@@ -464,7 +468,7 @@
                 focusable: 'true',
                 'data-ap-tile': key,
                 'aria-pressed': shown,
-                'aria-label': 'Unit square column ' + (c + 1) + ', row ' + (r + 1) + (shown ? ', revealed' : ', hidden'),
+                'aria-label': t('stem.areaperimeter.unit_square_column', "Unit square column ") + (c + 1) + t('stem.areaperimeter.row', ", row ") + (r + 1) + (shown ? t('stem.areaperimeter.revealed_3', ", revealed") : t('stem.areaperimeter.hidden', ", hidden")),
                 onFocus: function() { if (focusedTile !== key) patch({ focusedTile: key }); },
                 onClick: function() { toggleTile(c, r); },
                 onKeyDown: function(event) {
@@ -499,12 +503,12 @@
           'aria-labelledby': 'ap-explore-title ap-explore-desc',
           style: { display: 'block', width: '100%', maxHeight: '430px' }
         }, [
-          h('title', { key: 'title', id: 'ap-explore-title' }, width + ' by ' + height + ' tiled rectangle'),
-          h('desc', { key: 'desc', id: 'ap-explore-desc' }, 'Interactive grid with ' + area + ' unit squares. ' + validRevealed + ' squares are revealed. The perimeter is ' + perimeter + ' units.'),
-          h('text', { key: 'top', x: originX + shapeW / 2, y: originY - 23, textAnchor: 'middle', fill: COLORS.text, fontSize: 18, fontWeight: 800 }, width + ' units'),
-          h('text', { key: 'side', x: originX - 28, y: originY + shapeH / 2, textAnchor: 'middle', fill: COLORS.text, fontSize: 18, fontWeight: 800, transform: 'rotate(-90 ' + (originX - 28) + ' ' + (originY + shapeH / 2) + ')' }, height + ' units')
+          h('title', { key: 'title', id: 'ap-explore-title' }, width + t('stem.areaperimeter.by', " by ") + height + t('stem.areaperimeter.tiled_rectangle', " tiled rectangle")),
+          h('desc', { key: 'desc', id: 'ap-explore-desc' }, t('stem.areaperimeter.interactive_grid_with', "Interactive grid with ") + area + t('stem.areaperimeter.unit_squares', " unit squares. ") + validRevealed + t('stem.areaperimeter.squares_are_revealed_the_perimeter_is', " squares are revealed. The perimeter is ") + perimeter + t('stem.areaperimeter.units', " units.")),
+          h('text', { key: 'top', x: originX + shapeW / 2, y: originY - 23, textAnchor: 'middle', fill: COLORS.text, fontSize: 18, fontWeight: 800 }, width + t('stem.areaperimeter.units_2', " units")),
+          h('text', { key: 'side', x: originX - 28, y: originY + shapeH / 2, textAnchor: 'middle', fill: COLORS.text, fontSize: 18, fontWeight: 800, transform: 'rotate(-90 ' + (originX - 28) + ' ' + (originY + shapeH / 2) + ')' }, height + t('stem.areaperimeter.units_2', " units"))
         ].concat(cells).concat([
-          h('text', { key: 'count', x: 320, y: 370, textAnchor: 'middle', fill: COLORS.tealDark, fontSize: 18, fontWeight: 800 }, validRevealed + ' of ' + area + ' unit squares revealed')
+          h('text', { key: 'count', x: 320, y: 370, textAnchor: 'middle', fill: COLORS.tealDark, fontSize: 18, fontWeight: 800 }, validRevealed + t('stem.areaperimeter.of', " of ") + area + t('stem.areaperimeter.unit_squares_revealed_2', " unit squares revealed"))
         ]));
       }
 
@@ -524,12 +528,12 @@
           'aria-labelledby': 'ap-compare-title ap-compare-desc',
           style: { display: 'block', width: '100%', maxHeight: '360px' }
         }, [
-          h('title', { key: 'title', id: 'ap-compare-title' }, 'Two rectangles compared by area and perimeter'),
-          h('desc', { key: 'desc', id: 'ap-compare-desc' }, 'Rectangle A is ' + width + ' by ' + height + ', area ' + area + ', perimeter ' + perimeter + '. Rectangle B is ' + compareWidth + ' by ' + compareHeight + ', area ' + compareArea + ', perimeter ' + comparePerimeter + '.'),
-          h('text', { key: 'la', x: 165, y: 37, textAnchor: 'middle', fill: COLORS.text, fontSize: 18, fontWeight: 800 }, 'Rectangle A'),
+          h('title', { key: 'title', id: 'ap-compare-title' }, t('stem.areaperimeter.two_rectangles_compared_by_area_and_pe', "Two rectangles compared by area and perimeter")),
+          h('desc', { key: 'desc', id: 'ap-compare-desc' }, t('stem.areaperimeter.rectangle_a_is', "Rectangle A is ") + width + t('stem.areaperimeter.by', " by ") + height + t('stem.areaperimeter.area_2', ", area ") + area + t('stem.areaperimeter.perimeter_2', ", perimeter ") + perimeter + t('stem.areaperimeter.rectangle_b_is', ". Rectangle B is ") + compareWidth + t('stem.areaperimeter.by', " by ") + compareHeight + t('stem.areaperimeter.area_2', ", area ") + compareArea + t('stem.areaperimeter.perimeter_2', ", perimeter ") + comparePerimeter + '.'),
+          h('text', { key: 'la', x: 165, y: 37, textAnchor: 'middle', fill: COLORS.text, fontSize: 18, fontWeight: 800 }, t('stem.areaperimeter.rectangle_a', "Rectangle A")),
           h('rect', { key: 'a', x: 165 - firstW / 2, y: y1, width: firstW, height: firstH, rx: 3, fill: COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4 }),
           h('text', { key: 'ad', x: 165, y: 250, textAnchor: 'middle', fill: COLORS.text, fontSize: 15 }, width + ' \u00D7 ' + height),
-          h('text', { key: 'lb', x: 475, y: 37, textAnchor: 'middle', fill: COLORS.text, fontSize: 18, fontWeight: 800 }, 'Rectangle B'),
+          h('text', { key: 'lb', x: 475, y: 37, textAnchor: 'middle', fill: COLORS.text, fontSize: 18, fontWeight: 800 }, t('stem.areaperimeter.rectangle_b', "Rectangle B")),
           h('rect', { key: 'b', x: 475 - secondW / 2, y: y2, width: secondW, height: secondH, rx: 3, fill: isDark ? '#1e3a5f' : '#dbeafe', stroke: COLORS.blue, strokeWidth: 4 }),
           h('text', { key: 'bd', x: 475, y: 250, textAnchor: 'middle', fill: COLORS.text, fontSize: 15 }, compareWidth + ' \u00D7 ' + compareHeight),
           h('line', { key: 'divider', x1: 320, y1: 30, x2: 320, y2: 270, stroke: COLORS.border, strokeDasharray: '7 7' }),
@@ -576,13 +580,13 @@
           'aria-labelledby': 'ap-composite-title ap-composite-desc',
           style: { display: 'block', width: '100%', maxHeight: '430px' }
         }, [
-          h('title', { key: 'title', id: 'ap-composite-title' }, 'L-shaped composite figure'),
-          h('desc', { key: 'desc', id: 'ap-composite-desc' }, 'An L-shape inside an outer ' + outerWidth + ' by ' + outerHeight + ' rectangle with a top-right ' + cutWidth + ' by ' + notchHeight + ' corner removed. Its area is ' + compositeArea + ' square units and perimeter is ' + compositePerimeter + ' units.'),
+          h('title', { key: 'title', id: 'ap-composite-title' }, t('stem.areaperimeter.l_shaped_composite_figure', "L-shaped composite figure")),
+          h('desc', { key: 'desc', id: 'ap-composite-desc' }, t('stem.areaperimeter.an_l_shape_inside_an_outer', "An L-shape inside an outer ") + outerWidth + t('stem.areaperimeter.by', " by ") + outerHeight + ' rectangle with a top-right ' + cutWidth + t('stem.areaperimeter.by', " by ") + notchHeight + t('stem.areaperimeter.corner_removed_its_area_is', " corner removed. Its area is ") + compositeArea + t('stem.areaperimeter.square_units_and_perimeter_is', " square units and perimeter is ") + compositePerimeter + t('stem.areaperimeter.units', " units.")),
           h('polygon', { key: 'base', points: points, fill: COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4 })
         ].concat(grid).concat(overlay).concat([
           h('polygon', { key: 'outline', points: points, fill: 'none', stroke: COLORS.tealDark, strokeWidth: 4 }),
-          h('text', { key: 'w', x: x + outerWidth * scale / 2, y: y + outerHeight * scale + 28, fill: COLORS.text, textAnchor: 'middle', fontSize: 17, fontWeight: 800 }, outerWidth + ' units'),
-          h('text', { key: 'h', x: x - 27, y: y + outerHeight * scale / 2, fill: COLORS.text, textAnchor: 'middle', fontSize: 17, fontWeight: 800, transform: 'rotate(-90 ' + (x - 27) + ' ' + (y + outerHeight * scale / 2) + ')' }, outerHeight + ' units')
+          h('text', { key: 'w', x: x + outerWidth * scale / 2, y: y + outerHeight * scale + 28, fill: COLORS.text, textAnchor: 'middle', fontSize: 17, fontWeight: 800 }, outerWidth + t('stem.areaperimeter.units_2', " units")),
+          h('text', { key: 'h', x: x - 27, y: y + outerHeight * scale / 2, fill: COLORS.text, textAnchor: 'middle', fontSize: 17, fontWeight: 800, transform: 'rotate(-90 ' + (x - 27) + ' ' + (y + outerHeight * scale / 2) + ')' }, outerHeight + t('stem.areaperimeter.units_2', " units"))
         ]));
       }
 
@@ -603,7 +607,7 @@
           shapes.push(h('g', { key: pair.w + 'x' + pair.h }, [
             h('text', { key: 'name', x: 18, y: 28 + index * rowHeight + 32, fill: COLORS.text, fontSize: 16, fontWeight: 800 }, pair.w + ' \u00D7 ' + pair.h),
             h('rect', { key: 'rect', x: 120, y: y, width: w, height: hgt, 'data-factor-pair': pair.w + 'x' + pair.h, 'data-square-unit': unit, fill: pair.p === minP ? (isDark ? '#14532d' : '#dcfce7') : COLORS.tileSoft, stroke: pair.p === minP ? COLORS.green : COLORS.teal, strokeWidth: 3 }),
-            h('text', { key: 'p', x: 500, y: 28 + index * rowHeight + 32, fill: pair.p === minP ? COLORS.green : COLORS.muted, fontSize: 15, fontWeight: 700 }, 'P = ' + pair.p + (pair.p === minP ? ' (least)' : ''))
+            h('text', { key: 'p', x: 500, y: 28 + index * rowHeight + 32, fill: pair.p === minP ? COLORS.green : COLORS.muted, fontSize: 15, fontWeight: 700 }, t('stem.areaperimeter.p', "P = ") + pair.p + (pair.p === minP ? t('stem.areaperimeter.least', " (least)") : ''))
           ]));
         });
         return h('svg', {
@@ -613,14 +617,14 @@
           'aria-labelledby': 'ap-factors-title ap-factors-desc',
           style: { display: 'block', width: '100%', maxHeight: '480px' }
         }, [
-          h('title', { key: 'title', id: 'ap-factors-title' }, 'Rectangles with area ' + targetArea),
-          h('desc', { key: 'desc', id: 'ap-factors-desc' }, pairs.map(function(pair) { return pair.w + ' by ' + pair.h + ', perimeter ' + pair.p; }).join('. ') + '. All have area ' + targetArea + '.')
+          h('title', { key: 'title', id: 'ap-factors-title' }, t('stem.areaperimeter.rectangles_with_area', "Rectangles with area ") + targetArea),
+          h('desc', { key: 'desc', id: 'ap-factors-desc' }, pairs.map(function(pair) { return pair.w + t('stem.areaperimeter.by', " by ") + pair.h + t('stem.areaperimeter.perimeter_2', ", perimeter ") + pair.p; }).join('. ') + t('stem.areaperimeter.all_have_area', ". All have area ") + targetArea + '.')
         ].concat(shapes));
       }
 
       function challengeSvg(challenge) {
         var elements = [
-          h('title', { key: 'title', id: 'ap-challenge-title' }, challenge.find + ' diagram'),
+          h('title', { key: 'title', id: 'ap-challenge-title' }, challenge.find + t('stem.areaperimeter.diagram', " diagram")),
           h('desc', { key: 'desc', id: 'ap-challenge-desc' }, challenge.prompt)
         ];
         if (challenge.kind === 'composite') {
@@ -631,7 +635,7 @@
           var pts = [[x,y],[x+left*scale,y],[x+left*scale,y+challenge.cutH*scale],[x+challenge.outerW*scale,y+challenge.cutH*scale],[x+challenge.outerW*scale,y+challenge.outerH*scale],[x,y+challenge.outerH*scale]].map(function(point) { return point.join(','); }).join(' ');
           elements.push(h('polygon', { key: 'shape', points: pts, fill: COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4 }));
           elements.push(h('rect', { key: 'cut', x: x + left * scale, y: y, width: challenge.cutW * scale, height: challenge.cutH * scale, fill: 'none', stroke: COLORS.red, strokeWidth: 3, strokeDasharray: '7 5' }));
-          elements.push(h('text', { key: 'whole', x: 320, y: 255, textAnchor: 'middle', fill: COLORS.text, fontSize: 17 }, challenge.outerW + ' \u00D7 ' + challenge.outerH + ' minus ' + challenge.cutW + ' \u00D7 ' + challenge.cutH));
+          elements.push(h('text', { key: 'whole', x: 320, y: 255, textAnchor: 'middle', fill: COLORS.text, fontSize: 17 }, challenge.outerW + ' \u00D7 ' + challenge.outerH + t('stem.areaperimeter.minus', " minus ") + challenge.cutW + ' \u00D7 ' + challenge.cutH));
         } else if (challenge.kind === 'compare') {
           elements.push(h('rect', { key: 'a', x: 85, y: 55, width: challenge.w * 20, height: challenge.h * 20, fill: COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4 }));
           elements.push(h('rect', { key: 'b', x: 390, y: 75, width: challenge.w2 * 20, height: challenge.h2 * 20, fill: isDark ? '#1e3a5f' : '#dbeafe', stroke: COLORS.blue, strokeWidth: 4 }));
@@ -660,72 +664,72 @@
           panel([
             h('div', { key: 'heading', style: { display: 'flex', justifyContent: 'space-between', gap: '14px', alignItems: 'flex-start', flexWrap: 'wrap' } }, [
               h('div', { key: 'copy' }, [
-                h('h2', { key: 'h', style: { color: COLORS.text, fontSize: '1.35rem', fontWeight: 850, margin: 0 } }, 'Build area one square at a time'),
-                h('p', { key: 'p', style: { color: COLORS.muted, margin: '6px 0 0', maxWidth: '720px' } }, 'Click or keyboard-activate unit squares. The inside squares measure area; the outside edge measures perimeter.')
+                h('h2', { key: 'h', style: { color: COLORS.text, fontSize: '1.35rem', fontWeight: 850, margin: 0 } }, t('stem.areaperimeter.build_area_one_square_at_a_time', "Build area one square at a time")),
+                h('p', { key: 'p', style: { color: COLORS.muted, margin: '6px 0 0', maxWidth: '720px' } }, t('stem.areaperimeter.click_or_keyboard_activate_unit_square', "Click or keyboard-activate unit squares. The inside squares measure area; the outside edge measures perimeter."))
               ]),
               h('div', { key: 'actions', style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } }, [
-                actionButton('Reveal all', revealAll, { primary: true, compact: true }),
-                actionButton('Hide all', function() { patch({ revealedTiles: {} }); speak('All unit squares hidden.'); }, { compact: true, disabled: validRevealed === 0 })
+                actionButton(t('stem.areaperimeter.reveal_all', "Reveal all"), revealAll, { primary: true, compact: true }),
+                actionButton(t('stem.areaperimeter.hide_all', "Hide all"), function() { patch({ revealedTiles: {} }); speak(t('stem.areaperimeter.all_unit_squares_hidden', "All unit squares hidden.")); }, { compact: true, disabled: validRevealed === 0 })
               ])
             ]),
             h('div', { key: 'controls', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '18px', marginTop: '18px' } }, [
-              rangeControl('Rectangle width', width, 1, 20, function(value) { setDimension('width', value, 'Width set to ' + value + ' units.'); }),
-              rangeControl('Rectangle height', height, 1, 16, function(value) { setDimension('height', value, 'Height set to ' + value + ' units.'); })
+              rangeControl(t('stem.areaperimeter.rectangle_width', "Rectangle width"), width, 1, 20, function(value) { setDimension('width', value, t('stem.areaperimeter.width_set_to', "Width set to ") + value + t('stem.areaperimeter.units', " units.")); }),
+              rangeControl(t('stem.areaperimeter.rectangle_height', "Rectangle height"), height, 1, 16, function(value) { setDimension('height', value, t('stem.areaperimeter.height_set_to', "Height set to ") + value + t('stem.areaperimeter.units', " units.")); })
             ])
           ], { key: 'controls' }),
           panel([
             h('div', { key: 'svg' }, rectangleSvg()),
             h('div', { key: 'metrics', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '12px' } }, [
-              metricCard('Area', area + ' square units', width + ' \u00D7 ' + height, COLORS.tealDark),
-              metricCard('Perimeter', perimeter + ' units', '2(' + width + ' + ' + height + ')', COLORS.blue),
-              metricCard('Tiles counted', validRevealed + ' / ' + area, 'one tile = 1 square unit', COLORS.green)
+              metricCard(t('stem.areaperimeter.area', "Area"), area + t('stem.areaperimeter.square_units', " square units"), width + ' \u00D7 ' + height, COLORS.tealDark),
+              metricCard(t('stem.areaperimeter.perimeter', "Perimeter"), perimeter + t('stem.areaperimeter.units_2', " units"), '2(' + width + ' + ' + height + ')', COLORS.blue),
+              metricCard(t('stem.areaperimeter.tiles_counted', "Tiles counted"), validRevealed + ' / ' + area, t('stem.areaperimeter.one_tile_1_square_unit', "one tile = 1 square unit"), COLORS.green)
             ]),
             h('details', { key: 'details', style: { marginTop: '14px', color: COLORS.text } }, [
-              h('summary', { key: 'summary', style: { cursor: 'pointer', fontWeight: 800 } }, 'View formulas and text alternative'),
-              h('p', { key: 'description', style: { color: COLORS.muted } }, 'The rectangle has ' + width + ' columns and ' + height + ' rows. That makes ' + area + ' unit squares inside and ' + perimeter + ' unit lengths around the boundary.'),
+              h('summary', { key: 'summary', style: { cursor: 'pointer', fontWeight: 800 } }, t('stem.areaperimeter.view_formulas_and_text_alternative', "View formulas and text alternative")),
+              h('p', { key: 'description', style: { color: COLORS.muted } }, t('stem.areaperimeter.the_rectangle_has', "The rectangle has ") + width + t('stem.areaperimeter.columns_and', " columns and ") + height + t('stem.areaperimeter.rows_that_makes', " rows. That makes ") + area + t('stem.areaperimeter.unit_squares_inside_and', " unit squares inside and ") + perimeter + t('stem.areaperimeter.unit_lengths_around_the_boundary', " unit lengths around the boundary.")),
               formulaTable([
-                ['Area', width + ' columns \u00D7 ' + height + ' rows', area + ' square units'],
-                ['Perimeter', width + ' + ' + height + ' + ' + width + ' + ' + height, perimeter + ' units']
-              ], 'Rectangle measurements')
+                [t('stem.areaperimeter.area', "Area"), width + t('stem.areaperimeter.columns', " columns × ") + height + t('stem.areaperimeter.rows', " rows"), area + t('stem.areaperimeter.square_units', " square units")],
+                [t('stem.areaperimeter.perimeter', "Perimeter"), width + ' + ' + height + ' + ' + width + ' + ' + height, perimeter + t('stem.areaperimeter.units_2', " units")]
+              ], t('stem.areaperimeter.rectangle_measurements', "Rectangle measurements"))
             ])
-          ], { key: 'visual', 'aria-label': 'Interactive rectangle model' })
+          ], { key: 'visual', 'aria-label': t('stem.areaperimeter.interactive_rectangle_model', "Interactive rectangle model") })
         ]);
       }
 
       function compareView() {
-        var areaRelation = area === compareArea ? 'The areas are equal.' : 'Rectangle ' + (area > compareArea ? 'A' : 'B') + ' has ' + Math.abs(area - compareArea) + ' more square units of area.';
-        var perimeterRelation = perimeter === comparePerimeter ? 'The perimeters are equal.' : 'Rectangle ' + (perimeter > comparePerimeter ? 'A' : 'B') + ' has a perimeter ' + Math.abs(perimeter - comparePerimeter) + ' units longer.';
+        var areaRelation = area === compareArea ? t('stem.areaperimeter.the_areas_are_equal', "The areas are equal.") : t('stem.areaperimeter.rectangle', "Rectangle ") + (area > compareArea ? 'A' : 'B') + t('stem.areaperimeter.has', " has ") + Math.abs(area - compareArea) + t('stem.areaperimeter.more_square_units_of_area', " more square units of area.");
+        var perimeterRelation = perimeter === comparePerimeter ? t('stem.areaperimeter.the_perimeters_are_equal', "The perimeters are equal.") : t('stem.areaperimeter.rectangle', "Rectangle ") + (perimeter > comparePerimeter ? 'A' : 'B') + t('stem.areaperimeter.has_a_perimeter', " has a perimeter ") + Math.abs(perimeter - comparePerimeter) + t('stem.areaperimeter.units_longer', " units longer.");
         return h('div', { style: { display: 'grid', gap: '16px' } }, [
           panel([
-            h('h2', { key: 'h', style: { color: COLORS.text, fontSize: '1.35rem', fontWeight: 850, margin: 0 } }, 'Area and perimeter can change differently'),
-            h('p', { key: 'p', style: { color: COLORS.muted, margin: '6px 0 16px' } }, 'Adjust either rectangle. Compare the space inside with the distance around the edge.'),
+            h('h2', { key: 'h', style: { color: COLORS.text, fontSize: '1.35rem', fontWeight: 850, margin: 0 } }, t('stem.areaperimeter.area_and_perimeter_can_change_differen', "Area and perimeter can change differently")),
+            h('p', { key: 'p', style: { color: COLORS.muted, margin: '6px 0 16px' } }, t('stem.areaperimeter.adjust_either_rectangle_compare_the_sp', "Adjust either rectangle. Compare the space inside with the distance around the edge.")),
             h('div', { key: 'controls', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '22px' } }, [
               h('fieldset', { key: 'a', style: { border: '1px solid ' + COLORS.border, borderRadius: '12px', padding: '14px', minWidth: 0 } }, [
-                h('legend', { key: 'legend', style: { color: COLORS.tealDark, fontWeight: 850, padding: '0 6px' } }, 'Rectangle A'),
-                rangeControl('A width', width, 1, 20, function(value) { setDimension('width', value, 'Rectangle A width set to ' + value + '.'); }),
+                h('legend', { key: 'legend', style: { color: COLORS.tealDark, fontWeight: 850, padding: '0 6px' } }, t('stem.areaperimeter.rectangle_a', "Rectangle A")),
+                rangeControl(t('stem.areaperimeter.a_width', "A width"), width, 1, 20, function(value) { setDimension('width', value, t('stem.areaperimeter.rectangle_a_width_set_to', "Rectangle A width set to ") + value + '.'); }),
                 h('div', { key: 'gap', style: { height: '12px' } }),
-                rangeControl('A height', height, 1, 16, function(value) { setDimension('height', value, 'Rectangle A height set to ' + value + '.'); })
+                rangeControl(t('stem.areaperimeter.a_height', "A height"), height, 1, 16, function(value) { setDimension('height', value, t('stem.areaperimeter.rectangle_a_height_set_to', "Rectangle A height set to ") + value + '.'); })
               ]),
               h('fieldset', { key: 'b', style: { border: '1px solid ' + COLORS.border, borderRadius: '12px', padding: '14px', minWidth: 0 } }, [
-                h('legend', { key: 'legend', style: { color: COLORS.blue, fontWeight: 850, padding: '0 6px' } }, 'Rectangle B'),
-                rangeControl('B width', compareWidth, 1, 20, function(value) { patch({ compareWidth: value }); speak('Rectangle B width set to ' + value + '.'); }),
+                h('legend', { key: 'legend', style: { color: COLORS.blue, fontWeight: 850, padding: '0 6px' } }, t('stem.areaperimeter.rectangle_b', "Rectangle B")),
+                rangeControl(t('stem.areaperimeter.b_width', "B width"), compareWidth, 1, 20, function(value) { patch({ compareWidth: value }); speak(t('stem.areaperimeter.rectangle_b_width_set_to', "Rectangle B width set to ") + value + '.'); }),
                 h('div', { key: 'gap', style: { height: '12px' } }),
-                rangeControl('B height', compareHeight, 1, 16, function(value) { patch({ compareHeight: value }); speak('Rectangle B height set to ' + value + '.'); })
+                rangeControl(t('stem.areaperimeter.b_height', "B height"), compareHeight, 1, 16, function(value) { patch({ compareHeight: value }); speak(t('stem.areaperimeter.rectangle_b_height_set_to', "Rectangle B height set to ") + value + '.'); })
               ])
             ])
           ], { key: 'controls' }),
           panel([
             compareSvg(),
             h('div', { key: 'relations', role: 'status', 'aria-live': 'polite', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '12px', marginTop: '6px' } }, [
-              metricCard('Area comparison', areaRelation, 'A: ' + area + ' | B: ' + compareArea, COLORS.tealDark),
-              metricCard('Perimeter comparison', perimeterRelation, 'A: ' + perimeter + ' | B: ' + comparePerimeter, COLORS.blue)
+              metricCard(t('stem.areaperimeter.area_comparison', "Area comparison"), areaRelation, t('stem.areaperimeter.a', "A: ") + area + t('stem.areaperimeter.b', " | B: ") + compareArea, COLORS.tealDark),
+              metricCard(t('stem.areaperimeter.perimeter_comparison', "Perimeter comparison"), perimeterRelation, t('stem.areaperimeter.a', "A: ") + perimeter + t('stem.areaperimeter.b', " | B: ") + comparePerimeter, COLORS.blue)
             ]),
             formulaTable([
-              ['Rectangle A area', width + ' \u00D7 ' + height, area + ' square units'],
-              ['Rectangle A perimeter', '2(' + width + ' + ' + height + ')', perimeter + ' units'],
-              ['Rectangle B area', compareWidth + ' \u00D7 ' + compareHeight, compareArea + ' square units'],
-              ['Rectangle B perimeter', '2(' + compareWidth + ' + ' + compareHeight + ')', comparePerimeter + ' units']
-            ], 'Side-by-side measurements')
+              [t('stem.areaperimeter.rectangle_a_area', "Rectangle A area"), width + ' \u00D7 ' + height, area + t('stem.areaperimeter.square_units', " square units")],
+              [t('stem.areaperimeter.rectangle_a_perimeter', "Rectangle A perimeter"), '2(' + width + ' + ' + height + ')', perimeter + t('stem.areaperimeter.units_2', " units")],
+              [t('stem.areaperimeter.rectangle_b_area', "Rectangle B area"), compareWidth + ' \u00D7 ' + compareHeight, compareArea + t('stem.areaperimeter.square_units', " square units")],
+              [t('stem.areaperimeter.rectangle_b_perimeter', "Rectangle B perimeter"), '2(' + compareWidth + ' + ' + compareHeight + ')', comparePerimeter + t('stem.areaperimeter.units_2', " units")]
+            ], t('stem.areaperimeter.side_by_side_measurements', "Side-by-side measurements"))
           ], { key: 'visual' })
         ]);
       }
@@ -737,44 +741,44 @@
         var removed = cutWidth * notchHeight;
         return h('div', { style: { display: 'grid', gap: '16px' } }, [
           panel([
-            h('h2', { key: 'h', style: { color: COLORS.text, fontSize: '1.35rem', fontWeight: 850, margin: 0 } }, 'Decompose an L-shape'),
-            h('p', { key: 'p', style: { color: COLORS.muted, margin: '6px 0 16px' } }, 'Find the same area by adding two rectangles or subtracting a missing corner.'),
+            h('h2', { key: 'h', style: { color: COLORS.text, fontSize: '1.35rem', fontWeight: 850, margin: 0 } }, t('stem.areaperimeter.decompose_an_l_shape', "Decompose an L-shape")),
+            h('p', { key: 'p', style: { color: COLORS.muted, margin: '6px 0 16px' } }, t('stem.areaperimeter.find_the_same_area_by_adding_two_recta', "Find the same area by adding two rectangles or subtracting a missing corner.")),
             h('div', { key: 'controls', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '16px' } }, [
-              rangeControl('Outer width', outerWidth, 4, 14, function(value) {
-                patch({ outerWidth: value, leftWidth: Math.min(leftWidth, value - 1) }); speak('Outer width set to ' + value + '.');
+              rangeControl(t('stem.areaperimeter.outer_width', "Outer width"), outerWidth, 4, 14, function(value) {
+                patch({ outerWidth: value, leftWidth: Math.min(leftWidth, value - 1) }); speak(t('stem.areaperimeter.outer_width_set_to', "Outer width set to ") + value + '.');
               }),
-              rangeControl('Outer height', outerHeight, 4, 12, function(value) {
-                patch({ outerHeight: value, notchHeight: Math.min(notchHeight, value - 1) }); speak('Outer height set to ' + value + '.');
+              rangeControl(t('stem.areaperimeter.outer_height', "Outer height"), outerHeight, 4, 12, function(value) {
+                patch({ outerHeight: value, notchHeight: Math.min(notchHeight, value - 1) }); speak(t('stem.areaperimeter.outer_height_set_to', "Outer height set to ") + value + '.');
               }),
-              rangeControl('Left section width', leftWidth, 1, outerWidth - 1, function(value) { patch({ leftWidth: value }); speak('Left section width set to ' + value + '.'); }),
-              rangeControl('Notch height', notchHeight, 1, outerHeight - 1, function(value) { patch({ notchHeight: value }); speak('Notch height set to ' + value + '.'); })
+              rangeControl(t('stem.areaperimeter.left_section_width', "Left section width"), leftWidth, 1, outerWidth - 1, function(value) { patch({ leftWidth: value }); speak(t('stem.areaperimeter.left_section_width_set_to', "Left section width set to ") + value + '.'); }),
+              rangeControl(t('stem.areaperimeter.notch_height', "Notch height"), notchHeight, 1, outerHeight - 1, function(value) { patch({ notchHeight: value }); speak(t('stem.areaperimeter.notch_height_set_to', "Notch height set to ") + value + '.'); })
             ]),
-            h('div', { key: 'methods', role: 'group', 'aria-label': 'Decomposition strategy', style: { display: 'flex', gap: '9px', flexWrap: 'wrap', marginTop: '18px' } }, [
-              actionButton('Add two rectangles', function() {
+            h('div', { key: 'methods', role: 'group', 'aria-label': t('stem.areaperimeter.decomposition_strategy', "Decomposition strategy"), style: { display: 'flex', gap: '9px', flexWrap: 'wrap', marginTop: '18px' } }, [
+              actionButton(t('stem.areaperimeter.add_two_rectangles', "Add two rectangles"), function() {
                 var used = Object.assign({}, state.compositeMethods || {}, { add: true });
-                patch({ decomposition: 'add', compositeMethods: used }); speak('Add two rectangles strategy selected.');
+                patch({ decomposition: 'add', compositeMethods: used }); speak(t('stem.areaperimeter.add_two_rectangles_strategy_selected', "Add two rectangles strategy selected."));
               }, { primary: decomposition === 'add', pressed: decomposition === 'add' }),
-              actionButton('Subtract the corner', function() {
+              actionButton(t('stem.areaperimeter.subtract_the_corner', "Subtract the corner"), function() {
                 var used = Object.assign({}, state.compositeMethods || {}, { subtract: true });
-                patch({ decomposition: 'subtract', compositeMethods: used }); speak('Subtract the corner strategy selected.');
+                patch({ decomposition: 'subtract', compositeMethods: used }); speak(t('stem.areaperimeter.subtract_the_corner_strategy_selected', "Subtract the corner strategy selected."));
               }, { primary: decomposition === 'subtract', pressed: decomposition === 'subtract' })
             ])
           ], { key: 'controls' }),
           panel([
             compositeSvg(),
             h('div', { key: 'metrics', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' } }, [
-              metricCard('Composite area', compositeArea + ' square units', decomposition === 'add' ? addOne + ' + ' + addTwo : whole + ' - ' + removed, COLORS.tealDark),
-              metricCard('Outer boundary', compositePerimeter + ' units', composite.boundaryEdges.join(' + '), COLORS.blue)
+              metricCard(t('stem.areaperimeter.composite_area', "Composite area"), compositeArea + t('stem.areaperimeter.square_units', " square units"), decomposition === 'add' ? addOne + ' + ' + addTwo : whole + ' - ' + removed, COLORS.tealDark),
+              metricCard(t('stem.areaperimeter.outer_boundary', "Outer boundary"), compositePerimeter + t('stem.areaperimeter.units_2', " units"), composite.boundaryEdges.join(' + '), COLORS.blue)
             ]),
             h('div', { key: 'reason', style: { marginTop: '14px', padding: '14px', borderRadius: '12px', background: COLORS.panelAlt, color: COLORS.text, border: '1px solid ' + COLORS.border } }, decomposition === 'add'
-              ? h('p', { style: { margin: 0 } }, [h('strong', { key: 'b' }, 'Add strategy: '), 'Rectangle A is ' + leftWidth + ' \u00D7 ' + outerHeight + ' = ' + addOne + '. Rectangle B is ' + cutWidth + ' \u00D7 ' + (outerHeight - notchHeight) + ' = ' + addTwo + '. Together: ' + compositeArea + ' square units.'])
-              : h('p', { style: { margin: 0 } }, [h('strong', { key: 'b' }, 'Subtract strategy: '), 'Start with ' + outerWidth + ' \u00D7 ' + outerHeight + ' = ' + whole + '. Remove ' + cutWidth + ' \u00D7 ' + notchHeight + ' = ' + removed + '. The L-shape has ' + compositeArea + ' square units.'])),
+              ? h('p', { style: { margin: 0 } }, [h('strong', { key: 'b' }, t('stem.areaperimeter.add_strategy', "Add strategy: ")), t('stem.areaperimeter.rectangle_a_is', "Rectangle A is ") + leftWidth + ' \u00D7 ' + outerHeight + ' = ' + addOne + t('stem.areaperimeter.rectangle_b_is', ". Rectangle B is ") + cutWidth + ' \u00D7 ' + (outerHeight - notchHeight) + ' = ' + addTwo + t('stem.areaperimeter.together', ". Together: ") + compositeArea + t('stem.areaperimeter.square_units_2', " square units.")])
+              : h('p', { style: { margin: 0 } }, [h('strong', { key: 'b' }, t('stem.areaperimeter.subtract_strategy', "Subtract strategy: ")), t('stem.areaperimeter.start_with', "Start with ") + outerWidth + ' \u00D7 ' + outerHeight + ' = ' + whole + t('stem.areaperimeter.remove', ". Remove ") + cutWidth + ' \u00D7 ' + notchHeight + ' = ' + removed + t('stem.areaperimeter.the_l_shape_has', ". The L-shape has ") + compositeArea + t('stem.areaperimeter.square_units_2', " square units.")])),
             formulaTable([
-              ['Whole rectangle', outerWidth + ' \u00D7 ' + outerHeight, whole + ' square units'],
-              ['Missing corner', cutWidth + ' \u00D7 ' + notchHeight, removed + ' square units'],
-              ['L-shape area', whole + ' - ' + removed, compositeArea + ' square units'],
-              ['L-shape perimeter', 'sum all 6 outside edges', compositePerimeter + ' units']
-            ], 'Composite-shape measurements')
+              [t('stem.areaperimeter.whole_rectangle', "Whole rectangle"), outerWidth + ' \u00D7 ' + outerHeight, whole + t('stem.areaperimeter.square_units', " square units")],
+              [t('stem.areaperimeter.missing_corner', "Missing corner"), cutWidth + ' \u00D7 ' + notchHeight, removed + t('stem.areaperimeter.square_units', " square units")],
+              [t('stem.areaperimeter.l_shape_area', "L-shape area"), whole + ' - ' + removed, compositeArea + t('stem.areaperimeter.square_units', " square units")],
+              [t('stem.areaperimeter.l_shape_perimeter', "L-shape perimeter"), t('stem.areaperimeter.sum_all_6_outside_edges', "sum all 6 outside edges"), compositePerimeter + t('stem.areaperimeter.units_2', " units")]
+            ], t('stem.areaperimeter.composite_shape_measurements', "Composite-shape measurements"))
           ], { key: 'visual' })
         ]);
       }
@@ -784,35 +788,35 @@
         var smallest = pairs.slice().sort(function(a, b) { return a.p - b.p; })[0];
         return h('div', { style: { display: 'grid', gap: '16px' } }, [
           panel([
-            h('h2', { key: 'h', style: { color: COLORS.text, fontSize: '1.35rem', fontWeight: 850, margin: 0 } }, 'Same area, different perimeter'),
-            h('p', { key: 'p', style: { color: COLORS.muted, margin: '6px 0 14px' } }, 'Every rectangle below has the same number of unit squares. Watch what happens to perimeter as the shape becomes longer and thinner.'),
-            h('div', { key: 'targets', role: 'group', 'aria-label': 'Target area', style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } }, [12, 18, 24, 30, 36].map(function(value) {
-              return actionButton('Area ' + value, function() {
+            h('h2', { key: 'h', style: { color: COLORS.text, fontSize: '1.35rem', fontWeight: 850, margin: 0 } }, t('stem.areaperimeter.same_area_different_perimeter', "Same area, different perimeter")),
+            h('p', { key: 'p', style: { color: COLORS.muted, margin: '6px 0 14px' } }, t('stem.areaperimeter.every_rectangle_below_has_the_same_num', "Every rectangle below has the same number of unit squares. Watch what happens to perimeter as the shape becomes longer and thinner.")),
+            h('div', { key: 'targets', role: 'group', 'aria-label': t('stem.areaperimeter.target_area', "Target area"), style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } }, [12, 18, 24, 30, 36].map(function(value) {
+              return actionButton(t('stem.areaperimeter.area_3', "Area ") + value, function() {
                 var explored = Object.assign({}, state.targetsExplored || {});
                 explored[value] = true;
                 patch({ targetArea: value, targetsExplored: explored });
-                speak('Target area ' + value + ' selected.');
+                speak(t('stem.areaperimeter.target_area_2', "Target area ") + value + t('stem.areaperimeter.selected', " selected."));
               }, { primary: targetArea === value, pressed: targetArea === value, compact: true });
             }))
           ], { key: 'controls' }),
           panel([
             factorSvg(pairs),
             h('div', { key: 'insight', style: { padding: '14px', borderRadius: '12px', border: '1px solid ' + COLORS.border, background: COLORS.panelAlt, color: COLORS.text } }, [
-              h('strong', { key: 'lead', style: { color: COLORS.green } }, 'Pattern spotted: '),
-              'For area ' + targetArea + ', the ' + smallest.w + ' \u00D7 ' + smallest.h + ' rectangle has the least perimeter (' + smallest.p + ' units) because its side lengths are closest together.'
+              h('strong', { key: 'lead', style: { color: COLORS.green } }, t('stem.areaperimeter.pattern_spotted', "Pattern spotted: ")),
+              t('stem.areaperimeter.for_area', "For area ") + targetArea + t('stem.areaperimeter.the', ", the ") + smallest.w + ' \u00D7 ' + smallest.h + t('stem.areaperimeter.rectangle_has_the_least_perimeter', " rectangle has the least perimeter (") + smallest.p + t('stem.areaperimeter.units_because_its_side_lengths_are_clo', " units) because its side lengths are closest together.")
             ]),
             h('div', { key: 'table', style: { overflowX: 'auto', marginTop: '14px' } },
               h('table', { style: { width: '100%', borderCollapse: 'collapse', color: COLORS.text, minWidth: '470px' } }, [
-                h('caption', { key: 'cap', style: { textAlign: 'left', fontWeight: 800, marginBottom: '8px' } }, 'Factor-pair rectangles for area ' + targetArea),
-                h('thead', { key: 'head' }, h('tr', null, ['Dimensions', 'Area', 'Perimeter', 'Observation'].map(function(item) {
+                h('caption', { key: 'cap', style: { textAlign: 'left', fontWeight: 800, marginBottom: '8px' } }, t('stem.areaperimeter.factor_pair_rectangles_for_area', "Factor-pair rectangles for area ") + targetArea),
+                h('thead', { key: 'head' }, h('tr', null, [t('stem.areaperimeter.dimensions', "Dimensions"), t('stem.areaperimeter.area', "Area"), t('stem.areaperimeter.perimeter', "Perimeter"), t('stem.areaperimeter.observation', "Observation")].map(function(item) {
                   return h('th', { key: item, scope: 'col', style: { padding: '9px', borderBottom: '2px solid ' + COLORS.border, textAlign: 'left' } }, item);
                 }))),
                 h('tbody', { key: 'body' }, pairs.map(function(pair) {
                   return h('tr', { key: pair.w + '-' + pair.h }, [
                     h('th', { key: 'd', scope: 'row', style: { padding: '9px', borderBottom: '1px solid ' + COLORS.border, textAlign: 'left' } }, pair.w + ' \u00D7 ' + pair.h),
-                    h('td', { key: 'a', style: { padding: '9px', borderBottom: '1px solid ' + COLORS.border } }, targetArea + ' square units'),
-                    h('td', { key: 'p', style: { padding: '9px', borderBottom: '1px solid ' + COLORS.border } }, pair.p + ' units'),
-                    h('td', { key: 'o', style: { padding: '9px', borderBottom: '1px solid ' + COLORS.border, color: pair.p === smallest.p ? COLORS.green : COLORS.muted, fontWeight: pair.p === smallest.p ? 800 : 400 } }, pair.p === smallest.p ? 'Least perimeter' : 'Longer boundary')
+                    h('td', { key: 'a', style: { padding: '9px', borderBottom: '1px solid ' + COLORS.border } }, targetArea + t('stem.areaperimeter.square_units', " square units")),
+                    h('td', { key: 'p', style: { padding: '9px', borderBottom: '1px solid ' + COLORS.border } }, pair.p + t('stem.areaperimeter.units_2', " units")),
+                    h('td', { key: 'o', style: { padding: '9px', borderBottom: '1px solid ' + COLORS.border, color: pair.p === smallest.p ? COLORS.green : COLORS.muted, fontWeight: pair.p === smallest.p ? 800 : 400 } }, pair.p === smallest.p ? t('stem.areaperimeter.least_perimeter', "Least perimeter") : t('stem.areaperimeter.longer_boundary', "Longer boundary"))
                   ]);
                 }))
               ])
@@ -824,10 +828,10 @@
       function challengeView() {
         var difficulty = ['foundations', 'reasoning', 'stretch'].indexOf(state.challengeDifficulty) >= 0 ? state.challengeDifficulty : 'all';
         var difficultyOptions = [
-          { id: 'all', label: 'All levels' },
-          { id: 'foundations', label: 'Foundations' },
-          { id: 'reasoning', label: 'Reasoning' },
-          { id: 'stretch', label: 'Stretch' }
+          { id: 'all', label: t('stem.areaperimeter.all_levels', "All levels") },
+          { id: 'foundations', label: t('stem.areaperimeter.foundations', "Foundations") },
+          { id: 'reasoning', label: t('stem.areaperimeter.reasoning', "Reasoning") },
+          { id: 'stretch', label: t('stem.areaperimeter.stretch', "Stretch") }
         ];
         var visibleIndexes = CHALLENGES.map(function(item, index) { return item.difficulty === difficulty || difficulty === 'all' ? index : -1; }).filter(function(index) { return index >= 0; });
         var challengeSubstituted = visibleIndexes.indexOf(challengeIndex) < 0;
@@ -845,19 +849,19 @@
         var showHint = !challengeSubstituted && !!state.showHint;
         var missedIndexes = CHALLENGES.map(function(item, index) { return missedMap[item.id] && !solvedMap[item.id] ? index : -1; }).filter(function(index) { return index >= 0; });
         var missedCount = missedIndexes.length;
-        if (challengeSolved && !feedback) feedback = { correct: true, challengeId: challenge.id, text: 'Solved previously. ' + challenge.explanation };
+        if (challengeSolved && !feedback) feedback = { correct: true, challengeId: challenge.id, text: t('stem.areaperimeter.solved_previously', "Solved previously. ") + challenge.explanation };
 
         function selectChallenge(nextIndex, nextDifficulty, message) {
           var nextChallenge = CHALLENGES[nextIndex];
           patch({ challengeIndex: nextIndex, challengeId: nextChallenge.id, challengeDifficulty: nextDifficulty, answer: '', feedback: null, showHint: false });
-          speak(message || ('Challenge ' + (nextIndex + 1) + ' of ' + CHALLENGES.length + '.'));
+          speak(message || (t('stem.areaperimeter.challenge_2', "Challenge ") + (nextIndex + 1) + t('stem.areaperimeter.of', " of ") + CHALLENGES.length + '.'));
         }
 
         function moveChallenge(direction) {
           var position = visibleIndexes.indexOf(challengeIndex);
           var nextPosition = (position + direction + visibleIndexes.length) % visibleIndexes.length;
           var nextIndex = visibleIndexes[nextPosition];
-          selectChallenge(nextIndex, difficulty, 'Challenge ' + (nextPosition + 1) + ' of ' + visibleIndexes.length + ' in this practice focus.');
+          selectChallenge(nextIndex, difficulty, t('stem.areaperimeter.challenge_2', "Challenge ") + (nextPosition + 1) + t('stem.areaperimeter.of', " of ") + visibleIndexes.length + t('stem.areaperimeter.in_this_practice_focus', " in this practice focus."));
         }
 
         function setDifficulty(nextDifficulty) {
@@ -866,14 +870,14 @@
           var nextIndex = eligible.find(function(index) { return !solvedMap[CHALLENGES[index].id]; });
           if (nextIndex == null) nextIndex = eligible[0];
           var option = difficultyOptions.find(function(item) { return item.id === nextDifficulty; });
-          selectChallenge(nextIndex, nextDifficulty, (option ? option.label : 'Practice') + ' practice selected.');
+          selectChallenge(nextIndex, nextDifficulty, (option ? option.label : t('stem.areaperimeter.practice', "Practice")) + t('stem.areaperimeter.practice_selected', " practice selected."));
         }
 
         function retryMissed() {
           if (!missedIndexes.length) return;
           var currentMissedPosition = missedIndexes.indexOf(challengeIndex);
           var nextIndex = missedIndexes[currentMissedPosition < 0 ? 0 : (currentMissedPosition + 1) % missedIndexes.length];
-          selectChallenge(nextIndex, 'all', 'Retrying missed challenge: ' + CHALLENGES[nextIndex].find + '.');
+          selectChallenge(nextIndex, 'all', t('stem.areaperimeter.retrying_missed_challenge', "Retrying missed challenge: ") + CHALLENGES[nextIndex].find + '.');
         }
 
         function submit(event) {
@@ -881,7 +885,7 @@
           if (submitLocked) return;
           var numeric = Number(challengeAnswer);
           if (challengeAnswer.trim() === '' || !isFinite(numeric)) {
-            patch({ feedback: { correct: false, challengeId: challenge.id, text: 'Enter a number before checking.' } });
+            patch({ feedback: { correct: false, challengeId: challenge.id, text: t('stem.areaperimeter.enter_a_number_before_checking', "Enter a number before checking.") } });
             return;
           }
           submitLocked = true;
@@ -901,19 +905,19 @@
                 missedChallenges: nextMissed,
                 streak: nextStreak,
                 bestStreak: Math.max(current.bestStreak || 0, nextStreak),
-                feedback: { correct: true, challengeId: challenge.id, text: 'Correct! ' + challenge.explanation }
+                feedback: { correct: true, challengeId: challenge.id, text: t('stem.areaperimeter.correct', "Correct! ") + challenge.explanation }
               };
             });
             if (firstSolve) {
-              awardXP('areaPerimeter', 5, 'Area & Perimeter challenge');
-              addToast('Correct! ' + challenge.answer + ' ' + challenge.unit, 'success');
+              awardXP('areaPerimeter', 5, t('stem.areaperimeter.area_perimeter_challenge', "Area & Perimeter challenge"));
+              addToast(t('stem.areaperimeter.correct', "Correct! ") + challenge.answer + ' ' + challenge.unit, 'success');
             }
           } else {
             patch(function(current) {
               var currentScore = current.score || { correct: 0, attempts: 0 };
               var nextMissed = normalizeChallengeProgress(current.missedChallenges);
               nextMissed[challenge.id] = true;
-              return { score: { correct: challengeProgressCount(current.solvedChallenges), attempts: (currentScore.attempts || 0) + 1 }, missedChallenges: nextMissed, streak: 0, feedback: { correct: false, challengeId: challenge.id, text: 'Not yet. This challenge is saved for retry. Check whether the problem asks for inside space, outside distance, or a missing side.' } };
+              return { score: { correct: challengeProgressCount(current.solvedChallenges), attempts: (currentScore.attempts || 0) + 1 }, missedChallenges: nextMissed, streak: 0, feedback: { correct: false, challengeId: challenge.id, text: t('stem.areaperimeter.not_yet_this_challenge_is_saved_for_re', "Not yet. This challenge is saved for retry. Check whether the problem asks for inside space, outside distance, or a missing side.") } };
             });
           }
         }
@@ -922,23 +926,23 @@
           panel([
             h('div', { key: 'top', style: { display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', alignItems: 'center' } }, [
               h('div', { key: 'label' }, [
-                h('div', { key: 'eyebrow', style: { color: COLORS.tealDark, fontWeight: 850, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Deterministic set \u2022 ' + challenge.difficulty + ' \u2022 Challenge ' + (challengePosition + 1) + ' of ' + visibleIndexes.length),
+                h('div', { key: 'eyebrow', style: { color: COLORS.tealDark, fontWeight: 850, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.06em' } }, t('stem.areaperimeter.deterministic_set', "Deterministic set • ") + challenge.difficulty + t('stem.areaperimeter.challenge_3', " • Challenge ") + (challengePosition + 1) + t('stem.areaperimeter.of', " of ") + visibleIndexes.length),
                 h('h2', { key: 'h', style: { color: COLORS.text, fontSize: '1.3rem', margin: '5px 0 0' } }, challenge.find)
               ]),
               h('div', { key: 'score', style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } }, [
-                h('span', { key: 'correct', style: { padding: '7px 11px', borderRadius: '999px', background: COLORS.panelAlt, color: COLORS.green, fontWeight: 800, border: '1px solid ' + COLORS.border } }, challengeProgressCount(solvedMap) + ' solved'),
-                h('span', { key: 'streak', style: { padding: '7px 11px', borderRadius: '999px', background: COLORS.panelAlt, color: COLORS.amber, fontWeight: 800, border: '1px solid ' + COLORS.border } }, '\uD83D\uDD25 ' + (state.streak || 0) + ' streak'),
-                missedCount ? h('span', { key: 'missed', style: { padding: '7px 11px', borderRadius: '999px', background: COLORS.panelAlt, color: COLORS.red, fontWeight: 800, border: '1px solid ' + COLORS.border } }, missedCount + ' to retry') : null
+                h('span', { key: 'correct', style: { padding: '7px 11px', borderRadius: '999px', background: COLORS.panelAlt, color: COLORS.green, fontWeight: 800, border: '1px solid ' + COLORS.border } }, challengeProgressCount(solvedMap) + t('stem.areaperimeter.solved', " solved")),
+                h('span', { key: 'streak', style: { padding: '7px 11px', borderRadius: '999px', background: COLORS.panelAlt, color: COLORS.amber, fontWeight: 800, border: '1px solid ' + COLORS.border } }, '\uD83D\uDD25 ' + (state.streak || 0) + t('stem.areaperimeter.streak', " streak")),
+                missedCount ? h('span', { key: 'missed', style: { padding: '7px 11px', borderRadius: '999px', background: COLORS.panelAlt, color: COLORS.red, fontWeight: 800, border: '1px solid ' + COLORS.border } }, missedCount + t('stem.areaperimeter.to_retry', " to retry")) : null
               ])
             ]),
-            h('div', { key: 'difficulty', role: 'group', 'aria-label': 'Challenge practice focus', style: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '16px' } }, difficultyOptions.map(function(item) {
+            h('div', { key: 'difficulty', role: 'group', 'aria-label': t('stem.areaperimeter.challenge_practice_focus', "Challenge practice focus"), style: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '16px' } }, difficultyOptions.map(function(item) {
               return actionButton(item.label, function() { setDifficulty(item.id); }, { key: 'difficulty-' + item.id, compact: true, pressed: difficulty === item.id, primary: difficulty === item.id });
             })),
             h('p', { key: 'prompt', id: 'ap-challenge-prompt', style: { color: COLORS.text, fontSize: '1.08rem', lineHeight: 1.55, fontWeight: 650, margin: '18px 0 8px' } }, challenge.prompt),
             challengeSvg(challenge),
             h('form', { key: 'form', onSubmit: submit, style: { display: 'flex', gap: '9px', alignItems: 'flex-end', flexWrap: 'wrap', marginTop: '8px' } }, [
               h('label', { key: 'label', htmlFor: 'ap-answer', style: { color: COLORS.text, fontWeight: 800, flex: '1 1 210px' } }, [
-                h('span', { key: 'text', style: { display: 'block', marginBottom: '6px' } }, 'Your answer (' + challenge.unit + ')'),
+                h('span', { key: 'text', style: { display: 'block', marginBottom: '6px' } }, t('stem.areaperimeter.your_answer', "Your answer (") + challenge.unit + ')'),
                 h('input', {
                   key: 'input', id: 'ap-answer', type: 'number', inputMode: 'decimal', value: displayedAnswer, disabled: challengeSolved,
                   onChange: function(event) { patch({ challengeId: challenge.id, challengeIndex: challengeIndex, answer: event.target.value, feedback: null }); },
@@ -947,29 +951,29 @@
                   'aria-describedby': 'ap-challenge-prompt' + (feedback ? ' ap-feedback' : '')
                 })
               ]),
-              actionButton(challengeSolved ? 'Solved' : 'Check answer', null, { type: 'submit', primary: true, disabled: challengeSolved }),
-              actionButton(showHint ? 'Hide hint' : 'Show hint', function() { patch({ challengeId: challenge.id, challengeIndex: challengeIndex, showHint: !showHint }); }, { expanded: showHint, controls: 'ap-challenge-hint' })
+              actionButton(challengeSolved ? t('stem.areaperimeter.solved_2', "Solved") : t('stem.areaperimeter.check_answer', "Check answer"), null, { type: 'submit', primary: true, disabled: challengeSolved }),
+              actionButton(showHint ? t('stem.areaperimeter.hide_hint', "Hide hint") : t('stem.areaperimeter.show_hint', "Show hint"), function() { patch({ challengeId: challenge.id, challengeIndex: challengeIndex, showHint: !showHint }); }, { expanded: showHint, controls: 'ap-challenge-hint' })
             ]),
-            showHint ? h('p', { key: 'hint', id: 'ap-challenge-hint', style: { padding: '12px', borderRadius: '10px', background: isDark ? '#422006' : '#fffbeb', color: isDark ? '#fde68a' : '#92400e', border: '1px solid ' + (isDark ? '#a16207' : '#fcd34d') } }, challenge.kind === 'composite' ? 'Find the whole rectangle, then subtract the missing corner.' : challenge.find.indexOf('Perimeter') >= 0 ? 'Trace the entire outside boundary and add every side.' : challenge.find.indexOf('Missing') >= 0 || challenge.find.indexOf('Side') >= 0 ? 'Work backward from the area or perimeter formula.' : 'Area counts square units inside; perimeter counts unit lengths around.') : null,
+            showHint ? h('p', { key: 'hint', id: 'ap-challenge-hint', style: { padding: '12px', borderRadius: '10px', background: isDark ? '#422006' : '#fffbeb', color: isDark ? '#fde68a' : '#92400e', border: '1px solid ' + (isDark ? '#a16207' : '#fcd34d') } }, challenge.kind === 'composite' ? t('stem.areaperimeter.find_the_whole_rectangle_then_subtract', "Find the whole rectangle, then subtract the missing corner.") : challenge.find.indexOf(t('stem.areaperimeter.perimeter', "Perimeter")) >= 0 ? t('stem.areaperimeter.trace_the_entire_outside_boundary_and_', "Trace the entire outside boundary and add every side.") : challenge.find.indexOf(t('stem.areaperimeter.missing', "Missing")) >= 0 || challenge.find.indexOf(t('stem.areaperimeter.side', "Side")) >= 0 ? t('stem.areaperimeter.work_backward_from_the_area_or_perimet', "Work backward from the area or perimeter formula.") : t('stem.areaperimeter.area_counts_square_units_inside_perime', "Area counts square units inside; perimeter counts unit lengths around.")) : null,
             feedback ? h('div', {
               key: 'feedback', id: 'ap-feedback', role: 'status', 'aria-live': 'polite',
               style: { marginTop: '12px', padding: '13px', borderRadius: '11px', border: '1px solid ' + (feedback.correct ? COLORS.green : COLORS.red), background: feedback.correct ? (isDark ? '#052e16' : '#f0fdf4') : (isDark ? '#450a0a' : '#fef2f2'), color: feedback.correct ? (isDark ? '#bbf7d0' : '#166534') : (isDark ? '#fecaca' : '#991b1b'), fontWeight: 700 }
             }, feedback.text) : null,
             h('div', { key: 'nav', style: { display: 'flex', justifyContent: 'space-between', gap: '9px', flexWrap: 'wrap', marginTop: '16px' } }, [
-              actionButton('\u2190 Previous', function() { moveChallenge(-1); }, { compact: true }),
-              missedCount ? actionButton('Retry missed (' + missedCount + ')', retryMissed, { key: 'retry-missed', compact: true, primary: true }) : null,
-              h('span', { key: 'progress', style: { alignSelf: 'center', color: COLORS.muted, fontSize: '0.9rem' } }, challengeProgressCount(solvedMap) + ' of ' + CHALLENGES.length + ' unique challenges complete'),
-              actionButton('Next \u2192', function() { moveChallenge(1); }, { compact: true, primary: !!feedback && feedback.correct })
+              actionButton(t('stem.areaperimeter.previous', "← Previous"), function() { moveChallenge(-1); }, { compact: true }),
+              missedCount ? actionButton(t('stem.areaperimeter.retry_missed', "Retry missed (") + missedCount + ')', retryMissed, { key: 'retry-missed', compact: true, primary: true }) : null,
+              h('span', { key: 'progress', style: { alignSelf: 'center', color: COLORS.muted, fontSize: '0.9rem' } }, challengeProgressCount(solvedMap) + t('stem.areaperimeter.of', " of ") + CHALLENGES.length + t('stem.areaperimeter.unique_challenges_complete', " unique challenges complete")),
+              actionButton(t('stem.areaperimeter.next', "Next →"), function() { moveChallenge(1); }, { compact: true, primary: !!feedback && feedback.correct })
             ])
           ], { key: 'challenge', 'data-challenge-id': challenge.id, 'data-challenge-difficulty': challenge.difficulty }),
           panel([
-            h('h3', { key: 'h', style: { color: COLORS.text, fontSize: '1.05rem', margin: '0 0 8px' } }, 'Problem translation'),
+            h('h3', { key: 'h', style: { color: COLORS.text, fontSize: '1.05rem', margin: '0 0 8px' } }, t('stem.areaperimeter.problem_translation', "Problem translation")),
             h('div', { key: 'table', style: { overflowX: 'auto' } }, h('table', { style: { width: '100%', borderCollapse: 'collapse', color: COLORS.text, minWidth: '420px' } }, [
-              h('thead', { key: 'head' }, h('tr', null, ['What is given?', 'What is unknown?', 'Useful relationship'].map(function(item) { return h('th', { key: item, scope: 'col', style: { padding: '9px', borderBottom: '2px solid ' + COLORS.border, textAlign: 'left' } }, item); }))),
+              h('thead', { key: 'head' }, h('tr', null, [t('stem.areaperimeter.what_is_given', "What is given?"), t('stem.areaperimeter.what_is_unknown', "What is unknown?"), t('stem.areaperimeter.useful_relationship', "Useful relationship")].map(function(item) { return h('th', { key: item, scope: 'col', style: { padding: '9px', borderBottom: '2px solid ' + COLORS.border, textAlign: 'left' } }, item); }))),
               h('tbody', { key: 'body' }, h('tr', null, [
-                h('td', { key: 'g', style: { padding: '9px', verticalAlign: 'top' } }, challenge.kind === 'composite' ? 'Outer and removed rectangle dimensions' : challenge.kind === 'compare' ? 'Two pairs of side lengths' : 'Rectangle measurements in the prompt'),
+                h('td', { key: 'g', style: { padding: '9px', verticalAlign: 'top' } }, challenge.kind === 'composite' ? t('stem.areaperimeter.outer_and_removed_rectangle_dimensions', "Outer and removed rectangle dimensions") : challenge.kind === 'compare' ? t('stem.areaperimeter.two_pairs_of_side_lengths', "Two pairs of side lengths") : t('stem.areaperimeter.rectangle_measurements_in_the_prompt', "Rectangle measurements in the prompt")),
                 h('td', { key: 'u', style: { padding: '9px', verticalAlign: 'top', fontWeight: 800 } }, challenge.find),
-                h('td', { key: 'r', style: { padding: '9px', verticalAlign: 'top' } }, challenge.kind === 'composite' ? 'remaining area = whole - removed' : challenge.find.indexOf('Perimeter') >= 0 ? 'P = 2(l + w)' : challenge.find.indexOf('Missing') >= 0 || challenge.find.indexOf('Side') >= 0 ? 'use the formula backward' : 'A = l \u00D7 w')
+                h('td', { key: 'r', style: { padding: '9px', verticalAlign: 'top' } }, challenge.kind === 'composite' ? t('stem.areaperimeter.remaining_area_whole_removed', "remaining area = whole - removed") : challenge.find.indexOf(t('stem.areaperimeter.perimeter', "Perimeter")) >= 0 ? t('stem.areaperimeter.p_2_l_w', "P = 2(l + w)") : challenge.find.indexOf(t('stem.areaperimeter.missing', "Missing")) >= 0 || challenge.find.indexOf(t('stem.areaperimeter.side', "Side")) >= 0 ? t('stem.areaperimeter.use_the_formula_backward', "use the formula backward") : t('stem.areaperimeter.a_l_w', "A = l × w"))
               ]))
             ]))
           ], { key: 'translation' })
@@ -987,22 +991,22 @@
             h('div', { key: 'titleWrap', style: { display: 'flex', alignItems: 'center', gap: '11px', minWidth: 0 } }, [
               typeof ctx.setStemLabTool === 'function' ? h('button', {
                 key: 'back', type: 'button', onClick: function() { ctx.setStemLabTool(null); },
-                'aria-label': 'Back to STEM tools', title: 'Back to STEM tools',
+                'aria-label': t('stem.areaperimeter.back_to_stem_tools', "Back to STEM tools"), title: t('stem.areaperimeter.back_to_stem_tools', "Back to STEM tools"),
                 className: 'rounded-xl border focus:outline-none focus:ring-2 focus:ring-teal-500',
-                style: { width: '42px', height: '42px', display: 'grid', placeItems: 'center', borderColor: COLORS.border, background: COLORS.panel, color: COLORS.text, cursor: 'pointer', flex: '0 0 auto' }
+                style: { width: '42px', height: '42px', display: 'grid', placeItems: 'center', borderColor: COLORS.border, background: COLORS.panel, color: COLORS.text, cursor: 'pointer', flex: t('stem.areaperimeter.n_0_0_auto', "0 0 auto") }
               }, ArrowLeft ? h(ArrowLeft, { size: 20, 'aria-hidden': true }) : '\u2190') : null,
               h('div', { key: 'titles', style: { minWidth: 0 } }, [
-                h('h1', { key: 'h', style: { margin: 0, color: COLORS.text, fontSize: 'clamp(1.45rem, 4vw, 2.15rem)', lineHeight: 1.15 } }, '\uD83D\uDCD0 Area & Perimeter Lab'),
-                h('p', { key: 'p', style: { margin: '5px 0 0', color: COLORS.muted, lineHeight: 1.45 } }, 'Measure space inside, distance around, and the shapes between.')
+                h('h1', { key: 'h', style: { margin: 0, color: COLORS.text, fontSize: t('stem.areaperimeter.clamp_1_45rem_4vw_2_15rem', "clamp(1.45rem, 4vw, 2.15rem)"), lineHeight: 1.15 } }, t('stem.areaperimeter.area_perimeter_lab', "📐 Area & Perimeter Lab")),
+                h('p', { key: 'p', style: { margin: '5px 0 0', color: COLORS.muted, lineHeight: 1.45 } }, t('stem.areaperimeter.measure_space_inside_distance_around_a', "Measure space inside, distance around, and the shapes between."))
               ])
             ]),
             h('div', { key: 'quick', style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } }, [
-              h('span', { key: 'solved', style: { padding: '7px 11px', borderRadius: '999px', border: '1px solid ' + COLORS.border, background: COLORS.panel, color: COLORS.green, fontWeight: 800 } }, challengeProgressCount(state.solvedChallenges) + ' solved'),
-              h('span', { key: 'best', style: { padding: '7px 11px', borderRadius: '999px', border: '1px solid ' + COLORS.border, background: COLORS.panel, color: COLORS.amber, fontWeight: 800 } }, 'Best streak ' + (state.bestStreak || 0))
+              h('span', { key: 'solved', style: { padding: '7px 11px', borderRadius: '999px', border: '1px solid ' + COLORS.border, background: COLORS.panel, color: COLORS.green, fontWeight: 800 } }, challengeProgressCount(state.solvedChallenges) + t('stem.areaperimeter.solved', " solved")),
+              h('span', { key: 'best', style: { padding: '7px 11px', borderRadius: '999px', border: '1px solid ' + COLORS.border, background: COLORS.panel, color: COLORS.amber, fontWeight: 800 } }, t('stem.areaperimeter.best_streak', "Best streak ") + (state.bestStreak || 0))
             ])
           ]),
-          h('nav', { key: 'nav', 'aria-label': 'Area and perimeter lab modes', style: { marginTop: '16px' } },
-            h('div', { role: 'tablist', 'aria-label': 'Lab modes', style: { display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '7px', overflowX: 'auto' } }, MODES.map(function(item, index) {
+          h('nav', { key: 'nav', 'aria-label': t('stem.areaperimeter.area_and_perimeter_lab_modes', "Area and perimeter lab modes"), style: { marginTop: '16px' } },
+            h('div', { role: 'tablist', 'aria-label': t('stem.areaperimeter.lab_modes', "Lab modes"), style: { display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '7px', overflowX: 'auto' } }, MODES.map(function(item, index) {
               var active = mode === item.id;
               return h('button', {
                 key: item.id, id: 'ap-tab-' + item.id, type: 'button', role: 'tab', 'aria-selected': active,
@@ -1017,8 +1021,8 @@
         ]),
         h('main', { key: 'main', id: 'ap-mode-panel', role: 'tabpanel', tabIndex: 0, 'aria-labelledby': 'ap-tab-' + mode }, activeView),
         h('footer', { key: 'footer', style: { marginTop: '15px', padding: '12px 14px', borderRadius: '12px', border: '1px solid ' + COLORS.border, background: COLORS.panel, color: COLORS.muted, fontSize: '0.9rem', lineHeight: 1.5 } }, [
-          h('strong', { key: 'label', style: { color: COLORS.text } }, 'Measurement reminder: '),
-          'Area uses square units because it covers a surface. Perimeter uses linear units because it traces a boundary.'
+          h('strong', { key: 'label', style: { color: COLORS.text } }, t('stem.areaperimeter.measurement_reminder', "Measurement reminder: ")),
+          t('stem.areaperimeter.area_uses_square_units_because_it_cove', "Area uses square units because it covers a surface. Perimeter uses linear units because it traces a boundary.")
         ])
       ]);
     }

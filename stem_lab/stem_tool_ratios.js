@@ -353,6 +353,10 @@
       }
     ],
     render: function(ctx) {
+      var t = function (key, fallback) {
+        try { var translated = typeof ctx.t === 'function' ? ctx.t(key, fallback) : null; return translated == null ? fallback : translated; }
+        catch (_) { return fallback; }
+      };
       ctx = ctx || {};
       var React = ctx.React;
       if (!React || typeof React.createElement !== 'function') return null;
@@ -423,7 +427,7 @@
             challengeAnswer: '', challengeAnswerId: null, challengeFeedback: null };
         });
         var selected = MODES.filter(function(item) { return item.id === nextMode; })[0];
-        announce((selected ? selected.title : nextMode) + ' opened.');
+        announce((selected ? selected.title : nextMode) + t('stem.ratios.opened', " opened."));
       }
 
       function moveMode(event, index) {
@@ -475,33 +479,33 @@
         factors.sort(function(a, b) { return a - b; });
         return h('div', { className: 'grid lg:grid-cols-[minmax(230px,0.8fr)_minmax(300px,1.2fr)] gap-4' },
           h('div', { className: 'rounded-xl p-4 space-y-3', style: cardStyle },
-            h('h3', { className: 'font-bold' }, 'Build an equivalent-ratio family'),
+            h('h3', { className: 'font-bold' }, t('stem.ratios.build_an_equivalent_ratio_family', "Build an equivalent-ratio family")),
             h('div', { className: 'grid grid-cols-2 gap-3' },
-              numericField('First quantity', first, 'ratioA', { min: 1, max: 100 }),
-              numericField('Second quantity', second, 'ratioB', { min: 1, max: 100 })
+              numericField(t('stem.ratios.first_quantity', "First quantity"), first, 'ratioA', { min: 1, max: 100 }),
+              numericField(t('stem.ratios.second_quantity', "Second quantity"), second, 'ratioB', { min: 1, max: 100 })
             ),
-            numericField('Scale factor', selectedFactor, 'ratioFactor', { min: 1, max: 12 }),
+            numericField(t('stem.ratios.scale_factor', "Scale factor"), selectedFactor, 'ratioFactor', { min: 1, max: 12 }),
             h('div', { className: 'rounded-lg p-3 text-center', style: { background: soft, border: '1px solid ' + border } },
-              h('div', { className: 'text-xs', style: { color: muted } }, 'Scaled ratio'),
+              h('div', { className: 'text-xs', style: { color: muted } }, t('stem.ratios.scaled_ratio', "Scaled ratio")),
               h('div', { className: 'text-2xl font-black', style: { color: accent } }, (first * selectedFactor) + ':' + (second * selectedFactor)),
-              h('div', { className: 'text-xs mt-1', style: { color: muted } }, first + ' \u00D7 ' + selectedFactor + ' and ' + second + ' \u00D7 ' + selectedFactor)
+              h('div', { className: 'text-xs mt-1', style: { color: muted } }, first + ' \u00D7 ' + selectedFactor + t('stem.ratios.and', " and ") + second + ' \u00D7 ' + selectedFactor)
             ),
             h('p', { className: 'text-sm' },
-              h('strong', null, 'Simplest form: '), (first / divisor) + ':' + (second / divisor), '. Divide both quantities by ', divisor, '.'
+              h('strong', null, t('stem.ratios.simplest_form', "Simplest form: ")), (first / divisor) + ':' + (second / divisor), t('stem.ratios.divide_both_quantities_by', ". Divide both quantities by "), divisor, '.'
             )
           ),
           h('div', { className: 'rounded-xl p-4 overflow-x-auto', style: cardStyle },
             h('table', { className: 'w-full text-sm border-collapse' },
-              h('caption', { className: 'text-left font-bold mb-3' }, 'Equivalent ratio table for ' + first + ':' + second),
+              h('caption', { className: 'text-left font-bold mb-3' }, t('stem.ratios.equivalent_ratio_table_for', "Equivalent ratio table for ") + first + ':' + second),
               h('thead', null, h('tr', null,
-                h('th', { scope: 'col', className: 'p-2 text-left', style: { borderBottom: '2px solid ' + border } }, 'Scale factor'),
-                h('th', { scope: 'col', className: 'p-2 text-right', style: { borderBottom: '2px solid ' + border } }, 'First quantity'),
-                h('th', { scope: 'col', className: 'p-2 text-right', style: { borderBottom: '2px solid ' + border } }, 'Second quantity')
+                h('th', { scope: 'col', className: 'p-2 text-left', style: { borderBottom: '2px solid ' + border } }, t('stem.ratios.scale_factor', "Scale factor")),
+                h('th', { scope: 'col', className: 'p-2 text-right', style: { borderBottom: '2px solid ' + border } }, t('stem.ratios.first_quantity', "First quantity")),
+                h('th', { scope: 'col', className: 'p-2 text-right', style: { borderBottom: '2px solid ' + border } }, t('stem.ratios.second_quantity', "Second quantity"))
               )),
               h('tbody', null, factors.map(function(factor) {
                 var active = factor === selectedFactor;
                 return h('tr', { key: factor, style: { background: active ? (isContrast ? accentStrong : (isDark ? '#312e81' : '#eef2ff')) : 'transparent', color: active && isContrast ? accentText : text } },
-                  h('th', { scope: 'row', className: 'p-2 text-left' }, '\u00D7' + factor + (active ? ' (selected)' : '')),
+                  h('th', { scope: 'row', className: 'p-2 text-left' }, '\u00D7' + factor + (active ? t('stem.ratios.selected', " (selected)") : '')),
                   h('td', { className: 'p-2 text-right font-mono' }, first * factor),
                   h('td', { className: 'p-2 text-right font-mono' }, second * factor)
                 );
@@ -518,14 +522,14 @@
         var steps = clamp(Math.round(finiteNumber(d.lineSteps, 5)), 2, 8);
         var ticks = [];
         for (var i = 0; i <= steps; i++) ticks.push(i);
-        return h('div', { className: 'grid lg:grid-cols-[250px_1fr] gap-4' },
+        return h('div', { className: t('stem.ratios.grid_lg_grid_cols_250px_1fr_gap_4', "grid lg:grid-cols-[250px_1fr] gap-4") },
           h('div', { className: 'rounded-xl p-4 space-y-3', style: cardStyle },
-            h('h3', { className: 'font-bold' }, 'Set one aligned interval'),
-            numericField('Top-line value per interval', topUnit, 'lineTopUnit', { min: 0.1, step: 0.1 }),
-            numericField('Bottom-line value per interval', bottomUnit, 'lineBottomUnit', { min: 0.1, step: 0.1 }),
-            numericField('Number of intervals', steps, 'lineSteps', { min: 2, max: 8 }),
+            h('h3', { className: 'font-bold' }, t('stem.ratios.set_one_aligned_interval', "Set one aligned interval")),
+            numericField(t('stem.ratios.top_line_value_per_interval', "Top-line value per interval"), topUnit, 'lineTopUnit', { min: 0.1, step: 0.1 }),
+            numericField(t('stem.ratios.bottom_line_value_per_interval', "Bottom-line value per interval"), bottomUnit, 'lineBottomUnit', { min: 0.1, step: 0.1 }),
+            numericField(t('stem.ratios.number_of_intervals', "Number of intervals"), steps, 'lineSteps', { min: 2, max: 8 }),
             h('div', { className: 'rounded-lg p-3 text-sm', style: { background: soft, border: '1px solid ' + border } },
-              h('strong', null, 'Unit relationship: '), '1 top unit corresponds to ', formatNumber(bottomUnit / topUnit), ' bottom units.'
+              h('strong', null, t('stem.ratios.unit_relationship', "Unit relationship: ")), t('stem.ratios.n_1_top_unit_corresponds_to', "1 top unit corresponds to "), formatNumber(bottomUnit / topUnit), t('stem.ratios.bottom_units', " bottom units.")
             )
           ),
           h('div', { className: 'rounded-xl p-3 sm:p-4', style: cardStyle },
@@ -535,10 +539,10 @@
               role: 'img',
               'aria-labelledby': 'ratio-line-title ratio-line-desc'
             },
-              h('title', { id: 'ratio-line-title' }, 'Double number line'),
-              h('desc', { id: 'ratio-line-desc' }, 'The top line increases by ' + topUnit + ' per interval and the bottom line increases by ' + bottomUnit + ' per interval for ' + steps + ' intervals.'),
+              h('title', { id: 'ratio-line-title' }, t('stem.ratios.double_number_line', "Double number line")),
+              h('desc', { id: 'ratio-line-desc' }, t('stem.ratios.the_top_line_increases_by', "The top line increases by ") + topUnit + t('stem.ratios.per_interval_and_the_bottom_line_incre', " per interval and the bottom line increases by ") + bottomUnit + t('stem.ratios.per_interval_for', " per interval for ") + steps + t('stem.ratios.intervals', " intervals.")),
               h('text', { x: 12, y: 55, style: { fill: text, fontSize: '12px', fontWeight: 'bold' } }, 'Top'),
-              h('text', { x: 12, y: 135, style: { fill: text, fontSize: '12px', fontWeight: 'bold' } }, 'Bottom'),
+              h('text', { x: 12, y: 135, style: { fill: text, fontSize: '12px', fontWeight: 'bold' } }, t('stem.ratios.bottom', "Bottom")),
               h('line', { x1: 55, y1: 60, x2: 465, y2: 60, stroke: accent, strokeWidth: 4, strokeLinecap: 'round' }),
               h('line', { x1: 55, y1: 140, x2: 465, y2: 140, stroke: success, strokeWidth: 4, strokeLinecap: 'round' }),
               ticks.map(function(tick) {
@@ -566,23 +570,23 @@
         var computedRateB = amountB > 0 ? costB / amountB : null;
         var rateA = computedRateA !== null && isFinite(computedRateA) ? computedRateA : null;
         var rateB = computedRateB !== null && isFinite(computedRateB) ? computedRateB : null;
-        var comparison = 'Enter an amount greater than zero for both options.';
+        var comparison = t('stem.ratios.enter_an_amount_greater_than_zero_for_', "Enter an amount greater than zero for both options.");
         if (rateA !== null && rateB !== null) {
-          comparison = nearlyEqual(rateA, rateB) ? 'Both options have the same cost per unit.' : (rateA < rateB ? 'Option A has the lower cost per unit.' : 'Option B has the lower cost per unit.');
+          comparison = nearlyEqual(rateA, rateB) ? t('stem.ratios.both_options_have_the_same_cost_per_un', "Both options have the same cost per unit.") : (rateA < rateB ? t('stem.ratios.option_a_has_the_lower_cost_per_unit', "Option A has the lower cost per unit.") : t('stem.ratios.option_b_has_the_lower_cost_per_unit', "Option B has the lower cost per unit."));
         } else if (amountA > 0 && amountB > 0) {
-          comparison = 'Adjust the values so both unit rates stay within the learning-model range.';
+          comparison = t('stem.ratios.adjust_the_values_so_both_unit_rates_s', "Adjust the values so both unit rates stay within the learning-model range.");
         }
 
         function optionCard(name, amount, cost, amountKey, costKey, rate) {
           return h('fieldset', { className: 'rounded-xl p-4 space-y-3', style: cardStyle },
             h('legend', { className: 'px-2 font-bold' }, name),
             h('div', { className: 'grid grid-cols-2 gap-3' },
-              numericField(name + ' quantity', amount, amountKey, { min: 0, max: MAX_UNIT_RATE_VALUE, step: 0.1 }),
-              numericField(name + ' cost in dollars', cost, costKey, { min: 0, max: MAX_UNIT_RATE_VALUE, step: 0.01 })
+              numericField(name + t('stem.ratios.quantity', " quantity"), amount, amountKey, { min: 0, max: MAX_UNIT_RATE_VALUE, step: 0.1 }),
+              numericField(name + t('stem.ratios.cost_in_dollars', " cost in dollars"), cost, costKey, { min: 0, max: MAX_UNIT_RATE_VALUE, step: 0.01 })
             ),
             h('div', { className: 'rounded-lg p-3 text-center', style: { background: soft, border: '1px solid ' + border } },
-              h('div', { className: 'text-xs', style: { color: muted } }, 'Cost for 1 unit'),
-              h('div', { className: 'text-2xl font-black', style: { color: rate === null ? warning : accent } }, rate === null ? (amount > 0 ? 'Rate outside model range' : 'Needs a quantity') : '$' + formatNumber(rate)),
+              h('div', { className: 'text-xs', style: { color: muted } }, t('stem.ratios.cost_for_1_unit', "Cost for 1 unit")),
+              h('div', { className: 'text-2xl font-black', style: { color: rate === null ? warning : accent } }, rate === null ? (amount > 0 ? t('stem.ratios.rate_outside_model_range', "Rate outside model range") : t('stem.ratios.needs_a_quantity', "Needs a quantity")) : '$' + formatNumber(rate)),
               rate !== null && h('div', { className: 'text-xs', style: { color: muted } }, '$' + formatNumber(cost) + ' \u00F7 ' + formatNumber(amount))
             )
           );
@@ -590,14 +594,14 @@
 
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'grid md:grid-cols-2 gap-4' },
-            optionCard('Option A', amountA, costA, 'amountA', 'costA', rateA),
-            optionCard('Option B', amountB, costB, 'amountB', 'costB', rateB)
+            optionCard(t('stem.ratios.option_a', "Option A"), amountA, costA, 'amountA', 'costA', rateA),
+            optionCard(t('stem.ratios.option_b', "Option B"), amountB, costB, 'amountB', 'costB', rateB)
           ),
           h('div', { className: 'rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2', role: 'status', 'aria-live': 'polite', style: { background: soft, border: '1px solid ' + border } },
             h('span', { className: 'text-xl', 'aria-hidden': 'true' }, '\u2696\uFE0F'),
             h('div', null,
               h('div', { className: 'font-bold' }, comparison),
-              h('div', { className: 'text-xs', style: { color: muted } }, 'A fair comparison divides each cost by its own quantity. Context may also involve quality, waste, or other needs.')
+              h('div', { className: 'text-xs', style: { color: muted } }, t('stem.ratios.a_fair_comparison_divides_each_cost_by', "A fair comparison divides each cost by its own quantity. Context may also involve quality, waste, or other needs."))
             )
           )
         );
@@ -614,28 +618,28 @@
         var resultIssue = '';
         if (kind === 'findPercent') {
           result = whole > 0 ? part / whole * 100 : null;
-          formula = 'part \u00F7 whole \u00D7 100';
-          resultLabel = 'Percent';
+          formula = t('stem.ratios.part_whole_100', "part ÷ whole × 100");
+          resultLabel = t('stem.ratios.percent', "Percent");
         } else if (kind === 'findWhole') {
           result = percent > 0 ? part / (percent / 100) : null;
-          formula = 'part \u00F7 (percent \u00F7 100)';
-          resultLabel = 'Whole';
+          formula = t('stem.ratios.part_percent_100', "part ÷ (percent ÷ 100)");
+          resultLabel = t('stem.ratios.whole', "Whole");
         } else {
           result = whole * (percent / 100);
-          formula = 'whole \u00D7 (percent \u00F7 100)';
-          resultLabel = 'Part';
+          formula = t('stem.ratios.whole_percent_100', "whole × (percent ÷ 100)");
+          resultLabel = t('stem.ratios.part', "Part");
         }
         var resultLimit = kind === 'findPercent' ? MAX_PERCENT : MAX_PERCENT_QUANTITY;
         if (result != null && (!isFinite(result) || result > resultLimit)) {
           result = null;
           resultIssue = kind === 'findPercent'
-            ? 'This example is above the 1000% learning-model limit. Adjust the part or whole.'
-            : 'This result is above the 1,000,000 quantity limit. Adjust the example values.';
+            ? t('stem.ratios.this_example_is_above_the_1000_learnin', "This example is above the 1000% learning-model limit. Adjust the part or whole.")
+            : t('stem.ratios.this_result_is_above_the_1_000_000_qua', "This result is above the 1,000,000 quantity limit. Adjust the example values.");
         }
         var tapePercent = kind === 'findPercent' ? (result == null ? 0 : result) : percent;
         var tapeModel = percentTapeModel(tapePercent, 6);
         var tapeSummary = resultIssue || (result == null
-          ? (kind === 'findPercent' ? 'The percent is not defined when the whole is zero. Enter a positive whole to build the tape.' : 'The whole is not defined when the percent is zero. Enter a positive percent to build the tape.')
+          ? (kind === 'findPercent' ? t('stem.ratios.the_percent_is_not_defined_when_the_wh', "The percent is not defined when the whole is zero. Enter a positive whole to build the tape.") : t('stem.ratios.the_whole_is_not_defined_when_the_perc', "The whole is not defined when the percent is zero. Enter a positive percent to build the tape."))
           : percentTapeSummary(tapeModel));
 
         function renderPercentTape(tape, tapeIndex) {
@@ -644,11 +648,11 @@
           var descId = 'ratio-percent-tape-desc-' + tapeIndex;
           var fullSegments = tape.fills.filter(function(fill) { return fill === 1; }).length;
           var partialSegment = tape.fills.filter(function(fill) { return fill > 0 && fill < 1; })[0];
-          var description = 'Ten equal sections each represent 10% of one whole. ' + fullSegments + ' sections are completely filled.';
+          var description = t('stem.ratios.ten_equal_sections_each_represent_10_o', "Ten equal sections each represent 10% of one whole. ") + fullSegments + t('stem.ratios.sections_are_completely_filled', " sections are completely filled.");
           if (partialSegment != null) {
-            description += ' The next section is ' + formatNumber(partialSegment * 100) + '% filled, representing ' + formatNumber(partialSegment * 10) + '% of the whole.';
+            description += t('stem.ratios.the_next_section_is', " The next section is ") + formatNumber(partialSegment * 100) + t('stem.ratios.filled_representing', "% filled, representing ") + formatNumber(partialSegment * 10) + t('stem.ratios.of_the_whole', "% of the whole.");
           }
-          if (!fullSegments && partialSegment == null) description += ' No sections are filled.';
+          if (!fullSegments && partialSegment == null) description += t('stem.ratios.no_sections_are_filled', " No sections are filled.");
 
           return h('div', {
             key: 'percent-tape-' + tapeIndex,
@@ -658,8 +662,8 @@
             'data-tape-percent': formatNumber(tape.percent)
           },
             h('div', { className: 'flex flex-wrap items-baseline justify-between gap-2 text-xs' },
-              h('strong', null, 'Whole ' + wholeNumber),
-              h('span', { style: { color: muted } }, formatNumber(tape.percent) + '% filled')
+              h('strong', null, t('stem.ratios.whole_2', "Whole ") + wholeNumber),
+              h('span', { style: { color: muted } }, formatNumber(tape.percent) + t('stem.ratios.filled', "% filled"))
             ),
             h('svg', {
               viewBox: '0 0 500 62',
@@ -667,9 +671,9 @@
               role: 'img',
               'aria-labelledby': titleId + ' ' + descId,
               'data-tape-percent': formatNumber(tape.percent),
-              preserveAspectRatio: 'xMidYMid meet'
+              preserveAspectRatio: t('stem.ratios.xmidymid_meet', "xMidYMid meet")
             },
-              h('title', { id: titleId }, 'Whole ' + wholeNumber + ' percent tape: ' + formatNumber(tape.percent) + '% filled'),
+              h('title', { id: titleId }, t('stem.ratios.whole_2', "Whole ") + wholeNumber + ' percent tape: ' + formatNumber(tape.percent) + t('stem.ratios.filled', "% filled")),
               h('desc', { id: descId }, description),
               tape.fills.map(function(fill, segmentIndex) {
                 var x = segmentIndex * 50 + 1;
@@ -693,34 +697,34 @@
           );
         }
 
-        return h('div', { className: 'grid lg:grid-cols-[280px_1fr] gap-4' },
+        return h('div', { className: t('stem.ratios.grid_lg_grid_cols_280px_1fr_gap_4', "grid lg:grid-cols-[280px_1fr] gap-4") },
           h('div', { className: 'rounded-xl p-4 space-y-3', style: cardStyle },
             h('label', { className: 'block text-xs font-semibold' },
-              h('span', { className: 'block mb-1', style: { color: muted } }, 'Choose the unknown'),
+              h('span', { className: 'block mb-1', style: { color: muted } }, t('stem.ratios.choose_the_unknown', "Choose the unknown")),
               h('select', { value: kind, onChange: function(event) { update({ percentKind: event.target.value }); }, className: 'w-full rounded-lg px-3 py-2 text-sm', style: inputStyle },
-                h('option', { value: 'findPart' }, 'Find the part'),
-                h('option', { value: 'findPercent' }, 'Find the percent'),
-                h('option', { value: 'findWhole' }, 'Find the whole')
+                h('option', { value: 'findPart' }, t('stem.ratios.find_the_part', "Find the part")),
+                h('option', { value: 'findPercent' }, t('stem.ratios.find_the_percent', "Find the percent")),
+                h('option', { value: 'findWhole' }, t('stem.ratios.find_the_whole', "Find the whole"))
               )
             ),
-            kind !== 'findWhole' && numericField('Whole', whole, 'percentWhole', { min: 0, max: MAX_PERCENT_QUANTITY, step: 0.1 }),
-            kind !== 'findPercent' && numericField('Percent', percent, 'percentValue', { min: 0, max: MAX_PERCENT, step: 0.1 }),
-            kind !== 'findPart' && numericField('Part', part, 'percentPart', { min: 0, max: MAX_PERCENT_QUANTITY, step: 0.1 }),
-            h('p', { className: 'text-xs', style: { color: muted }, role: 'note' }, 'Learning-model range: 0% to 1000%; quantities up to 1,000,000.')
+            kind !== 'findWhole' && numericField(t('stem.ratios.whole', "Whole"), whole, 'percentWhole', { min: 0, max: MAX_PERCENT_QUANTITY, step: 0.1 }),
+            kind !== 'findPercent' && numericField(t('stem.ratios.percent', "Percent"), percent, 'percentValue', { min: 0, max: MAX_PERCENT, step: 0.1 }),
+            kind !== 'findPart' && numericField(t('stem.ratios.part', "Part"), part, 'percentPart', { min: 0, max: MAX_PERCENT_QUANTITY, step: 0.1 }),
+            h('p', { className: 'text-xs', style: { color: muted }, role: 'note' }, t('stem.ratios.learning_model_range_0_to_1000_quantit', "Learning-model range: 0% to 1000%; quantities up to 1,000,000."))
           ),
           h('div', { className: 'rounded-xl p-4 space-y-4', style: cardStyle },
             h('div', { className: 'flex flex-wrap items-end justify-between gap-3' },
               h('div', null,
                 h('div', { className: 'text-xs', style: { color: muted } }, resultLabel),
-                h('div', { className: 'text-3xl font-black', style: { color: result == null ? warning : accent } }, result == null ? 'Not defined' : formatNumber(result) + (kind === 'findPercent' ? '%' : ''))
+                h('div', { className: 'text-3xl font-black', style: { color: result == null ? warning : accent } }, result == null ? t('stem.ratios.not_defined', "Not defined") : formatNumber(result) + (kind === 'findPercent' ? '%' : ''))
               ),
               h('code', { className: 'rounded-lg px-3 py-2 text-xs', style: { background: soft, border: '1px solid ' + border } }, formula)
             ),
             h('div', { className: 'space-y-3', 'data-percent-tape-total': formatNumber(tapeModel.percent), 'data-percent-tape-count': tapeModel.totalTapeCount },
               h('p', { id: 'ratio-percent-tape-summary', className: 'text-sm font-semibold', style: { color: text } }, tapeSummary),
-              h('p', { id: 'ratio-percent-tape-key', className: 'text-xs', style: { color: muted } }, 'Each outlined section is exactly 10% of one whole. A partially filled section shows the exact fraction of that 10% section.'),
+              h('p', { id: 'ratio-percent-tape-key', className: 'text-xs', style: { color: muted } }, t('stem.ratios.each_outlined_section_is_exactly_10_of', "Each outlined section is exactly 10% of one whole. A partially filled section shows the exact fraction of that 10% section.")),
               h('div', { className: 'space-y-3', 'aria-describedby': 'ratio-percent-tape-summary ratio-percent-tape-key' }, tapeModel.tapes.map(renderPercentTape)),
-              tapeModel.hiddenWholeCount > 0 && h('p', { className: 'text-xs font-semibold', style: { color: muted }, role: 'note' }, 'Showing ' + (tapeModel.tapes.length - (tapeModel.remainderPercent > 0 ? 1 : 0)) + ' complete whole tapes; ' + tapeModel.hiddenWholeCount + ' additional complete ' + (tapeModel.hiddenWholeCount === 1 ? 'whole is' : 'wholes are') + ' summarized above.')
+              tapeModel.hiddenWholeCount > 0 && h('p', { className: 'text-xs font-semibold', style: { color: muted }, role: 'note' }, t('stem.ratios.showing', "Showing ") + (tapeModel.tapes.length - (tapeModel.remainderPercent > 0 ? 1 : 0)) + t('stem.ratios.complete_whole_tapes', " complete whole tapes; ") + tapeModel.hiddenWholeCount + t('stem.ratios.additional_complete', " additional complete ") + (tapeModel.hiddenWholeCount === 1 ? t('stem.ratios.whole_is', "whole is") : t('stem.ratios.wholes_are', "wholes are")) + t('stem.ratios.summarized_above', " summarized above."))
             )
           )
         );
@@ -741,46 +745,46 @@
         function scaleX(value) { return 42 + (value / maxX) * 290; }
         function scaleY(value) { return 185 - (value / maxY) * 145; }
         var includesOrigin = graphPairs.some(function(pair) { return pair.x === 0 && pair.y === 0; });
-        var verdict = pairInput.errors.length ? pairInput.errors[0] : !validForDecision ? 'Enter at least two valid coordinate pairs, including one with a nonzero x-value.' : (proportional ? 'Proportional: the unit rate is constant.' : 'Not proportional: the evidence does not show one constant unit rate through the origin.');
+        var verdict = pairInput.errors.length ? pairInput.errors[0] : !validForDecision ? t('stem.ratios.enter_at_least_two_valid_coordinate_pa', "Enter at least two valid coordinate pairs, including one with a nonzero x-value.") : (proportional ? t('stem.ratios.proportional_the_unit_rate_is_constant', "Proportional: the unit rate is constant.") : t('stem.ratios.not_proportional_the_evidence_does_not', "Not proportional: the evidence does not show one constant unit rate through the origin."));
 
         function setExample(isProportional) {
           update(isProportional ? { propX: '0, 1, 2, 4', propY: '0, 3, 6, 12' } : { propX: '0, 1, 2, 4', propY: '0, 3, 7, 12' });
-          announce((isProportional ? 'Proportional' : 'Non-proportional') + ' example loaded.');
+          announce((isProportional ? t('stem.ratios.proportional', "Proportional") : t('stem.ratios.non_proportional', "Non-proportional")) + t('stem.ratios.example_loaded', " example loaded."));
         }
 
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'rounded-xl p-4', style: cardStyle },
             h('div', { className: 'flex flex-wrap justify-between items-center gap-2 mb-3' },
-              h('h3', { className: 'font-bold' }, 'Test a relationship'),
-              h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': 'Load table example' },
-                h('button', { type: 'button', onClick: function() { setExample(true); }, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { border: '1px solid ' + border, background: soft, color: text } }, 'Load proportional'),
-                h('button', { type: 'button', onClick: function() { setExample(false); }, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { border: '1px solid ' + border, background: soft, color: text } }, 'Load non-proportional')
+              h('h3', { className: 'font-bold' }, t('stem.ratios.test_a_relationship', "Test a relationship")),
+              h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': t('stem.ratios.load_table_example', "Load table example") },
+                h('button', { type: 'button', onClick: function() { setExample(true); }, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { border: '1px solid ' + border, background: soft, color: text } }, t('stem.ratios.load_proportional', "Load proportional")),
+                h('button', { type: 'button', onClick: function() { setExample(false); }, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { border: '1px solid ' + border, background: soft, color: text } }, t('stem.ratios.load_non_proportional', "Load non-proportional"))
               )
             ),
             h('div', { className: 'grid sm:grid-cols-2 gap-3' },
               h('label', { className: 'text-xs font-semibold' },
-                h('span', { className: 'block mb-1', style: { color: muted } }, 'x-values (comma separated)'),
-                h('input', { value: xText, onChange: function(event) { update({ propX: event.target.value }); }, className: 'w-full rounded-lg px-3 py-2 text-sm font-mono', style: inputStyle, 'aria-label': 'x-values, comma separated' })
+                h('span', { className: 'block mb-1', style: { color: muted } }, t('stem.ratios.x_values_comma_separated', "x-values (comma separated)")),
+                h('input', { value: xText, onChange: function(event) { update({ propX: event.target.value }); }, className: 'w-full rounded-lg px-3 py-2 text-sm font-mono', style: inputStyle, 'aria-label': t('stem.ratios.x_values_comma_separated_2', "x-values, comma separated") })
               ),
               h('label', { className: 'text-xs font-semibold' },
-                h('span', { className: 'block mb-1', style: { color: muted } }, 'y-values (comma separated)'),
-                h('input', { value: yText, onChange: function(event) { update({ propY: event.target.value }); }, className: 'w-full rounded-lg px-3 py-2 text-sm font-mono', style: inputStyle, 'aria-label': 'y-values, comma separated' })
+                h('span', { className: 'block mb-1', style: { color: muted } }, t('stem.ratios.y_values_comma_separated', "y-values (comma separated)")),
+                h('input', { value: yText, onChange: function(event) { update({ propY: event.target.value }); }, className: 'w-full rounded-lg px-3 py-2 text-sm font-mono', style: inputStyle, 'aria-label': t('stem.ratios.y_values_comma_separated_2', "y-values, comma separated") })
               )
             ),
-            h('p', { className: 'text-xs mt-2', style: { color: muted } }, 'Use the same number of x- and y-values. This first-quadrant graph requires a nonnegative number in every row.'),
+            h('p', { className: 'text-xs mt-2', style: { color: muted } }, t('stem.ratios.use_the_same_number_of_x_and_y_values_', "Use the same number of x- and y-values. This first-quadrant graph requires a nonnegative number in every row.")),
             pairInput.errors.length > 0 && h('div', { role: 'alert', className: 'mt-3 rounded-lg p-3 text-xs font-semibold', style: { background: soft, color: warning, border: '1px solid ' + warning } },
-              h('p', { className: 'font-bold' }, 'Fix the coordinate list before making a proportionality decision:'),
+              h('p', { className: 'font-bold' }, t('stem.ratios.fix_the_coordinate_list_before_making_', "Fix the coordinate list before making a proportionality decision:")),
               h('ul', { className: 'mt-1 list-disc pl-5 space-y-1' }, pairInput.errors.map(function(error, index) { return h('li', { key: index }, error); }))
             )
           ),
           h('div', { className: 'grid lg:grid-cols-2 gap-4' },
             h('div', { className: 'rounded-xl p-4 overflow-x-auto', style: cardStyle },
               h('table', { className: 'w-full text-sm' },
-                h('caption', { className: 'text-left font-bold mb-2' }, 'Table and unit-rate evidence'),
+                h('caption', { className: 'text-left font-bold mb-2' }, t('stem.ratios.table_and_unit_rate_evidence', "Table and unit-rate evidence")),
                 h('thead', null, h('tr', null,
                   h('th', { scope: 'col', className: 'p-2 text-left', style: { borderBottom: '2px solid ' + border } }, 'x'),
                   h('th', { scope: 'col', className: 'p-2 text-left', style: { borderBottom: '2px solid ' + border } }, 'y'),
-                  h('th', { scope: 'col', className: 'p-2 text-left', style: { borderBottom: '2px solid ' + border } }, 'y \u00F7 x')
+                  h('th', { scope: 'col', className: 'p-2 text-left', style: { borderBottom: '2px solid ' + border } }, t('stem.ratios.y_x', "y ÷ x"))
                 )),
                 h('tbody', null, pairs.length ? pairs.map(function(pair, index) {
                   return h('tr', { key: index },
@@ -788,13 +792,13 @@
                     h('td', { className: 'p-2 font-mono' }, formatNumber(pair.y)),
                     h('td', { className: 'p-2 font-mono' }, pair.x === 0 ? (pair.y === 0 ? 'origin' : 'undefined') : formatNumber(pair.y / pair.x))
                   );
-                }) : h('tr', null, h('td', { colSpan: 3, className: 'p-4 text-center', style: { color: muted } }, 'No valid paired rows yet.')))
+                }) : h('tr', null, h('td', { colSpan: 3, className: 'p-4 text-center', style: { color: muted } }, t('stem.ratios.no_valid_paired_rows_yet', "No valid paired rows yet."))))
               )
             ),
             h('div', { className: 'rounded-xl p-3', style: cardStyle },
               h('svg', { viewBox: '0 0 360 220', className: 'w-full min-h-[220px]', role: 'img', 'aria-labelledby': 'ratio-graph-title ratio-graph-desc', 'data-axis-max-x': formatNumber(maxX, 6), 'data-axis-max-y': formatNumber(maxY, 6) },
-                h('title', { id: 'ratio-graph-title' }, 'Relationship graph'),
-                h('desc', { id: 'ratio-graph-desc' }, graphPairs.length ? 'Graph of ' + graphPairs.length + ' plotted table points. ' + (proportional && !includesOrigin ? 'A proportional model ray is extended through the origin. ' : '') + verdict : 'No complete set of points is available to graph. ' + verdict),
+                h('title', { id: 'ratio-graph-title' }, t('stem.ratios.relationship_graph', "Relationship graph")),
+                h('desc', { id: 'ratio-graph-desc' }, graphPairs.length ? t('stem.ratios.graph_of', "Graph of ") + graphPairs.length + t('stem.ratios.plotted_table_points', " plotted table points. ") + (proportional && !includesOrigin ? t('stem.ratios.a_proportional_model_ray_is_extended_t', "A proportional model ray is extended through the origin. ") : '') + verdict : t('stem.ratios.no_complete_set_of_points_is_available', "No complete set of points is available to graph. ") + verdict),
                 h('line', { x1: 42, y1: 185, x2: 340, y2: 185, stroke: text, strokeWidth: 2 }),
                 h('line', { x1: 42, y1: 185, x2: 42, y2: 28, stroke: text, strokeWidth: 2 }),
                 h('text', { x: 340, y: 205, textAnchor: 'end', style: { fill: muted, fontSize: '11px' } }, 'x'),
@@ -811,7 +815,7 @@
           ),
           h('div', { className: 'rounded-xl p-4', role: 'status', 'aria-live': 'polite', style: { background: soft, border: '1px solid ' + border } },
             h('div', { className: 'font-bold', style: { color: validForDecision ? (proportional ? success : warning) : muted } }, verdict),
-            validForDecision && h('p', { className: 'text-xs mt-1', style: { color: muted } }, proportional ? 'Table evidence: all defined y \u00F7 x values equal ' + formatNumber(rates[0]) + '. Graph evidence: ' + (includesOrigin ? 'the entered points include (0,0) and follow the model ray.' : 'the model ray extends the constant relationship through (0,0), even though the origin was not entered.') : 'Check for changing y \u00F7 x values, a nonzero y-value when x = 0, or points that do not lie on one straight line through the origin.')
+            validForDecision && h('p', { className: 'text-xs mt-1', style: { color: muted } }, proportional ? t('stem.ratios.table_evidence_all_defined_y_x_values_', "Table evidence: all defined y ÷ x values equal ") + formatNumber(rates[0]) + t('stem.ratios.graph_evidence', ". Graph evidence: ") + (includesOrigin ? t('stem.ratios.the_entered_points_include_0_0_and_fol', "the entered points include (0,0) and follow the model ray.") : t('stem.ratios.the_model_ray_extends_the_constant_rel', "the model ray extends the constant relationship through (0,0), even though the origin was not entered.")) : t('stem.ratios.check_for_changing_y_x_values_a_nonzer', "Check for changing y ÷ x values, a nonzero y-value when x = 0, or points that do not lie on one straight line through the origin."))
           )
         );
       }
@@ -842,7 +846,7 @@
       var feedback = d.challengeFeedback;
       if (feedback && feedback.challengeId !== challenge.id) feedback = null;
       if (challengeSolved && (!feedback || !feedback.correct)) {
-        feedback = { challengeId: challenge.id, correct: true, message: 'Solved previously. ' + challenge.explain };
+        feedback = { challengeId: challenge.id, correct: true, message: t('stem.ratios.solved_previously', "Solved previously. ") + challenge.explain };
       }
       var scopedChallengeAnswer = d.challengeAnswerId === challenge.id && d.challengeAnswer != null ? d.challengeAnswer : '';
       var displayedChallengeAnswer = challengeSolved ? canonicalChallengeAnswer(challenge) : scopedChallengeAnswer;
@@ -852,8 +856,8 @@
         if (challengeSolved || challengeCheckPending) return;
         if (!normalizeAnswer(scopedChallengeAnswer)) {
           update({ challengeId: challenge.id, challengeIndex: challengeIndex,
-            challengeFeedback: { challengeId: challenge.id, correct: false, message: 'Enter an answer before checking.' } });
-          announce('Enter an answer before checking.');
+            challengeFeedback: { challengeId: challenge.id, correct: false, message: t('stem.ratios.enter_an_answer_before_checking', "Enter an answer before checking.") } });
+          announce(t('stem.ratios.enter_an_answer_before_checking', "Enter an answer before checking."));
           return;
         }
         var correct = challengeIsCorrect(challenge, scopedChallengeAnswer);
@@ -863,16 +867,16 @@
           update(function(current) {
             var solved = Object.assign({}, current.solvedChallenges || {});
             solved[challenge.id] = true;
-            return { solvedChallenges: solved, challengeFeedback: { challengeId: challenge.id, correct: true, message: 'Correct! ' + challenge.explain } };
+            return { solvedChallenges: solved, challengeFeedback: { challengeId: challenge.id, correct: true, message: t('stem.ratios.correct', "Correct! ") + challenge.explain } };
           });
-          announce('Correct. ' + challenge.explain);
+          announce(t('stem.ratios.correct_2', "Correct. ") + challenge.explain);
           if (firstSolve && typeof ctx.awardXP === 'function') {
-            try { ctx.awardXP('ratioLab', 15, 'Ratio Lab challenge'); } catch (error) {}
+            try { ctx.awardXP('ratioLab', 15, t('stem.ratios.ratio_lab_challenge', "Ratio Lab challenge")); } catch (error) {}
           }
-          if (firstSolve) notify('Challenge solved! +15 XP', 'success');
+          if (firstSolve) notify(t('stem.ratios.challenge_solved_15_xp', "Challenge solved! +15 XP"), 'success');
         } else {
-          update({ challengeFeedback: { challengeId: challenge.id, correct: false, message: 'Not yet. ' + challenge.hint } });
-          announce('Not yet. ' + challenge.hint);
+          update({ challengeFeedback: { challengeId: challenge.id, correct: false, message: t('stem.ratios.not_yet', "Not yet. ") + challenge.hint } });
+          announce(t('stem.ratios.not_yet', "Not yet. ") + challenge.hint);
         }
       }
 
@@ -885,7 +889,7 @@
           return { challengeCursorByMode: cursors, challengeId: nextChallengeItem.id,
             challengeIndex: next, challengeAnswer: '', challengeAnswerId: null, challengeFeedback: null };
         });
-        announce('Challenge ' + (next + 1) + ' of ' + modeChallenges.length + '.');
+        announce(t('stem.ratios.challenge', "Challenge ") + (next + 1) + t('stem.ratios.of', " of ") + modeChallenges.length + '.');
       }
 
       return h('div', { className: 'p-3 sm:p-5 space-y-4', style: { color: text, background: isContrast ? '#000000' : (isDark ? '#0c1322' : '#f8fafc') } },
@@ -899,21 +903,21 @@
               },
               className: 'rounded-lg px-3 py-2 text-sm font-bold shrink-0',
               style: { background: soft, color: text, border: '1px solid ' + border },
-              'aria-label': 'Back to STEM tools'
-            }, '\u2190 Back'),
+              'aria-label': t('stem.ratios.back_to_stem_tools', "Back to STEM tools")
+            }, t('stem.ratios.back', "← Back")),
             h('div', null,
-              h('h2', { className: 'text-xl sm:text-2xl font-black' }, '\uD83D\uDCCA Ratios, Rates & Proportions Lab'),
-              h('p', { className: 'text-sm mt-1', style: { color: muted } }, 'Move between representations and explain the multiplicative relationship.')
+              h('h2', { className: 'text-xl sm:text-2xl font-black' }, t('stem.ratios.ratios_rates_proportions_lab', "📊 Ratios, Rates & Proportions Lab")),
+              h('p', { className: 'text-sm mt-1', style: { color: muted } }, t('stem.ratios.move_between_representations_and_expla', "Move between representations and explain the multiplicative relationship."))
             )
           ),
-          h('div', { className: 'flex gap-2 text-xs', 'aria-label': 'Lab progress' },
-            h('span', { className: 'rounded-full px-3 py-1.5 font-bold', style: { background: soft, border: '1px solid ' + border } }, visitedCount(d) + '/5 modes'),
-            h('span', { className: 'rounded-full px-3 py-1.5 font-bold', style: { background: soft, border: '1px solid ' + border } }, solvedCount(d) + ' solved')
+          h('div', { className: 'flex gap-2 text-xs', 'aria-label': t('stem.ratios.lab_progress', "Lab progress") },
+            h('span', { className: t('stem.ratios.rounded_full_px_3_py_1_5_font_bold', "rounded-full px-3 py-1.5 font-bold"), style: { background: soft, border: '1px solid ' + border } }, visitedCount(d) + t('stem.ratios.n_5_modes', "/5 modes")),
+            h('span', { className: t('stem.ratios.rounded_full_px_3_py_1_5_font_bold', "rounded-full px-3 py-1.5 font-bold"), style: { background: soft, border: '1px solid ' + border } }, solvedCount(d) + t('stem.ratios.solved', " solved"))
           )
         ),
 
-        h('nav', { className: 'rounded-xl p-2', style: cardStyle, 'aria-label': 'Ratio Lab learning modes' },
-          h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2', role: 'tablist', 'aria-label': 'Learning mode' }, MODES.map(function(item, index) {
+        h('nav', { className: 'rounded-xl p-2', style: cardStyle, 'aria-label': t('stem.ratios.ratio_lab_learning_modes', "Ratio Lab learning modes") },
+          h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2', role: 'tablist', 'aria-label': t('stem.ratios.learning_mode', "Learning mode") }, MODES.map(function(item, index) {
             var selected = item.id === mode;
             return h('button', {
               key: item.id,
@@ -947,15 +951,15 @@
         h('section', { className: 'rounded-2xl p-4 sm:p-5 space-y-4', 'aria-labelledby': 'ratio-challenge-heading', style: { background: isContrast ? '#000000' : (isDark ? '#191d36' : '#eef2ff'), border: '2px solid ' + accent } },
           h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
             h('div', null,
-              h('h2', { id: 'ratio-challenge-heading', className: 'font-black' }, '\uD83C\uDFAF Deterministic challenge'),
-              h('p', { className: 'text-xs', style: { color: muted } }, modeInfo.title + ' \u2022 Challenge ' + (challengeIndex + 1) + ' of ' + modeChallenges.length)
+              h('h2', { id: 'ratio-challenge-heading', className: 'font-black' }, t('stem.ratios.deterministic_challenge', "🎯 Deterministic challenge")),
+              h('p', { className: 'text-xs', style: { color: muted } }, modeInfo.title + t('stem.ratios.challenge_2', " • Challenge ") + (challengeIndex + 1) + t('stem.ratios.of', " of ") + modeChallenges.length)
             ),
-            h('button', { type: 'button', onClick: nextChallenge, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: panel, color: text, border: '1px solid ' + border } }, 'Next challenge')
+            h('button', { type: 'button', onClick: nextChallenge, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: panel, color: text, border: '1px solid ' + border } }, t('stem.ratios.next_challenge', "Next challenge"))
           ),
           h('p', { id: 'ratio-challenge-prompt', className: 'text-sm sm:text-base font-semibold' }, challenge.prompt),
           h('form', { className: 'flex flex-col sm:flex-row gap-2', 'aria-labelledby': 'ratio-challenge-prompt', onSubmit: function(event) { event.preventDefault(); checkChallenge(); } },
             h('label', { className: 'flex-1', htmlFor: 'ratio-challenge-answer' },
-              h('span', { id: 'ratio-challenge-answer-label', className: 'sr-only' }, 'Challenge answer'),
+              h('span', { id: 'ratio-challenge-answer-label', className: 'sr-only' }, t('stem.ratios.challenge_answer', "Challenge answer")),
               h('div', { className: 'flex items-center rounded-lg', style: inputStyle },
                 challenge.prefix && h('span', { className: 'pl-3 font-bold', 'aria-hidden': 'true' }, challenge.prefix),
                 h('input', {
@@ -975,9 +979,9 @@
                   readOnly: challengeSolved,
                   'aria-readonly': challengeSolved,
                   inputMode: challenge.answer != null ? 'decimal' : 'text',
-                  className: 'ratio-challenge-answer w-full rounded-lg px-3 py-2.5 bg-transparent',
+                  className: t('stem.ratios.ratio_challenge_answer_w_full_rounded_', "ratio-challenge-answer w-full rounded-lg px-3 py-2.5 bg-transparent"),
                   style: { color: text, '--ratio-focus-color': accent },
-                  placeholder: challenge.answers ? 'Type your answer' : 'Enter a number',
+                  placeholder: challenge.answers ? t('stem.ratios.type_your_answer', "Type your answer") : t('stem.ratios.enter_a_number', "Enter a number"),
                   'aria-labelledby': 'ratio-challenge-prompt ratio-challenge-answer-label',
                   'aria-describedby': feedback ? 'ratio-challenge-feedback' : undefined,
                   'aria-invalid': feedback && !feedback.correct ? 'true' : undefined,
@@ -986,20 +990,20 @@
                 challenge.suffix && h('span', { className: 'pr-3 text-xs font-bold', 'aria-hidden': 'true' }, challenge.suffix)
               )
             ),
-            h('button', { type: 'submit', disabled: challengeSolved, className: 'rounded-lg px-5 py-2.5 font-bold disabled:opacity-70', style: { background: accentStrong, color: accentText, border: isContrast ? '2px solid #ffffff' : 'none' } }, challengeSolved ? 'Solved' : 'Check answer')
+            h('button', { type: 'submit', disabled: challengeSolved, className: t('stem.ratios.rounded_lg_px_5_py_2_5_font_bold_disab', "rounded-lg px-5 py-2.5 font-bold disabled:opacity-70"), style: { background: accentStrong, color: accentText, border: isContrast ? '2px solid #ffffff' : 'none' } }, challengeSolved ? t('stem.ratios.solved_2', "Solved") : t('stem.ratios.check_answer', "Check answer"))
           ),
           feedback && h('div', { id: 'ratio-challenge-feedback', role: 'status', 'aria-live': 'polite', className: 'rounded-lg p-3 text-sm font-semibold', style: { background: panel, border: '1px solid ' + (feedback.correct ? success : warning), color: feedback.correct ? success : warning } }, feedback.message)
         ),
 
         h('details', { className: 'rounded-xl p-4', style: cardStyle },
-          h('summary', { className: 'font-bold cursor-pointer', style: { color: accent } }, 'Representation strategy guide'),
+          h('summary', { className: 'font-bold cursor-pointer', style: { color: accent } }, t('stem.ratios.representation_strategy_guide', "Representation strategy guide")),
           h('div', { className: 'grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3 text-sm' },
-            h('div', { className: 'rounded-lg p-3', style: { background: soft } }, h('strong', null, 'Ratio table'), h('p', { className: 'mt-1', style: { color: muted } }, 'Best for listing many equivalent pairs and spotting a common scale factor.')),
-            h('div', { className: 'rounded-lg p-3', style: { background: soft } }, h('strong', null, 'Double number line'), h('p', { className: 'mt-1', style: { color: muted } }, 'Best for seeing aligned quantities, intermediate values, and how far each scale travels.')),
-            h('div', { className: 'rounded-lg p-3', style: { background: soft } }, h('strong', null, 'Unit rate'), h('p', { className: 'mt-1', style: { color: muted } }, 'Best for fair comparisons because every situation is rewritten per one unit.')),
-            h('div', { className: 'rounded-lg p-3', style: { background: soft } }, h('strong', null, 'Percent'), h('p', { className: 'mt-1', style: { color: muted } }, 'A ratio measured against a whole of 100; use part = percent \u00D7 whole.')),
-            h('div', { className: 'rounded-lg p-3', style: { background: soft } }, h('strong', null, 'Proportional graph'), h('p', { className: 'mt-1', style: { color: muted } }, 'A straight line through the origin shows one constant multiplier from x to y.')),
-            h('div', { className: 'rounded-lg p-3', style: { background: soft } }, h('strong', null, 'Reasonableness check'), h('p', { className: 'mt-1', style: { color: muted } }, 'Estimate first, preserve units, and ask whether both quantities changed multiplicatively.'))
+            h('div', { className: 'rounded-lg p-3', style: { background: soft } }, h('strong', null, t('stem.ratios.ratio_table', "Ratio table")), h('p', { className: 'mt-1', style: { color: muted } }, 'Best for listing many equivalent pairs and spotting a common scale factor.')),
+            h('div', { className: 'rounded-lg p-3', style: { background: soft } }, h('strong', null, t('stem.ratios.double_number_line', "Double number line")), h('p', { className: 'mt-1', style: { color: muted } }, 'Best for seeing aligned quantities, intermediate values, and how far each scale travels.')),
+            h('div', { className: 'rounded-lg p-3', style: { background: soft } }, h('strong', null, t('stem.ratios.unit_rate', "Unit rate")), h('p', { className: 'mt-1', style: { color: muted } }, t('stem.ratios.best_for_fair_comparisons_because_ever', "Best for fair comparisons because every situation is rewritten per one unit."))),
+            h('div', { className: 'rounded-lg p-3', style: { background: soft } }, h('strong', null, t('stem.ratios.percent', "Percent")), h('p', { className: 'mt-1', style: { color: muted } }, t('stem.ratios.a_ratio_measured_against_a_whole_of_10', "A ratio measured against a whole of 100; use part = percent × whole."))),
+            h('div', { className: 'rounded-lg p-3', style: { background: soft } }, h('strong', null, t('stem.ratios.proportional_graph', "Proportional graph")), h('p', { className: 'mt-1', style: { color: muted } }, t('stem.ratios.a_straight_line_through_the_origin_sho', "A straight line through the origin shows one constant multiplier from x to y."))),
+            h('div', { className: 'rounded-lg p-3', style: { background: soft } }, h('strong', null, t('stem.ratios.reasonableness_check', "Reasonableness check")), h('p', { className: 'mt-1', style: { color: muted } }, t('stem.ratios.estimate_first_preserve_units_and_ask_', "Estimate first, preserve units, and ask whether both quantities changed multiplicatively.")))
           )
         )
       );
