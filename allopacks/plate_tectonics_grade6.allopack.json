@@ -20,10 +20,31 @@
       "data": {
         "body": "**Due:** (your teacher will tell you)\n\nA scientist noticed that South America and Africa look like puzzle pieces. Everyone laughed at him for fifty years. He was right — but for a reason he never figured out.\n\n1. Read **The Man Who Was Laughed At** and watch how EVIDENCE piles up.\n2. Learn the terms in the **Glossary**, then win the **Word Scramble**.\n3. Follow **How We Figured It Out** — the timeline of the argument.\n4. Sort the evidence in **What Kind of Boundary?**\n5. Take the quiz — two questions ask what counts as EVIDENCE, not just what happened.\n6. Fill in the **Cornell Notes** in your own words.\n\nThe real lesson here is not about rocks. It is about how science changes its mind when the evidence finally forces it. 🌍",
         "objectives": [
-          { "id": "pt-goal-scramble", "label": "Win the Word Scramble", "kind": "game", "gameType": "wordScramble", "resourceRef": "pt-glossary" },
-          { "id": "pt-goal-matching", "label": "Win the Matching game", "kind": "game", "gameType": "matching", "resourceRef": "pt-glossary" },
-          { "id": "pt-goal-xp", "label": "Earn 30 XP", "kind": "xp", "amount": 30 },
-          { "id": "pt-goal-map", "label": "I found my own home on a plate map and named the plate I live on", "kind": "manual" }
+          {
+            "id": "pt-goal-scramble",
+            "label": "Win the Word Scramble",
+            "kind": "game",
+            "gameType": "wordScramble",
+            "resourceRef": "pt-glossary"
+          },
+          {
+            "id": "pt-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "pt-glossary"
+          },
+          {
+            "id": "pt-goal-xp",
+            "label": "Earn 30 XP",
+            "kind": "xp",
+            "amount": 30
+          },
+          {
+            "id": "pt-goal-map",
+            "label": "I found my own home on a plate map and named the plate I live on",
+            "kind": "manual"
+          }
         ]
       },
       "meta": "6th Grade • 4 goals • evidence-focused"
@@ -33,8 +54,8 @@
       "type": "simplified",
       "title": "The Man Who Was Laughed At",
       "timestamp": "2026-07-21T05:00:01.000Z",
-      "data": "## The Man Who Was Laughed At\n\nIn 1912, a German scientist named Alfred Wegener pointed at a world map and said something that got him mocked for the rest of his life: the continents used to be joined together, and they have been drifting apart ever since.\n\nHis evidence was actually good. South America's east coast fits into Africa's west coast like puzzle pieces. Identical fossils of *Mesosaurus*, a freshwater reptile that could not possibly swim an ocean, show up on both continents. Matching rock layers and mountain ranges line up across the Atlantic. Coal — which forms in warm swamps — sits under the ice of Antarctica, meaning Antarctica was not always where it is now.\n\nGeologists still rejected it, and their reason was fair: Wegener could not explain **how**. What force could shove a continent through solid ocean floor? Without a mechanism, a good pattern is only a curiosity.\n\nThe answer arrived decades later, from the sea floor. After World War II, ships mapping the ocean bottom found a mountain range running down the middle of the Atlantic. Along that ridge, new rock was erupting and pushing outward — and the magnetic stripes frozen into that rock lined up in matching mirror-image bands on both sides. The sea floor was spreading.\n\nContinents were not plowing through the ocean floor. They were riding on it.\n\nEarth's outer shell is broken into about fifteen major **plates** that float on the hot, slowly flowing rock beneath. Where plates pull apart at a **divergent** boundary, magma rises and makes new crust — that is Iceland, sitting on the Mid-Atlantic Ridge and widening every year. Where they push together at a **convergent** boundary, one plate dives under the other or both crumple upward — that is the Himalayas, still growing as India presses into Asia. Where they grind past each other at a **transform** boundary, they stick, build stress, and snap — that is the San Andreas Fault, and that snap is an earthquake.\n\nPlates move about as fast as your fingernails grow, a few centimeters a year. Over millions of years, that is enough to build the Andes and tear open an ocean.\n\nWegener died on an expedition in Greenland in 1930, still dismissed. His idea became the foundation of modern geology about thirty years later. Being right early is not the same as being believed — in science, you also have to show the mechanism.",
-      "meta": "6th Grade • Leveled reading • ~450 words",
+      "data": "## The Man Who Was Laughed At\n\nIn 1912, a German scientist named Alfred Wegener pointed at a world map and said something that got him mocked for the rest of his life: the continents used to be joined together, and they have been drifting apart ever since.\n\nHis evidence was actually good. South America's east coast fits into Africa's west coast like puzzle pieces. Identical fossils of *Mesosaurus* show up on both continents. That reptile lived in fresh water and could never have swum an ocean. Matching rock layers and mountain ranges line up across the Atlantic. Coal sits under the ice of Antarctica, and coal forms in warm swamps. So Antarctica was not always where it is now.\n\nGeologists still rejected it, and their reason was fair: Wegener could not explain **how**. What force could shove a continent through solid ocean floor? Without a mechanism, a good pattern is only a curiosity.\n\nThe answer arrived decades later, from the sea floor. After World War II, ships mapped the ocean bottom. They found a mountain range running down the middle of the Atlantic. Along that ridge, new rock was erupting and pushing outward. Even better, magnetic stripes frozen into that rock matched in mirror image on both sides. The sea floor was spreading.\n\nContinents were not plowing through the ocean floor. They were riding on it.\n\nEarth's outer shell is broken into about fifteen major **plates**. They float on the **mantle**, the hot layer of slowly flowing rock underneath.\n\nWhere plates pull apart at a **divergent** boundary, magma rises and makes new crust. That is Iceland, sitting on the Mid-Atlantic Ridge and widening every year.\n\nWhere plates push together at a **convergent** boundary, one dives under the other or both crumple upward. That is the Himalayas, still growing as India presses into Asia.\n\nWhere plates grind past each other at a **transform** boundary, they stick, build stress, and snap. That is the San Andreas Fault. That snap is an earthquake.\n\nPlates move about as fast as your fingernails grow, a few centimeters a year. Over millions of years, that is enough to build the Andes and tear open an ocean.\n\nWegener died on an expedition in Greenland in 1930, still dismissed. About thirty years later his idea became the foundation of modern geology.\n\nBeing right early is not the same as being believed. In science, you also have to show the mechanism.",
+      "meta": "6th Grade • Leveled reading • ~400 words",
       "imageSlot": "pt-img-boundaries"
     },
     {
@@ -43,18 +64,66 @@
       "title": "Tectonics Vocabulary",
       "timestamp": "2026-07-21T05:00:02.000Z",
       "data": [
-        { "term": "Plate", "def": "A large slab of Earth's outer shell that moves slowly over the hotter rock below.", "tier": "Domain-Specific" },
-        { "term": "Crust", "def": "Earth's thin, solid outer layer — the part we live on.", "tier": "Domain-Specific" },
-        { "term": "Mantle", "def": "The thick, hot layer beneath the crust where rock flows very slowly.", "tier": "Domain-Specific" },
-        { "term": "Divergent", "def": "A boundary where two plates pull apart and new crust forms.", "tier": "Domain-Specific" },
-        { "term": "Convergent", "def": "A boundary where two plates push together, building mountains or diving under.", "tier": "Domain-Specific" },
-        { "term": "Transform", "def": "A boundary where two plates grind past each other sideways.", "tier": "Domain-Specific" },
-        { "term": "Fault", "def": "A crack in Earth's crust where blocks of rock move against each other.", "tier": "Domain-Specific" },
-        { "term": "Earthquake", "def": "The shaking that happens when stressed rock suddenly slips.", "tier": "Domain-Specific" },
-        { "term": "Magma", "def": "Melted rock beneath the surface — called lava once it erupts.", "tier": "Domain-Specific" },
-        { "term": "Evidence", "def": "Observations that support or challenge an explanation.", "tier": "Academic" },
-        { "term": "Mechanism", "def": "The actual process that makes something happen — the missing piece in Wegener's idea.", "tier": "Academic" },
-        { "term": "Fossil", "def": "Preserved remains or traces of an ancient living thing.", "tier": "Domain-Specific" }
+        {
+          "term": "Plate",
+          "def": "A large slab of Earth's outer shell that moves slowly over the hotter rock below.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Crust",
+          "def": "Earth's thin, solid outer layer — the part we live on.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Mantle",
+          "def": "The thick, hot layer beneath the crust where rock flows very slowly.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Divergent",
+          "def": "A boundary where two plates pull apart and new crust forms.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Convergent",
+          "def": "A boundary where two plates push together, building mountains or diving under.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Transform",
+          "def": "A boundary where two plates grind past each other sideways.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Fault",
+          "def": "A crack in Earth's crust where blocks of rock move against each other.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Earthquake",
+          "def": "The shaking that happens when stressed rock suddenly slips.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Magma",
+          "def": "Melted rock beneath the surface — called lava once it erupts.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Evidence",
+          "def": "Observations that support or challenge an explanation.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Mechanism",
+          "def": "The actual process that makes something happen — the missing piece in Wegener's idea.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Fossil",
+          "def": "Preserved remains or traces of an ancient living thing.",
+          "tier": "Domain-Specific"
+        }
       ],
       "meta": "12 terms • Tiered"
     },
@@ -66,14 +135,38 @@
       "data": {
         "progressionLabel": "TIMELINE: A rejected idea (1912) → Accepted theory (1960s)",
         "items": [
-          { "date": "1596", "event": "Mapmaker Abraham Ortelius notices that the Atlantic coastlines look like they could fit together." },
-          { "date": "1912", "event": "Alfred Wegener proposes continental drift, using matching coastlines, fossils, rock layers, and climate clues." },
-          { "date": "1920s", "event": "Geologists reject the idea because Wegener cannot explain what force could move a continent." },
-          { "date": "1930", "event": "Wegener dies on a Greenland expedition with his hypothesis still dismissed." },
-          { "date": "1947-1950s", "event": "Post-war ocean mapping reveals the Mid-Atlantic Ridge, a mountain range running down the ocean floor." },
-          { "date": "1962", "event": "Harry Hess proposes sea-floor spreading: new crust forms at ridges and spreads outward." },
-          { "date": "1963", "event": "Magnetic stripes on the sea floor are found to mirror each other on both sides of the ridge — powerful confirming evidence." },
-          { "date": "1960s", "event": "Plate tectonics is assembled from these pieces and becomes the unifying theory of modern geology." }
+          {
+            "date": "1596",
+            "event": "Mapmaker Abraham Ortelius notices that the Atlantic coastlines look like they could fit together."
+          },
+          {
+            "date": "1912",
+            "event": "Alfred Wegener proposes continental drift, using matching coastlines, fossils, rock layers, and climate clues."
+          },
+          {
+            "date": "1920s",
+            "event": "Geologists reject the idea because Wegener cannot explain what force could move a continent."
+          },
+          {
+            "date": "1930",
+            "event": "Wegener dies on a Greenland expedition with his hypothesis still dismissed."
+          },
+          {
+            "date": "1947-1950s",
+            "event": "Post-war ocean mapping reveals the Mid-Atlantic Ridge, a mountain range running down the ocean floor."
+          },
+          {
+            "date": "1962",
+            "event": "Harry Hess proposes sea-floor spreading: new crust forms at ridges and spreads outward."
+          },
+          {
+            "date": "1963",
+            "event": "Magnetic stripes on the sea floor are found to mirror each other on both sides of the ridge — powerful confirming evidence."
+          },
+          {
+            "date": "1960s",
+            "event": "Plate tectonics is assembled from these pieces and becomes the unifying theory of modern geology."
+          }
         ]
       },
       "meta": "8 events • how science changed its mind"
@@ -85,20 +178,68 @@
       "timestamp": "2026-07-21T05:00:04.000Z",
       "data": {
         "categories": [
-          { "id": "pt-div", "label": "Divergent (pulling apart)", "color": "bg-sky-500" },
-          { "id": "pt-con", "label": "Convergent (pushing together)", "color": "bg-rose-500" },
-          { "id": "pt-tra", "label": "Transform (sliding past)", "color": "bg-amber-500" }
+          {
+            "id": "pt-div",
+            "label": "Divergent (pulling apart)",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "pt-con",
+            "label": "Convergent (pushing together)",
+            "color": "bg-rose-500"
+          },
+          {
+            "id": "pt-tra",
+            "label": "Transform (sliding past)",
+            "color": "bg-amber-500"
+          }
         ],
         "items": [
-          { "id": "p1", "content": "The Mid-Atlantic Ridge, where Iceland is widening", "categoryId": "pt-div" },
-          { "id": "p2", "content": "The Himalayas, still rising as India presses into Asia", "categoryId": "pt-con" },
-          { "id": "p3", "content": "The San Andreas Fault in California", "categoryId": "pt-tra" },
-          { "id": "p4", "content": "New ocean floor forming from rising magma", "categoryId": "pt-div" },
-          { "id": "p5", "content": "One plate diving beneath another into the mantle", "categoryId": "pt-con" },
-          { "id": "p6", "content": "Two plates locking, building stress, then snapping sideways", "categoryId": "pt-tra" },
-          { "id": "p7", "content": "The East African Rift, where a continent is splitting", "categoryId": "pt-div" },
-          { "id": "p8", "content": "A deep ocean trench next to a chain of volcanoes", "categoryId": "pt-con" },
-          { "id": "p9", "content": "The Andes Mountains along South America's edge", "categoryId": "pt-con" }
+          {
+            "id": "p1",
+            "content": "The Mid-Atlantic Ridge, where Iceland is widening",
+            "categoryId": "pt-div"
+          },
+          {
+            "id": "p2",
+            "content": "The Himalayas, still rising as India presses into Asia",
+            "categoryId": "pt-con"
+          },
+          {
+            "id": "p3",
+            "content": "The San Andreas Fault in California",
+            "categoryId": "pt-tra"
+          },
+          {
+            "id": "p4",
+            "content": "New ocean floor forming from rising magma",
+            "categoryId": "pt-div"
+          },
+          {
+            "id": "p5",
+            "content": "One plate diving beneath another into the mantle",
+            "categoryId": "pt-con"
+          },
+          {
+            "id": "p6",
+            "content": "Two plates locking, building stress, then snapping sideways",
+            "categoryId": "pt-tra"
+          },
+          {
+            "id": "p7",
+            "content": "The East African Rift, where a continent is splitting",
+            "categoryId": "pt-div"
+          },
+          {
+            "id": "p8",
+            "content": "A deep ocean trench next to a chain of volcanoes",
+            "categoryId": "pt-con"
+          },
+          {
+            "id": "p9",
+            "content": "The Andes Mountains along South America's edge",
+            "categoryId": "pt-con"
+          }
         ]
       },
       "meta": "3 boundary types • 9 real places"
@@ -184,8 +325,12 @@
           }
         ],
         "reflections": [
-          { "text": "Which piece of Wegener's evidence would have convinced you? Why that one?" },
-          { "text": "Name something people believe today that you think might be overturned by future evidence." }
+          {
+            "text": "Which piece of Wegener's evidence would have convinced you? Why that one?"
+          },
+          {
+            "text": "Name something people believe today that you think might be overturned by future evidence."
+          }
         ]
       },
       "meta": "5 MCQ + 2 short answer • nature-of-science focus"
@@ -199,26 +344,80 @@
         "templateType": "cornell-notes",
         "title": "Plate Tectonics — The Earth Puzzle",
         "cues": [
-          { "id": "cue-pt-1", "text": "Wegener's claim" },
-          { "id": "cue-pt-2", "text": "His 4 kinds of evidence" },
-          { "id": "cue-pt-3", "text": "Why rejected?" },
-          { "id": "cue-pt-4", "text": "Sea-floor spreading" },
-          { "id": "cue-pt-5", "text": "Divergent = ?" },
-          { "id": "cue-pt-6", "text": "Convergent = ?" },
-          { "id": "cue-pt-7", "text": "Transform = ?" },
-          { "id": "cue-pt-8", "text": "How fast do plates move?" },
-          { "id": "cue-pt-9", "text": "My question" }
+          {
+            "id": "cue-pt-1",
+            "text": "Wegener's claim"
+          },
+          {
+            "id": "cue-pt-2",
+            "text": "His 4 kinds of evidence"
+          },
+          {
+            "id": "cue-pt-3",
+            "text": "Why rejected?"
+          },
+          {
+            "id": "cue-pt-4",
+            "text": "Sea-floor spreading"
+          },
+          {
+            "id": "cue-pt-5",
+            "text": "Divergent = ?"
+          },
+          {
+            "id": "cue-pt-6",
+            "text": "Convergent = ?"
+          },
+          {
+            "id": "cue-pt-7",
+            "text": "Transform = ?"
+          },
+          {
+            "id": "cue-pt-8",
+            "text": "How fast do plates move?"
+          },
+          {
+            "id": "cue-pt-9",
+            "text": "My question"
+          }
         ],
         "notes": [
-          { "id": "note-pt-1", "text": "" },
-          { "id": "note-pt-2", "text": "" },
-          { "id": "note-pt-3", "text": "" },
-          { "id": "note-pt-4", "text": "" },
-          { "id": "note-pt-5", "text": "" },
-          { "id": "note-pt-6", "text": "" },
-          { "id": "note-pt-7", "text": "" },
-          { "id": "note-pt-8", "text": "" },
-          { "id": "note-pt-9", "text": "" }
+          {
+            "id": "note-pt-1",
+            "text": ""
+          },
+          {
+            "id": "note-pt-2",
+            "text": ""
+          },
+          {
+            "id": "note-pt-3",
+            "text": ""
+          },
+          {
+            "id": "note-pt-4",
+            "text": ""
+          },
+          {
+            "id": "note-pt-5",
+            "text": ""
+          },
+          {
+            "id": "note-pt-6",
+            "text": ""
+          },
+          {
+            "id": "note-pt-7",
+            "text": ""
+          },
+          {
+            "id": "note-pt-8",
+            "text": ""
+          },
+          {
+            "id": "note-pt-9",
+            "text": ""
+          }
         ]
       },
       "meta": "Cornell template • 9 cues"
@@ -229,12 +428,30 @@
       "title": "Earth Questions",
       "timestamp": "2026-07-21T05:00:07.000Z",
       "data": [
-        { "question": "Will the continents crash back together someday? 🌎", "answer": "Probably. Geologists model a future supercontinent forming in roughly 250 million years — it already has proposed names like Pangaea Proxima. Nobody will be around to check the prediction." },
-        { "question": "What plate am I on right now?", "answer": "Most of North America sits on the North American Plate, which extends well into the Atlantic. Parts of coastal California are on the Pacific Plate — which is why they grind past each other along the San Andreas." },
-        { "question": "Can we predict earthquakes yet?", "answer": "Not the way people want. Scientists can say which areas are at risk and roughly how often big quakes happen, but not the day or hour. Anyone claiming exact prediction is overselling." },
-        { "question": "Is Mount Everest still growing? 🏔️", "answer": "Yes, a few millimeters a year as India keeps pressing north — though erosion and earthquakes shave some of that back off." },
-        { "question": "What is the Ring of Fire?", "answer": "The horseshoe of volcanoes and earthquake zones around the Pacific, where plates converge and dive under each other. About three-quarters of the world's active volcanoes sit along it." },
-        { "question": "Was Pangaea the only supercontinent?", "answer": "No — it is just the most recent and best documented. Geologists have evidence for earlier ones like Rodinia. The continents have assembled and broken apart several times." }
+        {
+          "question": "Will the continents crash back together someday? 🌎",
+          "answer": "Probably. Geologists model a future supercontinent forming in roughly 250 million years — it already has proposed names like Pangaea Proxima. Nobody will be around to check the prediction."
+        },
+        {
+          "question": "What plate am I on right now?",
+          "answer": "Most of North America sits on the North American Plate, which extends well into the Atlantic. Parts of coastal California are on the Pacific Plate — which is why they grind past each other along the San Andreas."
+        },
+        {
+          "question": "Can we predict earthquakes yet?",
+          "answer": "Not the way people want. Scientists can say which areas are at risk and roughly how often big quakes happen, but not the day or hour. Anyone claiming exact prediction is overselling."
+        },
+        {
+          "question": "Is Mount Everest still growing? 🏔️",
+          "answer": "Yes, a few millimeters a year as India keeps pressing north — though erosion and earthquakes shave some of that back off."
+        },
+        {
+          "question": "What is the Ring of Fire?",
+          "answer": "The horseshoe of volcanoes and earthquake zones around the Pacific, where plates converge and dive under each other. About three-quarters of the world's active volcanoes sit along it."
+        },
+        {
+          "question": "Was Pangaea the only supercontinent?",
+          "answer": "No — it is just the most recent and best documented. Geologists have evidence for earlier ones like Rodinia. The continents have assembled and broken apart several times."
+        }
       ],
       "meta": "6 questions • includes honest prediction limits"
     }
