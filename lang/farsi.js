@@ -11499,7 +11499,7 @@
     "ai": {
       "get_hint": "احصل روی راهنمایی"
     },
-    "layers_slider": "انهعمال کنیدات",
+    "layers_slider": "لایه‌ها",
     "surface_area": "مساحت سطح",
     "volume": {
       "abstract_units_default": "واحدهای انتزاعی (پیش‌فرض)",

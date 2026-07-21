@@ -11491,7 +11491,7 @@
     "ai": {
       "get_hint": "احصل پر اشارہ"
     },
-    "layers_slider": "نہیںگو کریںات",
+    "layers_slider": "تہیں",
     "surface_area": "سطحی رقبہ",
     "volume": {
       "abstract_units_default": "تجریدی اکائیاں (طے شدہ)",

@@ -11492,7 +11492,7 @@
     "ai": {
       "get_hint": "احصل په اشاره"
     },
-    "layers_slider": "پلی کونهت",
+    "layers_slider": "طبقې",
     "surface_area": "د مخ مساحت",
     "volume": {
       "abstract_units_default": "خلاص واحدونه (تلواله)",
