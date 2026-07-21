@@ -1,0 +1,21 @@
+{
+  "dari": {
+    "circuit_lab": "لابراتوار مدار",
+    "a_thin_layer_of_sio_is_grown_on_the_wa": "یک لایه نازک SiO₂ روی سطح ویفر در ~1000 °C در کوره اکسیجن رشد داده می‌شود.",
+    "unwanted_material_is_removed_by_chemic": "مواد ناخواسته با حکاکی کیمیاوی (مرطوب) یا پلاسما (خشک) حذف می‌شوند.",
+    "dopant_atoms_are_shot_into_the_silicon": "اتوم‌های ناخالصی با انرژی بالا به سیلیکون شلیک می‌شوند تا خواص الکتریکی آن را تغییر دهند.",
+    "ferroelectric_capacitor_stores_charge_": "خازن فروالکتریک بار را با قطبش باقیمانده ذخیره می‌کند. غیرفرار + نوشتن سریع. در کارت‌های هوشمند، موتر استفاده می‌شود.",
+    "band_gaps_between_0_5_and_3_5_ev_are_s": "گاف‌های نواری بین 0.5 و 3.5 eV نیمه‌رساناها استند.",
+    "carbon_forms_very_strong_bonds": "کاربن پیوندهای بسیار قوی تشکیل می‌دهد.",
+    "temperature_rising_in_a_semiconductor_": "حرارت در حال افزایش است! در یک نیمه‌رسانا، افزایش حرارت با رسانایی چه می‌کند؟",
+    "memory_technologies": "تکنالوژی‌های حافظه",
+    "back_to_stem_lab": " بازگشت به لابراتوار STEM",
+    "adjust_dopant_concentration_temperatur": "غلظت ناخالصی، حرارت، ماده را تنظیم کنید. رژیم گسسته 4 نواری. بدون امتیاز، بدون افشا.",
+    "hypothesis_how_does_temperature_affect": "فرضیه: حرارت چگونه بر غلظت حامل‌ها تأثیر می‌گذارد؟",
+    "stuck_show_open_prompts": "🤔 گیر کردم — سوال‌های باز را نشان بده",
+    "explain_how_concentration_temperature_": "توضیح دهید که چگونه غلظت، حرارت و ماده با هم رژیم را تعیین می‌کنند.",
+    "loading_semiconductor_lab": "در حال بارگذاری لابراتوار نیمه‌رسانا…",
+    "semiconductor_lab": "لابراتوار نیمه‌رسانا",
+    "semiconductor_lab_2": "لابراتوار نیمه‌رسانا"
+  }
+}
