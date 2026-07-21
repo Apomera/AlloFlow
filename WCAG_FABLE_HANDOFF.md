@@ -58,6 +58,8 @@ These sections were independently committed:
 | Energy Tracker | `2bc049e1f` |
 | Career Explorer | `418ce85d9` |
 | Letters to Future Self | `6a62cc745` |
+| Memory Palace | `85d6c9b8e` |
+| Identity Map | `5b375c3cb` |
 
 The most recently completed section, Personal Reference Sheet Builder, passed:
 
@@ -123,9 +125,16 @@ Three more sections with the standard wave, all gate-verified (full suite 2,250/
 - **Career Explorer** `418ce85d9`: null entries in `saved` crashed the `.some()` lookups; removed `aria-pressed` from the changing-label save toggle (established anti-pattern); duplicate style key cleanup; local-only guidance. Content framing was already exemplary — kept verbatim.
 - **Letters to Future Self** `6a62cc745`: null entries crashed the reading lookup; garbage `deliverOn` produced "about NaN days from now"; sealed/open state now derives from trimmed string dates; render test proves a sealed letter never leaks its body text.
 
+## Session notes (2026-07-21 early morning, Fable — seventh continuation)
+
+- **Memory Palace** `85d6c9b8e`: converted the remaining narrow-pattern `setTimeout` focus site to pendingFocusId; `lociOf`/`rawPalaces` guards (null palace/stop entries crashed the editor and walk); walk stops now render guarded text; Untitled fallbacks; local-only guidance; 10px→12px. Render test covers the full walk flow (progressbar semantics, next/complete focus recovery) and stop/palace deletion.
+- **Identity Map** `5b375c3cb`: Crisis-Plan-style guards (corrupt `map` value would spread character-by-character on save; non-string field values now render empty instead of leaking); "saving does not send or show your map to anyone"; 11px→12px. Framing was already excellent — untouched.
+- Full suite 2,263/2,263. Mirror SHA-256: `9C91D118760167E9D31B89E7A72DE040FD3382D3F9F2F374B653E79060FAF7F2`.
+- **CORRECTION to the earlier "3 remaining setTimeout-focus sites" note:** that count used a narrow regex. The broader variant (`setTimeout(function() { if (typeof document === 'undefined') return; var tar…`) exists at ~28 sites in later components/regions of this file (SEL-adjacent tools etc.). Same conversion applies as each section is audited; the focus-binding gate only catches UNBOUND calls, not timer-based ones, so don't rely on it for this.
+
 ## Next section
 
-The crash-fixed trio is now fully audited. Remaining unaudited: **Memory Palace, Identity Map**, and the rest of the no-render-test list (Question Log, Success Log, Teacher Email, Body Check, Achievement Wall, Affirmations, Role Models, Self Assessment, Learning Contract, Emotion Regulator...). One independently tested and committed section at a time. Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
+Remaining unaudited (no-render-test list): **Question Log, Success Log, Teacher Email, Body Check, Achievement Wall, Affirmations, Role Models, Self Assessment, Learning Contract, Emotion Regulator, Mood/Class-adjacent leftovers** — plus the ~28 timer-focus conversions as their sections come up. One independently tested and committed section at a time. Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
 
 ## Completed section reference: Optional Support Request Notes
 
