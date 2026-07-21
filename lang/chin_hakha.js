@@ -12708,7 +12708,7 @@
       "close_all_open_overlays_and_return_to_": "Close all open overlays and return to the game view",
       "close_all_overlays_return_to_the_3d_ga": "Close all overlays & return to the 3D game (or press Shift+Esc)",
       "close_my_lessons": "My Lessons khar",
-      "delete_this_saved_lesson": "Hi cawnpiaknak khumhmi hlonh",
+      "delete_this_saved_lesson": "Hi cawnpiaknak chiahmi hlonh",
       "close_editor": "Editor khar",
       "close_creator_panel": "Creator panel khar",
       "npc_name": "NPC name",
@@ -12735,7 +12735,7 @@
       "close_teacher_dashboard": "Teacher dashboard khar",
       "toggle_fullscreen_for_the_3d_world": "Toggle fullscreen for the 3D world",
       "fullscreen": "Fullscreen",
-      "aligned_axes_preserved": "🟢 A dik (axes a um rero)",
+      "aligned_axes_preserved": "🟢 A hmaan (axes a um rero)",
       "scaled_volume_changed": "🔵 Scaled (volume a thleng)",
       "skewed_shape_deformed": "🟠 Skewed (shape a se)",
       "degenerate_volume_0": "💀 Degenerate (volume → 0)"
