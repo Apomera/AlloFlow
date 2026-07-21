@@ -55,6 +55,9 @@ These sections were independently committed:
 | UTC-date class (brain dump, flashcards, evening-fragile tests) | `cb9e7eb54` |
 | Quote Collector | `df9a0a876` |
 | Worry Time | `b746c083a` |
+| Energy Tracker | `2bc049e1f` |
+| Career Explorer | `418ce85d9` |
+| Letters to Future Self | `6a62cc745` |
 
 The most recently completed section, Personal Reference Sheet Builder, passed:
 
@@ -112,9 +115,17 @@ Four more sections completed and committed, all with the standard gate (focused 
 - **Quote Collector** `df9a0a876`: standard wave (rawQuotes/isRecord/textValue guards — a non-array `quotes` value or a null entry crashed render/search; local-save guidance; 10px→12px; catalog stat guard).
 - **Worry Time** `b746c083a`: standard wave; null entries crashed the open/resolved filters; removed silent 10-cap on processed worries; guarded the catalog "open worries" stat (crashed on null entries too); added "saving does not send them to or notify anyone." Full suite 2,228/2,228. Mirror SHA-256: `C06207A435FD3222490E94F64EDD8485012420308D68AC9F205B32348F5E8A74`.
 
+## Session notes (2026-07-20 late evening, Fable — sixth continuation)
+
+Three more sections with the standard wave, all gate-verified (full suite 2,250/2,250 after the last). Mirror SHA-256 after `6a62cc745`: `830DB864CF84102F963053D2FF9800E1D059D2B5223F2377EB888C3A7CED21A8`.
+
+- **Energy Tracker** `2bc049e1f`: null entries crashed the hourly aggregation; `formatHour` of garbage rendered "NaN:00 PM" (now "an unrecorded time"); unclamped legacy levels (999) skewed averages (ratingOf-style clamp); removed silent 20-cap; 8/9px chart text → 10/11px; non-notification wording.
+- **Career Explorer** `418ce85d9`: null entries in `saved` crashed the `.some()` lookups; removed `aria-pressed` from the changing-label save toggle (established anti-pattern); duplicate style key cleanup; local-only guidance. Content framing was already exemplary — kept verbatim.
+- **Letters to Future Self** `6a62cc745`: null entries crashed the reading lookup; garbage `deliverOn` produced "about NaN days from now"; sealed/open state now derives from trimmed string dates; render test proves a sealed letter never leaks its body text.
+
 ## Next section
 
-Remaining unaudited (crash-fixed but not fully audited): **Energy Tracker, Career Explorer, Future Self** — then Memory Palace, Identity Map, and the rest of the no-render-test list (Question Log, Success Log, Teacher Email, Body Check, Achievement Wall, Affirmations, Role Models, Self Assessment, Learning Contract, Emotion Regulator...). One independently tested and committed section at a time. Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
+The crash-fixed trio is now fully audited. Remaining unaudited: **Memory Palace, Identity Map**, and the rest of the no-render-test list (Question Log, Success Log, Teacher Email, Body Check, Achievement Wall, Affirmations, Role Models, Self Assessment, Learning Contract, Emotion Regulator...). One independently tested and committed section at a time. Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
 
 ## Completed section reference: Optional Support Request Notes
 
