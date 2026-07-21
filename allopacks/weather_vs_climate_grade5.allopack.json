@@ -18,11 +18,26 @@
       "title": "Two Words People Mix Up Every Day",
       "timestamp": "2026-07-20T02:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nAdults on TV mix these two words up constantly. By the end of today, you will catch the mistake faster than they make it.\n\n1. Read **Mood and Personality** — it gives you the one comparison that makes this stick.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Try **Weather or Climate?** — sort each headline into the right bucket. Some are sneaky.\n4. Take the quiz. Question 4 fools most people; slow down there.\n5. Answer the two reflection questions in your own words.\n\nBonus challenge: catch a real adult using the wrong word this week and (politely!) explain the difference. 🌦️📊",
+        "body": "**Due:** (your teacher will tell you)\n\nAdults on TV mix these two words up constantly. By the end of today, you will catch the mistake faster than they make it.\n\n1. Read **Mood and Personality** — it gives you the one comparison that makes this stick.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Try **Weather or Climate?** — sort each headline into the right bucket. Some are sneaky.\n4. Take the quiz. Question 4 fools most people; slow down there.\n5. Fill in the **Cornell Notes** page in your own words — that becomes your study sheet.\n6. Answer the two reflection questions.\n\nBonus challenge: catch a real adult using the wrong word this week and (politely!) explain the difference. 🌦️📊",
         "objectives": [
-          { "id": "wx-goal-matching", "label": "Win the Matching game", "kind": "game", "gameType": "matching", "resourceRef": "wx-glossary" },
-          { "id": "wx-goal-xp", "label": "Earn 25 XP", "kind": "xp", "amount": 25 },
-          { "id": "wx-goal-catch", "label": "I caught someone mixing up weather and climate (and explained it kindly)", "kind": "manual" }
+          {
+            "id": "wx-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "wx-glossary"
+          },
+          {
+            "id": "wx-goal-xp",
+            "label": "Earn 25 XP",
+            "kind": "xp",
+            "amount": 25
+          },
+          {
+            "id": "wx-goal-catch",
+            "label": "I caught someone mixing up weather and climate (and explained it kindly)",
+            "kind": "manual"
+          }
         ]
       },
       "meta": "5th-6th Grade • 3 goals • misconception-led"
@@ -42,16 +57,56 @@
       "title": "Weather and Climate Words",
       "timestamp": "2026-07-20T02:00:02.000Z",
       "data": [
-        { "term": "Weather", "def": "What the air is doing right now or over a few days — temperature, rain, wind, and clouds.", "tier": "Domain-Specific" },
-        { "term": "Climate", "def": "The usual pattern of weather in a place, measured over thirty years or more.", "tier": "Domain-Specific" },
-        { "term": "Temperature", "def": "How hot or cold the air is at a moment.", "tier": "Academic" },
-        { "term": "Precipitation", "def": "Any water falling from the sky: rain, snow, sleet, or hail.", "tier": "Domain-Specific" },
-        { "term": "Average", "def": "A middle value found by combining many measurements — the tool that turns weather into climate.", "tier": "Academic" },
-        { "term": "Pattern", "def": "Something that repeats in a predictable way over time.", "tier": "Academic" },
-        { "term": "Forecast", "def": "A prediction of weather in the near future, usually days ahead.", "tier": "Domain-Specific" },
-        { "term": "Region", "def": "An area of the world that shares similar conditions.", "tier": "Academic" },
-        { "term": "Trend", "def": "A gradual change in one direction over a long stretch of time.", "tier": "Academic" },
-        { "term": "Atmosphere", "def": "The layer of air surrounding Earth where all weather happens.", "tier": "Domain-Specific" }
+        {
+          "term": "Weather",
+          "def": "What the air is doing right now or over a few days — temperature, rain, wind, and clouds.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Climate",
+          "def": "The usual pattern of weather in a place, measured over thirty years or more.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Temperature",
+          "def": "How hot or cold the air is at a moment.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Precipitation",
+          "def": "Any water falling from the sky: rain, snow, sleet, or hail.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Average",
+          "def": "A middle value found by combining many measurements — the tool that turns weather into climate.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Pattern",
+          "def": "Something that repeats in a predictable way over time.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Forecast",
+          "def": "A prediction of weather in the near future, usually days ahead.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Region",
+          "def": "An area of the world that shares similar conditions.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Trend",
+          "def": "A gradual change in one direction over a long stretch of time.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Atmosphere",
+          "def": "The layer of air surrounding Earth where all weather happens.",
+          "tier": "Domain-Specific"
+        }
       ],
       "meta": "10 terms • Tiered"
     },
@@ -62,20 +117,68 @@
       "timestamp": "2026-07-20T02:00:03.000Z",
       "data": {
         "categories": [
-          { "id": "w-weather", "label": "WEATHER (right now / this week)", "color": "bg-sky-500" },
-          { "id": "w-climate", "label": "CLIMATE (the long-run pattern)", "color": "bg-emerald-500" }
+          {
+            "id": "w-weather",
+            "label": "WEATHER (right now / this week)",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "w-climate",
+            "label": "CLIMATE (the long-run pattern)",
+            "color": "bg-emerald-500"
+          }
         ],
         "items": [
-          { "id": "w1", "content": "It is 32 degrees and snowing outside", "categoryId": "w-weather" },
-          { "id": "w2", "content": "Maine winters are usually snowy", "categoryId": "w-climate" },
-          { "id": "w3", "content": "A hurricane is forecast to hit on Thursday", "categoryId": "w-weather" },
-          { "id": "w4", "content": "The Sahara is one of the driest places on Earth", "categoryId": "w-climate" },
-          { "id": "w5", "content": "Yesterday broke the record for the hottest June 14th", "categoryId": "w-weather" },
-          { "id": "w6", "content": "Summers here have gotten hotter on average over 40 years", "categoryId": "w-climate" },
-          { "id": "w7", "content": "Bring an umbrella — rain is expected this afternoon", "categoryId": "w-weather" },
-          { "id": "w8", "content": "Seattle gets more rainy days per year than Phoenix", "categoryId": "w-climate" },
-          { "id": "w9", "content": "This week has been unusually windy", "categoryId": "w-weather" },
-          { "id": "w10", "content": "Arctic sea ice has shrunk over the past several decades", "categoryId": "w-climate" }
+          {
+            "id": "w1",
+            "content": "It is 32 degrees and snowing outside",
+            "categoryId": "w-weather"
+          },
+          {
+            "id": "w2",
+            "content": "Maine winters are usually snowy",
+            "categoryId": "w-climate"
+          },
+          {
+            "id": "w3",
+            "content": "A hurricane is forecast to hit on Thursday",
+            "categoryId": "w-weather"
+          },
+          {
+            "id": "w4",
+            "content": "The Sahara is one of the driest places on Earth",
+            "categoryId": "w-climate"
+          },
+          {
+            "id": "w5",
+            "content": "Yesterday broke the record for the hottest June 14th",
+            "categoryId": "w-weather"
+          },
+          {
+            "id": "w6",
+            "content": "Summers here have gotten hotter on average over 40 years",
+            "categoryId": "w-climate"
+          },
+          {
+            "id": "w7",
+            "content": "Bring an umbrella — rain is expected this afternoon",
+            "categoryId": "w-weather"
+          },
+          {
+            "id": "w8",
+            "content": "Seattle gets more rainy days per year than Phoenix",
+            "categoryId": "w-climate"
+          },
+          {
+            "id": "w9",
+            "content": "This week has been unusually windy",
+            "categoryId": "w-weather"
+          },
+          {
+            "id": "w10",
+            "content": "Arctic sea ice has shrunk over the past several decades",
+            "categoryId": "w-climate"
+          }
         ]
       },
       "meta": "2 buckets • 10 headlines • time-scale practice"
@@ -161,8 +264,12 @@
           }
         ],
         "reflections": [
-          { "text": "Describe the climate where you live in two sentences. Then describe today's weather in one." },
-          { "text": "Where have you heard these two words used incorrectly? What did the person say?" }
+          {
+            "text": "Describe the climate where you live in two sentences. Then describe today's weather in one."
+          },
+          {
+            "text": "Where have you heard these two words used incorrectly? What did the person say?"
+          }
         ]
       },
       "meta": "5 MCQ + 2 short answer • Q4 is the classic trap"
@@ -175,12 +282,24 @@
       "data": {
         "mode": "list",
         "items": [
-          { "text": "Weather describes ____, while climate describes ____." },
-          { "text": "One way to tell them apart is to ask ____." },
-          { "text": "An example of weather where I live is ____; an example of climate is ____." },
-          { "text": "A single cold day does not disprove a warming climate because ____." },
-          { "text": "Scientists study climate by looking at ____ instead of ____." },
-          { "text": "If I had to explain this to a younger kid, I would say ____." }
+          {
+            "text": "Weather describes ____, while climate describes ____."
+          },
+          {
+            "text": "One way to tell them apart is to ask ____."
+          },
+          {
+            "text": "An example of weather where I live is ____; an example of climate is ____."
+          },
+          {
+            "text": "A single cold day does not disprove a warming climate because ____."
+          },
+          {
+            "text": "Scientists study climate by looking at ____ instead of ____."
+          },
+          {
+            "text": "If I had to explain this to a younger kid, I would say ____."
+          }
         ],
         "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Scientist |\n|---|---|---|---|\n| Time scale | Time is not mentioned | Mentions short vs long | Names a specific scale (a day vs ~30 years) |\n| Examples | Vague or missing | One clear example | Both examples clear and correctly sorted |\n| Reasoning | Restates the definition | Explains one why | Explains why a single event cannot show a pattern |"
       },
@@ -192,14 +311,111 @@
       "title": "Wait, But What About...?",
       "timestamp": "2026-07-20T02:00:06.000Z",
       "data": [
-        { "question": "If forecasts are only good for a week, how can anyone predict climate for 50 years? 🤔", "answer": "Great question — it feels backwards! Predicting one specific day is like guessing one coin flip. Predicting climate is like predicting that 1,000 flips will land near half heads. Averages over long times are more predictable than single moments." },
-        { "question": "Does climate ever change naturally?", "answer": "Yes. Ice ages and warm periods have come and gone over hundreds of thousands of years from natural causes. Scientists study those natural patterns carefully — it is part of how they identify what is different about recent decades." },
-        { "question": "Why do weather reporters say 'climate' when they mean weather? 📺", "answer": "Usually just habit and casual speech. Now that you know the difference, you will hear it constantly — it is a fun (slightly annoying) superpower." },
-        { "question": "Can two places have the same weather but different climates?", "answer": "Absolutely. It might be 70 degrees and sunny in both Seattle and Phoenix today, but their climates — the long-run patterns — are completely different." },
-        { "question": "What is a microclimate?", "answer": "A small area whose climate differs from the region around it — a shaded valley, a city center that stays warmer than nearby farms, or the sunny side of a hill." },
-        { "question": "How far back do climate records go?", "answer": "Direct thermometer records go back a couple of centuries. Beyond that, scientists read natural records: tree rings, ice cores, coral layers, and lake sediments — nature keeps its own logbooks." }
+        {
+          "question": "If forecasts are only good for a week, how can anyone predict climate for 50 years? 🤔",
+          "answer": "Great question — it feels backwards! Predicting one specific day is like guessing one coin flip. Predicting climate is like predicting that 1,000 flips will land near half heads. Averages over long times are more predictable than single moments."
+        },
+        {
+          "question": "Does climate ever change naturally?",
+          "answer": "Yes. Ice ages and warm periods have come and gone over hundreds of thousands of years from natural causes. Scientists study those natural patterns carefully — it is part of how they identify what is different about recent decades."
+        },
+        {
+          "question": "Why do weather reporters say 'climate' when they mean weather? 📺",
+          "answer": "Usually just habit and casual speech. Now that you know the difference, you will hear it constantly — it is a fun (slightly annoying) superpower."
+        },
+        {
+          "question": "Can two places have the same weather but different climates?",
+          "answer": "Absolutely. It might be 70 degrees and sunny in both Seattle and Phoenix today, but their climates — the long-run patterns — are completely different."
+        },
+        {
+          "question": "What is a microclimate?",
+          "answer": "A small area whose climate differs from the region around it — a shaded valley, a city center that stays warmer than nearby farms, or the sunny side of a hill."
+        },
+        {
+          "question": "How far back do climate records go?",
+          "answer": "Direct thermometer records go back a couple of centuries. Beyond that, scientists read natural records: tree rings, ice cores, coral layers, and lake sediments — nature keeps its own logbooks."
+        }
       ],
       "meta": "6 questions • includes the chaos/averages puzzle"
+    },
+    {
+      "id": "wx-notes",
+      "type": "note-taking",
+      "title": "Weather vs. Climate Cornell Notes",
+      "timestamp": "2026-07-20T02:00:05.500Z",
+      "data": {
+        "templateType": "cornell-notes",
+        "title": "Weather vs. Climate",
+        "cues": [
+          {
+            "id": "cue-wx-1",
+            "text": "Weather = ?"
+          },
+          {
+            "id": "cue-wx-2",
+            "text": "Climate = ?"
+          },
+          {
+            "id": "cue-wx-3",
+            "text": "How long is climate?"
+          },
+          {
+            "id": "cue-wx-4",
+            "text": "Mood vs personality"
+          },
+          {
+            "id": "cue-wx-5",
+            "text": "Why only 7-day forecasts?"
+          },
+          {
+            "id": "cue-wx-6",
+            "text": "Cold day ≠ ?"
+          },
+          {
+            "id": "cue-wx-7",
+            "text": "One heat wave ≠ ?"
+          },
+          {
+            "id": "cue-wx-8",
+            "text": "My question"
+          }
+        ],
+        "notes": [
+          {
+            "id": "note-wx-1",
+            "text": ""
+          },
+          {
+            "id": "note-wx-2",
+            "text": ""
+          },
+          {
+            "id": "note-wx-3",
+            "text": ""
+          },
+          {
+            "id": "note-wx-4",
+            "text": ""
+          },
+          {
+            "id": "note-wx-5",
+            "text": ""
+          },
+          {
+            "id": "note-wx-6",
+            "text": ""
+          },
+          {
+            "id": "note-wx-7",
+            "text": ""
+          },
+          {
+            "id": "note-wx-8",
+            "text": ""
+          }
+        ]
+      },
+      "meta": "Cornell template • 8 cues • compare/contrast study page"
     }
   ]
 }

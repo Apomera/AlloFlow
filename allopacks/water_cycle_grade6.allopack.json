@@ -18,7 +18,7 @@
       "title": "Your Water Cycle Mission",
       "timestamp": "2026-07-20T00:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nWater has been recycling itself on Earth for about four billion years — the water in your bottle once floated in a cloud, and maybe once sat in a glacier. Tonight you become a water-cycle expert.\n\n1. Read **Journey of a Raindrop** first. Read it out loud if you can — or use the Read Aloud button.\n2. Open the **Glossary** and play the **Crossword** and the **Word Scramble** until you win each one.\n3. Try the **Sort It: Where Is the Water Going?** activity — drag each card to the right stage.\n4. Take the **Check Your Understanding** quiz. It is not a grade — wrong answers just show us what to practice.\n5. Use the **Sentence Frames** to write two sentences about the water cycle in your own words.\n\nWhen every goal below has a checkmark, you are done — and you have earned it. 🌧️➡️☀️",
+        "body": "**Due:** (your teacher will tell you)\n\nWater has been recycling itself on Earth for about four billion years — the water in your bottle once floated in a cloud, and maybe once sat in a glacier. Tonight you become a water-cycle expert.\n\n1. Read **Journey of a Raindrop** first. Read it out loud if you can — or use the Read Aloud button.\n2. Open the **Glossary** and play the **Crossword** and the **Word Scramble** until you win each one.\n3. Keep **The Four Moves of Water** chart open while you work — it is your cheat sheet, and using it is allowed.\n4. Try the **Sort It: Where Is the Water Going?** activity — drag each card to the right stage.\n5. Take the **Check Your Understanding** quiz. It is not a grade — wrong answers just show us what to practice.\n6. Use the **Sentence Frames** to write two sentences about the water cycle in your own words.\n\nWhen every goal below has a checkmark, you are done — and you have earned it. 🌧️➡️☀️",
         "objectives": [
           {
             "id": "wc-goal-crossword",
@@ -116,6 +116,61 @@
         }
       ],
       "meta": "10 terms • Tiered"
+    },
+    {
+      "id": "wc-anchor",
+      "type": "anchor-chart",
+      "title": "The Four Moves of Water",
+      "timestamp": "2026-07-20T00:00:02.500Z",
+      "data": {
+        "chartType": "reference",
+        "title": "WATER IS ALWAYS MOVING",
+        "sections": [
+          {
+            "label": "UP",
+            "bullets": [
+              "Evaporation — the Sun lifts water as invisible vapor",
+              "Transpiration — plants release water from their leaves"
+            ],
+            "iconPrompt": "an upward arrow rising from a puddle toward the sun"
+          },
+          {
+            "label": "TOGETHER",
+            "bullets": [
+              "Condensation — cold air turns vapor back into droplets",
+              "A cloud IS billions of floating droplets"
+            ],
+            "iconPrompt": "tiny droplets gathering into a cloud"
+          },
+          {
+            "label": "DOWN",
+            "bullets": [
+              "Precipitation — rain, snow, sleet, or hail",
+              "Gravity wins when droplets grow too heavy"
+            ],
+            "iconPrompt": "raindrops falling from a cloud"
+          },
+          {
+            "label": "STORED",
+            "bullets": [
+              "Runoff — flows over land into rivers",
+              "Groundwater — soaks between soil and rock",
+              "Collection — oceans, lakes, and ice hold it"
+            ],
+            "iconPrompt": "a lake with an underground layer beneath it"
+          },
+          {
+            "label": "REMEMBER",
+            "bullets": [
+              "Earth almost never gets new water",
+              "Powered by the Sun, pulled by gravity",
+              "The cycle has no start and no end"
+            ],
+            "iconPrompt": "a circular arrow loop"
+          }
+        ]
+      },
+      "meta": "5 sections • classroom reference chart"
     },
     {
       "id": "wc-sort",

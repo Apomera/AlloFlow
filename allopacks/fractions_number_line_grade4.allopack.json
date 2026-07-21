@@ -18,11 +18,26 @@
       "title": "Your Fraction Quest",
       "timestamp": "2026-07-21T02:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nMost people learn fractions as pizza slices. Today you learn them as **places** — spots on a number line. This is the version that keeps working when the math gets bigger.\n\n1. Read **The Space Between 0 and 1**.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Do the **Practice Problems** one at a time. Say each answer out loud before checking.\n4. Sort the cards in **Bigger, Smaller, or Equal to One-Half?**\n5. Take the quiz — question 3 catches almost everyone.\n\nTip: if a fraction confuses you, draw the number line. Every single time. Drawing is not cheating; it is what mathematicians actually do. ✏️📏",
+        "body": "**Due:** (your teacher will tell you)\n\nMost people learn fractions as pizza slices. Today you learn them as **places** — spots on a number line. This is the version that keeps working when the math gets bigger.\n\n1. Read **The Space Between 0 and 1**.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Do the **Practice Problems** one at a time. Say each answer out loud before checking.\n4. Sort the cards in **Bigger, Smaller, or Equal to One-Half?**\n5. Take the quiz — question 3 catches almost everyone.\n6. Read **Fraction Questions Kids Actually Ask** if something still feels strange.\n\nTip: if a fraction confuses you, draw the number line. Every single time. Drawing is not cheating; it is what mathematicians actually do. ✏️📏",
         "objectives": [
-          { "id": "fr-goal-scramble", "label": "Win the Word Scramble", "kind": "game", "gameType": "wordScramble", "resourceRef": "fr-glossary" },
-          { "id": "fr-goal-xp", "label": "Earn 25 XP", "kind": "xp", "amount": 25 },
-          { "id": "fr-goal-draw", "label": "I drew a number line to solve at least one problem", "kind": "manual" }
+          {
+            "id": "fr-goal-scramble",
+            "label": "Win the Word Scramble",
+            "kind": "game",
+            "gameType": "wordScramble",
+            "resourceRef": "fr-glossary"
+          },
+          {
+            "id": "fr-goal-xp",
+            "label": "Earn 25 XP",
+            "kind": "xp",
+            "amount": 25
+          },
+          {
+            "id": "fr-goal-draw",
+            "label": "I drew a number line to solve at least one problem",
+            "kind": "manual"
+          }
         ]
       },
       "meta": "3rd-4th Grade • 3 goals • drawing encouraged"
@@ -42,16 +57,56 @@
       "title": "Fraction Words",
       "timestamp": "2026-07-21T02:00:02.000Z",
       "data": [
-        { "term": "Fraction", "def": "A number that names a place between whole numbers.", "tier": "Domain-Specific" },
-        { "term": "Numerator", "def": "The top number — how many equal pieces you counted.", "tier": "Domain-Specific" },
-        { "term": "Denominator", "def": "The bottom number — how many equal pieces the whole was cut into.", "tier": "Domain-Specific" },
-        { "term": "Equivalent", "def": "Equal in value — two fractions that land on the same spot.", "tier": "Academic" },
-        { "term": "Whole", "def": "The complete amount, from 0 to 1 on the number line.", "tier": "Academic" },
-        { "term": "Equal", "def": "The same size or the same amount.", "tier": "Academic" },
-        { "term": "Unit", "def": "One single piece — like 1/4 is one unit of a fourth.", "tier": "Academic" },
-        { "term": "Halves", "def": "The two equal pieces you get by cutting a whole in two.", "tier": "Domain-Specific" },
-        { "term": "Fourths", "def": "The four equal pieces you get by cutting a whole into four.", "tier": "Domain-Specific" },
-        { "term": "Compare", "def": "To decide which of two numbers is bigger, smaller, or equal.", "tier": "Academic" }
+        {
+          "term": "Fraction",
+          "def": "A number that names a place between whole numbers.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Numerator",
+          "def": "The top number — how many equal pieces you counted.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Denominator",
+          "def": "The bottom number — how many equal pieces the whole was cut into.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Equivalent",
+          "def": "Equal in value — two fractions that land on the same spot.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Whole",
+          "def": "The complete amount, from 0 to 1 on the number line.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Equal",
+          "def": "The same size or the same amount.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Unit",
+          "def": "One single piece — like 1/4 is one unit of a fourth.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Halves",
+          "def": "The two equal pieces you get by cutting a whole in two.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Fourths",
+          "def": "The four equal pieces you get by cutting a whole into four.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Compare",
+          "def": "To decide which of two numbers is bigger, smaller, or equal.",
+          "tier": "Academic"
+        }
       ],
       "meta": "10 terms • Tiered"
     },
@@ -67,9 +122,18 @@
             "question": "A number line runs from 0 to 1 and is cut into 4 equal pieces. Which fraction sits at the very first cut mark after 0?",
             "answer": "1/4",
             "steps": [
-              { "explanation": "The denominator is 4 because the whole was cut into 4 equal pieces.", "latex": "" },
-              { "explanation": "The first mark after 0 is one piece from the start, so the numerator is 1.", "latex": "" },
-              { "explanation": "That location is named 1/4.", "latex": "" }
+              {
+                "explanation": "The denominator is 4 because the whole was cut into 4 equal pieces.",
+                "latex": ""
+              },
+              {
+                "explanation": "The first mark after 0 is one piece from the start, so the numerator is 1.",
+                "latex": ""
+              },
+              {
+                "explanation": "That location is named 1/4.",
+                "latex": ""
+              }
             ],
             "realWorld": "A running lap divided into four quarters: the first quarter mark."
           },
@@ -77,9 +141,18 @@
             "question": "Which is bigger: 1/4 or 1/8? Explain using pieces.",
             "answer": "1/4 is bigger",
             "steps": [
-              { "explanation": "Cutting the same whole into 8 pieces makes each piece smaller than cutting it into 4.", "latex": "" },
-              { "explanation": "So one piece out of 8 is closer to zero than one piece out of 4.", "latex": "" },
-              { "explanation": "More pieces means smaller pieces: 1/4 > 1/8.", "latex": "" }
+              {
+                "explanation": "Cutting the same whole into 8 pieces makes each piece smaller than cutting it into 4.",
+                "latex": ""
+              },
+              {
+                "explanation": "So one piece out of 8 is closer to zero than one piece out of 4.",
+                "latex": ""
+              },
+              {
+                "explanation": "More pieces means smaller pieces: 1/4 > 1/8.",
+                "latex": ""
+              }
             ],
             "realWorld": "Sharing one candy bar with 4 friends versus 8 friends — bigger group, smaller share."
           },
@@ -87,9 +160,18 @@
             "question": "Name a fraction that lands on the exact same spot as 1/2 when the line is cut into fourths.",
             "answer": "2/4",
             "steps": [
-              { "explanation": "Cut 0 to 1 into 4 equal pieces and walk 2 of them.", "latex": "" },
-              { "explanation": "You stop exactly halfway, which is where 1/2 is.", "latex": "" },
-              { "explanation": "So 2/4 and 1/2 are equivalent — same place, two names.", "latex": "" }
+              {
+                "explanation": "Cut 0 to 1 into 4 equal pieces and walk 2 of them.",
+                "latex": ""
+              },
+              {
+                "explanation": "You stop exactly halfway, which is where 1/2 is.",
+                "latex": ""
+              },
+              {
+                "explanation": "So 2/4 and 1/2 are equivalent — same place, two names.",
+                "latex": ""
+              }
             ],
             "realWorld": "Half a sandwich is the same as two quarter-pieces of that sandwich."
           },
@@ -97,9 +179,18 @@
             "question": "On a line cut into thirds, where does 3/3 land?",
             "answer": "At 1 (the whole)",
             "steps": [
-              { "explanation": "The denominator 3 means 3 equal pieces make one whole.", "latex": "" },
-              { "explanation": "The numerator 3 means you walk all 3 pieces.", "latex": "" },
-              { "explanation": "Walking every piece brings you to the whole, which is 1.", "latex": "" }
+              {
+                "explanation": "The denominator 3 means 3 equal pieces make one whole.",
+                "latex": ""
+              },
+              {
+                "explanation": "The numerator 3 means you walk all 3 pieces.",
+                "latex": ""
+              },
+              {
+                "explanation": "Walking every piece brings you to the whole, which is 1.",
+                "latex": ""
+              }
             ],
             "realWorld": "Eating all three slices of a three-slice pie means you ate one whole pie."
           },
@@ -107,9 +198,18 @@
             "question": "A line is cut into fourths and continues past 1. Where does 5/4 land?",
             "answer": "One fourth past 1",
             "steps": [
-              { "explanation": "Four fourths get you exactly to 1.", "latex": "" },
-              { "explanation": "The fifth fourth is one more piece beyond that.", "latex": "" },
-              { "explanation": "So 5/4 sits one fourth to the right of 1.", "latex": "" }
+              {
+                "explanation": "Four fourths get you exactly to 1.",
+                "latex": ""
+              },
+              {
+                "explanation": "The fifth fourth is one more piece beyond that.",
+                "latex": ""
+              },
+              {
+                "explanation": "So 5/4 sits one fourth to the right of 1.",
+                "latex": ""
+              }
             ],
             "realWorld": "Running one full lap plus a quarter of the next one."
           },
@@ -117,9 +217,18 @@
             "question": "Order these from smallest to largest: 3/4, 1/4, 2/4.",
             "answer": "1/4, 2/4, 3/4",
             "steps": [
-              { "explanation": "All three have the same denominator, so the pieces are the same size.", "latex": "" },
-              { "explanation": "When piece size matches, more pieces means farther from 0.", "latex": "" },
-              { "explanation": "Counting up the numerators gives 1/4, then 2/4, then 3/4.", "latex": "" }
+              {
+                "explanation": "All three have the same denominator, so the pieces are the same size.",
+                "latex": ""
+              },
+              {
+                "explanation": "When piece size matches, more pieces means farther from 0.",
+                "latex": ""
+              },
+              {
+                "explanation": "Counting up the numerators gives 1/4, then 2/4, then 3/4.",
+                "latex": ""
+              }
             ],
             "realWorld": "Three water bottles filled to different quarter marks, lined up shortest to tallest."
           }
@@ -135,20 +244,68 @@
       "timestamp": "2026-07-21T02:00:04.000Z",
       "data": {
         "categories": [
-          { "id": "fr-less", "label": "Less than 1/2", "color": "bg-sky-500" },
-          { "id": "fr-equal", "label": "Equal to 1/2", "color": "bg-amber-500" },
-          { "id": "fr-more", "label": "Greater than 1/2", "color": "bg-emerald-500" }
+          {
+            "id": "fr-less",
+            "label": "Less than 1/2",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "fr-equal",
+            "label": "Equal to 1/2",
+            "color": "bg-amber-500"
+          },
+          {
+            "id": "fr-more",
+            "label": "Greater than 1/2",
+            "color": "bg-emerald-500"
+          }
         ],
         "items": [
-          { "id": "fr1", "content": "1/4", "categoryId": "fr-less" },
-          { "id": "fr2", "content": "2/4", "categoryId": "fr-equal" },
-          { "id": "fr3", "content": "3/4", "categoryId": "fr-more" },
-          { "id": "fr4", "content": "1/8", "categoryId": "fr-less" },
-          { "id": "fr5", "content": "4/8", "categoryId": "fr-equal" },
-          { "id": "fr6", "content": "7/8", "categoryId": "fr-more" },
-          { "id": "fr7", "content": "1/3", "categoryId": "fr-less" },
-          { "id": "fr8", "content": "2/3", "categoryId": "fr-more" },
-          { "id": "fr9", "content": "3/6", "categoryId": "fr-equal" }
+          {
+            "id": "fr1",
+            "content": "1/4",
+            "categoryId": "fr-less"
+          },
+          {
+            "id": "fr2",
+            "content": "2/4",
+            "categoryId": "fr-equal"
+          },
+          {
+            "id": "fr3",
+            "content": "3/4",
+            "categoryId": "fr-more"
+          },
+          {
+            "id": "fr4",
+            "content": "1/8",
+            "categoryId": "fr-less"
+          },
+          {
+            "id": "fr5",
+            "content": "4/8",
+            "categoryId": "fr-equal"
+          },
+          {
+            "id": "fr6",
+            "content": "7/8",
+            "categoryId": "fr-more"
+          },
+          {
+            "id": "fr7",
+            "content": "1/3",
+            "categoryId": "fr-less"
+          },
+          {
+            "id": "fr8",
+            "content": "2/3",
+            "categoryId": "fr-more"
+          },
+          {
+            "id": "fr9",
+            "content": "3/6",
+            "categoryId": "fr-equal"
+          }
         ]
       },
       "meta": "3 buckets • 9 fractions • benchmark reasoning"
@@ -234,8 +391,12 @@
           }
         ],
         "reflections": [
-          { "text": "Where do you see fractions outside of math class? Name two real places." },
-          { "text": "Which was easier for you: thinking of fractions as slices or as places on a line? Why?" }
+          {
+            "text": "Where do you see fractions outside of math class? Name two real places."
+          },
+          {
+            "text": "Which was easier for you: thinking of fractions as slices or as places on a line? Why?"
+          }
         ]
       },
       "meta": "5 MCQ + 2 short answer • Q3 is the classic reversal"
@@ -248,16 +409,61 @@
       "data": {
         "mode": "list",
         "items": [
-          { "text": "The denominator ____ tells me the whole was cut into ____ equal pieces." },
-          { "text": "To find ____ on the number line, I start at 0 and walk ____ pieces." },
-          { "text": "____ and ____ are equivalent because ____." },
-          { "text": "I know ____ is bigger than ____ because ____." },
-          { "text": "When the denominator gets bigger, each piece gets ____, because ____." },
-          { "text": "A fraction is a number because ____." }
+          {
+            "text": "The denominator ____ tells me the whole was cut into ____ equal pieces."
+          },
+          {
+            "text": "To find ____ on the number line, I start at 0 and walk ____ pieces."
+          },
+          {
+            "text": "____ and ____ are equivalent because ____."
+          },
+          {
+            "text": "I know ____ is bigger than ____ because ____."
+          },
+          {
+            "text": "When the denominator gets bigger, each piece gets ____, because ____."
+          },
+          {
+            "text": "A fraction is a number because ____."
+          }
         ],
         "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Mathematician |\n|---|---|---|---|\n| Vocabulary | Says top and bottom number | Uses numerator or denominator | Uses both terms correctly every time |\n| Reasoning | States the answer only | Gives one reason | Explains using pieces or the number line |\n| Representation | No drawing | Draws a line | Draws a labeled line that matches the explanation |"
       },
       "meta": "6 frames • rubric • math talk"
+    },
+    {
+      "id": "fr-faq",
+      "type": "faq",
+      "title": "Fraction Questions Kids Actually Ask",
+      "timestamp": "2026-07-21T02:00:07.000Z",
+      "data": [
+        {
+          "question": "Why do we even need fractions? 🤷",
+          "answer": "Because almost nothing in real life comes in whole numbers. Half an hour, three-quarters of a cup, a quarter mile. Whole numbers alone cannot measure the world."
+        },
+        {
+          "question": "Is 1/2 the same as 0.5?",
+          "answer": "Yes! Same location on the number line, two ways of writing it. Decimals are just fractions where the denominator is always 10, 100, 1000, and so on."
+        },
+        {
+          "question": "Can the top number be bigger than the bottom? 🤔",
+          "answer": "Absolutely. 5/4 just means you walked five fourth-sized steps, which takes you past 1. Those are called improper fractions, though there is nothing improper about them."
+        },
+        {
+          "question": "Why does my brain say 1/8 is bigger than 1/4?",
+          "answer": "Because 8 is bigger than 4, and your brain is pattern-matching to whole numbers. It is the single most common fraction mistake — which is why the number line is worth drawing every time."
+        },
+        {
+          "question": "What is the biggest fraction between 0 and 1?",
+          "answer": "There is no biggest one, and that is the wild part. You can always get closer to 1: 99/100, then 999/1000, forever. Between any two fractions there is always another."
+        },
+        {
+          "question": "Do fractions go on the negative side of the number line too?",
+          "answer": "They do — negative one-half sits exactly as far left of 0 as one-half sits right of it. You will work with those more in later grades."
+        }
+      ],
+      "meta": "6 questions • includes the infinity surprise"
     }
   ]
 }

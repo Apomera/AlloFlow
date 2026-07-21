@@ -18,12 +18,33 @@
       "title": "Your Mission: Say It Sideways",
       "timestamp": "2026-07-20T03:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nWriters almost never say things the plain way. \"I was nervous\" is true, but \"my stomach was a washing machine on spin cycle\" is *felt*. Today you learn the tools — then use them.\n\n1. Read **The Sideways Sentence** and watch for the five tools in action.\n2. Learn the terms in the **Glossary**, then win the **Crossword**.\n3. Sort the examples in **Name That Tool** — some are trickier than they look.\n4. Take the quiz — it asks you to explain MEANING, not just name types.\n5. Use the **Sentence Frames** to write your own. This is the real work.\n6. Read the FAQ if you are wondering where the weird idioms come from.\n\nChallenge: your last frame asks for an original metaphor about school. Make it one nobody has written before. ✍️🎭",
+        "body": "**Due:** (your teacher will tell you)\n\nWriters almost never say things the plain way. \"I was nervous\" is true, but \"my stomach was a washing machine on spin cycle\" is *felt*. Today you learn the tools — then use them.\n\n1. Read **The Sideways Sentence** and watch for the five tools in action.\n2. Learn the terms in the **Glossary**, then win the **Crossword**.\n3. Keep the **Say It Sideways** chart nearby — it holds all five tools with an example each.\n4. Sort the examples in **Name That Tool** — some are trickier than they look.\n5. Take the quiz — it asks you to explain MEANING, not just name types.\n6. Use the **Sentence Frames** to write your own. This is the real work.\n7. Read the FAQ if you are wondering where the weird idioms come from.\n\nChallenge: your last frame asks for an original metaphor about school. Make it one nobody has written before. ✍️🎭",
         "objectives": [
-          { "id": "fl-goal-crossword", "label": "Win the Crossword", "kind": "game", "gameType": "crossword", "resourceRef": "fl-glossary" },
-          { "id": "fl-goal-bingo", "label": "Win a round of Bingo", "kind": "game", "gameType": "bingo", "resourceRef": "fl-glossary" },
-          { "id": "fl-goal-xp", "label": "Earn 30 XP", "kind": "xp", "amount": 30 },
-          { "id": "fl-goal-original", "label": "I wrote an original metaphor nobody has used before", "kind": "manual" }
+          {
+            "id": "fl-goal-crossword",
+            "label": "Win the Crossword",
+            "kind": "game",
+            "gameType": "crossword",
+            "resourceRef": "fl-glossary"
+          },
+          {
+            "id": "fl-goal-bingo",
+            "label": "Win a round of Bingo",
+            "kind": "game",
+            "gameType": "bingo",
+            "resourceRef": "fl-glossary"
+          },
+          {
+            "id": "fl-goal-xp",
+            "label": "Earn 30 XP",
+            "kind": "xp",
+            "amount": 30
+          },
+          {
+            "id": "fl-goal-original",
+            "label": "I wrote an original metaphor nobody has used before",
+            "kind": "manual"
+          }
         ]
       },
       "meta": "5th Grade • 4 goals • writing-focused"
@@ -43,18 +64,116 @@
       "title": "Tools of the Sideways Sentence",
       "timestamp": "2026-07-20T03:00:02.000Z",
       "data": [
-        { "term": "Simile", "def": "A comparison of two unlike things using the word like or as.", "tier": "Domain-Specific" },
-        { "term": "Metaphor", "def": "A comparison that says one thing IS another, with no like or as.", "tier": "Domain-Specific" },
-        { "term": "Personification", "def": "Giving human qualities or actions to something that is not human.", "tier": "Domain-Specific" },
-        { "term": "Hyperbole", "def": "Exaggeration so extreme that nobody would take it literally.", "tier": "Domain-Specific" },
-        { "term": "Idiom", "def": "A common phrase whose meaning cannot be figured out from the individual words.", "tier": "Domain-Specific" },
-        { "term": "Literal", "def": "Meaning exactly what the words say, with no comparison or exaggeration.", "tier": "Academic" },
-        { "term": "Figurative", "def": "Meaning something different from the exact words, usually through comparison.", "tier": "Academic" },
-        { "term": "Imagery", "def": "Language that creates a picture or a feeling in the reader's mind.", "tier": "Academic" },
-        { "term": "Compare", "def": "To show how two things are alike.", "tier": "Academic" },
-        { "term": "Symbol", "def": "Something that stands for a bigger idea, like a dove standing for peace.", "tier": "Academic" }
+        {
+          "term": "Simile",
+          "def": "A comparison of two unlike things using the word like or as.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Metaphor",
+          "def": "A comparison that says one thing IS another, with no like or as.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Personification",
+          "def": "Giving human qualities or actions to something that is not human.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Hyperbole",
+          "def": "Exaggeration so extreme that nobody would take it literally.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Idiom",
+          "def": "A common phrase whose meaning cannot be figured out from the individual words.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Literal",
+          "def": "Meaning exactly what the words say, with no comparison or exaggeration.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Figurative",
+          "def": "Meaning something different from the exact words, usually through comparison.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Imagery",
+          "def": "Language that creates a picture or a feeling in the reader's mind.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Compare",
+          "def": "To show how two things are alike.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Symbol",
+          "def": "Something that stands for a bigger idea, like a dove standing for peace.",
+          "tier": "Academic"
+        }
       ],
       "meta": "10 terms • Tiered"
+    },
+    {
+      "id": "fl-anchor",
+      "type": "anchor-chart",
+      "title": "Five Ways to Say It Sideways",
+      "timestamp": "2026-07-20T03:00:02.500Z",
+      "data": {
+        "chartType": "reference",
+        "title": "SAY IT SIDEWAYS",
+        "sections": [
+          {
+            "label": "SIMILE",
+            "bullets": [
+              "Compares using LIKE or AS",
+              "\"as loud as a stadium\"",
+              "The comparison wears a label"
+            ],
+            "iconPrompt": "an equals sign between two different objects"
+          },
+          {
+            "label": "METAPHOR",
+            "bullets": [
+              "Says one thing IS another",
+              "\"the hallway was a stadium\"",
+              "Stronger — it does not apologize"
+            ],
+            "iconPrompt": "two objects merging into one"
+          },
+          {
+            "label": "PERSONIFICATION",
+            "bullets": [
+              "Gives human actions to non-human things",
+              "\"the locker groaned\"",
+              "Listen for a verb only people do"
+            ],
+            "iconPrompt": "a door with a friendly face"
+          },
+          {
+            "label": "HYPERBOLE",
+            "bullets": [
+              "Exaggeration nobody believes",
+              "\"told you a million times\"",
+              "The feeling is the point, not the number"
+            ],
+            "iconPrompt": "a tiny backpack drawn as a giant boulder"
+          },
+          {
+            "label": "IDIOM",
+            "bullets": [
+              "Meaning you cannot build from the words",
+              "\"bite the bullet\"",
+              "You have to learn these, not reason them"
+            ],
+            "iconPrompt": "a puzzled face beside a bullet and a tooth"
+          }
+        ]
+      },
+      "meta": "5 tools • classroom reference chart"
     },
     {
       "id": "fl-sort",
@@ -63,24 +182,88 @@
       "timestamp": "2026-07-20T03:00:03.000Z",
       "data": {
         "categories": [
-          { "id": "f-simile", "label": "Simile (uses like/as)", "color": "bg-sky-500" },
-          { "id": "f-metaphor", "label": "Metaphor (says it IS)", "color": "bg-indigo-500" },
-          { "id": "f-person", "label": "Personification", "color": "bg-emerald-500" },
-          { "id": "f-hyper", "label": "Hyperbole", "color": "bg-amber-500" }
+          {
+            "id": "f-simile",
+            "label": "Simile (uses like/as)",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "f-metaphor",
+            "label": "Metaphor (says it IS)",
+            "color": "bg-indigo-500"
+          },
+          {
+            "id": "f-person",
+            "label": "Personification",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "f-hyper",
+            "label": "Hyperbole",
+            "color": "bg-amber-500"
+          }
         ],
         "items": [
-          { "id": "f1", "content": "Her laugh was like a bell in an empty hallway", "categoryId": "f-simile" },
-          { "id": "f2", "content": "The classroom was a zoo after the fire drill", "categoryId": "f-metaphor" },
-          { "id": "f3", "content": "The wind shoved the door shut behind him", "categoryId": "f-person" },
-          { "id": "f4", "content": "This backpack weighs a thousand pounds", "categoryId": "f-hyper" },
-          { "id": "f5", "content": "My brother eats as slowly as a glacier moves", "categoryId": "f-simile" },
-          { "id": "f6", "content": "Time is a thief", "categoryId": "f-metaphor" },
-          { "id": "f7", "content": "The alarm clock screamed at me", "categoryId": "f-person" },
-          { "id": "f8", "content": "I have been waiting here for an eternity", "categoryId": "f-hyper" },
-          { "id": "f9", "content": "The stars winked at the sleeping town", "categoryId": "f-person" },
-          { "id": "f10", "content": "Fear is a shadow that follows you home", "categoryId": "f-metaphor" },
-          { "id": "f11", "content": "His hands were as cold as pond ice", "categoryId": "f-simile" },
-          { "id": "f12", "content": "I could sleep for a hundred years", "categoryId": "f-hyper" }
+          {
+            "id": "f1",
+            "content": "Her laugh was like a bell in an empty hallway",
+            "categoryId": "f-simile"
+          },
+          {
+            "id": "f2",
+            "content": "The classroom was a zoo after the fire drill",
+            "categoryId": "f-metaphor"
+          },
+          {
+            "id": "f3",
+            "content": "The wind shoved the door shut behind him",
+            "categoryId": "f-person"
+          },
+          {
+            "id": "f4",
+            "content": "This backpack weighs a thousand pounds",
+            "categoryId": "f-hyper"
+          },
+          {
+            "id": "f5",
+            "content": "My brother eats as slowly as a glacier moves",
+            "categoryId": "f-simile"
+          },
+          {
+            "id": "f6",
+            "content": "Time is a thief",
+            "categoryId": "f-metaphor"
+          },
+          {
+            "id": "f7",
+            "content": "The alarm clock screamed at me",
+            "categoryId": "f-person"
+          },
+          {
+            "id": "f8",
+            "content": "I have been waiting here for an eternity",
+            "categoryId": "f-hyper"
+          },
+          {
+            "id": "f9",
+            "content": "The stars winked at the sleeping town",
+            "categoryId": "f-person"
+          },
+          {
+            "id": "f10",
+            "content": "Fear is a shadow that follows you home",
+            "categoryId": "f-metaphor"
+          },
+          {
+            "id": "f11",
+            "content": "His hands were as cold as pond ice",
+            "categoryId": "f-simile"
+          },
+          {
+            "id": "f12",
+            "content": "I could sleep for a hundred years",
+            "categoryId": "f-hyper"
+          }
         ]
       },
       "meta": "4 tools • 12 examples • 3 of each"
@@ -166,8 +349,12 @@
           }
         ],
         "reflections": [
-          { "text": "What is a phrase your family says that would sound strange to someone outside your family? What does it really mean?" },
-          { "text": "Describe your mood this morning using a metaphor — no explaining allowed, just the image." }
+          {
+            "text": "What is a phrase your family says that would sound strange to someone outside your family? What does it really mean?"
+          },
+          {
+            "text": "Describe your mood this morning using a metaphor — no explaining allowed, just the image."
+          }
         ]
       },
       "meta": "5 MCQ + 2 short answer • meaning over labeling"
@@ -180,13 +367,27 @@
       "data": {
         "mode": "list",
         "items": [
-          { "text": "The classroom was as ____ as ____." },
-          { "text": "When I am nervous, my ____ feels like ____." },
-          { "text": "The ____ groaned/whispered/danced when ____. (personification)" },
-          { "text": "I have told you ____ times! (hyperbole)" },
-          { "text": "My favorite place is ____ — it IS ____. (metaphor, no like or as)" },
-          { "text": "An idiom my family uses is ____, and it really means ____." },
-          { "text": "Original challenge: School is ____. (a metaphor nobody has written before)" }
+          {
+            "text": "The classroom was as ____ as ____."
+          },
+          {
+            "text": "When I am nervous, my ____ feels like ____."
+          },
+          {
+            "text": "The ____ groaned/whispered/danced when ____. (personification)"
+          },
+          {
+            "text": "I have told you ____ times! (hyperbole)"
+          },
+          {
+            "text": "My favorite place is ____ — it IS ____. (metaphor, no like or as)"
+          },
+          {
+            "text": "An idiom my family uses is ____, and it really means ____."
+          },
+          {
+            "text": "Original challenge: School is ____. (a metaphor nobody has written before)"
+          }
         ],
         "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Word Artist |\n|---|---|---|---|\n| Tool accuracy | Frame filled but tool is mismatched | Correct tool for each frame | Every tool used correctly and deliberately |\n| Originality | Uses a familiar phrase (busy as a bee) | Mostly fresh comparisons | Comparisons I have never read before |\n| Sensory power | Tells the feeling | Shows some image | Creates a picture, sound, or sensation I can feel |"
       },
@@ -198,12 +399,30 @@
       "title": "Where Do Weird Sayings Come From?",
       "timestamp": "2026-07-20T03:00:06.000Z",
       "data": [
-        { "question": "Why do we say 'it's raining cats and dogs'? 🐱🐶", "answer": "Nobody knows for sure, which is honest and a little unsatisfying. The best guesses involve heavy storms washing debris (and unlucky animals) through old city streets. Historians disagree, so treat any confident answer with suspicion." },
-        { "question": "Is 'break a leg' really about wishing someone luck?", "answer": "Yes — theater people thought saying 'good luck' was unlucky, so they said the opposite. Many idioms come from superstitions like this." },
-        { "question": "Can a metaphor be wrong? 🤨", "answer": "It can be *bad* — confusing, or comparing things with nothing in common. 'My homework is a refrigerator' does not click, because we cannot find the connection. Good metaphors share something real." },
-        { "question": "Do other languages have the same idioms?", "answer": "Almost never the same ones! Spanish speakers might say it is raining jugs; German speakers, that it is raining young dogs. Same idea, completely different picture." },
-        { "question": "Is hyperbole the same as lying?", "answer": "No, because nobody is meant to believe it. If you say a backpack weighs a thousand pounds, no one goes looking for a scale. A lie is meant to be believed; hyperbole is meant to be felt." },
-        { "question": "Why do teachers want us to use this stuff so much?", "answer": "Because it is evidence you understand something well enough to compare it to something else. Anyone can define nervous. Only someone who has *felt* it invents the washing machine." }
+        {
+          "question": "Why do we say 'it's raining cats and dogs'? 🐱🐶",
+          "answer": "Nobody knows for sure, which is honest and a little unsatisfying. The best guesses involve heavy storms washing debris (and unlucky animals) through old city streets. Historians disagree, so treat any confident answer with suspicion."
+        },
+        {
+          "question": "Is 'break a leg' really about wishing someone luck?",
+          "answer": "Yes — theater people thought saying 'good luck' was unlucky, so they said the opposite. Many idioms come from superstitions like this."
+        },
+        {
+          "question": "Can a metaphor be wrong? 🤨",
+          "answer": "It can be *bad* — confusing, or comparing things with nothing in common. 'My homework is a refrigerator' does not click, because we cannot find the connection. Good metaphors share something real."
+        },
+        {
+          "question": "Do other languages have the same idioms?",
+          "answer": "Almost never the same ones! Spanish speakers might say it is raining jugs; German speakers, that it is raining young dogs. Same idea, completely different picture."
+        },
+        {
+          "question": "Is hyperbole the same as lying?",
+          "answer": "No, because nobody is meant to believe it. If you say a backpack weighs a thousand pounds, no one goes looking for a scale. A lie is meant to be believed; hyperbole is meant to be felt."
+        },
+        {
+          "question": "Why do teachers want us to use this stuff so much?",
+          "answer": "Because it is evidence you understand something well enough to compare it to something else. Anyone can define nervous. Only someone who has *felt* it invents the washing machine."
+        }
       ],
       "meta": "6 questions • etymology + honest uncertainty"
     }
