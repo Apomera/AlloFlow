@@ -2064,13 +2064,7 @@ const d = labToolData.solarSystem || {};
 
             } else {
 
-              const s = document.createElement('script');
-
-              s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-
-              s.onload = function () { initScene(window.THREE); };
-
-              document.head.appendChild(s);
+              window.StemLab.ensureThree({ orbit: false }).then(function () { initScene(window.THREE); }).catch(function () { console.error('[SolarSystem] Three.js failed to load'); });
 
             }
 
@@ -14167,13 +14161,7 @@ const d = labToolData.solarSystem || {};
 
                       else {
 
-                        var s = document.createElement('script');
-
-                        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-
-                        s.onload = function () { doInit(window.THREE); };
-
-                        document.head.appendChild(s);
+                        window.StemLab.ensureThree({ orbit: false }).then(function () { doInit(window.THREE); }).catch(function () { console.error('[SolarSystem] Three.js failed to load'); });
 
                       }
 

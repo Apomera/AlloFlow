@@ -72,13 +72,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
   // ─── Three.js loader (shared bootstrap) ───
   function ensureThreeJS(onReady, onError) {
-    if (window.THREE) { onReady(); return; }
-    var s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-    s.async = true;
-    s.onload = function() { onReady(); };
-    s.onerror = function() { console.error('[RaptorHunt] Three.js failed to load'); if (onError) onError(); };
-    document.head.appendChild(s);
+    // Shared resilient loader: multi-CDN fallback + timeout (host provides it).
+    window.StemLab.ensureThree({ orbit: false }).then(function () { onReady(); }).catch(function () { console.error('[RaptorHunt] Three.js failed to load'); if (onError) onError(); });
   }
 
   // ───────────────────────────────────────────────────────────

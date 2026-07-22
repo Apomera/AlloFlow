@@ -108,20 +108,9 @@ window.StemLab = window.StemLab || {
 
   // ── Three.js loader (shared with archStudio in monolith, self-contained here) ──
   function ensureThreeJS(onReady, onError) {
-    if (window.THREE) { onReady(); return; }
-    var s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-    s.async = true;
-    s.onload = function() {
-      var s2 = document.createElement('script');
-      s2.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js';
-      s2.async = true;
-      s2.onload = function() { onReady(); };
-      s2.onerror = function() { console.warn('[GeoSandbox] OrbitControls failed, proceeding without'); onReady(); };
-      document.head.appendChild(s2);
-    };
-    s.onerror = function() { console.error('[GeoSandbox] Three.js failed to load'); if (onError) onError(); };
-    document.head.appendChild(s);
+    // Shared resilient loader: multi-CDN fallback + timeout; OrbitControls
+    // stays non-fatal exactly like the old inline chain.
+    window.StemLab.ensureThree({ orbit: true }).then(function () { onReady(); }).catch(function () { console.error('[GeoSandbox] Three.js failed to load'); if (onError) onError(); });
   }
 
   // Lazy-load the shared Prim3D sculpting primitive (window.AlloModules.Prim3D) —

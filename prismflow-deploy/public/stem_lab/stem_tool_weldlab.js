@@ -2663,16 +2663,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           if (window.THREE) {
             init();
           } else {
-            var s = document.createElement('script');
-            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-            s.async = true;
-            s.onload = function () { if (!cancelled) init(); };
-            s.onerror = function () {
+            // Shared resilient loader: multi-CDN fallback + timeout (host provides it).
+            window.StemLab.ensureThree({ orbit: false }).then(function () { if (!cancelled) init(); }).catch(function () {
               if (cancelled) return;
               console.error('[WeldLab] Three.js failed to load');
               setStatus('error');
-            };
-            document.head.appendChild(s);
+            });
           }
 
           return function () {

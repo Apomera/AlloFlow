@@ -9673,16 +9673,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           setThreeLoaded(true);
           return;
         }
-        var script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-        script.async = true;
-        script.onload = function() {
+        // Shared resilient loader: multi-CDN fallback + timeout (host provides it).
+        window.StemLab.ensureThree({ orbit: false }).then(function () {
           setThreeLoaded(true);
-        };
-        script.onerror = function(err) {
+        }).catch(function (err) {
           console.error("Failed to load Three.js", err);
-        };
-        document.head.appendChild(script);
+        });
       }, []);
 
       var geodeticToLocal = function(lat, lon, alt) {

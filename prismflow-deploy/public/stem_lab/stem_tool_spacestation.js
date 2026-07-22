@@ -489,11 +489,8 @@
         }
         if (window.THREE) { doInit(window.THREE); }
         else {
-          var s = document.createElement('script');
-          s.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
-          s.onload = function () { if (window.THREE && cv.isConnected) doInit(window.THREE); else cv._issInit = false; };
-          s.onerror = function () { cv._issInit = false; };
-          document.head.appendChild(s);
+          // Shared resilient loader: multi-CDN fallback + timeout (host provides it).
+          window.StemLab.ensureThree({ orbit: false }).then(function () { if (window.THREE && cv.isConnected) doInit(window.THREE); else cv._issInit = false; }).catch(function () { cv._issInit = false; });
         }
       }
 

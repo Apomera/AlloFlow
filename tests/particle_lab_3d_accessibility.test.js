@@ -76,23 +76,52 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(a.equals(b)).toBe(true);
   });
 
-  it('loads its 3D engine resiliently: CDN fallback, timeout, error UI with Retry', () => {
+  it('loads its 3D engine through the shared resilient loader with error UI + Retry', () => {
     TOOL_PATHS.forEach((filePath) => {
       const source = readFileSync(resolve(process.cwd(), filePath), 'utf8');
-      // fallback CDNs for both the core engine and camera controls
-      expect(source).toContain("cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js");
-      expect(source).toContain("unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js");
-      // per-attempt timeout so a black-holed request cannot hang the spinner
-      expect(source).toContain('var timer = window.setTimeout(function () { finish(false); }, 20000)');
-      // failed tags are removed (their events never re-fire)
-      expect(source).toContain('if (script.parentNode) script.parentNode.removeChild(script)');
+      // one canonical loader: the host's ensureThree (multi-CDN + timeout)
+      expect(source).toContain('window.StemLab.ensureThree({ orbit: true, orbitRequired: true })');
       // real error state + Retry instead of an eternal 'Loading Three.js'
       expect(source).toContain("'3D engine unavailable'");
       expect(source).toContain('setLoadAttempt(function (a) { return a + 1; })');
       expect(source).toContain('School network filters sometimes block CDNs');
-      // the old no-onerror single-shot loader is gone
+      // the old no-onerror single-shot loader is gone, URLs and all
       expect(source).not.toContain('script.onload = loadOrbit');
+      expect(source).not.toContain('three.min.js');
     });
+  });
+});
+
+describe('STEM Lab Three.js loading — single canonical path (sweep)', () => {
+  const { readdirSync } = require('node:fs');
+
+  it('no tool loads Three.js on its own: only the host module references the CDN', () => {
+    const toolFiles = readdirSync(resolve(process.cwd(), 'stem_lab'))
+      .filter((f) => f.startsWith('stem_tool_') && f.endsWith('.js'));
+    expect(toolFiles.length).toBeGreaterThan(100); // the sweep really scanned the lab
+    const offenders = toolFiles.filter((f) =>
+      readFileSync(resolve(process.cwd(), 'stem_lab', f), 'utf8').includes('three.min.js'));
+    expect(offenders).toEqual([]);
+    // the host keeps exactly one canonical reference (inside ensureThree)
+    const moduleSource = readFileSync(resolve(process.cwd(), 'stem_lab/stem_lab_module.js'), 'utf8');
+    expect((moduleSource.match(/three\.min\.js/g) || []).length).toBe(2); // cdnjs + jsDelivr fallback
+    expect(moduleSource).toContain('ensureThree: function (opts)');
+  });
+
+  it('every converted tool calls the shared loader', () => {
+    const converted = ['aquaculture', 'artstudio', 'cephalopodlab', 'coasterlab', 'dinolab',
+      'fisherlab', 'flightsim', 'galaxy', 'geo', 'geosandbox', 'molecule', 'moonmission',
+      'particlelab3d', 'raptorhunt', 'roadready', 'solarsystem', 'spacestation', 'weldlab'];
+    converted.forEach((slug) => {
+      const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_' + slug + '.js'), 'utf8');
+      expect(source, slug + ' should use the shared loader').toContain('window.StemLab.ensureThree(');
+    });
+  });
+
+  it('the test harness stubs the loader API so tool effects cannot crash under jsdom', () => {
+    const harness = readFileSync(resolve(process.cwd(), 'tests/helpers/stem_widgets_smoke_harness.js'), 'utf8');
+    expect(harness).toContain('loadScriptResilient: function () { return new Promise(function () {}); }');
+    expect(harness).toContain('ensureThree: function () { return new Promise(function () {}); }');
   });
 });
 
@@ -114,7 +143,8 @@ describe('STEM Lab host 3D loader resilience (stem_lab_module.js)', () => {
 
   it('the host Three.js path uses the helper with fallback CDNs and stays retryable', () => {
     const source = readFileSync(resolve(process.cwd(), MODULE_PATHS[0]), 'utf8');
-    expect(source).toContain("window.StemLab.loadScriptResilient(\n          ['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js']");
+    expect(source).toContain('window.StemLab.ensureThree({ orbit: true, failMessage:');
+    expect(source).toContain('ensureThree: function (opts)');
     expect(source).toContain("cacheKey: 'three-core'");
     expect(source).toContain("cacheKey: 'three-orbit'");
     // OrbitControls failure stays non-fatal for host-driven tools

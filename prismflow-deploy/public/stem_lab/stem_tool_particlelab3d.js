@@ -7,8 +7,6 @@
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
   if (window.StemLab.isRegistered && window.StemLab.isRegistered('particleLab3d')) return;
 
-  var THREE_URL = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-  var ORBIT_URL = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js';
 
   function seeded(seed) {
     var value = (seed >>> 0) || 1;
@@ -391,49 +389,16 @@
         });
       }
 
-      // Resilient engine loader: try each CDN in order with a timeout per
-      // attempt (a filtered school network can black-hole a request — neither
-      // load nor error ever fires), remove failed tags, and surface a real
-      // error with a Retry instead of spinning forever. The old loader had no
-      // onerror at all: one CDN hiccup froze 'Loading Three.js…' permanently.
-      function loadEngineScript(urls, index, check, onDone) {
-        if (check()) { onDone(true); return; }
-        if (index >= urls.length) { onDone(false); return; }
-        var script = document.createElement('script');
-        var settled = false;
-        var timer = window.setTimeout(function () { finish(false); }, 20000);
-        function finish(ok) {
-          if (settled) return;
-          settled = true;
-          window.clearTimeout(timer);
-          if (ok && check()) { onDone(true); return; }
-          if (script.parentNode) script.parentNode.removeChild(script);
-          loadEngineScript(urls, index + 1, check, onDone);
-        }
-        script.src = urls[index];
-        script.async = true;
-        script.crossOrigin = 'anonymous';
-        script.onload = function () { finish(true); };
-        script.onerror = function () { finish(false); };
-        document.head.appendChild(script);
-      }
+      // Engine load via the shared resilient loader (multi-CDN + per-attempt
+      // timeout, host-provided) — surfacing a real error with Retry instead of
+      // spinning forever. OrbitControls is required (the chamber constructs it
+      // unconditionally).
       useEffect(function () {
         if (ready) return;
         var cancelled = false;
-        loadEngineScript([THREE_URL, 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js'], 0,
-          function () { return !!window.THREE; },
-          function (coreOk) {
-            if (cancelled) return;
-            if (!coreOk) { setLoadError('The 3D engine could not be loaded from any source. School network filters sometimes block CDNs — press Retry, or check the connection.'); return; }
-            loadEngineScript([ORBIT_URL, 'https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js'], 0,
-              function () { return !!(window.THREE && window.THREE.OrbitControls); },
-              function (orbitOk) {
-                if (cancelled) return;
-                if (!orbitOk) { setLoadError('The 3D camera controls could not be loaded. Press Retry to try again.'); return; }
-                setLoadError('');
-                setReady(true);
-              });
-          });
+        window.StemLab.ensureThree({ orbit: true, orbitRequired: true })
+          .then(function () { if (!cancelled) { setLoadError(""); setReady(true); } })
+          .catch(function () { if (!cancelled) setLoadError("The 3D engine could not be loaded from any source. School network filters sometimes block CDNs — press Retry, or check the connection."); });
         return function () { cancelled = true; };
       }, [ready, loadAttempt]);
 

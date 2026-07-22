@@ -1207,10 +1207,7 @@ var d = labToolData || {};
             }
             if (window.THREE) { addGlobeClouds(); }
             else {
-              var threeScript = document.createElement('script');
-              threeScript.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
-              threeScript.onload = addGlobeClouds;
-              document.head.appendChild(threeScript);
+              window.StemLab.ensureThree({ orbit: false }).then(addGlobeClouds).catch(function () { console.warn('[Geo] Three.js failed to load for globe clouds'); });
             }
 
             globeRef.current = globe;

@@ -189,6 +189,26 @@
           if (cacheKey) cache[cacheKey] = promise;
           return promise;
         },
+        // One canonical way to get Three.js r128 (+ optionally OrbitControls):
+        // resilient multi-CDN load, shared promise cache across every 3D tool.
+        // Resolves with window.THREE; rejects only when no CDN could deliver
+        // the core (orbit failures are non-fatal unless orbitRequired).
+        ensureThree: function (opts) {
+          opts = opts || {};
+          var self = this;
+          var wantOrbit = opts.orbit === true;
+          if (window.THREE && (!wantOrbit || window.THREE.OrbitControls)) return Promise.resolve(window.THREE);
+          var core = window.THREE ? Promise.resolve(true) : self.loadScriptResilient(
+            ['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js'],
+            { cacheKey: 'three-core', check: function () { return !!window.THREE; }, failMessage: opts.failMessage || 'The 3D engine could not load. School network filters sometimes block CDNs — retry, or check the connection.' });
+          return core.then(function () {
+            if (!wantOrbit || window.THREE.OrbitControls) return true;
+            var orbit = self.loadScriptResilient(
+              ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js', 'https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js'],
+              { cacheKey: 'three-orbit', check: function () { return !!(window.THREE && window.THREE.OrbitControls); } });
+            return opts.orbitRequired ? orbit : orbit.catch(function () { console.warn('[StemLab] OrbitControls failed to load, proceeding without orbit controls'); return true; });
+          }).then(function () { return window.THREE; });
+        },
         registerTool: function(id, config) {
           config.id = id;
           config.ready = config.ready !== false;
@@ -1827,22 +1847,14 @@
         // camera was never aimed (scene stuck in a corner, no orbit). If it's
         // missing, load it first, THEN mark ready.
         if (window.THREE && window.THREE.OrbitControls) { setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); }); return; }
-        // Resilient path: cdnjs \u2192 jsDelivr with per-attempt timeouts (see
-        // loadScriptResilient). The promise cache doubles as an in-flight
-        // guard, so this effect re-running mid-load no longer appends
-        // duplicate script tags; a total failure clears the cache so simply
-        // re-entering the tool (or _threeAttempt bumps) retries fresh.
+        // Resilient path via the shared ensureThree (cdnjs \u2192 jsDelivr core,
+        // jsDelivr \u2192 unpkg OrbitControls, per-attempt timeouts). The promise
+        // cache doubles as an in-flight guard, so this effect re-running
+        // mid-load no longer appends duplicate script tags; a total failure
+        // clears the cache so re-entering the tool (or _threeAttempt bumps)
+        // retries fresh.
         var hadThree = !!window.THREE;
-        var corePromise = hadThree ? Promise.resolve(true) : window.StemLab.loadScriptResilient(
-          ['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js'],
-          { cacheKey: 'three-core', check: function () { return !!window.THREE; }, failMessage: 'The 3D engine could not load. School network filters sometimes block CDNs. The accessible 2D view remains available.' });
-        corePromise.then(function () {
-          if (window.THREE.OrbitControls) return true;
-          return window.StemLab.loadScriptResilient(
-            ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js', 'https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js'],
-            { cacheKey: 'three-orbit', check: function () { return !!(window.THREE && window.THREE.OrbitControls); } }
-          ).catch(function () { console.warn('[StemLab] OrbitControls failed to load, proceeding without orbit controls'); return true; });
-        }).then(function () {
+        window.StemLab.ensureThree({ orbit: true, failMessage: 'The 3D engine could not load. School network filters sometimes block CDNs. The accessible 2D view remains available.' }).then(function () {
           if (!hadThree && typeof addToast === 'function') addToast('\uD83D\uDD37 3D engine loaded', 'info');
           setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true, _threeLoadError: undefined }); });
         }).catch(function (error) {

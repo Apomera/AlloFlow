@@ -40,6 +40,11 @@ export function resetStemLab() {
       if (this._order.indexOf(id) === -1) this._order.push(id);
     },
     isRegistered: function (id) { return !!this._registry[id]; },
+    // Loader stubs matching the real host API (stem_lab_module.js). A
+    // forever-pending promise keeps tools in their loading state under jsdom —
+    // exactly what the old inline script tags did (they never load here).
+    loadScriptResilient: function () { return new Promise(function () {}); },
+    ensureThree: function () { return new Promise(function () {}); },
     getRegisteredTools: function () {
       const self = this;
       return this._order.map(function (id) { return self._registry[id]; }).filter(Boolean);

@@ -22026,11 +22026,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 setWebglError(true);
               }
             } else {
-              // Load Three.js on demand
-              var s = document.createElement('script');
-              s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-              s.async = true;
-              s.onload = function() {
+              // Load Three.js on demand (shared resilient loader: multi-CDN + timeout)
+              window.StemLab.ensureThree({ orbit: false }).then(function () {
                 try {
                   scn3d = initThreeScene();
                   threeRef.current = scn3d;
@@ -22045,12 +22042,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   console.error('[RoadReady] WebGL initialization failed', err);
                   setWebglError(true);
                 }
-              };
-              s.onerror = function() {
+              }).catch(function () {
                 console.error('[RoadReady] Three.js failed to load');
                 setWebglError(true);
-              };
-              document.head.appendChild(s);
+              });
             }
           } catch (err) {
             console.error('[RoadReady] WebGL initialization failed', err);

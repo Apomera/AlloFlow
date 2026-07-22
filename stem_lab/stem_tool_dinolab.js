@@ -5630,20 +5630,9 @@ window.StemLab = window.StemLab || {
           }
 
           function ensureThree(done) {
-            if (window.THREE) { done(window.THREE); return; }
-            var existing = document.getElementById('dinolab-three-loader');
-            if (existing) {
-              existing.addEventListener('load', function () { if (window.THREE) done(window.THREE); }, { once: true });
-              existing.addEventListener('error', function () { setStatus('3D engine failed to load. The evidence panels still work.'); }, { once: true });
-              return;
-            }
-            var script = document.createElement('script');
-            script.id = 'dinolab-three-loader';
-            script.async = true;
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-            script.onload = function () { if (window.THREE) done(window.THREE); };
-            script.onerror = function () { setStatus('3D engine failed to load. The evidence panels still work.'); };
-            document.head.appendChild(script);
+            // Shared resilient loader (multi-CDN + timeout). Replaces a local
+            // loader that re-listened on a dead script tag after failure.
+            window.StemLab.ensureThree({ orbit: false }).then(function () { done(window.THREE); }).catch(function () { setStatus('3D engine failed to load. The evidence panels still work.'); });
           }
 
           function disposeObject(obj) {
@@ -5787,11 +5776,12 @@ window.StemLab = window.StemLab || {
             model = new THREE.Group();
             scene.add(model);
 
-            var boneMat = new THREE.MeshPhongMaterial({ color: 0xf8fafc, shininess: 42 });
+            var boneMat = new THREE.MeshPhongMaterial({ color: 0xf8fafc, emissive: 0x18222f, shininess: 42 });
             var jointMat = new THREE.MeshPhongMaterial({ color: 0xfacc15, shininess: 32 });
             var anatomyCalloutMat = new THREE.MeshBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.62, depthWrite: false });
-            var bodyMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.32, shininess: 25, side: THREE.DoubleSide });
-            var headMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.44, shininess: 30 });
+            var bodyMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.28, shininess: 25, side: THREE.DoubleSide, depthWrite: false });
+            var headMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.40, shininess: 30, depthWrite: false });
+            var bodyWireMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.18, wireframe: true, depthWrite: false });
             var anatomyAccentMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.68, shininess: 38, side: THREE.DoubleSide });
             var markerMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
             var loggedMarkerMat = new THREE.MeshBasicMaterial({ color: 0x22c55e });
@@ -5851,6 +5841,29 @@ window.StemLab = window.StemLab || {
               mesh.castShadow = true;
               model.add(mesh);
               return mesh;
+            }
+            function addSoftTissueCylinder(a, b, startRadius, endRadius) {
+              if (!props.showBody) return null;
+              var dir = new THREE.Vector3().subVectors(b, a);
+              var dist = dir.length();
+              if (!dist) return null;
+              var mesh = new THREE.Mesh(new THREE.CylinderGeometry(endRadius, startRadius, dist, 14), bodyMat);
+              mesh.position.copy(a).add(b).multiplyScalar(0.5);
+              mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+              mesh.castShadow = true;
+              mesh.renderOrder = 6;
+              model.add(mesh);
+              return mesh;
+            }
+            function addBodyContour(mesh) {
+              if (!mesh || !props.showBody) return null;
+              var contour = new THREE.Mesh(mesh.geometry.clone(), bodyWireMat);
+              contour.position.copy(mesh.position);
+              contour.quaternion.copy(mesh.quaternion);
+              contour.scale.copy(mesh.scale);
+              contour.renderOrder = 9;
+              model.add(contour);
+              return contour;
             }
             function addSceneCylinder(a, b, radius, mat) {
               var dir = new THREE.Vector3().subVectors(b, a);
@@ -6013,14 +6026,19 @@ window.StemLab = window.StemLab || {
             addSceneCylinder(compassNorth, vec(compassNorth.x - compassRadius * 0.30, compassNorth.y, compassNorth.z + compassRadius * 0.42), Math.max(0.012, ht * 0.0035), surveyRopeMat);
             addSceneCylinder(compassNorth, vec(compassNorth.x + compassRadius * 0.30, compassNorth.y, compassNorth.z + compassRadius * 0.42), Math.max(0.012, ht * 0.0035), surveyRopeMat);
 
-            addEllipsoid(bodyCenter, vec(bodyLen, bodyHeight, bodyDepth), bodyMat);
-            addEllipsoid(head, vec(Math.max(0.18, len * (isSauropod ? 0.035 : 0.055)), Math.max(0.12, ht * 0.055), Math.max(0.10, ht * 0.050)), headMat);
+            var bodyShell = addEllipsoid(bodyCenter, vec(bodyLen, bodyHeight, bodyDepth), bodyMat);
+            var headShell = addEllipsoid(head, vec(Math.max(0.18, len * (isSauropod ? 0.035 : 0.055)), Math.max(0.12, ht * 0.055), Math.max(0.10, ht * 0.050)), headMat);
+            addBodyContour(bodyShell);
+            addBodyContour(headShell);
             if (props.showBody) {
+              var neckShell = addSoftTissueCylinder(shoulder, head, Math.max(0.11, bodyHeight * 0.42), Math.max(0.08, ht * 0.038));
+              addBodyContour(neckShell);
               var tailMesh = new THREE.Mesh(new THREE.CylinderGeometry(Math.max(0.04, ht * 0.025), Math.max(0.16, ht * 0.060), hip.distanceTo(tail), 14), bodyMat);
               tailMesh.position.copy(hip).add(tail).multiplyScalar(0.5);
               tailMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3().subVectors(tail, hip).normalize());
               tailMesh.castShadow = true;
               model.add(tailMesh);
+              addBodyContour(tailMesh);
 
               var cladeName = String(dn.clade || '');
               if (/Ceratops/i.test(cladeName)) {
@@ -6135,7 +6153,11 @@ window.StemLab = window.StemLab || {
               addBone(vec(x, top.y, z), knee, Math.max(0.035, ht * 0.012));
               addBone(knee, foot, Math.max(0.030, ht * 0.010));
               addJoint(knee, Math.max(0.050, ht * 0.016));
-              if (props.showBody) addEllipsoid(foot, vec(Math.max(0.12, len * 0.018), Math.max(0.035, ht * 0.016), Math.max(0.04, ht * 0.018)), headMat);
+              if (props.showBody) {
+                addBodyContour(addSoftTissueCylinder(vec(x, top.y, z), knee, Math.max(0.06, ht * 0.030), Math.max(0.045, ht * 0.022)));
+                addBodyContour(addSoftTissueCylinder(knee, foot, Math.max(0.045, ht * 0.022), Math.max(0.030, ht * 0.014)));
+                addBodyContour(addEllipsoid(foot, vec(Math.max(0.12, len * 0.018), Math.max(0.035, ht * 0.016), Math.max(0.04, ht * 0.018)), headMat));
+              }
             }
             var stance = Math.max(0.18, bodyDepth * 0.55);
             addLeg(hip.x, stance, false);
@@ -6144,10 +6166,16 @@ window.StemLab = window.StemLab || {
               addLeg(shoulder.x, stance, true);
               addLeg(shoulder.x, -stance, true);
             } else {
+              var armStartL = vec(shoulder.x, shoulder.y * 0.93, stance * 0.42);
+              var armStartR = vec(shoulder.x, shoulder.y * 0.93, -stance * 0.42);
               var armEndL = vec(shoulder.x - len * 0.050, shoulder.y * 0.55, stance * 0.55);
               var armEndR = vec(shoulder.x - len * 0.050, shoulder.y * 0.55, -stance * 0.55);
-              addBone(vec(shoulder.x, shoulder.y * 0.93, stance * 0.42), armEndL, Math.max(0.018, ht * 0.006));
-              addBone(vec(shoulder.x, shoulder.y * 0.93, -stance * 0.42), armEndR, Math.max(0.018, ht * 0.006));
+              addBone(armStartL, armEndL, Math.max(0.018, ht * 0.006));
+              addBone(armStartR, armEndR, Math.max(0.018, ht * 0.006));
+              if (props.showBody) {
+                addBodyContour(addSoftTissueCylinder(armStartL, armEndL, Math.max(0.025, ht * 0.010), Math.max(0.018, ht * 0.007)));
+                addBodyContour(addSoftTissueCylinder(armStartR, armEndR, Math.max(0.025, ht * 0.010), Math.max(0.018, ht * 0.007)));
+              }
             }
 
             function addAssemblySocket(piece, active, placed) {
@@ -6939,7 +6967,7 @@ window.StemLab = window.StemLab || {
         var visualKeyPanel = panel([
           el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 5 } }, 'Visual key'),
           keyItem('#f8fafc', 'Skeleton proxy', 'White rods, vertebrae, rib loops, pelvis, and joints show the inferred bone layout. Skull, spine, pelvis, and tail callouts keep the main landmarks easy to follow.'),
-          keyItem(dColor(dn.diet), 'Body inference', 'Translucent color shows estimated soft tissue volume.'),
+          keyItem(dColor(dn.diet), 'Body inference', 'Translucent color and a thin contour mesh show estimated soft-tissue volume around the visible skeleton.'),
           keyItem(dColor(dn.diet), 'Species anatomy cues', 'Simplified horns, plates, sails, armor, crests, domes, claws, or feather fans appear for supported clades. They are diagram cues, not specimen scans.'),
           keyItem('#38bdf8', 'Evidence marker', 'Blue points mark fossil anchor locations.'),
           keyItem('#14b8a6', 'Evidence path', 'Cyan links connect anchors; green links show a completed evidence chain.'),

@@ -671,13 +671,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             if (window.THREE) { doInit(); } else {
 
-              var script = document.createElement('script');
-
-              script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-
-              script.onload = doInit;
-
-              document.head.appendChild(script);
+              window.StemLab.ensureThree({ orbit: false }).then(doInit).catch(function () { console.error('[Galaxy] Three.js failed to load'); });
 
             }
 
@@ -819,7 +813,7 @@ if (!window._galaxyHasLoadedOnce) {
             if (window.IntersectionObserver) { observer=new IntersectionObserver(function(entries){ inView=!!(entries[0]&&entries[0].isIntersecting); },{rootMargin:'100px'}); observer.observe(canvas); }
             window.addEventListener('resize', resize);
             canvas._blackHoleCleanup = function(){ stopped=true; cancelAnimationFrame(frame); window.removeEventListener('resize',resize); document.removeEventListener('visibilitychange',onVisibilityChange); canvas.removeEventListener('webglcontextlost',onContextLost); canvas.removeEventListener('webglcontextrestored',onContextRestored); if(observer)observer.disconnect(); while(fallingObjects.length)disposeFalling(fallingObjects.pop()); if(renderer)renderer.dispose(); };
-            if (window.THREE) init(); else { var script=document.createElement('script'); script.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'; script.onload=init; script.onerror=function(){ var fallback=document.getElementById('black-hole-status'); if(fallback)fallback.textContent='The 3-D library could not load. The labeled black-hole explanation remains available.'; }; document.head.appendChild(script); }
+            if (window.THREE) init(); else { window.StemLab.ensureThree({ orbit: false }).then(init).catch(function(){ var fallback=document.getElementById('black-hole-status'); if(fallback)fallback.textContent='The 3-D library could not load. The labeled black-hole explanation remains available.'; }); }
           }, []);
           function generateStars(THREE, count, gType, galaxyType, ageDist) {
 

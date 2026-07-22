@@ -302,16 +302,11 @@ window.StemLab = window.StemLab || {
                 setThreeLoaded(true);
                 return;
               }
-              var script = document.createElement('script');
-              script.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js';
-              script.async = true;
-              script.onload = function() {
+              window.StemLab.ensureThree({ orbit: true, orbitRequired: true }).then(function () {
                 setThreeLoaded(true);
-              };
-              script.onerror = function(err) {
+              }).catch(function (err) {
                 console.error("Failed to load OrbitControls", err);
-              };
-              document.head.appendChild(script);
+              });
             }
 
             if (window.THREE) {
@@ -319,16 +314,11 @@ window.StemLab = window.StemLab || {
               return;
             }
 
-            var script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-            script.async = true;
-            script.onload = function() {
+            window.StemLab.ensureThree({ orbit: false }).then(function () {
               loadOrbitControls();
-            };
-            script.onerror = function(err) {
+            }).catch(function (err) {
               console.error("Failed to load Three.js", err);
-            };
-            document.head.appendChild(script);
+            });
           }, []);
 
           // ── Three.js Lifecycle Hooks ──

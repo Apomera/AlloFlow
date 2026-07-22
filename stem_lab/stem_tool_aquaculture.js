@@ -7095,15 +7095,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
   // THREE.JS LOADER
   // ───────────────────────────────────────────────────────────
   function ensureThreeJS(onReady, onError) {
-    if (window.THREE) { onReady(); return; }
-    var s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-    s.onload = function() { console.log('[AquacultureLab] three.js loaded'); onReady(); };
-    s.onerror = function() {
+    // Shared resilient loader: multi-CDN fallback + timeout (host provides it).
+    window.StemLab.ensureThree({ orbit: false }).then(function () { console.log('[AquacultureLab] three.js loaded'); onReady(); }).catch(function () {
       console.error('[AquacultureLab] three.js failed to load');
       if (onError) onError();
-    };
-    document.head.appendChild(s);
+    });
   }
 
   // ───────────────────────────────────────────────────────────

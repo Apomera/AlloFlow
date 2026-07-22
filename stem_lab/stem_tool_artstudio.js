@@ -1834,8 +1834,10 @@ const d = labToolData.artStudio || {};
               }
               if (!THREE_OK && !window._artSculptThreeLoading) {
                 window._artSculptThreeLoading = true;
-                _loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', function(ok) {
-                  if (!ok) window._artSculptThreeLoading = false;   // failed load must not latch "loading" forever — revisiting the tab retries
+                window.StemLab.ensureThree({ orbit: false }).then(function () {
+                  upd('_sculptPing', Date.now());
+                }).catch(function () {
+                  window._artSculptThreeLoading = false;   // failed load must not latch "loading" forever — revisiting the tab retries
                   upd('_sculptPing', Date.now());
                 });
               }

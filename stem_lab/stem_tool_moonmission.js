@@ -3152,10 +3152,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
                   if (window.THREE) doEvaInit(window.THREE);
                   else {
-                    var s = document.createElement('script');
-                    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-                    s.onload = function() { doEvaInit(window.THREE); };
-                    document.head.appendChild(s);
+                    window.StemLab.ensureThree({ orbit: false }).then(function () { doEvaInit(window.THREE); }).catch(function () { console.error('[MoonMission] Three.js failed to load'); });
                   }
                 }
               })
