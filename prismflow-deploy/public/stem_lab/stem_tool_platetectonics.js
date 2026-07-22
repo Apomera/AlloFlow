@@ -287,7 +287,7 @@
       var ctx = canvas.getContext('2d');
       var dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = W_CANVAS * dpr; canvas.height = H_CANVAS * dpr;
-      canvas.style.width = W_CANVAS + 'px'; canvas.style.height = H_CANVAS + 'px';
+      canvas.style.width = '100%'; canvas.style.height = 'auto';
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
       var prefersReduced = false;
@@ -556,7 +556,7 @@
             role: 'img',
             tabIndex: 0,
             'aria-label': 'Map with three seismograph stations (Berkeley, Pasadena, Mt Hamilton) and a draggable epicenter. Each station shows a distance circle; their intersection is the triangulated location. Use arrow keys to move the epicenter; hold Shift for larger steps. Current S-P readings: ' + readings.map(function(r){ return r.id + ' ' + r.sp.toFixed(1) + ' seconds, ' + r.dist.toFixed(0) + ' kilometers'; }).join('; ') + '.',
-            style: { width: W_CANVAS, height: H_CANVAS, display: 'block', cursor: s.dragging ? 'grabbing' : 'grab', maxWidth: '100%', touchAction: 'none' },
+            style: { width: '100%', height: 'auto', aspectRatio: W_CANVAS + ' / ' + H_CANVAS, display: 'block', cursor: s.dragging ? 'grabbing' : 'grab', touchAction: 'none' },
             onMouseDown: onDown, onMouseMove: onMove, onMouseUp: onUp, onMouseLeave: onUp,
             onTouchStart: onDown, onTouchMove: onMove, onTouchEnd: onUp,
             onKeyDown: onKey
@@ -693,7 +693,7 @@
       var W = 540, H = 300;
       var dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = W * dpr; canvas.height = H * dpr;
-      canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+      canvas.style.width = '100%'; canvas.style.height = 'auto';
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
       var lastT = performance.now();
@@ -1081,7 +1081,7 @@
           role: 'img',
           tabIndex: 0,
           'aria-label': info.name + ' boundary cross-section. ' + evidence.motion + '. ' + depthSummary + '.',
-          style: { width: 540, height: 300, display: 'block', maxWidth: '100%' }
+          style: { width: '100%', height: 'auto', aspectRatio: '540 / 300', display: 'block' }
         })
       ),
       h('div', { className: 'flex flex-col gap-2' },
