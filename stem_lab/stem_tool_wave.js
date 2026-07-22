@@ -2974,9 +2974,9 @@ const d = labToolData.wave;
                 className: 'transition-colors w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-' + g.color + '-50'
               },
                 React.createElement('span', { className: 'text-[11px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 flex-1' }, g.label),
-                React.createElement('span', { className: 'text-[10px] text-slate-500 font-bold' }, (g.tabs || []).length + ' topics ' + (isOpen ? '▲' : '▼'))
+                React.createElement('span', { className: 'text-[10px] text-slate-500 font-bold' }, (g.tabs || []).length + __alloT('stem.wave.count_topics', ' topics ') + (isOpen ? '▲' : '▼'))
               ),
-              isOpen && React.createElement('div', { role: 'group', 'aria-label': g.label + ' topics', className: 'px-3 pb-2 flex items-center gap-1.5 flex-wrap' },
+              isOpen && React.createElement('div', { role: 'group', 'aria-label': g.label + __alloT('stem.wave.aria_topics_suffix', ' topics'), className: 'px-3 pb-2 flex items-center gap-1.5 flex-wrap' },
                 (g.tabs || []).map(function(s) { return renderBtn(s, g.color); })
               )
             );
@@ -2986,8 +2986,8 @@ const d = labToolData.wave;
 
       function renderTypesSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌊 Wave types'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Waves are categorized by particle motion relative to propagation, and by whether they need a medium. All carry energy but no matter from one place to another.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌊 ' + __alloT('stem.wave.tab_types', 'Wave types')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_types_intro', 'Waves are categorized by particle motion relative to propagation, and by whether they need a medium. All carry energy but no matter from one place to another.')),
           React.createElement('div', { className: 'grid gap-2 grid-cols-1 md:grid-cols-2' },
             WAVE_TYPES.map(function(w, i) {
               return React.createElement('div', { key: 'w'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -2997,7 +2997,7 @@ const d = labToolData.wave;
                   React.createElement('span', { className: 'text-[10px] font-bold ml-auto px-1.5 py-0.5 rounded bg-cyan-100 text-cyan-800' }, w.speed)
                 ),
                 React.createElement('div', { className: 'text-[12px] text-slate-700 leading-relaxed mb-1' }, w.desc),
-                React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Examples: ', w.examples.join(', '))
+                React.createElement('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.wave.label_examples', 'Examples: '), w.examples.join(', '))
               );
             })
           )
@@ -3006,8 +3006,8 @@ const d = labToolData.wave;
 
       function renderQuantitiesSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📐 Wave quantities'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'The full vocabulary needed to describe any wave. Most quantities are related — once you know two, you can derive the rest.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📐 ' + __alloT('stem.wave.tab_quantities', 'Wave quantities')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_quantities_intro', 'The full vocabulary needed to describe any wave. Most quantities are related — once you know two, you can derive the rest.')),
           React.createElement('div', { className: 'grid gap-2 grid-cols-1 md:grid-cols-2' },
             WAVE_QUANTITIES.map(function(q, i) {
               return React.createElement('div', { key: 'q'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3025,7 +3025,7 @@ const d = labToolData.wave;
 
       function renderFormulasSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, 'ƒ Key wave equations'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, 'ƒ ' + __alloT('stem.wave.sec_formulas_title', 'Key wave equations')),
           React.createElement('div', { className: 'space-y-1.5' },
             WAVE_FORMULAS.map(function(f, i) {
               return React.createElement('div', { key: 'f'+i, className: 'flex items-baseline gap-3 p-2 rounded-md bg-slate-50 border border-slate-200' },
@@ -3039,8 +3039,8 @@ const d = labToolData.wave;
 
       function renderInterferenceSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '+ Interference + superposition'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'When two waves meet, their displacements add (principle of superposition). After passing through each other, each wave continues unchanged.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '+ ' + __alloT('stem.wave.sec_interference_title', 'Interference + superposition')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_interference_intro', 'When two waves meet, their displacements add (principle of superposition). After passing through each other, each wave continues unchanged.')),
           React.createElement('div', { className: 'space-y-2 mb-3' },
             INTERFERENCE_PATTERNS.map(function(p, i) {
               return React.createElement('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3054,15 +3054,15 @@ const d = labToolData.wave;
             })
           ),
           React.createElement('div', { className: 'p-2.5 rounded-md bg-amber-50 border border-amber-200 text-[11px] text-amber-900' },
-            React.createElement('strong', null, '💡 Beats: '), 'Two waves of slightly different frequency interfere alternately constructively + destructively. Beat frequency = |f₁ − f₂|. Musicians use this to tune by ear.'
+            React.createElement('strong', null, '💡 ' + __alloT('stem.wave.sec_beats_label', 'Beats: ')), __alloT('stem.wave.sec_beats_text', 'Two waves of slightly different frequency interfere alternately constructively + destructively. Beat frequency = |f₁ − f₂|. Musicians use this to tune by ear.')
           )
         );
       }
 
       function renderDopplerSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🚓 Doppler effect'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Frequency observed changes when source and/or observer move relative to each other. The ambulance siren that drops pitch as it passes you = sound Doppler. Galaxy redshift = light Doppler.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🚓 ' + __alloT('stem.wave.tab_doppler', 'Doppler effect')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_doppler_intro', 'Frequency observed changes when source and/or observer move relative to each other. The ambulance siren that drops pitch as it passes you = sound Doppler. Galaxy redshift = light Doppler.')),
           React.createElement('div', { className: 'space-y-2' },
             DOPPLER_CASES.map(function(c, i) {
               return React.createElement('div', { key: 'd'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3075,12 +3075,12 @@ const d = labToolData.wave;
             })
           ),
           React.createElement('div', { className: 'mt-3 p-3 rounded-md bg-emerald-50 border border-emerald-200' },
-            React.createElement('div', { className: 'text-[11px] font-bold text-emerald-800 mb-1' }, '📡 Applications'),
+            React.createElement('div', { className: 'text-[11px] font-bold text-emerald-800 mb-1' }, '📡 ' + __alloT('stem.wave.sec_applications', 'Applications')),
             React.createElement('div', { className: 'text-[11px] text-emerald-900 leading-relaxed' },
-              '• Police radar: bounces microwaves off your car; Doppler shift = your speed. ',
-              '• Doppler ultrasound: measures blood flow direction + speed. ',
-              '• Hubble\'s discovery: distant galaxies are redshifted → universe expanding. ',
-              '• Cosmic microwave background: small Doppler shifts reveal early-universe structure.'
+              '• ' + __alloT('stem.wave.doppler_app_radar', 'Police radar: bounces microwaves off your car; Doppler shift = your speed. '),
+              '• ' + __alloT('stem.wave.doppler_app_ultrasound', 'Doppler ultrasound: measures blood flow direction + speed. '),
+              '• ' + __alloT('stem.wave.doppler_app_hubble', 'Hubble\'s discovery: distant galaxies are redshifted → universe expanding. '),
+              '• ' + __alloT('stem.wave.doppler_app_cmb', 'Cosmic microwave background: small Doppler shifts reveal early-universe structure.')
             )
           )
         );

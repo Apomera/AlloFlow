@@ -507,5 +507,21 @@
   "grp_reference": "Reference",
   "tab_careers": "Wave careers",
   "tab_history": "History",
-  "tab_glossary": "Glossary"
+  "tab_glossary": "Glossary",
+  "count_topics": " topics ",
+  "aria_topics_suffix": " topics",
+  "sec_types_intro": "Waves are categorized by particle motion relative to propagation, and by whether they need a medium. All carry energy but no matter from one place to another.",
+  "label_examples": "Examples: ",
+  "sec_quantities_intro": "The full vocabulary needed to describe any wave. Most quantities are related — once you know two, you can derive the rest.",
+  "sec_formulas_title": "Key wave equations",
+  "sec_interference_title": "Interference + superposition",
+  "sec_interference_intro": "When two waves meet, their displacements add (principle of superposition). After passing through each other, each wave continues unchanged.",
+  "sec_beats_label": "Beats: ",
+  "sec_beats_text": "Two waves of slightly different frequency interfere alternately constructively + destructively. Beat frequency = |f₁ − f₂|. Musicians use this to tune by ear.",
+  "sec_doppler_intro": "Frequency observed changes when source and/or observer move relative to each other. The ambulance siren that drops pitch as it passes you = sound Doppler. Galaxy redshift = light Doppler.",
+  "sec_applications": "Applications",
+  "doppler_app_radar": "Police radar: bounces microwaves off your car; Doppler shift = your speed. ",
+  "doppler_app_ultrasound": "Doppler ultrasound: measures blood flow direction + speed. ",
+  "doppler_app_hubble": "Hubble's discovery: distant galaxies are redshifted → universe expanding. ",
+  "doppler_app_cmb": "Cosmic microwave background: small Doppler shifts reveal early-universe structure."
 }
