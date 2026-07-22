@@ -122,13 +122,24 @@ describe('adventure cast lobby modal accessibility', () => {
     expect(source).toContain('overflow-y-auto p-4 sm:p-8');
     expect(source).toContain('className="flex flex-wrap justify-center gap-3"');
     expect(source).toContain('role="status" aria-live="polite">');
-    expect(source).toContain("t('common.loading') || 'Loading'");
+    expect(source).toContain('Creating portrait…');
+    expect(source).toContain('Waiting its turn…');
+    expect(source).toContain('aria-label="Cast portraits ready"');
     expect(source).toContain('rounded-full" aria-hidden="true"');
+  });
+
+  it('deduplicates portrait work, caps concurrency, and exposes aggregate progress', () => {
+    expect(source).toContain('activePortraitJobsRef.current.size < 2');
+    expect(source).toContain('activePortraitJobsRef.current.has(key) || portraitQueueRef.current.some(job => job.key === key)');
+    expect(source).toContain('prioritizedIndexes.forEach(index => enqueuePortrait(index))');
+    expect(source).not.toContain('setTimeout(() => onGeneratePortrait(i), i * 600)');
+    expect(source).toContain('Creating up to two portraits at a time');
+    expect(source).toContain('aria-valuenow={portraitReadyCount}');
   });
 
   it('provides larger, contrasted, visibly focused main actions and hides decorative symbols', () => {
     expect(source).toContain('min-h-11 px-5 py-2.5 bg-violet-100 text-violet-700');
-    expect(source).toContain('border border-violet-600 focus-visible:outline-none');
+    expect(source).toContain('border border-violet-600 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none');
     expect(source.match(/border border-violet-600 rounded-lg focus:ring-2/g)).toHaveLength(4);
     expect(source).toContain('border-2 border-dashed border-violet-600');
     expect(source).toContain('min-h-11 px-6 py-2.5 bg-violet-700 text-white');

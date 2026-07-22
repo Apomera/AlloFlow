@@ -100,7 +100,10 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
       xpToNextLevel: startingXpToNext,
       energy: 100,
       sceneImage: null,
+      sceneImagePreview: null,
       isImageLoading: false,
+      imagePolishStage: null,
+      loadingStage: 'Building your opening scene…',
       inventory: [],
       voiceMap: {},
       gold: initialGold,
@@ -309,7 +312,7 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
           sceneData = JSON.parse(cleanJson(result));
       } catch (parseErr) {
           warnLog("Adventure Parse Error:", parseErr);
-          setAdventureState(prev => ({ ...prev, isLoading: false }));
+          setAdventureState(prev => ({ ...prev, isLoading: false, loadingStage: null }));
           addToast(t('toasts.adventure_start_failed_retry'), "error");
           return;
       }
@@ -436,7 +439,10 @@ Opening scene: ${sceneText.substring(0, 1200)}
         xp: startingXp,
         xpToNextLevel: startingXpToNext,
         sceneImage: null,
+        sceneImagePreview: null,
         isImageLoading: true,
+        imagePolishStage: 'generating',
+        loadingStage: sceneCharacters.length > 0 ? 'Preparing cast review…' : 'Painting scene art…',
         inventory: [...prev.inventory, ...initialInventory],
         systemResources: initialSystemResources,
         voiceMap: sceneData.voices || {},
@@ -489,7 +495,7 @@ Opening scene: ${sceneText.substring(0, 1200)}
     } catch (error) {
       warnLog("Adventure Start Error:", error);
       addToast(t('toasts.adventure_start_failed'), "error");
-      setAdventureState(prev => ({ ...prev, isLoading: false }));
+      setAdventureState(prev => ({ ...prev, isLoading: false, loadingStage: null }));
     }
 };
 
@@ -598,7 +604,7 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
     SafetyContentChecker.aiCheck(currentInput, 'adventure', apiKey, handleAiSafetyFlag);
     lastTurnSnapshot.current = structuredClone(adventureState);
     stopPlayback();
-    setAdventureState(prev => ({ ...prev, isLoading: true, pendingChoice: currentInput }));
+    setAdventureState(prev => ({ ...prev, isLoading: true, pendingChoice: currentInput, loadingStage: 'Interpreting your response…' }));
     let archivedImageId = null;
     if (adventureState.sceneImage) {
         try {
@@ -620,7 +626,10 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
         ],
         currentScene: null,
         sceneImage: null,
+        sceneImagePreview: null,
+        imagePolishStage: null,
         isLoading: true,
+        loadingStage: 'Interpreting your response…',
         pendingChoice: currentInput,
     }));
     if (!overrideInput) setAdventureTextInput('');
@@ -997,7 +1006,7 @@ const handleAdventureChoice = async (choice, deps) => {
     stopPlayback();
     playAdventureEventSound('decision_select');
     lastTurnSnapshot.current = structuredClone(adventureState);
-    setAdventureState(prev => ({ ...prev, isLoading: true, pendingChoice: normalizedChoice }));
+    setAdventureState(prev => ({ ...prev, isLoading: true, pendingChoice: normalizedChoice, loadingStage: 'Considering your choice…' }));
     let archivedImageId = null;
     if (adventureState.sceneImage) {
         try {
@@ -1019,7 +1028,10 @@ const handleAdventureChoice = async (choice, deps) => {
           { type: 'choice', text: normalizedChoice, source: 'option' }
       ],
       sceneImage: null,
+      sceneImagePreview: null,
+      imagePolishStage: null,
       isLoading: true,
+      loadingStage: 'Considering your choice…',
       pendingChoice: normalizedChoice,
     }));
     try {

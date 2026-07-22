@@ -98,6 +98,50 @@ describe('Adventure portrait consent and sanitation runtime', () => {
   });
 });
 
+describe('Adventure portrait queue runtime', () => {
+  it('prioritizes the protagonist, caps concurrency at two, and suppresses duplicate bulk work', async () => {
+    const pending = [];
+    const onGeneratePortrait = vi.fn((index) => new Promise((resolvePromise) => pending.push({ index, resolvePromise })));
+    const characters = [
+      { id: 'guide', name: 'Guide', role: 'Mentor', appearance: 'Guide', portrait: null },
+      { id: 'rival', name: 'Rival', role: 'Antagonist', appearance: 'Rival', portrait: null },
+      { id: 'hero', name: 'Hero', role: 'Protagonist', appearance: 'Hero', portrait: null },
+      { id: 'merchant', name: 'Merchant', role: 'Character', appearance: 'Merchant', portrait: null },
+    ];
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await React.act(async () => {
+      root.render(React.createElement(adventureUi.CastLobby, {
+        characters,
+        onUpdateCharacter: vi.fn(),
+        onConfirm: vi.fn(),
+        onGeneratePortrait,
+        onRefinePortrait: vi.fn(),
+        onAddCharacter: vi.fn(),
+        onRemoveCharacter: vi.fn(),
+        onUploadPortrait: vi.fn(),
+        t: (key) => key,
+      }));
+    });
+    await vi.waitFor(() => expect(onGeneratePortrait).toHaveBeenCalledTimes(2));
+
+    expect(onGeneratePortrait.mock.calls.map(([index]) => index)).toEqual([2, 0]);
+    expect(container.textContent).toContain('0 of 4');
+    const bulkButton = [...container.querySelectorAll('button')].find((button) => button.textContent.includes('Creating portraits'));
+    expect(bulkButton?.disabled).toBe(true);
+    bulkButton?.click();
+    expect(onGeneratePortrait).toHaveBeenCalledTimes(2);
+
+    await React.act(async () => {
+      pending[0].resolvePromise();
+      await vi.waitFor(() => expect(onGeneratePortrait).toHaveBeenCalledTimes(3));
+    });
+    expect(onGeneratePortrait.mock.calls[2][0]).toBe(1);
+    await React.act(async () => root.unmount());
+  });
+});
+
 describe('Adventure establishing-shot cancellation runtime', () => {
   it('cancels the preflight before a provider request starts', async () => {
     vi.useFakeTimers();

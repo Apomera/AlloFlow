@@ -5,6 +5,8 @@ const handlersSource = readFileSync('adventure_handlers_source.jsx', 'utf8');
 const handlersModule = readFileSync('adventure_handlers_module.js', 'utf8');
 const sessionSource = readFileSync('adventure_session_handlers_source.jsx', 'utf8');
 const sessionModule = readFileSync('adventure_session_handlers_module.js', 'utf8');
+const viewSource = readFileSync('view_adventure_source.jsx', 'utf8');
+const viewModule = readFileSync('view_adventure_module.js', 'utf8');
 const anti = readFileSync('AlloFlowANTI.txt', 'utf8');
 
 describe('Adventure cast-review establishing shot', () => {
@@ -65,6 +67,36 @@ describe('Gemini-gated cast reference sheet', () => {
   it('keeps the generated session module and deployed copy synchronized', () => {
     expect(sessionModule).toContain('createAdventureReferenceSheet');
     expect(readFileSync('prismflow-deploy/public/adventure_session_handlers_module.js', 'utf8')).toBe(sessionModule);
+  });
+});
+
+describe('Adventure perceived-latency polish', () => {
+  it('reveals a preview before cleanup and consistency passes finish', () => {
+    const providerIndex = sessionSource.indexOf('let imageUrl = await callImagen');
+    const previewIndex = sessionSource.indexOf('sceneImagePreview: imageUrl');
+    const cleanupIndex = sessionSource.indexOf('const refinedUrl = await callGeminiImageEdit');
+    const finalIndex = sessionSource.indexOf('sceneImage: imageUrl');
+    expect(providerIndex).toBeGreaterThan(-1);
+    expect(previewIndex).toBeGreaterThan(providerIndex);
+    expect(previewIndex).toBeLessThan(cleanupIndex);
+    expect(finalIndex).toBeGreaterThan(cleanupIndex);
+    expect(sessionSource).toContain("imagePolishStage: 'matching'");
+    expect(sessionSource).toContain("loadingStage: 'Polishing scene details…'");
+  });
+
+  it('shows real stages and reserves the final scene height in both views', () => {
+    expect(viewSource).toContain("adventureState.loadingStage || t('adventure.status.loading_story')");
+    expect(viewSource).toContain("style={{ minHeight: adventureImageSize + 'px' }}");
+    expect(viewSource).toContain('adventureState.sceneImage || adventureState.sceneImagePreview');
+    expect(viewSource).toContain("adventureState.imagePolishStage === 'matching' ? 'Matching your cast…' : 'Polishing scene details…'");
+    expect(handlersSource).toContain("loadingStage: 'Building your opening scene…'");
+    expect(handlersSource).toContain("loadingStage: 'Considering your choice…'");
+    expect(handlersSource).toContain("loadingStage: 'Interpreting your response…'");
+  });
+
+  it('keeps the generated Adventure view and deployed copy synchronized', () => {
+    expect(viewModule).toContain('Polishing scene details');
+    expect(readFileSync('prismflow-deploy/public/view_adventure_module.js', 'utf8')).toBe(viewModule);
   });
 });
 

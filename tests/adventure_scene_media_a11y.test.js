@@ -29,8 +29,8 @@ describe('Adventure scene, artwork, and playback accessibility', () => {
   });
 
   it('treats redundant artwork as decorative and announces image availability', () => {
-    expect(source).toContain('src={adventureState.sceneImage}\n                                                        alt=""');
-    expect(source).toContain('src={adventureState.sceneImage}\n                                        className={`absolute');
+    expect(source).toContain('src={adventureState.sceneImage || adventureState.sceneImagePreview}\n                                                        alt=""');
+    expect(source).toContain('src={adventureState.sceneImage || adventureState.sceneImagePreview}\n                                        className={`absolute');
     expect(source.match(/alt=""/g)?.length).toBeGreaterThanOrEqual(4);
     expect(source.match(/role="status" aria-live="polite" aria-atomic="true" className="absolute inset-0/g)).toHaveLength(2);
     expect(source).toContain('animate-ken-burns motion-reduce:animate-none motion-reduce:transition-none');
@@ -41,7 +41,7 @@ describe('Adventure scene, artwork, and playback accessibility', () => {
     expect(source).toContain("aria-label={t('common.adjust_image_size')} aria-valuetext={adventureImageSize + ' px'}");
     expect(source).toContain('className="w-24 h-11');
     expect(source).not.toContain("aria-label={t('common.range_slider')}");
-    expect(source).toContain('<button type="button"\n                                            onClick={handleSetShowStorybookExportModalToTrue}');
+    expect(source).toMatch(/<button type="button"\s+onClick=\{handleSetShowStorybookExportModalToTrue\}/);
     expect(source).toContain("aria-label={t('adventure.start_sequel')}");
     expect(source).not.toContain("aria-label={t('common.start_sequel')}");
     expect(source).toContain('motion-reduce:animate-none motion-reduce:transform-none');

@@ -975,7 +975,7 @@ function AdventureView(props) {
     className: "text-amber-800 text-sm font-medium italic leading-relaxed"
   }, "\"", adventureState.pendingChoice, "\""), /*#__PURE__*/React.createElement("p", {
     className: "text-amber-700 text-xs mt-2 animate-pulse motion-reduce:animate-none"
-  }, t('adventure.story_unfolds') || 'The story unfolds...'))), adventureState.isLoading && !adventureState.pendingChoice && /*#__PURE__*/React.createElement("div", {
+  }, adventureState.loadingStage || t('adventure.story_unfolds') || 'The story unfolds...'))), adventureState.isLoading && !adventureState.pendingChoice && /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
@@ -986,7 +986,7 @@ function AdventureView(props) {
     size: 14,
     className: "animate-spin motion-reduce:animate-none",
     "aria-hidden": "true"
-  }), " ", t('adventure.status.loading_story'))), adventureState.currentScene && /*#__PURE__*/React.createElement("div", {
+  }), " ", adventureState.loadingStage || t('adventure.status.loading_story'))), adventureState.currentScene && /*#__PURE__*/React.createElement("div", {
     role: "region",
     "aria-labelledby": "adventure-current-scene-heading",
     className: "flex justify-start animate-in fade-in slide-in-from-bottom-4 duration-700 motion-reduce:animate-none"
@@ -1000,7 +1000,7 @@ function AdventureView(props) {
   }, /*#__PURE__*/React.createElement(Flag, {
     size: 12,
     "aria-hidden": "true"
-  }), " ", t('adventure.current_scene')), adventureState.sceneImage && /*#__PURE__*/React.createElement("div", {
+  }), " ", t('adventure.current_scene')), (adventureState.sceneImage || adventureState.sceneImagePreview) && /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1.5 bg-yellow-50 px-2 py-0.5 rounded-full border border-yellow-100",
     title: t('common.adjust_image_size')
   }, /*#__PURE__*/React.createElement(ImageIcon, {
@@ -1020,18 +1020,23 @@ function AdventureView(props) {
   }))), /*#__PURE__*/React.createElement("div", {
     className: "mb-4 rounded-lg overflow-hidden bg-slate-100 border border-slate-400 shadow-inner relative group transition-all duration-300 motion-reduce:transition-none",
     style: {
-      minHeight: '200px'
+      minHeight: adventureImageSize + 'px'
     }
-  }, adventureState.sceneImage ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("img", {
+  }, adventureState.sceneImage || adventureState.sceneImagePreview ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("img", {
     loading: "lazy",
-    src: adventureState.sceneImage,
+    src: adventureState.sceneImage || adventureState.sceneImagePreview,
     alt: "",
     style: {
-      height: `${adventureImageSize}px`
+      height: `${adventureImageSize}px`,
+      filter: !adventureState.sceneImage && adventureState.sceneImagePreview ? 'blur(1.5px) saturate(0.9)' : 'none'
     },
-    className: "w-full object-cover animate-in fade-in duration-500 motion-reduce:animate-none",
+    className: "w-full object-cover animate-in fade-in duration-500 transition-[filter,opacity] motion-reduce:animate-none motion-reduce:transition-none",
     decoding: "async"
-  }), /*#__PURE__*/React.createElement("div", {
+  }), !adventureState.sceneImage && adventureState.sceneImagePreview && /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    "aria-live": "polite",
+    className: "absolute left-3 bottom-3 bg-slate-950/80 text-white text-xs font-bold px-3 py-2 rounded-full shadow-lg backdrop-blur-sm"
+  }, adventureState.imagePolishStage === 'matching' ? 'Matching your cast…' : 'Polishing scene details…'), /*#__PURE__*/React.createElement("div", {
     "aria-hidden": "true",
     className: "absolute top-2 right-2 bg-black/60 text-white text-[11px] px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity motion-reduce:transition-none backdrop-blur-sm"
   }, /*#__PURE__*/React.createElement(Sparkles, {
@@ -1048,7 +1053,7 @@ function AdventureView(props) {
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-medium animate-pulse motion-reduce:animate-none"
-  }, t('adventure.generating_scene'))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ImageIcon, {
+  }, adventureState.loadingStage || t('adventure.generating_scene'))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ImageIcon, {
     size: 24,
     className: "opacity-40",
     "aria-hidden": "true"
@@ -1156,9 +1161,9 @@ function AdventureView(props) {
     }))));
   })()) : /*#__PURE__*/React.createElement("div", {
     className: "relative w-full h-full bg-black rounded-xl overflow-hidden shadow-2xl group select-none relative"
-  }, adventureState.sceneImage ? /*#__PURE__*/React.createElement("img", {
+  }, adventureState.sceneImage || adventureState.sceneImagePreview ? /*#__PURE__*/React.createElement("img", {
     loading: "lazy",
-    src: adventureState.sceneImage,
+    src: adventureState.sceneImage || adventureState.sceneImagePreview,
     className: `absolute inset-0 w-full h-full ${immersiveHideUI ? 'object-contain' : 'object-cover'} transition-opacity duration-700 animate-ken-burns motion-reduce:animate-none motion-reduce:transition-none`,
     alt: ""
   }) : /*#__PURE__*/React.createElement("div", {
@@ -1172,13 +1177,17 @@ function AdventureView(props) {
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-sm font-bold animate-pulse motion-reduce:animate-none"
-  }, t('adventure.generating_scene'))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ImageIcon, {
+  }, adventureState.loadingStage || t('adventure.generating_scene'))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ImageIcon, {
     size: 48,
     className: "opacity-40",
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-sm font-bold"
-  }, t('adventure.no_image')))), theme !== 'contrast' && /*#__PURE__*/React.createElement("div", {
+  }, t('adventure.no_image')))), !adventureState.sceneImage && adventureState.sceneImagePreview && /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    "aria-live": "polite",
+    className: "absolute left-1/2 top-5 -translate-x-1/2 z-20 bg-black/75 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg backdrop-blur-sm"
+  }, adventureState.imagePolishStage === 'matching' ? 'Matching your cast…' : 'Polishing scene details…'), theme !== 'contrast' && /*#__PURE__*/React.createElement("div", {
     "aria-hidden": "true",
     className: "absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90 pointer-events-none"
   }), /*#__PURE__*/React.createElement("div", {
