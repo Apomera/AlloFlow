@@ -173,7 +173,7 @@ describe('coaster lab — Ride & Solve math is GROUNDED in the checkpoint elemen
     const e = src.indexOf('/* @clab-mathgen-end');
     expect(s).toBeGreaterThan(-1);
     expect(e).toBeGreaterThan(s);
-    return new Function(src.slice(s, e) + '\nreturn { genElementMath, _bandCfg };')();
+    return new Function(src.slice(s, e) + '\nreturn { genElementMath, _bandCfg, _mathViz };')();
   }
   const BANDS = ['k2', 'g35', 'g68', 'g912'];
   const OPS = ['addition', 'subtraction', 'multiplication', 'division', 'arithmetic'];
@@ -284,6 +284,39 @@ describe('coaster lab — Ride & Solve math is GROUNDED in the checkpoint elemen
       expect(q.answer).toBeGreaterThanOrEqual(0);
       expect(parseExplain(q.explain)).toBeTruthy();
     }
+  });
+
+  it('every math question carries a bar/area-model SVG that shows "?", never the answer', () => {
+    const { genElementMath, _mathViz } = loadGen(TOOL_PATHS[0]);
+    // the four models are valid SVG and hide the result behind a "?"
+    for (const [op, a, b, ans] of [['+', 18, 7, 25], ['−', 24, 6, 18], ['×', 3, 8, 24], ['÷', 24, 3, 8]]) {
+      const svg = _mathViz(op, a, b, ans);
+      expect(svg.startsWith('<svg')).toBe(true);
+      expect(svg).toContain('viewBox');
+      expect(svg).toContain('</svg>');
+      expect(svg.includes('>?<') || svg.includes('= ?')).toBe(true); // asks, does not answer
+      // the answer is never printed as its own number label (would give it away)
+      const answerLabel = new RegExp('>\\s*' + ans + '\\s*<');
+      // (operands may appear as labels; the ANSWER must not, except inside a countable ×-array which is intended)
+      if (op !== '×') expect(svg).not.toMatch(answerLabel);
+    }
+    // and the generator attaches one to every math question
+    for (const t of ['addition', 'subtraction', 'multiplication', 'division', 'arithmetic']) {
+      for (let i = 0; i < 40; i++) {
+        const q = genElementMath(t, 'g68', FACTS);
+        expect(q.vizSvg, `${t} #${i}`).toMatch(/^<svg[\s\S]*<\/svg>$/);
+      }
+    }
+  });
+
+  it.each(TOOL_PATHS)('%s: the question card renders the viz only for math topics', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    expect(src).toContain('id=\\"clab-rqViz\\"');                    // the container exists
+    expect(src).toContain('.clab-root .clab-viz{');                  // and its styling
+    expect(src).toContain('vizSvg: _mathViz(p.op, p.a, p.b, p.ans)'); // generator emits it
+    // pauseForQuestion shows it for math (has vizSvg) and clears it otherwise
+    expect(src).toContain("if(ride.current.vizSvg){ rq.viz.innerHTML = ride.current.vizSvg; rq.viz.classList.add('on'); }");
+    expect(src).toContain("else { rq.viz.innerHTML = ''; rq.viz.classList.remove('on'); }");
   });
 
   it.each(TOOL_PATHS)('%s: physics is the default; math reads live facts at the checkpoint', (p) => {
