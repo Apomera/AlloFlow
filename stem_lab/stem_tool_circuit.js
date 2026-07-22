@@ -1760,27 +1760,27 @@ window.StemLab = window.StemLab || {
               var segs = loads.map(function(c) {
                 var r = getCompR(c);
                 var p = mode === 'series' ? (current * current * r) : (voltage * voltage / (r || 1));
-                var name = c.type === 'resistor' ? 'Resistor ' + c.value + 'Ω' : c.type === 'bulb' ? 'Bulb ' + c.value + 'Ω' : c.type === 'led' ? 'LED' : c.type;
+                var name = c.type === 'resistor' ? 'Resistor ' + c.value + 'Ω' : c.type === 'bulb' ? 'Bulb ' + c.value + 'Ω' : c.type === 'led' ? __alloT('stem.circuit.comp_led', 'LED') : c.type;
                 var col = c.type === 'bulb' ? '#f59e0b' : c.type === 'led' ? (c.ledColor || '#ef4444') : c.type === 'switch' ? '#10b981' : '#eab308';
                 return { name: name, p: p, col: col, type: c.type };
               }).filter(function(s) { return s.p > 1e-6; });
               var totP = segs.reduce(function(a, s) { return a + s.p; }, 0) || power || 1e-6;
               // Real-world equivalence for the delivered power
               var eq = power < 0.05 ? 'about a digital watch (' + (power * 1000).toFixed(0) + ' mW)'
-                : power < 0.5 ? 'a hearing-aid battery load'
-                : power < 3 ? 'a small LED night-light'
-                : power < 10 ? 'a phone fast-charger'
-                : power < 40 ? 'a bright desk lamp'
-                : power < 100 ? 'a laptop under load'
-                : 'a household appliance';
+                : power < 0.5 ? __alloT('stem.circuit.eq_hearing_aid', 'a hearing-aid battery load')
+                : power < 3 ? __alloT('stem.circuit.eq_led_nightlight', 'a small LED night-light')
+                : power < 10 ? __alloT('stem.circuit.eq_phone_charger', 'a phone fast-charger')
+                : power < 40 ? __alloT('stem.circuit.eq_desk_lamp', 'a bright desk lamp')
+                : power < 100 ? __alloT('stem.circuit.eq_laptop', 'a laptop under load')
+                : __alloT('stem.circuit.eq_appliance', 'a household appliance');
               return h('div', { className: 'circuit-card mt-4 bg-slate-900/40 border border-rose-500/25 rounded-xl p-4 backdrop-blur-md' },
-                h('p', { className: 'text-[11px] font-bold text-rose-400 uppercase tracking-wider mb-1' }, '🔥 Energy budget — where the power goes'),
+                h('p', { className: 'text-[11px] font-bold text-rose-400 uppercase tracking-wider mb-1' }, '🔥 ' + __alloT('stem.circuit.energy_budget_title', 'Energy budget — where the power goes')),
                 h('p', { className: 'text-[11px] text-slate-400 mb-2 leading-snug' },
-                  'The battery pours out ', h('b', { className: 'text-rose-300' }, 'P = V×I = ' + power.toFixed(2) + ' W'),
+                  __alloT('stem.circuit.energy_budget_intro', 'The battery pours out '), h('b', { className: 'text-rose-300' }, 'P = V×I = ' + power.toFixed(2) + ' W'),
                   ' (like ' + eq + '). Every load turns its share into heat or light — and the shares must add back up to the total. Energy is never destroyed, only spent.'),
                 // Segmented power bar
                 h('div', { className: 'flex w-full h-7 rounded-lg overflow-hidden border border-slate-700', role: 'img', 'aria-label': 'Power split: ' + segs.map(function(s){ return s.name + ' ' + (s.p/totP*100).toFixed(0) + ' percent'; }).join(', ') },
-                  segs.length === 0 ? h('div', { className: 'flex-1 flex items-center justify-center text-[10px] text-slate-500' }, 'no dissipating load')
+                  segs.length === 0 ? h('div', { className: 'flex-1 flex items-center justify-center text-[10px] text-slate-500' }, __alloT('stem.circuit.no_dissipating_load', 'no dissipating load'))
                   : segs.map(function(s, i) {
                       var pct = s.p / totP * 100;
                       return h('div', { key: i, style: { width: pct + '%', background: s.col + '33', borderRight: i < segs.length - 1 ? '1px solid rgba(15,23,42,0.6)' : 'none' }, className: 'flex flex-col items-center justify-center overflow-hidden' },
@@ -1790,7 +1790,7 @@ window.StemLab = window.StemLab || {
                     })
                 ),
                 h('div', { className: 'flex justify-between mt-1.5 text-[10px]' },
-                  h('span', { className: 'text-slate-500' }, mode === 'series' ? 'Biggest resistor dissipates the most (P = I²R, same I)' : 'Smallest resistor dissipates the most (P = V²/R, same V)'),
+                  h('span', { className: 'text-slate-500' }, mode === 'series' ? __alloT('stem.circuit.dissipate_series_note', 'Biggest resistor dissipates the most (P = I²R, same I)') : __alloT('stem.circuit.dissipate_parallel_note', 'Smallest resistor dissipates the most (P = V²/R, same V)')),
                   h('span', { className: 'font-mono font-bold text-rose-300' }, 'Σ = ' + totP.toFixed(2) + ' W')
                 )
               );
@@ -1820,15 +1820,15 @@ window.StemLab = window.StemLab || {
                 );
               }
               return h('div', { className: 'circuit-card mt-4 bg-gradient-to-br from-slate-900 to-blue-950/40 border border-cyan-500/25 rounded-xl p-4 backdrop-blur-md' },
-                h('p', { className: 'text-[11px] font-bold text-cyan-400 uppercase tracking-wider mb-1' }, '🐌⚡ The paradox: electrons crawl, the signal races'),
-                h('p', { className: 'text-[11px] text-slate-400 mb-2 leading-snug' }, 'The blue dots in the schematic move fast so you can see them — but real electrons barely creep. So why does the bulb light instantly? Because flipping the switch launches an electric field down the wire at nearly light speed, nudging every electron at once.'),
-                h('svg', { viewBox: '0 0 360 120', width: '100%', role: 'img', 'aria-label': 'Two wires. In the top wire the electric field pulse races across almost instantly. In the bottom wire individual electrons drift very slowly.' },
-                  lane(32, '⚡ Electric field / signal', '≈ 200,000 km/s'),
+                h('p', { className: 'text-[11px] font-bold text-cyan-400 uppercase tracking-wider mb-1' }, '🐌⚡ ' + __alloT('stem.circuit.paradox_title', 'The paradox: electrons crawl, the signal races')),
+                h('p', { className: 'text-[11px] text-slate-400 mb-2 leading-snug' }, __alloT('stem.circuit.paradox_body', 'The blue dots in the schematic move fast so you can see them — but real electrons barely creep. So why does the bulb light instantly? Because flipping the switch launches an electric field down the wire at nearly light speed, nudging every electron at once.')),
+                h('svg', { viewBox: '0 0 360 120', width: '100%', role: 'img', 'aria-label': __alloT('stem.circuit.aria_paradox_svg', 'Two wires. In the top wire the electric field pulse races across almost instantly. In the bottom wire individual electrons drift very slowly.') },
+                  lane(32, '⚡ ' + __alloT('stem.circuit.lane_field_label', 'Electric field / signal'), '≈ 200,000 km/s'),
                   // fast signal pulse
                   h('g', { className: reduced ? '' : 'circ-signal-pulse' },
                     h('rect', { x: 4, y: 24, width: 16, height: 16, rx: 8, fill: '#22d3ee', opacity: 0.9, filter: 'drop-shadow(0 0 5px #22d3ee)' })
                   ),
-                  lane(84, '🔵 Actual electrons', '≈ ' + (vDriftMm < 0.1 ? vDriftMm.toFixed(3) : vDriftMm.toFixed(2)) + ' mm/s'),
+                  lane(84, '🔵 ' + __alloT('stem.circuit.lane_electrons_label', 'Actual electrons'), '≈ ' + (vDriftMm < 0.1 ? vDriftMm.toFixed(3) : vDriftMm.toFixed(2)) + ' mm/s'),
                   // slow drifting electrons
                   [0, 1, 2, 3, 4, 5].map(function(k) {
                     return h('g', { key: k, className: reduced ? '' : 'circ-electron-drift', style: reduced ? {} : { animationDelay: (-k * 1.0) + 's' } },
@@ -1838,11 +1838,11 @@ window.StemLab = window.StemLab || {
                 ),
                 h('div', { className: 'grid grid-cols-2 gap-2 mt-1' },
                   h('div', { className: 'bg-cyan-950/30 border border-cyan-500/20 rounded-lg p-2 text-center' },
-                    h('p', { className: 'text-[10px] uppercase tracking-wider text-cyan-500/80 font-bold' }, 'Signal crosses 1 m in'),
+                    h('p', { className: 'text-[10px] uppercase tracking-wider text-cyan-500/80 font-bold' }, __alloT('stem.circuit.signal_crosses_label', 'Signal crosses 1 m in')),
                     h('p', { className: 'text-sm font-black font-mono text-cyan-300' }, '~5 nanoseconds')
                   ),
                   h('div', { className: 'bg-blue-950/30 border border-blue-500/20 rounded-lg p-2 text-center' },
-                    h('p', { className: 'text-[10px] uppercase tracking-wider text-blue-400/80 font-bold' }, 'One electron crosses 1 m in'),
+                    h('p', { className: 'text-[10px] uppercase tracking-wider text-blue-400/80 font-bold' }, __alloT('stem.circuit.electron_crosses_label', 'One electron crosses 1 m in')),
                     h('p', { className: 'text-sm font-black font-mono text-blue-300' }, '~' + driftTime)
                   )
                 ),
@@ -1900,8 +1900,8 @@ window.StemLab = window.StemLab || {
             // KVL Verification (g68 / g912)
             // ══════════════════════════════════════
             (band === 'g68' || band === 'g912') && components.length > 0 && mode === 'series' && current > 0.001 && h('div', { className: 'mt-4 bg-indigo-950/20 border border-indigo-500/30 rounded-xl p-4 backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-2' }, '\u2696 Kirchhoff\'s Voltage Law (KVL) Verification'),
-              h('p', { className: 'text-xs text-slate-300 mb-2' }, 'The sum of voltage drops around any closed loop equals the source voltage. The same current flows through every series component, so this isn\'t a lucky coincidence — Ohm\'s law forces it to balance.'),
+              h('p', { className: 'text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-2' }, '\u2696 ' + __alloT('stem.circuit.kvl_title', 'Kirchhoff\'s Voltage Law (KVL) Verification')),
+              h('p', { className: 'text-xs text-slate-300 mb-2' }, __alloT('stem.circuit.kvl_desc', 'The sum of voltage drops around any closed loop equals the source voltage. The same current flows through every series component, so this isn\'t a lucky coincidence — Ohm\'s law forces it to balance.')),
               h('div', { className: 'space-y-1' },
                 components.map(function(comp, i) {
                   var compR = getCompR(comp);
@@ -1923,7 +1923,7 @@ window.StemLab = window.StemLab || {
                       h('span', { className: 'text-indigo-300' }, '\u2211 V_drops = ' + vSum.toFixed(2) + 'V'),
                       h('span', { className: 'text-indigo-400' }, '\u2248'),
                       h('span', { className: 'text-indigo-300' }, 'V_source = ' + voltage + 'V'),
-                      h('span', { className: Math.abs(vSum - voltage) < 0.1 ? 'text-emerald-400' : 'text-rose-400' }, Math.abs(vSum - voltage) < 0.1 ? '\u2713 must balance: \u03A3V = I\u00D7\u03A3R = V' : '\u26A0\uFE0F')
+                      h('span', { className: Math.abs(vSum - voltage) < 0.1 ? 'text-emerald-400' : 'text-rose-400' }, Math.abs(vSum - voltage) < 0.1 ? '\u2713 ' + __alloT('stem.circuit.must_balance', 'must balance: \u03A3V = I\u00D7\u03A3R = V') : '\u26A0\uFE0F')
                     );
                   })()
                 )
@@ -1934,33 +1934,33 @@ window.StemLab = window.StemLab || {
             // Open/Short circuit warnings
             // ══════════════════════════════════════
             isOpen && h('div', { role: 'alert', className: 'mt-4 bg-amber-950/20 rounded-xl border border-amber-500/40 p-4 text-center' },
-              h('p', { className: 'text-base font-black text-amber-400' }, '\uD83D\uDD13 CIRCUIT OPEN'),
-              h('p', { className: 'text-xs text-amber-500/90 mt-1' }, 'A switch is open - no current flows. Close all switches to complete the circuit.')
+              h('p', { className: 'text-base font-black text-amber-400' }, '\uD83D\uDD13 ' + __alloT('stem.circuit.circuit_open_title', 'CIRCUIT OPEN')),
+              h('p', { className: 'text-xs text-amber-500/90 mt-1' }, __alloT('stem.circuit.circuit_open_desc', 'A switch is open - no current flows. Close all switches to complete the circuit.'))
             ),
 
             isShort && h('div', { role: 'alert', className: 'mt-4 bg-red-950/30 rounded-xl border border-red-500/40 p-4 text-center short-active-flash' },
-              h('p', { className: 'text-base font-black text-red-400' }, '\u26A0\uFE0F SHORT CIRCUIT DETECTED'),
-              h('p', { className: 'text-xs text-red-400/90 mt-1' }, 'Total resistance is below 1\u03A9! In real life, this could damage components or cause a fire. Add more resistance.')
+              h('p', { className: 'text-base font-black text-red-400' }, '\u26A0\uFE0F ' + __alloT('stem.circuit.short_circuit_detected_title', 'SHORT CIRCUIT DETECTED')),
+              h('p', { className: 'text-xs text-red-400/90 mt-1' }, __alloT('stem.circuit.short_circuit_detected_desc', 'Total resistance is below 1\u03A9! In real life, this could damage components or cause a fire. Add more resistance.'))
             ),
 
             // ══════════════════════════════════════
             // Circuit Presets
             // ══════════════════════════════════════
             h('div', { className: 'mt-4 bg-slate-900/40 border border-slate-800 p-4 rounded-xl backdrop-blur-md' },
-              h('button', { 'aria-label': 'Circuit Presets', 'aria-expanded': showPresets,
+              h('button', { 'aria-label': __alloT('stem.circuit.circuit_presets', 'Circuit Presets'), 'aria-expanded': showPresets,
                 onClick: function() { upd('showPresets', !showPresets); },
                 className: 'flex items-center gap-2 w-full text-left'
               },
-                h('p', { className: 'text-[11px] font-bold text-slate-300 uppercase tracking-wider' }, '\uD83D\uDCCB Circuit Presets'),
+                h('p', { className: 'text-[11px] font-bold text-slate-300 uppercase tracking-wider' }, '\uD83D\uDCCB ' + __alloT('stem.circuit.circuit_presets', 'Circuit Presets')),
                 h('span', { className: 'ml-auto text-slate-400 text-xs' }, showPresets ? '\u25B2' : '\u25BC')
               ),
               showPresets && h('div', { className: 'flex flex-wrap gap-2 mt-3' },
                 CIRCUIT_PRESETS.map(function(preset) {
-                  return h('button', { 'aria-label': 'Load Preset',
+                  return h('button', { 'aria-label': __alloT('stem.circuit.aria_load_preset', 'Load Preset'),
                     key: preset.id,
                     onClick: function() { loadPreset(preset); },
                     className: 'px-3 py-2 rounded-lg text-xs border border-slate-800 bg-slate-950/60 hover:bg-slate-800 transition-all text-left w-full sm:w-auto active:scale-[0.97]',
-                    title: preset.desc
+                    title: __alloT('stem.circuit.' + (preset.id) + '_desc', preset.desc)
                   },
                     h('span', { className: 'font-bold text-slate-200 block' }, preset.label),
                     h('span', { className: 'text-[10px] text-slate-400 mt-0.5 block' }, __alloT('stem.circuit.' + (preset.id) + '_desc', preset.desc))
@@ -1973,7 +1973,7 @@ window.StemLab = window.StemLab || {
             // Circuit Challenges (10)
             // ══════════════════════════════════════
             h('div', { className: 'mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-amber-500 uppercase tracking-wider mb-2' }, '\uD83C\uDFAF Circuit Challenges'),
+              h('p', { className: 'text-[11px] font-bold text-amber-500 uppercase tracking-wider mb-2' }, '\uD83C\uDFAF ' + __alloT('stem.circuit.circuit_challenges_title', 'Circuit Challenges')),
               h('div', { className: 'flex flex-wrap gap-2' },
                 CHALLENGES.map(function(ch, ci) {
                   var actual = ch.type === 'current' ? current : ch.type === 'resistance' ? totalR : power;
@@ -2013,7 +2013,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'flex items-center gap-2 mb-3' },
                   h('button', { onClick: function() { var q = makeOhmQuestion(); upd('ohmQuiz', q); },
                     className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (ohmQuiz ? 'bg-blue-900/40 text-blue-300 border border-blue-800' : 'transition-colors bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 active:scale-[0.97]')
-                  }, ohmQuiz ? '\uD83D\uDD04 Next Question' : '\u26A1 Ohm\'s Law Quiz'),
+                  }, ohmQuiz ? '\uD83D\uDD04 ' + __alloT('stem.circuit.next_question', 'Next Question') : '\u26A1 ' + __alloT('stem.circuit.ohm_law_quiz', 'Ohm\'s Law Quiz')),
                   ohmScore > 0 && h('span', { className: 'text-xs font-bold text-emerald-400' }, '\u2B50 ' + ohmScore + ' correct'),
                   ohmStreak > 1 && h('span', { className: 'text-xs font-bold text-orange-400 animate-pulse' }, '\uD83D\uDD25 ' + ohmStreak + ' streak')
                 ),
@@ -2053,7 +2053,7 @@ window.StemLab = window.StemLab || {
                 ohmQuiz && ohmQuiz.answered && h('div', {
                   className: 'p-3 rounded-lg text-sm font-bold ' + (Math.abs(ohmQuiz.chosen - ohmQuiz.answer) < 0.01 ? 'bg-emerald-950/20 text-emerald-400 border border-emerald-900/30' : 'bg-red-950/20 text-red-400 border border-red-900/30')
                 },
-                  Math.abs(ohmQuiz.chosen - ohmQuiz.answer) < 0.01 ? '\u2705 Correct!' : '\u274C Answer: ' + ohmQuiz.answer + ohmQuiz.unit,
+                  Math.abs(ohmQuiz.chosen - ohmQuiz.answer) < 0.01 ? '\u2705 ' + __alloT('stem.circuit.quiz_correct', 'Correct!') : '\u274C Answer: ' + ohmQuiz.answer + ohmQuiz.unit,
                   h('p', {
                     className: 'text-xs font-normal mt-1 ' + (Math.abs(ohmQuiz.chosen - ohmQuiz.answer) < 0.01 ? 'text-emerald-500' : 'text-red-500')
                   }, '\uD83D\uDD0D ' + ohmQuiz.formula)
@@ -2065,7 +2065,7 @@ window.StemLab = window.StemLab || {
             // Badge panel (collapsible)
             // ══════════════════════════════════════
             showBadges && h('div', { className: 'mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-amber-400 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 Badges (' + Object.keys(badges).length + '/' + BADGES.length + ')'),
+              h('p', { className: 'text-[11px] font-bold text-amber-400 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 ' + __alloT('stem.circuit.badges', 'Badges') + ' (' + Object.keys(badges).length + '/' + BADGES.length + ')'),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
                 BADGES.map(function(b) {
                   var earned = badges[b.id];
