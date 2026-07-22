@@ -16537,10 +16537,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // grades — just self-knowledge.
   function PersonalSelfAssessment(props) {
     if (!R) return null;
-    var data = props.data || { assessments: [] };
+    var data = props.data && typeof props.data === 'object' ? props.data : { assessments: [] };
     var setData = props.setData;
+    var isRecord = function(value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
+    var textValue = function(value) { return typeof value === 'string' ? value : (typeof value === 'number' ? String(value) : ''); };
+    var rawAssessments = Array.isArray(data.assessments) ? data.assessments : [];
     var as = R.useState({}); var answers = as[0]; var setAnswers = as[1];
     var ms = R.useState([]); var missingIds = ms[0]; var setMissingIds = ms[1];
+    var pfs = R.useState(''); var pendingFocusId = pfs[0]; var setPendingFocusId = pfs[1];
+
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, missingIds, data]);
 
     var QUESTIONS = [
       { id: 'q1', text: 'A way I often like to explore new information is…', options: ['Looking at examples or visuals', 'Listening to an explanation', 'Trying it myself', 'Discussing it with someone'] },
@@ -16557,13 +16569,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'q12', text: 'A direction that matters to me right now is…', options: ['Deepening a skill', 'Helping others', 'Building or creating', 'Making room for balance'] }
     ];
 
-    function focusById(id) {
-      setTimeout(function() {
-        if (typeof document === 'undefined') return;
-        var target = document.getElementById(id);
-        if (target && typeof target.focus === 'function') target.focus();
-      }, 0);
-    }
+    function focusById(id) { setPendingFocusId(id); }
     function pick(questionId, value) {
       var next = Object.assign({}, answers); next[questionId] = value; setAnswers(next);
       if (missingIds.indexOf(questionId) >= 0) setMissingIds(missingIds.filter(function(id) { return id !== questionId; }));
@@ -16577,40 +16583,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return;
       }
       var entry = { id: tkId(), date: todayISO(), answers: Object.assign({}, answers) };
-      setData(Object.assign({}, data, { assessments: [entry].concat(data.assessments || []) }));
+      setData(Object.assign({}, data, { assessments: [entry].concat(rawAssessments) }));
       setAnswers({}); setMissingIds([]);
       llAnnounce('Learning reflection snapshot saved.');
       focusById('learning-lab-assessment-history-heading');
     }
     function removeAssessment(entry) {
-      askLearningLabConfirmation('Remove the learning reflection from ' + String(entry.date || 'this date') + '? This cannot be undone.', {
+      askLearningLabConfirmation('Remove the learning reflection from ' + (textValue(entry.date).trim() || 'this date') + '? This cannot be undone.', {
         title: 'Remove this reflection snapshot?', confirmText: 'Remove snapshot'
       }).then(function(accepted) {
         if (!accepted) return;
-        setData(Object.assign({}, data, { assessments: (data.assessments || []).filter(function(item) { return item.id !== entry.id; }) }));
+        setData(Object.assign({}, data, { assessments: rawAssessments.filter(function(item) { return !(isRecord(item) && item.id === entry.id); }) }));
         llAnnounce('Learning reflection snapshot removed.');
         focusById('learning-lab-assessment-history-heading');
       });
     }
 
-    var assessments = data.assessments || [];
+    var assessments = rawAssessments.filter(isRecord);
     var recentAssessments = assessments.slice(0, 20);
     var answeredCount = QUESTIONS.filter(function(question) { return !!answers[question.id]; }).length;
     var progressText = answeredCount + ' of ' + QUESTIONS.length + ' questions answered.';
-    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.5 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 12, lineHeight: 1.5 };
     var legendStyle = { padding: 0, color: '#e9d5ff', fontSize: 12, fontWeight: 800, lineHeight: 1.5 };
-    var errorStyle = { margin: '7px 0 0', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var errorStyle = { margin: '7px 0 0', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 12, fontWeight: 700 };
 
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🔍', 'Learning Reflection', 'A 12-question snapshot of current preferences and patterns. There are no right answers.', '#a855f7'),
-      hh('aside', { 'aria-labelledby': 'learning-lab-assessment-about-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #c084fc', background: 'rgba(88,28,135,0.24)', color: '#f3e8ff', fontSize: 11, lineHeight: 1.55 } },
+      hh('aside', { 'aria-labelledby': 'learning-lab-assessment-about-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #c084fc', background: 'rgba(88,28,135,0.24)', color: '#f3e8ff', fontSize: 12, lineHeight: 1.55 } },
         hh('h2', { id: 'learning-lab-assessment-about-heading', style: { margin: '0 0 5px', fontSize: 13 } }, 'A reflection, not a test or diagnosis'),
         hh('p', { style: { margin: 0 } }, 'Preferences and needs can change by task, setting, and day. This snapshot does not assign a learning style, score, or label.')
       ),
       tkCard('#a855f7',
         hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-assessment-form-heading', 'aria-describedby': 'learning-lab-assessment-privacy-note' },
           hh('h2', { id: 'learning-lab-assessment-form-heading', style: { margin: '0 0 5px', color: '#e9d5ff', fontSize: 15 } }, 'Current learning reflection'),
-          hh('p', { id: 'learning-lab-assessment-privacy-note', style: helpStyle }, 'Snapshots save in this browser. Avoid choosing or saving private information if other people use this device.'),
+          hh('p', { id: 'learning-lab-assessment-privacy-note', style: helpStyle }, 'Snapshots save in this browser only; saving does not send them to or notify anyone. Avoid choosing or saving private information if other people use this device.'),
           hh('div', { style: { marginBottom: 14 } },
             hh('label', { htmlFor: 'learning-lab-assessment-progress', style: { display: 'block', marginBottom: 5, color: '#e9d5ff', fontSize: 12, fontWeight: 800 } }, progressText),
             hh('progress', { id: 'learning-lab-assessment-progress', value: answeredCount, max: QUESTIONS.length, style: { width: '100%', minHeight: 24, accentColor: '#a855f7' } }, progressText)
@@ -16646,13 +16652,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 return hh('li', { key: 'sa-' + entry.id },
                   hh('article', { 'aria-labelledby': headingId, style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.62)', border: '1px solid #a855f7' } },
                     hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
-                      hh('h3', { id: headingId, style: { margin: 0, color: '#e9d5ff', fontSize: 13 } }, 'Reflection from ', hh('time', { dateTime: entry.date || undefined }, relDate(entry.date))),
-                      hh('button', { type: 'button', onClick: function() { removeAssessment(entry); }, 'aria-label': 'Remove learning reflection from ' + String(entry.date || 'unknown date'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Remove')
+                      hh('h3', { id: headingId, style: { margin: 0, color: '#e9d5ff', fontSize: 13 } }, 'Reflection from ', hh('time', { dateTime: textValue(entry.date).trim() || undefined }, relDate(textValue(entry.date).trim()))),
+                      hh('button', { type: 'button', onClick: function() { removeAssessment(entry); }, 'aria-label': 'Remove learning reflection from ' + (textValue(entry.date).trim() || 'unknown date'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Remove')
                     ),
                     hh('details', { style: { marginTop: 8, color: '#e2e8f0' } },
                       hh('summary', { style: { display: 'flex', alignItems: 'center', minHeight: 44, color: '#e9d5ff', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Review all responses'),
-                      hh('dl', { 'aria-label': 'Learning reflection responses', style: { margin: '8px 0 0', fontSize: 11 } },
-                        QUESTIONS.map(function(question) { return hh('div', { key: 'answer-' + entry.id + '-' + question.id, style: { marginBottom: 9 } }, hh('dt', { style: { color: '#d8b4fe', fontWeight: 800 } }, question.text), hh('dd', { style: { margin: '2px 0 0', color: '#f1f5f9' } }, (entry.answers || {})[question.id] || 'No response recorded')); })
+                      hh('dl', { 'aria-label': 'Learning reflection responses', style: { margin: '8px 0 0', fontSize: 12 } },
+                        QUESTIONS.map(function(question) { return hh('div', { key: 'answer-' + entry.id + '-' + question.id, style: { marginBottom: 9 } }, hh('dt', { style: { color: '#d8b4fe', fontWeight: 800 } }, question.text), hh('dd', { style: { margin: '2px 0 0', color: '#f1f5f9' } }, textValue((entry.answers && typeof entry.answers === 'object' ? entry.answers : {})[question.id]).trim() || 'No response recorded')); })
                       )
                     )
                   )
@@ -20809,7 +20815,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkRole',     icon: '🌟', label: 'Role Models',          color: '#fbbf24', desc: 'People whose qualities you want to grow',
         stat: (Array.isArray((data.mytkRole || {}).models) ? (data.mytkRole || {}).models.length : 0) + ' models', cta: 'Add a role model' },
       { id: 'mytkAssess',   icon: '🔍', label: 'Self-Assessment',      color: '#a855f7', desc: '12-question academic self-awareness check',
-        stat: ((data.mytkAssess || {}).assessments || []).length + ' snapshots', cta: 'Take the quiz' },
+        stat: (Array.isArray((data.mytkAssess || {}).assessments) ? (data.mytkAssess || {}).assessments.length : 0) + ' snapshots', cta: 'Take the quiz' },
       { id: 'mytkContract', icon: '📜', label: 'Learning Contract',    color: '#06b6d4', desc: 'Self-agreement: commitments + rewards + accountability',
         stat: ((data.mytkContract || {}).contracts || []).length + ' contracts', cta: 'Make a contract' },
       { id: 'mytkCircle',   icon: '🤝', label: 'Circle of Support',    color: '#10b981', desc: 'Map your real support network',

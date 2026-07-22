@@ -66,14 +66,14 @@ describe('Learning Lab Self-Assessment accessibility', () => {
   });
 
   it('discloses local storage and shared-device privacy considerations', () => {
-    expect(assessment).toContain('Snapshots save in this browser.');
+    expect(assessment).toContain('Snapshots save in this browser only; saving does not send them to or notify anyone.');
     expect(assessment).toContain('if other people use this device.');
     expect(assessment).toContain("'aria-describedby': 'learning-lab-assessment-privacy-note'");
   });
 
   it('copies answer state and preserves unrelated section data when saving', () => {
     expect(assessment).toContain('answers: Object.assign({}, answers)');
-    expect(assessment).toContain("setData(Object.assign({}, data, { assessments: [entry].concat(data.assessments || []) }))");
+    expect(assessment).toContain("setData(Object.assign({}, data, { assessments: [entry].concat(rawAssessments) }))");
   });
 
   it('announces a save and moves focus to history', () => {
@@ -89,13 +89,13 @@ describe('Learning Lab Self-Assessment accessibility', () => {
   });
 
   it('uses time semantics for saved snapshot headings', () => {
-    expect(assessment).toContain("hh('time', { dateTime: entry.date || undefined }, relDate(entry.date))");
+    expect(assessment).toContain("hh('time', { dateTime: textValue(entry.date).trim() || undefined }, relDate(textValue(entry.date).trim()))");
   });
 
   it('exposes every saved response in a definition list', () => {
     expect(assessment).toContain("'Review all responses'");
     expect(assessment).toContain("hh('dl', { 'aria-label': 'Learning reflection responses'");
-    expect(assessment).toContain("(entry.answers || {})[question.id] || 'No response recorded'");
+    expect(assessment).toContain("textValue((entry.answers && typeof entry.answers === 'object' ? entry.answers : {})[question.id]).trim() || 'No response recorded'");
     expect(assessment).not.toContain("'Top: '");
   });
 
@@ -111,8 +111,8 @@ describe('Learning Lab Self-Assessment accessibility', () => {
   });
 
   it('names deletion, preserves data, announces removal, and restores focus', () => {
-    expect(assessment).toContain("'aria-label': 'Remove learning reflection from ' + String(entry.date || 'unknown date')");
-    expect(assessment).toContain("setData(Object.assign({}, data, { assessments: (data.assessments || []).filter");
+    expect(assessment).toContain("'aria-label': 'Remove learning reflection from ' + (textValue(entry.date).trim() || 'unknown date')");
+    expect(assessment).toContain("setData(Object.assign({}, data, { assessments: rawAssessments.filter");
     expect(assessment).toContain("llAnnounce('Learning reflection snapshot removed.')");
     expect(assessment).toContain("focusById('learning-lab-assessment-history-heading')");
   });
@@ -121,6 +121,18 @@ describe('Learning Lab Self-Assessment accessibility', () => {
     expect(assessment).toContain("gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))'");
     expect(assessment).toContain("minWidth: 44, minHeight: 44");
     expect(assessment).toContain("minHeight: 44");
+  });
+
+  it('handles malformed legacy snapshot data without crashing', () => {
+    expect(assessment).toContain('var rawAssessments = Array.isArray(data.assessments) ? data.assessments : [];');
+    expect(assessment).toContain('var assessments = rawAssessments.filter(isRecord);');
+    expect(source).toContain("stat: (Array.isArray((data.mytkAssess || {}).assessments) ? (data.mytkAssess || {}).assessments.length : 0) + ' snapshots'");
+  });
+
+  it('synchronizes focus with rendered state instead of a focus timer', () => {
+    expect(assessment).toContain('if (!pendingFocusId) return;');
+    expect(assessment).toContain('function focusById(id) { setPendingFocusId(id); }');
+    expect(assessment).not.toContain('setTimeout');
   });
 
   it('keeps the deployed mirror identical', () => {
