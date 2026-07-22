@@ -1936,32 +1936,32 @@ const d = labToolData.physics;
 
           var PRESETS = [
 
-            { label: '\uD83C\uDF0D Earth', gravity: 9.8 },
+            { label: '\uD83C\uDF0D ' + __alloT('stem.physics.preset_earth', 'Earth'), gravity: 9.8 },
 
-            { label: '\uD83C\uDF11 Moon', gravity: 1.6 },
+            { label: '\uD83C\uDF11 ' + __alloT('stem.physics.preset_moon', 'Moon'), gravity: 1.6 },
 
-            { label: '\u2642\uFE0F Mars', gravity: 3.7 },
+            { label: '\u2642\uFE0F ' + __alloT('stem.physics.preset_mars', 'Mars'), gravity: 3.7 },
 
-            { label: '\u2643 Jupiter', gravity: 24.8 },
+            { label: '\u2643 ' + __alloT('stem.physics.preset_jupiter', 'Jupiter'), gravity: 24.8 },
 
           ];
 
           var CHALLENGES = [
 
-            { target: 50, label: '\uD83C\uDFAF Land at 50m', tolerance: 8 },
+            { target: 50, label: '\uD83C\uDFAF ' + __alloT('stem.physics.challenge_land_50m', 'Land at 50m'), tolerance: 8 },
 
-            { target: 100, label: '\uD83C\uDFAF Hit the 100m flag', tolerance: 10 },
+            { target: 100, label: '\uD83C\uDFAF ' + __alloT('stem.physics.challenge_hit_100m_flag', 'Hit the 100m flag'), tolerance: 10 },
 
-            { target: 200, label: '\uD83C\uDFAF Reach 200m range', tolerance: 12 },
+            { target: 200, label: '\uD83C\uDFAF ' + __alloT('stem.physics.challenge_reach_200m', 'Reach 200m range'), tolerance: 12 },
 
           ];
           var physicsNext = (d.launchCount || 0) === 0
-            ? 'Predict the range, then launch once and compare the result.'
+            ? __alloT('stem.physics.next_predict_then_launch', 'Predict the range, then launch once and compare the result.')
             : !d.showVectors && !d.showEnergy
-              ? 'Turn on vectors or energy and explain what changes during flight.'
+              ? __alloT('stem.physics.next_turn_on_vectors', 'Turn on vectors or energy and explain what changes during flight.')
               : d.targetMode
-                ? 'Use one controlled change to improve your next target attempt.'
-                : 'Change only angle, velocity, or gravity and compare the new trajectory.';
+                ? __alloT('stem.physics.next_one_controlled_change', 'Use one controlled change to improve your next target attempt.')
+                : __alloT('stem.physics.next_change_only_one', 'Change only angle, velocity, or gravity and compare the new trajectory.');
 
           return React.createElement("div", { id: "physics-fs-outer", className: "max-w-5xl mx-auto animate-in fade-in duration-200", style: d.physFsMode ? { position: 'fixed', inset: 0, zIndex: 9998, width: '100vw', height: '100vh', maxWidth: '100vw', margin: 0, overflowY: 'auto', background: '#0f172a', padding: '10px' } : { position: 'relative' } },
 
@@ -1971,21 +1971,21 @@ const d = labToolData.physics;
                 React.createElement("div", { className: "flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between" },
                   React.createElement("div", { className: "min-w-0" },
                     React.createElement("div", { className: "flex items-center gap-2" },
-                      React.createElement("button", { onClick: () => setStemLabTool(null), className: "shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-cyan-300", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18 })),
-                      React.createElement("span", { className: "rounded-full bg-cyan-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100 ring-1 ring-cyan-200/30" }, "Projectile mission")
+                      React.createElement("button", { onClick: () => setStemLabTool(null), className: "shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-cyan-300", 'aria-label': __alloT('stem.physics.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
+                      React.createElement("span", { className: "rounded-full bg-cyan-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100 ring-1 ring-cyan-200/30" }, __alloT('stem.physics.projectile_mission', 'Projectile mission'))
                     ),
-                    React.createElement("h3", { className: "mt-3 text-xl font-black tracking-tight sm:text-2xl" }, "\u26A1 Physics Simulator"),
-                    React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-6 text-cyan-100" }, "Investigate how launch conditions shape motion, then support each claim with trajectory evidence."),
+                    React.createElement("h3", { className: "mt-3 text-xl font-black tracking-tight sm:text-2xl" }, "\u26A1 " + __alloT('stem.physics.physics_simulator', 'Physics Simulator')),
+                    React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-6 text-cyan-100" }, __alloT('stem.physics.tool_intro_blurb', 'Investigate how launch conditions shape motion, then support each claim with trajectory evidence.')),
                     React.createElement("div", { className: "mt-3 rounded-xl border border-white/15 bg-white/10 p-3" },
-                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200" }, "Recommended next move"),
+                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200" }, __alloT('stem.physics.recommended_next_move', 'Recommended next move')),
                       React.createElement("p", { className: "mt-1 text-sm font-semibold text-white" }, physicsNext)
                     )
                   ),
                   React.createElement("div", { className: "grid grid-cols-3 gap-2 lg:w-[22rem]" },
                     [
-                      { label: 'Angle', value: String(d.angle || 45) + '\u00B0' },
-                      { label: 'Speed', value: String(d.velocity || 25) + ' m/s' },
-                      { label: 'Launches', value: String(d.launchCount || 0) }
+                      { label: __alloT('stem.physics.metric_angle', 'Angle'), value: String(d.angle || 45) + '\u00B0' },
+                      { label: __alloT('stem.physics.metric_speed', 'Speed'), value: String(d.velocity || 25) + ' m/s' },
+                      { label: __alloT('stem.physics.metric_launches', 'Launches'), value: String(d.launchCount || 0) }
                     ].map(function(metric) {
                       return React.createElement("div", { key: metric.label, className: "min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center" },
                         React.createElement("div", { className: "truncate text-sm font-black text-white", title: metric.value }, metric.value),
@@ -1994,11 +1994,11 @@ const d = labToolData.physics;
                     })
                   )
                 ),
-                React.createElement("ol", { className: "mt-4 grid gap-2 text-xs sm:grid-cols-3", "aria-label": "Projectile investigation pathway" },
+                React.createElement("ol", { className: "mt-4 grid gap-2 text-xs sm:grid-cols-3", "aria-label": __alloT('stem.physics.investigation_pathway', 'Projectile investigation pathway') },
                   [
-                    { n: '1', title: 'Predict', detail: 'Choose variables and estimate range.' },
-                    { n: '2', title: 'Launch', detail: 'Observe motion and collect evidence.' },
-                    { n: '3', title: 'Explain', detail: 'Connect forces to the trajectory.' }
+                    { n: '1', title: __alloT('stem.physics.step_predict', 'Predict'), detail: __alloT('stem.physics.step_predict_detail', 'Choose variables and estimate range.') },
+                    { n: '2', title: __alloT('stem.physics.step_launch', 'Launch'), detail: __alloT('stem.physics.step_launch_detail', 'Observe motion and collect evidence.') },
+                    { n: '3', title: __alloT('stem.physics.step_explain', 'Explain'), detail: __alloT('stem.physics.step_explain_detail', 'Connect forces to the trajectory.') }
                   ].map(function(step) {
                     return React.createElement("li", { key: step.n, className: "flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5" },
                       React.createElement("span", { className: "flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cyan-300 font-black text-slate-950" }, step.n),
@@ -2018,8 +2018,8 @@ const d = labToolData.physics;
               // toggled via state (physFsMode): the wrapper goes position:fixed/100vw/100vh and,
               // because the canvas is width/height:100%, the re-render re-measures it to fill.
               React.createElement("button", {
-                'aria-label': (d.physFsMode ? 'Exit fullscreen' : 'Fullscreen') + ' for the physics canvas',
-                title: d.physFsMode ? 'Exit fullscreen' : 'Fullscreen',
+                'aria-label': (d.physFsMode ? __alloT('stem.physics.exit_fullscreen', 'Exit fullscreen') : __alloT('stem.physics.fullscreen', 'Fullscreen')) + __alloT('stem.physics.for_the_physics_canvas', ' for the physics canvas'),
+                title: d.physFsMode ? __alloT('stem.physics.exit_fullscreen', 'Exit fullscreen') : __alloT('stem.physics.fullscreen', 'Fullscreen'),
                 onClick: function() {
                   // Fullscreen the OUTER container (header + canvas + controls),
                   // not just the canvas, so the sim controls stay usable in
@@ -2056,7 +2056,7 @@ const d = labToolData.physics;
 
                 role: "application",
 
-                "aria-label": "Physics projectile simulator — use arrow keys to adjust angle and velocity, Space to launch",
+                "aria-label": __alloT('stem.physics.aria_canvas', 'Physics projectile simulator — use arrow keys to adjust angle and velocity, Space to launch'),
 
                 "data-angle": d.angle, "data-velocity": d.velocity, "data-gravity": d.gravity,
 
@@ -2103,7 +2103,7 @@ const d = labToolData.physics;
 
             React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
 
-              React.createElement("button", { "aria-label": "Launch!",
+              React.createElement("button", { "aria-label": __alloT('stem.physics.launch', 'Launch!'),
 
                 onClick: function () {
 
@@ -2121,11 +2121,11 @@ const d = labToolData.physics;
 
                 }, className: "px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl text-sm hover:from-amber-600 hover:to-orange-600 shadow-md transition-all"
 
-              }, "\uD83D\uDE80 Launch!"),
+              }, "\uD83D\uDE80 " + __alloT('stem.physics.launch', 'Launch!')),
 
               // \u2500\u2500 Predict-then-launch input \u2500\u2500
               React.createElement("div", { className: "flex items-center gap-1.5 bg-fuchsia-50 border border-fuchsia-200 rounded-lg px-2 py-1" },
-                React.createElement("label", { htmlFor: "physPredict", className: "text-[11px] font-bold text-fuchsia-700" }, "\uD83D\uDD2E Predict landing:"),
+                React.createElement("label", { htmlFor: "physPredict", className: "text-[11px] font-bold text-fuchsia-700" }, "\uD83D\uDD2E " + __alloT('stem.physics.predict_landing', 'Predict landing:')),
                 React.createElement("input", {
                   id: "physPredict",
                   type: "number",
@@ -2134,7 +2134,7 @@ const d = labToolData.physics;
                   step: 0.1,
                   value: d.predictedRange == null ? '' : d.predictedRange,
                   placeholder: "m",
-                  "aria-label": "Predicted landing distance in meters",
+                  "aria-label": __alloT('stem.physics.aria_predicted_landing', 'Predicted landing distance in meters'),
                   onChange: function(e) { upd('predictedRange', e.target.value); },
                   className: "w-16 px-1.5 py-0.5 text-xs font-mono border border-fuchsia-300 rounded bg-white text-slate-700 focus:outline-none focus:border-fuchsia-500"
                 }),
@@ -2157,7 +2157,7 @@ const d = labToolData.physics;
                 (d.predictionResult.xp ? ' +' + d.predictionResult.xp + ' XP' : '')
               ),
 
-              React.createElement("button", { "aria-label": "Air drag, currently " + (d.airResist ? "on" : "off") + ". Click to toggle.",
+              React.createElement("button", { "aria-label": __alloT('stem.physics.aria_air_drag_currently', 'Air drag, currently ') + (d.airResist ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
 
                 "aria-pressed": !!d.airResist,
 
@@ -2165,69 +2165,69 @@ const d = labToolData.physics;
 
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.airResist ? 'bg-orange-700 text-white shadow-md' : 'bg-orange-50 text-orange-700 border border-orange-200')
 
-              }, "\uD83C\uDF2C\uFE0F Air Drag " + (d.airResist ? 'ON' : 'OFF')),
+              }, "\uD83C\uDF2C\uFE0F " + __alloT('stem.physics.label_air_drag', 'Air Drag ') + (d.airResist ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
 
-              React.createElement("button", { "aria-label": "Force vectors, currently " + (d.showVectors ? "on" : "off") + ". Click to toggle.",
+              React.createElement("button", { "aria-label": __alloT('stem.physics.aria_vectors_currently', 'Force vectors, currently ') + (d.showVectors ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
                 "aria-pressed": !!d.showVectors,
                 onClick: function () { upd('showVectors', !d.showVectors); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showVectors ? 'bg-purple-700 text-white shadow-md' : 'bg-purple-50 text-purple-700 border border-purple-200')
-              }, "\u2197\uFE0F Vectors " + (d.showVectors ? 'ON' : 'OFF')),
+              }, "\u2197\uFE0F " + __alloT('stem.physics.label_vectors', 'Vectors ') + (d.showVectors ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
 
-              React.createElement("button", { "aria-label": "Energy display, currently " + (d.showEnergy ? "on" : "off") + ". Click to toggle.",
+              React.createElement("button", { "aria-label": __alloT('stem.physics.aria_energy_currently', 'Energy display, currently ') + (d.showEnergy ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
                 "aria-pressed": !!d.showEnergy,
                 onClick: function () { upd('showEnergy', !d.showEnergy); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showEnergy ? 'bg-blue-700 text-white shadow-md' : 'bg-blue-50 text-blue-700 border border-blue-200')
-              }, "\u26A1 Energy " + (d.showEnergy ? 'ON' : 'OFF')),
+              }, "\u26A1 " + __alloT('stem.physics.label_energy', 'Energy ') + (d.showEnergy ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
 
-              React.createElement("button", { "aria-label": "Learn panel, currently " + (d.showLearn ? "on" : "off") + ". Click to toggle.",
+              React.createElement("button", { "aria-label": __alloT('stem.physics.aria_learn_currently', 'Learn panel, currently ') + (d.showLearn ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
                 "aria-pressed": !!d.showLearn,
                 onClick: function () { upd('showLearn', !d.showLearn); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showLearn ? 'bg-emerald-700 text-white shadow-md' : 'bg-emerald-50 text-emerald-700 border border-emerald-200')
-              }, "\uD83D\uDCD6 Learn"),
+              }, "\uD83D\uDCD6 " + __alloT('stem.physics.label_learn', 'Learn')),
 
-              React.createElement("button", { "aria-label": "Flight data, currently " + (d.showFlightData ? "on" : "off") + ". Click to toggle.",
+              React.createElement("button", { "aria-label": __alloT('stem.physics.aria_data_currently', 'Flight data, currently ') + (d.showFlightData ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
                 "aria-pressed": !!d.showFlightData,
                 onClick: function () { upd('showFlightData', !d.showFlightData); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showFlightData ? 'bg-cyan-700 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-200')
-              }, "\uD83D\uDCCA Data " + (d.showFlightData ? 'ON' : 'OFF')),
+              }, "\uD83D\uDCCA " + __alloT('stem.physics.label_data', 'Data ') + (d.showFlightData ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
 
-              React.createElement("button", { "aria-label": "Show your work formulas panel, currently " + (d.showFormulas ? "on" : "off") + ". Click to toggle.",
+              React.createElement("button", { "aria-label": __alloT('stem.physics.aria_show_work_currently', 'Show your work formulas panel, currently ') + (d.showFormulas ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
                 "aria-pressed": !!d.showFormulas,
                 onClick: function () { upd('showFormulas', !d.showFormulas); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showFormulas ? 'bg-fuchsia-700 text-white shadow-md' : 'bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200')
-              }, "\u{1F4DD} Show Work " + (d.showFormulas ? 'ON' : 'OFF')),
+              }, "\u{1F4DD} " + __alloT('stem.physics.label_show_work', 'Show Work ') + (d.showFormulas ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
 
-              React.createElement("button", { "aria-label": "Trajectory comparison overlay, currently " + (d.showOverlay ? "on" : "off") + ". Click to toggle.",
+              React.createElement("button", { "aria-label": __alloT('stem.physics.aria_compare_currently', 'Trajectory comparison overlay, currently ') + (d.showOverlay ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
                 "aria-pressed": !!d.showOverlay,
                 onClick: function () { upd('showOverlay', !d.showOverlay); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showOverlay ? 'bg-rose-700 text-white shadow-md' : 'bg-rose-50 text-rose-700 border border-rose-200')
-              }, "\u{1F4C8} Compare " + (d.showOverlay ? 'ON' : 'OFF')),
+              }, "\u{1F4C8} " + __alloT('stem.physics.label_compare', 'Compare ') + (d.showOverlay ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
 
-              React.createElement("button", { "aria-label": "Motion component graphs (Vx vs t and Vy vs t), currently " + (d.showGraphs ? "on" : "off") + ". Click to toggle.",
+              React.createElement("button", { "aria-label": __alloT('stem.physics.aria_motion_currently', 'Motion component graphs (Vx vs t and Vy vs t), currently ') + (d.showGraphs ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
                 "aria-pressed": !!d.showGraphs,
                 onClick: function () { upd('showGraphs', !d.showGraphs); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showGraphs ? 'bg-teal-700 text-white shadow-md' : 'bg-teal-50 text-teal-700 border border-teal-200')
-              }, "\u{1F4C9} Motion " + (d.showGraphs ? 'ON' : 'OFF')),
+              }, "\u{1F4C9} " + __alloT('stem.physics.label_motion', 'Motion ') + (d.showGraphs ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
 
-              React.createElement("button", { "aria-label": "Clear all trajectory trails",
+              React.createElement("button", { "aria-label": __alloT('stem.physics.aria_clear_trails', 'Clear all trajectory trails'),
                 onClick: function () {
                   var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
                   if (cv) { cv._trails = []; cv._impactParticles = []; cv._landingMarkers = []; }
                 },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200"
-              }, "\u{1F9F9} Clear Trails"),
+              }, "\u{1F9F9} " + __alloT('stem.physics.clear_trails', 'Clear Trails')),
 
               // ── Simulation speed control (pause + slow-motion) ──
               // Lets students freeze flight mid-arc to inspect velocity
               // vectors, energy bars, and position without losing context.
               // Active speed gets indigo background so state is obvious.
-              React.createElement("div", { className: "flex items-center gap-0 bg-slate-50 border border-slate-300 rounded-lg overflow-hidden", role: "group", "aria-label": "Simulation speed" },
-                React.createElement("span", { className: "px-2 py-1.5 text-[10px] font-bold text-slate-500 bg-slate-100 border-r border-slate-300" }, "SPEED"),
+              React.createElement("div", { className: "flex items-center gap-0 bg-slate-50 border border-slate-300 rounded-lg overflow-hidden", role: "group", "aria-label": __alloT('stem.physics.sim_speed', 'Simulation speed') },
+                React.createElement("span", { className: "px-2 py-1.5 text-[10px] font-bold text-slate-500 bg-slate-100 border-r border-slate-300" }, __alloT('stem.physics.speed_caps', 'SPEED')),
                 [{ v: 1.0, label: "1×" }, { v: 0.5, label: "½×" }, { v: 0.25, label: "¼×" }, { v: 0, label: "⏸" }].map(function (sp) {
                   var isActive = (d.simSpeed != null ? d.simSpeed : 1.0) === sp.v;
                   return React.createElement("button", {
                     key: sp.v,
-                    "aria-label": sp.v === 0 ? "Pause" : "Simulation speed " + sp.label,
+                    "aria-label": sp.v === 0 ? __alloT('stem.physics.pause', 'Pause') : __alloT('stem.physics.sim_speed_prefix', 'Simulation speed ') + sp.label,
                     "aria-pressed": isActive,
                     onClick: function () { upd('simSpeed', sp.v); },
                     className: "px-2.5 py-1.5 text-xs font-bold transition-all " + (isActive ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100')
@@ -2238,7 +2238,7 @@ const d = labToolData.physics;
                 // exactly one physics tick before re-pausing. Lets students
                 // walk through flight a frame at a time.
                 React.createElement("button", {
-                  "aria-label": "Step one frame forward (only useful when paused)",
+                  "aria-label": __alloT('stem.physics.aria_step_frame', 'Step one frame forward (only useful when paused)'),
                   disabled: (d.simSpeed != null ? d.simSpeed : 1.0) !== 0,
                   onClick: function () {
                     var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
@@ -2248,7 +2248,7 @@ const d = labToolData.physics;
                     ((d.simSpeed != null ? d.simSpeed : 1.0) === 0
                       ? 'bg-white text-indigo-700 hover:bg-indigo-50'
                       : 'bg-slate-100 text-slate-400 cursor-not-allowed')
-                }, "⏭ Step")
+                }, "⏭ " + __alloT('stem.physics.step', 'Step'))
               ),
 
               // ── Complementary-angles auto-demo ──
@@ -2260,7 +2260,7 @@ const d = labToolData.physics;
               // closed-form flight time (drag only shortens, so this is a
               // safe upper bound for "when does flight 1 finish").
               React.createElement("button", {
-                "aria-label": "Symmetry demo: fire current angle, then the complementary angle, at the same velocity",
+                "aria-label": __alloT('stem.physics.aria_symmetry_demo', 'Symmetry demo: fire current angle, then the complementary angle, at the same velocity'),
                 onClick: function () {
                   var ang = parseFloat(d.angle);
                   var vel = parseFloat(d.velocity);
