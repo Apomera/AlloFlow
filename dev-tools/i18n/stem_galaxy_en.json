@@ -359,5 +359,11 @@
   "title_trigger_supernova": "Trigger a random supernova flash in the galaxy view",
   "supernova_unavailable": "Supernova effect is not available yet.",
   "random_supernova_btn": "Random supernova",
-  "milestone_now": "Now"
+  "milestone_now": "Now",
+  "warp_blackhole_desc": "Sagittarius A* sits in this crowded core; stars orbit it so quickly that an unseen compact mass is required.",
+  "object_inspector_title": "Object Inspector",
+  "evidence_label": "Evidence",
+  "astronomer_note_label": "Astronomer Note",
+  "why_it_matters_label": "Why It Matters",
+  "snapshot": "Snapshot"
 }

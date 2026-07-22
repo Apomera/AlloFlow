@@ -3792,7 +3792,7 @@ if (!window._galaxyHasLoadedOnce) {
                 WARP_POINTS.map(function (wp) { return React.createElement("button", { "aria-label": "Warp to " + wp.label, key: wp.label, onClick: function () {
                   var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyWarp) cv._galaxyWarp(wp);
                   var warpInspect = (wp.zoom === 2 && wp.x === 0 && wp.z === 0) ? 'blackHole' : (wp.zoom === 0.8 ? 'galaxyType' : 'spiralArms');
-                  var warpDesc = wp.desc || (warpInspect === 'blackHole' ? 'Sagittarius A* sits in this crowded core; stars orbit it so quickly that an unseen compact mass is required.' : null);
+                  var warpDesc = wp.desc || (warpInspect === 'blackHole' ? __alloT('stem.galaxy.warp_blackhole_desc', 'Sagittarius A* sits in this crowded core; stars orbit it so quickly that an unseen compact mass is required.') : null);
                   var warpPatch = { selectedStar: null, selectedNebula: null, inspectTarget: warpInspect, inspectLog: addInspectKey(warpInspect) };
                   if (warpDesc) warpPatch.warpInfo = warpDesc;
                   patchGalaxy(warpPatch);
@@ -3832,7 +3832,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
 
-                      React.createElement("h4", { className: "font-black text-sm", style: { color: currentInspector.color } }, "Object Inspector"),
+                      React.createElement("h4", { className: "font-black text-sm", style: { color: currentInspector.color } }, __alloT('stem.galaxy.object_inspector_title', 'Object Inspector')),
 
                       React.createElement("span", { className: "px-2 py-0.5 rounded-full text-[10px] font-bold", style: { background: currentInspector.color + '18', color: currentInspector.color } }, currentInspector.type)
 
@@ -3891,7 +3891,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   React.createElement("div", { className: "rounded-lg border border-slate-200 bg-slate-50 p-2.5" },
 
-                    React.createElement("p", { className: "text-[11px] font-black text-slate-700 mb-1" }, "Evidence"),
+                    React.createElement("p", { className: "text-[11px] font-black text-slate-700 mb-1" }, __alloT('stem.galaxy.evidence_label', 'Evidence')),
 
                     React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" }, currentInspector.evidence)
 
@@ -3899,7 +3899,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   React.createElement("div", { className: "rounded-lg border border-cyan-100 bg-cyan-50 p-2.5" },
 
-                    React.createElement("p", { className: "text-[11px] font-black text-cyan-800 mb-1" }, "Astronomer Note"),
+                    React.createElement("p", { className: "text-[11px] font-black text-cyan-800 mb-1" }, __alloT('stem.galaxy.astronomer_note_label', 'Astronomer Note')),
 
                     React.createElement("p", { className: "text-[11px] text-cyan-900 leading-relaxed" }, currentInspector.question)
 
@@ -3909,7 +3909,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 selStar && selStar.whyItMatters && React.createElement("div", { className: "mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-1" }, "\uD83D\uDCA1 Why It Matters"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-1" }, "\uD83D\uDCA1 " + __alloT('stem.galaxy.why_it_matters_label', 'Why It Matters')),
 
                   React.createElement("p", { className: "text-[11px] text-amber-800 leading-relaxed" }, selStar.whyItMatters)
 
@@ -3929,7 +3929,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
 
-                React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: t('stem.galaxy.galaxy') + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+                React.createElement("button", { "aria-label": __alloT('stem.galaxy.snapshot', 'Snapshot'), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: t('stem.galaxy.galaxy') + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.galaxy.snapshot', 'Snapshot'))
 
               )
 
@@ -4797,7 +4797,7 @@ if (!window._galaxyHasLoadedOnce) {
                 }),
 
                 // ── Snapshot button (overlay, bottom-right of canvas) ──
-                React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: 'Star Life: ' + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Star life snapshot saved!', 'success'); }, className: "px-3 py-1.5 text-[11px] font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all", style: { position: 'absolute', bottom: '12px', right: '12px', zIndex: 10 } }, "\uD83D\uDCF8 Snapshot")
+                React.createElement("button", { "aria-label": __alloT('stem.galaxy.snapshot', 'Snapshot'), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: 'Star Life: ' + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Star life snapshot saved!', 'success'); }, className: "px-3 py-1.5 text-[11px] font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all", style: { position: 'absolute', bottom: '12px', right: '12px', zIndex: 10 } }, "\uD83D\uDCF8 Snapshot")
 
               )
 
