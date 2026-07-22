@@ -2630,15 +2630,15 @@ const d = labToolData.wave;
 
                       var correct = opt === d.quiz.a;
 
-                      var fb = correct ? '' : ((d.quiz.wrongFeedback && d.quiz.wrongFeedback[opt]) || ('The answer is ' + d.quiz.a + '.'));
+                      var fb = correct ? '' : ((d.quiz.wrongFeedback && d.quiz.wrongFeedback[opt]) || (__alloT('stem.wave.quiz_answer_is', 'The answer is ') + d.quiz.a + '.'));
 
                       upd('quiz', Object.assign({}, d.quiz, { answered: true, chosen: opt, fb: fb, score: d.quiz.score + (correct ? 1 : 0), attempted: (d.quiz.attempted || 0) + 1 }));
 
-                      if (correct) { awardStemXP('wave-quiz', 5, 'Wave quiz: ' + d.quiz.q); }
+                      if (correct) { awardStemXP('wave-quiz', 5, __alloT('stem.wave.xp_wave_quiz', 'Wave quiz: ') + d.quiz.q); }
 
-                      if (!correct && typeof announceToSR === 'function') announceToSR('Not quite. ' + fb);
+                      if (!correct && typeof announceToSR === 'function') announceToSR(__alloT('stem.wave.announce_not_quite', 'Not quite. ') + fb);
 
-                      addToast(correct ? '\u2705 Correct!' : '\u274C Not quite \u2014 see why below', correct ? 'success' : 'error');
+                      addToast(correct ? '\u2705 ' + __alloT('stem.wave.toast_correct', 'Correct!') : '\u274C ' + __alloT('stem.wave.toast_not_quite_below', 'Not quite \u2014 see why below'), correct ? 'success' : 'error');
 
                     }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
 
@@ -2651,9 +2651,9 @@ const d = labToolData.wave;
               // Corrective feedback \u2014 names the specific mix-up instead of just the answer
               d.quiz.answered && React.createElement("div", { className: "mt-2 p-2.5 rounded-lg text-xs leading-relaxed " + (d.quiz.chosen === d.quiz.a ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : 'bg-red-50 border border-red-200 text-red-800'), role: "status" },
                 d.quiz.chosen === d.quiz.a
-                  ? '\u2705 Correct!'
+                  ? '\u2705 ' + __alloT('stem.wave.toast_correct', 'Correct!')
                   : React.createElement(React.Fragment, null,
-                      React.createElement("span", { className: "font-bold" }, '\u274C Not quite \u2014 the answer is \u201C' + d.quiz.a + '\u201D. '),
+                      React.createElement("span", { className: "font-bold" }, '\u274C ' + __alloT('stem.wave.feedback_answer_prefix', 'Not quite \u2014 the answer is') + ' \u201C' + d.quiz.a + '\u201D. '),
                       d.quiz.fb
                     ),
                 d.quiz.demo && React.createElement("button", {
@@ -2663,15 +2663,15 @@ const d = labToolData.wave;
                       var prior = (prev && prev.wave) || {};
                       return Object.assign({}, prev, { wave: Object.assign({}, prior, demoPatch) });
                     });
-                    if (typeof addToast === 'function') addToast('\uD83D\uDC40 Sim set up to demonstrate this \u2014 watch the wave', 'info');
+                    if (typeof addToast === 'function') addToast('\uD83D\uDC40 ' + __alloT('stem.wave.toast_sim_setup', 'Sim set up to demonstrate this \u2014 watch the wave'), 'info');
                   },
                   className: "transition-colors ml-2 px-2 py-1 rounded-md text-[11px] font-bold bg-white border " + (d.quiz.chosen === d.quiz.a ? 'border-emerald-400 text-emerald-700 hover:bg-emerald-100' : 'border-red-400 text-red-700 hover:bg-red-100') + " active:scale-[0.97]"
-                }, '\uD83D\uDC40 Show me in the sim')
+                }, '\uD83D\uDC40 ' + __alloT('stem.wave.btn_show_in_sim', 'Show me in the sim'))
               )
 
             ),
 
-            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: 'A=' + d.amplitude + ' f=' + d.frequency, data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot"),
+            React.createElement("button", { "aria-label": __alloT('stem.wave.snapshot', 'Snapshot'), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: 'A=' + d.amplitude + ' f=' + d.frequency, data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 ' + __alloT('stem.wave.toast_snapshot_saved', 'Snapshot saved!'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.wave.snapshot', 'Snapshot')),
 
             // ── AI Wave Tutor (reading-level aware) ──
             (function () {
@@ -2680,12 +2680,12 @@ const d = labToolData.wave;
               var aiLoading = !!d.aiLoading;
               var aiError = d.aiError || '';
               var LEVELS = [
-                { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences' },
-                { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student, brief and friendly' },
-                { id: 'hs', label: 'High School', hint: 'for a high school physics student, with appropriate equations' }
+                { id: 'plain', label: __alloT('stem.wave.ai_level_plain', 'Plain'), hint: 'using simple everyday words and short sentences' },
+                { id: 'grade5', label: __alloT('stem.wave.ai_level_grade5', 'Grade 5'), hint: 'for a 5th grade student, brief and friendly' },
+                { id: 'hs', label: __alloT('stem.wave.ai_level_hs', 'High School'), hint: 'for a high school physics student, with appropriate equations' }
               ];
               function explain() {
-                if (typeof callGemini !== 'function') { var labToolData = ctx.toolData; setLabToolData(function (prev) { return Object.assign({}, prev, { wave: Object.assign({}, prev.wave, { aiError: 'AI tutor not available.' }) }); }); return; }
+                if (typeof callGemini !== 'function') { var labToolData = ctx.toolData; setLabToolData(function (prev) { return Object.assign({}, prev, { wave: Object.assign({}, prev.wave, { aiError: __alloT('stem.wave.ai_not_available', 'AI tutor not available.') }) }); }); return; }
                 setLabToolData(function (prev) { return Object.assign({}, prev, { wave: Object.assign({}, prev.wave, { aiLoading: true, aiError: '', aiExplain: '' }) }); });
                 var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
                 var waveMode = d.waveMode || 'free';
@@ -2697,9 +2697,9 @@ const d = labToolData.wave;
                   + 'No markdown, no bullets, no headings. Plain prose.';
                 callGemini(prompt, false, false, 0.5).then(function (resp) {
                   setLabToolData(function (prev) { return Object.assign({}, prev, { wave: Object.assign({}, prev.wave, { aiExplain: String(resp || '').trim(), aiLoading: false }) }); });
-                  if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
+                  if (typeof announceToSR === 'function') announceToSR(__alloT('stem.wave.announce_explanation_ready', 'Explanation ready.'));
                 }).catch(function () {
-                  setLabToolData(function (prev) { return Object.assign({}, prev, { wave: Object.assign({}, prev.wave, { aiLoading: false, aiError: 'Could not reach AI tutor. Try again in a moment.' }) }); });
+                  setLabToolData(function (prev) { return Object.assign({}, prev, { wave: Object.assign({}, prev.wave, { aiLoading: false, aiError: __alloT('stem.wave.ai_unreachable', 'Could not reach AI tutor. Try again in a moment.') }) }); });
                 });
               }
               function setAiLevel(id) {
@@ -2707,14 +2707,14 @@ const d = labToolData.wave;
               }
               return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", },
                 React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
-                  React.createElement("span", { className: "text-sm font-bold text-purple-700" }, "\u2728 Explain at my level"),
-                  React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },
+                  React.createElement("span", { className: "text-sm font-bold text-purple-700" }, "\u2728 " + __alloT('stem.wave.ai_explain_heading', 'Explain at my level')),
+                  React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": __alloT('stem.wave.aria_reading_level_group', 'Reading level') },
                     LEVELS.map(function (L) {
                       var active = aiLevel === L.id;
                       return React.createElement("button", {
                         key: L.id,
                         onClick: function () { setAiLevel(L.id); },
-                        "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
+                        "aria-label": __alloT('stem.wave.aria_reading_level', 'Reading level: ') + L.label + (active ? __alloT('stem.wave.aria_selected', ' (selected)') : ""),
                         "aria-pressed": active,
                         className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'transition-colors bg-white text-purple-700 border border-purple-600 hover:bg-purple-100 active:scale-[0.97]')
                       }, L.label);
@@ -2723,13 +2723,13 @@ const d = labToolData.wave;
                   React.createElement("button", {
                     onClick: explain,
                     disabled: aiLoading,
-                    "aria-label": "Generate AI explanation at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
+                    "aria-label": __alloT('stem.wave.aria_generate_at', 'Generate AI explanation at ') + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + __alloT('stem.wave.aria_level_suffix', ' level'),
                     className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 active:scale-[0.97]"
-                  }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
+                  }, aiLoading ? '\u23F3 ' + __alloT('stem.wave.ai_thinking', 'Thinking...') : (aiText ? '\uD83D\uDD04 ' + __alloT('stem.wave.ai_reexplain', 'Re-explain') : '\uD83E\uDDE0 ' + __alloT('stem.wave.ai_explain', 'Explain')))
                 ),
                 aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
                 aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
-                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, "Click \u201CExplain\u201D for the AI tutor to describe the current wave at your chosen reading level.")
+                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, __alloT('stem.wave.ai_placeholder', 'Click \u201CExplain\u201D for the AI tutor to describe the current wave at your chosen reading level.'))
               );
             })()
 
