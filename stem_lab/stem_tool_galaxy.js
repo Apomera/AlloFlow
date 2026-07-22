@@ -4262,7 +4262,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   "data-star-life-canvas": "true",
                   role: "img",
-                  "aria-label": "Animated star lifecycle visualization showing the selected mass and evolutionary stage, including red dwarf, main sequence, supernova, neutron star, and black hole outcomes.",
+                  "aria-label": __alloT('stem.galaxy.aria_star_canvas', 'Animated star lifecycle visualization showing the selected mass and evolutionary stage, including red dwarf, main sequence, supernova, neutron star, and black hole outcomes.'),
 
                   ref: function (cvEl) {
                     if (!cvEl) return;
@@ -4821,9 +4821,9 @@ if (!window._galaxyHasLoadedOnce) {
 
                   React.createElement("div", null,
 
-                    React.createElement("h4", { className: "text-sm font-bold text-white" }, "Star Mass & Classification"),
+                    React.createElement("h4", { className: "text-sm font-bold text-white" }, __alloT('stem.galaxy.star_mass_class_title', 'Star Mass & Classification')),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-300" }, "Adjust mass to explore how different stars live and die")
+                    React.createElement("p", { className: "text-[11px] text-slate-300" }, __alloT('stem.galaxy.star_mass_class_sub', 'Adjust mass to explore how different stars live and die'))
 
                   ),
 
@@ -4841,7 +4841,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   React.createElement("input", {
 
-                    type: "range", min: 0.03, max: 50, step: 0.01, value: lifecycleMass, "aria-label": "Star or brown dwarf mass in solar masses",
+                    type: "range", min: 0.03, max: 50, step: 0.01, value: lifecycleMass, "aria-label": __alloT('stem.galaxy.aria_star_mass', 'Star or brown dwarf mass in solar masses'),
 
                     onChange: function (e) {
                       var massVal = parseFloat(e.target.value);
@@ -4871,14 +4871,14 @@ if (!window._galaxyHasLoadedOnce) {
 
                   },
 
-                    lifecycleMass < HYDROGEN_FUSION_LIMIT ? "\uD83E\uDEA8 Brown Dwarf" :
-                      lifecycleMass < M_DWARF_LIMIT ? "\uD83D\uDD34 Red Dwarf (M-type)" :
-                        lifecycleMass < 0.8 ? "\uD83D\uDFE0 Orange Dwarf (K-type)" :
-                          lifecycleMass < 1.04 ? "\u2600\uFE0F Sun-like (G-type)" :
-                            lifecycleMass < 2.1 ? "\uD83D\uDD35 Hot Main-Sequence Star" :
-                              lifecycleMass < 8 ? "\uD83D\uDD35 Bright B-type Star" :
-                                lifecycleMass < 25 ? "\uD83D\uDCA5 Massive Star" :
-                                  "\uD83D\uDD73\uFE0F Very Massive Star"
+                    lifecycleMass < HYDROGEN_FUSION_LIMIT ? "\uD83E\uDEA8 " + __alloT('stem.galaxy.masscat_brown_dwarf', 'Brown Dwarf') :
+                      lifecycleMass < M_DWARF_LIMIT ? "\uD83D\uDD34 " + __alloT('stem.galaxy.masscat_red_dwarf', 'Red Dwarf (M-type)') :
+                        lifecycleMass < 0.8 ? "\uD83D\uDFE0 " + __alloT('stem.galaxy.masscat_orange_dwarf', 'Orange Dwarf (K-type)') :
+                          lifecycleMass < 1.04 ? "\u2600\uFE0F " + __alloT('stem.galaxy.masscat_sunlike', 'Sun-like (G-type)') :
+                            lifecycleMass < 2.1 ? "\uD83D\uDD35 " + __alloT('stem.galaxy.masscat_hot_ms', 'Hot Main-Sequence Star') :
+                              lifecycleMass < 8 ? "\uD83D\uDD35 " + __alloT('stem.galaxy.masscat_b_type', 'Bright B-type Star') :
+                                lifecycleMass < 25 ? "\uD83D\uDCA5 " + __alloT('stem.galaxy.masscat_massive', 'Massive Star') :
+                                  "\uD83D\uDD73\uFE0F " + __alloT('stem.galaxy.masscat_very_massive', 'Very Massive Star')
 
                   ),
 
@@ -4892,10 +4892,10 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("div", { className: "grid grid-cols-2 gap-2 mt-4" },
                   [
-                    { key: 'browndwarf', label: "\uD83E\uDEA8 Brown-dwarf path", sub: "0.05 M\u2609 substellar", mass: 0.05, stage: 'main_sequence', border: 'rgba(161,98,7,0.55)', bg: 'rgba(161,98,7,0.14)', text: '#fde68a' },
-                    { key: 'reddwarf', label: "\uD83D\uDD34 Red-dwarf future", sub: "0.2 M\u2609 blue-dwarf phase", mass: 0.2, stage: 'blue_dwarf', border: 'rgba(96,165,250,0.55)', bg: 'rgba(59,130,246,0.12)', text: '#bfdbfe' },
-                    { key: 'supernova', label: "\uD83D\uDCA5 Supernova path", sub: "12 M\u2609 core collapse", mass: 12, stage: 'supernova', border: 'rgba(251,191,36,0.55)', bg: 'rgba(251,191,36,0.12)', text: '#fde68a' },
-                    { key: 'blackhole', label: "\uD83D\uDD73\uFE0F Black-hole path", sub: "30 M\u2609 remnant", mass: 30, stage: 'black_hole', border: 'rgba(168,85,247,0.55)', bg: 'rgba(168,85,247,0.14)', text: '#ddd6fe' }
+                    { key: 'browndwarf', label: "\uD83E\uDEA8 " + __alloT('stem.galaxy.masspath_browndwarf_label', 'Brown-dwarf path'), sub: "0.05 M\u2609 substellar", mass: 0.05, stage: 'main_sequence', border: 'rgba(161,98,7,0.55)', bg: 'rgba(161,98,7,0.14)', text: '#fde68a' },
+                    { key: 'reddwarf', label: "\uD83D\uDD34 " + __alloT('stem.galaxy.masspath_reddwarf_label', 'Red-dwarf future'), sub: "0.2 M\u2609 blue-dwarf phase", mass: 0.2, stage: 'blue_dwarf', border: 'rgba(96,165,250,0.55)', bg: 'rgba(59,130,246,0.12)', text: '#bfdbfe' },
+                    { key: 'supernova', label: "\uD83D\uDCA5 " + __alloT('stem.galaxy.masspath_supernova_label', 'Supernova path'), sub: "12 M\u2609 core collapse", mass: 12, stage: 'supernova', border: 'rgba(251,191,36,0.55)', bg: 'rgba(251,191,36,0.12)', text: '#fde68a' },
+                    { key: 'blackhole', label: "\uD83D\uDD73\uFE0F " + __alloT('stem.galaxy.masspath_blackhole_label', 'Black-hole path'), sub: "30 M\u2609 remnant", mass: 30, stage: 'black_hole', border: 'rgba(168,85,247,0.55)', bg: 'rgba(168,85,247,0.14)', text: '#ddd6fe' }
                   ].map(function (path) {
                     return React.createElement("button", {
                       key: path.key,
@@ -4927,11 +4927,11 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-4" },
 
-                  React.createElement("h4", { className: "text-sm font-bold text-white" }, "\u2728 Stellar Lifecycle Journey"),
+                  React.createElement("h4", { className: "text-sm font-bold text-white" }, "\u2728 " + __alloT('stem.galaxy.lifecycle_journey_title', 'Stellar Lifecycle Journey')),
 
                   React.createElement("span", { className: "ml-auto text-[11px] text-indigo-400 bg-indigo-900/50 px-2 py-0.5 rounded-full border border-indigo-700/50" },
 
-                    lifecycleMass < 8 ? "\u2193 Gentle path" : "\u2193 Violent path")
+                    lifecycleMass < 8 ? "\u2193 " + __alloT('stem.galaxy.path_gentle', 'Gentle path') : "\u2193 " + __alloT('stem.galaxy.path_violent', 'Violent path'))
 
                 ),
 
@@ -4943,9 +4943,9 @@ if (!window._galaxyHasLoadedOnce) {
                     // Identify if we need a branch indicator BEFORE this item
                     var showBranch = false;
                     var branchLabel = "", branchEmoji = "";
-                    if (s.id === 'planetary_nebula') { showBranch = true; branchLabel = 'Gentle death \u2014 outer layers drift away'; branchEmoji = '\u2B07\uFE0F'; }
-                    else if (s.id === 'supernova') { showBranch = true; branchLabel = 'Violent death \u2014 core collapse!'; branchEmoji = '\uD83D\uDCA5'; }
-                    else if (s.id === 'black_dwarf' && lifecycleMass < HYDROGEN_FUSION_LIMIT) { showBranch = true; branchLabel = 'Cooling phase \u2014 fades slowly'; branchEmoji = '\u2B07\uFE0F'; }
+                    if (s.id === 'planetary_nebula') { showBranch = true; branchLabel = __alloT('stem.galaxy.branch_gentle_death', 'Gentle death \u2014 outer layers drift away'); branchEmoji = '\u2B07\uFE0F'; }
+                    else if (s.id === 'supernova') { showBranch = true; branchLabel = __alloT('stem.galaxy.branch_violent_death', 'Violent death \u2014 core collapse!'); branchEmoji = '\uD83D\uDCA5'; }
+                    else if (s.id === 'black_dwarf' && lifecycleMass < HYDROGEN_FUSION_LIMIT) { showBranch = true; branchLabel = __alloT('stem.galaxy.branch_cooling', 'Cooling phase \u2014 fades slowly'); branchEmoji = '\u2B07\uFE0F'; }
 
                     var isDeathBranch = false;
                     if (s.id === 'planetary_nebula' || s.id === 'white_dwarf' || s.id === 'black_dwarf' || s.id === 'supernova' || s.id === 'neutron_star' || s.id === 'black_hole' || (s.id === 'blue_dwarf' && lifecycleMass < M_DWARF_LIMIT)) {
