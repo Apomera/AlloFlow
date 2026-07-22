@@ -15871,11 +15871,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // Bessel van der Kolk-aligned somatic literacy.
   function PersonalBodyCheck(props) {
     if (!R) return null;
-    var data = props.data || { checks: [] };
+    var data = props.data && typeof props.data === 'object' ? props.data : { checks: [] };
     var setData = props.setData;
+    var isRecord = function(value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
+    var textValue = function(value) { return typeof value === 'string' ? value : (typeof value === 'number' ? String(value) : ''); };
+    var rawChecks = Array.isArray(data.checks) ? data.checks : [];
     var emptyForm = { areas: {}, overall: 5, note: '' };
     var fs = R.useState(emptyForm);
     var form = fs[0]; var setForm = fs[1];
+    var pfb = R.useState(''); var pendingFocusId = pfb[0]; var setPendingFocusId = pfb[1];
+
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, data]);
 
     var BODY_AREAS = [
       { id: 'head', label: 'Head', icon: '🧠' },
@@ -15888,13 +15900,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'legs', label: 'Legs and feet', icon: '🦵' }
     ];
 
-    function focusById(id) {
-      setTimeout(function() {
-        if (typeof document === 'undefined') return;
-        var target = document.getElementById(id);
-        if (target && typeof target.focus === 'function') target.focus();
-      }, 0);
-    }
+    function focusById(id) { setPendingFocusId(id); }
     function normalizedRating(value) {
       var number = parseInt(value, 10);
       return Number.isFinite(number) && number >= 1 && number <= 10 ? number : 5;
@@ -15914,17 +15920,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         id: tkId(), date: todayISO(), time: Date.now(), areas: areas,
         overall: normalizedRating(form.overall), note: form.note.trim()
       };
-      setData(Object.assign({}, data, { checks: [entry].concat(data.checks || []) }));
+      setData(Object.assign({}, data, { checks: [entry].concat(rawChecks) }));
       setForm(emptyForm);
       llAnnounce('Body comfort check saved. Overall comfort: ' + entry.overall + ' out of 10.');
       focusById('learning-lab-body-history-heading');
     }
     function removeCheck(entry) {
-      askLearningLabConfirmation('Remove the body comfort check from ' + String(entry.date || 'this date') + '? This cannot be undone.', {
+      askLearningLabConfirmation('Remove the body comfort check from ' + (textValue(entry.date).trim() || 'this date') + '? This cannot be undone.', {
         title: 'Remove this body check?', confirmText: 'Remove check'
       }).then(function(accepted) {
         if (!accepted) return;
-        setData(Object.assign({}, data, { checks: (data.checks || []).filter(function(item) { return item.id !== entry.id; }) }));
+        setData(Object.assign({}, data, { checks: rawChecks.filter(function(item) { return !(isRecord(item) && item.id === entry.id); }) }));
         llAnnounce('Body comfort check removed.');
         focusById(entry.date === todayISO() ? 'learning-lab-body-form-heading' : 'learning-lab-body-history-heading');
       });
@@ -15935,22 +15941,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         var date = new Date(timestamp);
         if (!Number.isNaN(date.getTime())) return date.toISOString();
       }
-      return entry.date || undefined;
+      return textValue(entry.date).trim() || undefined;
     }
 
-    var checks = data.checks || [];
+    var checks = rawChecks.filter(isRecord);
     var today = todayISO();
     var todayCheck = checks.filter(function(check) { return check.date === today; })[0];
     var recentChecks = checks.slice(0, 10);
     var labelStyle = { display: 'block', marginBottom: 5, color: '#fce7f3', fontSize: 12, fontWeight: 800 };
-    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 12, lineHeight: 1.55 };
     var rangeStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, accentColor: '#ec4899', cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🫀', 'Body Awareness', 'Record how comfortable different areas feel right now.', '#ec4899'),
       hh('aside', {
         'aria-labelledby': 'learning-lab-body-safety-heading',
-        style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #f9a8d4', background: 'rgba(131,24,67,0.25)', color: '#fdf2f8', fontSize: 11, lineHeight: 1.6 }
+        style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #f9a8d4', background: 'rgba(131,24,67,0.25)', color: '#fdf2f8', fontSize: 12, lineHeight: 1.6 }
       },
         hh('h2', { id: 'learning-lab-body-safety-heading', style: { margin: '0 0 5px', color: '#fbcfe8', fontSize: 13 } }, 'Personal reflection, not a medical assessment'),
         hh('p', { style: { margin: 0 } }, 'This check cannot explain or diagnose symptoms. If pain, breathing, or another symptom concerns you, contact a health professional or a trusted person. Use your local emergency service for an emergency.')
@@ -15972,7 +15978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             },
               hh('h2', { id: 'learning-lab-body-form-heading', tabIndex: -1, style: { margin: '0 0 6px', color: '#f9a8d4', fontSize: 15 } }, 'Rate body comfort'),
               hh('p', { id: 'learning-lab-body-scale-help', style: helpStyle }, 'For every slider, 1 means very uncomfortable and 10 means very comfortable. Five is selected initially; change any rating that does not fit.'),
-              hh('p', { id: 'learning-lab-body-privacy-note', style: helpStyle }, 'Checks save in this browser. Avoid private health details if other people use this device.'),
+              hh('p', { id: 'learning-lab-body-privacy-note', style: helpStyle }, 'Checks save in this browser only; saving does not send them to or notify anyone. Avoid private health details if other people use this device.'),
               hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 10, marginBottom: 14 } },
                 BODY_AREAS.map(function(area) {
                   var value = normalizedRating((form.areas || {})[area.id]);
@@ -16029,20 +16035,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                     hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
                       hh('div', null,
                         hh('h3', { id: headingId, style: { margin: '0 0 4px', color: '#fbcfe8', fontSize: 13 } }, 'Overall comfort: ' + overall + ' out of 10'),
-                        hh('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 11 } },
-                          hh('time', { dateTime: entryDateTime(entry) }, relDate(entry.date))
+                        hh('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 12 } },
+                          hh('time', { dateTime: entryDateTime(entry) }, relDate(textValue(entry.date).trim()))
                         )
                       ),
                       hh('button', {
                         type: 'button', onClick: function() { removeCheck(entry); },
-                        'aria-label': 'Remove body check from ' + String(entry.date || 'unknown date'),
+                        'aria-label': 'Remove body check from ' + (textValue(entry.date).trim() || 'unknown date'),
                         style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
                       }, 'Remove')
                     ),
-                    entry.note ? hh('p', { style: { margin: '10px 0 0', color: '#f1f5f9', fontSize: 12, lineHeight: 1.55, whiteSpace: 'pre-wrap' } }, entry.note) : null,
+                    textValue(entry.note).trim() ? hh('p', { style: { margin: '10px 0 0', color: '#f1f5f9', fontSize: 12, lineHeight: 1.55, whiteSpace: 'pre-wrap' } }, textValue(entry.note).trim()) : null,
                     hh('details', { style: { marginTop: 8, color: '#e2e8f0' } },
                       hh('summary', { style: { display: 'flex', alignItems: 'center', minHeight: 44, color: '#fbcfe8', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Review area ratings'),
-                      hh('dl', { 'aria-label': 'Body area comfort ratings', style: { display: 'grid', gridTemplateColumns: '1fr max-content', gap: 6, margin: '8px 0 0', fontSize: 11 } },
+                      hh('dl', { 'aria-label': 'Body area comfort ratings', style: { display: 'grid', gridTemplateColumns: '1fr max-content', gap: 6, margin: '8px 0 0', fontSize: 12 } },
                         BODY_AREAS.map(function(area) {
                           var value = normalizedRating((entry.areas || {})[area.id]);
                           return hh('div', { key: 'body-detail-' + entry.id + '-' + area.id, style: { display: 'contents' } },
@@ -20780,7 +20786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkEmail',    icon: '📧', label: 'Teacher Email Builder',color: '#3b82f6', desc: '6 templates for common student emails',
         stat: (Array.isArray((data.mytkEmail || {}).saved) ? (data.mytkEmail || {}).saved.length : 0) + ' drafts', cta: 'Pick a template' },
       { id: 'mytkBody',     icon: '🫀', label: 'Body Awareness',       color: '#ec4899', desc: '8-area body scan, builds interoception',
-        stat: ((data.mytkBody || {}).checks || []).length + ' scans', cta: 'Scan now' },
+        stat: (Array.isArray((data.mytkBody || {}).checks) ? (data.mytkBody || {}).checks.length : 0) + ' scans', cta: 'Scan now' },
       { id: 'mytkAchieve',  icon: '🏆', label: 'Achievement Wall',     color: '#fbbf24', desc: 'Gallery of accomplishments',
         stat: ((data.mytkAchieve || {}).achievements || []).length + ' achievements', cta: 'Add an achievement' },
       { id: 'mytkAffirm',   icon: '✨', label: 'Affirmations',         color: '#fbbf24', desc: '20+ built-in + your custom (Steele 1988)',

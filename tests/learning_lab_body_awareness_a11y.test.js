@@ -57,7 +57,7 @@ describe('Learning Lab Body Awareness accessibility', () => {
 
   it('trims notes and preserves unrelated section data', () => {
     expect(body).toContain('note: form.note.trim()');
-    expect(body).toContain("setData(Object.assign({}, data, { checks: [entry].concat(data.checks || []) }))");
+    expect(body).toContain("setData(Object.assign({}, data, { checks: [entry].concat(rawChecks) }))");
   });
 
   it('announces the saved value and moves focus to history', () => {
@@ -66,7 +66,7 @@ describe('Learning Lab Body Awareness accessibility', () => {
   });
 
   it('discloses browser storage and shared-device privacy considerations', () => {
-    expect(body).toContain('Checks save in this browser.');
+    expect(body).toContain('Checks save in this browser only; saving does not send them to or notify anyone.');
     expect(body).toContain('Avoid private health details if other people use this device.');
     expect(body).toContain("'aria-describedby': 'learning-lab-body-scale-help learning-lab-body-privacy-note'");
   });
@@ -104,7 +104,7 @@ describe('Learning Lab Body Awareness accessibility', () => {
 
   it('uses time semantics with a safe legacy timestamp fallback', () => {
     expect(body).toContain('if (!Number.isNaN(date.getTime())) return date.toISOString();');
-    expect(body).toContain("hh('time', { dateTime: entryDateTime(entry) }, relDate(entry.date))");
+    expect(body).toContain("hh('time', { dateTime: entryDateTime(entry) }, relDate(textValue(entry.date).trim()))");
   });
 
   it('makes complete area ratings available in a definition list', () => {
@@ -125,8 +125,8 @@ describe('Learning Lab Body Awareness accessibility', () => {
   });
 
   it('names deletion, preserves data, announces removal, and restores useful focus', () => {
-    expect(body).toContain("'aria-label': 'Remove body check from ' + String(entry.date || 'unknown date')");
-    expect(body).toContain("setData(Object.assign({}, data, { checks: (data.checks || []).filter");
+    expect(body).toContain("'aria-label': 'Remove body check from ' + (textValue(entry.date).trim() || 'unknown date')");
+    expect(body).toContain("setData(Object.assign({}, data, { checks: rawChecks.filter");
     expect(body).toContain("llAnnounce('Body comfort check removed.')");
     expect(body).toContain("entry.date === todayISO() ? 'learning-lab-body-form-heading' : 'learning-lab-body-history-heading'");
   });
@@ -136,6 +136,18 @@ describe('Learning Lab Body Awareness accessibility', () => {
     expect(body).toContain("width: '100%', minHeight: 44");
     expect(body).toContain("minWidth: 44, minHeight: 44");
     expect(body).toContain("width: '100%', minHeight: 88");
+  });
+
+  it('handles malformed legacy check data without crashing', () => {
+    expect(body).toContain('var rawChecks = Array.isArray(data.checks) ? data.checks : [];');
+    expect(body).toContain('var checks = rawChecks.filter(isRecord);');
+    expect(source).toContain("stat: (Array.isArray((data.mytkBody || {}).checks) ? (data.mytkBody || {}).checks.length : 0) + ' scans'");
+  });
+
+  it('synchronizes focus with rendered state instead of a focus timer', () => {
+    expect(body).toContain('if (!pendingFocusId) return;');
+    expect(body).toContain('function focusById(id) { setPendingFocusId(id); }');
+    expect(body).not.toContain('setTimeout');
   });
 
   it('keeps the deployed mirror identical', () => {
