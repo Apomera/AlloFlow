@@ -95,6 +95,22 @@ peer-to-peer, low-risk on a school LAN, disclosed here for completeness.)
   here**, where access, retention, and audit are controllable and a standard DPA (e.g. the
   SDPC/NDPA used widely in Maine) can be signed. Canvas remains a teacher-side authoring surface.
 
+### Adventure portrait uploads and AI processing
+
+Portrait images uploaded in Adventure Mode remain device-local when selected and stored in the
+cast lobby. They are sent to the **AI provider configured for the app** only when an AI feature
+needs the image: refining that portrait, or applying the consistent-characters pass to a scene.
+When consistent characters are enabled, that scene pass may send the portrait again for each
+scene. Choosing **AI Generate** creates a portrait from the written character description and
+does not use the uploaded image.
+
+On the Gemini Canvas surface, the Gemini API key is auto-provisioned by the platform rather than
+entered by the user; for school-account use, that processing rides the school's Google Workspace
+for Education agreement. In the Desktop build, AI access uses the provider and key configured by
+the user or deploying organization. Schools should permit portrait uploads only when they have
+permission to use the image this way and should apply their own AI/data agreement to student
+photos.
+
 ## 4. Former exceptions — both RESOLVED 2026-07-01
 
 An ironclad posture names its own soft spots. The two this document originally flagged have been

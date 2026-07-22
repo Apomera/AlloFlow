@@ -529,8 +529,49 @@ const handleDiceRollComplete = (deps) => {
       setPendingAdventureUpdate(null);
 };
 
+const createAdventureReferenceSheet = async (characters) => {
+  const portraitCharacters = (Array.isArray(characters) ? characters : [])
+      .filter(character => character?.portrait)
+      .slice(0, 4);
+  if (portraitCharacters.length < 2) return null;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 800;
+  canvas.height = 800;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Reference sheet canvas is unavailable.');
+
+  const loadPortrait = (src) => new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error('A cast portrait could not be loaded.'));
+      image.src = src;
+  });
+  const images = await Promise.all(portraitCharacters.map(character => loadPortrait(character.portrait)));
+  const padding = 24;
+  const gap = 16;
+  const cellSize = (canvas.width - (padding * 2) - gap) / 2;
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  images.forEach((image, index) => {
+      const column = index % 2;
+      const row = Math.floor(index / 2);
+      const x = padding + column * (cellSize + gap);
+      const y = padding + row * (cellSize + gap);
+      const sourceScale = Math.max(cellSize / image.width, cellSize / image.height);
+      const sourceWidth = cellSize / sourceScale;
+      const sourceHeight = cellSize / sourceScale;
+      const sourceX = Math.max(0, (image.width - sourceWidth) / 2);
+      const sourceY = Math.max(0, (image.height - sourceHeight) / 2);
+      ctx.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, x, y, cellSize, cellSize);
+  });
+
+  return canvas.toDataURL('image/png').split(',')[1] || null;
+};
+
 const generateAdventureImage = async (sceneText, targetTurn, deps) => {
-  const { adventureState, pendingAdventureUpdate, adventureChanceMode, adventureDifficulty, adventureCustomInstructions, adventureLanguageMode, adventureInputMode, adventureFreeResponseEnabled, adventureConsistentCharacters, isAdventureStoryMode, isImmersiveMode, isSocialStoryMode, aiBotsActive, narrativeLedger, currentUiLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, inputText, history, isIndependentMode, isTeacherMode, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, adventureArtStyle, adventureCustomArtStyle, imageGenerationStyle, imageAspectRatio, alloBotRef, lastTurnSnapshot, lastReadTurnRef, setAdventureState, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setActiveView, setGenerationStep, setError, setHistory, setGeneratedContent, setHasSavedAdventure, setIsResumingAdventure, setDiceResult, setFailedAdventureAction, setAdventureEffects, setIsProcessing, useLowQualityVisuals, adventureImageDB, addToast, t, warnLog, debugLog, cleanJson, safeJsonParse, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, playSound, handleScoreUpdate, getAdventureGlossaryTerms, generatePixelArtItem, generateAdventureImage, generateNarrativeLedger, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, NARRATIVE_GUARDRAILS, INVISIBLE_NARRATOR_INSTRUCTIONS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES } = deps;
+  const { adventureState, pendingAdventureUpdate, adventureChanceMode, adventureDifficulty, adventureCustomInstructions, adventureLanguageMode, adventureInputMode, adventureFreeResponseEnabled, adventureConsistentCharacters, isGeminiImageBackend, isAdventureStoryMode, isImmersiveMode, isSocialStoryMode, aiBotsActive, narrativeLedger, currentUiLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, inputText, history, isIndependentMode, isTeacherMode, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, adventureArtStyle, adventureCustomArtStyle, imageGenerationStyle, imageAspectRatio, alloBotRef, lastTurnSnapshot, lastReadTurnRef, setAdventureState, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setActiveView, setGenerationStep, setError, setHistory, setGeneratedContent, setHasSavedAdventure, setIsResumingAdventure, setDiceResult, setFailedAdventureAction, setAdventureEffects, setIsProcessing, useLowQualityVisuals, adventureImageDB, addToast, t, warnLog, debugLog, cleanJson, safeJsonParse, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, playSound, handleScoreUpdate, getAdventureGlossaryTerms, generatePixelArtItem, generateAdventureImage, generateNarrativeLedger, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, NARRATIVE_GUARDRAILS, INVISIBLE_NARRATOR_INSTRUCTIONS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES } = deps;
   try { if (window._DEBUG_PHASE_L) console.log("[PhaseL] generateAdventureImage fired"); } catch(_) {}
       try {
           let characterContext = "";
@@ -652,28 +693,48 @@ const generateAdventureImage = async (sceneText, targetTurn, deps) => {
               warnLog("Adventure image refinement failed, using original.", refineErr);
           }
           if (adventureConsistentCharacters && adventureState.characters?.length > 0) {
+              const portraitCharacters = adventureState.characters.filter(character => character?.portrait).slice(0, 4);
               const protagonist = adventureState.characters.find(c =>
                   c.role?.toLowerCase().includes('protagonist') ||
                   c.role?.toLowerCase().includes('player')
               ) || adventureState.characters[0];
-              if (protagonist?.portrait) {
+              const useGeminiReferenceSheet = isGeminiImageBackend && portraitCharacters.length >= 2;
+              if (protagonist?.portrait || useGeminiReferenceSheet) {
                   try {
                       const currentBase64 = imageUrl.split(',')[1];
-                      const portraitBase64 = protagonist.portrait.split(',')[1];
-                      const consistencyPrompt = `
+                      let referenceBase64 = protagonist?.portrait?.split(',')[1] || null;
+                      let consistencyPrompt = `
                           Refine the main character in this scene to visually match this reference portrait.
                           Character: ${protagonist.name} — ${protagonist.appearance}.
                           Keep the scene composition, background, lighting, and any other characters unchanged.
                           Only adjust the protagonist's facial features, hair, and clothing to match the reference.
                           NO TEXT. NO LABELS. NO UI ELEMENTS.
                       `;
-                      const consistentUrl = await callGeminiImageEdit(consistencyPrompt, currentBase64, targetWidth, targetQual, portraitBase64);
-                      if (consistentUrl) {
-                          imageUrl = consistentUrl;
-                          debugLog("🎭 Character consistency pass applied successfully");
+                      if (useGeminiReferenceSheet) {
+                          try {
+                              const compositeReference = await createAdventureReferenceSheet(portraitCharacters);
+                              if (compositeReference) {
+                                  referenceBase64 = compositeReference;
+                                  consistencyPrompt = `
+                                      The attached reference sheet shows this story's cast.
+                                      Refine the characters in this scene to match their appearances in the reference sheet.
+                                      Keep the scene composition, background, and lighting unchanged.
+                                      NO TEXT. NO LABELS. NO UI ELEMENTS.
+                                  `;
+                              }
+                          } catch (referenceSheetErr) {
+                              warnLog('Character reference sheet failed; falling back to the protagonist portrait.', referenceSheetErr);
+                          }
+                      }
+                      if (referenceBase64) {
+                          const consistentUrl = await callGeminiImageEdit(consistencyPrompt, currentBase64, targetWidth, targetQual, referenceBase64);
+                          if (consistentUrl) {
+                              imageUrl = consistentUrl;
+                              debugLog('Character consistency pass applied successfully');
+                          }
                       }
                   } catch (consistencyErr) {
-                      warnLog("Character consistency pass failed, using previous result.", consistencyErr);
+                      warnLog('Character consistency pass failed, using previous result.', consistencyErr);
                   }
               }
           }

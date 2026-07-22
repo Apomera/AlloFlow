@@ -837,8 +837,11 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
     const [editingField, setEditingField] = useState(null); // { idx, field }
     const [editFieldValue, setEditFieldValue] = useState('');
     const [portraitUploadError, setPortraitUploadError] = useState(null);
+    const [pendingPortraitUpload, setPendingPortraitUpload] = useState(null);
     const hasTriggeredAutoGen = useRef(false);
     const portraitFileRefs = useRef({});
+    const portraitUploadButtonRefs = useRef({});
+    const portraitConsentButtonRef = useRef(null);
     const castRef = useRef(null);
     const castTitleRef = useRef(null);
     useFocusTrap(castRef, true);
@@ -846,6 +849,34 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
         const frame = requestAnimationFrame(() => castTitleRef.current?.focus());
         return () => cancelAnimationFrame(frame);
     }, []);
+    useEffect(() => {
+        if (!pendingPortraitUpload) return undefined;
+        const frame = requestAnimationFrame(() => portraitConsentButtonRef.current?.focus());
+        return () => cancelAnimationFrame(frame);
+    }, [pendingPortraitUpload]);
+    const clearPendingPortraitUpload = (returnFocus = false) => {
+        const pending = pendingPortraitUpload;
+        if (pending?.input) pending.input.value = '';
+        setPendingPortraitUpload(null);
+        if (returnFocus && pending) {
+            requestAnimationFrame(() => portraitUploadButtonRefs.current[pending.charIdx]?.focus());
+        }
+    };
+    const acceptPendingPortraitUpload = () => {
+        const pending = pendingPortraitUpload;
+        if (!pending) return;
+        setPendingPortraitUpload(null);
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            if (onUploadPortrait) onUploadPortrait(pending.charIdx, ev.target.result);
+            pending.input.value = '';
+        };
+        reader.onerror = () => {
+            setPortraitUploadError({ charIdx: pending.charIdx, message: 'This image could not be read. Please choose a different image.' });
+            pending.input.value = '';
+        };
+        reader.readAsDataURL(pending.file);
+    };
     const handlePortraitFileChange = (charIdx, e) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -863,11 +894,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
             return;
         }
         setPortraitUploadError(null);
-        const reader = new FileReader();
-        reader.onload = (ev) => { if (onUploadPortrait) onUploadPortrait(charIdx, ev.target.result); };
-        reader.onerror = () => rejectUpload('This image could not be read. Please choose a different image.');
-        reader.readAsDataURL(file);
-        input.value = '';
+        setPendingPortraitUpload({ charIdx, file, input });
     };
     useEffect(() => {
         if (!hasTriggeredAutoGen.current && characters?.length > 0) {
@@ -901,7 +928,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     {characters.map((char, i) => (
                         <div key={i} className="bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 p-4 flex flex-col items-center text-center transition-all hover:shadow-lg hover:border-violet-300 relative group/card">
-                            <button type="button" onClick={() => { setPortraitUploadError(null); onRemoveCharacter(i); }} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-700 text-xs font-bold opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100 focus:opacity-100 transition-opacity flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2" title={t('adventure.remove_character')} aria-label={(t('adventure.remove_character') || 'Remove character') + ': ' + (char.name || (i + 1))}>✕</button>
+                            <button type="button" onClick={() => { setPortraitUploadError(null); clearPendingPortraitUpload(); onRemoveCharacter(i); }} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-700 text-xs font-bold opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100 focus:opacity-100 transition-opacity flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2" title={t('adventure.remove_character')} aria-label={(t('adventure.remove_character') || 'Remove character') + ': ' + (char.name || (i + 1))}>✕</button>
                             <div className="w-24 h-24 rounded-full bg-violet-100 border-2 border-violet-200 flex items-center justify-center overflow-hidden mb-3 shadow-inner" aria-busy={!!char.isGenerating} aria-label={char.isGenerating ? (t('adventure.generating_portrait_aria') || ('Generating portrait for ' + (char.name || 'character'))) : undefined}>
                                 {char.isGenerating ? (
                                     <div className="animate-spin w-6 h-6 border-2 border-violet-400 border-t-transparent rounded-full" aria-hidden="true"></div>
@@ -935,7 +962,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                                         🔄 {char.isUserUploaded ? 'AI Generate' : 'Regenerate'}
                                     </button>
                                     <input type="file" aria-label={t('adventure.upload_portrait') || 'Upload portrait image'} aria-describedby={portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : undefined} accept="image/*" ref={el => portraitFileRefs.current[i] = el} onChange={(e) => handlePortraitFileChange(i, e)} className="hidden" />
-                                    <button type="button" aria-describedby={portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : undefined} onClick={() => { setPortraitUploadError(null); portraitFileRefs.current[i]?.click(); }} className="min-h-11 px-3 py-2 bg-sky-50 text-sky-700 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2" title={t('adventure.upload_portrait') || 'Upload your own portrait image'}>
+                                    <button type="button" ref={el => portraitUploadButtonRefs.current[i] = el} aria-describedby={portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : undefined} onClick={() => { setPortraitUploadError(null); clearPendingPortraitUpload(); portraitFileRefs.current[i]?.click(); }} className="min-h-11 px-3 py-2 bg-sky-50 text-sky-700 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2" title={t('adventure.upload_portrait') || 'Upload your own portrait image'}>
                                         📷 Upload
                                     </button>
                                     {editIdx === i ? (
@@ -969,7 +996,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                                         🎨 Generate Portrait
                                     </button>
                                     <input type="file" aria-label={t('adventure.upload_portrait') || 'Upload portrait image'} aria-describedby={portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : undefined} accept="image/*" ref={el => portraitFileRefs.current['new-' + i] = el} onChange={(e) => handlePortraitFileChange(i, e)} className="hidden" />
-                                    <button type="button" aria-describedby={portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : undefined} onClick={() => { setPortraitUploadError(null); portraitFileRefs.current['new-' + i]?.click(); }} className="min-h-11 px-3 py-2 bg-sky-50 text-sky-700 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2" title={t('adventure.upload_portrait') || 'Upload your own portrait image'}>
+                                    <button type="button" ref={el => portraitUploadButtonRefs.current[i] = el} aria-describedby={portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : undefined} onClick={() => { setPortraitUploadError(null); clearPendingPortraitUpload(); portraitFileRefs.current['new-' + i]?.click(); }} className="min-h-11 px-3 py-2 bg-sky-50 text-sky-700 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2" title={t('adventure.upload_portrait') || 'Upload your own portrait image'}>
                                         📷 Upload Photo
                                     </button>
                                 </div>
@@ -978,6 +1005,21 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                                 <p id={`adventure-portrait-upload-error-${i}`} role="alert" aria-atomic="true" className="w-full mt-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800">
                                     {portraitUploadError.message}
                                 </p>
+                            )}
+                            {pendingPortraitUpload?.charIdx === i && (
+                                <div role="group" aria-labelledby={`adventure-portrait-consent-${i}`} className="w-full mt-2 rounded-xl border border-amber-400 bg-amber-50 px-3 py-3 text-left">
+                                    <p id={`adventure-portrait-consent-${i}`} className="text-xs font-semibold leading-relaxed text-amber-950">
+                                        Uploaded images are used by AI to keep this character consistent — the image is sent to the AI provider configured for this app with each scene. Only upload images you have permission to use this way (for photos of students, check your school's AI/data agreement).
+                                    </p>
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                        <button ref={portraitConsentButtonRef} type="button" onClick={acceptPendingPortraitUpload} className="min-h-11 px-4 py-2 rounded-lg bg-amber-800 text-white font-bold hover:bg-amber-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-800 focus-visible:ring-offset-2">
+                                            Use image
+                                        </button>
+                                        <button type="button" onClick={() => clearPendingPortraitUpload(true)} className="min-h-11 px-4 py-2 rounded-lg border border-slate-500 bg-white text-slate-800 font-bold hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
                             )}
                             {char.isGenerating && (
                                 <p className="mt-2 text-[11px] text-violet-700 animate-pulse font-medium" role="status" aria-live="polite">{t('common.loading') || 'Loading'}</p>

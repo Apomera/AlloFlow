@@ -18,7 +18,7 @@ const getAssistedKnowledgeContext = (state) => {
 };
 
 const executeStartAdventure = async (contextOverride = null, deps) => {
-  const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
+  const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureArtStyle, adventureCustomArtStyle, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, callImagen, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] executeStartAdventure fired"); } catch(_) {}
     const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
     const sourceText = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
@@ -331,6 +331,32 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
               sceneCharacters = sceneData.characters.map(c => ({ ...c, portrait: null, isGenerating: false }));
           } else {
               const sceneText = sceneData.text || '';
+              try {
+                  const extractionResult = await callGemini(`
+From this opening scene, extract 2–4 characters as JSON.
+Return ONLY a JSON array in this exact shape: [{"name":"...","role":"...","appearance":"..."}]
+Each appearance must be a concise, visual description suitable for keeping the character consistent in illustrations.
+Opening scene: ${sceneText.substring(0, 1200)}
+                  `, true);
+                  const cleanedExtraction = cleanJson(extractionResult);
+                  const extractedData = await resilientJsonParse(cleanedExtraction);
+                  const extractedCharacters = Array.isArray(extractedData) ? extractedData : extractedData?.characters;
+                  if (Array.isArray(extractedCharacters)) {
+                      sceneCharacters = extractedCharacters
+                          .filter(c => c && String(c.name || '').trim())
+                          .slice(0, 4)
+                          .map(c => ({
+                              name: String(c.name).trim(),
+                              role: String(c.role || 'Character').trim(),
+                              appearance: String(c.appearance || c.role || c.name).trim(),
+                              portrait: null,
+                              isGenerating: false,
+                          }));
+                  }
+              } catch (characterRetryErr) {
+                  warnLog('Structured character extraction retry failed; using text fallback.', characterRetryErr);
+              }
+              if (sceneCharacters.length === 0) {
               const nameMatches = sceneText.match(/(?:named?\s+|called\s+|meet\s+|,\s*)([A-Z][a-z]{2,}(?:\s[A-Z][a-z]+)?)/g) || [];
               const roleMatches = sceneText.match(/(?:the\s+)((?:wise|old|young|brave|mighty|clever|kind|ancient|mysterious)\s+[a-z]+)/gi) || [];
               const extracted = new Set();
@@ -361,6 +387,7 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
                   const ageDesc = gradeMap[gradeLevel] || 'young student';
                   sceneCharacters.push({ name: 'Your Character', role: 'Protagonist', appearance: `A friendly ${ageDesc}, the main character of this adventure`, portrait: null, isGenerating: false });
               }
+              }
           }
       }
       setAdventureState(prev => ({
@@ -381,6 +408,23 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
         characters: sceneCharacters,
         isReviewingCharacters: sceneCharacters.length > 0,
       }));
+      if (adventureConsistentCharacters && sceneCharacters.length > 0) {
+          const establishingStyle = adventureArtStyle === 'custom' && adventureCustomArtStyle
+              ? `Art style: ${adventureCustomArtStyle}.`
+              : (adventureArtStyle && adventureArtStyle !== 'auto' ? `Art style: ${adventureArtStyle}.` : '');
+          const establishingPrompt = `Wide establishing shot introducing this setting: ${String(sceneData.text || '').substring(0, 600)}. Scenic environment only, absolutely no people, no characters, no text. ${establishingStyle}`;
+          Promise.resolve()
+              .then(() => callImagen(establishingPrompt))
+              .then((url) => {
+                  if (!url) return;
+                  setAdventureState(prev => prev.isReviewingCharacters
+                      ? { ...prev, sceneImage: url, isImageLoading: false }
+                      : prev);
+              })
+              .catch((establishingErr) => {
+                  warnLog('Adventure establishing shot failed; waiting for the confirmed cast image.', establishingErr);
+              });
+      }
       const newAdventureItem = {
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
           type: 'adventure',

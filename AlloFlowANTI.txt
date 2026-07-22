@@ -27502,6 +27502,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       adventureInputMode,
       adventureFreeResponseEnabled,
       adventureConsistentCharacters,
+      isGeminiImageBackend: _isCanvasEnv || String(_aiConfig?.backend || 'gemini').trim().toLowerCase() === 'gemini',
       isAdventureStoryMode,
       isImmersiveMode,
       isSocialStoryMode,
@@ -27626,6 +27627,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       adventureTextInput,
       setAdventureState,
       callGemini,
+      callImagen,
       addToast,
       t,
       warnLog,
@@ -27642,6 +27644,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       socialStoryFocus: typeof socialStoryFocus !== 'undefined' ? socialStoryFocus : undefined,
       adventureFreeResponseEnabled,
       adventureConsistentCharacters,
+      adventureArtStyle,
+      adventureCustomArtStyle,
       isAdventureStoryMode: typeof isAdventureStoryMode !== 'undefined' ? isAdventureStoryMode : undefined,
       currentUiLanguage,
       lastTurnSnapshot,
@@ -30390,6 +30394,17 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         if (field === 'title') {
             if (isEn) branch.title_en = value;
             else branch.title = value;
+        } else if (field === 'connections') {
+            const seenTargets = new Set();
+            const newConnections = (Array.isArray(value) ? value : []).reduce((valid, connection) => {
+                const target = Number(connection?.target);
+                if (!Number.isInteger(target) || target < 0 || target >= newBranches.length || target === branchIndex || seenTargets.has(target)) return valid;
+                seenTargets.add(target);
+                valid.push({ target, label: String(connection?.label || '').slice(0, 40) });
+                return valid;
+            }, []);
+            branch.connections = newConnections;
+            branch.connectsTo = newConnections.map(connection => connection.target);
         } else if (field === 'item') {
             if (isEn) {
                 const newItemsEn = [...(branch.items_en || [])];
