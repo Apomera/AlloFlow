@@ -63,6 +63,8 @@ These sections were independently committed:
 | Question Log | `5da6940cc` |
 | Success Log | `175920ca7` |
 | Teacher Email Builder | `f952f8178` |
+| Parent Message Builder | `7c11d260f` |
+| Race-proof suite gate runner | `3b6469390` |
 
 The most recently completed section, Personal Reference Sheet Builder, passed:
 
@@ -148,9 +150,15 @@ Three more sections with the standard wave, all gate-verified (full suite 2,250/
 - **CAUTION — Vitest JSON reporter races under load:** two consecutive `--reporter=json` full runs reported fewer passed than total with 0 failed plus a "tests are still running when generating the JSON report" warning. The default reporter run was definitive: 2,285/2,285 across 153 files. If the JSON gate ever shows passed < total with failed == 0 AND that warning, re-run with the default reporter before diagnosing — do not treat it as a regression. Mirror SHA-256: `E86053D9F87B50B8A35D4D5A63D07C5F5D81EBFA839CFAEF8361C234020E9740`.
 - Teacher Email and Parent Message share near-identical helper code — Edit anchors needed template-body context to disambiguate. Expect the same when auditing **Parent Message** (it still has the timer focusById + `String(draft.body)` patterns; likely the same fix set applies nearly verbatim).
 
+## Session notes (2026-07-21 late, Fable — tenth continuation)
+
+Both issues surfaced last session are now FIXED:
+- **Parent Message Builder** `7c11d260f`: the Teacher Email fix set applied nearly verbatim as predicted (pendingFocus with select-text state, rawDrafts/isRecord/textValue guards, catalog stat guard, 11→12px). Its crisis-honesty aside ("does not address, send, or monitor... contact local emergency or crisis services now") was already excellent — untouched. Render test covers recipient substitution, empty-body rejection, discard-confirm, save/remove.
+- **Suite gate is now race-proof**: `node dev-tools/run_learning_lab_gate.cjs [maxWorkers]` (`3b6469390`) runs the full suite with the DEFAULT reporter (whose summary is written after all workers settle) and fails unless passed == total with zero failures. **Use this instead of --reporter=json for the per-section gate.** It also caught a second failure mode in the wild: under low free RAM (~2GB), vitest workers die with "Zone Allocation failed" OOM and tests silently vanish from the run — pass `2` (or `1`) as the workers argument when the machine is loaded. Gate verified: 2,291/2,291 across 154 files at 2 workers while the machine had <2GB free.
+
 ## Next section
 
-Remaining unaudited (no-render-test list): **Body Check, Achievement Wall, Affirmations, Role Models, Self Assessment, Learning Contract, Emotion Regulator** — plus Parent Message (see note above) and the ~28 timer-focus conversions as their sections come up. One independently tested and committed section at a time. Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
+Remaining unaudited (no-render-test list): **Body Check, Achievement Wall, Affirmations, Role Models, Self Assessment, Learning Contract, Emotion Regulator** — plus the ~28 timer-focus conversions as their sections come up. One independently tested and committed section at a time. Use the gate runner for the full-suite check. Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
 
 ## Completed section reference: Optional Support Request Notes
 
