@@ -7288,8 +7288,8 @@
             e('label', { style: S.lbl }, 'Topic'),
             e('input', { type: 'text', value: boardTopic, onChange: function (ev) { setBoardTopic(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') generateBoardFromTopic(); }, placeholder: 'e.g. morning routine, feelings, playground', 'aria-label': 'Board topic', style: S.input, autoFocus: true })
           ),
-          e('button', { onClick: generateBoardFromTopic, disabled: !boardTopic.trim() || boardGenerating, 'aria-label': 'Generate board from topic', style: S.btn(PURPLE, '#fff', !boardTopic.trim() || boardGenerating) }, boardGenerating ? '⏳ Writing...' : '📝 Generate Word List'),
-          boardWords.length > 0 && e('button', { onClick: generateBoardImages, disabled: isLoading, 'aria-label': 'Cols', style: S.btn('#059669', '#fff', isLoading) }, isLoading ? '⏳ Generating...' : '✨ Generate Images'),
+          e('button', { onClick: generateBoardFromTopic, disabled: !boardTopic.trim() || boardGenerating, 'aria-label': 'Generate word list', style: S.btn(PURPLE, '#fff', !boardTopic.trim() || boardGenerating) }, boardGenerating ? '⏳ Writing...' : '📝 Generate Word List'),
+          boardWords.length > 0 && e('button', { onClick: generateBoardImages, disabled: isLoading, 'aria-label': 'Generate images', style: S.btn('#059669', '#fff', isLoading) }, isLoading ? '⏳ Generating...' : '✨ Generate Images'),
           boardWords.length > 0 && e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
             e('label', { style: Object.assign({}, S.lbl, { margin: 0 }) }, 'Cols:'),
             e('input', { type: 'number', min: 2, max: 8, value: boardCols, onChange: function (ev) { setBoardCols(Number(ev.target.value)); }, 'aria-label': 'Board columns', style: { width: '52px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '6px 8px', fontSize: '13px' } })
@@ -7333,7 +7333,7 @@
             translating && e('span', { style: { fontSize: '10px', color: PURPLE } }, '⏳')
           ),
           e('button', { onClick: function () { setShowSentencePanel(!showSentencePanel); if (!showSentencePanel) { setSentenceMapping([]); setSentenceInput(''); } }, 'aria-label': 'From Sentence', style: S.btn(showSentencePanel ? LIGHT_PURPLE : '#f3f4f6', showSentencePanel ? PURPLE : '#374151', false), title: 'Type a sentence and let AI map each word to an AAC symbol' }, '🔤 From Sentence'),
-          e('button', { onClick: function () { setShowGalleryPicker(!showGalleryPicker); }, 'aria-label': '️ From Gallery', style: S.btn(showGalleryPicker ? LIGHT_PURPLE : '#f3f4f6', showGalleryPicker ? PURPLE : '#374151', false), title: 'Add a symbol from your gallery directly to the board' }, '🖼️ From Gallery'),
+          e('button', { onClick: function () { setShowGalleryPicker(!showGalleryPicker); }, 'aria-label': 'From Gallery', style: S.btn(showGalleryPicker ? LIGHT_PURPLE : '#f3f4f6', showGalleryPicker ? PURPLE : '#374151', false), title: 'Add a symbol from your gallery directly to the board' }, '🖼️ From Gallery'),
           boardWords.length > 0 && !boardPages && e('button', {
             onClick: enablePages,
             title: 'Enable multi-page mode — add linked pages to this board', 'aria-label': 'Enable multi-page mode — add linked pages to this board',
@@ -7370,12 +7370,12 @@
                 title: 'Drag or press Alt+Left/Right Arrow to reorder pages'
               }, pg.title || ('Page ' + (pi + 1)));
             }),
-            e('button', { onClick: addPage, title: 'Add a new page', 'aria-label': 'Add a new page', style: { background: 'none', border: '1px dashed #92400e', borderRadius: '6px', padding: '2px 7px', color: '#92400e', fontSize: '11px', cursor: 'pointer' } }, '+'),
-            boardPages.length > 1 && e('button', { onClick: function () { deletePage(activePageIdx); }, title: 'Delete current page', 'aria-label': '✕', style: { background: 'none', border: 'none', color: '#dc2626', fontSize: '12px', cursor: 'pointer', padding: '0 2px' } }, '✕')
+            e('button', { type: 'button', onClick: addPage, title: 'Add a new page', 'aria-label': 'Add a new page', style: { background: 'none', border: '1px dashed #92400e', borderRadius: '6px', width: '32px', height: '32px', minWidth: '32px', minHeight: '32px', padding: 0, color: '#92400e', fontSize: '15px', fontWeight: 700, cursor: 'pointer' } }, '+'),
+            boardPages.length > 1 && e('button', { type: 'button', onClick: function () { deletePage(activePageIdx); }, title: 'Delete current page', 'aria-label': 'Delete current board page', style: { background: 'none', border: '1px solid transparent', borderRadius: '6px', width: '32px', height: '32px', minWidth: '32px', minHeight: '32px', color: '#b91c1c', fontSize: '14px', cursor: 'pointer', padding: 0 } }, '✕')
           ),
           hasImages && e('div', { style: { display: 'flex', gap: '6px' } },
             e('button', { onClick: saveBoard, 'aria-label': 'Save', style: S.btn('#f3f4f6', '#374151', false) }, '💾 Save'),
-            e('button', { onClick: function () { setShowPrintSettings(!showPrintSettings); }, 'aria-label': '️ Printu2026', style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print\u2026')
+            e('button', { onClick: function () { setShowPrintSettings(!showPrintSettings); }, 'aria-label': 'Print…', style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print\u2026')
           ),
           savedBoards.length > 0 && e('button', { onClick: function () { setShowBoardGallery(!showBoardGallery); }, 'aria-label': 'Toggle saved boards gallery', style: S.btn(showBoardGallery ? LIGHT_PURPLE : '#f3f4f6', showBoardGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedBoards.length + ')'),
           e('button', { onClick: function () { importBoardRef.current && importBoardRef.current.click(); }, 'aria-label': 'Import Board', style: S.btn('#f3f4f6', '#374151', false), title: 'Import a board from a .json, .obf, or .obz (Cboard / Open Board Format) file' }, '📥 Import Board'),
@@ -7532,7 +7532,7 @@
               e('button', {
                 onClick: applySentenceMapping,
                 disabled: !sentenceMapping.some(function (m) { return m.selected && !m.skip; }),
-                'aria-label': 'Reset progress', style: S.btn('#059669', '#fff', !sentenceMapping.some(function (m) { return m.selected && !m.skip; }))
+                'aria-label': 'Add to Board', style: S.btn('#059669', '#fff', !sentenceMapping.some(function (m) { return m.selected && !m.skip; }))
               }, '✅ Add to Board (' + sentenceMapping.filter(function (m) { return m.selected && !m.skip; }).length + ')'),
               e('button', { onClick: function () { setSentenceMapping([]); setSentenceInput(''); }, 'aria-label': 'Reset', style: S.btn('#f3f4f6', '#374151', false) }, '↩ Reset')
             )
@@ -7627,7 +7627,7 @@
                     style: { background: bg, border: border, borderRadius: '10px', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'grab', minHeight: '112px', transition: 'border-color 0.1s, opacity 0.1s', position: 'relative', opacity: dragBoardId === word.id ? 0.45 : 1 }
                   },
                     // Drag handle indicator
-                    e('div', { 'aria-hidden': 'true', className: 'ss-no-print', style: { position: 'absolute', top: 3, left: 4, fontSize: '10px', color: '#d1d5db', lineHeight: 1, userSelect: 'none' } }, '\u28FF'),
+                    e('div', { 'aria-hidden': 'true', className: 'ss-no-print', style: { position: 'absolute', top: 36, left: 4, fontSize: '10px', color: '#d1d5db', lineHeight: 1, userSelect: 'none' } }, '\u28FF'),
                     // Label above image
                     boardTextPos === 'above' && e('span', { style: { fontSize: boardTextSize + 'px', fontWeight: 700, color: theme.textColor, textAlign: 'center', lineHeight: 1.3 } },
                       word.translatedLabel || word.label,
@@ -7645,13 +7645,13 @@
                       word.translatedLabel && word.originalLabel && e('span', { style: { display: 'block', fontSize: Math.max(9, boardTextSize - 3) + 'px', fontWeight: 400, color: '#6b7280' } }, word.originalLabel)
                     ),
                     // Lock toggle \u2014 protects this cell's symbol from regenerate
-                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); toggleBoardCellLock(word.id); }, 'aria-pressed': !!word.locked, 'aria-label': (word.locked ? 'Unlock ' : 'Lock ') + word.label, title: word.locked ? 'Locked - protected from regenerate. Click to unlock.' : 'Lock to protect this symbol from regenerate', style: { position: 'absolute', top: 4, right: 22, background: word.locked ? 'rgba(161,98,7,0.2)' : 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px' } }, word.locked ? '\uD83D\uDD12' : '\uD83D\uDD13'),
+                    e('button', { className: 'ss-no-print', type: 'button', onClick: function (ev) { ev.stopPropagation(); toggleBoardCellLock(word.id); }, 'aria-pressed': !!word.locked, 'aria-label': (word.locked ? 'Unlock ' : 'Lock ') + (word.translatedLabel || word.label), title: word.locked ? 'Locked - protected from regenerate. Click to unlock.' : 'Lock to protect this symbol from regenerate', style: { position: 'absolute', top: 4, right: 36, background: word.locked ? 'rgba(161,98,7,0.2)' : 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '4px', width: '28px', height: '28px', minWidth: '28px', minHeight: '28px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, cursor: 'pointer', fontSize: '12px' } }, word.locked ? '\uD83D\uDD12' : '\uD83D\uDD13'),
                     // Regen button
-                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); regenBoardCell(word.id); }, 'aria-label': 'Regenerate symbol', style: { position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px' } }, '\uD83D\uDD04'),
+                    e('button', { className: 'ss-no-print', type: 'button', onClick: function (ev) { ev.stopPropagation(); regenBoardCell(word.id); }, 'aria-label': 'Regenerate symbol for ' + (word.translatedLabel || word.label), style: { position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '4px', width: '28px', height: '28px', minWidth: '28px', minHeight: '28px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, cursor: 'pointer', fontSize: '12px' } }, '\uD83D\uDD04'),
                     // Record audio button
-                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); recordCellAudio(word.id); }, 'aria-label': 'Reset progress', style: { position: 'absolute', top: 4, left: 4, background: cellRecording === word.id ? 'rgba(220,38,38,0.8)' : (word.audioData ? 'rgba(16,185,129,0.2)' : 'rgba(0,0,0,0.1)'), border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px', color: cellRecording === word.id ? '#fff' : undefined } }, cellRecording === word.id ? '⏹' : (word.audioData ? '🎙️' : '🎤')),
+                    e('button', { className: 'ss-no-print', type: 'button', onClick: function (ev) { ev.stopPropagation(); recordCellAudio(word.id); }, 'aria-label': (cellRecording === word.id ? 'Stop recording audio for ' : word.audioData ? 'Replace recorded audio for ' : 'Record audio for ') + (word.translatedLabel || word.label), style: { position: 'absolute', top: 4, left: 4, background: cellRecording === word.id ? 'rgba(220,38,38,0.8)' : (word.audioData ? 'rgba(16,185,129,0.2)' : 'rgba(0,0,0,0.1)'), border: 'none', borderRadius: '4px', width: '28px', height: '28px', minWidth: '28px', minHeight: '28px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, cursor: 'pointer', fontSize: '12px', color: cellRecording === word.id ? '#fff' : undefined } }, cellRecording === word.id ? '⏹' : (word.audioData ? '🎙️' : '🎤')),
                     // Play custom audio button
-                    word.audioData && e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); playCellAudio(word.audioData); }, 'aria-label': '🔊', style: { position: 'absolute', bottom: 4, left: 4, background: 'rgba(37,99,235,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px' } }, '🔊'),
+                    word.audioData && e('button', { className: 'ss-no-print', type: 'button', onClick: function (ev) { ev.stopPropagation(); playCellAudio(word.audioData); }, 'aria-label': 'Play recorded audio for ' + (word.translatedLabel || word.label), style: { position: 'absolute', bottom: 4, left: 4, background: 'rgba(37,99,235,0.1)', border: 'none', borderRadius: '4px', width: '28px', height: '28px', minWidth: '28px', minHeight: '28px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, cursor: 'pointer', fontSize: '12px' } }, '🔊'),
                     e('button', {
                       className: 'ss-no-print',
                       type: 'button',
@@ -7670,7 +7670,7 @@
                       style: { marginTop: 'auto', minHeight: '28px', minWidth: '64px', border: '1px solid #6d28d9', borderRadius: '6px', padding: '3px 8px', background: '#ede9fe', color: '#5b21b6', fontWeight: 700, fontSize: '10px', cursor: 'pointer' }
                     }, '\uD83D\uDD0A Speak'),
                     // Remove button
-                    e('button', { className: 'ss-no-print', type: 'button', onClick: function (ev) { ev.stopPropagation(); setBoardWords(function (prev) { return prev.filter(function (w) { return w.id !== word.id; }); }); }, 'aria-label': 'Remove ' + (word.translatedLabel || word.label) + ' from board', style: { position: 'absolute', bottom: 4, right: 4, background: 'rgba(220,38,38,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px', color: '#dc2626' } }, '\u00d7')
+                    e('button', { className: 'ss-no-print', type: 'button', onClick: function (ev) { ev.stopPropagation(); setBoardWords(function (prev) { return prev.filter(function (w) { return w.id !== word.id; }); }); }, 'aria-label': 'Remove ' + (word.translatedLabel || word.label) + ' from board', style: { position: 'absolute', bottom: 4, right: 4, background: 'rgba(220,38,38,0.1)', border: 'none', borderRadius: '4px', width: '28px', height: '28px', minWidth: '28px', minHeight: '28px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, cursor: 'pointer', fontSize: '12px', color: '#dc2626' } }, '\u00d7')
                   );
                 })
               ),
@@ -7689,7 +7689,7 @@
                 }),
                 e('button', {
                   onClick: function () { setCatFill(CAT_COLORS); setCatBorder(CAT_BORDER); store(STORAGE_CAT_COLORS + '_fill', CAT_COLORS); store(STORAGE_CAT_COLORS + '_border', CAT_BORDER); },
-                  'aria-label': 'Reset progress', style: { fontSize: '10px', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }
+                  'aria-label': 'Reset category colors', style: { fontSize: '10px', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }
                 }, 'Reset')
               )
             )

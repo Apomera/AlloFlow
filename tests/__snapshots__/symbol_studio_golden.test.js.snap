@@ -211,7 +211,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "board" renders iden
 <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">Topic</label>
 <input type="text" placeholder="e.g. morning routine, feelings, playground" aria-label="Board topic" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit" autofocus="" value=""/>
 </div>
-<button disabled="" aria-label="Generate board from topic" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">📝 Generate Word List</button>
+<button disabled="" aria-label="Generate word list" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">📝 Generate Word List</button>
 <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
 <span style="font-size:10px;color:#6b7280;font-weight:600">Theme:</span>
 <button aria-label="Theme: Default" style="font-size:10px;padding:3px 8px;border-radius:5px;border:2px solid #7c3aed;background:#ede9fe;color:#7c3aed;font-weight:700;cursor:pointer">Default</button>
@@ -250,7 +250,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "board" renders iden
 </select>
 </div>
 <button aria-label="From Sentence" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap" title="Type a sentence and let AI map each word to an AAC symbol">🔤 From Sentence</button>
-<button aria-label="️ From Gallery" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap" title="Add a symbol from your gallery directly to the board">🖼️ From Gallery</button>
+<button aria-label="From Gallery" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap" title="Add a symbol from your gallery directly to the board">🖼️ From Gallery</button>
 <button aria-label="Import Board" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap" title="Import a board from a .json, .obf, or .obz (Cboard / Open Board Format) file">📥 Import Board</button>
 <input type="file" accept=".json,.obf,.obz" style="display:none"/>
 </div>
