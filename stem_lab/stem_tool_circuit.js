@@ -2490,13 +2490,13 @@ window.StemLab = window.StemLab || {
       }
       function renderWorkspaceSwitch() {
         var tabs = [
-          { id: 'build', label: 'Build', icon: '\uD83D\uDD0C' },
-          { id: 'reference', label: 'Reference', icon: '\uD83D\uDCD8' }
+          { id: 'build', label: __alloT('stem.circuit.reference_tab_build', 'Build'), icon: '\uD83D\uDD0C' },
+          { id: 'reference', label: __alloT('stem.circuit.reference_tab_reference', 'Reference'), icon: '\uD83D\uDCD8' }
         ];
         return h('div', {
           className: 'max-w-3xl mx-auto mb-3 flex flex-wrap items-center gap-1 p-1 rounded-xl bg-slate-950/90 border border-slate-800 shadow-lg',
           role: 'tablist',
-          'aria-label': 'Circuit Builder workspace'
+          'aria-label': __alloT('stem.circuit.aria_workspace', 'Circuit Builder workspace')
         }, tabs.map(function(tab) {
           var active = workspaceTab === tab.id;
           return h('button', {
@@ -2617,13 +2617,13 @@ window.StemLab = window.StemLab || {
       function expHeader() {
         return h('div', { className: 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-2 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200' },
           h('div', null,
-            h('h3', { className: 'text-base font-black text-amber-900' }, '⚡ Circuit Reference Library'),
-            h('div', { className: 'text-[11px] text-amber-700 mt-0.5' }, 'Interactive references — pick a topic below to explore.')
+            h('h3', { className: 'text-base font-black text-amber-900' }, '⚡ ' + __alloT('stem.circuit.reference_library_title', 'Circuit Reference Library')),
+            h('div', { className: 'text-[11px] text-amber-700 mt-0.5' }, __alloT('stem.circuit.reference_library_subtitle', 'Interactive references — pick a topic below to explore.'))
           ),
           expSection && h('button', {
             onClick: function() { setExp({ expSection: null }); },
             className: 'transition-colors px-3 py-1 rounded-md text-xs font-bold bg-white border border-amber-300 text-amber-700 hover:bg-amber-100 active:scale-[0.97]'
-          }, '✕ Close section')
+          }, '✕ ' + __alloT('stem.circuit.close_section', 'Close section'))
         );
       }
 
@@ -2633,62 +2633,62 @@ window.StemLab = window.StemLab || {
         // Computing · Power & Energy · Practical & Reference · History &
         // Careers.
         var TAB_GROUPS = [
-          { id: 'fundamentals', label: 'Fundamentals', color: 'amber', tabs: [
-            { id: 'laws', label: 'Laws + formulas', icon: 'V=IR' },
-            { id: 'units', label: 'Units & constants', icon: '∑' },
-            { id: 'sp', label: 'Series vs parallel', icon: '⇊' },
-            { id: 'patterns', label: 'Common circuits', icon: '🔌' },
-            { id: 'symbols', label: 'Schematic symbols', icon: '⊜' },
-            { id: 'fields', label: 'E & M fields', icon: '⚡' },
-            { id: 'ohmInquiry', label: 'Ohm Inquiry', icon: '🔬' }
+          { id: 'fundamentals', label: __alloT('stem.circuit.navgroup_fundamentals', 'Fundamentals'), color: 'amber', tabs: [
+            { id: 'laws', label: __alloT('stem.circuit.nav_laws', 'Laws + formulas'), icon: 'V=IR' },
+            { id: 'units', label: __alloT('stem.circuit.nav_units', 'Units & constants'), icon: '∑' },
+            { id: 'sp', label: __alloT('stem.circuit.nav_sp', 'Series vs parallel'), icon: '⇊' },
+            { id: 'patterns', label: __alloT('stem.circuit.nav_patterns', 'Common circuits'), icon: '🔌' },
+            { id: 'symbols', label: __alloT('stem.circuit.nav_symbols', 'Schematic symbols'), icon: '⊜' },
+            { id: 'fields', label: __alloT('stem.circuit.nav_fields', 'E & M fields'), icon: '⚡' },
+            { id: 'ohmInquiry', label: __alloT('stem.circuit.nav_ohm_inquiry', 'Ohm Inquiry'), icon: '🔬' }
           ] },
-          { id: 'components', label: 'Components', color: 'sky', tabs: [
-            { id: 'components', label: 'Components', icon: '⏛' },
-            { id: 'resistor', label: 'Resistor colors', icon: '🎨' },
-            { id: 'capacitor', label: 'Capacitors', icon: '⎮⎮' },
-            { id: 'inductor', label: 'Inductors', icon: '∿∿' },
-            { id: 'semicon', label: 'Semiconductors', icon: '⌐' },
-            { id: 'opamp', label: 'Op-amps', icon: '▷' },
-            { id: 'filters', label: 'Filters', icon: '⌒' },
-            { id: 'sensors', label: 'Sensors', icon: '◉' },
-            { id: 'actuators', label: 'Actuators', icon: '🔧' },
-            { id: 'connectors', label: 'Connectors', icon: '🔗' }
+          { id: 'components', label: __alloT('stem.circuit.navgroup_components', 'Components'), color: 'sky', tabs: [
+            { id: 'components', label: __alloT('stem.circuit.nav_components', 'Components'), icon: '⏛' },
+            { id: 'resistor', label: __alloT('stem.circuit.nav_resistor_colors', 'Resistor colors'), icon: '🎨' },
+            { id: 'capacitor', label: __alloT('stem.circuit.nav_capacitors', 'Capacitors'), icon: '⎮⎮' },
+            { id: 'inductor', label: __alloT('stem.circuit.nav_inductors', 'Inductors'), icon: '∿∿' },
+            { id: 'semicon', label: __alloT('stem.circuit.nav_semiconductors', 'Semiconductors'), icon: '⌐' },
+            { id: 'opamp', label: __alloT('stem.circuit.nav_opamps', 'Op-amps'), icon: '▷' },
+            { id: 'filters', label: __alloT('stem.circuit.nav_filters', 'Filters'), icon: '⌒' },
+            { id: 'sensors', label: __alloT('stem.circuit.nav_sensors', 'Sensors'), icon: '◉' },
+            { id: 'actuators', label: __alloT('stem.circuit.nav_actuators', 'Actuators'), icon: '🔧' },
+            { id: 'connectors', label: __alloT('stem.circuit.nav_connectors', 'Connectors'), icon: '🔗' }
           ] },
-          { id: 'systems', label: 'Systems & Computing', color: 'violet', tabs: [
-            { id: 'logic', label: 'Digital logic', icon: '0/1' },
-            { id: 'micro', label: 'Microcontrollers', icon: '🧠' },
-            { id: 'ics', label: 'Common ICs', icon: '⬚' },
-            { id: 'protos', label: 'Comm protocols', icon: '↔' },
-            { id: 'pcb', label: 'PCB design', icon: '▦' },
-            { id: 'simulation', label: 'Circuit sim', icon: '🖥' }
+          { id: 'systems', label: __alloT('stem.circuit.navgroup_systems', 'Systems & Computing'), color: 'violet', tabs: [
+            { id: 'logic', label: __alloT('stem.circuit.nav_logic', 'Digital logic'), icon: '0/1' },
+            { id: 'micro', label: __alloT('stem.circuit.nav_micro', 'Microcontrollers'), icon: '🧠' },
+            { id: 'ics', label: __alloT('stem.circuit.nav_ics', 'Common ICs'), icon: '⬚' },
+            { id: 'protos', label: __alloT('stem.circuit.nav_protos', 'Comm protocols'), icon: '↔' },
+            { id: 'pcb', label: __alloT('stem.circuit.nav_pcb', 'PCB design'), icon: '▦' },
+            { id: 'simulation', label: __alloT('stem.circuit.nav_simulation', 'Circuit sim'), icon: '🖥' }
           ] },
-          { id: 'power', label: 'Power & Energy', color: 'rose', tabs: [
-            { id: 'power', label: 'Power supplies', icon: '🔌' },
-            { id: 'batteries', label: 'Battery types', icon: '🔋' },
-            { id: 'energy', label: 'Energy sources', icon: '⚡' },
-            { id: 'motors', label: 'Motors & gens', icon: '⚙' },
-            { id: 'wireless', label: 'Wireless power', icon: '📶' },
-            { id: 'fuses', label: 'Fuses + breakers', icon: '⌧' },
-            { id: 'safety', label: 'Safety', icon: '⚠' }
+          { id: 'power', label: __alloT('stem.circuit.navgroup_power', 'Power & Energy'), color: 'rose', tabs: [
+            { id: 'power', label: __alloT('stem.circuit.nav_power', 'Power supplies'), icon: '🔌' },
+            { id: 'batteries', label: __alloT('stem.circuit.nav_batteries', 'Battery types'), icon: '🔋' },
+            { id: 'energy', label: __alloT('stem.circuit.nav_energy', 'Energy sources'), icon: '⚡' },
+            { id: 'motors', label: __alloT('stem.circuit.nav_motors', 'Motors & gens'), icon: '⚙' },
+            { id: 'wireless', label: __alloT('stem.circuit.nav_wireless', 'Wireless power'), icon: '📶' },
+            { id: 'fuses', label: __alloT('stem.circuit.nav_fuses', 'Fuses + breakers'), icon: '⌧' },
+            { id: 'safety', label: __alloT('stem.circuit.nav_safety', 'Safety'), icon: '⚠' }
           ] },
-          { id: 'practical', label: 'Practical & Reference', color: 'emerald', tabs: [
-            { id: 'standards', label: 'Standards + plugs', icon: '🔌' },
-            { id: 'wire', label: 'Wire gauges', icon: '〰' },
-            { id: 'lights', label: 'Light bulbs', icon: '💡' },
-            { id: 'household_app', label: 'Appliance watts', icon: '🏠' },
-            { id: 'circuit_lab', label: 'Lab equipment', icon: '🔬' },
-            { id: 'common_circuits', label: 'Project circuits', icon: '⚒' },
-            { id: 'troubleshoot', label: 'Troubleshooting', icon: '🛠' },
-            { id: 'glossary', label: 'Glossary', icon: '📖' }
+          { id: 'practical', label: __alloT('stem.circuit.navgroup_practical', 'Practical & Reference'), color: 'emerald', tabs: [
+            { id: 'standards', label: __alloT('stem.circuit.nav_standards', 'Standards + plugs'), icon: '🔌' },
+            { id: 'wire', label: __alloT('stem.circuit.nav_wire', 'Wire gauges'), icon: '〰' },
+            { id: 'lights', label: __alloT('stem.circuit.nav_lights', 'Light bulbs'), icon: '💡' },
+            { id: 'household_app', label: __alloT('stem.circuit.nav_household_app', 'Appliance watts'), icon: '🏠' },
+            { id: 'circuit_lab', label: __alloT('stem.circuit.nav_circuit_lab', 'Lab equipment'), icon: '🔬' },
+            { id: 'common_circuits', label: __alloT('stem.circuit.nav_common_circuits', 'Project circuits'), icon: '⚒' },
+            { id: 'troubleshoot', label: __alloT('stem.circuit.nav_troubleshoot', 'Troubleshooting'), icon: '🛠' },
+            { id: 'glossary', label: __alloT('stem.circuit.nav_glossary', 'Glossary'), icon: '📖' }
           ] },
-          { id: 'history', label: 'History & Careers', color: 'slate', tabs: [
-            { id: 'famous', label: 'History', icon: '🕰' },
-            { id: 'famouscirc', label: 'Famous circuits', icon: '🎛' },
-            { id: 'computers', label: 'Computer history', icon: '💻' },
-            { id: 'world', label: 'World electrification', icon: '🌐' },
-            { id: 'careers', label: 'Careers', icon: '💼' }
-, { id: 'poebulb', label: 'Predict bulb', icon: '💡' }
-, { id: 'failDx', label: 'Why did it fail?', icon: '🛠' }
+          { id: 'history', label: __alloT('stem.circuit.navgroup_history', 'History & Careers'), color: 'slate', tabs: [
+            { id: 'famous', label: __alloT('stem.circuit.nav_famous', 'History'), icon: '🕰' },
+            { id: 'famouscirc', label: __alloT('stem.circuit.nav_famouscirc', 'Famous circuits'), icon: '🎛' },
+            { id: 'computers', label: __alloT('stem.circuit.nav_computers', 'Computer history'), icon: '💻' },
+            { id: 'world', label: __alloT('stem.circuit.nav_world', 'World electrification'), icon: '🌐' },
+            { id: 'careers', label: __alloT('stem.circuit.nav_careers', 'Careers'), icon: '💼' }
+, { id: 'poebulb', label: __alloT('stem.circuit.nav_poebulb', 'Predict bulb'), icon: '💡' }
+, { id: 'failDx', label: __alloT('stem.circuit.nav_faildx', 'Why did it fail?'), icon: '🛠' }
           ] }
         ];
         function renderBtn(s, accent) {
