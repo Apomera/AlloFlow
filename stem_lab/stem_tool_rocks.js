@@ -3140,7 +3140,7 @@ const d = labToolData.rocks || {};
 
                 if (typeof callGemini !== 'function') {
 
-                  upd("mystery", { error: 'AI tutor is not available. Check back when online.' });
+                  upd("mystery", { error: __alloT('stem.rocks.ai_tutor_unavailable', 'AI tutor is not available. Check back when online.') });
 
                   return;
 
@@ -3168,7 +3168,7 @@ const d = labToolData.rocks || {};
 
                   const parts = String(resp || '').split('|||').map(function (s) { return s.replace(/^\s*[0-9]+\.?\s*/, '').trim(); }).filter(Boolean);
 
-                  const safeClues = parts.length >= 1 ? parts.slice(0, 3) : ['The AI returned no clues. Try again.'];
+                  const safeClues = parts.length >= 1 ? parts.slice(0, 3) : [__alloT('stem.rocks.ai_no_clues', 'The AI returned no clues. Try again.')];
 
                   upd("mystery", { rockId: pick.id, clues: safeClues, cluesShown: 1, revealed: false, solved: false, loading: false, lastGuess: null, error: null });
 
@@ -3176,7 +3176,7 @@ const d = labToolData.rocks || {};
 
                 }).catch(function () {
 
-                  upd("mystery", { rockId: pick.id, clues: [], cluesShown: 0, revealed: false, solved: false, loading: false, lastGuess: null, error: 'Could not reach AI tutor. Try again in a moment.' });
+                  upd("mystery", { rockId: pick.id, clues: [], cluesShown: 0, revealed: false, solved: false, loading: false, lastGuess: null, error: __alloT('stem.rocks.could_not_reach_ai', 'Could not reach AI tutor. Try again in a moment.') });
 
                 });
 
@@ -3244,7 +3244,7 @@ const d = labToolData.rocks || {};
 
 
 
-              return React.createElement("div", { className: "mt-2", role: "region", "aria-label": "Mystery Rock challenge" },
+              return React.createElement("div", { className: "mt-2", role: "region", "aria-label": __alloT('stem.rocks.mystery_rock_challenge_aria', "Mystery Rock challenge") },
 
                 React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border-2 border-amber-300 p-4 mb-3" },
 
@@ -3252,31 +3252,31 @@ const d = labToolData.rocks || {};
 
                     React.createElement("span", { className: "text-2xl" }, "🔍"),
 
-                    React.createElement("h4", { className: "font-bold text-sm text-amber-900" }, "Mystery Rock Challenge"),
+                    React.createElement("h4", { className: "font-bold text-sm text-amber-900" }, __alloT('stem.rocks.mystery_rock_challenge_title', "Mystery Rock Challenge")),
 
-                    React.createElement("span", { className: "ml-auto text-[11px] text-amber-700 font-bold" }, "Reading level: " + (gradeLevel || '5th Grade'))
+                    React.createElement("span", { className: "ml-auto text-[11px] text-amber-700 font-bold" }, __alloT('stem.rocks.reading_level_label', "Reading level: ") + (gradeLevel || '5th Grade'))
 
                   ),
 
                   React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" },
 
-                    "The AI tutor picks a rock and gives you 3 clues. Read each clue, then click a rock from the grid below to guess. Wrong guesses reveal the next clue. Earn 15 XP for a correct ID.")
+                    __alloT('stem.rocks.mystery_intro', "The AI tutor picks a rock and gives you 3 clues. Read each clue, then click a rock from the grid below to guess. Wrong guesses reveal the next clue. Earn 15 XP for a correct ID."))
 
                 ),
 
                 !myst.rockId && !myst.loading && React.createElement("div", { className: "flex flex-col items-center gap-2 p-6 bg-white rounded-xl border-2 border-dashed border-amber-300" },
 
-                  React.createElement("p", { className: "text-xs text-slate-600" }, "Ready to test your rock knowledge?"),
+                  React.createElement("p", { className: "text-xs text-slate-600" }, __alloT('stem.rocks.ready_to_test', "Ready to test your rock knowledge?")),
 
                   React.createElement("button", {
 
                     onClick: startMystery,
 
-                    "aria-label": "Start Mystery Rock challenge",
+                    "aria-label": __alloT('stem.rocks.start_mystery_aria', "Start Mystery Rock challenge"),
 
                     className: "px-5 py-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold text-sm rounded-full shadow-md hover:shadow-lg hover:from-amber-700 hover:to-orange-700"
 
-                  }, "🎲 Start Challenge"),
+                  }, "🎲 " + __alloT('stem.rocks.start_challenge', "Start Challenge")),
 
                   myst.error && React.createElement("p", { className: "text-[11px] text-red-600 mt-1", role: "alert" }, myst.error)
 
@@ -3284,19 +3284,19 @@ const d = labToolData.rocks || {};
 
                 myst.loading && React.createElement("div", { className: "p-4 bg-white rounded-xl border border-amber-200 text-center text-xs text-slate-600", role: "status", "aria-live": "polite" },
 
-                  "🧠 AI tutor is thinking up clues..."),
+                  "🧠 " + __alloT('stem.rocks.ai_thinking_clues', "AI tutor is thinking up clues...")),
 
                 myst.rockId && !myst.loading && React.createElement("div", null,
 
                   React.createElement("div", { className: "bg-white rounded-xl border-2 border-amber-200 p-3 mb-3" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-2" }, "Clues (" + cluesShown + "/" + clues.length + ")"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-2" }, __alloT('stem.rocks.clues_label', "Clues") + " (" + cluesShown + "/" + clues.length + ")"),
 
                     clues.slice(0, cluesShown).map(function (c, i) {
 
                       return React.createElement("div", { key: i, className: "flex gap-2 mb-1.5 text-xs text-slate-700 leading-relaxed" },
 
-                        React.createElement("span", { className: "font-bold text-amber-700 shrink-0" }, "Clue " + (i + 1) + ":"),
+                        React.createElement("span", { className: "font-bold text-amber-700 shrink-0" }, __alloT('stem.rocks.clue_label', "Clue ") + (i + 1) + ":"),
 
                         React.createElement("span", null, c));
 
@@ -3306,11 +3306,11 @@ const d = labToolData.rocks || {};
 
                       onClick: revealNextClue,
 
-                      "aria-label": "Reveal next clue",
+                      "aria-label": __alloT('stem.rocks.reveal_next_clue', "Reveal next clue"),
 
                       className: "transition-colors mt-1 px-3 py-1 text-[11px] font-bold bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200 active:scale-[0.97]"
 
-                    }, "+ Reveal next clue")
+                    }, "+ " + __alloT('stem.rocks.reveal_next_clue', "Reveal next clue"))
 
                   ),
 
@@ -3324,7 +3324,7 @@ const d = labToolData.rocks || {};
 
                     React.createElement("p", { className: "text-sm font-bold " + (myst.solved ? "text-green-800" : "text-slate-800") },
 
-                      (myst.solved ? "✅ Correct! It was " : "📖 The answer was ") + ROCK_TYPES[mysteryRock.type].icon + " " + mysteryRock.label),
+                      (myst.solved ? "✅ " + __alloT('stem.rocks.correct_it_was', "Correct! It was ") : "📖 " + __alloT('stem.rocks.the_answer_was', "The answer was ")) + ROCK_TYPES[mysteryRock.type].icon + " " + mysteryRock.label),
 
                     React.createElement("p", { className: "text-[11px] text-slate-600 mt-1 leading-relaxed" }, mysteryRock.desc),
 
@@ -3332,19 +3332,19 @@ const d = labToolData.rocks || {};
 
                       onClick: startMystery,
 
-                      "aria-label": "Start a new Mystery Rock challenge",
+                      "aria-label": __alloT('stem.rocks.start_new_mystery_aria', "Start a new Mystery Rock challenge"),
 
                       className: "transition-colors mt-2 px-3 py-1 text-[11px] font-bold bg-amber-700 text-white rounded-lg hover:bg-amber-800 active:scale-[0.97]"
 
-                    }, "🎲 New Mystery")
+                    }, "🎲 " + __alloT('stem.rocks.new_mystery', "New Mystery"))
 
                   ),
 
                   !myst.solved && !myst.revealed && React.createElement("div", null,
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1.5" }, "Click the rock you think matches the clues:"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1.5" }, __alloT('stem.rocks.click_rock_matches_clues', "Click the rock you think matches the clues:")),
 
-                    React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-2", role: "group", "aria-label": "Rock guess options" },
+                    React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-2", role: "group", "aria-label": __alloT('stem.rocks.rock_guess_options_aria', "Rock guess options") },
 
                       ROCKS.map(function (rock) {
 
@@ -3358,7 +3358,7 @@ const d = labToolData.rocks || {};
 
                           onClick: function () { guess(rock.id); },
 
-                          "aria-label": "Guess " + rock.label,
+                          "aria-label": __alloT('stem.rocks.guess_label', "Guess ") + rock.label,
 
                           className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
 
@@ -3378,11 +3378,11 @@ const d = labToolData.rocks || {};
 
                       onClick: giveUp,
 
-                      "aria-label": "Give up and reveal the answer",
+                      "aria-label": __alloT('stem.rocks.give_up_aria', "Give up and reveal the answer"),
 
                       className: "transition-colors px-3 py-1 text-[11px] font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 active:scale-[0.97]"
 
-                    }, "🤷 Give up · show answer")
+                    }, "🤷 " + __alloT('stem.rocks.give_up_show_answer', "Give up · show answer"))
 
                   )
 
@@ -3398,7 +3398,7 @@ const d = labToolData.rocks || {};
 
             d.quizMode && quizQ && React.createElement("div", {
               className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in outline-none focus:ring-2 focus:ring-amber-400",
-              role: "region", "aria-label": "Rock identification quiz. Press 1 through 4 to answer, or N for next.",
+              role: "region", "aria-label": __alloT('stem.rocks.quiz_region_aria', "Rock identification quiz. Press 1 through 4 to answer, or N for next."),
               tabIndex: 0,
               ref: function (el) { if (el && !el._rkQuizFocused) { el._rkQuizFocused = true; try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); } } },
               onKeyDown: function (e) {
@@ -3409,11 +3409,11 @@ const d = labToolData.rocks || {};
                     e.preventDefault();
                     const opt = quizQ.options[idx];
                     const correct = opt === quizQ.a;
-                    const explanation = quizQ.wrongFeedback ? quizQ.wrongFeedback[idx] : (correct ? "Correct!" : "Incorrect.");
+                    const explanation = quizQ.wrongFeedback ? quizQ.wrongFeedback[idx] : (correct ? __alloT('stem.rocks.correct_exclaim', "Correct!") : __alloT('stem.rocks.incorrect', "Incorrect."));
                     upd("quizFeedback", {
                       correct: correct,
                       chosenIdx: idx,
-                      msg: correct ? "✅ Correct! +10 XP" : "❌ Incorrect.",
+                      msg: correct ? "✅ " + __alloT('stem.rocks.correct_plus_xp', "Correct! +10 XP") : "❌ " + __alloT('stem.rocks.incorrect', "Incorrect."),
                       explanation: explanation
                     });
                     if (correct) {
@@ -3434,7 +3434,7 @@ const d = labToolData.rocks || {};
               }
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("p", { className: "text-xs font-bold text-amber-700" }, "🧠 Question " + ((d.quizIdx || 0) + 1) + "/" + QUIZ_BANK.length),
+                React.createElement("p", { className: "text-xs font-bold text-amber-700" }, "🧠 " + __alloT('stem.rocks.question_label', "Question ") + ((d.quizIdx || 0) + 1) + "/" + QUIZ_BANK.length),
                 React.createElement("span", { className: "font-bold text-green-600 text-xs" }, "✔ " + (d.quizScore || 0))
               ),
               React.createElement("p", { className: "text-sm font-bold text-slate-800 mb-3" }, quizQ.q),
@@ -3442,15 +3442,15 @@ const d = labToolData.rocks || {};
                 quizQ.options.map(function (opt, i) {
                   const shortcut = (i + 1).toString();
                   const isChosen = d.quizFeedback && d.quizFeedback.chosenIdx === i;
-                  return React.createElement("button", { "aria-label": "Answer " + shortcut + ": " + opt,
+                  return React.createElement("button", { "aria-label": __alloT('stem.rocks.answer_label', "Answer ") + shortcut + ": " + opt,
                     key: opt, onClick: function () {
                       if (d.quizFeedback) return;
                       const correct = opt === quizQ.a;
-                      const explanation = quizQ.wrongFeedback ? quizQ.wrongFeedback[i] : (correct ? "Correct!" : "Incorrect.");
+                      const explanation = quizQ.wrongFeedback ? quizQ.wrongFeedback[i] : (correct ? __alloT('stem.rocks.correct_exclaim', "Correct!") : __alloT('stem.rocks.incorrect', "Incorrect."));
                       upd("quizFeedback", {
                         correct: correct,
                         chosenIdx: i,
-                        msg: correct ? "✅ Correct! +10 XP" : "❌ Incorrect.",
+                        msg: correct ? "✅ " + __alloT('stem.rocks.correct_plus_xp', "Correct! +10 XP") : "❌ " + __alloT('stem.rocks.incorrect', "Incorrect."),
                         explanation: explanation
                       });
                       if (correct) {
@@ -3480,7 +3480,7 @@ const d = labToolData.rocks || {};
                   var studied = (d.vocabLookedUp || []).indexOf(concept) !== -1;
                   return React.createElement("div", { className: "p-3 rounded-lg bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in" },
                     React.createElement("div", { className: "flex-1" },
-                      React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "🔍 Concept Focus: " + concept),
+                      React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "🔍 " + __alloT('stem.rocks.concept_focus_label', "Concept Focus: ") + concept),
                       React.createElement("p", { className: "text-[11px] text-slate-600 mt-0.5 leading-relaxed" }, definition)
                     ),
                     !studied && React.createElement("button", {
@@ -3495,16 +3495,16 @@ const d = labToolData.rocks || {};
                         setTimeout(function() { checkRocksChallenges(nextState); }, 50);
                       },
                       className: "px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]"
-                    }, "📖 Study Term (+5 RP)")
+                    }, "📖 " + __alloT('stem.rocks.study_term', "Study Term (+5 RP)"))
                   );
                 })(),
                 React.createElement("div", { className: "flex justify-end" },
-                  React.createElement("button", { "aria-label": "Next question (shortcut: N)",
+                  React.createElement("button", { "aria-label": __alloT('stem.rocks.next_question_aria', "Next question (shortcut: N)"),
                     onClick: function () {
                       const nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
                       upd("quizIdx", nextIdx); upd("quizFeedback", null);
                     }, className: "px-4 py-1.5 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all active:scale-[0.97]"
-                  }, "Next Question \u2192 (N)")
+                  }, __alloT('stem.rocks.next_question', "Next Question") + " \u2192 (N)")
                 )
               )
             ),
@@ -3523,22 +3523,22 @@ const d = labToolData.rocks || {};
               else if (total > 0.5) state = 'mixed';
               else state = 'minimal';
               var sm = {
-                chemDom: { label: '\ud83e\uddea Chemical-dominated', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Acidic rain dissolves minerals. Karst landscapes form.' },
-                physDom: { label: '\ud83d\udd28 Physical-dominated', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Freeze-thaw cycles fracture rock mechanically.' },
-                mixed:   { label: '\u2696\ufe0f Mixed weathering', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Both processes active. Typical temperate climate.' },
-                minimal: { label: '\ud83d\udfe2 Minimal weathering', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Stable conditions. Rock surfaces persist.' }
+                chemDom: { label: '\ud83e\uddea ' + __alloT('stem.rocks.weath_chem_label', 'Chemical-dominated'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: __alloT('stem.rocks.weath_chem_desc', 'Acidic rain dissolves minerals. Karst landscapes form.') },
+                physDom: { label: '\ud83d\udd28 ' + __alloT('stem.rocks.weath_phys_label', 'Physical-dominated'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.rocks.weath_phys_desc', 'Freeze-thaw cycles fracture rock mechanically.') },
+                mixed:   { label: '\u2696\ufe0f ' + __alloT('stem.rocks.weath_mixed_label', 'Mixed weathering'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.rocks.weath_mixed_desc', 'Both processes active. Typical temperate climate.') },
+                minimal: { label: '\ud83d\udfe2 ' + __alloT('stem.rocks.weath_minimal_label', 'Minimal weathering'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.rocks.weath_minimal_desc', 'Stable conditions. Rock surfaces persist.') }
               }[state];
               return h('div', { className: 'p-4 rounded-xl bg-white border border-amber-300 space-y-3' },
-                h('h3', { className: 'text-sm font-black text-amber-700' }, '\u26cf\ufe0f Rock weathering discovery'),
-                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Adjust temperature swings, rainfall, and rain pH. Widget classifies dominant weathering mode into 4 discrete categories. No score, no reveal.'),
+                h('h3', { className: 'text-sm font-black text-amber-700' }, '\u26cf\ufe0f ' + __alloT('stem.rocks.rock_weathering_discovery', 'Rock weathering discovery')),
+                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, __alloT('stem.rocks.weathering_intro', 'Adjust temperature swings, rainfall, and rain pH. Widget classifies dominant weathering mode into 4 discrete categories. No score, no reveal.')),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
                   h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
                 ),
                 h('div', { className: 'grid grid-cols-3 gap-3' },
-                  [{ k: 'tempSwing', l: 'Temp swing (\u00b0C)', mn: 0, mx: 50, st: 1 },
-                   { k: 'rainfall', l: 'Rainfall (mm/yr)', mn: 0, mx: 500, st: 10 },
-                   { k: 'pH', l: 'Rain pH', mn: 0, mx: 14, st: 0.1 }].map(function(s) {
+                  [{ k: 'tempSwing', l: __alloT('stem.rocks.weath_temp_swing', 'Temp swing (\u00b0C)'), mn: 0, mx: 50, st: 1 },
+                   { k: 'rainfall', l: __alloT('stem.rocks.weath_rainfall', 'Rainfall (mm/yr)'), mn: 0, mx: 500, st: 10 },
+                   { k: 'pH', l: __alloT('stem.rocks.weath_rain_ph', 'Rain pH'), mn: 0, mx: 14, st: 0.1 }].map(function(s) {
                     return h('div', { key: s.k },
                       h('label', { htmlFor: 'wh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-amber-700' }, iq[s.k])),
                       h('input', { id: 'wh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
@@ -3547,23 +3547,23 @@ const d = labToolData.rocks || {};
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempSwing, r: iq.rainfall, p: iq.pH, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '\ud83d\udccb Log'),
-                  h('button', { onClick: function() { setIQ({ tempSwing: 20, rainfall: 200, pH: 7, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '\u21ba Reset')
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempSwing, r: iq.rainfall, p: iq.pH, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '\ud83d\udccb ' + __alloT('stem.rocks.weath_log', 'Log')),
+                  h('button', { onClick: function() { setIQ({ tempSwing: 20, rainfall: 200, pH: 7, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '\u21ba ' + __alloT('stem.rocks.weath_reset', 'Reset'))
                 ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: What climate produces chemical vs physical dominance?',
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.rocks.weath_hypothesis_placeholder', 'Hypothesis: What climate produces chemical vs physical dominance?'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '\ud83e\udd14 Stuck \u2014 show open prompts'),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '\ud83e\udd14 ' + __alloT('stem.rocks.weath_stuck_btn', 'Stuck \u2014 show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
-                    h('li', null, 'Try pH=4 (acid rain). Does that change the mode?'),
-                    h('li', null, 'Why does temperature swing matter more in arid climates?'))),
+                    h('li', null, __alloT('stem.rocks.weath_prompt_ph', 'Try pH=4 (acid rain). Does that change the mode?')),
+                    h('li', null, __alloT('stem.rocks.weath_prompt_temp', 'Why does temperature swing matter more in arid climates?')))),
                 h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
                   h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                     h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                    'I understand \u2014 explain in own words'),
-                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how climate selects which weathering mode dominates.',
+                    __alloT('stem.rocks.weath_understand_label', 'I understand \u2014 explain in own words')),
+                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.rocks.weath_explanation_placeholder', 'Explain how climate selects which weathering mode dominates.'),
                     className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state weathering marker; no rate score; no reveal \u2014 by design.')
+                h('div', { className: 'text-[10px] italic text-slate-500' }, __alloT('stem.rocks.weath_design_note', 'Design note: discrete 4-state weathering marker; no rate score; no reveal \u2014 by design.'))
               );
             })(),
 
@@ -3572,7 +3572,7 @@ const d = labToolData.rocks || {};
 
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
 
-              React.createElement("button", { "aria-label": "Snapshot",
+              React.createElement("button", { "aria-label": __alloT('stem.rocks.snapshot', "Snapshot"),
 
                 onClick: function () {
 
@@ -3582,7 +3582,7 @@ const d = labToolData.rocks || {};
 
                 }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all"
 
-              }, "\uD83D\uDCF8 Snapshot")
+              }, "\uD83D\uDCF8 " + __alloT('stem.rocks.snapshot', "Snapshot"))
 
             )
 
@@ -5082,7 +5082,7 @@ const d = labToolData.rockCycle || {};
                           if (typeof addToast === 'function') addToast({ type: 'success', title: 'Concept Studied!', message: 'You studied ' + d.rcQuiz.concept + ' (+5 RP)' });
                         },
                         className: "px-2 py-1 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]"
-                      }, "📖 Study Term (+5 RP)")
+                      }, "📖 " + __alloT('stem.rocks.study_term', "Study Term (+5 RP)"))
                     );
                   })()
                 )
