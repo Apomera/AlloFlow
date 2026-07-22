@@ -2286,7 +2286,7 @@ const d = labToolData.wave;
             // Reflection / boundary controls
             waveMode === 'reflection' && React.createElement("div", { className: "flex items-center flex-wrap gap-4 mb-3 p-2 bg-amber-50 rounded-lg border border-amber-200" },
               React.createElement("div", { className: "flex items-center gap-2" },
-                React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "End Type:"),
+                React.createElement("span", { className: "text-xs font-bold text-amber-800" }, __alloT('stem.wave.refl_end_type', 'End Type:')),
                 React.createElement("div", { className: "flex rounded-md overflow-hidden border border-amber-300" },
                   ['fixed', 'free'].map(function(et) {
                     var active = (d.reflectionEnd || 'fixed') === et;
@@ -2295,19 +2295,19 @@ const d = labToolData.wave;
                       onClick: function() { upd('reflectionEnd', et); },
                       className: 'px-2.5 py-1 text-[11px] font-bold transition ' + (active ? (et === 'fixed' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white') : 'transition-colors bg-white text-slate-600 hover:bg-amber-100 active:scale-[0.97]'),
                       'aria-pressed': active,
-                      'aria-label': et === 'fixed' ? 'Fixed end (string tied down — phase inverts on reflection)' : 'Free end (string free to move — phase preserved on reflection)'
-                    }, et === 'fixed' ? '🔒 Fixed' : '🪁 Free');
+                      'aria-label': et === 'fixed' ? __alloT('stem.wave.aria_fixed_end', 'Fixed end (string tied down — phase inverts on reflection)') : __alloT('stem.wave.aria_free_end', 'Free end (string free to move — phase preserved on reflection)')
+                    }, et === 'fixed' ? '🔒 ' + __alloT('stem.wave.btn_fixed', 'Fixed') : '🪁 ' + __alloT('stem.wave.btn_free', 'Free'));
                   })
                 )
               ),
               React.createElement("div", { className: "flex items-center gap-2" },
-                React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "Wall Position:"),
-                React.createElement("input", { type: "range", min: 0.2, max: 0.95, step: 0.01, value: d.wallFrac != null ? d.wallFrac : 0.75, 'aria-label': 'Wall position across the tank (keyboard equivalent of dragging the gold wall)', onChange: function(e) { var wf = parseFloat(e.target.value); upd('wallFrac', wf); var c = canvasRef._lastCanvas; if (c && c._drag) c._drag.wallX = wf * c.width; }, className: "w-24 accent-amber-600" }),
+                React.createElement("span", { className: "text-xs font-bold text-amber-800" }, __alloT('stem.wave.refl_wall_position', 'Wall Position:')),
+                React.createElement("input", { type: "range", min: 0.2, max: 0.95, step: 0.01, value: d.wallFrac != null ? d.wallFrac : 0.75, 'aria-label': __alloT('stem.wave.aria_wall_position', 'Wall position across the tank (keyboard equivalent of dragging the gold wall)'), onChange: function(e) { var wf = parseFloat(e.target.value); upd('wallFrac', wf); var c = canvasRef._lastCanvas; if (c && c._drag) c._drag.wallX = wf * c.width; }, className: "w-24 accent-amber-600" }),
                 React.createElement("span", { className: "text-xs text-amber-900 font-bold w-10" }, Math.round((d.wallFrac != null ? d.wallFrac : 0.75) * 100) + "%")
               ),
               React.createElement("div", { className: "flex items-center gap-2" },
-                React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "Reflectivity:"),
-                React.createElement("input", { type: "range", min: 0.0, max: 1.0, step: 0.05, value: d.reflectivity != null ? d.reflectivity : 0.9, 'aria-label': 'Wall reflectivity 0 to 1', onChange: e => upd('reflectivity', parseFloat(e.target.value)), className: "w-24 accent-amber-600" }),
+                React.createElement("span", { className: "text-xs font-bold text-amber-800" }, __alloT('stem.wave.refl_reflectivity', 'Reflectivity:')),
+                React.createElement("input", { type: "range", min: 0.0, max: 1.0, step: 0.05, value: d.reflectivity != null ? d.reflectivity : 0.9, 'aria-label': __alloT('stem.wave.aria_reflectivity', 'Wall reflectivity 0 to 1'), onChange: e => upd('reflectivity', parseFloat(e.target.value)), className: "w-24 accent-amber-600" }),
                 React.createElement("span", { className: "text-xs text-amber-900 font-bold w-10" }, (d.reflectivity != null ? d.reflectivity : 0.9).toFixed(2))
               ),
               React.createElement("button", {
@@ -2315,14 +2315,14 @@ const d = labToolData.wave;
                   var c = canvasRef._lastCanvas;
                   if (c && c._drag) { c._drag.wallX = null; }
                   upd('wallFrac', null);
-                  if (typeof addToast === 'function') addToast('Wall reset to 75% across', 'info');
+                  if (typeof addToast === 'function') addToast(__alloT('stem.wave.toast_wall_reset', 'Wall reset to 75% across'), 'info');
                 },
                 className: "transition-colors px-3 py-1 rounded-md text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 active:scale-[0.97]",
-                'aria-label': 'Reset wall position'
-              }, '↻ Reset wall'),
+                'aria-label': __alloT('stem.wave.aria_reset_wall', 'Reset wall position')
+              }, '↻ ' + __alloT('stem.wave.btn_reset_wall', 'Reset wall')),
               React.createElement("span", { className: "text-[11px] text-amber-900 ml-auto" },
-                React.createElement("span", { style: { color: '#f59e0b', fontWeight: 700 } }, '— solid'), ': incident + reflected · ',
-                React.createElement("span", { style: { color: '#db2777', fontWeight: 700 } }, '‑‑ dashed'), ': reflected alone · 💡 drag the gold wall or use the slider')
+                React.createElement("span", { style: { color: '#f59e0b', fontWeight: 700 } }, '— ' + __alloT('stem.wave.refl_solid', 'solid')), __alloT('stem.wave.refl_solid_desc', ': incident + reflected · '),
+                React.createElement("span", { style: { color: '#db2777', fontWeight: 700 } }, '‑‑ ' + __alloT('stem.wave.refl_dashed', 'dashed')), __alloT('stem.wave.refl_dashed_desc', ': reflected alone · 💡 drag the gold wall or use the slider'))
             ),
 
             // Doppler specific controls
@@ -2331,23 +2331,23 @@ const d = labToolData.wave;
 
               React.createElement("label", { className: "text-xs font-bold text-rose-700 flex items-center gap-2" },
 
-                "Source Speed (v\u209B):",
+                __alloT('stem.wave.doppler_source_speed', 'Source Speed') + " (v\u209B):",
 
-                React.createElement("input", { type: "range", min: 0.0, max: 0.95, step: 0.05, value: d.sourceSpeed !== undefined ? d.sourceSpeed : 0.3, 'aria-label': 'Source speed as fraction of wave speed', onChange: e => upd('sourceSpeed', parseFloat(e.target.value)), className: "w-32 accent-rose-600" }),
+                React.createElement("input", { type: "range", min: 0.0, max: 0.95, step: 0.05, value: d.sourceSpeed !== undefined ? d.sourceSpeed : 0.3, 'aria-label': __alloT('stem.wave.aria_source_speed', 'Source speed as fraction of wave speed'), onChange: e => upd('sourceSpeed', parseFloat(e.target.value)), className: "w-32 accent-rose-600" }),
 
                 React.createElement("span", { className: "inline-block w-8 text-right" }, Math.round((d.sourceSpeed !== undefined ? d.sourceSpeed : 0.3) * 100) + "%")
 
               ),
 
-              React.createElement("span", { className: "text-[11px] text-rose-500" }, "of sound speed (Mach number)"),
+              React.createElement("span", { className: "text-[11px] text-rose-500" }, __alloT('stem.wave.doppler_mach', 'of sound speed (Mach number)')),
 
               (function() {
                 var _m = d.sourceSpeed !== undefined ? d.sourceSpeed : 0.3;
                 var _f0 = d.frequency || 2;
                 return React.createElement(React.Fragment, null,
-                  React.createElement("span", { className: "text-[11px] font-bold text-red-700 bg-red-100 border border-red-200 rounded-full px-2 py-0.5" }, "approaching f′ = " + (_f0 / (1 - Math.min(_m, 0.95))).toFixed(1) + " Hz"),
-                  React.createElement("span", { className: "text-[11px] font-bold text-sky-700 bg-sky-100 border border-sky-200 rounded-full px-2 py-0.5" }, "receding f′ = " + (_f0 / (1 + _m)).toFixed(1) + " Hz"),
-                  React.createElement("span", { className: "text-[10px] text-rose-600 italic" }, (_waveAudio.ctx && d.soundPlaying) ? "🔊 the tone bends as the source passes the observer" : "▶ press Play Sound to HEAR the shift")
+                  React.createElement("span", { className: "text-[11px] font-bold text-red-700 bg-red-100 border border-red-200 rounded-full px-2 py-0.5" }, __alloT('stem.wave.doppler_approaching', 'approaching') + " f′ = " + (_f0 / (1 - Math.min(_m, 0.95))).toFixed(1) + " Hz"),
+                  React.createElement("span", { className: "text-[11px] font-bold text-sky-700 bg-sky-100 border border-sky-200 rounded-full px-2 py-0.5" }, __alloT('stem.wave.doppler_receding', 'receding') + " f′ = " + (_f0 / (1 + _m)).toFixed(1) + " Hz"),
+                  React.createElement("span", { className: "text-[10px] text-rose-600 italic" }, (_waveAudio.ctx && d.soundPlaying) ? "🔊 " + __alloT('stem.wave.doppler_tone_bends', 'the tone bends as the source passes the observer') : "▶ " + __alloT('stem.wave.doppler_press_play', 'press Play Sound to HEAR the shift'))
                 );
               })()
 
@@ -2357,7 +2357,7 @@ const d = labToolData.wave;
 
             React.createElement("div", { className: "bg-slate-900 rounded-lg p-4 mb-3 text-center border border-slate-700 shadow-lg" },
 
-              React.createElement("p", { className: "text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1" }, "\uD83D\uDCDD Wave Equation"),
+              React.createElement("p", { className: "text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1" }, "\uD83D\uDCDD " + __alloT('stem.wave.wave_equation_heading', 'Wave Equation')),
 
               
 
@@ -2365,7 +2365,7 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "mb-3 p-1.5 bg-slate-900/50 rounded-lg border border-slate-700/50 inline-block text-center" },
 
-                 React.createElement("p", { className: "text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5" }, "General Formula"),
+                 React.createElement("p", { className: "text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5" }, __alloT('stem.wave.general_formula', 'General Formula')),
 
                  React.createElement("p", { className: "text-sm font-mono font-bold text-slate-300" }, 
 
@@ -2381,7 +2381,7 @@ const d = labToolData.wave;
 
               (d.matchTarget && d.matchTarget.isEquation) && React.createElement("div", { className: "mb-3 p-2 bg-purple-900/50 rounded-lg border border-purple-500/50 inline-block text-left" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-purple-300 uppercase tracking-wider mb-1" }, "Target Equation:"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-purple-300 uppercase tracking-wider mb-1" }, __alloT('stem.wave.target_equation', 'Target Equation:')),
 
                   React.createElement("div", { className: "text-lg font-mono font-bold opacity-90 tracking-tight" }, 
 
@@ -2393,7 +2393,7 @@ const d = labToolData.wave;
 
               React.createElement("p", { className: "text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1 mt-1 flex justify-center items-center h-4" }, 
 
-                  (d.matchTarget && d.matchTarget.isEquation) ? "Your Equation:" : "Current Equation:",
+                  (d.matchTarget && d.matchTarget.isEquation) ? __alloT('stem.wave.your_equation', 'Your Equation:') : __alloT('stem.wave.current_equation', 'Current Equation:'),
 
                   (function() {
 
@@ -2403,9 +2403,9 @@ const d = labToolData.wave;
 
                     return pct > 90 
 
-                      ? React.createElement("span", {className: "text-[11px] font-bold text-emerald-400 bg-emerald-900/50 px-1.5 py-0.5 rounded-full ml-2 lowercase tracking-normal"}, "\u2705 " + pct + "% match") 
+                      ? React.createElement("span", {className: "text-[11px] font-bold text-emerald-400 bg-emerald-900/50 px-1.5 py-0.5 rounded-full ml-2 lowercase tracking-normal"}, "\u2705 " + pct + __alloT('stem.wave.pct_match', '% match')) 
 
-                      : React.createElement("span", {className: "text-[11px] font-bold text-amber-400 bg-amber-900/50 px-1.5 py-0.5 rounded-full ml-2 lowercase tracking-normal"}, pct + "% match");
+                      : React.createElement("span", {className: "text-[11px] font-bold text-amber-400 bg-amber-900/50 px-1.5 py-0.5 rounded-full ml-2 lowercase tracking-normal"}, pct + __alloT('stem.wave.pct_match', '% match'));
                   })()
 
               ),
@@ -2420,7 +2420,7 @@ const d = labToolData.wave;
 
                   waveMode === 'standing' 
 
-                  ? 'Standing wave \u2014 superposition of two traveling waves. A = Amplitude, n = Harmonic' 
+                  ? __alloT('stem.wave.eq_standing_note', 'Standing wave \u2014 superposition of two traveling waves. A = Amplitude, n = Harmonic')
 
                   : 'A = ' + d.amplitude + ', f = ' + d.frequency + ' Hz, \u03BB = ' + wavelength.toFixed(1) + ' m, T = ' + (1 / d.frequency).toFixed(3) + ' s'
 
@@ -2434,7 +2434,7 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "p-3 bg-white rounded-lg border border-cyan-100 shadow-sm" },
 
-                React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 uppercase" }, "Wavelength \u03BB"),
+                React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 uppercase" }, __alloT('stem.wave.card_wavelength', 'Wavelength') + " \u03BB"),
 
                 React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, wavelength.toFixed(1) + " m")
 
@@ -2442,7 +2442,7 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "p-3 bg-white rounded-lg border border-cyan-100 shadow-sm" },
 
-                React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 uppercase" }, "Period T"),
+                React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 uppercase" }, __alloT('stem.wave.card_period', 'Period') + " T"),
 
                 React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, (1 / d.frequency).toFixed(3) + " s")
 
@@ -2450,7 +2450,7 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "p-3 bg-white rounded-lg border border-cyan-100 shadow-sm" },
 
-                React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 uppercase" }, "Wave Speed v"),
+                React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 uppercase" }, __alloT('stem.wave.card_wave_speed', 'Wave Speed') + " v"),
 
                 React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, waveSpeedCalc.toFixed(0) + " m/s")
 
@@ -2458,7 +2458,7 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "p-3 bg-white rounded-lg border border-cyan-100 shadow-sm" },
 
-                React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 uppercase" }, "Energy"),
+                React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 uppercase" }, __alloT('stem.wave.card_energy', 'Energy')),
 
                 React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, "\u221D A\u00B2 = " + (d.amplitude * d.amplitude).toFixed(0))
 
