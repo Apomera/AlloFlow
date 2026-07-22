@@ -3926,42 +3926,42 @@ const d = labToolData.wave;
       }
 
       var AUDIO_FORMATS = [
-        { format: 'WAV (PCM)', extension: '.wav', compression: 'None (lossless)', notes: 'Raw uncompressed audio. ~10 MB/min at CD quality. Standard for editing.' },
-        { format: 'FLAC', extension: '.flac', compression: 'Lossless', notes: 'Free Lossless Audio Codec. ~5 MB/min CD quality. Bit-perfect — when decoded, identical to original.' },
-        { format: 'ALAC', extension: '.m4a, .alac', compression: 'Lossless', notes: 'Apple Lossless Audio Codec. Similar to FLAC but Apple-developed.' },
-        { format: 'MP3', extension: '.mp3', compression: 'Lossy', notes: 'Most common lossy format. 128 kbps = compact but audible artifacts. 320 kbps near-transparent.' },
-        { format: 'AAC', extension: '.aac, .m4a', compression: 'Lossy', notes: 'Better quality than MP3 at same bitrate. iTunes, YouTube use it.' },
-        { format: 'OGG Vorbis', extension: '.ogg', compression: 'Lossy', notes: 'Open-source alternative to MP3. Often used in games (Minecraft, Spotify).' },
-        { format: 'Opus', extension: '.opus', compression: 'Lossy', notes: 'Modern open codec. Excellent at low bitrates (6-510 kbps). Used in WebRTC, Discord, YouTube.' },
-        { format: 'WMA', extension: '.wma', compression: 'Lossy or lossless', notes: 'Microsoft\'s codec. Largely abandoned.' },
-        { format: 'AIFF', extension: '.aiff', compression: 'None (lossless)', notes: 'Apple\'s uncompressed format. Similar to WAV.' },
-        { format: 'MIDI', extension: '.mid', compression: 'Not audio — instructions', notes: 'Stores notes + timing, not sound. Player synthesizes. Tiny files.' },
-        { format: 'DSD', extension: '.dsf, .dff', compression: 'PDM (different from PCM)', notes: 'Used for Super Audio CD. 1-bit, very high sample rate (2.8+ MHz).' }
+        { format: 'WAV (PCM)', extension: '.wav', compression: __alloT('stem.wave.af_comp_none', 'None (lossless)'), notes: __alloT('stem.wave.af_wav_notes', 'Raw uncompressed audio. ~10 MB/min at CD quality. Standard for editing.') },
+        { format: 'FLAC', extension: '.flac', compression: __alloT('stem.wave.af_comp_lossless', 'Lossless'), notes: __alloT('stem.wave.af_flac_notes', 'Free Lossless Audio Codec. ~5 MB/min CD quality. Bit-perfect — when decoded, identical to original.') },
+        { format: 'ALAC', extension: '.m4a, .alac', compression: __alloT('stem.wave.af_comp_lossless', 'Lossless'), notes: __alloT('stem.wave.af_alac_notes', 'Apple Lossless Audio Codec. Similar to FLAC but Apple-developed.') },
+        { format: 'MP3', extension: '.mp3', compression: __alloT('stem.wave.af_comp_lossy', 'Lossy'), notes: __alloT('stem.wave.af_mp3_notes', 'Most common lossy format. 128 kbps = compact but audible artifacts. 320 kbps near-transparent.') },
+        { format: 'AAC', extension: '.aac, .m4a', compression: __alloT('stem.wave.af_comp_lossy', 'Lossy'), notes: __alloT('stem.wave.af_aac_notes', 'Better quality than MP3 at same bitrate. iTunes, YouTube use it.') },
+        { format: 'OGG Vorbis', extension: '.ogg', compression: __alloT('stem.wave.af_comp_lossy', 'Lossy'), notes: __alloT('stem.wave.af_ogg_notes', 'Open-source alternative to MP3. Often used in games (Minecraft, Spotify).') },
+        { format: 'Opus', extension: '.opus', compression: __alloT('stem.wave.af_comp_lossy', 'Lossy'), notes: __alloT('stem.wave.af_opus_notes', 'Modern open codec. Excellent at low bitrates (6-510 kbps). Used in WebRTC, Discord, YouTube.') },
+        { format: 'WMA', extension: '.wma', compression: __alloT('stem.wave.af_comp_lossy_or_lossless', 'Lossy or lossless'), notes: __alloT('stem.wave.af_wma_notes', 'Microsoft\'s codec. Largely abandoned.') },
+        { format: 'AIFF', extension: '.aiff', compression: __alloT('stem.wave.af_comp_none', 'None (lossless)'), notes: __alloT('stem.wave.af_aiff_notes', 'Apple\'s uncompressed format. Similar to WAV.') },
+        { format: 'MIDI', extension: '.mid', compression: __alloT('stem.wave.af_comp_midi', 'Not audio — instructions'), notes: __alloT('stem.wave.af_midi_notes', 'Stores notes + timing, not sound. Player synthesizes. Tiny files.') },
+        { format: 'DSD', extension: '.dsf, .dff', compression: __alloT('stem.wave.af_comp_dsd', 'PDM (different from PCM)'), notes: __alloT('stem.wave.af_dsd_notes', 'Used for Super Audio CD. 1-bit, very high sample rate (2.8+ MHz).') }
       ];
 
       var AUDIO_BITRATES = [
-        { quality: 'Phone call (G.711)', bitrate: '64 kbps', notes: '8 kHz sample, narrow band.' },
-        { quality: 'Opus low quality', bitrate: '24 kbps', notes: 'Voice still intelligible.' },
-        { quality: 'AM radio quality', bitrate: '~30 kbps equiv', notes: '5 kHz bandwidth approximately.' },
-        { quality: 'FM radio quality', bitrate: '~96 kbps equiv', notes: '15 kHz bandwidth approximately.' },
-        { quality: 'MP3 (web typical)', bitrate: '128 kbps', notes: 'Acceptable for casual listening. Audible artifacts.' },
-        { quality: 'AAC (Apple Music)', bitrate: '256 kbps', notes: 'Apple Music standard. Better than 128 kbps MP3.' },
-        { quality: 'Spotify (high)', bitrate: '320 kbps Ogg', notes: 'High-quality lossy. Near-transparent for most.' },
-        { quality: 'CD quality (16-bit/44.1 kHz PCM)', bitrate: '1411 kbps', notes: 'Lossless. ~10 MB/min stereo.' },
-        { quality: 'DVD-Audio (24-bit/96 kHz)', bitrate: '~4600 kbps', notes: 'High-resolution audio. Debated whether audible improvement.' },
-        { quality: 'Studio masters (24-bit/192 kHz)', bitrate: '~9200 kbps', notes: 'Recording standard. Down-converted for distribution.' }
+        { quality: __alloT('stem.wave.ab_phone', 'Phone call (G.711)'), bitrate: '64 kbps', notes: __alloT('stem.wave.ab_phone_notes', '8 kHz sample, narrow band.') },
+        { quality: __alloT('stem.wave.ab_opus', 'Opus low quality'), bitrate: '24 kbps', notes: __alloT('stem.wave.ab_opus_notes', 'Voice still intelligible.') },
+        { quality: __alloT('stem.wave.ab_am', 'AM radio quality'), bitrate: '~30 kbps equiv', notes: __alloT('stem.wave.ab_am_notes', '5 kHz bandwidth approximately.') },
+        { quality: __alloT('stem.wave.ab_fm', 'FM radio quality'), bitrate: '~96 kbps equiv', notes: __alloT('stem.wave.ab_fm_notes', '15 kHz bandwidth approximately.') },
+        { quality: __alloT('stem.wave.ab_mp3', 'MP3 (web typical)'), bitrate: '128 kbps', notes: __alloT('stem.wave.ab_mp3_notes', 'Acceptable for casual listening. Audible artifacts.') },
+        { quality: __alloT('stem.wave.ab_aac', 'AAC (Apple Music)'), bitrate: '256 kbps', notes: __alloT('stem.wave.ab_aac_notes', 'Apple Music standard. Better than 128 kbps MP3.') },
+        { quality: __alloT('stem.wave.ab_spotify', 'Spotify (high)'), bitrate: '320 kbps Ogg', notes: __alloT('stem.wave.ab_spotify_notes', 'High-quality lossy. Near-transparent for most.') },
+        { quality: __alloT('stem.wave.ab_cd', 'CD quality (16-bit/44.1 kHz PCM)'), bitrate: '1411 kbps', notes: __alloT('stem.wave.ab_cd_notes', 'Lossless. ~10 MB/min stereo.') },
+        { quality: __alloT('stem.wave.ab_dvd', 'DVD-Audio (24-bit/96 kHz)'), bitrate: '~4600 kbps', notes: __alloT('stem.wave.ab_dvd_notes', 'High-resolution audio. Debated whether audible improvement.') },
+        { quality: __alloT('stem.wave.ab_studio', 'Studio masters (24-bit/192 kHz)'), bitrate: '~9200 kbps', notes: __alloT('stem.wave.ab_studio_notes', 'Recording standard. Down-converted for distribution.') }
       ];
 
       function renderRecordingsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎧 Audio formats + quality'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎧 ' + __alloT('stem.wave.sec_recordings_title', 'Audio formats + quality')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Common audio file formats'),
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_common_formats', 'Common audio file formats')),
             React.createElement('div', { className: 'overflow-x-auto' },
               React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
                 React.createElement('thead', null,
                   React.createElement('tr', { className: 'bg-slate-100' },
-                    ['Format', 'Extension', 'Compression', 'Notes'].map(function(hh, i) {
+                    [__alloT('stem.wave.col_format', 'Format'), __alloT('stem.wave.col_extension', 'Extension'), __alloT('stem.wave.col_compression', 'Compression'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
                       return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                     })
                   )
@@ -3979,12 +3979,12 @@ const d = labToolData.wave;
               )
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Common bitrates'),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_common_bitrates', 'Common bitrates')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
-                  ['Quality level', 'Bitrate', 'Notes'].map(function(hh, i) {
+                  [__alloT('stem.wave.col_quality_level', 'Quality level'), __alloT('stem.wave.col_bitrate', 'Bitrate'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
                     return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
@@ -4008,36 +4008,36 @@ const d = labToolData.wave;
       // ═════════════════════════════════════════════════════════════════════
 
       var OPTICAL_ILLUSIONS = [
-        { illusion: 'Müller-Lyer', description: 'Two equal lines with arrowheads — one outward, one inward — appear different lengths.', explanation: 'Brain interprets arrows as depth cues. May be culturally-influenced (less effect in some non-Western cultures).' },
-        { illusion: 'Necker cube', description: 'Wireframe cube spontaneously "flips" which face is in front.', explanation: 'Ambiguous projection — brain alternates interpretations. Bistable perception.' },
-        { illusion: 'Hermann grid', description: 'Black squares on white grid show ghostly gray dots at intersections.', explanation: 'Lateral inhibition in retinal cells. Each cell\'s response depends on neighbors.' },
-        { illusion: 'Checker shadow', description: 'Two checkerboard squares appear different shades but are identical.', explanation: 'Adelson\'s classic. Brain corrects for perceived shadow → "constancy" overrides actual luminance.' },
-        { illusion: 'Ponzo illusion', description: 'Two identical lines, one near converging rails, appear different lengths.', explanation: 'Brain treats converging lines as depth — "farther" object must be bigger to project same size on retina.' },
-        { illusion: 'Café wall', description: 'Parallel rows of alternating black/white tiles appear sloped.', explanation: 'Offset between rows creates perceived tilt. Studied at café walls in Bristol.' },
-        { illusion: 'Rotating snakes (Kitaoka)', description: 'Static image of circles appears to rotate.', explanation: 'Motion-sensitive cells respond differently to varying luminance, creating illusory motion in peripheral vision.' },
-        { illusion: 'Spinning dancer (silhouette)', description: 'Dancer appears to spin clockwise or counterclockwise.', explanation: 'Ambiguous silhouette has no depth cues. Brain locks in an interpretation — can sometimes be switched.' },
-        { illusion: 'The dress (2015 viral)', description: 'Photo of dress appeared blue/black to some, white/gold to others.', explanation: 'Different brains assume different illumination (daylight vs incandescent) → "color constancy" leads to different perceptions.' },
-        { illusion: 'Mach bands', description: 'Sharp luminance edges appear to have over/undershoot bands.', explanation: 'Lateral inhibition in retina enhances edges. Helps with object recognition but creates artifact at edges.' },
-        { illusion: 'Stroboscopic effect', description: 'Wheels appear to spin backward in movies.', explanation: 'Frame rate samples motion — when wheel completes nearly full rotation per frame, looks like slight reverse motion.' },
-        { illusion: 'Phantom limb', description: 'Amputees feel sensations from missing limb.', explanation: 'Brain map of body remains. Mirror therapy (Ramachandran) sometimes helps.' },
-        { illusion: 'Persistence of vision', description: 'Why movies (24+ fps) appear as continuous motion.', explanation: 'Retinal afterimage + brain interpolation. Below ~16 fps flicker is visible.' },
-        { illusion: 'Color afterimage', description: 'Stare at red for 30s → look at white → see green afterimage.', explanation: 'Cone receptors fatigue; complementary color signal dominates briefly when you look away.' },
-        { illusion: 'Blind spot', description: 'Each eye has a small region where you don\'t see.', explanation: 'Where optic nerve leaves retina — no photoreceptors. Brain fills in. Both eyes together compensate.' },
-        { illusion: 'Anaglyph (red/cyan 3D)', description: 'Glasses with red + cyan lenses create 3D from flat image.', explanation: 'Each eye sees different-colored image → brain fuses into 3D.' },
-        { illusion: 'Magic Eye / autostereogram', description: 'Cross-eye to see hidden 3D image.', explanation: 'Repeating pattern, each row offset slightly. Brain matches wrong elements → perceived depth.' },
-        { illusion: 'Doppler shift in sound', description: 'Siren of approaching vehicle sounds higher than receding.', explanation: 'Compressed waves coming, stretched waves going. f\' = f × (v_sound ± v_observer) / (v_sound ∓ v_source).' },
-        { illusion: 'Sonic boom', description: 'Loud bang when supersonic object passes.', explanation: 'Pressure cone of compressed air. Boom not heard until cone reaches you.' },
-        { illusion: 'Mirage (highway shimmer)', description: 'Distant road appears wet on hot day.', explanation: 'Hot air near road has lower n than cooler air above → refracts sky light to your eye. Same physics for desert mirages.' },
-        { illusion: 'Rainbow', description: '42° arc from anti-solar point.', explanation: 'Sunlight refracts entering water droplet, reflects off back, refracts again leaving. Different λ at different angles.' },
-        { illusion: 'Double rainbow', description: 'Second, dimmer rainbow with reversed colors at ~51°.', explanation: 'Two internal reflections in droplets. Less light → dimmer. Reverse order.' },
-        { illusion: 'Halo around moon/sun', description: '22° halo around sun or moon.', explanation: 'Ice crystals in high cirrus refract light. Often precedes weather change.' },
-        { illusion: 'Green flash at sunset', description: 'Brief green flash as sun dips below horizon.', explanation: 'Atmospheric refraction separates colors at moment of sunset. Best seen over ocean.' }
+        { illusion: __alloT('stem.wave.oi1_name', 'Müller-Lyer'), description: __alloT('stem.wave.oi1_desc', 'Two equal lines with arrowheads — one outward, one inward — appear different lengths.'), explanation: __alloT('stem.wave.oi1_expl', 'Brain interprets arrows as depth cues. May be culturally-influenced (less effect in some non-Western cultures).') },
+        { illusion: __alloT('stem.wave.oi2_name', 'Necker cube'), description: __alloT('stem.wave.oi2_desc', 'Wireframe cube spontaneously "flips" which face is in front.'), explanation: __alloT('stem.wave.oi2_expl', 'Ambiguous projection — brain alternates interpretations. Bistable perception.') },
+        { illusion: __alloT('stem.wave.oi3_name', 'Hermann grid'), description: __alloT('stem.wave.oi3_desc', 'Black squares on white grid show ghostly gray dots at intersections.'), explanation: __alloT('stem.wave.oi3_expl', 'Lateral inhibition in retinal cells. Each cell\'s response depends on neighbors.') },
+        { illusion: __alloT('stem.wave.oi4_name', 'Checker shadow'), description: __alloT('stem.wave.oi4_desc', 'Two checkerboard squares appear different shades but are identical.'), explanation: __alloT('stem.wave.oi4_expl', 'Adelson\'s classic. Brain corrects for perceived shadow → "constancy" overrides actual luminance.') },
+        { illusion: __alloT('stem.wave.oi5_name', 'Ponzo illusion'), description: __alloT('stem.wave.oi5_desc', 'Two identical lines, one near converging rails, appear different lengths.'), explanation: __alloT('stem.wave.oi5_expl', 'Brain treats converging lines as depth — "farther" object must be bigger to project same size on retina.') },
+        { illusion: __alloT('stem.wave.oi6_name', 'Café wall'), description: __alloT('stem.wave.oi6_desc', 'Parallel rows of alternating black/white tiles appear sloped.'), explanation: __alloT('stem.wave.oi6_expl', 'Offset between rows creates perceived tilt. Studied at café walls in Bristol.') },
+        { illusion: __alloT('stem.wave.oi7_name', 'Rotating snakes (Kitaoka)'), description: __alloT('stem.wave.oi7_desc', 'Static image of circles appears to rotate.'), explanation: __alloT('stem.wave.oi7_expl', 'Motion-sensitive cells respond differently to varying luminance, creating illusory motion in peripheral vision.') },
+        { illusion: __alloT('stem.wave.oi8_name', 'Spinning dancer (silhouette)'), description: __alloT('stem.wave.oi8_desc', 'Dancer appears to spin clockwise or counterclockwise.'), explanation: __alloT('stem.wave.oi8_expl', 'Ambiguous silhouette has no depth cues. Brain locks in an interpretation — can sometimes be switched.') },
+        { illusion: __alloT('stem.wave.oi9_name', 'The dress (2015 viral)'), description: __alloT('stem.wave.oi9_desc', 'Photo of dress appeared blue/black to some, white/gold to others.'), explanation: __alloT('stem.wave.oi9_expl', 'Different brains assume different illumination (daylight vs incandescent) → "color constancy" leads to different perceptions.') },
+        { illusion: __alloT('stem.wave.oi10_name', 'Mach bands'), description: __alloT('stem.wave.oi10_desc', 'Sharp luminance edges appear to have over/undershoot bands.'), explanation: __alloT('stem.wave.oi10_expl', 'Lateral inhibition in retina enhances edges. Helps with object recognition but creates artifact at edges.') },
+        { illusion: __alloT('stem.wave.oi11_name', 'Stroboscopic effect'), description: __alloT('stem.wave.oi11_desc', 'Wheels appear to spin backward in movies.'), explanation: __alloT('stem.wave.oi11_expl', 'Frame rate samples motion — when wheel completes nearly full rotation per frame, looks like slight reverse motion.') },
+        { illusion: __alloT('stem.wave.oi12_name', 'Phantom limb'), description: __alloT('stem.wave.oi12_desc', 'Amputees feel sensations from missing limb.'), explanation: __alloT('stem.wave.oi12_expl', 'Brain map of body remains. Mirror therapy (Ramachandran) sometimes helps.') },
+        { illusion: __alloT('stem.wave.oi13_name', 'Persistence of vision'), description: __alloT('stem.wave.oi13_desc', 'Why movies (24+ fps) appear as continuous motion.'), explanation: __alloT('stem.wave.oi13_expl', 'Retinal afterimage + brain interpolation. Below ~16 fps flicker is visible.') },
+        { illusion: __alloT('stem.wave.oi14_name', 'Color afterimage'), description: __alloT('stem.wave.oi14_desc', 'Stare at red for 30s → look at white → see green afterimage.'), explanation: __alloT('stem.wave.oi14_expl', 'Cone receptors fatigue; complementary color signal dominates briefly when you look away.') },
+        { illusion: __alloT('stem.wave.oi15_name', 'Blind spot'), description: __alloT('stem.wave.oi15_desc', 'Each eye has a small region where you don\'t see.'), explanation: __alloT('stem.wave.oi15_expl', 'Where optic nerve leaves retina — no photoreceptors. Brain fills in. Both eyes together compensate.') },
+        { illusion: __alloT('stem.wave.oi16_name', 'Anaglyph (red/cyan 3D)'), description: __alloT('stem.wave.oi16_desc', 'Glasses with red + cyan lenses create 3D from flat image.'), explanation: __alloT('stem.wave.oi16_expl', 'Each eye sees different-colored image → brain fuses into 3D.') },
+        { illusion: __alloT('stem.wave.oi17_name', 'Magic Eye / autostereogram'), description: __alloT('stem.wave.oi17_desc', 'Cross-eye to see hidden 3D image.'), explanation: __alloT('stem.wave.oi17_expl', 'Repeating pattern, each row offset slightly. Brain matches wrong elements → perceived depth.') },
+        { illusion: __alloT('stem.wave.oi18_name', 'Doppler shift in sound'), description: __alloT('stem.wave.oi18_desc', 'Siren of approaching vehicle sounds higher than receding.'), explanation: __alloT('stem.wave.oi18_expl', 'Compressed waves coming, stretched waves going. f\' = f × (v_sound ± v_observer) / (v_sound ∓ v_source).') },
+        { illusion: __alloT('stem.wave.oi19_name', 'Sonic boom'), description: __alloT('stem.wave.oi19_desc', 'Loud bang when supersonic object passes.'), explanation: __alloT('stem.wave.oi19_expl', 'Pressure cone of compressed air. Boom not heard until cone reaches you.') },
+        { illusion: __alloT('stem.wave.oi20_name', 'Mirage (highway shimmer)'), description: __alloT('stem.wave.oi20_desc', 'Distant road appears wet on hot day.'), explanation: __alloT('stem.wave.oi20_expl', 'Hot air near road has lower n than cooler air above → refracts sky light to your eye. Same physics for desert mirages.') },
+        { illusion: __alloT('stem.wave.oi21_name', 'Rainbow'), description: __alloT('stem.wave.oi21_desc', '42° arc from anti-solar point.'), explanation: __alloT('stem.wave.oi21_expl', 'Sunlight refracts entering water droplet, reflects off back, refracts again leaving. Different λ at different angles.') },
+        { illusion: __alloT('stem.wave.oi22_name', 'Double rainbow'), description: __alloT('stem.wave.oi22_desc', 'Second, dimmer rainbow with reversed colors at ~51°.'), explanation: __alloT('stem.wave.oi22_expl', 'Two internal reflections in droplets. Less light → dimmer. Reverse order.') },
+        { illusion: __alloT('stem.wave.oi23_name', 'Halo around moon/sun'), description: __alloT('stem.wave.oi23_desc', '22° halo around sun or moon.'), explanation: __alloT('stem.wave.oi23_expl', 'Ice crystals in high cirrus refract light. Often precedes weather change.') },
+        { illusion: __alloT('stem.wave.oi24_name', 'Green flash at sunset'), description: __alloT('stem.wave.oi24_desc', 'Brief green flash as sun dips below horizon.'), explanation: __alloT('stem.wave.oi24_expl', 'Atmospheric refraction separates colors at moment of sunset. Best seen over ocean.') }
       ];
 
       function renderOpticalFactsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '👁 Optical illusions + perception phenomena'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Visual perception is active — brain interprets, fills in gaps, makes guesses. Illusions reveal the underlying processes.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '👁 ' + __alloT('stem.wave.sec_optical_facts_title', 'Optical illusions + perception phenomena')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_optical_facts_intro', 'Visual perception is active — brain interprets, fills in gaps, makes guesses. Illusions reveal the underlying processes.')),
           React.createElement('div', { className: 'space-y-2' },
             OPTICAL_ILLUSIONS.map(function(o, i) {
               return React.createElement('div', { key: 'o'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
