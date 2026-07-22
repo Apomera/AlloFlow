@@ -77,7 +77,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "board" renders iden
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dbeafe"/>Adj</label>
 <label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#f3f4f6"/>Other</label>
-<button aria-label="Reset progress" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
+<button aria-label="Reset category colors" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
 </div>
 <p style="font-size:10px;color:#6b7280;margin:0">Colors apply to boards and symbol cards</p>
 <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;margin-top:10px">🔊 Quick Voice Settings</label>
@@ -343,7 +343,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "books" renders iden
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dbeafe"/>Adj</label>
 <label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#f3f4f6"/>Other</label>
-<button aria-label="Reset progress" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
+<button aria-label="Reset category colors" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
 </div>
 <p style="font-size:10px;color:#6b7280;margin:0">Colors apply to boards and symbol cards</p>
 <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;margin-top:10px">🔊 Quick Voice Settings</label>
@@ -549,7 +549,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "garden" renders ide
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dbeafe"/>Adj</label>
 <label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#f3f4f6"/>Other</label>
-<button aria-label="Reset progress" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
+<button aria-label="Reset category colors" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
 </div>
 <p style="font-size:10px;color:#6b7280;margin:0">Colors apply to boards and symbol cards</p>
 <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;margin-top:10px">🔊 Quick Voice Settings</label>
@@ -1177,7 +1177,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quest" renders iden
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dbeafe"/>Adj</label>
 <label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#f3f4f6"/>Other</label>
-<button aria-label="Reset progress" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
+<button aria-label="Reset category colors" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
 </div>
 <p style="font-size:10px;color:#6b7280;margin:0">Colors apply to boards and symbol cards</p>
 <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;margin-top:10px">🔊 Quick Voice Settings</label>
@@ -1366,7 +1366,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quickboards" render
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dbeafe"/>Adj</label>
 <label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#f3f4f6"/>Other</label>
-<button aria-label="Reset progress" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
+<button aria-label="Reset category colors" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
 </div>
 <p style="font-size:10px;color:#6b7280;margin:0">Colors apply to boards and symbol cards</p>
 <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;margin-top:10px">🔊 Quick Voice Settings</label>
@@ -1564,8 +1564,8 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quickboards" render
 <div style="text-align:center;font-weight:700;font-size:16px;color:#1f2937;min-height:22px"> </div>
 <div class="ss-no-print" style="display:flex;gap:4px;margin-top:6px">
 <input type="text" placeholder="e.g. homework" aria-label="First activity" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:11px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit" value=""/>
-<button disabled="" aria-label="✨" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨</button>
-<button aria-label="Reset progress" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap">📷</button>
+<button disabled="" aria-label="Generate image for first activity" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨</button>
+<button aria-label="Upload image for first activity" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap">📷</button>
 </div>
 </div>
 </div>
@@ -1579,8 +1579,8 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quickboards" render
 <div style="text-align:center;font-weight:700;font-size:16px;color:#1f2937;min-height:22px"> </div>
 <div class="ss-no-print" style="display:flex;gap:4px;margin-top:6px">
 <input type="text" placeholder="e.g. iPad time" aria-label="Reward activity" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:11px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit" value=""/>
-<button disabled="" aria-label="✨" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨</button>
-<button aria-label="Reset progress" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap">📷</button>
+<button disabled="" aria-label="Generate image for reward activity" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨</button>
+<button aria-label="Upload image for reward activity" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap">📷</button>
 </div>
 </div>
 </div>
@@ -1674,7 +1674,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "schedule" renders i
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dbeafe"/>Adj</label>
 <label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#f3f4f6"/>Other</label>
-<button aria-label="Reset progress" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
+<button aria-label="Reset category colors" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
 </div>
 <p style="font-size:10px;color:#6b7280;margin:0">Colors apply to boards and symbol cards</p>
 <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;margin-top:10px">🔊 Quick Voice Settings</label>
@@ -1899,7 +1899,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "search" renders ide
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dbeafe"/>Adj</label>
 <label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#f3f4f6"/>Other</label>
-<button aria-label="Reset progress" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
+<button aria-label="Reset category colors" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
 </div>
 <p style="font-size:10px;color:#6b7280;margin:0">Colors apply to boards and symbol cards</p>
 <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;margin-top:10px">🔊 Quick Voice Settings</label>
@@ -2088,7 +2088,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "stories" renders id
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dbeafe"/>Adj</label>
 <label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#f3f4f6"/>Other</label>
-<button aria-label="Reset progress" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
+<button aria-label="Reset category colors" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
 </div>
 <p style="font-size:10px;color:#6b7280;margin:0">Colors apply to boards and symbol cards</p>
 <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;margin-top:10px">🔊 Quick Voice Settings</label>
@@ -2335,7 +2335,7 @@ exports[`Symbol Studio — render under each host theme (snapshot) > Canvas / FE
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dbeafe"/>Adj</label>
 <label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#f3f4f6"/>Other</label>
-<button aria-label="Reset progress" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
+<button aria-label="Reset category colors" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
 </div>
 <p style="font-size:10px;color:#6b7280;margin:0">Colors apply to boards and symbol cards</p>
 <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;margin-top:10px">🔊 Quick Voice Settings</label>
@@ -2588,7 +2588,7 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dbeafe"/>Adj</label>
 <label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#f3f4f6"/>Other</label>
-<button aria-label="Reset progress" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
+<button aria-label="Reset category colors" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
 </div>
 <p style="font-size:10px;color:#6b7280;margin:0">Colors apply to boards and symbol cards</p>
 <label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px;margin-top:10px">🔊 Quick Voice Settings</label>
@@ -2837,7 +2837,7 @@ exports[`Symbol Studio — render under each host theme (snapshot) > default (li
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dbeafe"/>Adj</label>
 <label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#f3f4f6"/>Other</label>
-<button aria-label="Reset progress" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
+<button aria-label="Reset category colors" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
 </div>
 <p style="font-size:10px;color:#6b7280;margin:0">Colors apply to boards and symbol cards</p>
 <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;margin-top:10px">🔊 Quick Voice Settings</label>
@@ -3086,7 +3086,7 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dbeafe"/>Adj</label>
 <label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#f3f4f6"/>Other</label>
-<button aria-label="Reset progress" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
+<button aria-label="Reset category colors" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
 </div>
 <p style="font-size:10px;color:#6b7280;margin:0">Colors apply to boards and symbol cards</p>
 <label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px;margin-top:10px">🔊 Quick Voice Settings</label>

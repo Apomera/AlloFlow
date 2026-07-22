@@ -5835,10 +5835,10 @@
         { id: 'transition', icon: '⏰', label: 'Transition' },
       ];
 
-      function qbUploadBtn(target) {
+      function qbUploadBtn(target, accessibleName) {
         return e('button', {
           onClick: function () { setQbUploadTarget(target); qbUploadRef.current && qbUploadRef.current.click(); },
-          'aria-label': 'Reset progress', style: S.btn('#f3f4f6', '#374151', false)
+          'aria-label': accessibleName, style: S.btn('#f3f4f6', '#374151', false)
         }, '📷');
       }
 
@@ -5867,8 +5867,8 @@
               e('div', { style: { textAlign: 'center', fontWeight: 700, fontSize: '16px', color: '#1f2937', minHeight: '22px' } }, label || '\u00a0'),
               e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px', marginTop: '6px' } },
                 e('input', { type: 'text', value: label, onChange: function (ev) { setLabel(ev.target.value); }, placeholder: which === 'first' ? 'e.g. homework' : 'e.g. iPad time', 'aria-label': which === 'first' ? 'First activity' : 'Reward activity', style: Object.assign({}, S.input, { fontSize: '11px' }) }),
-                e('button', { onClick: function () { genFtCell(which); }, disabled: loading || !label.trim() || !onCallImagen, 'aria-label': '✨', style: S.btn(PURPLE, '#fff', loading || !label.trim() || !onCallImagen) }, '✨'),
-                qbUploadBtn({ type: 'ft', which: which })
+                e('button', { onClick: function () { genFtCell(which); }, disabled: loading || !label.trim() || !onCallImagen, 'aria-label': 'Generate image for ' + (which === 'first' ? 'first activity' : 'reward activity'), style: S.btn(PURPLE, '#fff', loading || !label.trim() || !onCallImagen) }, '✨'),
+                qbUploadBtn({ type: 'ft', which: which }, 'Upload image for ' + (which === 'first' ? 'first activity' : 'reward activity'))
               )
             )
           );
@@ -5887,7 +5887,7 @@
           e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '6px', alignItems: 'center' } },
             e('span', { style: { fontSize: '12px', fontWeight: 600, color: '#374151' } }, 'Choices:'),
             [2, 3, 4].map(function (n) {
-              return e('button', { key: n, onClick: function () { setCbCount(n); setCbSelected(null); }, 'aria-label': 'Reset progress', style: { padding: '4px 12px', borderRadius: '6px', border: '2px solid ' + (cbCount === n ? PURPLE : '#d1d5db'), background: cbCount === n ? LIGHT_PURPLE : '#fff', color: cbCount === n ? PURPLE : '#374151', fontWeight: cbCount === n ? 700 : 400, fontSize: '12px', cursor: 'pointer' } }, n);
+              return e('button', { key: n, onClick: function () { setCbCount(n); setCbSelected(null); }, 'aria-label': n + ' choices', 'aria-pressed': cbCount === n, style: { padding: '4px 12px', borderRadius: '6px', border: '2px solid ' + (cbCount === n ? PURPLE : '#d1d5db'), background: cbCount === n ? LIGHT_PURPLE : '#fff', color: cbCount === n ? PURPLE : '#374151', fontWeight: cbCount === n ? 700 : 400, fontSize: '12px', cursor: 'pointer' } }, n);
             }),
             cbSelected && e('button', { onClick: function () { setCbSelected(null); }, className: 'ss-no-print', 'aria-label': 'Reset', style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { marginLeft: 'auto' }) }, '↺ Reset')
           ),
@@ -5904,8 +5904,8 @@
                 e('div', { style: { fontWeight: 700, fontSize: '14px', color: '#1f2937', padding: '6px 4px 2px', textAlign: 'center', minHeight: '20px' } }, item.label || '\u00a0'),
                 e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '3px', padding: '4px', width: '100%' } },
                   e('input', { type: 'text', value: item.label, onChange: function (ev) { var v = ev.target.value; setCbItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, placeholder: 'Option ' + (idx + 1), 'aria-label': 'Choice board option ' + (idx + 1), style: Object.assign({}, S.input, { fontSize: '11px' }), onClick: function (ev) { ev.stopPropagation(); } }),
-                  e('button', { onClick: function (ev) { ev.stopPropagation(); genChoiceItem(item.id); }, disabled: isLoading || !item.label.trim() || !onCallImagen, 'aria-label': '✨', style: S.btn(PURPLE, '#fff', isLoading || !item.label.trim() || !onCallImagen) }, '✨'),
-                  qbUploadBtn({ type: 'cb', id: item.id })
+                  e('button', { onClick: function (ev) { ev.stopPropagation(); genChoiceItem(item.id); }, disabled: isLoading || !item.label.trim() || !onCallImagen, 'aria-label': 'Generate image for choice ' + (idx + 1), style: S.btn(PURPLE, '#fff', isLoading || !item.label.trim() || !onCallImagen) }, '✨'),
+                  qbUploadBtn({ type: 'cb', id: item.id }, 'Upload image for choice ' + (idx + 1))
                 )
               );
             })
@@ -5964,8 +5964,8 @@
               e('div', { className: 'ss-no-print', style: { display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' } },
                 e('input', { type: 'text', value: tokenRewardLabel, onChange: function (ev) { setTokenRewardLabel(ev.target.value); }, placeholder: 'e.g. iPad time', 'aria-label': 'Token board reward', style: Object.assign({}, S.input, { fontSize: '11px' }) }),
                 e('div', { style: { display: 'flex', gap: '4px' } },
-                  e('button', { onClick: genTokenReward, disabled: tokenRewardLoading || !tokenRewardLabel.trim() || !onCallImagen, 'aria-label': '✨', style: S.btn(PURPLE, '#fff', tokenRewardLoading || !tokenRewardLabel.trim() || !onCallImagen) }, '✨'),
-                  qbUploadBtn({ type: 'token' })
+                  e('button', { onClick: genTokenReward, disabled: tokenRewardLoading || !tokenRewardLabel.trim() || !onCallImagen, 'aria-label': 'Generate token board reward image', style: S.btn(PURPLE, '#fff', tokenRewardLoading || !tokenRewardLabel.trim() || !onCallImagen) }, '✨'),
+                  qbUploadBtn({ type: 'token' }, 'Upload token board reward image')
                 )
               )
             )
@@ -6476,7 +6476,7 @@
               e('button', { onClick: generateAvatar, disabled: avatarGenerating || !avatarDesc.trim(), 'aria-label': 'Generate student avatar', style: S.btn(PURPLE, '#fff', avatarGenerating || !avatarDesc.trim()) }, avatarGenerating ? '⏳' : '✨ Generate'),
               e('button', { onClick: function () { fileInputRef.current && fileInputRef.current.click(); }, 'aria-label': 'Upload', style: S.btn('#f3f4f6', '#374151', false) }, '📷 Upload'),
               activeProfile.image && e('button', { onClick: clearAvatar, title: 'Clear avatar image', 'aria-label': 'Clear avatar image', style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️'),
-              profiles.length > 1 && e('button', { onClick: function () { deleteProfile(activeProfileId); }, title: 'Delete this profile', 'aria-label': '✕', style: S.btn('#fee2e2', '#dc2626', false) }, '✕')
+              profiles.length > 1 && e('button', { onClick: function () { deleteProfile(activeProfileId); }, title: 'Delete this profile', 'aria-label': 'Delete profile ' + (activeProfile.name || 'student'), style: S.btn('#fee2e2', '#dc2626', false) }, '✕')
             ),
             e('input', { type: 'file', accept: 'image/*', ref: fileInputRef, style: { display: 'none' }, onChange: uploadAvatarFile })
           )
@@ -6514,7 +6514,7 @@
             }),
             e('button', {
               onClick: function () { setCatFill(CAT_COLORS); setCatBorder(CAT_BORDER); store(STORAGE_CAT_COLORS + '_fill', CAT_COLORS); store(STORAGE_CAT_COLORS + '_border', CAT_BORDER); },
-              'aria-label': 'Reset progress', style: { fontSize: '10px', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }
+              'aria-label': 'Reset category colors', style: { fontSize: '10px', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }
             }, 'Reset')
           ),
           e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '0' } }, 'Colors apply to boards and symbol cards'),
@@ -6797,7 +6797,7 @@
                     title: 'Target: ' + g.targetDate
                   }, daysTo < 0 ? 'OVERDUE · ' + Math.abs(daysTo) + 'd' : daysTo === 0 ? 'DUE TODAY' : daysTo + 'd left'),
                   e('span', { style: { fontSize: '11px', fontWeight: 700, color: '#374151', flex: 1, minWidth: '120px' } }, g.text),
-                  e('button', { onClick: function () { removeIepGoal(g.id); }, 'aria-label': '✕', style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '10px', color: '#dc2626', padding: '0 3px' } }, '✕')
+                  e('button', { onClick: function () { removeIepGoal(g.id); }, 'aria-label': 'Remove IEP goal: ' + g.text, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '10px', color: '#dc2626', padding: '0 3px' } }, '✕')
                 ),
                 // Meta row: cue level, data method, and IEP section — collapses if none are set.
                 (g.cueLevel || g.dataMethod || g.linkedIepSection) && e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '5px', fontSize: '9px', color: '#6b7280' } },
@@ -7436,8 +7436,8 @@
                       title: 'Partner-assisted single-switch scanning mode', 'aria-label': 'Start scanning mode',
                       style: S.btn('#ecfdf5', '#065f46', false)
                     }, '\u267f Scan'),
-                    e('button', { onClick: function () { exportBoard(b); }, title: 'Export this board as a .json file', 'aria-label': '⬇️', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️'),
-                    b.words && b.words.some(function (w) { return w.image; }) && e('button', { onClick: function () { exportBoardHTML(b); }, title: 'Export standalone HTML board — opens in any browser without AlloFlow', 'aria-label': '🌐', style: S.btn('#fef9c3', '#92400e', false) }, '🌐'),
+                    e('button', { onClick: function () { exportBoard(b); }, title: 'Export this board as a .json file', 'aria-label': 'Export ' + (b.title || 'saved board') + ' as JSON', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️'),
+                    b.words && b.words.some(function (w) { return w.image; }) && e('button', { onClick: function () { exportBoardHTML(b); }, title: 'Export standalone HTML board — opens in any browser without AlloFlow', 'aria-label': 'Export ' + (b.title || 'saved board') + ' as standalone HTML', style: S.btn('#fef9c3', '#92400e', false) }, '🌐'),
                     b.words && b.words.length > 0 && e('button', { onClick: function () { exportBoardOBF(b); }, title: 'Export as Open Board Format (.obf) — single board; import into Cboard or another AAC app', 'aria-label': 'Export as Open Board Format for Cboard', style: S.btn('#ede9fe', '#5b21b6', false) }, '💬 OBF'),
                     b.pages && b.pages.length > 1 && e('button', { onClick: function () { exportBoardOBZ(b); }, title: 'Export all pages as an Open Board Format set (.obz) — import into Cboard or another AAC app', 'aria-label': 'Export all pages as Open Board Format set for Cboard', style: S.btn('#ede9fe', '#5b21b6', false) }, '💬 OBZ'),
                     liveSession && liveSession.active && e('button', {
@@ -7450,7 +7450,7 @@
                       },
                       style: S.btn('#ecfdf5', '#065f46', false)
                     }, '📡'),
-                    e('button', { onClick: function () { deleteSavedBoard(b.id); }, 'aria-label': '🗑️', style: { background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '14px', padding: '2px 4px' } }, '🗑️')
+                    e('button', { onClick: function () { deleteSavedBoard(b.id); }, 'aria-label': 'Delete saved board ' + (b.title || 'Untitled Board'), style: { background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '14px', padding: '2px 4px' } }, '🗑️')
                   )
                 );
               })
@@ -7740,7 +7740,7 @@
           schedItems.length > 0 && e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
             e('button', { onClick: resetSchedule, 'aria-label': 'Reset', style: S.btn('#f3f4f6', '#374151', false) }, '🔄 Reset'),
             e('button', { onClick: saveSchedule, 'aria-label': 'Save', style: S.btn('#f3f4f6', '#374151', false) }, '💾 Save'),
-            e('button', { onClick: function () { window.print(); }, 'aria-label': '️ Print', style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print')
+            e('button', { onClick: function () { window.print(); }, 'aria-label': 'Print', style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print')
           ),
           savedSchedules.length > 0 && e('button', { onClick: function () { setShowSchedGallery(!showSchedGallery); }, 'aria-label': 'Toggle saved schedules gallery', style: S.btn(showSchedGallery ? LIGHT_PURPLE : '#f3f4f6', showSchedGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedSchedules.length + ')')
         ),
@@ -7764,7 +7764,7 @@
                   },
                   style: S.btn('#ecfdf5', '#065f46', false)
                 }, '📡'),
-                e('button', { onClick: function () { deleteSavedSchedule(s.id); }, 'aria-label': '🗑️', style: { background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '14px', padding: '2px 4px' } }, '🗑️')
+                e('button', { onClick: function () { deleteSavedSchedule(s.id); }, 'aria-label': 'Delete saved schedule ' + (s.title || 'Untitled Schedule'), style: { background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '14px', padding: '2px 4px' } }, '🗑️')
               );
             })
           )
@@ -7814,7 +7814,7 @@
                       : e('div', { style: { width: 70, height: 70, background: '#f9fafb', borderRadius: '8px', border: '1px dashed #d1d5db', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, schedGenerating ? spinner(24) : '⏳'),
                     e('span', { style: { fontSize: '12px', fontWeight: isDone ? 400 : 600, color: isDone ? '#6b7280' : '#1f2937', textAlign: 'center', textDecoration: isDone ? 'line-through' : 'none', lineHeight: 1.3 } }, item.label),
                     isDone && e('div', { style: { fontSize: '22px', flexShrink: 0 } }, '✅'),
-                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); setSchedNowId(item.id); }, 'aria-label': '▶', style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: isNow ? 1 : 0.4, flexShrink: 0, padding: '2px' } }, '▶')
+                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); setSchedNowId(item.id); }, 'aria-label': 'Set ' + item.label + ' as current activity', style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: isNow ? 1 : 0.4, flexShrink: 0, padding: '2px' } }, '▶')
                   );
                 })
               ),
@@ -7881,7 +7881,7 @@
           e('button', { onClick: generateStory, disabled: !storySituation.trim() || storyGenerating || isIllustrating, 'aria-label': 'Generate social story', style: S.btn(PURPLE, '#fff', !storySituation.trim() || storyGenerating || isIllustrating) }, storyGenerating ? '⏳ Writing story...' : (isIllustrating ? '🎨 Illustrating...' : '✨ Create Social Story')),
           e('p', { style: { fontSize: '10px', color: '#6b7280' } }, 'Carol Gray-informed draft (descriptive, perspective, and directive sentences) — review and edit for fidelity before use. Illustrations auto-generate for each page.'),
           hasStory && e('div', { style: { borderTop: '1px solid #e5e7eb', paddingTop: '10px' } },
-            e('button', { onClick: function () { window.print(); }, 'aria-label': '️ Print Story', style: Object.assign({}, S.btn('#dbeafe', '#1e40af', false), { width: '100%' }) }, '🖨️ Print Story')
+            e('button', { onClick: function () { window.print(); }, 'aria-label': 'Print Story', style: Object.assign({}, S.btn('#dbeafe', '#1e40af', false), { width: '100%' }) }, '🖨️ Print Story')
           )
         ),
         // Right: story viewer
@@ -7994,7 +7994,7 @@
                     )
                   ),
                   e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
-                    e('button', { onClick: function () { printBook(activeBook); }, disabled: activeBook.boardIds.length === 0, 'aria-label': 'Reset progress', style: S.btn('#dbeafe', '#1e40af', activeBook.boardIds.length === 0) }, '\uD83D\uDDB6 Print All (' + activeBook.boardIds.length + ')'),
+                    e('button', { onClick: function () { printBook(activeBook); }, disabled: activeBook.boardIds.length === 0, 'aria-label': 'Print all boards in ' + (activeBook.title || 'activity set'), style: S.btn('#dbeafe', '#1e40af', activeBook.boardIds.length === 0) }, '\uD83D\uDDB6 Print All (' + activeBook.boardIds.length + ')'),
                     e('button', { onClick: function () { deleteBook(activeBook.id); }, 'aria-label': 'Delete activity set', style: S.btn('#fee2e2', '#dc2626', false) }, '\uD83D\uDDD1\uFE0F Delete Set')
                   )
                 ),
@@ -8493,7 +8493,7 @@
           }, scanPaused ? '▶ Resume' : '⏸ Pause'),
           e('button', {
             onClick: exitScan,
-            'aria-label': 'Reset progress', style: { background: '#ef4444', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
+            'aria-label': 'Exit scanning mode', style: { background: '#ef4444', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
           }, '✕ Exit')
         ),
         // Cell grid
