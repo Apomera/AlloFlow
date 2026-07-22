@@ -81,7 +81,8 @@ describe('Learning Lab Script Library accessibility', () => {
 
   it('preserves multiline script text and supports manual selection', () => {
     expect(library).toContain("whiteSpace: 'pre-wrap', overflowWrap: 'anywhere'");
-    expect(library).toContain("if (selectText && typeof target.select === 'function') target.select()");
+    expect(library).toContain("if (pendingFocus.select && typeof target.select === 'function') target.select()");
+    expect(library).toContain('function focusById(id, selectText) { setPendingFocus({ id: id, select: !!selectText }); }');
   });
 
   it('gives every copy action a contextual accessible name', () => {

@@ -4653,9 +4653,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var goals = (data.goals || []).filter(function(g) { return g.id !== id; });
       setData({ goals: goals });
     }
-    function focusGoalView(targetId) {
-      setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(targetId); if (target && typeof target.focus === 'function') target.focus(); }, 0);
-    }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusGoalView(targetId) { setPendingFocusId(targetId); }
     function startNew() {
       setForm({ title: '', specific: '', measurable: '', achievable: '', relevant: '', timebound: '', startDate: todayISO() });
       setEditingId(null);
@@ -8861,9 +8867,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var ns = R.useState(''); var newText = ns[0]; var setNewText = ns[1];
     var es = R.useState(''); var itemError = es[0]; var setItemError = es[1];
 
-    function focusId(id) {
-      setTimeout(function() { var target = document.getElementById(id); if (target) target.focus(); }, 0);
-    }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusId(id) { setPendingFocusId(id); }
     function addCustom(text) {
       if (!text.trim()) {
         setItemError('Enter an item before adding it.');
@@ -16883,13 +16895,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'know', label: 'Known contact', description: 'Someone I know but may not contact often', color: '#67e8f9' }
     ];
 
-    function focusById(id) {
-      setTimeout(function() {
-        if (typeof document === 'undefined') return;
-        var target = document.getElementById(id);
-        if (target && typeof target.focus === 'function') target.focus();
-      }, 0);
-    }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function levelFor(id) {
       return LEVELS.filter(function(level) { return level.id === id; })[0] || LEVELS[1];
     }
@@ -17017,13 +17031,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'pre-test', label: 'Before a test', icon: '📝', color: '#f9a8d4' }
     ];
 
-    function focusById(id) {
-      setTimeout(function() {
-        if (typeof document === 'undefined') return;
-        var target = document.getElementById(id);
-        if (target && typeof target.focus === 'function') target.focus();
-      }, 0);
-    }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function typeFor(id) { return TYPES.filter(function(type) { return type.id === id; })[0] || TYPES[0]; }
     function routineFor(id) { return (data.routines || []).filter(function(routine) { return routine.id === id; })[0] || null; }
     function normalizedMinutes(value) {
@@ -17227,13 +17243,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'q4', label: 'Q4: Not urgent or important', color: '#cbd5e1', description: 'Lower-priority tasks. Consider whether they still belong on your list.' }
     ];
 
-    function focusById(id) {
-      setTimeout(function() {
-        if (typeof document === 'undefined') return;
-        var target = document.getElementById(id);
-        if (target && typeof target.focus === 'function') target.focus();
-      }, 0);
-    }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function quadrantFor(id) {
       return QUADRANTS.filter(function(quadrant) { return quadrant.id === id; })[0] || QUADRANTS[1];
     }
@@ -17595,13 +17613,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'rest-plan', label: 'Make a rest or sleep plan that fits your situation', icon: '😴', why: 'Consider your needs and any health guidance you already follow.' }
     ];
 
-    function focusById(id) {
-      setTimeout(function() {
-        if (typeof document === 'undefined') return;
-        var target = document.getElementById(id);
-        if (target && typeof target.focus === 'function') target.focus();
-      }, 0);
-    }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function stepFor(id) { return STEPS.filter(function(step) { return step.id === id; })[0] || null; }
     function completedIds() { return STEPS.filter(function(step) { return !!checks[step.id]; }).map(function(step) { return step.id; }); }
     function toggle(id, checked) {
@@ -17722,13 +17742,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var ps = R.useState({}); var pageDrafts = ps[0]; var setPageDrafts = ps[1];
     var pe = R.useState({}); var progressErrors = pe[0]; var setProgressErrors = pe[1];
 
-    function focusById(id) {
-      setTimeout(function() {
-        if (typeof document === 'undefined') return;
-        var target = document.getElementById(id);
-        if (target && typeof target.focus === 'function') target.focus();
-      }, 0);
-    }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function normalizedPage(value, allowBlank) {
       var text = String(value == null ? '' : value).trim();
       if (!text && allowBlank) return null;
@@ -17895,13 +17917,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'accomplished', label: 'Something meaningful, difficult, or noteworthy (optional)', help: 'This does not need to be an accomplishment or productivity measure.' }
     ];
 
-    function focusById(id) {
-      setTimeout(function() {
-        if (typeof document === 'undefined') return;
-        var target = document.getElementById(id);
-        if (target && typeof target.focus === 'function') target.focus();
-      }, 0);
-    }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function normalizedRating(value) {
       var number = Number(value);
       return Number.isInteger(number) && number >= 1 && number <= 10 ? number : null;
@@ -18015,7 +18039,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'social', label: 'Social environment', icon: '👥', help: 'For example: alone time, one-to-one interaction, groups, or nearby people.' }
     ];
 
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function updateDraft(id, value) { var next = Object.assign({}, draft); next[id] = value; setDraft(next); }
     function saveProfile() {
       var normalized = {}; DIMENSIONS.forEach(function(dimension) { normalized[dimension.id] = String(draft[dimension.id] || '').trim(); });
@@ -18098,7 +18130,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'other', label: 'Another topic', icon: '📝' }
     ];
 
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function topicFor(id) { return TOPICS.filter(function(topic) { return topic.id === id; })[0] || { id: '', label: 'No topic selected', icon: '📝' }; }
     function saveIdentity() {
       var identity = identityDraft.trim();
@@ -18187,7 +18227,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var is = R.useState(initialIncluded()); var included = is[0]; var setIncluded = is[1];
     var es = R.useState(''); var saveError = es[0]; var setSaveError = es[1];
 
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function normalizedRating(value) { var number = Number(value); return Number.isInteger(number) && number >= 0 && number <= 10 ? number : null; }
     function setRating(id, value) { var next = Object.assign({}, form); next[id] = value; setForm(next); if (saveError) setSaveError(''); }
     function toggleIncluded(id, checked) { var next = Object.assign({}, included); next[id] = checked; setIncluded(next); if (saveError) setSaveError(''); }
@@ -18268,7 +18316,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
     var es = R.useState(''); var bodyError = es[0]; var setBodyError = es[1];
 
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function save() {
       var body = form.body.trim();
       if (!body) { setBodyError('Enter letter text before saving.'); llAnnounce('Letter not saved. Enter some letter text first.'); focusById('learning-lab-open-letter-body'); return; }
@@ -18331,7 +18387,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
     var es = R.useState(''); var formError = es[0]; var setFormError = es[1];
 
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function setMoment(index, value) { var moments = form.moments.slice(); moments[index] = value; setForm(Object.assign({}, form, { moments: moments })); if (formError) setFormError(''); }
     function hasContent() { return form.moments.some(function(moment) { return moment.trim(); }) || form.lesson.trim() || form.tomorrow.trim(); }
     function save() {
@@ -18483,7 +18547,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'why', label: 'Reasoning, questions, or uncertainty (optional)', prompt: 'Record what matters to you, what you do not know, or whose perspective may be missing.' }
     ];
 
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function setField(id, value) { var next = Object.assign({}, form); next[id] = value; setForm(next); if (id === 'situation' && situationError) setSituationError(''); }
     function save() {
       var situation = form.situation.trim();
@@ -18566,7 +18638,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'maine-211', name: '211 Maine', cat: 'community', contact: 'Dial 211; text your ZIP code to 898-211; or visit 211maine.org', notes: 'Maine health and human-services information. In an emergency, use the appropriate emergency service instead.', url: 'https://211maine.org/contact/', verifiedOn: '2026-07-18' }
     ];
 
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function categoryFor(id) { return CATEGORIES.filter(function(category) { return category.id === id; })[0] || CATEGORIES[6]; }
     function addResource() {
       var name = form.name.trim();
@@ -18641,7 +18721,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'hopes', icon: '🌅', label: 'What are you hoping for?', help: 'This can be a wish for how the week feels rather than a goal.' }
     ];
 
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function save() {
       var answers = {};
       SECTIONS.forEach(function(section) { answers[section.id] = String(form[section.id] || '').trim(); });
@@ -18721,7 +18809,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'quarterly', label: 'Every three months', days: 90 }
     ];
 
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function cadenceFor(id) { return CADENCES.filter(function(cadence) { return cadence.id === id; })[0] || CADENCES[1]; }
     function add() {
       var name = form.name.trim();
@@ -18808,7 +18904,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'why', label: '4. Reflect' }
     ];
 
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function showLimit(max) { var message = 'You can select up to ' + max + ' values in this step. Remove one before adding another.'; setNotice(message); llAnnounce(message); }
     function toggleSelected(value) {
       var selected = (data.selected || []).slice(); var index = selected.indexOf(value);
@@ -18918,7 +19022,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     ];
 
     function safeDomId(value) { return String(value || 'item').replace(/[^A-Za-z0-9_-]+/g, '-'); }
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function colorFor(value) { return COLORS.filter(function(color) { return color.value === value; })[0] || COLORS[0]; }
     function localISO(date) { var year = date.getFullYear(); var month = String(date.getMonth() + 1).padStart(2, '0'); var day = String(date.getDate()).padStart(2, '0'); return year + '-' + month + '-' + day; }
     function dateLabel(iso) { var date = new Date(iso + 'T12:00:00'); return isNaN(date.getTime()) ? iso : date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); }
@@ -19004,7 +19116,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var fs = R.useState(defaultForm); var form = fs[0]; var setForm = fs[1];
 
     function safeDomId(value) { return String(value || 'entry').replace(/[^A-Za-z0-9_-]+/g, '-'); }
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function finiteNumber(value) { var number = Number(value); return isFinite(number) ? number : null; }
     function clampNumber(value, min, max, fallback) { var number = finiteNumber(value); if (number === null) number = fallback; return Math.max(min, Math.min(max, number)); }
     function hourText(value) { var number = finiteNumber(value); if (number === null) return 'Not recorded'; return (number % 1 === 0 ? number.toFixed(0) : number.toFixed(1)) + (number === 1 ? ' hour' : ' hours'); }
@@ -19113,7 +19233,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var done = [0, 1, 2].map(function(index) { return !!sourceDone[index] && !!items[index].trim(); });
       return Object.assign({}, source, { items: items, done: done, reflection: String(source.reflection || '') });
     }
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
 
     var todayDay = normalizeDay((data.days || {})[today]);
     var fs = R.useState(todayDay); var form = fs[0]; var setForm = fs[1];
@@ -19194,7 +19322,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     ];
 
     function safeDomId(value) { return String(value || 'moment').replace(/[^A-Za-z0-9_-]+/g, '-'); }
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function save() {
       var what = form.what.trim();
       if (!what) { setWhatError('Describe a moment before saving.'); llAnnounce('Confidence reflection not saved. Describe a moment first.'); focusById('learning-lab-confidence-what'); return; }
@@ -19275,7 +19411,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     ];
 
     function safeDomId(value) { return String(value || 'hope').replace(/[^A-Za-z0-9_-]+/g, '-'); }
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function categoryFor(id) { return CATS.filter(function(category) { return category.id === id; })[0] || CATS[1]; }
     function add() {
       var text = form.text.trim();
@@ -19418,7 +19562,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     ];
 
     function safeDomId(value) { return String(value || 'script').replace(/[^A-Za-z0-9_-]+/g, '-'); }
-    function focusById(id, selectText) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (!target) return; if (typeof target.focus === 'function') target.focus(); if (selectText && typeof target.select === 'function') target.select(); }, 0); }
+    var pfx = R.useState(null); var pendingFocus = pfx[0]; var setPendingFocus = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocus) return;
+      var target = document.getElementById(pendingFocus.id);
+      if (!target) return;
+      target.focus();
+      if (pendingFocus.select && typeof target.select === 'function') target.select();
+      setPendingFocus(null);
+    });
+    function focusById(id, selectText) { setPendingFocus({ id: id, select: !!selectText }); }
     function categoryFor(id) { return CATS.filter(function(category) { return category.id === id; })[0] || CATS[0]; }
     function changeCategory(id) { setCat(categoryFor(id).id); setCopyStatus(null); }
     function handleTabKey(event, index) {
@@ -19529,7 +19682,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     ];
 
     function safeDomId(value) { return String(value || 'area').replace(/[^A-Za-z0-9_-]+/g, '-'); }
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function statusFor(id) { return STATUSES.filter(function(status) { return status.id === id; })[0] || STATUSES[2]; }
     function getArea() { return (data.areas || []).filter(function(area) { return area.id === activeId; })[0]; }
     function addArea() {
@@ -19673,7 +19834,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     ];
 
     function safeDomId(value) { return String(value || 'curriculum').replace(/[^A-Za-z0-9_-]+/g, '-'); }
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function typeFor(id) { return STEP_TYPES.filter(function(type) { return type.id === id; })[0] || STEP_TYPES[0]; }
     function getCurr() { return (data.curricula || []).filter(function(curriculum) { return curriculum.id === activeId; })[0]; }
     function createCurriculum() {
@@ -19854,7 +20023,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var dangerButtonStyle = Object.assign({}, buttonStyle, { borderColor: '#f87171', background: 'rgba(127,29,29,0.45)', color: '#fee2e2' });
 
     function safeDomId(value) { return String(value || 'transition').replace(/[^A-Za-z0-9_-]+/g, '-'); }
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function kindFor(id) { return KINDS.filter(function(kind) { return kind.id === id; })[0] || KINDS[0]; }
     function phaseFor(id) { return PHASES.filter(function(phase) { return phase.id === id; })[0] || PHASES[0]; }
     function activeTransition() { return transitions.filter(function(transition) { return transition.id === activeId; })[0] || null; }
@@ -20064,7 +20241,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var dangerButtonStyle = Object.assign({}, buttonStyle, { borderColor: '#f87171', background: 'rgba(127,29,29,0.45)', color: '#fee2e2' });
 
     function safeDomId(value) { return String(value || 'draft').replace(/[^A-Za-z0-9_-]+/g, '-'); }
-    function focusById(id, selectText) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (!target) return; if (typeof target.focus === 'function') target.focus(); if (selectText && typeof target.select === 'function') target.select(); }, 0); }
+    var pfx = R.useState(null); var pendingFocus = pfx[0]; var setPendingFocus = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocus) return;
+      var target = document.getElementById(pendingFocus.id);
+      if (!target) return;
+      target.focus();
+      if (pendingFocus.select && typeof target.select === 'function') target.select();
+      setPendingFocus(null);
+    });
+    function focusById(id, selectText) { setPendingFocus({ id: id, select: !!selectText }); }
     function templateFor(id) { return TEMPLATES.filter(function(template) { return template.id === id; })[0] || null; }
     function saveDrafts(nextDrafts) { setData(Object.assign({}, data, { drafts: nextDrafts })); }
     function setField(id, value) { var next = Object.assign({}, form); next[id] = value; setForm(next); setCopyStatus(null); if (id === 'request' && errors.request) setErrors({ request: '' }); }
@@ -20321,7 +20507,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var dangerButtonStyle = Object.assign({}, buttonStyle, { borderColor: '#f87171', background: 'rgba(127,29,29,0.45)', color: '#fee2e2' });
 
     function safeDomId(value) { return String(value || 'answer').replace(/[^A-Za-z0-9_-]+/g, '-'); }
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function saveAnswers(nextAnswers) { setData(Object.assign({}, data, { answers: nextAnswers })); }
     function poolForMode() { return mode === 'all' ? DECK : DECK.filter(function(question) { return DEEP_PROMPTS.indexOf(question) === -1; }); }
     function chooseCard() {
@@ -20440,7 +20634,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #67e8f9', background: '#0e7490', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer' };
     var dangerButtonStyle = Object.assign({}, buttonStyle, { borderColor: '#f87171', background: 'rgba(127,29,29,0.45)', color: '#fee2e2' });
 
-    function focusById(id, selectText) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (!target) return; if (typeof target.focus === 'function') target.focus(); if (selectText && typeof target.select === 'function') target.select(); }, 0); }
+    var pfx = R.useState(null); var pendingFocus = pfx[0]; var setPendingFocus = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocus) return;
+      var target = document.getElementById(pendingFocus.id);
+      if (!target) return;
+      target.focus();
+      if (pendingFocus.select && typeof target.select === 'function') target.select();
+      setPendingFocus(null);
+    });
+    function focusById(id, selectText) { setPendingFocus({ id: id, select: !!selectText }); }
     function hasOwn(id) { return Object.prototype.hasOwnProperty.call(prof, id); }
     function normalizedValue(value) { var number = Number(value); if (number <= 2) return 1; if (number <= 4) return 3; if (number <= 6) return 5; if (number <= 8) return 7; return 9; }
     function optionLabel(dimension, option) { if (option.label) return option.label; var endpoint = option.value < 5 ? dimension.left : dimension.right; return option.prefix + endpoint; }
@@ -20546,7 +20749,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var secondaryButtonStyle = Object.assign({}, buttonStyle, { background: 'rgba(30,64,175,0.32)', color: '#dbeafe' });
     var dangerButtonStyle = Object.assign({}, buttonStyle, { borderColor: '#f87171', background: 'rgba(127,29,29,0.48)', color: '#fee2e2' });
 
-    function focusById(id, selectText) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (!target) return; if (typeof target.focus === 'function') target.focus(); if (selectText && typeof target.select === 'function') target.select(); }, 0); }
+    var pfx = R.useState(null); var pendingFocus = pfx[0]; var setPendingFocus = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocus) return;
+      var target = document.getElementById(pendingFocus.id);
+      if (!target) return;
+      target.focus();
+      if (pendingFocus.select && typeof target.select === 'function') target.select();
+      setPendingFocus(null);
+    });
+    function focusById(id, selectText) { setPendingFocus({ id: id, select: !!selectText }); }
     function report(kind, text) { setStatus({ kind: kind, text: text }); llAnnounce(text); }
     function formattedSize(bytes) { if (bytes < 1024) return bytes + ' bytes'; return (Math.round(bytes / 102.4) / 10) + ' KB'; }
     function exportAll() {
@@ -20898,7 +21110,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var resultText = filteredTools.length + ' of ' + TOOLS.length + ' toolkit tools shown' + (normalizedQuery ? ' for “' + query.trim() + '”.' : '.');
     var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 7, border: '1px solid #c084fc', background: 'rgba(15,23,42,0.88)', color: '#f8fafc', fontSize: 12, lineHeight: 1.5 };
     var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #c084fc', background: '#7e22ce', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer' };
-    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    var pfx = R.useState(''); var pendingFocusId = pfx[0]; var setPendingFocusId = pfx[1];
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    });
+    function focusById(id) { setPendingFocusId(id); }
     function openTool(tool) { if (typeof navigate !== 'function') { llAnnounce('This toolkit tool could not be opened.'); return; } llAnnounce('Opening ' + tool.label + '.'); navigate(tool.id); }
     function clearSearch() { setQuery(''); llAnnounce('Toolkit search cleared. All tools are shown.'); focusById('learning-lab-toolkit-hub-search'); }
 

@@ -32,6 +32,18 @@ describe('Learning Lab focus helper binding', () => {
     expect(unbound).toEqual([]);
   });
 
+  it('allows timer-based focus only at the two accepted exception sites', () => {
+    // Accepted exceptions: (1) the shell's post-navigation focusCurrentView,
+    // whose target exists across renders; (2) the render-error catch path,
+    // where React hooks cannot be used. Every component-level focus helper
+    // must use the render-synchronized pendingFocus pattern instead.
+    const timerFocus = source.match(/setTimeout\(function\(\) \{\s*if \(typeof document === 'undefined'\) return;/g) || [];
+    expect(timerFocus).toHaveLength(2);
+    expect(source).toContain('function focusCurrentView(nextView) { setTimeout(');
+    expect(source).toContain("console.error('[LearningLab] render error', e);");
+    expect(source.match(/setTimeout\(function\(\) \{ var target = document\.getElementById/g)).toBeNull();
+  });
+
   it('keeps the deployed mirror identical', () => {
     expect(source).toBe(read('prismflow-deploy/public/stem_lab/stem_tool_learning_lab.js'));
   });
