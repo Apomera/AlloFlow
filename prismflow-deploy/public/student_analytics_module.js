@@ -5911,6 +5911,10 @@
     }, orfProbeTitle)), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-3"
     }, /*#__PURE__*/React.createElement("span", {
+      role: "timer",
+      "aria-label": "ORF time remaining: " + orfProbeTimer + " seconds",
+      "aria-live": orfProbeTimer <= 10 ? "polite" : "off",
+      "aria-atomic": "true",
       className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${orfProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'}`
     }, "\u23F1 ", Math.floor(orfProbeTimer / 60), ":", String(orfProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
       onClick: async () => {
@@ -5920,20 +5924,27 @@
           setOrfProbeTimer(0);
         }
       },
-      className: "text-xs text-red-500 hover:text-red-700 font-bold"
+      className: "min-h-11 px-3 text-xs text-red-700 hover:text-red-800 font-bold rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-4"
-    }, /*#__PURE__*/React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
+    }, /*#__PURE__*/React.createElement("div", { role: "progressbar",
+      "aria-label": "ORF time elapsed",
+      "aria-valuemin": 0,
+      "aria-valuemax": 100,
+      "aria-valuenow": Math.round((60 - orfProbeTimer) / 60 * 100),
+      "aria-valuetext": (60 - orfProbeTimer) + " seconds elapsed",
       className: "bg-rose-500 h-2 rounded-full transition-all",
       style: {
         width: `${orfProbeTimer > 0 ? (60 - orfProbeTimer) / 60 * 100 : 100}%`
       }
     })), orfProbeTimer > 0 ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 mb-3 font-semibold uppercase tracking-wider text-center"
-    }, "Say: \u201CStart here. Read this story aloud. Do your best reading.\u201D Tap words read INCORRECTLY"), /*#__PURE__*/React.createElement("div", {
+    }, "Say: \u201CStart here. Read this story aloud. Do your best reading.\u201D Select words read incorrectly"), /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-br from-slate-50 to-rose-50 rounded-2xl p-6 mb-4 border border-rose-100 leading-relaxed"
-    }, orfProbeWords.map((item, idx) => /*#__PURE__*/React.createElement("span", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } }, 
+    }, orfProbeWords.map((item, idx) => /*#__PURE__*/React.createElement("button", { type: "button",
       key: idx,
+      "aria-pressed": item.error,
+      "aria-label": item.word + (item.error ? ', marked incorrect; activate to mark correct' : ', activate to mark incorrect'),
       onClick: () => {
         const updated = [...orfProbeWords];
         updated[idx] = {
@@ -5942,21 +5953,22 @@
         };
         setOrfProbeWords(updated);
       },
-      className: `inline-block cursor-pointer px-1 py-0.5 mx-0.5 my-0.5 rounded text-lg transition-all select-none ${item.error ? 'bg-red-200 text-red-700 line-through font-bold' : 'hover:bg-rose-100 text-slate-800'}`
+      className: `inline-flex min-w-8 min-h-8 items-center justify-center border-0 cursor-pointer px-1 py-0.5 mx-0.5 my-0.5 rounded text-lg transition-all select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 ${item.error ? 'bg-red-200 text-red-700 line-through font-bold' : 'bg-transparent hover:bg-rose-100 text-slate-800'}`
     }, item.word))), /*#__PURE__*/React.createElement("div", {
       className: "text-center text-xs text-slate-600"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-red-500 font-bold"
     }, orfProbeWords.filter(w => w.error).length, " errors marked"), /*#__PURE__*/React.createElement("span", {
       className: "mx-2"
-    }, "\xB7"), /*#__PURE__*/React.createElement("span", null, "Tap a word to toggle error"))) : orfProbeLastWord < 0 ? /*#__PURE__*/React.createElement("div", {
+    }, "\xB7"), /*#__PURE__*/React.createElement("span", null, "Select a word to toggle its error mark"))) : orfProbeLastWord < 0 ? /*#__PURE__*/React.createElement("div", {
       className: "text-center py-4"
     }, /*#__PURE__*/React.createElement("p", {
       className: "text-lg font-bold text-amber-600 mb-3"
-    }, "\u23F0 Time's Up! Tap the LAST word the student read:"), /*#__PURE__*/React.createElement("div", {
+    }, "\u23F0 Time's up! Select the last word the student read:"), /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-br from-slate-50 to-amber-50 rounded-2xl p-6 border border-amber-200 leading-relaxed"
-    }, orfProbeWords.map((item, idx) => /*#__PURE__*/React.createElement("span", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } }, 
+    }, orfProbeWords.map((item, idx) => /*#__PURE__*/React.createElement("button", { type: "button",
       key: idx,
+      "aria-label": 'Select ' + item.word + ' as the last word read',
       onClick: () => {
         setOrfProbeLastWord(idx);
         const wordsAttempted = orfProbeWords.slice(0, Math.min(idx + 1, orfProbeWords.length));
@@ -5973,7 +5985,7 @@
         });
         setOrfProbeActive(false);
       },
-      className: `inline-block cursor-pointer px-1 py-0.5 mx-0.5 my-0.5 rounded text-lg transition-all select-none hover:bg-amber-200 hover:ring-2 hover:ring-amber-400 ${item.error ? 'bg-red-200 text-red-700 line-through' : 'text-slate-800'}`
+      className: `inline-flex min-w-8 min-h-8 items-center justify-center border-0 cursor-pointer px-1 py-0.5 mx-0.5 my-0.5 rounded text-lg transition-all select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600 hover:bg-amber-200 hover:ring-2 hover:ring-amber-400 ${item.error ? 'bg-red-200 text-red-700 line-through' : 'bg-transparent text-slate-800'}`
     }, item.word)))) : null), orfProbeResults && /*#__PURE__*/React.createElement("div", {
       className: "mt-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl border border-rose-200 p-4",
       "data-probe-results": "orf"
