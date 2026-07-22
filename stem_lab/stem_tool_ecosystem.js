@@ -2994,7 +2994,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       // RENDER
       // ═══════════════════════════════════════════
       var presetNames = ['balanced', 'extinction', 'boom', 'equilibrium'];
-      var presetLabels = ['\u2696\uFE0F Balanced', '\uD83D\uDCA0 Extinction', '\uD83D\uDCA5 Boom', '\uD83D\uDD04 Equilibrium'];
+      var presetLabels = ['\u2696\uFE0F ' + __alloT('stem.ecosystem.preset_balanced', 'Balanced'), '\uD83D\uDCA0 ' + __alloT('stem.ecosystem.preset_extinction', 'Extinction'), '\uD83D\uDCA5 ' + __alloT('stem.ecosystem.preset_boom', 'Boom'), '\uD83D\uDD04 ' + __alloT('stem.ecosystem.preset_equilibrium', 'Equilibrium')];
 
       // Current quiz question
       var currentQ = QUIZ_QUESTIONS[quizIndex % QUIZ_QUESTIONS.length];
@@ -3026,20 +3026,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
       // Sandbox tool definitions
       var sandboxTools = [
-        { id: 'rabbit', icon: '\uD83D\uDC07', label: 'Place Rabbit' },
-        { id: 'fox',    icon: '\uD83E\uDD8A', label: 'Place Fox' },
-        { id: 'tree',   icon: '\uD83C\uDF33', label: 'Place Tree' },
-        { id: 'erase',  icon: '\u274C',        label: 'Erase' },
-        { id: 'move',   icon: '\u2194\uFE0F',  label: 'Move' }
+        { id: 'rabbit', icon: '\uD83D\uDC07', label: __alloT('stem.ecosystem.place_rabbit', 'Place Rabbit') },
+        { id: 'fox',    icon: '\uD83E\uDD8A', label: __alloT('stem.ecosystem.place_fox', 'Place Fox') },
+        { id: 'tree',   icon: '\uD83C\uDF33', label: __alloT('stem.ecosystem.place_tree', 'Place Tree') },
+        { id: 'erase',  icon: '\u274C',        label: __alloT('stem.ecosystem.erase', 'Erase') },
+        { id: 'move',   icon: '\u2194\uFE0F',  label: __alloT('stem.ecosystem.move', 'Move') }
       ];
 
       // Event definitions for buttons
       var eventDefs = [
-        { id: 'drought',   icon: '\u2600\uFE0F',  label: 'Drought',   color: 'bg-amber-500' },
-        { id: 'disease',   icon: '\uD83E\uDDA0',   label: 'Disease',   color: 'bg-green-600' },
-        { id: 'foodBoom',  icon: '\uD83C\uDF31',   label: 'Food Boom', color: 'bg-emerald-500' },
-        { id: 'migration', icon: '\uD83E\uDD85',   label: 'Migration', color: 'bg-blue-500' },
-        { id: 'wildfire',  icon: '\uD83D\uDD25',   label: 'Wildfire',  color: 'bg-red-500' }
+        { id: 'drought',   icon: '\u2600\uFE0F',  label: __alloT('stem.ecosystem.drought', 'Drought'),   color: 'bg-amber-500' },
+        { id: 'disease',   icon: '\uD83E\uDDA0',   label: __alloT('stem.ecosystem.disease', 'Disease'),   color: 'bg-green-600' },
+        { id: 'foodBoom',  icon: '\uD83C\uDF31',   label: __alloT('stem.ecosystem.food_boom', 'Food Boom'), color: 'bg-emerald-500' },
+        { id: 'migration', icon: '\uD83E\uDD85',   label: __alloT('stem.ecosystem.migration', 'Migration'), color: 'bg-blue-500' },
+        { id: 'wildfire',  icon: '\uD83D\uDD25',   label: __alloT('stem.ecosystem.wildfire', 'Wildfire'),  color: 'bg-red-500' }
       ];
 
       // ── Cleanup on unmount ──
@@ -3051,12 +3051,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       }, []);
 
       var ecoRouteCards = [
-        { id: 'explore', label: 'Explore', hint: 'Tune predator-prey dynamics.' },
-        { id: 'sandbox', label: 'Sandbox', hint: 'Build a food web by hand.' },
-        { id: 'conserve', label: 'Conserve', hint: 'Run the Maine campaign.' },
-        { id: 'inquiry', label: 'Inquiry', hint: 'Sweep variables and observe.' }
+        { id: 'explore', label: __alloT('stem.ecosystem.explore', 'Explore'), hint: __alloT('stem.ecosystem.route_explore_hint', 'Tune predator-prey dynamics.') },
+        { id: 'sandbox', label: __alloT('stem.ecosystem.sandbox', 'Sandbox'), hint: __alloT('stem.ecosystem.route_sandbox_hint', 'Build a food web by hand.') },
+        { id: 'conserve', label: __alloT('stem.ecosystem.conserve', 'Conserve'), hint: __alloT('stem.ecosystem.route_conserve_hint', 'Run the Maine campaign.') },
+        { id: 'inquiry', label: __alloT('stem.ecosystem.inquiry', 'Inquiry'), hint: __alloT('stem.ecosystem.route_inquiry_hint', 'Sweep variables and observe.') }
       ];
-      var ecoTabNames = { explore: 'Explore', sandbox: 'Sandbox', conserve: 'Conservation', inquiry: 'Inquiry', quiz: 'Quiz', badges: 'Badges' };
+      var ecoTabNames = { explore: __alloT('stem.ecosystem.explore', 'Explore'), sandbox: __alloT('stem.ecosystem.sandbox', 'Sandbox'), conserve: __alloT('stem.ecosystem.conservation', 'Conservation'), inquiry: __alloT('stem.ecosystem.inquiry', 'Inquiry'), quiz: __alloT('stem.ecosystem.quiz', 'Quiz'), badges: __alloT('stem.ecosystem.badges', 'Badges') };
 
       return h('div', { className: 'space-y-3 pb-4', 'data-ecosystem-tool': 'true' },
 
@@ -3069,10 +3069,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               if (canvasEl && canvasEl._ecoCleanup) canvasEl._ecoCleanup();
               setStemLabTool(null);
             },
-            'aria-label': 'Back'
+            'aria-label': __alloT('stem.ecosystem.back', 'Back')
           }, h(ArrowLeft, { size: 18 })),
-          h('span', { className: 'text-lg font-bold tracking-tight' }, '\uD83E\uDD8A Ecosystem Simulator'),
-          h('span', { className: 'ml-auto px-2 py-0.5 text-[11px] font-bold bg-emerald-700 text-white rounded-full animate-pulse' }, 'LIVE'),
+          h('span', { className: 'text-lg font-bold tracking-tight' }, '\uD83E\uDD8A ' + __alloT('stem.ecosystem.title', 'Ecosystem Simulator')),
+          h('span', { className: 'ml-auto px-2 py-0.5 text-[11px] font-bold bg-emerald-700 text-white rounded-full animate-pulse' }, __alloT('stem.ecosystem.live', 'LIVE')),
           h('span', { className: 'text-xs font-bold text-amber-600 dark:text-amber-400 ml-1' }, '\u2B50 ' + researchPoints + ' RP'),
         ),
 
@@ -3091,10 +3091,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           } },
           h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.15fr) minmax(240px,0.85fr)', gap: 12, alignItems: 'stretch' } },
             h('div', null,
-              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#86efac', letterSpacing: 0, marginBottom: 4 } }, 'Field station'),
-              h('div', { style: { fontSize: 20, fontWeight: 900, lineHeight: 1.15, marginBottom: 6 } }, ecoTabNames[tab] || 'Explore'),
+              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#86efac', letterSpacing: 0, marginBottom: 4 } }, __alloT('stem.ecosystem.field_station', 'Field station')),
+              h('div', { style: { fontSize: 20, fontWeight: 900, lineHeight: 1.15, marginBottom: 6 } }, ecoTabNames[tab] || __alloT('stem.ecosystem.explore', 'Explore')),
               h('p', { style: { margin: '0 0 10px', fontSize: 12, lineHeight: 1.5, color: '#cbd5e1' } },
-                'Pick a route, watch the live population system, and use the graph or campaign when you need evidence.'),
+                __alloT('stem.ecosystem.field_brief_lead', 'Pick a route, watch the live population system, and use the graph or campaign when you need evidence.')),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(116px,1fr))', gap: 8 } },
                 ecoRouteCards.map(function(route) {
                   var active = tab === route.id;
@@ -3114,10 +3114,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 } },
               [
-                { label: 'Biome', value: (BIOME_COLORS[biome] && BIOME_COLORS[biome].name) || biome },
-                { label: 'Mode', value: simPaused ? 'Paused' : 'Live' },
-                { label: 'Research', value: researchPoints + ' RP' },
-                { label: 'Badges', value: badgeCount + '/' + BADGES.length }
+                { label: __alloT('stem.ecosystem.biome', 'Biome'), value: (BIOME_COLORS[biome] && BIOME_COLORS[biome].name) || biome },
+                { label: __alloT('stem.ecosystem.mode', 'Mode'), value: simPaused ? __alloT('stem.ecosystem.paused', 'Paused') : __alloT('stem.ecosystem.live_status', 'Live') },
+                { label: __alloT('stem.ecosystem.research', 'Research'), value: researchPoints + ' RP' },
+                { label: __alloT('stem.ecosystem.badges', 'Badges'), value: badgeCount + '/' + BADGES.length }
               ].map(function(card) {
                 return h('div', { key: card.label, style: { padding: 9, borderRadius: 8, background: 'rgba(2,6,23,0.34)', border: '1px solid rgba(148,163,184,0.18)' } },
                   h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 4 } }, card.label),
@@ -3131,7 +3131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         h('div', { className: 'flex gap-1 mb-1' },
           Object.keys(BIOME_COLORS).map(function(bId) {
             var bInfo = BIOME_COLORS[bId];
-            return h('button', { 'aria-label': 'Change Biome',
+            return h('button', { 'aria-label': __alloT('stem.ecosystem.change_biome', 'Change Biome'),
               key: bId,
               className: 'flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all border ' +
                 (biome === bId
@@ -3144,15 +3144,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
 
         // ── Mode tabs (4 tabs now) ──
-        h('div', { className: 'flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1', role: 'tablist', 'aria-label': 'Ecosystem Explorer sections' },
+        h('div', { className: 'flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1', role: 'tablist', 'aria-label': __alloT('stem.ecosystem.aria_explorer_sections', 'Ecosystem Explorer sections') },
           ['explore', 'sandbox', 'conserve', 'inquiry', 'quiz', 'badges'].map(function(t2) {
             var tabLabel = '';
-            if (t2 === 'explore') tabLabel = '\uD83C\uDF3F Explore';
-            else if (t2 === 'sandbox') tabLabel = '\uD83E\uDDEA Sandbox';
-            else if (t2 === 'conserve') tabLabel = '\uD83C\uDF32 Conservation';
-            else if (t2 === 'inquiry') tabLabel = '\u2754 Inquiry';
-            else if (t2 === 'quiz') tabLabel = '\u2753 Quiz';
-            else tabLabel = '\uD83C\uDFC5 Badges (' + badgeCount + '/' + BADGES.length + ')';
+            if (t2 === 'explore') tabLabel = '\uD83C\uDF3F ' + __alloT('stem.ecosystem.explore', 'Explore');
+            else if (t2 === 'sandbox') tabLabel = '\uD83E\uDDEA ' + __alloT('stem.ecosystem.sandbox', 'Sandbox');
+            else if (t2 === 'conserve') tabLabel = '\uD83C\uDF32 ' + __alloT('stem.ecosystem.conservation', 'Conservation');
+            else if (t2 === 'inquiry') tabLabel = '\u2754 ' + __alloT('stem.ecosystem.inquiry', 'Inquiry');
+            else if (t2 === 'quiz') tabLabel = '\u2753 ' + __alloT('stem.ecosystem.quiz', 'Quiz');
+            else tabLabel = '\uD83C\uDFC5 ' + __alloT('stem.ecosystem.badges', 'Badges') + ' (' + badgeCount + '/' + BADGES.length + ')';
             return h('button', { key: t2,
               role: 'tab', 'aria-selected': tab === t2,
               className: 'flex-1 px-2 py-1.5 text-xs font-semibold rounded-md transition-all ' +
@@ -3176,12 +3176,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         // ── Topic-accent hero band (per tab) ──
         (function() {
           var TAB_META = {
-            explore: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '\uD83C\uDF3F', title: 'Explore the food web',          hint: 'Click any species to see what it eats and what eats it. Trophic-level cascades become obvious \u2014 remove a top predator and watch the system reorganize.' },
-            sandbox: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83E\uDDEA', title: 'Sandbox \u2014 your ecosystem', hint: 'Drop in producers, consumers, and predators; watch population dynamics emerge. Lotka-Volterra cycles appear when you have one predator + one prey + nothing else.' },
-            conserve: { accent: '#15803d', soft: 'rgba(21,128,61,0.10)', icon: '\uD83C\uDF32', title: 'Conservation Manager \u2014 Maine scenario', hint: 'Explore a Maine-inspired 10-year teaching scenario. Population, habitat, and public-support values are 0-100 indices, and hand-authored cascade rules are not forecasts.' },
-            inquiry: { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)', icon: '\u2754', title: 'Inquiry \u2014 predator-prey dynamics', hint: 'Adjust predator birth, prey lifespan, and resource scarcity. Watch which discrete regime the system settles into. No score, no reveal, no answer dump \u2014 just slider sweep and observation.' },
-            quiz:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\u2753', title: 'Quiz \u2014 foundational concepts', hint: 'Six questions cover predator-prey lag, model purpose, predation, carrying capacity, primary producers, and trophic levels.' },
-            badges:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFC5', title: 'Badges \u2014 what you have learned', hint: 'Achievements track which ecological concepts you have demonstrated, not just visited. Trophic-cascade badge requires you to actually trigger one in the sandbox.' }
+            explore: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '\uD83C\uDF3F', title: __alloT('stem.ecosystem.hero_explore_title', 'Explore the food web'),          hint: __alloT('stem.ecosystem.hero_explore_hint', 'Click any species to see what it eats and what eats it. Trophic-level cascades become obvious \u2014 remove a top predator and watch the system reorganize.') },
+            sandbox: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83E\uDDEA', title: __alloT('stem.ecosystem.hero_sandbox_title', 'Sandbox \u2014 your ecosystem'), hint: __alloT('stem.ecosystem.hero_sandbox_hint', 'Drop in producers, consumers, and predators; watch population dynamics emerge. Lotka-Volterra cycles appear when you have one predator + one prey + nothing else.') },
+            conserve: { accent: '#15803d', soft: 'rgba(21,128,61,0.10)', icon: '\uD83C\uDF32', title: __alloT('stem.ecosystem.hero_conserve_title', 'Conservation Manager \u2014 Maine scenario'), hint: __alloT('stem.ecosystem.hero_conserve_hint', 'Explore a Maine-inspired 10-year teaching scenario. Population, habitat, and public-support values are 0-100 indices, and hand-authored cascade rules are not forecasts.') },
+            inquiry: { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)', icon: '\u2754', title: __alloT('stem.ecosystem.hero_inquiry_title', 'Inquiry \u2014 predator-prey dynamics'), hint: __alloT('stem.ecosystem.hero_inquiry_hint', 'Adjust predator birth, prey lifespan, and resource scarcity. Watch which discrete regime the system settles into. No score, no reveal, no answer dump \u2014 just slider sweep and observation.') },
+            quiz:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\u2753', title: __alloT('stem.ecosystem.hero_quiz_title', 'Quiz \u2014 foundational concepts'), hint: __alloT('stem.ecosystem.hero_quiz_hint', 'Six questions cover predator-prey lag, model purpose, predation, carrying capacity, primary producers, and trophic levels.') },
+            badges:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFC5', title: __alloT('stem.ecosystem.hero_badges_title', 'Badges \u2014 what you have learned'), hint: __alloT('stem.ecosystem.hero_badges_hint', 'Achievements track which ecological concepts you have demonstrated, not just visited. Trophic-cascade badge requires you to actually trigger one in the sandbox.') }
           };
           var meta = TAB_META[tab] || TAB_META.explore;
           return h('div', {
@@ -3215,8 +3215,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               color: '#bbf7d0', fontSize: 13, lineHeight: 1.55
             }
           },
-            h('strong', { style: { color: '#16a34a' } }, 'Goal: '),
-            'compare settings that produce cycles, damping, or collapse in these teaching models. Predator peaks often lag prey peaks, but the amount of lag depends on the parameters. The animated canvas uses separate stochastic rules; the graph below uses a deterministic logistic predator-prey equation.'
+            h('strong', { style: { color: '#16a34a' } }, __alloT('stem.ecosystem.goal_label', 'Goal: ')),
+            __alloT('stem.ecosystem.explore_goal_body', 'compare settings that produce cycles, damping, or collapse in these teaching models. Predator peaks often lag prey peaks, but the amount of lag depends on the parameters. The animated canvas uses separate stochastic rules; the graph below uses a deterministic logistic predator-prey equation.')
           ),
 
           // Canvas container
@@ -3236,9 +3236,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             }),
             // Bottom info bar
             h('div', { className: 'absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent px-3 py-1.5 flex items-center gap-2' },
-              h('span', { className: 'text-[11px] text-white/80' }, '\uD83D\uDC07 Prey: ' + prey0 + ' start'),
-              h('span', { className: 'text-[11px] text-white/80' }, '\uD83E\uDD8A Pred: ' + pred0 + ' start'),
-              h('span', { className: 'text-[11px] text-white/80 ml-auto' }, 'Watch the ecosystem evolve!')
+              h('span', { className: 'text-[11px] text-white/80' }, '\uD83D\uDC07 ' + __alloT('stem.ecosystem.prey_colon', 'Prey: ') + prey0 + __alloT('stem.ecosystem.start_suffix', ' start')),
+              h('span', { className: 'text-[11px] text-white/80' }, '\uD83E\uDD8A ' + __alloT('stem.ecosystem.pred_colon', 'Pred: ') + pred0 + __alloT('stem.ecosystem.start_suffix', ' start')),
+              h('span', { className: 'text-[11px] text-white/80 ml-auto' }, __alloT('stem.ecosystem.watch_evolve', 'Watch the ecosystem evolve!'))
             )
           ),
 
@@ -3255,7 +3255,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 var canvasEl = document.querySelector('canvas[data-eco-canvas]');
                 if (canvasEl) canvasEl.dataset.paused = newPaused ? '1' : '0';
               }
-            }, simPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
+            }, simPaused ? '\u25B6 ' + __alloT('stem.ecosystem.resume', 'Resume') : '\u23F8 ' + __alloT('stem.ecosystem.pause', 'Pause')),
             // Start/stop ambient on pause/resume — first button triggers on click above
             !simPaused && !_ecoAmbient && (function() { setTimeout(function() { if (!_ecoAmbient) startEcoAmbient(true, 30); }, 0); return null; })(),
             h('div', { className: 'flex items-center gap-2 flex-1' },
@@ -3774,7 +3774,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               color: '#bae6fd', fontSize: 13, lineHeight: 1.55
             }
           },
-            h('strong', { style: { color: '#0ea5e9' } }, 'Goal: '),
+            h('strong', { style: { color: '#0ea5e9' } }, __alloT('stem.ecosystem.goal_label', 'Goal: ')),
             'design experiments. Try the textbook Lotka-Volterra setup (1 predator + 1 prey, nothing else) and watch the cycle. Then break it: add a second predator (competitive exclusion), or remove the predator entirely (prey overshoots carrying capacity and crashes). Inject events to test resilience. Every entity placed is graded by Carrying Capacity (K) on the slider below.'
           ),
 
@@ -3843,7 +3843,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 var canvasEl = document.querySelector('canvas[data-eco-canvas]');
                 if (canvasEl) canvasEl.dataset.paused = newPaused ? '1' : '0';
               }
-            }, simPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
+            }, simPaused ? '\u25B6 ' + __alloT('stem.ecosystem.resume', 'Resume') : '\u23F8 ' + __alloT('stem.ecosystem.pause', 'Pause')),
             h('div', { className: 'flex items-center gap-2 flex-1' },
               h('span', { className: 'text-[11px] font-semibold text-slate-700 dark:text-slate-200' }, 'Speed:'),
               h('input', {
@@ -5112,7 +5112,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               ][tutorialStep]
             ),
             h('div', { className: 'flex gap-2' },
-              tutorialStep > 0 && h('button', { 'aria-label': 'Back',
+              tutorialStep > 0 && h('button', { 'aria-label': __alloT('stem.ecosystem.back', 'Back'),
                 className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-[0.97]',
                 onClick: function() { upd('tutorialStep', tutorialStep - 1); }
               }, '\u2190 Back'),
