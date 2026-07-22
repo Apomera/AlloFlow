@@ -1032,6 +1032,9 @@ function HeaderBar(props) {
                                         <option value={7}>1 week</option>
                                         <option value={14}>2 weeks</option>
                                         <option value={30}>30 days</option>
+                                        <option value={90}>90 days (quarter)</option>
+                                        <option value={180}>180 days (semester)</option>
+                                        <option value={365}>365 days (school year)</option>
                                       </select>
                                       <button type="button" onClick={() => { if (typeof openRecentQrShares === 'function') openRecentQrShares(); setShowExportMenu(false); }} className="mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 hover:border-cyan-400 hover:text-cyan-800">
                                         <History size={14}/> Recent homework links{recentQrShareCount ? ` (${recentQrShareCount})` : ''}
