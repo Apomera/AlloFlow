@@ -63,6 +63,7 @@ describe('brainAtlas refinement contracts', () => {
     VIEWS.forEach((view) => {
       const html = render({ view });
       expect(html).toContain('role="img"');
+      expect(html).toMatch(/<canvas[^>]*style="[^"]*width:100%[^"]*height:auto/);
       expect(html).toContain('aria-describedby="brainatlas-canvas-summary"');
       expect(html).toContain('id="brainatlas-canvas-summary"');
       expect(html).toContain('data-brainatlas-canvas-summary="true"');

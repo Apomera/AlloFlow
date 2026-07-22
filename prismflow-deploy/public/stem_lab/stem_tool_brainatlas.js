@@ -6838,7 +6838,7 @@ var d = labToolData.brainAtlas || {};
 
                   "data-brainatlas-canvas": "true",
 
-                  style: { background: 'var(--allo-stem-panel, #faf8ff)' }
+                  style: { background: 'var(--allo-stem-panel, #faf8ff)', width: '100%', height: 'auto' }
 
                 })
                 )
