@@ -3786,7 +3786,7 @@ const d = labToolData.wave;
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏄 ' + __alloT('stem.wave.tab_oceanwaves', 'Ocean waves')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Ocean wave types'),
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_ocean_wave_types', 'Ocean wave types')),
             React.createElement('div', { className: 'space-y-1' },
               OCEAN_WAVES.map(function(o, i) {
                 return React.createElement('div', { key: 'o'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
@@ -3799,7 +3799,7 @@ const d = labToolData.wave;
               })
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Wave physics in water'),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_wave_physics_water', 'Wave physics in water')),
           React.createElement('div', { className: 'space-y-1' },
             OCEAN_FACTS.map(function(f, i) {
               return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
@@ -3813,8 +3813,8 @@ const d = labToolData.wave;
 
       function renderAntennasSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📶 Antenna types'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Antenna size typically tied to wavelength. Lower frequency = longer wavelength = bigger antenna.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📶 ' + __alloT('stem.wave.sec_antennas_title', 'Antenna types')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_antennas_intro', 'Antenna size typically tied to wavelength. Lower frequency = longer wavelength = bigger antenna.')),
           React.createElement('div', { className: 'space-y-2' },
             ANTENNA_TYPES.map(function(a, i) {
               return React.createElement('div', { key: 'a'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3831,7 +3831,7 @@ const d = labToolData.wave;
 
       function renderRadarSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📡 Radar, sonar, and active ranging'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📡 ' + __alloT('stem.wave.sec_radar_title', 'Radar, sonar, and active ranging')),
           React.createElement('div', { className: 'space-y-2' },
             RADAR_SONAR.map(function(r, i) {
               return React.createElement('div', { key: 'r'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },
@@ -3845,7 +3845,7 @@ const d = labToolData.wave;
 
       function renderShockwavesSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '✈ Shock waves'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '✈ ' + __alloT('stem.wave.tab_shockwaves', 'Shock waves')),
           React.createElement('div', { className: 'space-y-2' },
             SHOCKWAVE_FACTS.map(function(s, i) {
               return React.createElement('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },
@@ -3859,7 +3859,7 @@ const d = labToolData.wave;
 
       function renderFamousSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🕰 History of wave science'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🕰 ' + __alloT('stem.wave.sec_history_title', 'History of wave science')),
           React.createElement('div', { className: 'space-y-2' },
             WAVE_HISTORY.map(function(h2, i) {
               return React.createElement('div', { key: 'h'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },

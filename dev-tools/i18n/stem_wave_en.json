@@ -825,5 +825,11 @@
   "col_notes": "Notes",
   "sec_diffraction_intro": "Diffraction = bending of waves around obstacles or through openings. Most noticeable when feature size ≈ wavelength.",
   "sec_quantum_intro": "In quantum mechanics, every particle has wave properties. The \"wave function\" ψ gives probability amplitude.",
-  "sec_seismology_essentials": "Seismology essentials"
+  "sec_seismology_essentials": "Seismology essentials",
+  "sec_ocean_wave_types": "Ocean wave types",
+  "sec_wave_physics_water": "Wave physics in water",
+  "sec_antennas_title": "Antenna types",
+  "sec_antennas_intro": "Antenna size typically tied to wavelength. Lower frequency = longer wavelength = bigger antenna.",
+  "sec_radar_title": "Radar, sonar, and active ranging",
+  "sec_history_title": "History of wave science"
 }
