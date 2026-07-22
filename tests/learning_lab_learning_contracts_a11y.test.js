@@ -78,7 +78,7 @@ describe('Learning Lab Learning Contracts accessibility', () => {
     expect(contracts).toContain('title: form.title.trim()');
     expect(contracts).toContain("item.text.trim(); }).filter(Boolean)");
     expect(contracts).toContain('rewards: form.rewards.trim(), accountability: form.accountability.trim()');
-    expect(contracts).toContain("setData(Object.assign({}, data, { contracts: [entry].concat(data.contracts || []) }))");
+    expect(contracts).toContain("setData(Object.assign({}, data, { contracts: [entry].concat(rawContracts) }))");
   });
 
   it('announces saves and focuses the new contract heading', () => {
@@ -99,9 +99,9 @@ describe('Learning Lab Learning Contracts accessibility', () => {
 
   it('confirms signing and preserves unrelated data', () => {
     expect(contracts).toContain("title: 'Sign this learning contract?', confirmText: 'Sign contract'");
-    expect(contracts).toContain("setData(Object.assign({}, data, { contracts: (data.contracts || []).map");
+    expect(contracts).toContain("setData(Object.assign({}, data, { contracts: rawContracts.map");
     expect(contracts).toContain("signed: true, signedAt: todayISO()");
-    expect(contracts).toContain("llAnnounce('Learning contract signed: ' + entry.title)");
+    expect(contracts).toContain("llAnnounce('Learning contract signed: ' + textValue(entry.title))");
   });
 
   it('confirms deletion through the accessible app dialog', () => {
@@ -111,8 +111,8 @@ describe('Learning Lab Learning Contracts accessibility', () => {
   });
 
   it('names deletion, preserves data, announces removal, and restores focus', () => {
-    expect(contracts).toContain("'aria-label': 'Delete learning contract: ' + String(entry.title || 'Untitled contract')");
-    expect(contracts).toContain("setData(Object.assign({}, data, { contracts: (data.contracts || []).filter");
+    expect(contracts).toContain("'aria-label': 'Delete learning contract: ' + (textValue(entry.title).trim() || 'Untitled contract')");
+    expect(contracts).toContain("setData(Object.assign({}, data, { contracts: rawContracts.filter");
     expect(contracts).toContain("llAnnounce('Learning contract deleted.')");
     expect(contracts).toContain("focusById('learning-lab-contract-list-heading')");
   });
@@ -123,7 +123,7 @@ describe('Learning Lab Learning Contracts accessibility', () => {
   });
 
   it('discloses local storage and shared-device privacy considerations', () => {
-    expect(contracts).toContain('Contracts save in this browser.');
+    expect(contracts).toContain('Contracts save in this browser only; saving does not send them to or notify anyone, including a check-in person you name.');
     expect(contracts).toContain('if other people use this device.');
     expect(contracts).toContain("'aria-describedby': 'learning-lab-contract-privacy-note'");
   });
@@ -142,9 +142,9 @@ describe('Learning Lab Learning Contracts accessibility', () => {
 
   it('uses definition-list and time semantics for dates and status', () => {
     expect(contracts).toContain("hh('dl', { 'aria-label': 'Contract dates and status'");
-    expect(contracts).toContain("hh('time', { dateTime: entry.startDate || undefined }");
-    expect(contracts).toContain("hh('time', { dateTime: entry.endDate }");
-    expect(contracts).toContain("hh('time', { dateTime: entry.signedAt }");
+    expect(contracts).toContain("hh('time', { dateTime: textValue(entry.startDate).trim() || undefined }");
+    expect(contracts).toContain("hh('time', { dateTime: textValue(entry.endDate).trim() }");
+    expect(contracts).toContain("hh('time', { dateTime: textValue(entry.signedAt).trim() }");
   });
 
   it('presents commitments and optional details in named sections', () => {
@@ -159,6 +159,18 @@ describe('Learning Lab Learning Contracts accessibility', () => {
     expect(contracts).toContain("width: '100%', minHeight: 44");
     expect(contracts).toContain("minWidth: 44, minHeight: 44");
     expect(contracts).toContain("minHeight: 88");
+  });
+
+  it('handles malformed legacy contract data without crashing', () => {
+    expect(contracts).toContain('var rawContracts = Array.isArray(data.contracts) ? data.contracts : [];');
+    expect(contracts).toContain('var contracts = rawContracts.filter(isRecord);');
+    expect(source).toContain("stat: (Array.isArray((data.mytkContract || {}).contracts) ? (data.mytkContract || {}).contracts.length : 0) + ' contracts'");
+  });
+
+  it('synchronizes focus with rendered state instead of a focus timer', () => {
+    expect(contracts).toContain('if (!pendingFocusId) return;');
+    expect(contracts).toContain('function focusById(id) { setPendingFocusId(id); }');
+    expect(contracts).not.toContain('setTimeout');
   });
 
   it('keeps the deployed mirror identical', () => {

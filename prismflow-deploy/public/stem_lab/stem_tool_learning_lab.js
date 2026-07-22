@@ -16674,22 +16674,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // Behavioral contracting research has 60+ years of support.
   function PersonalLearningContract(props) {
     if (!R) return null;
-    var data = props.data || { contracts: [] };
+    var data = props.data && typeof props.data === 'object' ? props.data : { contracts: [] };
     var setData = props.setData;
+    var isRecord = function(value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
+    var textValue = function(value) { return typeof value === 'string' ? value : (typeof value === 'number' ? String(value) : ''); };
+    var rawContracts = Array.isArray(data.contracts) ? data.contracts : [];
     function newContractForm() {
       return { title: '', commitments: [{ id: tkId(), text: '' }], rewards: '', accountability: '', startDate: todayISO(), endDate: '' };
     }
     var vs = R.useState('list'); var view = vs[0]; var setView = vs[1];
     var fs = R.useState(newContractForm()); var form = fs[0]; var setForm = fs[1];
     var es = R.useState({ title: '', commitments: '', startDate: '', endDate: '' }); var errors = es[0]; var setErrors = es[1];
+    var pfc = R.useState(''); var pendingFocusId = pfc[0]; var setPendingFocusId = pfc[1];
 
-    function focusById(id) {
-      setTimeout(function() {
-        if (typeof document === 'undefined') return;
-        var target = document.getElementById(id);
-        if (target && typeof target.focus === 'function') target.focus();
-      }, 0);
-    }
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, view, form, data]);
+
+    function focusById(id) { setPendingFocusId(id); }
     function addCommitment() {
       if (form.commitments.length >= 20) { llAnnounce('A contract can contain up to 20 commitments.'); return; }
       var entry = { id: tkId(), text: '' };
@@ -16730,7 +16736,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         rewards: form.rewards.trim(), accountability: form.accountability.trim(),
         startDate: form.startDate, endDate: form.endDate
       };
-      setData(Object.assign({}, data, { contracts: [entry].concat(data.contracts || []) }));
+      setData(Object.assign({}, data, { contracts: [entry].concat(rawContracts) }));
       setForm(newContractForm()); setErrors({ title: '', commitments: '', startDate: '', endDate: '' }); setView('list');
       llAnnounce('Unsigned learning contract saved: ' + entry.title);
       focusById('learning-lab-contract-heading-' + entry.id);
@@ -16747,25 +16753,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       });
     }
     function signContract(entry) {
-      askLearningLabConfirmation('Mark “' + String(entry.title || 'this contract') + '” as signed? The signed date will be recorded.', { title: 'Sign this learning contract?', confirmText: 'Sign contract' }).then(function(accepted) {
+      askLearningLabConfirmation('Mark “' + (textValue(entry.title).trim() || 'this contract') + '” as signed? The signed date will be recorded.', { title: 'Sign this learning contract?', confirmText: 'Sign contract' }).then(function(accepted) {
         if (!accepted) return;
-        setData(Object.assign({}, data, { contracts: (data.contracts || []).map(function(item) { return item.id === entry.id ? Object.assign({}, item, { signed: true, signedAt: todayISO() }) : item; }) }));
-        llAnnounce('Learning contract signed: ' + entry.title); focusById('learning-lab-contract-heading-' + entry.id);
+        setData(Object.assign({}, data, { contracts: rawContracts.map(function(item) { return isRecord(item) && item.id === entry.id ? Object.assign({}, item, { signed: true, signedAt: todayISO() }) : item; }) }));
+        llAnnounce('Learning contract signed: ' + textValue(entry.title)); focusById('learning-lab-contract-heading-' + entry.id);
       });
     }
     function removeContract(entry) {
-      askLearningLabConfirmation('Delete “' + String(entry.title || 'this contract') + '”? This cannot be undone.', { title: 'Delete this learning contract?', confirmText: 'Delete contract' }).then(function(accepted) {
+      askLearningLabConfirmation('Delete “' + (textValue(entry.title).trim() || 'this contract') + '”? This cannot be undone.', { title: 'Delete this learning contract?', confirmText: 'Delete contract' }).then(function(accepted) {
         if (!accepted) return;
-        setData(Object.assign({}, data, { contracts: (data.contracts || []).filter(function(item) { return item.id !== entry.id; }) }));
+        setData(Object.assign({}, data, { contracts: rawContracts.filter(function(item) { return !(isRecord(item) && item.id === entry.id); }) }));
         llAnnounce('Learning contract deleted.'); focusById('learning-lab-contract-list-heading');
       });
     }
 
-    var contracts = data.contracts || [];
+    var contracts = rawContracts.filter(isRecord);
     var labelStyle = { display: 'block', marginBottom: 5, color: '#cffafe', fontSize: 12, fontWeight: 800 };
     var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #22d3ee', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
-    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.5 };
-    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 12, lineHeight: 1.5 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 12, fontWeight: 700 };
 
     if (view === 'new') {
       return hh('div', { style: { padding: 14 } },
@@ -16773,7 +16779,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         tkCard('#06b6d4',
           hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-contract-editor-heading', 'aria-describedby': 'learning-lab-contract-privacy-note' },
             hh('h2', { id: 'learning-lab-contract-editor-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#67e8f9', fontSize: 15 } }, 'Contract details'),
-            hh('p', { id: 'learning-lab-contract-privacy-note', style: helpStyle }, 'Contracts save in this browser. Avoid private details about yourself or another person if other people use this device.'),
+            hh('p', { id: 'learning-lab-contract-privacy-note', style: helpStyle }, 'Contracts save in this browser only; saving does not send them to or notify anyone, including a check-in person you name. Avoid private details about yourself or another person if other people use this device.'),
             hh('label', { htmlFor: 'learning-lab-contract-title', style: labelStyle }, 'Contract title (required)'),
             hh('input', { id: 'learning-lab-contract-title', type: 'text', value: form.title, required: true, maxLength: 500, onChange: function(event) { setForm(Object.assign({}, form, { title: event.target.value })); if (errors.title) setErrors(Object.assign({}, errors, { title: '' })); }, 'aria-invalid': errors.title ? 'true' : undefined, 'aria-describedby': errors.title ? 'learning-lab-contract-title-error' : undefined, style: fieldStyle }),
             errors.title ? hh('p', { id: 'learning-lab-contract-title-error', role: 'alert', style: errorStyle }, errors.title) : null,
@@ -16828,24 +16834,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           : hh('ul', { 'aria-label': contracts.length + (contracts.length === 1 ? ' saved learning contract' : ' saved learning contracts'), style: { display: 'flex', flexDirection: 'column', gap: 10, margin: 0, padding: 0, listStyle: 'none' } },
               contracts.map(function(entry) {
                 var headingId = 'learning-lab-contract-heading-' + entry.id;
-                var commitments = (entry.commitments || []).filter(function(item) { return String(item || '').trim(); });
+                var commitments = (Array.isArray(entry.commitments) ? entry.commitments : []).filter(function(item) { return String(item || '').trim(); });
                 return hh('li', { key: 'lc-' + entry.id },
                   hh('article', { 'aria-labelledby': headingId, style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.68)', border: '1px solid #22d3ee' } },
                     hh('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
                       hh('div', null,
-                        hh('p', { style: { margin: '0 0 4px', color: entry.signed ? '#6ee7b7' : '#fde68a', fontSize: 11, fontWeight: 800 } }, entry.signed ? 'Signed contract' : 'Unsigned contract'),
-                        hh('h3', { id: headingId, tabIndex: -1, style: { margin: 0, color: '#f8fafc', fontSize: 14 } }, String(entry.title || 'Untitled contract'))
+                        hh('p', { style: { margin: '0 0 4px', color: entry.signed ? '#6ee7b7' : '#fde68a', fontSize: 12, fontWeight: 800 } }, entry.signed ? 'Signed contract' : 'Unsigned contract'),
+                        hh('h3', { id: headingId, tabIndex: -1, style: { margin: 0, color: '#f8fafc', fontSize: 14 } }, textValue(entry.title).trim() || 'Untitled contract')
                       ),
-                      hh('button', { type: 'button', onClick: function() { removeContract(entry); }, 'aria-label': 'Delete learning contract: ' + String(entry.title || 'Untitled contract'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Delete')
+                      hh('button', { type: 'button', onClick: function() { removeContract(entry); }, 'aria-label': 'Delete learning contract: ' + (textValue(entry.title).trim() || 'Untitled contract'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Delete')
                     ),
-                    hh('dl', { 'aria-label': 'Contract dates and status', style: { display: 'grid', gridTemplateColumns: 'max-content 1fr', gap: 6, margin: '10px 0', color: '#e2e8f0', fontSize: 11 } },
-                      hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Start'), hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: entry.startDate || undefined }, relDate(entry.startDate)))),
-                      entry.endDate ? hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Review'), hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: entry.endDate }, relDate(entry.endDate)))) : null,
-                      entry.signedAt ? hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Signed'), hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: entry.signedAt }, relDate(entry.signedAt)))) : null
+                    hh('dl', { 'aria-label': 'Contract dates and status', style: { display: 'grid', gridTemplateColumns: 'max-content 1fr', gap: 6, margin: '10px 0', color: '#e2e8f0', fontSize: 12 } },
+                      hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Start'), hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: textValue(entry.startDate).trim() || undefined }, relDate(textValue(entry.startDate).trim())))),
+                      textValue(entry.endDate).trim() ? hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Review'), hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: textValue(entry.endDate).trim() }, relDate(textValue(entry.endDate).trim())))) : null,
+                      textValue(entry.signedAt).trim() ? hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Signed'), hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: textValue(entry.signedAt).trim() }, relDate(textValue(entry.signedAt).trim())))) : null
                     ),
-                    commitments.length ? hh('section', { 'aria-label': 'Commitments' }, hh('h4', { style: { margin: '0 0 5px', color: '#67e8f9', fontSize: 12 } }, 'Commitments'), hh('ul', { style: { margin: 0, paddingLeft: 20, color: '#f1f5f9', fontSize: 11, lineHeight: 1.6 } }, commitments.map(function(text, index) { return hh('li', { key: 'co-' + index }, text); }))) : hh('p', { style: helpStyle }, 'No commitments were recorded in this legacy contract.'),
-                    entry.rewards ? hh('section', { 'aria-label': 'Reward or encouragement', style: { marginTop: 9 } }, hh('h4', { style: { margin: '0 0 4px', color: '#fde68a', fontSize: 11 } }, 'Reward or encouragement'), hh('p', { style: { margin: 0, color: '#f1f5f9', whiteSpace: 'pre-wrap', fontSize: 11 } }, entry.rewards)) : null,
-                    entry.accountability ? hh('section', { 'aria-label': 'Support or check-in person', style: { marginTop: 9 } }, hh('h4', { style: { margin: '0 0 4px', color: '#6ee7b7', fontSize: 11 } }, 'Support or check-in'), hh('p', { style: { margin: 0, color: '#f1f5f9', whiteSpace: 'pre-wrap', fontSize: 11 } }, entry.accountability)) : null,
+                    commitments.length ? hh('section', { 'aria-label': 'Commitments' }, hh('h4', { style: { margin: '0 0 5px', color: '#67e8f9', fontSize: 12 } }, 'Commitments'), hh('ul', { style: { margin: 0, paddingLeft: 20, color: '#f1f5f9', fontSize: 12, lineHeight: 1.6 } }, commitments.map(function(text, index) { return hh('li', { key: 'co-' + index }, String(text)); }))) : hh('p', { style: helpStyle }, 'No commitments were recorded in this legacy contract.'),
+                    textValue(entry.rewards).trim() ? hh('section', { 'aria-label': 'Reward or encouragement', style: { marginTop: 9 } }, hh('h4', { style: { margin: '0 0 4px', color: '#fde68a', fontSize: 12 } }, 'Reward or encouragement'), hh('p', { style: { margin: 0, color: '#f1f5f9', whiteSpace: 'pre-wrap', fontSize: 12 } }, textValue(entry.rewards).trim())) : null,
+                    textValue(entry.accountability).trim() ? hh('section', { 'aria-label': 'Support or check-in person', style: { marginTop: 9 } }, hh('h4', { style: { margin: '0 0 4px', color: '#6ee7b7', fontSize: 12 } }, 'Support or check-in'), hh('p', { style: { margin: 0, color: '#f1f5f9', whiteSpace: 'pre-wrap', fontSize: 12 } }, textValue(entry.accountability).trim())) : null,
                     !entry.signed ? hh('button', { type: 'button', onClick: function() { signContract(entry); }, style: { minWidth: 44, minHeight: 44, marginTop: 10, padding: '8px 12px', borderRadius: 7, border: '1px solid #6ee7b7', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Sign contract') : null
                   )
                 );
@@ -20817,7 +20823,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkAssess',   icon: '🔍', label: 'Self-Assessment',      color: '#a855f7', desc: '12-question academic self-awareness check',
         stat: (Array.isArray((data.mytkAssess || {}).assessments) ? (data.mytkAssess || {}).assessments.length : 0) + ' snapshots', cta: 'Take the quiz' },
       { id: 'mytkContract', icon: '📜', label: 'Learning Contract',    color: '#06b6d4', desc: 'Self-agreement: commitments + rewards + accountability',
-        stat: ((data.mytkContract || {}).contracts || []).length + ' contracts', cta: 'Make a contract' },
+        stat: (Array.isArray((data.mytkContract || {}).contracts) ? (data.mytkContract || {}).contracts.length : 0) + ' contracts', cta: 'Make a contract' },
       { id: 'mytkCircle',   icon: '🤝', label: 'Circle of Support',    color: '#10b981', desc: 'Map your real support network',
         stat: ((data.mytkCircle || {}).people || []).length + ' people', cta: 'Map your circle' },
       { id: 'mytkRoutine',  icon: '🔁', label: 'Routine Builder',      color: '#10b981', desc: 'Morning/evening/study routines + streak per routine',
