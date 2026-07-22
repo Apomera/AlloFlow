@@ -3585,7 +3585,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 }),
 
-                React.createElement("span", { className: "text-[11px] text-slate-600 w-12 text-right" }, starCount >= 50000 ? "Dense" : starCount >= 15000 ? "Normal" : "Sparse")
+                React.createElement("span", { className: "text-[11px] text-slate-600 w-12 text-right" }, starCount >= 50000 ? __alloT('stem.galaxy.density_dense', 'Dense') : starCount >= 15000 ? __alloT('stem.galaxy.density_normal', 'Normal') : __alloT('stem.galaxy.density_sparse', 'Sparse'))
 
               ),
 
@@ -3597,7 +3597,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                  React.createElement("span", { className: "text-xs font-bold text-violet-700" }, "\u23F3 Cosmic Time-Lapse"),
+                  React.createElement("span", { className: "text-xs font-bold text-violet-700" }, "\u23F3 " + __alloT('stem.galaxy.cosmic_timelapse_title', 'Cosmic Time-Lapse')),
 
                   React.createElement("span", { className: "ml-auto text-[11px] font-bold text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full" }, cosmicAge.toFixed(1) + " Gyr")
 
@@ -3605,13 +3605,13 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("div", { className: "flex items-center gap-2" },
 
-                  React.createElement("span", { className: "text-[11px] text-violet-400 whitespace-nowrap" }, "Big Bang"),
+                  React.createElement("span", { className: "text-[11px] text-violet-400 whitespace-nowrap" }, __alloT('stem.galaxy.big_bang_label', 'Big Bang')),
 
                   React.createElement("input", {
 
                     type: "range", min: 0.1, max: 14, step: 0.1, value: cosmicAge,
 
-                    'aria-label': 'Cosmic age in billion years',
+                    'aria-label': __alloT('stem.galaxy.aria_cosmic_age', 'Cosmic age in billion years'),
 
                     onChange: function (e) {
 
@@ -3648,7 +3648,7 @@ if (!window._galaxyHasLoadedOnce) {
                     className: "px-3 py-1.5 rounded-lg text-xs font-bold select-none bg-indigo-600 text-white hover:bg-indigo-700 transition-all"
                   }, '🥽 ' + t('vr.enter', 'VR')),
 
-                  React.createElement("button", { "aria-label": "Toggle cosmic time-lapse playback",
+                  React.createElement("button", { "aria-label": __alloT('stem.galaxy.aria_toggle_timelapse', 'Toggle cosmic time-lapse playback'),
 
                     onMouseDown: function (e) {
 
@@ -3680,16 +3680,16 @@ if (!window._galaxyHasLoadedOnce) {
 
                     className: "px-3 py-1.5 rounded-lg text-xs font-bold select-none " + (window._galaxyTimeLapse ? "bg-red-700 text-white" : "bg-violet-600 text-white hover:bg-violet-700") + " transition-all"
 
-                  }, window._galaxyTimeLapse ? "\u23F9 Stop" : "\u25B6 Play Time-Lapse"),
+                  }, window._galaxyTimeLapse ? "\u23F9 " + __alloT('stem.galaxy.stop_btn', 'Stop') : "\u25B6 " + __alloT('stem.galaxy.play_timelapse_btn', 'Play Time-Lapse')),
 
-                  React.createElement("button", { "aria-label": "Trigger a random supernova in the galaxy view", title: "Trigger a random supernova flash in the galaxy view",
+                  React.createElement("button", { "aria-label": __alloT('stem.galaxy.aria_trigger_supernova', 'Trigger a random supernova in the galaxy view'), title: __alloT('stem.galaxy.title_trigger_supernova', 'Trigger a random supernova flash in the galaxy view'),
 
                     onClick: function () {
 
                       var cv = document.querySelector('[data-galaxy-canvas]');
 
                       var evt = (cv && cv._triggerSupernova) ? cv._triggerSupernova() : null;
-                      var msg = evt ? "Random supernova: " + evt.type + " star (" + evt.spectral + "-type)" : "Supernova effect is not available yet.";
+                      var msg = evt ? "Random supernova: " + evt.type + " star (" + evt.spectral + "-type)" : __alloT('stem.galaxy.supernova_unavailable', 'Supernova effect is not available yet.');
                       patchGalaxy({ lastGalaxyEvent: msg, inspectLog: evt ? addInspectKey('supernovaEvent') : inspectLog });
                       if (evt && typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'supernovaEvent', {
                         first: msg + ". The flash marks a massive star exploding and spreading heavy elements into space.",
@@ -3703,15 +3703,15 @@ if (!window._galaxyHasLoadedOnce) {
 
                     className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all"
 
-                  }, "\uD83D\uDCA5 Random supernova"),
+                  }, "\uD83D\uDCA5 " + __alloT('stem.galaxy.random_supernova_btn', 'Random supernova')),
 
-                  React.createElement("button", { "aria-label": "Star Life",
+                  React.createElement("button", { "aria-label": __alloT('stem.galaxy.mode_star_life', 'Star Life'),
 
                     onClick: function () { patchGalaxy({ quizMode: false, simMode: "star", showLifecycle: true }); },
 
                     className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-indigo-600 border border-indigo-200 transition-all hover:bg-indigo-50"
 
-                  }, "\u2B50 Star Life \u2192")
+                  }, "\u2B50 " + __alloT('stem.galaxy.mode_star_life', 'Star Life') + " \u2192")
 
                 ),
 
@@ -3731,7 +3731,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     { age: 9.2, label: t('stem.galaxy.sun_born') },
 
-                    { age: 13.8, label: "Now" }
+                    { age: 13.8, label: __alloT('stem.galaxy.milestone_now', 'Now') }
 
                   ].map(function (m) {
 

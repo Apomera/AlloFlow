@@ -345,5 +345,19 @@
   "rotation_explain_rigid": "A toy model — the whole disk turns together like a painted DVD. No real galaxy does this; it would need mass to keep growing with radius squared. Compare it with the other two models!",
   "rotation_explain_flat": "In the 1970s Vera Rubin measured real galaxies and found this: outer stars move just as fast as inner ones. Visible matter can't supply that much gravity — an invisible halo of dark matter (~85% of all matter in the universe) must be holding the galaxy together. Nobody yet knows what it is.",
   "rotation_density_wave_note": "Also notice: the glowing gas lanes hold still while stars stream through them — real spiral arms are density waves (cosmic traffic jams), not fixed pinwheels of stars.",
-  "aria_number_of_stars": "Number of stars"
+  "aria_number_of_stars": "Number of stars",
+  "density_dense": "Dense",
+  "density_normal": "Normal",
+  "density_sparse": "Sparse",
+  "cosmic_timelapse_title": "Cosmic Time-Lapse",
+  "big_bang_label": "Big Bang",
+  "aria_cosmic_age": "Cosmic age in billion years",
+  "aria_toggle_timelapse": "Toggle cosmic time-lapse playback",
+  "stop_btn": "Stop",
+  "play_timelapse_btn": "Play Time-Lapse",
+  "aria_trigger_supernova": "Trigger a random supernova in the galaxy view",
+  "title_trigger_supernova": "Trigger a random supernova flash in the galaxy view",
+  "supernova_unavailable": "Supernova effect is not available yet.",
+  "random_supernova_btn": "Random supernova",
+  "milestone_now": "Now"
 }
