@@ -28578,10 +28578,10 @@
               },
                 h('thead', null,
                   h('tr', { style: { background: '#f0f0f0' } },
-                    h('th', { style: { textAlign: 'left', padding: '4px 8px', border: '1px solid #ccc', fontWeight: 700 } }, 'Peer'),
-                    h('th', { style: { textAlign: 'left', padding: '4px 8px', border: '1px solid #ccc', fontWeight: 700 } }, 'Career'),
-                    h('th', { style: { textAlign: 'left', padding: '4px 8px', border: '1px solid #ccc', fontWeight: 700 } }, 'Personality'),
-                    h('th', { style: { textAlign: 'left', padding: '4px 8px', border: '1px solid #ccc', fontWeight: 700 } }, 'Relationship')
+                    h('th', { scope: 'col', style: { textAlign: 'left', padding: '4px 8px', border: '1px solid #ccc', fontWeight: 700 } }, 'Peer'),
+                    h('th', { scope: 'col', style: { textAlign: 'left', padding: '4px 8px', border: '1px solid #ccc', fontWeight: 700 } }, 'Career'),
+                    h('th', { scope: 'col', style: { textAlign: 'left', padding: '4px 8px', border: '1px solid #ccc', fontWeight: 700 } }, 'Personality'),
+                    h('th', { scope: 'col', style: { textAlign: 'left', padding: '4px 8px', border: '1px solid #ccc', fontWeight: 700 } }, 'Relationship')
                   )
                 ),
                 h('tbody', null,
