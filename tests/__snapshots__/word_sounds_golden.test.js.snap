@@ -2210,10 +2210,11 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 </div>
 </div>
 <div class="flex flex-col items-center animate-in fade-in">
-<canvas width="320" height="320" class="hidden">
+<canvas role="presentation" aria-hidden="true" width="320" height="320" class="hidden">
 </canvas>
+<p id="word-sounds-tracing-path-note" class="sr-only">This handwriting exercise uses path-dependent input because it evaluates the complete drawing path. Use a mouse, stylus, or touch gesture to trace from the green start dot.</p>
 <div class="relative">
-<canvas width="320" height="320" tabindex="0" role="img" aria-label="Letter tracing canvas. Use mouse or touch to trace the letter shape. Use the surrounding controls to skip, get a hint, or hear the letter sound." class="border-4 rounded-3xl bg-white shadow-xl touch-none cursor-crosshair mb-6 transition-all duration-500 border-dashed border-violet-200">
+<canvas role="img" aria-label="Letter tracing surface for C. Draw from the green start dot with a mouse, stylus, or touch; the exercise evaluates the complete movement path." aria-describedby="word-sounds-tracing-path-note" width="320" height="320" tabindex="0" class="border-4 rounded-3xl bg-white shadow-xl touch-none cursor-crosshair mb-6 transition-all duration-500 border-dashed border-violet-200">
 </canvas>
 </div>
 <div class="flex items-center justify-center gap-3 mb-6">

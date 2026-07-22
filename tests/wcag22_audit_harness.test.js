@@ -31,6 +31,13 @@ describe('WCAG 2.2 audit harness', () => {
     expect(source).toContain('3.3.7 Redundant Entry');
     expect(source).not.toContain('undersizedTargets');
   });
+  it('does not demand a text alternative for an explicitly hidden canvas buffer', () => {
+    const source = read('a11y-audit/static-audit.js');
+    expect(source).toContain('aria-hidden');
+    expect(source).toContain('Explicit aria-hidden is the correct 1.1.1 treatment.');
+    expect(source).toContain('internal/decorative buffer');
+  });
+
   it('maps drag-and-drop to the WCAG 2.2 criterion', () => {
     const source = read('a11y-audit/static-audit.js');
     expect(source).toContain('2.5.7 Dragging Movements');

@@ -13078,22 +13078,36 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         return /*#__PURE__*/ React.createElement(
           "div",
           { className: "flex flex-col items-center animate-in fade-in" },
+          // WCAG 2.1.1 / 2.5.7: formation scoring depends on the complete
+          // movement path, not only its endpoints. The tracing gesture therefore
+          // uses the path-dependent-input exception; the internal scoring mask is
+          // decorative, while the exposed surface explains the required gesture.
           /*#__PURE__*/ React.createElement("canvas", {
             ref: maskRef,
+            role: "presentation",
+            "aria-hidden": "true",
             width: 320,
             height: 320,
             className: "hidden",
           }),
           /*#__PURE__*/ React.createElement(
+            "p",
+            { id: "word-sounds-tracing-path-note", className: "sr-only" },
+            "This handwriting exercise uses path-dependent input because it evaluates the complete drawing path. Use a mouse, stylus, or touch gesture to trace from the green start dot.",
+          ),
+          /*#__PURE__*/ React.createElement(
             "div",
             { className: "relative" },
             /*#__PURE__*/ React.createElement("canvas", {
               ref: canvasRef,
+              role: "img",
+              "aria-label":
+                (ts("word_sounds.sr_tracing_canvas", { letter }) ||
+                  ("Letter tracing surface for " + letter + ". Draw from the green start dot with a mouse, stylus, or touch; the exercise evaluates the complete movement path.")),
+              "aria-describedby": "word-sounds-tracing-path-note",
               width: 320,
               height: 320,
               tabIndex: 0,
-              role: "img",
-              "aria-label": ts("word_sounds.sr_tracing_canvas") || "Letter tracing canvas. Use mouse or touch to trace the letter shape. Use the surrounding controls to skip, get a hint, or hear the letter sound.",
               onMouseDown: startDraw,
               onMouseMove: draw,
               onMouseUp: endDraw,

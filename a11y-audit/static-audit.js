@@ -115,16 +115,19 @@ const CHECKS = [
     name: 'Canvas element without text alternative',
     wcag: '1.1.1 Non-text Content',
     severity: 'critical',
-    description: 'Canvas element lacks role and aria-label attributes',
+    description: 'Canvas element lacks a role and text alternative, or explicit exclusion when decorative',
     test(line, lineNum, lines) {
       const isCanvas = /h\(\s*['"]canvas['"]/.test(line) || /createElement\(\s*['"]canvas['"]/.test(line);
       if (!isCanvas) return false;
       // Check this line and next 5 lines for aria-label or role
       const context = lines.slice(lineNum - 1, lineNum + 5).join(' ');
+      // A canvas used only as an internal drawing/mask buffer has no user-facing
+      // information to name. Explicit aria-hidden is the correct 1.1.1 treatment.
+      if (/["']?aria-hidden["']?\s*[:=]\s*["']?true["']?/.test(context)) return false;
       if (/aria-label/.test(context) && /role/.test(context)) return false;
       return true;
     },
-    fix: 'Add role="img" (or "application" if interactive) and a descriptive aria-label.',
+    fix: 'Add role="img" and a descriptive aria-label, or aria-hidden="true" when the canvas is only an internal/decorative buffer.',
   },
   {
     id: 'SVG-001',
