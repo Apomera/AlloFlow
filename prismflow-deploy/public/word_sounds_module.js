@@ -15492,6 +15492,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 : !dAllReady
                   ? /*#__PURE__*/ React.createElement("p", { className: "text-slate-500 text-sm font-semibold italic" }, ts("word_sounds.decoding_preparing") || "Preparing pictures...")
                   : /*#__PURE__*/ React.createElement("div", { className: "grid grid-cols-2 gap-4 max-w-md w-full" },
+                      // WCAG 2.5.7: dragging is optional. Each image is a native
+                      // button whose onClick path supplies the same keyboard/tap result.
                       ...dChoices.map((w, i) => { const img = imgFor(w); const _cn = dChoiceName(w); return /*#__PURE__*/ React.createElement("button", { key: "dc-" + i + "-" + w, draggable: !!img, onDragStart: (e) => { e.dataTransfer.setData("text/plain", w); e.dataTransfer.effectAllowed = "move"; }, onDragEnd: () => setDecodeDragOver(false), onClick: () => dCheck(w), className: "aspect-square bg-white border-2 border-slate-200 rounded-2xl shadow-md hover:border-violet-400 hover:scale-105 transition-all flex items-center justify-center p-2 cursor-grab active:cursor-grabbing", "aria-label": _cn },
                         /*#__PURE__*/ React.createElement("img", { src: dSrc(img), alt: _cn, draggable: false, className: "w-full h-full object-contain rounded-xl pointer-events-none" }));
                       }),

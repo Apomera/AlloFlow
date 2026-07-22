@@ -41,6 +41,7 @@ describe('WCAG 2.2 audit harness', () => {
   it('maps drag-and-drop to the WCAG 2.2 criterion', () => {
     const source = read('a11y-audit/static-audit.js');
     expect(source).toContain('2.5.7 Dragging Movements');
+    expect(source).toContain('nativeButtonClickAlternative');
     expect(source).toContain("const STANDARD = 'WCAG 2.2 AA'");
   });
 

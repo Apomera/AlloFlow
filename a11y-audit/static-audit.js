@@ -291,6 +291,11 @@ const CHECKS = [
     test(line, lineNum, lines) {
       if (!/draggable\s*[:=]\s*['"]?true|onDragStart|onMouseDown.*drag/i.test(line)) return false;
       const context = lines.slice(lineNum - 1, lineNum + 10).join(' ');
+      // A draggable native button with an onClick handler already provides the
+      // same result through keyboard activation and a single tap/click.
+      const nativeButtonClickAlternative =
+        /createElement\(\s*['"]button['"]/.test(context) && /onClick/.test(context);
+      if (nativeButtonClickAlternative) return false;
       if (/onKeyDown|ArrowUp|ArrowDown|keyboard/.test(context)) return false;
       return true;
     },
