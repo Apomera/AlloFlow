@@ -3598,7 +3598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('span', { className: 'text-red-600 font-bold' }, predDeath.toFixed(3))
               ),
               h('input', {
-                type: 'range', 'aria-label': 'predator mortality coefficient d', min: 0.01, max: 0.3, step: 0.005, value: predDeath,
+                type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_pred_mortality_d', 'predator mortality coefficient d'), min: 0.01, max: 0.3, step: 0.005, value: predDeath,
                 className: 'w-full h-1.5 accent-red-500',
                 onChange: function(e) { upd('predDeath', parseFloat(e.target.value)); }
               })
@@ -3606,11 +3606,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             // Prey Death Rate (interaction)
             h('div', { className: 'space-y-1' },
               h('label', { className: 'text-[11px] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' },
-                h('span', null, 'Predation coefficient (a)'),
+                h('span', null, __alloT('stem.ecosystem.predation_coeff_a', 'Predation coefficient (a)')),
                 h('span', { className: 'text-orange-600 font-bold' }, preyDeath.toFixed(3))
               ),
               h('input', {
-                type: 'range', 'aria-label': 'predation coefficient a', min: 0.001, max: 0.05, step: 0.001, value: preyDeath,
+                type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_predation_coeff_a', 'predation coefficient a'), min: 0.001, max: 0.05, step: 0.001, value: preyDeath,
                 className: 'w-full h-1.5 accent-orange-500',
                 onChange: function(e) { upd('preyDeath', parseFloat(e.target.value)); }
               })
@@ -3618,11 +3618,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             // Pred Birth Rate (interaction)
             h('div', { className: 'space-y-1' },
               h('label', { className: 'text-[11px] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' },
-                h('span', null, 'Predator conversion (b)'),
+                h('span', null, __alloT('stem.ecosystem.pred_conversion_b', 'Predator conversion (b)')),
                 h('span', { className: 'text-blue-600 font-bold' }, predBirth.toFixed(3))
               ),
               h('input', {
-                type: 'range', 'aria-label': 'predator conversion coefficient b', min: 0.001, max: 0.05, step: 0.001, value: predBirth,
+                type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_pred_conversion_b', 'predator conversion coefficient b'), min: 0.001, max: 0.05, step: 0.001, value: predBirth,
                 className: 'w-full h-1.5 accent-blue-500',
                 onChange: function(e) { upd('predBirth', parseFloat(e.target.value)); }
               })
@@ -3631,24 +3631,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           h('div', { className: 'rounded-lg border border-cyan-300 bg-cyan-50 p-3 text-[11px] text-slate-700 leading-relaxed' },
             h('div', { className: 'font-mono font-bold text-cyan-900' }, 'ΔN = rN(1 − N/K) − aNP    ΔP = bNP − dP'),
-            h('div', { className: 'mt-1' }, 'Teaching model: one-step Euler updates with rounded counts. It omits age structure, space, seasons, stochasticity, handling time, disease, and changing K; parameter values are illustrative rather than fitted to rabbits and foxes.')
+            h('div', { className: 'mt-1' }, __alloT('stem.ecosystem.teaching_model_note', 'Teaching model: one-step Euler updates with rounded counts. It omits age structure, space, seasons, stochasticity, handling time, disease, and changing K; parameter values are illustrative rather than fitted to rabbits and foxes.'))
           ),
 
           // ── Run Graph Simulation button ──
-          h('button', { 'aria-label': 'Run Graph Simulation',
+          h('button', { 'aria-label': __alloT('stem.ecosystem.run_graph_sim', 'Run Graph Simulation'),
             className: 'w-full py-2.5 rounded-xl font-bold text-white text-sm shadow-lg transition-all ' +
               'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2',
             onClick: simulate
-          }, '\u25B6 Run Graph Simulation'),
+          }, '\u25B6 ' + __alloT('stem.ecosystem.run_graph_sim', 'Run Graph Simulation')),
 
           // ── Lotka-Volterra graph (post-simulation) ──
           data && data.length > 1 && h('div', { className: 'bg-white dark:bg-slate-900 rounded-xl border border-slate-400 dark:border-slate-700 p-3 space-y-2' },
-            h('p', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200' }, '\uD83D\uDCC8 Logistic Predator-Prey Approximation'),
+            h('p', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200' }, '\uD83D\uDCC8 ' + __alloT('stem.ecosystem.logistic_pp_approx', 'Logistic Predator-Prey Approximation')),
             buildPopSVG(),
             // Legend
             h('div', { className: 'flex gap-4 justify-center text-[11px]' },
-              h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-green-500' }), 'Prey (\uD83D\uDC07)'),
-              h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500' }), 'Predators (\uD83E\uDD8A)'),
+              h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-green-500' }), __alloT('stem.ecosystem.prey', 'Prey') + ' (\uD83D\uDC07)'),
+              h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500' }), __alloT('stem.ecosystem.predators', 'Predators') + ' (\uD83E\uDD8A)'),
               h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-3 h-0.5 bg-amber-500', style: { borderBottom: '1px dashed #f59e0b' } }), 'K')
             ),
             // Stats
@@ -3666,7 +3666,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('div', { className: 'text-sm font-bold text-purple-600' }, finalRatio)
               ),
               h('div', { className: 'bg-slate-50 dark:bg-slate-800 rounded p-1' },
-                h('div', { className: 'text-[11px] text-slate-600' }, 'Steps'),
+                h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.ecosystem.steps_label', 'Steps')),
                 h('div', { className: 'text-sm font-bold text-slate-600' }, steps)
               )
             )
@@ -3674,11 +3674,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // ── Phase Portrait (post-simulation) ──
           data && data.length > 1 && h('div', { className: 'bg-white dark:bg-slate-900 rounded-xl border border-slate-400 dark:border-slate-700 p-3 space-y-2' },
-            h('p', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200' }, '\uD83D\uDD04 Phase Portrait'),
+            h('p', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200' }, '\uD83D\uDD04 ' + __alloT('stem.ecosystem.phase_portrait', 'Phase Portrait')),
             buildPhaseSVG(),
             h('div', { className: 'flex gap-3 justify-center text-[11px]' },
-              h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-green-500' }), 'Start'),
-              h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500' }), 'End')
+              h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-green-500' }), __alloT('stem.ecosystem.start', 'Start')),
+              h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500' }), __alloT('stem.ecosystem.end', 'End'))
             )
           ),
 
@@ -3695,7 +3695,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               ),
               h('span', {
                 className: 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-600'
-              }, Object.keys(completedChallenges).length + '/' + ECO_CHALLENGES.length + ' challenges')
+              }, Object.keys(completedChallenges).length + '/' + ECO_CHALLENGES.length + __alloT('stem.ecosystem.challenges_suffix', ' challenges'))
             ),
             h('div', { className: 'w-full rounded-full h-2.5 bg-purple-100/50', style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
               h('div', {
@@ -3718,7 +3718,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   ),
                   h('p', { className: 'text-[11px] text-slate-600 mb-1' }, __alloT('stem.ecosystem.' + (ch.id) + '_desc', ch.desc)),
                   h('p', { className: 'text-[11px] font-bold ' + (done ? 'text-green-600' : 'text-amber-600') },
-                    done ? '✔ Completed!' : '⭐ +' + ch.reward + ' RP')
+                    done ? '✔ ' + __alloT('stem.ecosystem.completed_excl', 'Completed!') : '⭐ +' + ch.reward + ' RP')
                 );
               })
             )
@@ -3726,23 +3726,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
 
           // ── Snapshot button ──
-          h('button', { 'aria-label': 'Take Snapshot',
+          h('button', { 'aria-label': __alloT('stem.ecosystem.take_snapshot', 'Take Snapshot'),
             className: 'w-full py-1.5 rounded-lg text-xs font-semibold border border-slate-400 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all active:scale-[0.97]',
             onClick: takeSnapshot
-          }, '\uD83D\uDCF7 Take Snapshot'),
-          h('button', { 'aria-label': 'Export CSV', onClick: function() { try { var _d = (typeof d !== 'undefined' && d && d.data) ? d.data : []; if (!_d.length) return; var _csv = 'step,prey,predator\n' + _d.map(function(p,i){ return i + ',' + (p.prey||0) + ',' + (p.pred||0); }).join('\n'); var _b = new Blob([_csv], { type: 'text/csv' }); var _a = document.createElement('a'); _a.href = URL.createObjectURL(_b); _a.download = 'ecosystem_' + Date.now() + '.csv'; _a.click(); if (typeof addToast === 'function') addToast('CSV saved!', 'success'); } catch(e){} }, className: 'w-full py-1.5 mt-1 rounded-lg text-xs font-semibold border border-emerald-500 text-emerald-700', style: { cursor: 'pointer' } }, 'Export CSV'),
+          }, '\uD83D\uDCF7 ' + __alloT('stem.ecosystem.take_snapshot', 'Take Snapshot')),
+          h('button', { 'aria-label': __alloT('stem.ecosystem.export_csv', 'Export CSV'), onClick: function() { try { var _d = (typeof d !== 'undefined' && d && d.data) ? d.data : []; if (!_d.length) return; var _csv = 'step,prey,predator\n' + _d.map(function(p,i){ return i + ',' + (p.prey||0) + ',' + (p.pred||0); }).join('\n'); var _b = new Blob([_csv], { type: 'text/csv' }); var _a = document.createElement('a'); _a.href = URL.createObjectURL(_b); _a.download = 'ecosystem_' + Date.now() + '.csv'; _a.click(); if (typeof addToast === 'function') addToast('CSV saved!', 'success'); } catch(e){} }, className: 'w-full py-1.5 mt-1 rounded-lg text-xs font-semibold border border-emerald-500 text-emerald-700', style: { cursor: 'pointer' } }, __alloT('stem.ecosystem.export_csv', 'Export CSV')),
 
           // ── AI Tutor ──
           callGemini && h('div', { className: 'bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-3 border border-indigo-200 dark:border-indigo-700 space-y-2' },
             h('button', { className: 'w-full flex items-center justify-between text-xs font-bold text-indigo-700 dark:text-indigo-300',
               onClick: function() { upd('showAI', !showAI); }
             },
-              h('span', null, '\uD83E\uDD16 AI Ecology Tutor'),
+              h('span', null, '\uD83E\uDD16 ' + __alloT('stem.ecosystem.ai_ecology_tutor', 'AI Ecology Tutor')),
               h('span', null, showAI ? '\u25B2' : '\u25BC')
             ),
             showAI && h('div', { className: 'space-y-2' },
               h('div', { className: 'flex gap-1 flex-wrap' },
-                ['What is Lotka-Volterra?', 'Why do populations oscillate?', 'What is carrying capacity?', 'Explain food webs'].map(function(question) {
+                [__alloT('stem.ecosystem.q_what_lotka_volterra', 'What is Lotka-Volterra?'), __alloT('stem.ecosystem.q_why_oscillate', 'Why do populations oscillate?'), __alloT('stem.ecosystem.q_what_carrying_capacity', 'What is carrying capacity?'), __alloT('stem.ecosystem.q_explain_food_webs', 'Explain food webs')].map(function(question) {
                   return h('button', { key: question,
                     className: 'transition-colors px-2 py-1 text-[11px] rounded-full border border-indigo-600 dark:border-indigo-600 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97]',
                     onClick: function() { askAI(question); },
@@ -3750,13 +3750,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   }, question);
                 })
               ),
-              aiLoading && h('p', { className: 'text-xs text-indigo-500 animate-pulse' }, 'Thinking...'),
+              aiLoading && h('p', { className: 'text-xs text-indigo-500 animate-pulse' }, __alloT('stem.ecosystem.thinking', 'Thinking...')),
               aiResponse && h('div', { className: 'bg-white dark:bg-slate-800 rounded-lg p-2 text-xs text-slate-700 dark:text-slate-300 border border-indigo-100 dark:border-indigo-800' },
                 h('p', null, aiResponse),
                 callTTS && h('button', { 'aria-label': __alloT('stem.ecosystem.read_aloud', 'Read aloud'),
                   className: 'transition-colors mt-1 text-[11px] text-indigo-500 hover:text-indigo-700',
                   onClick: function() { speakText(aiResponse); }
-                }, '\uD83D\uDD0A Read aloud')
+                }, '\uD83D\uDD0A ' + __alloT('stem.ecosystem.read_aloud', 'Read aloud'))
               )
             )
           )
@@ -3775,7 +3775,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             }
           },
             h('strong', { style: { color: '#0ea5e9' } }, __alloT('stem.ecosystem.goal_label', 'Goal: ')),
-            'design experiments. Try the textbook Lotka-Volterra setup (1 predator + 1 prey, nothing else) and watch the cycle. Then break it: add a second predator (competitive exclusion), or remove the predator entirely (prey overshoots carrying capacity and crashes). Inject events to test resilience. Every entity placed is graded by Carrying Capacity (K) on the slider below.'
+            __alloT('stem.ecosystem.sandbox_goal_body', 'design experiments. Try the textbook Lotka-Volterra setup (1 predator + 1 prey, nothing else) and watch the cycle. Then break it: add a second predator (competitive exclusion), or remove the predator entirely (prey overshoots carrying capacity and crashes). Inject events to test resilience. Every entity placed is graded by Carrying Capacity (K) on the slider below.')
           ),
 
           // Canvas container (same canvas, with sandbox interactivity)
