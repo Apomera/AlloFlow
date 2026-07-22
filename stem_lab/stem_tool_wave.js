@@ -1950,7 +1950,7 @@ const d = labToolData.wave;
                 className: "focus:outline-none focus:ring-4 focus:ring-cyan-300 focus:ring-inset",
                 "data-wave-canvas": "true",
 
-                tabIndex: 0, role: "application", "aria-label": "Wave simulator — arrow up/down adjusts amplitude, arrow left/right adjusts frequency, +/- adjusts speed, space pauses or resumes the animation",
+                tabIndex: 0, role: "application", "aria-label": __alloT('stem.wave.aria_canvas', 'Wave simulator — arrow up/down adjusts amplitude, arrow left/right adjusts frequency, +/- adjusts speed, space pauses or resumes the animation'),
 
                 "data-amp": d.amplitude, "data-freq": d.frequency, "data-wave-type": d.waveType || 'sine',
 
@@ -1984,19 +1984,19 @@ const d = labToolData.wave;
                   var nv;
                   var say = function (id, msg) { if (typeof canvasNarrate === 'function') canvasNarrate('wave', id, msg, { debounce: 600 }); };
 
-                  if (e.key === 'ArrowUp') { e.preventDefault(); nv = Math.min(100, (d.amplitude || 50) + 5); upd('amplitude', nv); say('key_amp', 'Amplitude ' + nv); }
+                  if (e.key === 'ArrowUp') { e.preventDefault(); nv = Math.min(100, (d.amplitude || 50) + 5); upd('amplitude', nv); say('key_amp', __alloT('stem.wave.narrate_amplitude', 'Amplitude') + ' ' + nv); }
 
-                  else if (e.key === 'ArrowDown') { e.preventDefault(); nv = Math.max(5, (d.amplitude || 50) - 5); upd('amplitude', nv); say('key_amp', 'Amplitude ' + nv); }
+                  else if (e.key === 'ArrowDown') { e.preventDefault(); nv = Math.max(5, (d.amplitude || 50) - 5); upd('amplitude', nv); say('key_amp', __alloT('stem.wave.narrate_amplitude', 'Amplitude') + ' ' + nv); }
 
-                  else if (e.key === 'ArrowRight') { e.preventDefault(); nv = Math.min(10, Math.round(((d.frequency || 2) + 0.5) * 10) / 10); upd('frequency', nv); syncOsc({ freq: nv }); say('key_freq', 'Frequency ' + nv + ' hertz'); }
+                  else if (e.key === 'ArrowRight') { e.preventDefault(); nv = Math.min(10, Math.round(((d.frequency || 2) + 0.5) * 10) / 10); upd('frequency', nv); syncOsc({ freq: nv }); say('key_freq', __alloT('stem.wave.narrate_frequency', 'Frequency') + ' ' + nv + __alloT('stem.wave.narrate_hertz', ' hertz')); }
 
-                  else if (e.key === 'ArrowLeft') { e.preventDefault(); nv = Math.max(0.5, Math.round(((d.frequency || 2) - 0.5) * 10) / 10); upd('frequency', nv); syncOsc({ freq: nv }); say('key_freq', 'Frequency ' + nv + ' hertz'); }
+                  else if (e.key === 'ArrowLeft') { e.preventDefault(); nv = Math.max(0.5, Math.round(((d.frequency || 2) - 0.5) * 10) / 10); upd('frequency', nv); syncOsc({ freq: nv }); say('key_freq', __alloT('stem.wave.narrate_frequency', 'Frequency') + ' ' + nv + __alloT('stem.wave.narrate_hertz', ' hertz')); }
 
-                  else if (e.key === '+' || e.key === '=') { e.preventDefault(); nv = Math.min(3, Math.round(((d.speed || 1) + 0.25) * 100) / 100); upd('speed', nv); say('key_speed', 'Speed ' + nv + ' x'); }
+                  else if (e.key === '+' || e.key === '=') { e.preventDefault(); nv = Math.min(3, Math.round(((d.speed || 1) + 0.25) * 100) / 100); upd('speed', nv); say('key_speed', __alloT('stem.wave.narrate_speed', 'Speed') + ' ' + nv + ' x'); }
 
-                  else if (e.key === '-') { e.preventDefault(); nv = Math.max(0.25, Math.round(((d.speed || 1) - 0.25) * 100) / 100); upd('speed', nv); say('key_speed', 'Speed ' + nv + ' x'); }
+                  else if (e.key === '-') { e.preventDefault(); nv = Math.max(0.25, Math.round(((d.speed || 1) - 0.25) * 100) / 100); upd('speed', nv); say('key_speed', __alloT('stem.wave.narrate_speed', 'Speed') + ' ' + nv + ' x'); }
 
-                  else if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); nv = !d.paused; upd('paused', nv); say('key_pause', nv ? 'Animation paused' : 'Animation playing'); }
+                  else if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); nv = !d.paused; upd('paused', nv); say('key_pause', nv ? __alloT('stem.wave.narrate_paused', 'Animation paused') : __alloT('stem.wave.narrate_playing', 'Animation playing')); }
 
                 },
 
@@ -2015,7 +2015,7 @@ const d = labToolData.wave;
               React.createElement("div", {
                 className: "pointer-events-none absolute left-3 top-3 rounded-lg border border-white/20 bg-slate-950/60 px-3 py-2 text-white shadow-xl backdrop-blur-md"
               },
-                React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-cyan-100/80" }, "Live wave"),
+                React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-cyan-100/80" }, __alloT('stem.wave.overlay_live_wave', 'Live wave')),
                 React.createElement("p", { className: "text-sm font-black leading-tight" }, waveViewMeta.label),
                 React.createElement("p", { className: "mt-1 text-[11px] text-cyan-50/90" }, "A " + displayAmp + " | f " + displayFreq + " Hz | T " + displayPeriod.toFixed(2) + " s")
               ),
@@ -2024,17 +2024,17 @@ const d = labToolData.wave;
                 className: "pointer-events-none absolute right-3 top-3 hidden rounded-lg border border-white/20 bg-slate-950/60 px-3 py-2 text-right text-white shadow-xl backdrop-blur-md sm:block"
               },
                 React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-slate-200/80" }, waveViewMeta.chip),
-                React.createElement("p", { className: "text-[11px] text-slate-100/90" }, "Type " + activeWaveType),
-                React.createElement("p", { className: "text-[11px] text-slate-100/90" }, "Medium " + displayMediumSpeed + " m/s")
+                React.createElement("p", { className: "text-[11px] text-slate-100/90" }, __alloT('stem.wave.overlay_type', 'Type') + " " + activeWaveType),
+                React.createElement("p", { className: "text-[11px] text-slate-100/90" }, __alloT('stem.wave.overlay_medium', 'Medium') + " " + displayMediumSpeed + " m/s")
               ),
 
               React.createElement("div", {
                 className: "pointer-events-none absolute bottom-3 left-3 right-3 flex flex-wrap items-end gap-2 text-white"
               },
                 [
-                  ['Wavelength', displayWavelength.toFixed(1) + ' m'],
-                  ['Speed', displaySpeed.toFixed(1) + 'x'],
-                  ['Energy', (displayAmp * displayAmp).toFixed(0)]
+                  [__alloT('stem.wave.readout_wavelength', 'Wavelength'), displayWavelength.toFixed(1) + ' m'],
+                  [__alloT('stem.wave.readout_speed', 'Speed'), displaySpeed.toFixed(1) + 'x'],
+                  [__alloT('stem.wave.readout_energy', 'Energy'), (displayAmp * displayAmp).toFixed(0)]
                 ].map(function(item) {
                   return React.createElement("div", { key: item[0], className: "rounded-lg border border-white/10 bg-slate-950/50 px-2.5 py-1.5 shadow-lg backdrop-blur-md" },
                     React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-cyan-100/75" }, item[0]),
@@ -2043,16 +2043,16 @@ const d = labToolData.wave;
                 }),
 
                 waveMode === 'spectrum' && React.createElement("div", { className: "rounded-lg border border-emerald-300/40 bg-slate-950/60 px-2.5 py-1.5 shadow-lg backdrop-blur-md" },
-                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-emerald-200/80" }, "Timbre = harmonics"),
+                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-emerald-200/80" }, __alloT('stem.wave.overlay_timbre_harmonics', 'Timbre = harmonics')),
                   React.createElement("p", { className: "text-xs font-bold leading-tight" }, timbreNote)
                 ),
 
                 waveMode === 'longitudinal' && React.createElement("div", { className: "rounded-lg border border-amber-300/40 bg-slate-950/60 px-2.5 py-1.5 shadow-lg backdrop-blur-md" },
-                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-amber-200/80" }, "● Gold tracer"),
-                  React.createElement("p", { className: "text-xs font-bold leading-tight" }, "Jiggles in place — the wave travels, the matter does not"),
+                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-amber-200/80" }, "● " + __alloT('stem.wave.overlay_gold_tracer', 'Gold tracer')),
+                  React.createElement("p", { className: "text-xs font-bold leading-tight" }, __alloT('stem.wave.overlay_jiggles', 'Jiggles in place — the wave travels, the matter does not')),
                   React.createElement("p", { className: "mt-1 flex flex-wrap gap-x-2 text-[11px] font-bold" },
-                    React.createElement("span", { className: "text-rose-200" }, "Warm = compression"),
-                    React.createElement("span", { className: "text-blue-200" }, "Blue = rarefaction"))
+                    React.createElement("span", { className: "text-rose-200" }, __alloT('stem.wave.overlay_warm_compression', 'Warm = compression')),
+                    React.createElement("span", { className: "text-blue-200" }, __alloT('stem.wave.overlay_blue_rarefaction', 'Blue = rarefaction')))
                 )
               )
 
@@ -2079,7 +2079,7 @@ const d = labToolData.wave;
 
             waveMode === 'standing' && React.createElement("div", { className: "flex gap-2 mb-3 items-center" },
 
-              React.createElement("span", { className: "text-xs font-bold text-cyan-600" }, "Harmonic:"),
+              React.createElement("span", { className: "text-xs font-bold text-cyan-600" }, __alloT('stem.wave.standing_harmonic_label', 'Harmonic:')),
 
               [1, 2, 3, 4, 5, 6].map(function (h) {
 
@@ -2095,15 +2095,15 @@ const d = labToolData.wave;
 
             waveMode === 'standing' && React.createElement("div", { className: "bg-cyan-50 rounded-lg p-3 border border-cyan-200 mb-3 text-xs text-cyan-800" },
 
-              React.createElement("p", { className: "font-bold mb-1" }, "\uD83C\uDFB8 Standing Wave \u2014 Harmonic #" + (d.harmonic || 1)),
+              React.createElement("p", { className: "font-bold mb-1" }, "\uD83C\uDFB8 " + __alloT('stem.wave.standing_wave_title', 'Standing Wave \u2014 Harmonic #') + (d.harmonic || 1)),
 
-              React.createElement("p", null, "\u2022 Nodes (\uD83D\uDD34 N): Points of zero displacement \u2014 " + ((d.harmonic || 1) + 1) + " total (including endpoints)"),
+              React.createElement("p", null, "\u2022 " + __alloT('stem.wave.standing_nodes_prefix', 'Nodes (\uD83D\uDD34 N): Points of zero displacement \u2014 ') + ((d.harmonic || 1) + 1) + __alloT('stem.wave.standing_nodes_suffix', ' total (including endpoints)')),
 
-              React.createElement("p", null, "\u2022 Antinodes (\uD83D\uDFE2 A): Points of maximum displacement \u2014 " + (d.harmonic || 1) + " total"),
+              React.createElement("p", null, "\u2022 " + __alloT('stem.wave.standing_antinodes_prefix', 'Antinodes (\uD83D\uDFE2 A): Points of maximum displacement \u2014 ') + (d.harmonic || 1) + __alloT('stem.wave.standing_antinodes_suffix', ' total')),
 
-              React.createElement("p", null, "\u2022 Wavelength: \u03BB = 2L/" + (d.harmonic || 1) + " (L = string length)"),
+              React.createElement("p", null, "\u2022 " + __alloT('stem.wave.standing_wavelength_label', 'Wavelength:') + " \u03BB = 2L/" + (d.harmonic || 1) + __alloT('stem.wave.standing_wavelength_note', ' (L = string length)')),
 
-              React.createElement("p", null, "\u2022 Frequency: f\u2081 \u00D7 " + (d.harmonic || 1) + " = " + ((d.harmonic || 1) * d.frequency).toFixed(1) + " Hz")
+              React.createElement("p", null, "\u2022 " + __alloT('stem.wave.standing_frequency_label', 'Frequency:') + " f\u2081 \u00D7 " + (d.harmonic || 1) + " = " + ((d.harmonic || 1) * d.frequency).toFixed(1) + " Hz")
 
             ),
 
