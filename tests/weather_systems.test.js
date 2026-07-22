@@ -1359,3 +1359,45 @@ it('renders the immersive guided investigation tour and evidence note', () => {
   });
 
 });
+
+describe('Weather Systems geographic map loader resilience', () => {
+  const { readFileSync } = require('node:fs');
+  const { resolve } = require('node:path');
+  const PATHS = [
+    'stem_lab/stem_tool_weathersystems.js',
+    'prismflow-deploy/public/stem_lab/stem_tool_weathersystems.js',
+  ];
+
+  it('tries multiple CDNs with a timeout instead of a single point of failure', () => {
+    PATHS.forEach((filePath) => {
+      const source = readFileSync(resolve(process.cwd(), filePath), 'utf8');
+      expect(source).toContain('var WEATHER_MAPLIBRE_CDNS = [');
+      expect(source).toContain('cdn.jsdelivr.net/npm/maplibre-gl@5.24.0');
+      expect(source).toContain('WEATHER_MAPLIBRE_TIMEOUT_MS = 20000');
+      // a black-holed request must resolve to the next CDN, not spin forever
+      expect(source).toContain('var timer = window.setTimeout(function () { finish(false); }, WEATHER_MAPLIBRE_TIMEOUT_MS)');
+      expect(source).toContain('resolve(attempt(index + 1))');
+    });
+  });
+
+  it('cleans up dead script tags so a retry actually retries (the stuck-spinner bug)', () => {
+    const source = readFileSync(resolve(process.cwd(), PATHS[0]), 'utf8');
+    // the old code re-listened on a failed script tag whose events never re-fire
+    expect(source).toContain('var stale = document.getElementById(scriptId)');
+    expect(source).toContain('stale.parentNode.removeChild(stale)');
+    expect(source).not.toContain("existing.addEventListener('load', ready");
+    // a rejected load clears the cached promise so Retry starts fresh
+    expect(source).toContain('window.__weatherMapLibrePromise = null; // allow a fresh Retry');
+  });
+
+  it('the error overlay offers Retry alongside the conceptual-3D fallback', () => {
+    const source = readFileSync(resolve(process.cwd(), PATHS[0]), 'utf8');
+    expect(source).toContain("'Retry loading'");
+    expect(source).toContain("geographicMapAttempt: (d.geographicMapAttempt || 0) + 1");
+    expect(source).toContain("'Use conceptual 3D instead'");
+    // the retry counter re-runs the map effect
+    expect(source).toContain('d.geographicMapAttempt, d.liveWeather && d.liveWeather.observedAt');
+    // failure explanation names the likely culprit for school deployments
+    expect(source).toContain('School network filters sometimes block map services');
+  });
+});

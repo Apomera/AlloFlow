@@ -800,45 +800,65 @@ var GEOGRAPHY_PROFILES = {
     return parts.join(' | ');
   }
 
+  // Map-engine CDN candidates, tried in order. A single CDN is a single point
+  // of failure on filtered school networks; jsDelivr is frequently reachable
+  // when unpkg is not (and vice versa).
+  var WEATHER_MAPLIBRE_CDNS = [
+    { script: GEOGRAPHIC_MAP_SOURCES.mapLibreScript, css: GEOGRAPHIC_MAP_SOURCES.mapLibreCss },
+    { script: 'https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.js', css: 'https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.css' }
+  ];
+  var WEATHER_MAPLIBRE_TIMEOUT_MS = 20000;
+
   function ensureWeatherMapLibre() {
     if (window.maplibregl && window.maplibregl.Map) return Promise.resolve(window.maplibregl);
     if (window.__weatherMapLibrePromise) return window.__weatherMapLibrePromise;
-    window.__weatherMapLibrePromise = new Promise(function (resolve, reject) {
-      var cssId = 'weather-maplibre-css';
-      if (!document.getElementById(cssId)) {
-        var link = document.createElement('link');
-        link.id = cssId;
-        link.rel = 'stylesheet';
-        link.href = GEOGRAPHIC_MAP_SOURCES.mapLibreCss;
-        link.crossOrigin = 'anonymous';
-        document.head.appendChild(link);
-      }
-      var scriptId = 'weather-maplibre-script';
-      var existing = document.getElementById(scriptId);
-      function ready() {
-        if (window.maplibregl && window.maplibregl.Map) resolve(window.maplibregl);
-        else {
-          window.__weatherMapLibrePromise = null;
-          reject(new Error('The open geographic map engine loaded without its expected API.'));
+    var scriptId = 'weather-maplibre-script';
+    function attempt(index) {
+      return new Promise(function (resolve, reject) {
+        if (index >= WEATHER_MAPLIBRE_CDNS.length) {
+          reject(new Error('The open geographic map engine could not be loaded from any source. School network filters sometimes block map services — use Retry, or continue with the conceptual 3D scene.'));
+          return;
         }
-      }
-      function failed() {
-        window.__weatherMapLibrePromise = null;
-        reject(new Error('The open geographic map engine could not be loaded. The conceptual 3D scene is still available.'));
-      }
-      if (existing) {
-        existing.addEventListener('load', ready, { once: true });
-        existing.addEventListener('error', failed, { once: true });
-        return;
-      }
-      var script = document.createElement('script');
-      script.id = scriptId;
-      script.src = GEOGRAPHIC_MAP_SOURCES.mapLibreScript;
-      script.async = true;
-      script.crossOrigin = 'anonymous';
-      script.addEventListener('load', ready, { once: true });
-      script.addEventListener('error', failed, { once: true });
-      document.head.appendChild(script);
+        var source = WEATHER_MAPLIBRE_CDNS[index];
+        // Remove any script tag left by a failed earlier attempt. Its
+        // load/error events have already fired and will never fire again, so
+        // re-listening on it would hang the loading state forever.
+        var stale = document.getElementById(scriptId);
+        if (stale && stale.parentNode) stale.parentNode.removeChild(stale);
+        var cssId = 'weather-maplibre-css-' + index;
+        if (!document.getElementById(cssId)) {
+          var link = document.createElement('link');
+          link.id = cssId;
+          link.rel = 'stylesheet';
+          link.href = source.css;
+          link.crossOrigin = 'anonymous';
+          document.head.appendChild(link);
+        }
+        var script = document.createElement('script');
+        var settled = false;
+        // A filtered network can black-hole the request (no load, no error) —
+        // without a timeout the spinner never resolves.
+        var timer = window.setTimeout(function () { finish(false); }, WEATHER_MAPLIBRE_TIMEOUT_MS);
+        function finish(ok) {
+          if (settled) return;
+          settled = true;
+          window.clearTimeout(timer);
+          if (ok && window.maplibregl && window.maplibregl.Map) { resolve(window.maplibregl); return; }
+          if (script.parentNode) script.parentNode.removeChild(script);
+          resolve(attempt(index + 1)); // fall through to the next CDN
+        }
+        script.id = scriptId;
+        script.src = source.script;
+        script.async = true;
+        script.crossOrigin = 'anonymous';
+        script.addEventListener('load', function () { finish(true); }, { once: true });
+        script.addEventListener('error', function () { finish(false); }, { once: true });
+        document.head.appendChild(script);
+      });
+    }
+    window.__weatherMapLibrePromise = attempt(0).catch(function (error) {
+      window.__weatherMapLibrePromise = null; // allow a fresh Retry
+      throw error;
     });
     return window.__weatherMapLibrePromise;
   }
@@ -2466,7 +2486,7 @@ var geographyGroup = new THREE.Group();
           if (map && map.remove) map.remove();
           geographicRuntimeRef.current = null;
         };
-      }, [d.tab, d.immersiveSceneMode, d.liveWeather && d.liveWeather.observedAt, d.liveWeather && d.liveWeather.latitude, d.liveWeather && d.liveWeather.longitude]);
+      }, [d.tab, d.immersiveSceneMode, d.geographicMapAttempt, d.liveWeather && d.liveWeather.observedAt, d.liveWeather && d.liveWeather.latitude, d.liveWeather && d.liveWeather.longitude]);
 
       React.useEffect(function () {
         if (!d.playing) return undefined;
@@ -4709,7 +4729,9 @@ var geographyGroup = new THREE.Group();
                 !geographicMode && !engineReady && !engineError && h('div', { className: 'absolute inset-0 flex items-center justify-center bg-slate-950/90 text-center' }, h('div', { className: 'max-w-sm p-6' }, h('div', { className: 'mx-auto h-10 w-10 animate-spin rounded-full border-4 border-cyan-300/20 border-t-cyan-300', 'aria-hidden': true }), h('p', { className: 'mt-4 text-sm font-black' }, 'Loading the 3D atmosphere engine...'), h('p', { className: 'mt-1 text-xs text-slate-400' }, 'The Canvas 2D map remains available if WebGL cannot load.'))),
                 !geographicMode && engineError && h('div', { className: 'absolute inset-0 flex items-center justify-center bg-slate-950/95 p-6 text-center', role: 'alert' }, h('div', { className: 'max-w-md' }, h('p', { className: 'text-base font-black' }, '3D view unavailable'), h('p', { className: 'mt-2 text-sm text-slate-300' }, engineError), h('button', { type: 'button', onClick: function () { update({ tab: 'map' }); }, className: 'mt-4 rounded-lg bg-sky-600 px-4 py-2 text-sm font-black text-white' }, 'Return to 2D Canvas map'))),
                 geographicMode && (d.geographicMapLoading || (!d.geographicMapReady && !d.geographicMapError)) && h('div', { className: 'absolute inset-0 z-10 flex items-center justify-center bg-slate-950/90 text-center', role: 'status', 'aria-live': 'polite' }, h('div', { className: 'max-w-sm p-6' }, h('div', { className: 'mx-auto h-10 w-10 animate-spin rounded-full border-4 border-emerald-300/20 border-t-emerald-300', 'aria-hidden': true }), h('p', { className: 'mt-4 text-sm font-black' }, 'Loading open geographic layers...'), h('p', { className: 'mt-1 text-xs text-slate-400' }, 'OpenFreeMap, OpenStreetMap labels, and 3D terrain load only in this opt-in mode.'))),
-                geographicMode && d.geographicMapError && h('div', { className: 'absolute inset-0 z-10 flex items-center justify-center bg-slate-950/95 p-6 text-center', role: 'alert' }, h('div', { className: 'max-w-md' }, h('p', { className: 'text-base font-black' }, 'Geographic view unavailable'), h('p', { className: 'mt-2 text-sm text-slate-300' }, d.geographicMapError), h('button', { type: 'button', onClick: function () { update({ immersiveSceneMode: 'conceptual', geographicMapError: '' }); }, className: 'mt-4 min-h-11 rounded-lg bg-cyan-300 px-4 py-2 text-sm font-black text-cyan-950' }, 'Use conceptual 3D instead'))),
+                geographicMode && d.geographicMapError && h('div', { className: 'absolute inset-0 z-10 flex items-center justify-center bg-slate-950/95 p-6 text-center', role: 'alert' }, h('div', { className: 'max-w-md' }, h('p', { className: 'text-base font-black' }, 'Geographic view unavailable'), h('p', { className: 'mt-2 text-sm text-slate-300' }, d.geographicMapError), h('div', { className: 'mt-4 flex flex-wrap items-center justify-center gap-2' },
+                  h('button', { type: 'button', onClick: function () { update({ geographicMapError: '', geographicMapAttempt: (d.geographicMapAttempt || 0) + 1 }); }, className: 'min-h-11 rounded-lg bg-emerald-300 px-4 py-2 text-sm font-black text-emerald-950' }, 'Retry loading'),
+                  h('button', { type: 'button', onClick: function () { update({ immersiveSceneMode: 'conceptual', geographicMapError: '' }); }, className: 'min-h-11 rounded-lg bg-cyan-300 px-4 py-2 text-sm font-black text-cyan-950' }, 'Use conceptual 3D instead')))),
                 !geographicMode && h('div', { className: 'pointer-events-none absolute bottom-3 left-3 right-3 flex flex-wrap items-end justify-between gap-2' },
                   h('div', { className: 'rounded-xl bg-slate-950/75 px-3 py-2 backdrop-blur-sm' }, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, useLive ? 'Live observation scene' : 'Teaching model scene'), h('p', { className: 'text-xs font-black' }, sceneLabel)),
                   h('div', { className: 'rounded-xl bg-slate-950/75 px-3 py-2 text-right text-[11px] text-slate-300 backdrop-blur-sm' }, 'Drag to orbit | Scroll or pinch to zoom'),
