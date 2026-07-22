@@ -626,17 +626,17 @@ window.StemLab = window.StemLab || {
           var hasVoltmeter = components.some(function(comp) { return comp.type === 'voltmeter'; });
           var meterIssue = mode === 'parallel' && hasAmmeter ? 'ammeter-short' :
             mode === 'series' && hasVoltmeter ? 'voltmeter-open' : '';
-          var meterStatus = meterIssue === 'ammeter-short' ? 'Unsafe placement: short-circuit path' :
-            meterIssue === 'voltmeter-open' ? 'Incorrect placement: circuit is nearly open' :
-            hasAmmeter || hasVoltmeter ? 'Measurement placement is correct' : '';
+          var meterStatus = meterIssue === 'ammeter-short' ? __alloT('stem.circuit.meter_status_ammeter_short', 'Unsafe placement: short-circuit path') :
+            meterIssue === 'voltmeter-open' ? __alloT('stem.circuit.meter_status_voltmeter_open', 'Incorrect placement: circuit is nearly open') :
+            hasAmmeter || hasVoltmeter ? __alloT('stem.circuit.meter_status_correct', 'Measurement placement is correct') : '';
           var meterGuidance = meterIssue === 'ammeter-short'
-            ? 'An ammeter has nearly zero resistance. Across parallel nodes it bypasses the load and draws extremely high current. Move it into the series path.'
+            ? __alloT('stem.circuit.meter_guidance_ammeter_short', 'An ammeter has nearly zero resistance. Across parallel nodes it bypasses the load and draws extremely high current. Move it into the series path.')
             : meterIssue === 'voltmeter-open'
-            ? 'A voltmeter has extremely high resistance. In series it nearly stops current. Connect it across the component whose voltage difference you want.'
+            ? __alloT('stem.circuit.meter_guidance_voltmeter_open', 'A voltmeter has extremely high resistance. In series it nearly stops current. Connect it across the component whose voltage difference you want.')
             : hasAmmeter
-            ? 'The ammeter is in series, so circuit current passes through it.'
+            ? __alloT('stem.circuit.meter_guidance_ammeter_ok', 'The ammeter is in series, so circuit current passes through it.')
             : hasVoltmeter
-            ? 'The voltmeter is in parallel, so it compares electric potential across the branch while drawing negligible current.'
+            ? __alloT('stem.circuit.meter_guidance_voltmeter_ok', 'The voltmeter is in parallel, so it compares electric potential across the branch while drawing negligible current.')
             : '';
           // Check short circuit badge
           if (isShort && !shortTriggered) {
@@ -801,12 +801,12 @@ window.StemLab = window.StemLab || {
           // ── Component label helper ──
           var getCompLabel = function(comp) {
             if (comp.type === 'resistor') return 'R';
-            if (comp.type === 'bulb') return 'Bulb';
-            if (comp.type === 'switch') return comp.closed ? 'ON' : 'OFF';
-            if (comp.type === 'led') return 'LED';
-            if (comp.type === 'ammeter') return 'Ammeter';
-            if (comp.type === 'voltmeter') return 'Voltmeter';
-            if (comp.type === 'capacitor') return 'Cap';
+            if (comp.type === 'bulb') return __alloT('stem.circuit.comp_bulb', 'Bulb');
+            if (comp.type === 'switch') return comp.closed ? __alloT('stem.circuit.switch_on', 'ON') : __alloT('stem.circuit.switch_off', 'OFF');
+            if (comp.type === 'led') return __alloT('stem.circuit.comp_led', 'LED');
+            if (comp.type === 'ammeter') return __alloT('stem.circuit.comp_ammeter', 'Ammeter');
+            if (comp.type === 'voltmeter') return __alloT('stem.circuit.comp_voltmeter', 'Voltmeter');
+            if (comp.type === 'capacitor') return __alloT('stem.circuit.comp_cap_abbrev', 'Cap');
             return comp.type;
           };
 
@@ -1461,45 +1461,45 @@ window.StemLab = window.StemLab || {
             // Component buttons
             // ══════════════════════════════════════
             h('div', { className: 'flex flex-wrap gap-2 mt-4 mb-4 justify-center sm:justify-start' },
-              h('button', { 'aria-label': 'Resistor',
+              h('button', { 'aria-label': __alloT('stem.circuit.comp_resistor', 'Resistor'),
                 onClick: function() { addComponent('resistor', 100); },
                 className: 'px-3 py-1.5 bg-yellow-950/20 hover:bg-yellow-500/20 text-yellow-400 font-bold rounded-lg text-xs border border-yellow-500/30 hover:border-yellow-400 transition-all glow-button active:scale-[0.97]'
-              }, '\u2795 Resistor'),
+              }, '\u2795 ' + __alloT('stem.circuit.comp_resistor', 'Resistor')),
 
-              h('button', { 'aria-label': 'Bulb',
+              h('button', { 'aria-label': __alloT('stem.circuit.comp_bulb', 'Bulb'),
                 onClick: function() { addComponent('bulb', 50); },
                 className: 'px-3 py-1.5 bg-amber-950/20 hover:bg-amber-500/20 text-amber-400 font-bold rounded-lg text-xs border border-amber-500/30 hover:border-amber-400 transition-all glow-button active:scale-[0.97]'
-              }, '\uD83D\uDCA1 Bulb'),
+              }, '\uD83D\uDCA1 ' + __alloT('stem.circuit.comp_bulb', 'Bulb')),
 
-              h('button', { 'aria-label': 'Switch',
+              h('button', { 'aria-label': __alloT('stem.circuit.comp_switch', 'Switch'),
                 onClick: function() { addComponent('switch', 0, { closed: true }); },
                 className: 'px-3 py-1.5 bg-emerald-950/20 hover:bg-emerald-500/20 text-emerald-400 font-bold rounded-lg text-xs border border-emerald-500/30 hover:border-emerald-400 transition-all glow-button active:scale-[0.97]'
-              }, '\uD83D\uDD18 Switch'),
+              }, '\uD83D\uDD18 ' + __alloT('stem.circuit.comp_switch', 'Switch')),
 
-              h('button', { 'aria-label': 'LED',
+              h('button', { 'aria-label': __alloT('stem.circuit.comp_led', 'LED'),
                 onClick: function() { addComponent('led', 40, { ledColor: '#ef4444' }); },
                 className: 'px-3 py-1.5 bg-rose-950/20 hover:bg-rose-500/20 text-rose-400 font-bold rounded-lg text-xs border border-rose-500/30 hover:border-rose-400 transition-all glow-button active:scale-[0.97]'
-              }, '\uD83D\uDD34 LED'),
+              }, '\uD83D\uDD34 ' + __alloT('stem.circuit.comp_led', 'LED')),
 
-              h('button', { 'aria-label': 'Ammeter',
+              h('button', { 'aria-label': __alloT('stem.circuit.comp_ammeter', 'Ammeter'),
                 onClick: function() { addComponent('ammeter', 0); },
                 className: 'px-3 py-1.5 bg-cyan-950/20 hover:bg-cyan-500/20 text-cyan-400 font-bold rounded-lg text-xs border border-cyan-500/30 hover:border-cyan-400 transition-all glow-button active:scale-[0.97]'
-              }, '\u26A1 Ammeter'),
+              }, '\u26A1 ' + __alloT('stem.circuit.comp_ammeter', 'Ammeter')),
 
-              h('button', { 'aria-label': 'Voltmeter',
+              h('button', { 'aria-label': __alloT('stem.circuit.comp_voltmeter', 'Voltmeter'),
                 onClick: function() { addComponent('voltmeter', 0); },
                 className: 'px-3 py-1.5 bg-orange-950/20 hover:bg-orange-500/20 text-orange-400 font-bold rounded-lg text-xs border border-orange-500/30 hover:border-orange-400 transition-all glow-button active:scale-[0.97]'
-              }, '\uD83D\uDD0B Voltmeter'),
+              }, '\uD83D\uDD0B ' + __alloT('stem.circuit.comp_voltmeter', 'Voltmeter')),
 
-              h('button', { 'aria-label': 'Capacitor',
+              h('button', { 'aria-label': __alloT('stem.circuit.comp_capacitor', 'Capacitor'),
                 onClick: function() { addComponent('capacitor', 100); },
                 className: 'px-3 py-1.5 bg-sky-950/20 hover:bg-sky-500/20 text-sky-400 font-bold rounded-lg text-xs border border-sky-500/30 hover:border-sky-400 transition-all glow-button active:scale-[0.97]'
-              }, '\u2E28 Capacitor'),
+              }, '\u2E28 ' + __alloT('stem.circuit.comp_capacitor', 'Capacitor')),
 
-              h('button', { 'aria-label': 'Clear',
+              h('button', { 'aria-label': __alloT('stem.circuit.comp_clear', 'Clear'),
                 onClick: clearComponents,
                 className: 'px-3 py-1.5 bg-red-950/30 hover:bg-red-500/30 text-red-400 font-bold rounded-lg text-xs border border-red-500/30 hover:border-red-400 transition-all active:scale-[0.97]'
-              }, '\uD83D\uDDD1 Clear'),
+              }, '\uD83D\uDDD1 ' + __alloT('stem.circuit.comp_clear', 'Clear')),
 
               components.length > 0 && h('span', { className: 'self-center text-xs text-slate-400 ml-auto font-mono' }, components.length + ' component' + (components.length > 1 ? 's' : ''))
             ),
@@ -1512,7 +1512,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex items-center gap-3 mb-4' },
                 h('span', { className: 'text-xl' }, '\uD83D\uDD0B'),
                 h('input', {
-                  type: 'range', 'aria-label': 'Voltage slider', min: 1, max: 24, step: 0.5,
+                  type: 'range', 'aria-label': __alloT('stem.circuit.aria_voltage_slider', 'Voltage slider'), min: 1, max: 24, step: 0.5,
                   value: voltage,
                   'aria-valuetext': voltage + ' volts. ' + (current === 0 ? 'Open circuit, no current flows.' : ((isShort ? 'Short circuit! ' : '') + 'Total resistance ' + totalR.toFixed(1) + ' ohms, current ' + current.toFixed(3) + ' amps.')),
                   onChange: function(e) { upd('voltage', parseFloat(e.target.value)); },
@@ -1594,20 +1594,20 @@ window.StemLab = window.StemLab || {
                     comp.type === 'capacitor' && h('span', { className: 'text-xs text-slate-400' }, '\u00B5F'),
 
                     // Switch toggle button
-                    comp.type === 'switch' && h('button', { 'aria-label': 'Toggle Switch',
+                    comp.type === 'switch' && h('button', { 'aria-label': __alloT('stem.circuit.aria_toggle_switch', 'Toggle Switch'),
                       onClick: function() { toggleSwitch(comp.id); },
                       className: 'px-2 py-1 text-xs font-bold rounded border transition-all ' + (comp.closed ? 'transition-colors bg-emerald-950/30 text-emerald-400 border-emerald-800 hover:bg-emerald-900/40 active:scale-[0.97]' : 'transition-colors bg-red-950/30 text-red-400 border-red-800 hover:bg-red-900/40 active:scale-[0.97]')
-                    }, comp.closed ? 'Close' : 'Open'),
+                    }, comp.closed ? __alloT('stem.circuit.btn_close', 'Close') : __alloT('stem.circuit.btn_open', 'Open')),
 
                     // LED color cycle button
-                    comp.type === 'led' && h('button', { 'aria-label': 'Cycle LED Color',
+                    comp.type === 'led' && h('button', { 'aria-label': __alloT('stem.circuit.aria_cycle_led_color', 'Cycle LED Color'),
                       onClick: function() { cycleLedColor(comp.id); },
                       className: 'w-8 h-8 rounded-full border-2 border-slate-700 hover:scale-110 transition-transform',
                       style: { backgroundColor: comp.ledColor || '#ef4444' }
                     }),
 
                     // Remove button
-                    h('button', { 'aria-label': 'Remove Component',
+                    h('button', { 'aria-label': __alloT('stem.circuit.aria_remove_component', 'Remove Component'),
                       onClick: function() { removeComponent(i); },
                       className: 'transition-colors text-slate-500 hover:text-red-400 ml-auto font-bold text-lg px-1 tracking-tight'
                     }, '\u00D7')
@@ -1621,12 +1621,12 @@ window.StemLab = window.StemLab || {
             // ══════════════════════════════════════
             h('div', { className: 'mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2', role: 'status', 'aria-live': 'polite' },
               [
-                { label: 'Mode', val: mode, color: 'slate', icon: mode === 'series' ? '\u2192' : '\u2261', textCls: 'text-slate-400', valCls: 'text-slate-200', borderCls: 'border-slate-800 bg-slate-900/40' },
-                { label: 'Resistance', val: totalR >= 1e8 ? '\u221E' : totalR.toFixed(1) + '\u03A9', color: 'yellow', icon: '\u2AE8', textCls: 'text-yellow-400/80', valCls: 'text-yellow-400', borderCls: 'border-yellow-500/20 bg-yellow-950/10' },
-                { label: 'Current', val: current.toFixed(3) + 'A', color: 'blue', icon: '\u26A1', textCls: 'text-blue-400/80', valCls: 'text-blue-400', borderCls: 'border-blue-500/20 bg-blue-950/10' },
-                { label: 'Power', val: power.toFixed(2) + 'W', color: 'red', icon: '\uD83D\uDD25', textCls: 'text-rose-400/80', valCls: 'text-rose-400', borderCls: 'border-rose-500/20 bg-rose-950/10' }
+                { label: __alloT('stem.circuit.readout_mode', 'Mode'), val: mode, color: 'slate', icon: mode === 'series' ? '\u2192' : '\u2261', textCls: 'text-slate-400', valCls: 'text-slate-200', borderCls: 'border-slate-800 bg-slate-900/40' },
+                { label: __alloT('stem.circuit.readout_resistance', 'Resistance'), val: totalR >= 1e8 ? '\u221E' : totalR.toFixed(1) + '\u03A9', color: 'yellow', icon: '\u2AE8', textCls: 'text-yellow-400/80', valCls: 'text-yellow-400', borderCls: 'border-yellow-500/20 bg-yellow-950/10' },
+                { label: __alloT('stem.circuit.stat_current', 'Current'), val: current.toFixed(3) + 'A', color: 'blue', icon: '\u26A1', textCls: 'text-blue-400/80', valCls: 'text-blue-400', borderCls: 'border-blue-500/20 bg-blue-950/10' },
+                { label: __alloT('stem.circuit.readout_power', 'Power'), val: power.toFixed(2) + 'W', color: 'red', icon: '\uD83D\uDD25', textCls: 'text-rose-400/80', valCls: 'text-rose-400', borderCls: 'border-rose-500/20 bg-rose-950/10' }
               ].map(function(m) {
-                var isSh = isShort && m.label !== 'Mode';
+                var isSh = isShort && m.label !== __alloT('stem.circuit.readout_mode', 'Mode');
                 return h('div', {
                   key: m.label,
                   className: 'text-center p-3 rounded-xl border backdrop-blur-sm transition-all ' + (isSh ? 'bg-red-950/20 border-red-500/40 short-active-flash' : m.borderCls)
@@ -1644,24 +1644,24 @@ window.StemLab = window.StemLab || {
             },
               h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
                 h('div', null,
-                  h('p', { className: 'text-[10px] font-bold uppercase tracking-wider ' + (meterIssue ? 'text-red-400' : 'text-emerald-400') }, 'Meter Safety Coach'),
+                  h('p', { className: 'text-[10px] font-bold uppercase tracking-wider ' + (meterIssue ? 'text-red-400' : 'text-emerald-400') }, __alloT('stem.circuit.meter_safety_coach', 'Meter Safety Coach')),
                   h('h4', { id: 'circuitMeterCoachTitle', className: 'text-sm font-black ' + (meterIssue ? 'text-red-200' : 'text-emerald-200') }, meterStatus)
                 ),
                 h('span', {
                   className: 'px-2 py-1 rounded text-[10px] font-bold border ' + (meterIssue ? 'text-red-200 border-red-500/40' : 'text-emerald-200 border-emerald-500/40'),
                   role: 'status',
                   'aria-live': 'polite'
-                }, meterIssue ? 'Fix placement' : 'Connected correctly')
+                }, meterIssue ? __alloT('stem.circuit.fix_placement', 'Fix placement') : __alloT('stem.circuit.connected_correctly', 'Connected correctly'))
               ),
               h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, meterGuidance),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 text-[10px]' },
                 h('div', { className: 'border-l-2 border-cyan-500 pl-2' },
-                  h('strong', { className: 'block text-cyan-300' }, 'Ammeter rule'),
-                  h('span', { className: 'text-slate-400' }, 'Series connection; very low internal resistance.')
+                  h('strong', { className: 'block text-cyan-300' }, __alloT('stem.circuit.ammeter_rule', 'Ammeter rule')),
+                  h('span', { className: 'text-slate-400' }, __alloT('stem.circuit.ammeter_rule_desc', 'Series connection; very low internal resistance.'))
                 ),
                 h('div', { className: 'border-l-2 border-yellow-500 pl-2' },
-                  h('strong', { className: 'block text-yellow-300' }, 'Voltmeter rule'),
-                  h('span', { className: 'text-slate-400' }, 'Parallel connection; very high internal resistance.')
+                  h('strong', { className: 'block text-yellow-300' }, __alloT('stem.circuit.voltmeter_rule', 'Voltmeter rule')),
+                  h('span', { className: 'text-slate-400' }, __alloT('stem.circuit.voltmeter_rule_desc', 'Parallel connection; very high internal resistance.'))
                 )
               )
             ),
