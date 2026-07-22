@@ -57,7 +57,7 @@ describe('Learning Lab Achievement Wall accessibility', () => {
   it('trims entry text and preserves unrelated section data', () => {
     expect(wall).toContain('var title = form.title.trim();');
     expect(wall).toContain('reflection: form.reflection.trim()');
-    expect(wall).toContain("setData(Object.assign({}, data, { achievements: [entry].concat(data.achievements || []) }))");
+    expect(wall).toContain("setData(Object.assign({}, data, { achievements: [entry].concat(rawAchievements) }))");
   });
 
   it('announces saves and returns focus for another entry', () => {
@@ -66,7 +66,7 @@ describe('Learning Lab Achievement Wall accessibility', () => {
   });
 
   it('discloses local storage and shared-device privacy considerations', () => {
-    expect(wall).toContain('Achievements save in this browser.');
+    expect(wall).toContain('Achievements save in this browser only; saving does not send them to or notify anyone.');
     expect(wall).toContain('Avoid private details if other people use this device.');
     expect(wall).toContain("'aria-describedby': 'learning-lab-achievement-privacy-note'");
   });
@@ -93,16 +93,16 @@ describe('Learning Lab Achievement Wall accessibility', () => {
 
   it('uses definition-list and time semantics for details', () => {
     expect(wall).toContain("hh('dl', { 'aria-label': 'Achievement details'");
-    expect(wall).toContain("hh('time', { dateTime: entry.date || undefined }, relDate(entry.date))");
+    expect(wall).toContain("hh('time', { dateTime: textValue(entry.date).trim() || undefined }, relDate(textValue(entry.date).trim()))");
   });
 
   it('presents reflections as a named section and preserves whitespace', () => {
-    expect(wall).toContain("entry.reflection ? hh('section', { 'aria-label': 'Reflection'");
+    expect(wall).toContain("textValue(entry.reflection).trim() ? hh('section', { 'aria-label': 'Reflection'");
     expect(wall).toContain("whiteSpace: 'pre-wrap'");
   });
 
   it('provides a fallback title for legacy entries', () => {
-    expect(wall).toContain("String(entry.title || 'Untitled achievement')");
+    expect(wall).toContain("textValue(entry.title).trim() || 'Untitled achievement'");
   });
 
   it('confirms deletion through the accessible app dialog', () => {
@@ -112,8 +112,8 @@ describe('Learning Lab Achievement Wall accessibility', () => {
   });
 
   it('names deletion, preserves data, announces removal, and restores focus', () => {
-    expect(wall).toContain("'aria-label': 'Remove achievement: ' + String(entry.title || 'Untitled achievement')");
-    expect(wall).toContain("setData(Object.assign({}, data, { achievements: (data.achievements || []).filter");
+    expect(wall).toContain("'aria-label': 'Remove achievement: ' + (textValue(entry.title).trim() || 'Untitled achievement')");
+    expect(wall).toContain("setData(Object.assign({}, data, { achievements: rawAchievements.filter");
     expect(wall).toContain("llAnnounce('Achievement removed.')");
     expect(wall).toContain("focusById('learning-lab-achievement-history-heading')");
   });
@@ -123,6 +123,18 @@ describe('Learning Lab Achievement Wall accessibility', () => {
     expect(wall).toContain("width: '100%', minHeight: 44");
     expect(wall).toContain("minWidth: 44, minHeight: 44");
     expect(wall).toContain("minHeight: 88");
+  });
+
+  it('handles malformed legacy achievement data without crashing', () => {
+    expect(wall).toContain('var rawAchievements = Array.isArray(data.achievements) ? data.achievements : [];');
+    expect(wall).toContain('var achievements = rawAchievements.filter(isRecord);');
+    expect(source).toContain("stat: (Array.isArray((data.mytkAchieve || {}).achievements) ? (data.mytkAchieve || {}).achievements.length : 0) + ' achievements'");
+  });
+
+  it('synchronizes focus with rendered state instead of a focus timer', () => {
+    expect(wall).toContain('if (!pendingFocusId) return;');
+    expect(wall).toContain('function focusById(id) { setPendingFocusId(id); }');
+    expect(wall).not.toContain('setTimeout');
   });
 
   it('keeps the deployed mirror identical', () => {
