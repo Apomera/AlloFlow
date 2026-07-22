@@ -86,6 +86,49 @@
   function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
   function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
 
+  function useStudentAnalyticsDialog(isOpen, onClose) {
+    var dialogRef = React.useRef(null);
+    var openerRef = React.useRef(null);
+    var closeRef = React.useRef(onClose);
+    closeRef.current = onClose;
+    React.useEffect(function() {
+      if (!isOpen) return undefined;
+      openerRef.current = document.activeElement;
+      var node = dialogRef.current;
+      var focusTimer = window.setTimeout(function() {
+        if (node && node.isConnected && typeof node.focus === 'function') node.focus();
+      }, 0);
+      function onKeyDown(event) {
+        if (!node) return;
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          if (typeof closeRef.current === 'function') closeRef.current();
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var focusables = Array.prototype.slice.call(node.querySelectorAll('a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+        if (!focusables.length) { event.preventDefault(); node.focus(); return; }
+        var first = focusables[0];
+        var last = focusables[focusables.length - 1];
+        if (!node.contains(document.activeElement)) { event.preventDefault(); first.focus(); }
+        else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+      document.addEventListener('keydown', onKeyDown, true);
+      return function() {
+        window.clearTimeout(focusTimer);
+        document.removeEventListener('keydown', onKeyDown, true);
+        var opener = openerRef.current;
+        openerRef.current = null;
+        if (opener && opener.isConnected && typeof opener.focus === 'function') {
+          try { opener.focus(); } catch (e) {}
+        }
+      };
+    }, [isOpen]);
+    return dialogRef;
+  }
+
   var studentAnalyticsConfirmSequence = 0;
   function askStudentAnalyticsConfirmation(message, options) {
     return new Promise(function(resolve) {
@@ -2088,12 +2131,18 @@
         MAP: ['RIT Score', 'Percentile'],
         Other: ['Custom']
       };
-      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', {
         className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200'
       }, React.createElement('div', {
+        ref: cbmDialogRef,
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'sa-cbm-dialog-title',
+        tabIndex: -1,
         className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full border-2 border-indigo-200',
         onClick: e => e.stopPropagation()
       }, React.createElement('h3', {
+        id: 'sa-cbm-dialog-title',
         className: 'text-lg font-black text-slate-800 mb-4 flex items-center gap-2'
       }, React.createElement('span', null, '\u{1F4CB}'), 'Import External CBM Score'), React.createElement('div', {
         className: 'space-y-3'
@@ -2382,12 +2431,18 @@
         return a !== undefined && a !== null;
       };
       const allAnswered = questions.every(isAnswered);
-      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', {
         className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200'
       }, React.createElement('div', {
+        ref: surveyDialogRef,
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'sa-survey-dialog-title',
+        tabIndex: -1,
         className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full border-2 border-purple-200 max-h-[85vh] overflow-y-auto',
         onClick: e => e.stopPropagation()
       }, React.createElement('h3', {
+        id: 'sa-survey-dialog-title',
         className: 'text-lg font-black text-slate-800 mb-1 flex items-center gap-2'
       }, React.createElement('span', null, '\u{1F4DD}'), typeLabel + ' Survey'), React.createElement('p', {
         className: 'text-xs text-slate-600 mb-4'
@@ -2579,17 +2634,22 @@
     const renderCustomQuestionsEditor = () => {
       if (!showCustomQuestions) return null;
       const populations = ['student', 'teacher', 'parent'];
-      return React.createElement('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Custom Survey Items Editor',
+      return React.createElement('div', {
         className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200',
         onClick: (e) => { if (e.target === e.currentTarget) setShowCustomQuestions(false); }
       },
         React.createElement('div', {
+          ref: customQuestionsDialogRef,
+          role: 'dialog',
+          'aria-modal': 'true',
+          'aria-labelledby': 'sa-custom-questions-dialog-title',
+          tabIndex: -1,
           className: 'bg-white rounded-2xl shadow-2xl p-5 max-w-3xl w-full border-2 border-amber-200 max-h-[90vh] overflow-y-auto',
           onClick: (e) => e.stopPropagation()
         },
           React.createElement('div', { className: 'flex items-start justify-between gap-3 mb-3' },
             React.createElement('div', null,
-              React.createElement('h3', { className: 'text-lg font-black text-slate-800 flex items-center gap-2' },
+              React.createElement('h3', { id: 'sa-custom-questions-dialog-title', className: 'text-lg font-black text-slate-800 flex items-center gap-2' },
                 React.createElement('span', null, '\u{1F58C}️'), 'Customize Survey Items'),
               React.createElement('p', { className: 'text-xs text-slate-600 mt-1' },
                 'Replace the built-in RTI templates with study-specific items. Add per-option image icons via the AI image pipeline (text-to-image and image-to-image refinement supported).')
@@ -2974,6 +3034,16 @@
       }
     });
     const [showAutoSurveyPrompt, setShowAutoSurveyPrompt] = React.useState(false);
+    const cbmDialogRef = useStudentAnalyticsDialog(!!showCBMModal, () => setShowCBMModal(false));
+    const surveyDialogRef = useStudentAnalyticsDialog(!!showSurveyModal, () => {
+      setShowSurveyModal(null);
+      setSurveyAnswers({});
+      setSurveyRespondent('');
+    });
+    const customQuestionsDialogRef = useStudentAnalyticsDialog(!!showCustomQuestions, () => setShowCustomQuestions(false));
+    const researchSetupDialogRef = useStudentAnalyticsDialog(!!showResearchSetup, () => setShowResearchSetup(false));
+    const autoSurveyDialogRef = useStudentAnalyticsDialog(!!showAutoSurveyPrompt, () => setShowAutoSurveyPrompt(false));
+    const rtiSettingsDialogRef = useStudentAnalyticsDialog(!!showRTISettings, () => setShowRTISettings(false));
     const incrementSessionAndCheckSurvey = React.useCallback(() => {
       if (!researchMode || !researchMode.active) return;
       const newCount = sessionCounter + 1;
@@ -2994,12 +3064,18 @@
     });
     const renderResearchSetupModal = () => {
       if (!showResearchSetup) return null;
-      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', {
         className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200'
       }, React.createElement('div', {
+        ref: researchSetupDialogRef,
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'sa-research-setup-dialog-title',
+        tabIndex: -1,
         className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full border-2 border-emerald-200',
         onClick: e => e.stopPropagation()
       }, React.createElement('h3', {
+        id: 'sa-research-setup-dialog-title',
         className: 'text-lg font-black text-slate-800 mb-1 flex items-center gap-2'
       }, React.createElement('span', null, '\u{1F52C}'), 'Research Mode Setup'), React.createElement('p', {
         className: 'text-xs text-slate-600 mb-4'
@@ -3088,15 +3164,21 @@
     };
     const renderAutoSurveyPrompt = () => {
       if (!showAutoSurveyPrompt) return null;
-      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', {
         className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200'
       }, React.createElement('div', {
+        ref: autoSurveyDialogRef,
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'sa-auto-survey-dialog-title',
+        tabIndex: -1,
         className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full border-2 border-purple-200 text-center'
       }, React.createElement('div', {
         className: 'w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3'
       }, React.createElement('span', {
         className: 'text-3xl'
       }, '\u{1F4DD}')), React.createElement('h3', {
+        id: 'sa-auto-survey-dialog-title',
         className: 'text-lg font-black text-slate-800 mb-2'
       }, 'Quick Feedback Time!'), React.createElement('p', {
         className: 'text-sm text-slate-600 mb-4'
@@ -4244,7 +4326,7 @@
     // sub-modal is open (otherwise the sub-modal owns that Escape).
     var dialogRef = React.useRef(null);
     var subModalOpenRef = React.useRef(false);
-    subModalOpenRef.current = !!(showCBMImport || showSurveyModal || showResearchSetup || showAssessmentGuide || showCustomQuestions || showRTISettings || showAutoSurveyPrompt);
+    subModalOpenRef.current = !!(showCBMModal || showSurveyModal || showResearchSetup || showCustomQuestions || showRTISettings || showAutoSurveyPrompt);
     React.useEffect(function() {
       if (!isOpen) return undefined;
       alloSaveFocus();
@@ -4776,15 +4858,21 @@
     }, classSummary.rtiDistribution[2].map((name, i) => /*#__PURE__*/React.createElement("span", {
       key: i,
       className: "text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-medium border border-amber-200"
-    }, name)))))), showRTISettings && /*#__PURE__*/React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } }, 
+    }, name)))))), showRTISettings && /*#__PURE__*/React.createElement("div", {
       className: "fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in",
       onClick: () => setShowRTISettings(false)
-    }, /*#__PURE__*/React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } }, 
+    }, /*#__PURE__*/React.createElement("div", {
+      ref: rtiSettingsDialogRef,
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-labelledby": "sa-rti-settings-title",
+      tabIndex: -1,
       className: "bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg border-2 border-indigo-100 transform transition-all animate-in zoom-in-95",
       onClick: e => e.stopPropagation()
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center justify-between mb-4"
     }, /*#__PURE__*/React.createElement("h3", {
+      id: "sa-rti-settings-title",
       className: "text-lg font-bold text-slate-800 flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("div", {
       className: "bg-indigo-100 p-2 rounded-full text-indigo-600"
@@ -8008,7 +8096,7 @@
     }, renderResearchToolbar()), /*#__PURE__*/React.createElement("div", {
       className: "flex flex-wrap gap-2"
     }, /*#__PURE__*/React.createElement("button", {
-      onClick: () => setShowCBMImport(true),
+      onClick: () => setShowCBMModal(true),
       className: "px-3 py-1.5 text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 rounded-lg hover:bg-emerald-100 transition-all flex items-center gap-1"
     }, "\uD83D\uDCC2 Import CBM Data"), /*#__PURE__*/React.createElement("button", {
       onClick: () => setShowSurveyModal(true),
@@ -8102,7 +8190,7 @@
       className: "mt-6 bg-slate-50 rounded-xl p-4 border border-slate-400"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "text-sm font-bold text-slate-600 mb-3"
-    }, "\uD83D\uDCC8 Research Dashboard"), renderResearchDashboard()), showCBMImport && typeof renderCBMImportModal === 'function' && renderCBMImportModal(), showSurveyModal && typeof renderSurveyModal === 'function' && renderSurveyModal(), showResearchSetup && typeof renderResearchSetupModal === 'function' && renderResearchSetupModal(), showCustomQuestions && typeof renderCustomQuestionsEditor === 'function' && renderCustomQuestionsEditor(),
+    }, "\uD83D\uDCC8 Research Dashboard"), renderResearchDashboard()), showCBMModal && typeof renderCBMImportModal === 'function' && renderCBMImportModal(), showSurveyModal && typeof renderSurveyModal === 'function' && renderSurveyModal(), showResearchSetup && typeof renderResearchSetupModal === 'function' && renderResearchSetupModal(), showCustomQuestions && typeof renderCustomQuestionsEditor === 'function' && renderCustomQuestionsEditor(),
     // ── Probe Focus Overlays (full-screen with countdown + keyboard shortcuts) ──
     React.createElement(ProbeOverlay, {
       isActive: nwfProbeActive && !nwfProbeResults,
