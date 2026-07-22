@@ -72,5 +72,19 @@
   "correct_excl": "Correct!",
   "not_quite_answer_is": "Not quite — the answer is ",
   "in_a_row_suffix": " in a row!",
-  "explain": "Explain"
+  "explain": "Explain",
+  "abs_value_decomposition": "Absolute Value Decomposition",
+  "decomposes_to": " decomposes to:",
+  "step_by_step_solver": "Step-by-Step Solver",
+  "solver_hint_example": "Enter an inequality like 3x - 7 ≥ 5 or -2x + 4 < 10",
+  "aria_solver_input": "Step-by-step solver inequality input",
+  "solve": "Solve",
+  "graph_it": "Graph It",
+  "aria_reveal_next_step": "Reveal next solver step",
+  "next_step": "Next Step",
+  "recent_expressions": "Recent Expressions",
+  "clear": "Clear",
+  "legend_quiz": "Quiz",
+  "legend_tips": "Tips",
+  "snapshot": "Snapshot"
 }

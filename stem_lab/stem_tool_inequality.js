@@ -1020,8 +1020,8 @@ window.StemLab = window.StemLab || {
 
         // ── Absolute Value Decomposition ──
         ineq && ineq.absSource && h('div', { className: 'mt-3 bg-purple-50 rounded-lg p-3 border border-purple-200' },
-          h('p', { className: 'text-[11px] font-bold text-purple-600 uppercase tracking-wider mb-2' }, '\uD83D\uDD0D Absolute Value Decomposition'),
-          h('p', { className: 'text-xs text-purple-800' }, ineq.absSource + ' decomposes to:'),
+          h('p', { className: 'text-[11px] font-bold text-purple-600 uppercase tracking-wider mb-2' }, '\uD83D\uDD0D ' + __alloT('stem.inequality.abs_value_decomposition', 'Absolute Value Decomposition')),
+          h('p', { className: 'text-xs text-purple-800' }, ineq.absSource + __alloT('stem.inequality.decomposes_to', ' decomposes to:')),
           ineq.compound
             ? h('p', { className: 'text-sm font-bold text-purple-900 font-mono mt-1' },
                 ineq.lo + ' ' + (ineq.op1.includes('=') ? '\u2264' : '<') + ' ' + ineq.v + ' ' + (ineq.op2.includes('=') ? '\u2264' : '<') + ' ' + ineq.hi)
@@ -1031,16 +1031,16 @@ window.StemLab = window.StemLab || {
 
         // ── Step-by-Step Solver ──
         h('div', { className: 'mt-3 bg-teal-50 rounded-lg p-3 border border-teal-200' },
-          h('p', { className: 'text-[11px] font-bold text-teal-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDE0 Step-by-Step Solver'),
-          h('p', { className: 'text-[11px] text-teal-500 italic mb-2' }, 'Enter an inequality like 3x - 7 \u2265 5 or -2x + 4 < 10'),
+          h('p', { className: 'text-[11px] font-bold text-teal-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDE0 ' + __alloT('stem.inequality.step_by_step_solver', 'Step-by-Step Solver')),
+          h('p', { className: 'text-[11px] text-teal-500 italic mb-2' }, __alloT('stem.inequality.solver_hint_example', 'Enter an inequality like 3x - 7 \u2265 5 or -2x + 4 < 10')),
           h('div', { className: 'flex items-center gap-2 mb-2' },
             h('input', {
               type: 'text', value: solverExpr, placeholder: '3x - 7 \u2265 5',
               onChange: function(e) { upd('solverExpr', e.target.value); },
-              'aria-label': 'Step-by-step solver inequality input',
+              'aria-label': __alloT('stem.inequality.aria_solver_input', 'Step-by-step solver inequality input'),
               className: 'px-3 py-1.5 border-2 border-teal-600 rounded-lg font-mono text-sm w-48 text-center focus:ring-2 focus:ring-teal-400 outline-none'
             }),
-            h('button', { 'aria-label': 'Solve',
+            h('button', { 'aria-label': __alloT('stem.inequality.solve', 'Solve'),
               onClick: function() {
                 var steps = solveInequality(solverExpr);
                 if (steps) {
@@ -1052,19 +1052,19 @@ window.StemLab = window.StemLab || {
                 }
               },
               className: 'px-3 py-1.5 text-xs font-bold bg-teal-700 text-white rounded-lg hover:bg-teal-800 transition-all'
-            }, '\uD83D\uDD0D Solve'),
-            solverSteps && solverSteps.solution && h('button', { 'aria-label': 'Graph It',
+            }, '\uD83D\uDD0D ' + __alloT('stem.inequality.solve', 'Solve')),
+            solverSteps && solverSteps.solution && h('button', { 'aria-label': __alloT('stem.inequality.graph_it', 'Graph It'),
               onClick: function() {
                 upd({ expr: solverSteps.solution, graphMode: '1d' });
                 addToHistory(solverSteps.solution);
                 addToast('\uD83D\uDCC8 Graphed the solution!', 'success');
               },
               className: 'px-3 py-1.5 text-[11px] font-bold bg-fuchsia-100 text-fuchsia-700 rounded-lg hover:bg-fuchsia-200 transition-all'
-            }, '\uD83D\uDCC8 Graph It'),
-            solverSteps && h('button', { 'aria-label': 'Reset',
+            }, '\uD83D\uDCC8 ' + __alloT('stem.inequality.graph_it', 'Graph It')),
+            solverSteps && h('button', { 'aria-label': __alloT('stem.inequality.reset', 'Reset'),
               onClick: function() { upd({ solverSteps: null, solverRevealIdx: 0 }); },
               className: 'px-2 py-1 text-[11px] font-bold text-teal-500 hover:text-teal-700'
-            }, '\u21BA Reset')
+            }, '\u21BA ' + __alloT('stem.inequality.reset', 'Reset'))
           ),
           solverSteps && h('div', { className: 'space-y-1.5' },
             solverSteps.slice(0, solverRevealIdx).map(function(step, i) {
@@ -1075,18 +1075,18 @@ window.StemLab = window.StemLab || {
               else cls += 'text-teal-700';
               return h('div', { key: i, className: cls, style: { animation: 'fadeIn 0.3s ease' } }, step.text);
             }),
-            solverRevealIdx < solverSteps.length && h('button', { 'aria-label': 'Reveal next solver step',
+            solverRevealIdx < solverSteps.length && h('button', { 'aria-label': __alloT('stem.inequality.aria_reveal_next_step', 'Reveal next solver step'),
               onClick: function() { upd('solverRevealIdx', solverRevealIdx + 1); },
               className: 'px-3 py-1 text-[11px] font-bold bg-teal-100 text-teal-700 rounded hover:bg-teal-200 transition-all mt-1'
-            }, '\u25B6 Next Step (' + solverRevealIdx + '/' + (solverSteps.length - 1) + ')')
+            }, '\u25B6 ' + __alloT('stem.inequality.next_step', 'Next Step') + ' (' + solverRevealIdx + '/' + (solverSteps.length - 1) + ')')
           )
         ),
 
         // ── History ──
         exprHistory.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-lg p-3 border border-slate-400' },
           h('div', { className: 'flex items-center justify-between mb-2' },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider' }, '\uD83D\uDD53 Recent Expressions'),
-            h('button', { 'aria-label': 'Clear', onClick: function() { upd('exprHistory', []); }, className: 'text-[11px] text-slate-600 hover:text-slate-800' }, 'Clear')
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider' }, '\uD83D\uDD53 ' + __alloT('stem.inequality.recent_expressions', 'Recent Expressions')),
+            h('button', { 'aria-label': __alloT('stem.inequality.clear', 'Clear'), onClick: function() { upd('exprHistory', []); }, className: 'text-[11px] text-slate-600 hover:text-slate-800' }, __alloT('stem.inequality.clear', 'Clear'))
           ),
           h('div', { className: 'flex flex-wrap gap-1.5' },
             exprHistory.map(function(ex, i) {
@@ -1100,16 +1100,16 @@ window.StemLab = window.StemLab || {
 
         // ── Keyboard shortcuts legend ──
         h('div', { className: 'text-[11px] text-slate-600 text-center mt-3 space-x-3' },
-          h('span', null, '1 Number Line'),
-          h('span', null, '2 2D Graph'),
-          h('span', null, 'Q Quiz'),
-          h('span', null, 'C Tips'),
-          h('span', null, 'B Badges'),
+          h('span', null, '1 ' + __alloT('stem.inequality.mode_number_line', 'Number Line')),
+          h('span', null, '2 ' + __alloT('stem.inequality.mode_2d_graph', '2D Graph')),
+          h('span', null, 'Q ' + __alloT('stem.inequality.legend_quiz', 'Quiz')),
+          h('span', null, 'C ' + __alloT('stem.inequality.legend_tips', 'Tips')),
+          h('span', null, 'B ' + __alloT('stem.inequality.badges', 'Badges')),
           h('span', null, '? AI')
         ),
 
         // ── Snapshot button ──
-        h('button', { 'aria-label': 'Snapshot',
+        h('button', { 'aria-label': __alloT('stem.inequality.snapshot', 'Snapshot'),
           onClick: function() {
             setToolSnapshots(function(prev) {
               return prev.concat([{ id: 'iq-' + Date.now(), tool: 'inequality', label: d.expr || 'inequality', data: Object.assign({}, d), timestamp: Date.now() }]);
@@ -1117,7 +1117,7 @@ window.StemLab = window.StemLab || {
             addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
           },
           className: 'mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all'
-        }, '\uD83D\uDCF8 Snapshot')
+        }, '\uD83D\uDCF8 ' + __alloT('stem.inequality.snapshot', 'Snapshot'))
       );
     }
   });
