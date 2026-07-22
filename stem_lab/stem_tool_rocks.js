@@ -2806,13 +2806,13 @@ const d = labToolData.rocks || {};
 
                 React.createElement("h4", { className: "font-bold text-base text-violet-700 mb-1" }, "\uD83D\uDC8E " + selMineral.label),
 
-                React.createElement("p", { className: "text-xs text-slate-600 font-mono mb-1" }, "Formula: " + selMineral.formula),
+                React.createElement("p", { className: "text-xs text-slate-600 font-mono mb-1" }, __alloT('stem.rocks.formula_label', "Formula: ") + selMineral.formula),
 
                 // Cross-section canvas
 
                 React.createElement("div", { className: "flex gap-3 items-start" },
 
-                  React.createElement("canvas", { tabIndex: 0, ref: mineralCrossSectionRef, role: "img", "aria-label": "Mineral cross-section", style: { width: '140px', height: '100px', borderRadius: '10px', flexShrink: 0 } }),
+                  React.createElement("canvas", { tabIndex: 0, ref: mineralCrossSectionRef, role: "img", "aria-label": __alloT('stem.rocks.mineral_cross_section_aria', "Mineral cross-section"), style: { width: '140px', height: '100px', borderRadius: '10px', flexShrink: 0 } }),
 
                   React.createElement("div", { className: "flex-1 min-w-0" },
 
@@ -2832,7 +2832,7 @@ const d = labToolData.rocks || {};
 
                     { label: t('stem.rocks.luster'), value: selMineral.luster, icon: '\u2728' },
 
-                    { label: 'Crystal System', value: selMineral.crystal, icon: '\uD83D\uDD37' }
+                    { label: __alloT('stem.rocks.crystal_system', 'Crystal System'), value: selMineral.crystal, icon: '\uD83D\uDD37' }
 
                   ].map(function (prop) {
 
@@ -2848,7 +2848,7 @@ const d = labToolData.rocks || {};
 
                 selMineral.uses && React.createElement("div", { className: "bg-blue-50 rounded-lg p-2.5" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-blue-500 uppercase mb-0.5" }, "\uD83C\uDFD7\uFE0F Uses"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-blue-500 uppercase mb-0.5" }, "\uD83C\uDFD7\uFE0F " + __alloT('stem.rocks.uses_heading', "Uses")),
 
                   React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, selMineral.uses)
 
@@ -2856,7 +2856,7 @@ const d = labToolData.rocks || {};
 
                 selMineral.funFact && React.createElement("div", { className: "bg-amber-50 rounded-lg p-2.5 border border-amber-200" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-amber-600 uppercase mb-0.5" }, "\uD83D\uDCA1 Fun Fact"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-amber-600 uppercase mb-0.5" }, "\uD83D\uDCA1 " + __alloT('stem.rocks.fun_fact_heading', "Fun Fact")),
 
                   React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed italic" }, selMineral.funFact)
 
@@ -2864,7 +2864,7 @@ const d = labToolData.rocks || {};
 
                 selMineral.occurrence && React.createElement("div", { className: "bg-emerald-50 rounded-lg p-2.5" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-emerald-600 uppercase mb-0.5" }, "\uD83C\uDF0D Where Found"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-emerald-600 uppercase mb-0.5" }, "\uD83C\uDF0D " + __alloT('stem.rocks.where_found_heading', "Where Found")),
 
                   React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, selMineral.occurrence)
 
@@ -2874,7 +2874,7 @@ const d = labToolData.rocks || {};
 
                 React.createElement("div", { className: "mt-1" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, "Mohs Position"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, __alloT('stem.rocks.mohs_position', "Mohs Position")),
 
                   React.createElement("div", { className: "flex gap-0.5 items-end" },
 
@@ -2910,19 +2910,19 @@ const d = labToolData.rocks || {};
                 React.createElement("div", { className: "border-t border-violet-100 pt-3 mt-3" },
                   React.createElement("p", { className: "text-xs font-black text-violet-700 mb-2 flex items-center gap-1.5" },
                     React.createElement("span", null, "💅"),
-                    React.createElement("span", null, "Mohs Hardness Scratch Test Lab")
+                    React.createElement("span", null, __alloT('stem.rocks.mohs_scratch_test_lab', "Mohs Hardness Scratch Test Lab"))
                   ),
                   React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" },
-                    "Select a scratch tool and run the test to see if it can scratch the mineral surface. Minerals can only be scratched by tools with equal or higher hardness."
+                    __alloT('stem.rocks.mohs_scratch_intro', "Select a scratch tool and run the test to see if it can scratch the mineral surface. Minerals can only be scratched by tools with equal or higher hardness.")
                   ),
                   React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-6 gap-1.5 mb-3" },
                     [
-                      { id: 'fingernail', label: '💅 Fingernail', h: 2.5 },
-                      { id: 'penny', label: '🪙 Copper Penny', h: 3.5 },
-                      { id: 'steel_nail', label: '📌 Steel Nail', h: 5.5 },
-                      { id: 'streak_plate', label: '🍽️ Streak Plate', h: 6.5 },
-                      { id: 'drill_bit', label: '🪚 Masonry Drill', h: 8.5 },
-                      { id: 'diamond_scribe', label: '💎 Diamond Scribe', h: 10.0 }
+                      { id: 'fingernail', label: '💅 ' + __alloT('stem.rocks.tool_fingernail', 'Fingernail'), h: 2.5 },
+                      { id: 'penny', label: '🪙 ' + __alloT('stem.rocks.tool_copper_penny', 'Copper Penny'), h: 3.5 },
+                      { id: 'steel_nail', label: '📌 ' + __alloT('stem.rocks.tool_steel_nail', 'Steel Nail'), h: 5.5 },
+                      { id: 'streak_plate', label: '🍽️ ' + __alloT('stem.rocks.tool_streak_plate', 'Streak Plate'), h: 6.5 },
+                      { id: 'drill_bit', label: '🪚 ' + __alloT('stem.rocks.tool_masonry_drill', 'Masonry Drill'), h: 8.5 },
+                      { id: 'diamond_scribe', label: '💎 ' + __alloT('stem.rocks.tool_diamond_scribe', 'Diamond Scribe'), h: 10.0 }
                     ].map(function(tool) {
                       var isSelected = d.scratchTool === tool.id;
                       return React.createElement("button", {
@@ -2941,12 +2941,12 @@ const d = labToolData.rocks || {};
                   ),
                   d.scratchTool && (function() {
                     var toolData = [
-                      { id: 'fingernail', label: 'Fingernail', h: 2.5 },
-                      { id: 'penny', label: 'Copper Penny', h: 3.5 },
-                      { id: 'steel_nail', label: 'Steel Nail', h: 5.5 },
-                      { id: 'streak_plate', label: 'Streak Plate', h: 6.5 },
-                      { id: 'drill_bit', label: 'Masonry Drill', h: 8.5 },
-                      { id: 'diamond_scribe', label: 'Diamond Scribe', h: 10.0 }
+                      { id: 'fingernail', label: __alloT('stem.rocks.tool_fingernail', 'Fingernail'), h: 2.5 },
+                      { id: 'penny', label: __alloT('stem.rocks.tool_copper_penny', 'Copper Penny'), h: 3.5 },
+                      { id: 'steel_nail', label: __alloT('stem.rocks.tool_steel_nail', 'Steel Nail'), h: 5.5 },
+                      { id: 'streak_plate', label: __alloT('stem.rocks.tool_streak_plate', 'Streak Plate'), h: 6.5 },
+                      { id: 'drill_bit', label: __alloT('stem.rocks.tool_masonry_drill', 'Masonry Drill'), h: 8.5 },
+                      { id: 'diamond_scribe', label: __alloT('stem.rocks.tool_diamond_scribe', 'Diamond Scribe'), h: 10.0 }
                     ].find(function(t) { return t.id === d.scratchTool; });
 
                     var runTest = function() {
@@ -2960,10 +2960,10 @@ const d = labToolData.rocks || {};
                           var success = toolData.h >= selMineral.hardness;
                           var text = "";
                           if (success) {
-                            text = "Result: Scratch created! The " + toolData.label + " (" + toolData.h + ") successfully scratched " + selMineral.label + " (" + selMineral.hardness + ").";
+                            text = __alloT('stem.rocks.scratch_success_a', "Result: Scratch created! The ") + toolData.label + " (" + toolData.h + ") " + __alloT('stem.rocks.scratch_success_b', "successfully scratched ") + selMineral.label + " (" + selMineral.hardness + ").";
                             sfxRockCrack();
                           } else {
-                            text = "Result: No scratch! The " + toolData.label + " (" + toolData.h + ") rubbed off on " + selMineral.label + " (" + selMineral.hardness + ") without leaving a mark.";
+                            text = __alloT('stem.rocks.scratch_fail_a', "Result: No scratch! The ") + toolData.label + " (" + toolData.h + ") " + __alloT('stem.rocks.scratch_fail_b', "rubbed off on ") + selMineral.label + " (" + selMineral.hardness + ") " + __alloT('stem.rocks.scratch_fail_c', "without leaving a mark.");
                             sfxRockCool();
                           }
                           upd("scratchResult", text);
@@ -2975,11 +2975,11 @@ const d = labToolData.rocks || {};
 
                     return React.createElement("div", { className: "bg-slate-50 rounded-lg p-3 border border-slate-200" },
                       React.createElement("div", { className: "flex justify-between items-center mb-2" },
-                        React.createElement("span", { className: "text-[11px] font-bold text-slate-700" }, "Active Tool: " + toolData.label + " (Hardness " + toolData.h + ")"),
+                        React.createElement("span", { className: "text-[11px] font-bold text-slate-700" }, __alloT('stem.rocks.active_tool_label', "Active Tool: ") + toolData.label + " (" + __alloT('stem.rocks.hardness_word', "Hardness") + " " + toolData.h + ")"),
                         animProgress === 0 && React.createElement("button", {
                           onClick: runTest,
                           className: "px-3 py-1 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-[10px] font-bold transition-all shadow-sm active:scale-[0.97]"
-                        }, "⚡ Run Scratch Test")
+                        }, "⚡ " + __alloT('stem.rocks.run_scratch_test', "Run Scratch Test"))
                       ),
                       animProgress > 0 && animProgress < 100 && React.createElement("div", { className: "w-full bg-slate-200 h-2.5 rounded-full overflow-hidden mb-2" },
                         React.createElement("div", {
@@ -2998,10 +2998,10 @@ const d = labToolData.rocks || {};
                 React.createElement("div", { className: "border-t border-violet-100 pt-3 mt-3" },
                   React.createElement("p", { className: "text-xs font-black text-violet-700 mb-2 flex items-center gap-1.5" },
                     React.createElement("span", null, "🍽️"),
-                    React.createElement("span", null, "Streak Plate Test Lab")
+                    React.createElement("span", null, __alloT('stem.rocks.streak_plate_test_lab', "Streak Plate Test Lab"))
                   ),
                   React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" },
-                    "Scratch the mineral across an unglazed porcelain streak plate. The color of the powdered residue left behind is the streak color, which is often different from the mineral's external color."
+                    __alloT('stem.rocks.streak_test_intro', "Scratch the mineral across an unglazed porcelain streak plate. The color of the powdered residue left behind is the streak color, which is often different from the mineral's external color.")
                   ),
                   React.createElement("div", { className: "flex items-center gap-4" },
                     React.createElement("button", {
@@ -3011,12 +3011,12 @@ const d = labToolData.rocks || {};
                         upd("streakResult", null);
                         sfxRockCrack();
                         setTimeout(function() {
-                          var res = "Powder Streak Result: " + selMineral.streak;
+                          var res = __alloT('stem.rocks.powder_streak_result', "Powder Streak Result: ") + selMineral.streak;
                           updMulti({ streakAnimActive: false, streakResult: res });
                         }, 800);
                       },
                       className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50 active:scale-[0.97]"
-                    }, d.streakAnimActive ? "✏️ Scratching plate..." : "🍽️ Perform Streak Test"),
+                    }, d.streakAnimActive ? "✏️ " + __alloT('stem.rocks.scratching_plate', "Scratching plate...") : "🍽️ " + __alloT('stem.rocks.perform_streak_test', "Perform Streak Test")),
                     d.streakResult && (function() {
                       var streakColors = { 'White': '#f8fafc', 'Greenish-black': '#1a3a1a', 'Black': '#1e1e1e', 'Red-brown': '#8b3a2a', 'Lead-gray': '#94a3b8', 'White-yellow': '#fef9c3', 'None (too hard)': '#94a3b8' };
                       var c = streakColors[selMineral.streak] || '#e2e8f0';
@@ -3092,7 +3092,7 @@ const d = labToolData.rocks || {};
                     React.createElement("span", null, __alloT('stem.rocks.ask_ai_petrologist', "Ask the AI Petrologist"))
                   ),
                   React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" },
-                    "Query the AI about " + selMineral.label + "'s geologic origin, chemical properties, or tectonic significance."
+                    __alloT('stem.rocks.query_ai_about_prefix', "Query the AI about ") + selMineral.label + __alloT('stem.rocks.query_ai_suffix', "'s geologic origin, chemical properties, or tectonic significance.")
                   ),
                   React.createElement("div", { className: "flex gap-2" },
                     React.createElement("input", {
