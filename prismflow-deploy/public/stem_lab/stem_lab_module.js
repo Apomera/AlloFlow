@@ -5679,7 +5679,20 @@
             })(),
             // Coordinate grid range (passed from host useState — defaults to ±10).
             gridRange: typeof gridRange !== 'undefined' && gridRange ? gridRange : { min: -10, max: 10 },
-            t: typeof t === 'function' ? t : function(k) { return k; },
+            // Fallback-aware t (2026-07-21). STEM tools call t(key, englishFallback)
+            // and expect the fallback when a key is missing. The app's real t()
+            // returns undefined for a missing key (and treats arg2 as params), so
+            // any tool whose keys were never added to the lang packs rendered the
+            // literal text "undefined" — this is what broke the Sim / Molecule /
+            // Circuit / Zoom shelves (42 tools use this convention). Pass a params
+            // OBJECT through for interpolation, but never let a missing key reach a
+            // tool as undefined: fall back to the string default, or the key.
+            t: function(k, fb) {
+              var _params = (fb && typeof fb === 'object') ? fb : undefined;
+              var _v = (typeof t === 'function') ? t(k, _params) : null;
+              if (_v != null && _v !== k) return _v;
+              return (typeof fb === 'string') ? fb : k;
+            },
             icons: { ArrowLeft: ArrowLeft, Calculator: Calculator, Sparkles: Sparkles, X: X, GripVertical: GripVertical },
             _codingCanvasRef: typeof _codingCanvasRef !== 'undefined' ? _codingCanvasRef : null,
             saveSnapshot: function(toolId, label, data) {
