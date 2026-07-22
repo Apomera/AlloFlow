@@ -2470,19 +2470,19 @@ const d = labToolData.wave;
 
             React.createElement("div", { className: "mb-3 p-3 rounded-xl border-2 border-indigo-200 bg-indigo-50 flex items-center gap-3 flex-wrap" },
               React.createElement("span", { className: "text-xl", "aria-hidden": "true" }, '🔬'),
-              React.createElement("p", { className: "text-xs text-indigo-900 font-semibold flex-1 min-w-[220px] m-0" }, 'Ready to think like a physicist? Two open-ended investigations — no answer dumps, just you and the data.'),
-              React.createElement("button", { onClick: function () { upd('expSection', 'discoverWave'); if (typeof addToast === 'function') addToast('🔬 Opened below — scroll down to the Reference Library', 'info'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.97]" }, '🔬 Discover f·λ = v'),
-              React.createElement("button", { onClick: function () { upd('expSection', 'standingHunt'); if (typeof addToast === 'function') addToast('🎯 Opened below — scroll down to the Reference Library', 'info'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.97]" }, '🎯 Standing-wave hunt')
+              React.createElement("p", { className: "text-xs text-indigo-900 font-semibold flex-1 min-w-[220px] m-0" }, __alloT('stem.wave.investigate_intro', 'Ready to think like a physicist? Two open-ended investigations — no answer dumps, just you and the data.')),
+              React.createElement("button", { onClick: function () { upd('expSection', 'discoverWave'); if (typeof addToast === 'function') addToast('🔬 ' + __alloT('stem.wave.toast_opened_below', 'Opened below — scroll down to the Reference Library'), 'info'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.97]" }, '🔬 ' + __alloT('stem.wave.btn_discover', 'Discover') + ' f·λ = v'),
+              React.createElement("button", { onClick: function () { upd('expSection', 'standingHunt'); if (typeof addToast === 'function') addToast('🎯 ' + __alloT('stem.wave.toast_opened_below', 'Opened below — scroll down to the Reference Library'), 'info'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.97]" }, '🎯 ' + __alloT('stem.wave.btn_standing_hunt', 'Standing-wave hunt'))
             ),
 
             // ── Wave myths — misconception-busters, each with a live sim demo ──
 
             (function () {
               var MYTHS = [
-                { myth: 'Waves carry water (or air) along with them.', truth: 'Waves carry ENERGY, not matter. Each bit of the medium oscillates around its home spot and hands the motion on to its neighbor.', btn: 'Watch the gold tracer', demo: { waveMode: 'longitudinal' } },
-                { myth: 'A bigger (louder) wave travels faster.', truth: 'Speed is set by the MEDIUM — tension, density, temperature. Cranking amplitude adds energy, not speed: the crests arrive no sooner.', btn: 'Crank amplitude, watch the speed', demo: { waveMode: 'free', amplitude: 95 } },
-                { myth: 'Sound can travel through empty space.', truth: 'Sound is matter compressing matter. In a vacuum there is nothing to push, so space is silent. Light is different — EM waves need no medium.', btn: 'See what sound really is', demo: { waveMode: 'longitudinal' } },
-                { myth: 'When waves cancel, their energy is destroyed.', truth: 'Energy is never destroyed — it redistributes. The dark bands in the ripple tank sit right next to extra-bright ones; the total stays constant.', btn: 'Find the dark bands', demo: { waveMode: 'ripple' } }
+                { myth: __alloT('stem.wave.myth1_myth', 'Waves carry water (or air) along with them.'), truth: __alloT('stem.wave.myth1_truth', 'Waves carry ENERGY, not matter. Each bit of the medium oscillates around its home spot and hands the motion on to its neighbor.'), btn: __alloT('stem.wave.myth1_btn', 'Watch the gold tracer'), demo: { waveMode: 'longitudinal' } },
+                { myth: __alloT('stem.wave.myth2_myth', 'A bigger (louder) wave travels faster.'), truth: __alloT('stem.wave.myth2_truth', 'Speed is set by the MEDIUM — tension, density, temperature. Cranking amplitude adds energy, not speed: the crests arrive no sooner.'), btn: __alloT('stem.wave.myth2_btn', 'Crank amplitude, watch the speed'), demo: { waveMode: 'free', amplitude: 95 } },
+                { myth: __alloT('stem.wave.myth3_myth', 'Sound can travel through empty space.'), truth: __alloT('stem.wave.myth3_truth', 'Sound is matter compressing matter. In a vacuum there is nothing to push, so space is silent. Light is different — EM waves need no medium.'), btn: __alloT('stem.wave.myth3_btn', 'See what sound really is'), demo: { waveMode: 'longitudinal' } },
+                { myth: __alloT('stem.wave.myth4_myth', 'When waves cancel, their energy is destroyed.'), truth: __alloT('stem.wave.myth4_truth', 'Energy is never destroyed — it redistributes. The dark bands in the ripple tank sit right next to extra-bright ones; the total stays constant.'), btn: __alloT('stem.wave.myth4_btn', 'Find the dark bands'), demo: { waveMode: 'ripple' } }
               ];
               var mythsOpen = !!d.mythsOpen;
               return React.createElement("div", { className: "mb-3 rounded-xl border-2 border-fuchsia-200 bg-fuchsia-50/60 overflow-hidden" },
@@ -2492,13 +2492,13 @@ const d = labToolData.wave;
                   className: "transition-colors w-full flex items-center gap-2 p-3 text-left hover:bg-fuchsia-100/60"
                 },
                   React.createElement("span", { className: "text-xl", "aria-hidden": "true" }, '🧠'),
-                  React.createElement("span", { className: "text-sm font-black text-fuchsia-900 flex-1" }, 'Wave myths — test your intuition'),
-                  React.createElement("span", { className: "text-xs font-bold text-fuchsia-700" }, mythsOpen ? '▲ Hide' : '▼ Show')
+                  React.createElement("span", { className: "text-sm font-black text-fuchsia-900 flex-1" }, __alloT('stem.wave.myths_header', 'Wave myths — test your intuition')),
+                  React.createElement("span", { className: "text-xs font-bold text-fuchsia-700" }, mythsOpen ? '▲ ' + __alloT('stem.wave.hide', 'Hide') : '▼ ' + __alloT('stem.wave.show', 'Show'))
                 ),
                 mythsOpen && React.createElement("div", { className: "px-3 pb-3 grid gap-2 grid-cols-1 md:grid-cols-2" },
                   MYTHS.map(function (m, mi) {
                     return React.createElement("div", { key: 'myth' + mi, className: "p-3 rounded-lg bg-white border border-fuchsia-200" },
-                      React.createElement("p", { className: "text-xs font-black text-rose-700 m-0" }, '❌ Myth: ' + m.myth),
+                      React.createElement("p", { className: "text-xs font-black text-rose-700 m-0" }, '❌ ' + __alloT('stem.wave.myth_prefix', 'Myth: ') + m.myth),
                       React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed mt-1 mb-2" }, '✅ ' + m.truth),
                       React.createElement("button", {
                         onClick: function () {
@@ -2536,7 +2536,7 @@ const d = labToolData.wave;
 
                 }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-700 text-white') + " transition-all"
 
-              }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
+              }, d.quiz ? "\uD83D\uDD04 " + __alloT('stem.wave.btn_next_question', 'Next Question') : "\uD83E\uDDE0 " + __alloT('stem.wave.btn_quiz_mode', 'Quiz Mode')),
 
               React.createElement("button", { onClick: function () {
 
@@ -2556,7 +2556,7 @@ const d = labToolData.wave;
 
                 }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.matchTarget && !d.matchTarget.isEquation ? 'bg-amber-100 text-amber-700' : 'bg-amber-700 text-white') + " transition-all"
 
-              }, d.matchTarget && !d.matchTarget.isEquation ? "\uD83D\uDD04 New Target" : "\uD83C\uDFAF Match Waveform"),
+              }, d.matchTarget && !d.matchTarget.isEquation ? "\uD83D\uDD04 " + __alloT('stem.wave.btn_new_target', 'New Target') : "\uD83C\uDFAF " + __alloT('stem.wave.btn_match_waveform', 'Match Waveform')),
 
               React.createElement("button", { onClick: function () {
 
@@ -2572,23 +2572,23 @@ const d = labToolData.wave;
 
                   upd('matchXpClaimed', false);
 
-                  addToast("Match the mathematical equation!", 'info');
+                  addToast(__alloT('stem.wave.toast_match_equation', 'Match the mathematical equation!'), 'info');
 
                 }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.matchTarget && d.matchTarget.isEquation ? 'bg-purple-100 text-purple-700' : 'bg-purple-700 text-white') + " transition-all"
 
-              }, (d.matchTarget && d.matchTarget.isEquation) ? "\uD83D\uDD04 New Equation" : "\uD83D\uDCDD Match Equation"),
+              }, (d.matchTarget && d.matchTarget.isEquation) ? "\uD83D\uDD04 " + __alloT('stem.wave.btn_new_equation', 'New Equation') : "\uD83D\uDCDD " + __alloT('stem.wave.btn_match_equation', 'Match Equation')),
 
-              d.matchTarget && React.createElement("button", { "aria-label": "Clear",
+              d.matchTarget && React.createElement("button", { "aria-label": __alloT('stem.wave.btn_clear', 'Clear'),
 
                 onClick: function () { upd('matchTarget', null); upd('matchXpClaimed', false); },
 
                 className: "transition-colors px-2 py-1 rounded-lg text-xs text-slate-600 hover:bg-slate-100 active:scale-[0.97]"
 
-              }, "\u2715 Clear"),
+              }, "\u2715 " + __alloT('stem.wave.btn_clear', 'Clear')),
 
-              d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + (d.quiz.attempted ? "/" + d.quiz.attempted : "") + " correct"),
+              d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + (d.quiz.attempted ? "/" + d.quiz.attempted : "") + __alloT('stem.wave.quiz_correct_suffix', ' correct')),
 
-              React.createElement("button", { "aria-label": "Reset all wave controls to their defaults",
+              React.createElement("button", { "aria-label": __alloT('stem.wave.aria_reset_all', 'Reset all wave controls to their defaults'),
                 onClick: function () {
                   setLabToolData(function (prev) {
                     var prior = (prev && prev.wave) || {};
@@ -2603,10 +2603,10 @@ const d = labToolData.wave;
                   });
                   syncOsc({ freq: 2, type: 'sine', freq2: 3 });
                   var c = canvasRef._lastCanvas; if (c && c._drag) { c._drag.ripple1 = null; c._drag.ripple2 = null; c._drag.wallX = null; }
-                  if (typeof addToast === 'function') addToast('\u21BB Controls reset to defaults', 'info');
+                  if (typeof addToast === 'function') addToast('\u21BB ' + __alloT('stem.wave.toast_controls_reset', 'Controls reset to defaults'), 'info');
                 },
                 className: "transition-colors ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-slate-400 hover:bg-slate-50 active:scale-[0.97]"
-              }, '\u21BB Reset controls')
+              }, '\u21BB ' + __alloT('stem.wave.btn_reset_controls', 'Reset controls'))
 
             ),
 
@@ -2624,7 +2624,7 @@ const d = labToolData.wave;
 
                   var cls = !d.quiz.answered ? 'transition-colors bg-white border-slate-200 hover:border-cyan-400' : isCorrect ? 'bg-emerald-100 border-emerald-600' : wasChosen ? 'bg-red-100 border-red-600' : 'bg-slate-50 border-slate-200 opacity-50';
 
-                  return React.createElement("button", { "aria-label": "Select answer: " + opt,
+                  return React.createElement("button", { "aria-label": __alloT('stem.wave.aria_select_answer', 'Select answer: ') + opt,
 
                     key: opt, disabled: d.quiz.answered, onClick: function () {
 
