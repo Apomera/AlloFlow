@@ -4135,17 +4135,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   if (typeof resp === 'string') text = resp;
                   else if (resp && typeof resp.text === 'string') text = resp.text;
                   else if (resp && resp.candidates) text = (resp.candidates[0] && resp.candidates[0].content && resp.candidates[0].content.parts && resp.candidates[0].content.parts[0] && resp.candidates[0].content.parts[0].text) || '';
-                  text = (text || 'The reader returned no text. Try again in a moment.').replace(/\*\*/g, '').replace(/^[\s\n]+|[\s\n]+$/g, '');
+                  text = (text || __alloT('stem.ecosystem.ai_no_text_fallback', 'The reader returned no text. Try again in a moment.')).replace(/\*\*/g, '').replace(/^[\s\n]+|[\s\n]+$/g, '');
                   setConserve({ aiReadResponse: text, aiReadLoading: false });
                   if (announceToSR) announceToSR('AI Conservation Reading complete.');
                 }).catch(function() {
-                  setConserve({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
+                  setConserve({ aiReadResponse: __alloT('stem.ecosystem.ai_offline', 'The AI reader is offline right now. Try again in a moment.'), aiReadLoading: false });
                 });
               } else {
-                setConserve({ aiReadResponse: 'AI is not available in this context.', aiReadLoading: false });
+                setConserve({ aiReadResponse: __alloT('stem.ecosystem.ai_unavailable', 'AI is not available in this context.'), aiReadLoading: false });
               }
             } catch (e) {
-              setConserve({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
+              setConserve({ aiReadResponse: __alloT('stem.ecosystem.ai_offline', 'The AI reader is offline right now. Try again in a moment.'), aiReadLoading: false });
             }
           }
 
@@ -4155,26 +4155,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             if (conserve.aiReadLoading) {
               return h('div', { role: 'status', 'aria-live': 'polite',
                 style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', borderTop: '1px solid rgba(56,189,248,0.4)', borderRight: '1px solid rgba(56,189,248,0.4)', borderBottom: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 } },
-                '⏳ AI conservation biologist is reading your ecosystem...');
+                '⏳ ' + __alloT('stem.ecosystem.ai_reading_status', 'AI conservation biologist is reading your ecosystem...'));
             }
             if (!conserve.aiReadResponse) return null;
-            return h('div', { role: 'region', 'aria-label': 'AI Conservation Reading',
+            return h('div', { role: 'region', 'aria-label': __alloT('stem.ecosystem.ai_cons_reading', 'AI Conservation Reading'),
               style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', borderTop: '1px solid rgba(56,189,248,0.5)', borderRight: '1px solid rgba(56,189,248,0.5)', borderBottom: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                 h('span', { style: { fontSize: 20 } }, '🔍'),
-                h('strong', { style: { color: '#38bdf8', fontSize: 14 } }, 'AI Conservation Reading'),
+                h('strong', { style: { color: '#38bdf8', fontSize: 14 } }, __alloT('stem.ecosystem.ai_cons_reading', 'AI Conservation Reading')),
                 h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 6 } },
-                  h('button', { onClick: readEcosystem, 'aria-label': 'Read again',
-                    style: { background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '↻ Re-read'),
-                  h('button', { onClick: dismissConservAIRead, 'aria-label': 'Dismiss reading',
+                  h('button', { onClick: readEcosystem, 'aria-label': __alloT('stem.ecosystem.read_again', 'Read again'),
+                    style: { background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '↻ ' + __alloT('stem.ecosystem.re_read', 'Re-read')),
+                  h('button', { onClick: dismissConservAIRead, 'aria-label': __alloT('stem.ecosystem.dismiss_reading', 'Dismiss reading'),
                     style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✕')
                 )
               ),
               h('p', { style: { margin: '0 0 10px 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13.5, lineHeight: 1.6 } }, conserve.aiReadResponse),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
-                'AI conservation biology educator. ',
-                h('strong', null, 'It is not a Wabanaki person, not a wildlife professional, and does not speak for any Wabanaki nation, agency, or organization.'),
-                ' For authoritative voices on Maine conservation work, consult Penobscot Cultural and Historic Preservation Department, Passamaquoddy Cultural Heritage Museum, Wabanaki Public Health and Wellness, Maine Indian Basketmakers Alliance, Maine Department of Inland Fisheries and Wildlife, and the Atlantic Salmon Federation.'
+                __alloT('stem.ecosystem.ai_educator_disclaimer1', 'AI conservation biology educator. '),
+                h('strong', null, __alloT('stem.ecosystem.ai_disclaimer2', 'It is not a Wabanaki person, not a wildlife professional, and does not speak for any Wabanaki nation, agency, or organization.')),
+                __alloT('stem.ecosystem.ai_disclaimer3', ' For authoritative voices on Maine conservation work, consult Penobscot Cultural and Historic Preservation Department, Passamaquoddy Cultural Heritage Museum, Wabanaki Public Health and Wellness, Maine Indian Basketmakers Alliance, Maine Department of Inland Fisheries and Wildlife, and the Atlantic Salmon Federation.')
               )
             );
           }
@@ -4221,10 +4221,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             var w = 600, hgt = 360;
             return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 8, marginBottom: 12, border: '1px solid var(--allo-stem-border, #1e293b)' } },
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, paddingLeft: 4, display: 'flex', alignItems: 'center', gap: 8 } },
-                h('span', null, 'Food web: cascade rules active in real time'),
-                h('span', { style: { marginLeft: 'auto', fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, 'Click any species for deep-dive →')
+                h('span', null, __alloT('stem.ecosystem.foodweb_cascade_caption', 'Food web: cascade rules active in real time')),
+                h('span', { style: { marginLeft: 'auto', fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, __alloT('stem.ecosystem.click_species_deepdive', 'Click any species for deep-dive →'))
               ),
-              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8 }, role: 'img', 'aria-label': 'Food-web diagram of the 6 Maine species' },
+              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8 }, role: 'img', 'aria-label': __alloT('stem.ecosystem.aria_foodweb_diagram', 'Food-web diagram of the 6 Maine species') },
                 h('rect', { x: 0, y: 0, width: w, height: hgt, fill: '#020617', rx: 6 }),
                 // Cascade arrows. Each one is rendered dim by default and
                 // brightened + colored when its rule fires this year.
@@ -4235,7 +4235,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   var width = firing.wolfDeer ? 3 : 1.5;
                   return h('g', null,
                     h('path', { d: p, stroke: color, strokeWidth: width, fill: 'none', strokeDasharray: firing.wolfDeer ? '' : '4 4', markerEnd: 'url(#arrow-' + (firing.wolfDeer ? 'red' : 'gray') + ')' }),
-                    firing.wolfDeer ? h('text', { x: 220, y: 75, fontSize: 9, fill: '#fca5a5', fontWeight: 700 }, 'suppresses') : null
+                    firing.wolfDeer ? h('text', { x: 220, y: 75, fontSize: 9, fill: '#fca5a5', fontWeight: 700 }, __alloT('stem.ecosystem.label_suppresses', 'suppresses')) : null
                   );
                 })(),
                 // Deer -> all (overbrowsing, drawn down to center)
@@ -4245,7 +4245,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   return h('g', null,
                     h('path', { d: 'M 200 145 Q 130 200 200 290', stroke: color, strokeWidth: width, fill: 'none', strokeDasharray: firing.deerHabitat ? '' : '4 4' }),
                     h('path', { d: 'M 200 145 Q 250 220 380 305', stroke: color, strokeWidth: width, fill: 'none', strokeDasharray: firing.deerHabitat ? '' : '4 4' }),
-                    firing.deerHabitat ? h('text', { x: 135, y: 215, fontSize: 9, fill: '#fbbf24', fontWeight: 700 }, 'overbrowsing') : null
+                    firing.deerHabitat ? h('text', { x: 135, y: 215, fontSize: 9, fill: '#fbbf24', fontWeight: 700 }, __alloT('stem.ecosystem.label_overbrowsing', 'overbrowsing')) : null
                   );
                 })(),
                 // Beaver -> Salmon
@@ -4257,7 +4257,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   return h('g', null,
                     h('path', { d: p1, stroke: color, strokeWidth: width, fill: 'none', strokeDasharray: firing.beaverFish ? '' : '4 4', markerEnd: 'url(#arrow-' + (firing.beaverFish ? 'blue' : 'gray') + ')' }),
                     h('path', { d: p2, stroke: color, strokeWidth: width, fill: 'none', strokeDasharray: firing.beaverFish ? '' : '4 4', markerEnd: 'url(#arrow-' + (firing.beaverFish ? 'blue' : 'gray') + ')' }),
-                    firing.beaverFish ? h('text', { x: 300, y: 275, fontSize: 9, fill: '#bae6fd', fontWeight: 700, textAnchor: 'middle' }, 'engineers habitat') : null
+                    firing.beaverFish ? h('text', { x: 300, y: 275, fontSize: 9, fill: '#bae6fd', fontWeight: 700, textAnchor: 'middle' }, __alloT('stem.ecosystem.label_engineers_habitat', 'engineers habitat')) : null
                   );
                 })(),
                 // Salmon -> Brook Trout (marine nutrients)
@@ -4267,7 +4267,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   var width = firing.salmonTrout ? 3 : 1.2;
                   return h('g', null,
                     h('path', { d: p, stroke: color, strokeWidth: width, fill: 'none', strokeDasharray: firing.salmonTrout ? '' : '4 4', markerEnd: 'url(#arrow-' + (firing.salmonTrout ? 'cyan' : 'gray') + ')' }),
-                    firing.salmonTrout ? h('text', { x: 300, y: 325, fontSize: 9, fill: '#a5f3fc', fontWeight: 700, textAnchor: 'middle' }, 'marine nutrients') : null
+                    firing.salmonTrout ? h('text', { x: 300, y: 325, fontSize: 9, fill: '#a5f3fc', fontWeight: 700, textAnchor: 'middle' }, __alloT('stem.ecosystem.label_marine_nutrients', 'marine nutrients')) : null
                   );
                 })(),
                 // Arrow marker defs
@@ -4286,13 +4286,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                     onClick: function() { openConservDeepDive(s.id); },
                     style: { cursor: 'pointer' },
                     role: 'button', tabIndex: 0,
-                    'aria-label': 'Open deep-dive for ' + def.name
+                    'aria-label': __alloT('stem.ecosystem.aria_open_deepdive_pre', 'Open deep-dive for ') + def.name
                   },
                     h('circle', { cx: p.x, cy: p.y, r: 32, fill: def.color, opacity: fill.alpha }),
                     h('circle', { cx: p.x, cy: p.y, r: 32, fill: 'none', stroke: def.color, strokeWidth: 1.5 }),
                     h('text', { x: p.x, y: p.y + 4, fontSize: 22, textAnchor: 'middle', style: { pointerEvents: 'none' } }, def.icon),
                     h('text', { x: p.x, y: p.y + 50, fontSize: 11, textAnchor: 'middle', fontWeight: 700, fill: '#fff' }, def.name),
-                    h('text', { x: p.x, y: p.y + 62, fontSize: 9, textAnchor: 'middle', fill: '#94a3b8' }, 'pop ' + Math.round(s.pop))
+                    h('text', { x: p.x, y: p.y + 62, fontSize: 9, textAnchor: 'middle', fill: '#94a3b8' }, __alloT('stem.ecosystem.pop_prefix', 'pop ') + Math.round(s.pop))
                   );
                 })
               )
@@ -4313,7 +4313,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               return t.appliesTo.indexOf(id) >= 0;
             });
             return h('div', {
-              role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Cultural deep-dive: ' + def.name,
+              role: 'dialog', 'aria-modal': 'true', 'aria-label': __alloT('stem.ecosystem.aria_cultural_deepdive_pre', 'Cultural deep-dive: ') + def.name,
               style: {
                 background: 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.85) 60%)',
                 border: '1px solid ' + def.color + '88', borderLeft: '4px solid ' + def.color,
@@ -4323,16 +4323,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
                 h('span', { style: { fontSize: 36 } }, def.icon),
                 h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Species deep-dive'),
+                  h('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, __alloT('stem.ecosystem.species_deepdive', 'Species deep-dive')),
                   h('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
                   h('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
                 ),
                 h('button', { onClick: closeConservDeepDive,
-                  style: { background: 'rgba(15,23,42,0.6)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '✕ Close')
+                  style: { background: 'rgba(15,23,42,0.6)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '✕ ' + __alloT('stem.ecosystem.close', 'Close'))
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
                 h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌿 Ecology'),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌿 ' + __alloT('stem.ecosystem.ecology', 'Ecology')),
                   h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
                 ),
                 h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
