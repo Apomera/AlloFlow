@@ -72,7 +72,7 @@ describe('Learning Lab Affirmation Library accessibility', () => {
   });
 
   it('discloses local storage and shared-device privacy considerations', () => {
-    expect(affirmations).toContain('Custom statements and favorites save in this browser.');
+    expect(affirmations).toContain('Custom statements and favorites save in this browser only; saving does not send them to or notify anyone.');
     expect(affirmations).toContain('Avoid private details if other people use this device.');
     expect(affirmations).toContain("'aria-describedby': 'learning-lab-affirmation-privacy-note'");
   });
@@ -89,10 +89,22 @@ describe('Learning Lab Affirmation Library accessibility', () => {
     expect(affirmations).toContain("hh('article', { 'aria-labelledby': textId");
   });
 
-  it('exposes favorite state with pressed buttons and complete names', () => {
-    expect(affirmations).toContain("'aria-pressed': favorite ? 'true' : 'false'");
+  it('exposes favorite state through the changing label instead of aria-pressed', () => {
+    expect(affirmations).not.toContain("'aria-pressed'");
     expect(affirmations).toContain("'aria-label': (favorite ? 'Remove from favorites: ' : 'Add to favorites: ') + entry.text");
     expect(affirmations).toContain("favorite ? 'Favorited' : 'Add favorite'");
+  });
+
+  it('handles malformed legacy library data without crashing', () => {
+    expect(affirmations).toContain('var custom = Array.isArray(data.custom) ? data.custom : [];');
+    expect(affirmations).toContain('var favorites = Array.isArray(data.favorites) ? data.favorites : [];');
+    expect(source).toContain("stat: (Array.isArray((data.mytkAffirm || {}).favorites) ? (data.mytkAffirm || {}).favorites.length : 0) + ' favorites'");
+  });
+
+  it('synchronizes focus with rendered state instead of a focus timer', () => {
+    expect(affirmations).toContain('if (!pendingFocusId) return;');
+    expect(affirmations).toContain('function focusById(id) { setPendingFocusId(id); }');
+    expect(affirmations).not.toContain('setTimeout');
   });
 
   it('announces favorite changes', () => {

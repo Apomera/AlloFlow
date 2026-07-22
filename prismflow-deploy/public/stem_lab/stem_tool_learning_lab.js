@@ -16258,10 +16258,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // thinking" — research-backed self-affirmation theory (Steele 1988).
   function PersonalAffirmations(props) {
     if (!R) return null;
-    var data = props.data || { custom: [], favorites: [], lastReadDate: null };
+    var data = props.data && typeof props.data === 'object' ? props.data : { custom: [], favorites: [], lastReadDate: null };
     var setData = props.setData;
     var ns = R.useState(''); var newOne = ns[0]; var setNewOne = ns[1];
     var es = R.useState(''); var entryError = es[0]; var setEntryError = es[1];
+    var pff = R.useState(''); var pendingFocusId = pff[0]; var setPendingFocusId = pff[1];
+
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, data]);
 
     var BUILTIN = [
       'I am allowed to take up space.',
@@ -16281,21 +16290,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       'I can choose words that fit my own experience.'
     ];
 
-    function focusById(id) {
-      setTimeout(function() {
-        if (typeof document === 'undefined') return;
-        var target = document.getElementById(id);
-        if (target && typeof target.focus === 'function') target.focus();
-      }, 0);
-    }
+    function focusById(id) { setPendingFocusId(id); }
     function legacyTextId(text, index) {
       var hash = 0;
       for (var i = 0; i < text.length; i++) hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
       return 'legacy-' + Math.abs(hash).toString(36) + '-' + index;
     }
 
-    var custom = data.custom || [];
-    var favorites = data.favorites || [];
+    var custom = Array.isArray(data.custom) ? data.custom : [];
+    var favorites = Array.isArray(data.favorites) ? data.favorites : [];
     var customEntries = custom.map(function(item, index) {
       if (item && typeof item === 'object') {
         return { id: 'c-' + String(item.id || legacyTextId(String(item.text || ''), index)), text: String(item.text || ''), raw: item, legacyIndex: index };
@@ -16352,8 +16355,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
     var daily = dailyAffirmation();
     var labelStyle = { display: 'block', marginBottom: 5, color: '#fef3c7', fontSize: 12, fontWeight: 800 };
-    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.5 };
-    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 12, lineHeight: 1.5 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 12, fontWeight: 700 };
 
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('✨', 'Affirmation Library', 'Choose words that feel true or useful to you, and leave any that do not fit.', '#fbbf24'),
@@ -16369,7 +16372,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       tkCard('#fbbf24',
         hh('form', { onSubmit: function(event) { event.preventDefault(); addCustom(); }, 'aria-labelledby': 'learning-lab-affirmation-form-heading', 'aria-describedby': 'learning-lab-affirmation-privacy-note' },
           hh('h2', { id: 'learning-lab-affirmation-form-heading', style: { margin: '0 0 8px', color: '#fde68a', fontSize: 15 } }, 'Add your own words'),
-          hh('p', { id: 'learning-lab-affirmation-privacy-note', style: helpStyle }, 'Custom statements and favorites save in this browser. Avoid private details if other people use this device.'),
+          hh('p', { id: 'learning-lab-affirmation-privacy-note', style: helpStyle }, 'Custom statements and favorites save in this browser only; saving does not send them to or notify anyone. Avoid private details if other people use this device.'),
           hh('label', { htmlFor: 'learning-lab-affirmation-new', style: labelStyle }, 'Custom affirmation (required)'),
           hh('textarea', {
             id: 'learning-lab-affirmation-new', value: newOne, rows: 3, required: true, maxLength: 1000,
@@ -16396,13 +16399,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 hh('p', { id: textId, style: { margin: '0 0 8px', color: '#f8fafc', fontSize: 12, lineHeight: 1.55, fontFamily: 'Georgia, serif' } }, entry.text),
                 hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
                   hh('button', {
-                    type: 'button', onClick: function() { toggleFavorite(entry); }, 'aria-pressed': favorite ? 'true' : 'false',
+                    type: 'button', onClick: function() { toggleFavorite(entry); },
                     'aria-label': (favorite ? 'Remove from favorites: ' : 'Add to favorites: ') + entry.text,
-                    style: { minWidth: 44, minHeight: 44, padding: '8px 11px', borderRadius: 7, border: '1px solid #fbbf24', background: favorite ? '#854d0e' : '#334155', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+                    style: { minWidth: 44, minHeight: 44, padding: '8px 11px', borderRadius: 7, border: '1px solid #fbbf24', background: favorite ? '#854d0e' : '#334155', color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
                   }, favorite ? 'Favorited' : 'Add favorite'),
                   !entry.builtin ? hh('button', {
                     type: 'button', onClick: function() { removeCustom(entry); }, 'aria-label': 'Remove custom affirmation: ' + entry.text,
-                    style: { minWidth: 44, minHeight: 44, padding: '8px 11px', borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+                    style: { minWidth: 44, minHeight: 44, padding: '8px 11px', borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
                   }, 'Remove') : null
                 )
               )
@@ -20796,7 +20799,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkAchieve',  icon: '🏆', label: 'Achievement Wall',     color: '#fbbf24', desc: 'Gallery of accomplishments',
         stat: (Array.isArray((data.mytkAchieve || {}).achievements) ? (data.mytkAchieve || {}).achievements.length : 0) + ' achievements', cta: 'Add an achievement' },
       { id: 'mytkAffirm',   icon: '✨', label: 'Affirmations',         color: '#fbbf24', desc: '20+ built-in + your custom (Steele 1988)',
-        stat: ((data.mytkAffirm || {}).favorites || []).length + ' favorites', cta: 'Read daily' },
+        stat: (Array.isArray((data.mytkAffirm || {}).favorites) ? (data.mytkAffirm || {}).favorites.length : 0) + ' favorites', cta: 'Read daily' },
       { id: 'mytkRole',     icon: '🌟', label: 'Role Models',          color: '#fbbf24', desc: 'People whose qualities you want to grow',
         stat: ((data.mytkRole || {}).models || []).length + ' models', cta: 'Add a role model' },
       { id: 'mytkAssess',   icon: '🔍', label: 'Self-Assessment',      color: '#a855f7', desc: '12-question academic self-awareness check',
