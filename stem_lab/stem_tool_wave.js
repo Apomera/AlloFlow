@@ -3088,17 +3088,17 @@ const d = labToolData.wave;
 
       function renderSpectrumSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚡ Electromagnetic spectrum'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'All EM waves travel at c in vacuum. The full spectrum spans 18+ orders of magnitude in frequency. We see only a narrow sliver (visible light). Energy per photon: E = hf — higher frequency = more energetic.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚡ ' + __alloT('stem.wave.sec_spectrum_title', 'Electromagnetic spectrum')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_spectrum_intro', 'All EM waves travel at c in vacuum. The full spectrum spans 18+ orders of magnitude in frequency. We see only a narrow sliver (visible light). Energy per photon: E = hf — higher frequency = more energetic.')),
           React.createElement('div', { className: 'space-y-1.5' },
             EM_SPECTRUM.map(function(s, i) {
               return React.createElement('div', { key: 's'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-0.5' },
                   React.createElement('span', { className: 'text-[12px] font-black text-slate-800 min-w-[100px]' }, s.name),
-                  React.createElement('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-100 text-cyan-800 ml-auto' }, s.energy + ' energy')
+                  React.createElement('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-100 text-cyan-800 ml-auto' }, s.energy + __alloT('stem.wave.label_energy_suffix', ' energy'))
                 ),
                 React.createElement('div', { className: 'text-[11px] text-slate-600 mb-0.5 font-mono' }, 'λ: ', s.λ, '  ·  f: ', s.f),
-                React.createElement('div', { className: 'text-[11px] text-slate-700' }, 'Uses: ', s.uses)
+                React.createElement('div', { className: 'text-[11px] text-slate-700' }, __alloT('stem.wave.label_uses', 'Uses: '), s.uses)
               );
             })
           )
@@ -3107,8 +3107,8 @@ const d = labToolData.wave;
 
       function renderColorsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌈 Visible light spectrum'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Human vision spans ~380-700 nm. Each color corresponds to a specific range of wavelengths. White light = mix of all visible wavelengths.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌈 ' + __alloT('stem.wave.sec_colors_title', 'Visible light spectrum')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_colors_intro', 'Human vision spans ~380-700 nm. Each color corresponds to a specific range of wavelengths. White light = mix of all visible wavelengths.')),
           React.createElement('div', { className: 'grid gap-2' },
             VISIBLE_COLORS.map(function(c, i) {
               return React.createElement('div', { key: 'c'+i, className: 'p-2.5 rounded-lg border border-slate-200 flex items-center gap-3', style: { background: c.hex + '15' } },
@@ -3125,29 +3125,29 @@ const d = labToolData.wave;
 
       function renderHarmonicsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎵 Harmonics — modes of vibration'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'A vibrating string supports an infinite series of modes called harmonics. Each has a specific number of nodes (zero-amplitude points) + antinodes (max-amplitude points). The mix of harmonics = timbre.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎵 ' + __alloT('stem.wave.sec_harmonics_title', 'Harmonics — modes of vibration')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_harmonics_intro', 'A vibrating string supports an infinite series of modes called harmonics. Each has a specific number of nodes (zero-amplitude points) + antinodes (max-amplitude points). The mix of harmonics = timbre.')),
           React.createElement('div', { className: 'space-y-1.5' },
             HARMONICS.map(function(h, i) {
               return React.createElement('div', { key: 'h'+i, className: 'flex items-baseline gap-3 p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'min-w-[140px]' },
                   React.createElement('div', { className: 'text-[12px] font-black text-slate-800' }, h.mode),
-                  React.createElement('div', { className: 'text-[10px] text-slate-500 font-mono' }, h.nodes + ' nodes · f = ' + h.f)
+                  React.createElement('div', { className: 'text-[10px] text-slate-500 font-mono' }, h.nodes + __alloT('stem.wave.label_nodes_f', ' nodes · f = ') + h.f)
                 ),
                 React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, h.desc)
               );
             })
           ),
           React.createElement('div', { className: 'mt-3 p-2.5 rounded-md bg-purple-50 border border-purple-200 text-[11px] text-purple-900' },
-            React.createElement('strong', null, '💡 Why instruments sound different: '), 'A note at 440 Hz on a violin and a flute both have fundamental at 440 Hz. The MIX of higher harmonics (the spectrum) is different — that\'s timbre. Pure sine = boring; rich harmonic content = recognizable instrument.'
+            React.createElement('strong', null, '💡 ' + __alloT('stem.wave.harm_callout_label', 'Why instruments sound different: ')), __alloT('stem.wave.harm_callout_text', 'A note at 440 Hz on a violin and a flute both have fundamental at 440 Hz. The MIX of higher harmonics (the spectrum) is different — that\'s timbre. Pure sine = boring; rich harmonic content = recognizable instrument.')
           )
         );
       }
 
       function renderInstrumentsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎸 Standing waves in instruments'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Instruments make tones by setting up standing waves. The boundary conditions (open/closed/fixed ends) determine which harmonics are allowed.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎸 ' + __alloT('stem.wave.sec_instruments_title', 'Standing waves in instruments')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_instruments_intro', 'Instruments make tones by setting up standing waves. The boundary conditions (open/closed/fixed ends) determine which harmonics are allowed.')),
           React.createElement('div', { className: 'space-y-2' },
             STANDING_WAVE_INSTRUMENTS.map(function(s, i) {
               return React.createElement('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3155,7 +3155,7 @@ const d = labToolData.wave;
                   React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, s.instrument),
                   React.createElement('span', { className: 'text-[10px] font-bold ml-auto px-2 py-0.5 rounded bg-purple-100 text-purple-800' }, s.harmonics)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-600 mb-1' }, React.createElement('strong', null, 'Boundary: '), s.boundary),
+                React.createElement('div', { className: 'text-[11px] text-slate-600 mb-1' }, React.createElement('strong', null, __alloT('stem.wave.label_boundary', 'Boundary: ')), s.boundary),
                 React.createElement('div', { className: 'text-[11px] font-mono text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded mb-1 inline-block' }, s.formula),
                 React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.note)
               );
@@ -3166,8 +3166,8 @@ const d = labToolData.wave;
 
       function renderDecibelsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔊 Sound intensity (decibels)'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Decibels are a logarithmic scale. +10 dB ≈ 10× intensity, perceived as ~2× as loud. dB SPL (sound pressure level) is referenced to threshold of human hearing.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔊 ' + __alloT('stem.wave.sec_decibels_title', 'Sound intensity (decibels)')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_decibels_intro', 'Decibels are a logarithmic scale. +10 dB ≈ 10× intensity, perceived as ~2× as loud. dB SPL (sound pressure level) is referenced to threshold of human hearing.')),
           React.createElement('div', { className: 'space-y-1' },
             SOUND_INTENSITY.map(function(s, i) {
               var dangerLevel = s.db >= 120 ? 'red' : s.db >= 85 ? 'amber' : 'emerald';
@@ -3184,7 +3184,7 @@ const d = labToolData.wave;
             })
           ),
           React.createElement('div', { className: 'mt-3 p-2.5 rounded-md bg-red-50 border border-red-300 text-[11px] text-red-900' },
-            React.createElement('strong', null, '⚠ Permanent hearing loss: '), 'OSHA: 85 dB for 8 hours, 90 dB for 4 hours, etc. (each +5 dB halves safe exposure time). Wear ear protection at concerts, with power tools, at firing ranges.'
+            React.createElement('strong', null, '⚠ ' + __alloT('stem.wave.db_callout_label', 'Permanent hearing loss: ')), __alloT('stem.wave.db_callout_text', 'OSHA: 85 dB for 8 hours, 90 dB for 4 hours, etc. (each +5 dB halves safe exposure time). Wear ear protection at concerts, with power tools, at firing ranges.')
           )
         );
       }
@@ -3232,9 +3232,9 @@ const d = labToolData.wave;
         function reset() { setLab({ freq: 4, tension: 50, observationsLogged: [], discovered: false }); }
 
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🔬 Discover the wave equation'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🔬 ' + __alloT('stem.wave.sec_discover_title', 'Discover the wave equation')),
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
-            'A string is fixed at both ends. Wiggle the controls. Watch what changes and what stays the same. Log a few observations, then try to spot the pattern. Hit "I see it" when you think you have the law — no peeking.'),
+            __alloT('stem.wave.sec_discover_intro', 'A string is fixed at both ends. Wiggle the controls. Watch what changes and what stays the same. Log a few observations, then try to spot the pattern. Hit "I see it" when you think you have the law — no peeking.')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
             // Left: live SVG visualization
             h('div', { className: 'p-3 rounded-lg bg-slate-900 border border-slate-700' },
