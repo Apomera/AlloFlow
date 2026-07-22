@@ -61,7 +61,7 @@ describe('Learning Lab Parent or Guardian Message Builder accessibility', () => 
   });
 
   it('preserves unrelated data when saving a draft', () => {
-    expect(messages).toContain("setData(Object.assign({}, data, { drafts: [draft].concat(data.drafts || []) }))");
+    expect(messages).toContain("setData(Object.assign({}, data, { drafts: [draft].concat(rawDrafts) }))");
     expect(messages).toContain("templateLabel: template.label");
     expect(messages).toContain("llAnnounce(template.label + ' draft saved in this browser.')");
   });
@@ -111,7 +111,7 @@ describe('Learning Lab Parent or Guardian Message Builder accessibility', () => 
   });
 
   it('uses time semantics and expandable preformatted draft review', () => {
-    expect(messages).toContain("hh('time', { dateTime: draft.date || undefined }, relDate(draft.date))");
+    expect(messages).toContain("hh('time', { dateTime: textValue(draft.date).trim() || undefined }, relDate(textValue(draft.date).trim()))");
     expect(messages).toContain("hh('details'");
     expect(messages).toContain("minHeight: 44");
     expect(messages).toContain("whiteSpace: 'pre-wrap', overflowWrap: 'anywhere'");
@@ -119,7 +119,7 @@ describe('Learning Lab Parent or Guardian Message Builder accessibility', () => 
 
   it('confirms removal and restores saved-list focus', () => {
     expect(messages).toContain("title: 'Remove this saved draft?', confirmText: 'Remove draft'");
-    expect(messages).toContain("setData(Object.assign({}, data, { drafts: (data.drafts || []).filter");
+    expect(messages).toContain("setData(Object.assign({}, data, { drafts: rawDrafts.filter");
     expect(messages).toContain("llAnnounce('Saved message draft removed.')");
     expect(messages).toContain("focusById('learning-lab-message-saved-heading')");
   });
@@ -145,6 +145,17 @@ describe('Learning Lab Parent or Guardian Message Builder accessibility', () => 
     expect(messages).not.toContain("I'm not in crisis");
     expect(messages).not.toContain('I am not in crisis');
     expect(messages).toContain('Change or remove any sentence that does not match your experience');
+  });
+
+  it('handles malformed legacy draft data without crashing', () => {
+    expect(messages).toContain('var rawDrafts = Array.isArray(data.drafts) ? data.drafts : [];');
+    expect(messages).toContain('var drafts = rawDrafts.filter(isRecord);');
+    expect(source).toContain("stat: (Array.isArray((data.mytkParent || {}).drafts) ? (data.mytkParent || {}).drafts.length : 0) + ' drafts'");
+  });
+
+  it('synchronizes focus with rendered state, keeping the select-text behavior', () => {
+    expect(messages).toContain('function focusById(id, selectText) { setPendingFocus({ id: id, select: !!selectText }); }');
+    expect(messages).not.toContain('setTimeout');
   });
 
   it('keeps the deployed mirror identical', () => {
