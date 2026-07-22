@@ -53,6 +53,13 @@ describe('Volume Lab accessibility', () => {
     expect(text).toContain("id: 'volume-saved-toggle'");
   });
 
+  it('keeps persistent interface text at ten pixels or larger', () => {
+    const text = source();
+    expect(text).not.toMatch(/text-\[(?:[0-9])px\]/);
+    expect(text).not.toMatch(/fontSize:\s*(?:[0-9](?:\.[0-9]+)?)\b/);
+    expect(text).toContain('text-[10px] font-bold uppercase');
+  });
+
   it('marks the detached export-only canvas as absent from the accessibility tree', () => {
     const text = source();
     expect(text).toContain('Export-only detached canvas; it is never inserted into the accessibility tree.');
