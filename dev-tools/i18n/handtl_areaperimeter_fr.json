@@ -1,5 +1,5 @@
 {
-  "french": {
+  "french_canadian": {
     "tile_explorer": "Explorateur de tuiles",
     "tile": "Tuile",
     "compare_shapes": "Comparer des figures",
@@ -178,7 +178,7 @@
     "practice": "Pratique",
     "practice_selected": " pratique sélectionnée.",
     "retrying_missed_challenge": "Reprise du défi manqué : ",
-    "enter_a_number_before_checking": "Saisis un nombre avant de vérifier.",
+    "enter_a_number_before_checking": "Entre un nombre avant de vérifier.",
     "correct": "Correct ! ",
     "area_perimeter_challenge": "Défi d'aire et de périmètre",
     "not_yet_this_challenge_is_saved_for_re": "Pas encore. Ce défi est gardé pour une reprise. Vérifie si le problème demande l'espace intérieur, la distance extérieure ou un côté manquant.",
