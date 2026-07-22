@@ -50,7 +50,7 @@ describe('Learning Lab Role Models accessibility', () => {
   it('trims saved values and preserves unrelated section data', () => {
     expect(models).toContain('var name = form.name.trim();');
     expect(models).toContain('who: form.who.trim(), admire: form.admire.trim(), icon: form.icon.trim()');
-    expect(models).toContain("setData(Object.assign({}, data, { models: [entry].concat(data.models || []) }))");
+    expect(models).toContain("setData(Object.assign({}, data, { models: [entry].concat(rawModels) }))");
   });
 
   it('announces saves and restores entry focus', () => {
@@ -59,7 +59,7 @@ describe('Learning Lab Role Models accessibility', () => {
   });
 
   it('discloses local storage and real-person privacy considerations', () => {
-    expect(models).toContain('Role models and reflections save in this browser.');
+    expect(models).toContain('Role models and reflections save in this browser only; saving does not send them to or notify anyone.');
     expect(models).toContain('Avoid private details about real people if other people use this device.');
     expect(models).toContain("'aria-describedby': 'learning-lab-role-model-privacy-note'");
   });
@@ -78,12 +78,12 @@ describe('Learning Lab Role Models accessibility', () => {
 
   it('marks symbols decorative and provides a legacy name fallback', () => {
     expect(models).toContain("hh('span', { 'aria-hidden': 'true'");
-    expect(models).toContain("String(entry.name || 'Unnamed role model')");
+    expect(models).toContain("textValue(entry.name).trim() || 'Unnamed role model'");
   });
 
   it('uses definition-list and time semantics for details', () => {
     expect(models).toContain("hh('dl', { 'aria-label': 'Role model details'");
-    expect(models).toContain("hh('time', { dateTime: entry.addedAt || undefined }, relDate(entry.addedAt))");
+    expect(models).toContain("hh('time', { dateTime: textValue(entry.addedAt).trim() || undefined }, relDate(textValue(entry.addedAt).trim()))");
   });
 
   it('presents appreciation text in a named section and preserves whitespace', () => {
@@ -98,8 +98,8 @@ describe('Learning Lab Role Models accessibility', () => {
   });
 
   it('names deletion, preserves data, announces removal, and restores focus', () => {
-    expect(models).toContain("'aria-label': 'Remove role model: ' + String(entry.name || 'Unnamed role model')");
-    expect(models).toContain("setData(Object.assign({}, data, { models: (data.models || []).filter");
+    expect(models).toContain("'aria-label': 'Remove role model: ' + (textValue(entry.name).trim() || 'Unnamed role model')");
+    expect(models).toContain("setData(Object.assign({}, data, { models: rawModels.filter");
     expect(models).toContain("llAnnounce('Role model removed.')");
     expect(models).toContain("focusById('learning-lab-role-model-history-heading')");
   });
@@ -109,6 +109,18 @@ describe('Learning Lab Role Models accessibility', () => {
     expect(models).toContain("width: '100%', minHeight: 44");
     expect(models).toContain("minWidth: 44, minHeight: 44");
     expect(models).toContain("minHeight: 88");
+  });
+
+  it('handles malformed legacy role model data without crashing', () => {
+    expect(models).toContain('var rawModels = Array.isArray(data.models) ? data.models : [];');
+    expect(models).toContain('var models = rawModels.filter(isRecord);');
+    expect(source).toContain("stat: (Array.isArray((data.mytkRole || {}).models) ? (data.mytkRole || {}).models.length : 0) + ' models'");
+  });
+
+  it('synchronizes focus with rendered state instead of a focus timer', () => {
+    expect(models).toContain('if (!pendingFocusId) return;');
+    expect(models).toContain('function focusById(id) { setPendingFocusId(id); }');
+    expect(models).not.toContain('setTimeout');
   });
 
   it('keeps the deployed mirror identical', () => {

@@ -16421,19 +16421,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // figures. What you admire about each. Builds aspirational identity.
   function PersonalRoleModels(props) {
     if (!R) return null;
-    var data = props.data || { models: [] };
+    var data = props.data && typeof props.data === 'object' ? props.data : { models: [] };
     var setData = props.setData;
+    var isRecord = function(value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
+    var textValue = function(value) { return typeof value === 'string' ? value : (typeof value === 'number' ? String(value) : ''); };
+    var rawModels = Array.isArray(data.models) ? data.models : [];
     var emptyForm = { name: '', who: '', admire: '', icon: '🌟' };
     var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
     var es = R.useState(''); var nameError = es[0]; var setNameError = es[1];
+    var pfr = R.useState(''); var pendingFocusId = pfr[0]; var setPendingFocusId = pfr[1];
 
-    function focusById(id) {
-      setTimeout(function() {
-        if (typeof document === 'undefined') return;
-        var target = document.getElementById(id);
-        if (target && typeof target.focus === 'function') target.focus();
-      }, 0);
-    }
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, data]);
+
+    function focusById(id) { setPendingFocusId(id); }
     function save() {
       var name = form.name.trim();
       if (!name) {
@@ -16446,34 +16452,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         id: tkId(), addedAt: todayISO(), name: name,
         who: form.who.trim(), admire: form.admire.trim(), icon: form.icon.trim() || '🌟'
       };
-      setData(Object.assign({}, data, { models: [entry].concat(data.models || []) }));
+      setData(Object.assign({}, data, { models: [entry].concat(rawModels) }));
       setForm(emptyForm); setNameError('');
       llAnnounce('Role model saved: ' + name);
       focusById('learning-lab-role-model-name');
     }
     function removeModel(entry) {
-      askLearningLabConfirmation('Remove “' + String(entry.name || 'this role model') + '”? This cannot be undone.', {
+      askLearningLabConfirmation('Remove “' + (textValue(entry.name).trim() || 'this role model') + '”? This cannot be undone.', {
         title: 'Remove this role model?', confirmText: 'Remove role model'
       }).then(function(accepted) {
         if (!accepted) return;
-        setData(Object.assign({}, data, { models: (data.models || []).filter(function(item) { return item.id !== entry.id; }) }));
+        setData(Object.assign({}, data, { models: rawModels.filter(function(item) { return !(isRecord(item) && item.id === entry.id); }) }));
         llAnnounce('Role model removed.');
         focusById('learning-lab-role-model-history-heading');
       });
     }
 
-    var models = data.models || [];
+    var models = rawModels.filter(isRecord);
     var labelStyle = { display: 'block', marginBottom: 5, color: '#fef3c7', fontSize: 12, fontWeight: 800 };
     var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #fbbf24', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
-    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.5 };
-    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 12, lineHeight: 1.5 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 12, fontWeight: 700 };
 
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🌟', 'Role Models', 'Record people or characters and the qualities you appreciate in them.', '#fbbf24'),
       tkCard('#fbbf24',
         hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-role-model-form-heading', 'aria-describedby': 'learning-lab-role-model-privacy-note' },
           hh('h2', { id: 'learning-lab-role-model-form-heading', style: { margin: '0 0 8px', color: '#fde68a', fontSize: 15 } }, 'Add a role model'),
-          hh('p', { id: 'learning-lab-role-model-privacy-note', style: helpStyle }, 'Role models and reflections save in this browser. Avoid private details about real people if other people use this device.'),
+          hh('p', { id: 'learning-lab-role-model-privacy-note', style: helpStyle }, 'Role models and reflections save in this browser only; saving does not send them to or notify anyone. Avoid private details about real people if other people use this device.'),
           hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
             hh('div', null,
               hh('label', { htmlFor: 'learning-lab-role-model-icon', style: labelStyle }, 'Symbol (optional)'),
@@ -16508,16 +16514,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   hh('article', { 'aria-labelledby': headingId, style: { boxSizing: 'border-box', height: '100%', padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.68)', border: '1px solid #a16207' } },
                     hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
                       hh('div', null,
-                        hh('span', { 'aria-hidden': 'true', style: { display: 'block', fontSize: 26, marginBottom: 4 } }, entry.icon || '🌟'),
-                        hh('h3', { id: headingId, tabIndex: -1, style: { margin: 0, color: '#fde68a', fontSize: 14 } }, String(entry.name || 'Unnamed role model'))
+                        hh('span', { 'aria-hidden': 'true', style: { display: 'block', fontSize: 26, marginBottom: 4 } }, textValue(entry.icon).trim() || '🌟'),
+                        hh('h3', { id: headingId, tabIndex: -1, style: { margin: 0, color: '#fde68a', fontSize: 14 } }, textValue(entry.name).trim() || 'Unnamed role model')
                       ),
-                      hh('button', { type: 'button', onClick: function() { removeModel(entry); }, 'aria-label': 'Remove role model: ' + String(entry.name || 'Unnamed role model'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Remove')
+                      hh('button', { type: 'button', onClick: function() { removeModel(entry); }, 'aria-label': 'Remove role model: ' + (textValue(entry.name).trim() || 'Unnamed role model'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Remove')
                     ),
-                    hh('dl', { 'aria-label': 'Role model details', style: { display: 'grid', gridTemplateColumns: 'max-content 1fr', gap: 6, margin: '10px 0 0', color: '#e2e8f0', fontSize: 11 } },
-                      entry.who ? hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Description'), hh('dd', { style: { margin: 0 } }, entry.who)) : null,
-                      hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Added'), hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: entry.addedAt || undefined }, relDate(entry.addedAt))))
+                    hh('dl', { 'aria-label': 'Role model details', style: { display: 'grid', gridTemplateColumns: 'max-content 1fr', gap: 6, margin: '10px 0 0', color: '#e2e8f0', fontSize: 12 } },
+                      textValue(entry.who).trim() ? hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Description'), hh('dd', { style: { margin: 0 } }, textValue(entry.who).trim())) : null,
+                      hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Added'), hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: textValue(entry.addedAt).trim() || undefined }, relDate(textValue(entry.addedAt).trim()))))
                     ),
-                    entry.admire ? hh('section', { 'aria-label': 'Qualities or actions I appreciate', style: { marginTop: 10, padding: 9, borderRadius: 6, background: 'rgba(2,6,23,0.48)' } }, hh('h4', { style: { margin: '0 0 4px', color: '#fde68a', fontSize: 11 } }, 'What I appreciate'), hh('p', { style: { margin: 0, color: '#f1f5f9', fontSize: 11, lineHeight: 1.55, whiteSpace: 'pre-wrap' } }, entry.admire)) : null
+                    textValue(entry.admire).trim() ? hh('section', { 'aria-label': 'Qualities or actions I appreciate', style: { marginTop: 10, padding: 9, borderRadius: 6, background: 'rgba(2,6,23,0.48)' } }, hh('h4', { style: { margin: '0 0 4px', color: '#fde68a', fontSize: 12 } }, 'What I appreciate'), hh('p', { style: { margin: 0, color: '#f1f5f9', fontSize: 12, lineHeight: 1.55, whiteSpace: 'pre-wrap' } }, textValue(entry.admire).trim())) : null
                   )
                 );
               })
@@ -20801,7 +20807,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkAffirm',   icon: '✨', label: 'Affirmations',         color: '#fbbf24', desc: '20+ built-in + your custom (Steele 1988)',
         stat: (Array.isArray((data.mytkAffirm || {}).favorites) ? (data.mytkAffirm || {}).favorites.length : 0) + ' favorites', cta: 'Read daily' },
       { id: 'mytkRole',     icon: '🌟', label: 'Role Models',          color: '#fbbf24', desc: 'People whose qualities you want to grow',
-        stat: ((data.mytkRole || {}).models || []).length + ' models', cta: 'Add a role model' },
+        stat: (Array.isArray((data.mytkRole || {}).models) ? (data.mytkRole || {}).models.length : 0) + ' models', cta: 'Add a role model' },
       { id: 'mytkAssess',   icon: '🔍', label: 'Self-Assessment',      color: '#a855f7', desc: '12-question academic self-awareness check',
         stat: ((data.mytkAssess || {}).assessments || []).length + ' snapshots', cta: 'Take the quiz' },
       { id: 'mytkContract', icon: '📜', label: 'Learning Contract',    color: '#06b6d4', desc: 'Self-agreement: commitments + rewards + accountability',
