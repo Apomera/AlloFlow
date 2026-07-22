@@ -522,7 +522,7 @@
         var steps = clamp(Math.round(finiteNumber(d.lineSteps, 5)), 2, 8);
         var ticks = [];
         for (var i = 0; i <= steps; i++) ticks.push(i);
-        return h('div', { className: t('stem.ratios.grid_lg_grid_cols_250px_1fr_gap_4', "grid lg:grid-cols-[250px_1fr] gap-4") },
+        return h('div', { className: "grid lg:grid-cols-[250px_1fr] gap-4" },
           h('div', { className: 'rounded-xl p-4 space-y-3', style: cardStyle },
             h('h3', { className: 'font-bold' }, t('stem.ratios.set_one_aligned_interval', "Set one aligned interval")),
             numericField(t('stem.ratios.top_line_value_per_interval', "Top-line value per interval"), topUnit, 'lineTopUnit', { min: 0.1, step: 0.1 }),
@@ -671,7 +671,7 @@
               role: 'img',
               'aria-labelledby': titleId + ' ' + descId,
               'data-tape-percent': formatNumber(tape.percent),
-              preserveAspectRatio: t('stem.ratios.xmidymid_meet', "xMidYMid meet")
+              preserveAspectRatio: "xMidYMid meet"
             },
               h('title', { id: titleId }, t('stem.ratios.whole_2', "Whole ") + wholeNumber + ' percent tape: ' + formatNumber(tape.percent) + t('stem.ratios.filled', "% filled")),
               h('desc', { id: descId }, description),
@@ -697,7 +697,7 @@
           );
         }
 
-        return h('div', { className: t('stem.ratios.grid_lg_grid_cols_280px_1fr_gap_4', "grid lg:grid-cols-[280px_1fr] gap-4") },
+        return h('div', { className: "grid lg:grid-cols-[280px_1fr] gap-4" },
           h('div', { className: 'rounded-xl p-4 space-y-3', style: cardStyle },
             h('label', { className: 'block text-xs font-semibold' },
               h('span', { className: 'block mb-1', style: { color: muted } }, t('stem.ratios.choose_the_unknown', "Choose the unknown")),
@@ -911,8 +911,8 @@
             )
           ),
           h('div', { className: 'flex gap-2 text-xs', 'aria-label': t('stem.ratios.lab_progress', "Lab progress") },
-            h('span', { className: t('stem.ratios.rounded_full_px_3_py_1_5_font_bold', "rounded-full px-3 py-1.5 font-bold"), style: { background: soft, border: '1px solid ' + border } }, visitedCount(d) + t('stem.ratios.n_5_modes', "/5 modes")),
-            h('span', { className: t('stem.ratios.rounded_full_px_3_py_1_5_font_bold', "rounded-full px-3 py-1.5 font-bold"), style: { background: soft, border: '1px solid ' + border } }, solvedCount(d) + t('stem.ratios.solved', " solved"))
+            h('span', { className: "rounded-full px-3 py-1.5 font-bold", style: { background: soft, border: '1px solid ' + border } }, visitedCount(d) + t('stem.ratios.n_5_modes', "/5 modes")),
+            h('span', { className: "rounded-full px-3 py-1.5 font-bold", style: { background: soft, border: '1px solid ' + border } }, solvedCount(d) + t('stem.ratios.solved', " solved"))
           )
         ),
 
@@ -979,7 +979,7 @@
                   readOnly: challengeSolved,
                   'aria-readonly': challengeSolved,
                   inputMode: challenge.answer != null ? 'decimal' : 'text',
-                  className: t('stem.ratios.ratio_challenge_answer_w_full_rounded_', "ratio-challenge-answer w-full rounded-lg px-3 py-2.5 bg-transparent"),
+                  className: "ratio-challenge-answer w-full rounded-lg px-3 py-2.5 bg-transparent",
                   style: { color: text, '--ratio-focus-color': accent },
                   placeholder: challenge.answers ? t('stem.ratios.type_your_answer', "Type your answer") : t('stem.ratios.enter_a_number', "Enter a number"),
                   'aria-labelledby': 'ratio-challenge-prompt ratio-challenge-answer-label',
@@ -990,7 +990,7 @@
                 challenge.suffix && h('span', { className: 'pr-3 text-xs font-bold', 'aria-hidden': 'true' }, challenge.suffix)
               )
             ),
-            h('button', { type: 'submit', disabled: challengeSolved, className: t('stem.ratios.rounded_lg_px_5_py_2_5_font_bold_disab', "rounded-lg px-5 py-2.5 font-bold disabled:opacity-70"), style: { background: accentStrong, color: accentText, border: isContrast ? '2px solid #ffffff' : 'none' } }, challengeSolved ? t('stem.ratios.solved_2', "Solved") : t('stem.ratios.check_answer', "Check answer"))
+            h('button', { type: 'submit', disabled: challengeSolved, className: "rounded-lg px-5 py-2.5 font-bold disabled:opacity-70", style: { background: accentStrong, color: accentText, border: isContrast ? '2px solid #ffffff' : 'none' } }, challengeSolved ? t('stem.ratios.solved_2', "Solved") : t('stem.ratios.check_answer', "Check answer"))
           ),
           feedback && h('div', { id: 'ratio-challenge-feedback', role: 'status', 'aria-live': 'polite', className: 'rounded-lg p-3 text-sm font-semibold', style: { background: panel, border: '1px solid ' + (feedback.correct ? success : warning), color: feedback.correct ? success : warning } }, feedback.message)
         ),

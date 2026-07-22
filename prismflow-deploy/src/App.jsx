@@ -5967,10 +5967,145 @@ const ALLOHAVEN_CLASSROOM_REWARD_REASONS = Object.freeze([
   { id: 'repaired_harm', label: 'Restorative repair' },
   { id: 'self_regulation', label: 'Self-regulation' },
   { id: 'goal_progress', label: 'Individual goal progress' },
+  // Class Goals fan-out (docs/GROUP_CONTINGENCY_DESIGN.md, Ring A): the ONLY
+  // thing that crosses the backend for a group contingency is this enum id —
+  // the teacher's goal label stays device-local in rosterKey.classGoals.
+  { id: 'group_goal', label: 'Class goal achieved' },
 ]);
 const ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS = new Set(ALLOHAVEN_CLASSROOM_REWARD_REASONS.map(reason => reason.id));
 const ALLOHAVEN_RECOGNITION_CAPS = Object.freeze([2, 4, 6, 8]);
 const DEFAULT_ALLOHAVEN_RECOGNITION_CONFIG = Object.freeze({ enabled: false, perStudentTokenCap: 4, updatedAt: 0 });
+// ── Class Goals (docs/GROUP_CONTINGENCY_DESIGN.md, Ring A) ──
+// Whole-class interdependent contingencies, EARN-ONLY, teacher-observed
+// criteria. Goals live in rosterKey.classGoals (device-local, travels with
+// the roster export); awarding fans out ordinary individual havenRewards
+// events with reasonId 'group_goal' through the existing cap/validator
+// machinery, so nothing new crosses the backend. Templates are starting
+// points, not a taxonomy — every label names a positive class
+// accomplishment, never the absence of a problem; the teacher can rewrite
+// the label freely because it never leaves the device.
+const CLASS_GOAL_TEMPLATES = Object.freeze([
+  { id: 'transition_smooth', label: 'Smooth transition' },
+  { id: 'voice_level', label: 'Voice level maintained' },
+  { id: 'on_task', label: 'On-task work period' },
+  { id: 'materials_ready', label: 'Materials ready' },
+  { id: 'clean_up', label: 'Space reset & cleaned up' },
+  { id: 'participation', label: 'Everyone participated' },
+  { id: 'peer_support', label: 'Peer helping observed' },
+  { id: 'kindness', label: 'Acts of kindness observed' },
+  { id: 'routine_followed', label: 'Class routine followed' },
+  { id: 'custom', label: 'Custom goal…' },
+]);
+const CLASS_GOAL_TEMPLATE_IDS = new Set(CLASS_GOAL_TEMPLATES.map(item => item.id));
+// Ring B/C additions. mode: 'interdependent' = one criterion, whole team
+// earns together (Ring A/B); 'independent' = each student earns on their own
+// accomplishment via the per-student checklist (Ring C — awards ride the
+// EXISTING 'goal_progress' reason, no new enum). team: 'class', a roster
+// group ('group:<id>'), or a seating-chart pod ('pod:<index>', resolved
+// against the CURRENT active layout at award time — pods are positional).
+// tracked: optional app-measured readiness signal. NOTIFY-CONFIRM INVARIANT
+// (design doc §4.6): tracked criteria only ever set a progress display and a
+// one-time prompt — the app NEVER fans out a group award on its own.
+const CLASS_GOAL_TRACKED_METRICS = Object.freeze({ xp_total: 1, responded_each: 1 });
+const normalizeClassGoal = (goal) => {
+  if (!goal || typeof goal !== 'object' || Array.isArray(goal)) return null;
+  const id = typeof goal.id === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(goal.id) ? goal.id : null;
+  if (!id) return null;
+  const label = goal.label != null ? String(goal.label).slice(0, 80).trim() : '';
+  if (!label) return null;
+  const team = (goal.team === 'class'
+    || (typeof goal.team === 'string' && (/^group:[A-Za-z0-9_-]{1,60}$/.test(goal.team) || /^pod:\d{1,2}$/.test(goal.team))))
+    ? goal.team : 'class';
+  const tracked = (goal.tracked && typeof goal.tracked === 'object' && !Array.isArray(goal.tracked)
+    && CLASS_GOAL_TRACKED_METRICS[goal.tracked.metric])
+    ? { metric: goal.tracked.metric, threshold: Math.max(1, Math.min(1000000, Math.floor(Number(goal.tracked.threshold) || 1))) }
+    : null;
+  return {
+    id,
+    label,
+    templateId: CLASS_GOAL_TEMPLATE_IDS.has(goal.templateId) ? goal.templateId : 'custom',
+    tokens: Number(goal.tokens) === 2 ? 2 : 1,
+    // GBG-style can't-do allowance: "met with up to N exceptions." Judgment
+    // guidance for teacher-observed criteria; FUNCTIONAL for tracked
+    // per-student metrics (responded_each counts as met when team-size minus
+    // responders ≤ allowance). No student is ever named as the exception.
+    allowance: Math.max(0, Math.min(5, Math.floor(Number(goal.allowance) || 0))),
+    mode: goal.mode === 'independent' ? 'independent' : 'interdependent',
+    team,
+    tracked,
+    active: goal.active !== false,
+    metCount: Math.max(0, Math.floor(Number(goal.metCount) || 0)),
+    lastMetAt: Number(goal.lastMetAt) > 0 ? Number(goal.lastMetAt) : null,
+  };
+};
+const normalizeClassGoals = (raw) => {
+  const list = Array.isArray(raw) ? raw : [];
+  const seen = new Set();
+  const out = [];
+  list.forEach(item => {
+    const goal = normalizeClassGoal(item);
+    if (goal && !seen.has(goal.id)) { seen.add(goal.id); out.push(goal); }
+  });
+  return out.slice(0, 20);
+};
+// Which connected students a goal's team covers. Groups match the session
+// roster's groupId (same source as the Recognize group buttons); pods come
+// from the seating module's listPods over the CURRENT active layout, matched
+// to session students by codename normalization (roster-sync convention).
+const resolveClassGoalTeamUids = (goal, rosterEntries, rosterKeyValue) => {
+  const entries = rosterEntries && typeof rosterEntries === 'object' ? rosterEntries : {};
+  const uids = Object.keys(entries);
+  if (!goal || goal.team === 'class') return uids;
+  if (typeof goal.team === 'string' && goal.team.indexOf('group:') === 0) {
+    const groupId = goal.team.slice(6);
+    return uids.filter(uid => entries[uid] && entries[uid].groupId === groupId);
+  }
+  if (typeof goal.team === 'string' && goal.team.indexOf('pod:') === 0) {
+    const podIndex = parseInt(goal.team.slice(4), 10);
+    const SC = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SeatingChart;
+    if (!SC || typeof SC.listPods !== 'function' || !podIndex) return [];
+    let pod = null;
+    try { pod = SC.listPods(rosterKeyValue).find(item => item.index === podIndex) || null; } catch (_) { pod = null; }
+    if (!pod) return [];
+    const wanted = new Set(pod.students.map(normalizeRosterSessionCodename).filter(Boolean));
+    return uids.filter(uid => wanted.has(normalizeRosterSessionCodename(entries[uid] && entries[uid].name)));
+  }
+  return [];
+};
+// PURE readiness evaluator for tracked goals — display + notify only, never
+// an award trigger (§4.6). Returns null for teacher-observed goals.
+// perStudentMet (responded_each) seeds the Ring C checklist suggestions.
+const evaluateClassGoalProgress = (goal, teamUids, rosterEntries, sessionDataValue) => {
+  if (!goal || !goal.tracked) return null;
+  const entries = rosterEntries && typeof rosterEntries === 'object' ? rosterEntries : {};
+  const uids = Array.isArray(teamUids) ? teamUids : [];
+  if (goal.tracked.metric === 'xp_total') {
+    const total = uids.reduce((sum, uid) => sum + (Number(entries[uid] && entries[uid].xp) || 0), 0);
+    return {
+      met: uids.length > 0 && total >= goal.tracked.threshold,
+      label: total.toLocaleString() + ' / ' + goal.tracked.threshold.toLocaleString() + ' XP',
+      perStudentMet: null,
+    };
+  }
+  if (goal.tracked.metric === 'responded_each') {
+    const allResponses = (sessionDataValue && sessionDataValue.quizState && sessionDataValue.quizState.allResponses) || {};
+    const perStudentMet = {};
+    let responders = 0;
+    uids.forEach(uid => {
+      const bucket = allResponses[uid];
+      const count = bucket && typeof bucket === 'object' ? Object.keys(bucket).length : 0;
+      const ok = count >= goal.tracked.threshold;
+      perStudentMet[uid] = ok;
+      if (ok) responders += 1;
+    });
+    return {
+      met: uids.length > 0 && (uids.length - responders) <= goal.allowance,
+      label: responders + ' / ' + uids.length + ' responded',
+      perStudentMet,
+    };
+  }
+  return null;
+};
 
 const normalizeAlloHavenClassroomReward = (reward) => {
   if (!reward || typeof reward !== 'object' || Array.isArray(reward)) return null;
@@ -8364,7 +8499,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '028154b73';
+    var pluginCdnVersion = '24451374e';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -8606,124 +8741,127 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=028154b73');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=028154b73');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=028154b73');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=028154b73');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=028154b73');
+    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=24451374e');
+    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=24451374e');
+    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=24451374e');
+    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=24451374e');
+    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=24451374e');
     loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=04c6710a');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=028154b73');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=028154b73');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=028154b73');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=028154b73');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=028154b73');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=028154b73');
+    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=24451374e');
+    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=24451374e');
+    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=24451374e');
+    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=24451374e');
+    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=24451374e');
+    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=24451374e');
     loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=a95056e3');
     loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=0e96a73e');
     loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=6d41dc65');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=028154b73');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=028154b73');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=028154b73');
-    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=028154b73');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=028154b73');
-    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=028154b73');
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=028154b73');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=028154b73');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=028154b73');
+    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=24451374e');
+    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=24451374e');
+    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=24451374e');
+    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=24451374e');
+    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=24451374e');
+    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=24451374e');
+    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=24451374e');
+    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=24451374e');
+    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=24451374e');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=028154b73'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=24451374e'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=028154b73'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=028154b73'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=24451374e'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=24451374e'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
     window.__alloLazyDynamicAssessment = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DynamicAssessment', 'https://alloflow-cdn.pages.dev/dynamic_assessment_module.js'); }; })();
+    // Seating Chart (Ring 0+1, July 21 2026) — teacher-only roster tool,
+    // lazy-loaded from the Roster panel's Seating Chart button.
+    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=24451374e'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=028154b73');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=028154b73');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=028154b73');
-    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=028154b73');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=028154b73');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=028154b73');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=028154b73');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=028154b73');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=028154b73');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=028154b73');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=028154b73');
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=028154b73');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=028154b73');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=028154b73'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=028154b73'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=028154b73'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=028154b73'); }; })();
+    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=24451374e');
+    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=24451374e');
+    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=24451374e');
+    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=24451374e');
+    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=24451374e');
+    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=24451374e');
+    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=24451374e');
+    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=24451374e');
+    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=24451374e');
+    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=24451374e');
+    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=24451374e');
+    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=24451374e');
+    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=24451374e');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=24451374e'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=24451374e'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=24451374e'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=24451374e'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=028154b73');
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=028154b73');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=028154b73');
+    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=24451374e');
+    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=24451374e');
+    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=24451374e');
     loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=216a1867');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=028154b73');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=028154b73');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=028154b73');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=028154b73');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=028154b73');
+    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=24451374e');
+    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=24451374e');
+    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=24451374e');
+    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=24451374e');
+    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=24451374e');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=028154b73'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=24451374e'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=028154b73');
+    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=24451374e');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=028154b73');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=028154b73'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=028154b73'); }; })();
+    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=24451374e');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=24451374e'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=24451374e'); }; })();
     window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=059104c5'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=028154b73'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=028154b73'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=24451374e'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=24451374e'); }; })();
     window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=e7423298'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=028154b73'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=028154b73');
-    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=028154b73');
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=24451374e'); }; })();
+    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=24451374e');
+    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=24451374e');
     loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
     loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ea313f84');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=028154b73');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=028154b73');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=028154b73');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=028154b73');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=028154b73');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=028154b73'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=028154b73'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=028154b73'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=028154b73'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=028154b73'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=028154b73'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=028154b73'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=028154b73'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=028154b73'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=028154b73'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=028154b73'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=028154b73'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=028154b73');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=028154b73');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=028154b73');
+    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=24451374e');
+    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=24451374e');
+    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=24451374e');
+    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=24451374e');
+    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=24451374e');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=24451374e'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=24451374e'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=24451374e'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=24451374e'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=24451374e'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=24451374e'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=24451374e'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=24451374e'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=24451374e'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=24451374e'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=24451374e'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=24451374e'); }; })();
+    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=24451374e');
+    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=24451374e');
+    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=24451374e');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=028154b73');
-    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=028154b73');
-    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=028154b73');
-    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=028154b73');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=028154b73');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=028154b73');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=028154b73');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=028154b73');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=028154b73');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=028154b73');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=028154b73');
+    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=24451374e');
+    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=24451374e');
+    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=24451374e');
+    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=24451374e');
+    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=24451374e');
+    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=24451374e');
+    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=24451374e');
+    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=24451374e');
+    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=24451374e');
+    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=24451374e');
+    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=24451374e');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
     // upgrade-on-parse calls at lines ~693 and ~2002 fire before the CDN script
@@ -8761,22 +8899,22 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
     loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=d4205d9b');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=028154b73');
-    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=028154b73');
+    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=24451374e');
+    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=24451374e');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=028154b73');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=028154b73');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=028154b73');
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=028154b73');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=028154b73');
-    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=028154b73');
-    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=028154b73');
-    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=028154b73');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=028154b73');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=028154b73');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=028154b73');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=028154b73');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=028154b73');
+    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=24451374e');
+    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=24451374e');
+    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=24451374e');
+    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=24451374e');
+    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=24451374e');
+    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=24451374e');
+    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=24451374e');
+    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=24451374e');
+    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=24451374e');
+    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=24451374e');
+    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=24451374e');
+    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=24451374e');
+    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=24451374e');
     loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=d1304d57');
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
     loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
@@ -8786,49 +8924,49 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=501639a2');
     loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
     loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=b41bcb0a');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=028154b73');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=028154b73');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=028154b73');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=028154b73');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=028154b73');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=028154b73');
+    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=24451374e');
+    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=24451374e');
+    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=24451374e');
+    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=24451374e');
+    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=24451374e');
+    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=24451374e');
     loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=59174db7');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=028154b73');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=028154b73');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=028154b73');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=028154b73');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=028154b73');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=028154b73');
+    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=24451374e');
+    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=24451374e');
+    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=24451374e');
+    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=24451374e');
+    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=24451374e');
+    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=24451374e');
     loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=2c2f5ff1');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=028154b73');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=028154b73');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=028154b73');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=028154b73');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=028154b73');
+    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=24451374e');
+    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=24451374e');
+    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=24451374e');
+    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=24451374e');
+    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=24451374e');
     loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=5bd0659f');
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=028154b73');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=028154b73');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=028154b73');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=028154b73');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=028154b73');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=028154b73');
+    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=24451374e');
+    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=24451374e');
+    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=24451374e');
+    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=24451374e');
+    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=24451374e');
+    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=24451374e');
     loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=d12e82b7');
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=028154b73');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=028154b73');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=028154b73');
+    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=24451374e');
+    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=24451374e');
+    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=24451374e');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=028154b73');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=028154b73');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=028154b73');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=028154b73');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=028154b73');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=028154b73');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=028154b73');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=028154b73');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=028154b73');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=028154b73');
+    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=24451374e');
+    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=24451374e');
+    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=24451374e');
+    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=24451374e');
+    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=24451374e');
+    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=24451374e');
+    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=24451374e');
+    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=24451374e');
+    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=24451374e');
+    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=24451374e');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -10169,6 +10307,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   });
   const [isRosterKeyOpen, setIsRosterKeyOpen] = useState(false);
   const [isSubmissionInboxOpen, setIsSubmissionInboxOpen] = useState(false);
+  const [isSeatingChartOpen, setIsSeatingChartOpen] = useState(false);
   useEffect(() => {
     try {
       if (rosterKey) safeSetItem('alloflow_roster_key', JSON.stringify(rosterKey));
@@ -11482,6 +11621,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [havenConfigBusy, setHavenConfigBusy] = useState(false);
   const [havenRewardReceipt, setHavenRewardReceipt] = useState(null);
   const [showHavenRewardAudit, setShowHavenRewardAudit] = useState(false);
+  const [classGoalDraft, setClassGoalDraft] = useState(null);
+  // Ring C checklist: which independent goal is expanded + per-uid marks.
+  const [openChecklistGoalId, setOpenChecklistGoalId] = useState(null);
+  const [checklistMarks, setChecklistMarks] = useState({});
+  // Notify-confirm (§4.6): one prompt per tracked goal per session.
+  const classGoalNotifiedRef = useRef({});
   const [livePollPreset, setLivePollPreset] = useState(null);
   const [showStudentSignals, setShowStudentSignals] = useState(false);
   // sessionData useState moved up here (was at line ~5868) so the
@@ -24162,12 +24307,17 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
   };
 
-  const handleRecognizeStudents = async (uids, scopeLabel = 'students') => {
+  const handleRecognizeStudents = async (uids, scopeLabel = 'students', overrides = null) => {
+      // overrides {reasonId, amount}: used by Class Goals to fan out
+      // 'group_goal' events without disturbing the teacher's selected
+      // individual-recognition reason. Same caps, same validators.
+      const effectiveReasonId = (overrides && ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS.has(overrides.reasonId))
+          ? overrides.reasonId : havenRewardReasonId;
       if (!havenRecognitionConfig.enabled) {
           addToast('Enable AlloHaven recognition for this session before sending an award.', 'info');
           return;
       }
-      if (havenRewardSendLockRef.current || havenRewardBusy || !activeSessionCode || !ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS.has(havenRewardReasonId)) return;
+      if (havenRewardSendLockRef.current || havenRewardBusy || !activeSessionCode || !ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS.has(effectiveReasonId)) return;
       const roster = (sessionData && sessionData.roster) || {};
       const targetUids = Array.from(new Set(Array.isArray(uids) ? uids : []))
           .filter(uid => uid && roster[uid]);
@@ -24175,7 +24325,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           addToast('No connected students are available for this recognition.', 'info');
           return;
       }
-      const amount = havenRewardAmount === 2 ? 2 : 1;
+      const amount = (overrides ? Number(overrides.amount) : havenRewardAmount) === 2 ? 2 : 1;
       const awardedAt = Date.now();
       let cappedCount = 0;
       const prepared = targetUids.map((uid, index) => {
@@ -24189,7 +24339,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           }
           const reward = {
               id: 'haven-' + awardedAt.toString(36) + '-' + index.toString(36) + '-' + Math.random().toString(36).slice(2, 8),
-              reasonId: havenRewardReasonId,
+              reasonId: effectiveReasonId,
               amount,
               at: awardedAt
           };
@@ -24224,7 +24374,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               batch.forEach(item => { havenRewardDraftsRef.current[item.uid] = item.rewards; });
               delivered += batch.length;
           }
-          const reason = ALLOHAVEN_CLASSROOM_REWARD_REASONS.find(item => item.id === havenRewardReasonId);
+          const reason = ALLOHAVEN_CLASSROOM_REWARD_REASONS.find(item => item.id === effectiveReasonId);
           setHavenRewardReceipt({
               count: delivered,
               scopeLabel: scopeLabel || 'students',
@@ -24243,7 +24393,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       } catch (error) {
           warnLog('Could not finish the batched AlloHaven recognition.', error);
           if (delivered > 0) {
-              const reason = ALLOHAVEN_CLASSROOM_REWARD_REASONS.find(item => item.id === havenRewardReasonId);
+              const reason = ALLOHAVEN_CLASSROOM_REWARD_REASONS.find(item => item.id === effectiveReasonId);
               setHavenRewardReceipt({
                   count: delivered,
                   scopeLabel: 'students reached before interruption',
@@ -24264,7 +24414,79 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           havenRewardSendLockRef.current = false;
           setHavenRewardBusy(false);
       }
+      return delivered;
   };
+  // ── Class Goals (Rings A/B) ── mark an interdependent goal met → fan out
+  // ONE group_goal recognition event to every connected student on the
+  // goal's team via the standard batched path (same caps, same validators,
+  // same receipts). The goal's label stays device-local in
+  // rosterKey.classGoals; only the enum id crosses.
+  const _bumpClassGoalMet = (goalId, by) => {
+      setRosterKey(prev => {
+          const prevGoals = normalizeClassGoals(prev && prev.classGoals);
+          return {
+              ...(prev || { groups: {}, students: {} }),
+              classGoals: prevGoals.map(item => item.id === goalId
+                  ? { ...item, metCount: item.metCount + (by || 1), lastMetAt: Date.now() }
+                  : item),
+          };
+      });
+  };
+  const handleAwardClassGoal = async (goalId) => {
+      const goals = normalizeClassGoals(rosterKey && rosterKey.classGoals);
+      const goal = goals.find(item => item.id === goalId);
+      if (!goal) return;
+      const teamUids = resolveClassGoalTeamUids(goal, (sessionData && sessionData.roster) || {}, rosterKey);
+      if (!teamUids.length) {
+          addToast(goal.team.indexOf('pod:') === 0
+              ? 'No connected students matched this pod — check the seating chart’s active layout.'
+              : 'No connected students are on this goal’s team.', 'info');
+          return;
+      }
+      const delivered = await handleRecognizeStudents(
+          teamUids,
+          goal.team === 'class' ? 'students · class goal met' : 'students · team goal met',
+          { reasonId: 'group_goal', amount: goal.tokens }
+      );
+      if (!delivered) return;
+      _bumpClassGoalMet(goalId, 1);
+  };
+  // ── Ring C: independent goals ── each MARKED student earns on their own
+  // accomplishment. Rides the existing 'goal_progress' reason (already in
+  // every enum copy) — students see "Individual goal progress". Same caps.
+  const handleAwardIndependentGoal = async (goalId, uids) => {
+      const goals = normalizeClassGoals(rosterKey && rosterKey.classGoals);
+      const goal = goals.find(item => item.id === goalId);
+      if (!goal || !Array.isArray(uids) || !uids.length) return;
+      const delivered = await handleRecognizeStudents(
+          uids,
+          'students · individual goal met',
+          { reasonId: 'goal_progress', amount: goal.tokens }
+      );
+      if (!delivered) return;
+      _bumpClassGoalMet(goalId, delivered);
+  };
+  // Notify-confirm prompt (§4.6): when a TRACKED goal's criterion first
+  // crosses its threshold this session, surface a quiet toast. This effect
+  // never awards anything — the teacher's tap on "Met" is the only award
+  // path. Goal labels appear in the toast only (teacher device, never wire).
+  useEffect(() => {
+      if (!isTeacherMode || !activeSessionCode) {
+          classGoalNotifiedRef.current = {};
+          return;
+      }
+      const roster = (sessionData && sessionData.roster) || {};
+      const goals = normalizeClassGoals(rosterKey && rosterKey.classGoals);
+      goals.forEach(goal => {
+          if (!goal.active || !goal.tracked || classGoalNotifiedRef.current[goal.id]) return;
+          const teamUids = resolveClassGoalTeamUids(goal, roster, rosterKey);
+          const progress = evaluateClassGoalProgress(goal, teamUids, roster, sessionData);
+          if (progress && progress.met) {
+              classGoalNotifiedRef.current[goal.id] = true;
+              addToast('🎯 Goal criterion met: “' + goal.label + '” — review and tap Met to award.', 'info');
+          }
+      });
+  }, [sessionData, rosterKey, isTeacherMode, activeSessionCode]);
   // Plan T Slice Ta: student-side response submission to live session.
   // Writes to a NEW field `quizState.allResponses[uid][questionIdx]` so the
   // existing `quizState.responses[uid]` (one-question-at-a-time presentation
@@ -36923,7 +37145,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                       aria-label="AlloHaven recognition reason"
                       style={{minWidth:0,width:'100%',border:'1px solid #86efac',borderRadius:6,background:'white',color:'#14532d',padding:'0.3rem',fontSize:'0.72rem'}}
                     >
-                      {ALLOHAVEN_CLASSROOM_REWARD_REASONS.map(reason => (
+                      {ALLOHAVEN_CLASSROOM_REWARD_REASONS.filter(reason => reason.id !== 'group_goal').map(reason => (
                         <option key={reason.id} value={reason.id}>{reason.label}</option>
                       ))}
                     </select>
@@ -37008,6 +37230,275 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     </div>
                   ) : null}
                 </div>
+                <div style={dockGroupLabel}>Class Goals</div>
+                {(() => {
+                  // Class Goals (docs/GROUP_CONTINGENCY_DESIGN.md, Ring A):
+                  // whole-class interdependent contingencies, earn-only,
+                  // teacher-observed. "Met" fans out ONE private group_goal
+                  // recognition to every connected student through the same
+                  // capped path as Recognize. Goal names never leave this
+                  // device — students only ever see "Class goal achieved."
+                  const goals = normalizeClassGoals(rosterKey && rosterKey.classGoals);
+                  const activeGoals = goals.filter(goal => goal.active);
+                  const saveGoals = (next) => setRosterKey(prev => ({ ...(prev || { groups: {}, students: {} }), classGoals: next }));
+                  const draft = classGoalDraft;
+                  const goalBtnDisabled = !havenRecognitionConfig.enabled || havenConfigBusy || havenRewardBusy || Object.keys(rosterEntries).length === 0;
+                  return (
+                    <div style={{display:'flex',flexDirection:'column',gap:6,padding:'0.45rem',background:'#f0f9ff',border:'1px solid #bae6fd',borderRadius:9}}>
+                      <p style={{margin:0,fontSize:'0.61rem',lineHeight:1.35,color:'#0c4a6e'}}>
+                        Whole-class goals, earn-only. Goal names stay on this device; students privately receive “Class goal achieved.”
+                        {!havenRecognitionConfig.enabled ? ' Enable recognition above to award.' : ''}
+                      </p>
+                      {activeGoals.map(goal => {
+                        const teamUids = resolveClassGoalTeamUids(goal, rosterEntries, rosterKey);
+                        const progress = evaluateClassGoalProgress(goal, teamUids, rosterEntries, sessionData);
+                        const teamLabel = goal.team === 'class' ? null
+                          : goal.team.indexOf('group:') === 0
+                            ? (((rosterKey && rosterKey.groups && rosterKey.groups[goal.team.slice(6)]) || {}).name || 'Group')
+                            : 'Pod ' + goal.team.slice(4);
+                        const independent = goal.mode === 'independent';
+                        const checklistOpen = independent && openChecklistGoalId === goal.id;
+                        const markedUids = checklistOpen ? teamUids.filter(uid => checklistMarks[uid]) : [];
+                        const awardDisabled = goalBtnDisabled || teamUids.length === 0;
+                        return (
+                          <div key={goal.id} style={{display:'flex',flexDirection:'column',gap:4,padding:'0.32rem 0.4rem',borderRadius:7,background:'white',border:'1px solid ' + (progress && progress.met ? '#0284c7' : '#bae6fd'),boxShadow:progress && progress.met ? '0 0 0 1px #0284c7' : 'none'}}>
+                            <div style={{display:'grid',gridTemplateColumns:'1fr auto auto',gap:5,alignItems:'center'}}>
+                              <span style={{fontSize:'0.66rem',fontWeight:800,color:'#0c4a6e',overflow:'hidden',textOverflow:'ellipsis'}}>
+                                {goal.label}
+                                <span style={{fontWeight:600,color:'#0369a1'}}>
+                                  {(teamLabel ? ' · ' + teamLabel : '')
+                                    + (independent ? ' · each student' : '')
+                                    + (goal.allowance && !independent ? ' · ok with up to ' + goal.allowance + ' exception' + (goal.allowance === 1 ? '' : 's') : '')
+                                    + (goal.metCount ? ' · met ×' + goal.metCount : '')}
+                                </span>
+                                {progress ? (
+                                  <span style={{display:'block',fontWeight:700,color:progress.met ? '#0369a1' : '#64748b'}}>
+                                    {progress.label + (progress.met ? ' · criterion met — your call' : '')}
+                                  </span>
+                                ) : null}
+                              </span>
+                              {independent ? (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (checklistOpen) { setOpenChecklistGoalId(null); return; }
+                                    const seeded = {};
+                                    teamUids.forEach(uid => { seeded[uid] = !!(progress && progress.perStudentMet && progress.perStudentMet[uid]); });
+                                    setChecklistMarks(seeded);
+                                    setOpenChecklistGoalId(goal.id);
+                                  }}
+                                  aria-expanded={checklistOpen}
+                                  aria-label={'Open per-student checklist for goal ' + goal.label}
+                                  style={{border:'1px solid #0369a1',borderRadius:7,background:checklistOpen?'#e0f2fe':'#0284c7',color:checklistOpen?'#0369a1':'white',padding:'0.28rem 0.45rem',fontSize:'0.66rem',fontWeight:800,cursor:'pointer'}}
+                                >☑ Checklist</button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled={awardDisabled}
+                                  onClick={() => handleAwardClassGoal(goal.id)}
+                                  title={havenRecognitionConfig.enabled ? 'Criterion met — privately award +' + goal.tokens + ' AlloHaven token' + (goal.tokens === 1 ? '' : 's') + ' to each student on this team.' : 'Enable recognition above first.'}
+                                  aria-label={'Goal met: ' + goal.label + ' — award ' + goal.tokens + ' token' + (goal.tokens === 1 ? '' : 's') + ' to each of ' + teamUids.length + ' students'}
+                                  style={{border:'1px solid #0369a1',borderRadius:7,background:'#0284c7',color:'white',padding:'0.28rem 0.45rem',fontSize:'0.66rem',fontWeight:800,cursor:awardDisabled?'not-allowed':'pointer',opacity:awardDisabled?0.55:1}}
+                                >
+                                  🎯 Met · +{goal.tokens}
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => { saveGoals(goals.filter(item => item.id !== goal.id)); if (openChecklistGoalId === goal.id) setOpenChecklistGoalId(null); }}
+                                aria-label={'Remove goal ' + goal.label}
+                                style={{border:'none',background:'transparent',color:'#64748b',fontSize:'0.72rem',fontWeight:900,cursor:'pointer',padding:'0.1rem 0.2rem'}}
+                              >✕</button>
+                            </div>
+                            {checklistOpen ? (
+                              <div style={{display:'flex',flexDirection:'column',gap:4,paddingTop:2,borderTop:'1px dashed #bae6fd'}}>
+                                <p style={{margin:0,fontSize:'0.6rem',color:'#0369a1'}}>
+                                  {progress ? 'Pre-checked from live progress — adjust before awarding.' : 'Mark each student who met this goal.'}
+                                </p>
+                                <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
+                                  {teamUids.map(uid => {
+                                    const marked = !!checklistMarks[uid];
+                                    const sName = (rosterEntries[uid] && rosterEntries[uid].name) || 'Student';
+                                    return (
+                                      <button
+                                        key={goal.id + '-' + uid}
+                                        type="button"
+                                        role="checkbox"
+                                        aria-checked={marked}
+                                        aria-label={sName + (marked ? ' — marked as met' : ' — not marked')}
+                                        onClick={() => setChecklistMarks(prev => ({ ...prev, [uid]: !prev[uid] }))}
+                                        style={{border:'1px solid ' + (marked ? '#0369a1' : '#cbd5e1'),borderRadius:999,background:marked?'#e0f2fe':'white',color:marked?'#0c4a6e':'#64748b',padding:'0.2rem 0.45rem',fontSize:'0.63rem',fontWeight:800,cursor:'pointer'}}
+                                      >{(marked ? '☑ ' : '☐ ') + sName}</button>
+                                    );
+                                  })}
+                                  {teamUids.length === 0 ? <span style={{fontSize:'0.62rem',color:'#64748b',fontStyle:'italic'}}>No connected students on this team.</span> : null}
+                                </div>
+                                <button
+                                  type="button"
+                                  disabled={goalBtnDisabled || markedUids.length === 0}
+                                  onClick={() => { handleAwardIndependentGoal(goal.id, markedUids); setOpenChecklistGoalId(null); }}
+                                  aria-label={'Award ' + goal.tokens + ' token' + (goal.tokens === 1 ? '' : 's') + ' to each of ' + markedUids.length + ' marked students'}
+                                  style={{alignSelf:'flex-end',border:'1px solid #0369a1',borderRadius:7,background:'#0284c7',color:'white',padding:'0.26rem 0.5rem',fontSize:'0.66rem',fontWeight:800,cursor:(goalBtnDisabled || markedUids.length === 0)?'not-allowed':'pointer',opacity:(goalBtnDisabled || markedUids.length === 0)?0.55:1}}
+                                >🎯 Award {markedUids.length} · +{goal.tokens} each</button>
+                              </div>
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                      {activeGoals.length === 0 && !draft ? (
+                        <p style={{margin:0,fontSize:'0.62rem',color:'#64748b',fontStyle:'italic'}}>No class goals yet — add one to recognize whole-class accomplishments.</p>
+                      ) : null}
+                      {draft ? (
+                        <div style={{display:'flex',flexDirection:'column',gap:4,padding:'0.4rem',borderRadius:7,background:'white',border:'1px solid #bae6fd'}}>
+                          <label style={{display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}}>
+                            Starting point
+                            <select
+                              value={draft.templateId}
+                              onChange={(event) => {
+                                const template = CLASS_GOAL_TEMPLATES.find(item => item.id === event.target.value) || CLASS_GOAL_TEMPLATES[0];
+                                setClassGoalDraft({ ...draft, templateId: template.id, label: template.id === 'custom' ? '' : template.label });
+                              }}
+                              aria-label="Class goal starting template"
+                              style={{border:'1px solid #bae6fd',borderRadius:6,background:'white',color:'#0c4a6e',padding:'0.25rem',fontSize:'0.68rem'}}
+                            >
+                              {CLASS_GOAL_TEMPLATES.map(template => <option key={template.id} value={template.id}>{template.label}</option>)}
+                            </select>
+                          </label>
+                          <label style={{display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}}>
+                            Goal name (stays on this device)
+                            <input
+                              type="text"
+                              value={draft.label}
+                              maxLength={80}
+                              onChange={(event) => setClassGoalDraft({ ...draft, label: event.target.value })}
+                              placeholder="e.g., Lined up ready in under 2 minutes"
+                              aria-label="Class goal name — kept on this device only"
+                              style={{border:'1px solid #bae6fd',borderRadius:6,padding:'0.28rem',fontSize:'0.68rem',color:'#0c4a6e'}}
+                            />
+                          </label>
+                          <div style={{display:'flex',gap:6}}>
+                            <label style={{flex:1,display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}}>
+                              How it's earned
+                              <select value={draft.mode} onChange={(event) => setClassGoalDraft({ ...draft, mode: event.target.value === 'independent' ? 'independent' : 'interdependent' })} aria-label="Whole team together, or each student individually" style={{border:'1px solid #bae6fd',borderRadius:6,background:'white',color:'#0c4a6e',padding:'0.25rem',fontSize:'0.68rem'}}>
+                                <option value="interdependent">Team together</option>
+                                <option value="independent">Each student</option>
+                              </select>
+                            </label>
+                            <label style={{flex:1,display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}}>
+                              Team
+                              <select
+                                value={draft.team}
+                                onChange={(event) => setClassGoalDraft({ ...draft, team: event.target.value })}
+                                aria-label="Which students this goal covers"
+                                style={{border:'1px solid #bae6fd',borderRadius:6,background:'white',color:'#0c4a6e',padding:'0.25rem',fontSize:'0.68rem'}}
+                              >
+                                <option value="class">Whole class</option>
+                                {Object.keys((rosterKey && rosterKey.groups) || {}).map(gid => (
+                                  <option key={'goal-team-' + gid} value={'group:' + gid}>{(rosterKey.groups[gid] && rosterKey.groups[gid].name) || 'Group'}</option>
+                                ))}
+                                {(() => {
+                                  const SC = window.AlloModules && window.AlloModules.SeatingChart;
+                                  if (!SC || typeof SC.listPods !== 'function') return null;
+                                  let pods = [];
+                                  try { pods = SC.listPods(rosterKey); } catch(_) { pods = []; }
+                                  return pods.map(pod => <option key={'goal-pod-' + pod.index} value={'pod:' + pod.index}>{pod.label}</option>);
+                                })()}
+                              </select>
+                            </label>
+                          </div>
+                          {(!(window.AlloModules && window.AlloModules.SeatingChart) && rosterKey && rosterKey.seating) ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (typeof window.__alloLazySeatingChart === 'function') { try { window.__alloLazySeatingChart(); } catch(_) {} }
+                                window.setTimeout(() => setClassGoalDraft(current => current ? { ...current } : current), 900);
+                              }}
+                              style={{alignSelf:'flex-start',border:'1px dashed #7dd3fc',borderRadius:6,background:'white',color:'#0369a1',padding:'0.2rem 0.4rem',fontSize:'0.6rem',fontWeight:800,cursor:'pointer'}}
+                            >Load seating pods as teams…</button>
+                          ) : null}
+                          <div style={{display:'flex',gap:6}}>
+                            <label style={{flex:1,display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}}>
+                              Tokens
+                              <select value={draft.tokens} onChange={(event) => setClassGoalDraft({ ...draft, tokens: Number(event.target.value) === 2 ? 2 : 1 })} aria-label="Tokens awarded per student when this goal is met" style={{border:'1px solid #bae6fd',borderRadius:6,background:'white',color:'#0c4a6e',padding:'0.25rem',fontSize:'0.68rem'}}>
+                                <option value={1}>+1</option>
+                                <option value={2}>+2</option>
+                              </select>
+                            </label>
+                            <label style={{flex:1,display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}} title="Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.">
+                              Allowance
+                              <select value={draft.allowance} onChange={(event) => setClassGoalDraft({ ...draft, allowance: Math.max(0, Math.min(5, Number(event.target.value) || 0)) })} aria-label="Exceptions allowed while still meeting the goal" style={{border:'1px solid #bae6fd',borderRadius:6,background:'white',color:'#0c4a6e',padding:'0.25rem',fontSize:'0.68rem'}}>
+                                {[0,1,2,3,4,5].map(n => <option key={n} value={n}>{n === 0 ? 'None' : 'Up to ' + n}</option>)}
+                              </select>
+                            </label>
+                          </div>
+                          <div style={{display:'flex',gap:6}}>
+                            <label style={{flex:1.4,display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}} title="App-tracked criteria show live progress and prompt you when met — awarding is always your tap, never automatic.">
+                              Progress signal
+                              <select
+                                value={draft.trackedMetric}
+                                onChange={(event) => {
+                                  const metric = event.target.value;
+                                  setClassGoalDraft({ ...draft, trackedMetric: metric, trackedThreshold: metric === 'xp_total' ? 500 : 1 });
+                                }}
+                                aria-label="Optional app-tracked progress signal for this goal"
+                                style={{border:'1px solid #bae6fd',borderRadius:6,background:'white',color:'#0c4a6e',padding:'0.25rem',fontSize:'0.68rem'}}
+                              >
+                                <option value="none">Teacher observed (none)</option>
+                                <option value="xp_total">Team session XP reaches…</option>
+                                <option value="responded_each">Everyone responds ≥…</option>
+                              </select>
+                            </label>
+                            {draft.trackedMetric !== 'none' ? (
+                              <label style={{flex:0.6,display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}}>
+                                {draft.trackedMetric === 'xp_total' ? 'XP' : 'Responses'}
+                                <input
+                                  type="number"
+                                  min={1}
+                                  max={1000000}
+                                  value={draft.trackedThreshold}
+                                  onChange={(event) => setClassGoalDraft({ ...draft, trackedThreshold: Math.max(1, Math.min(1000000, Math.floor(Number(event.target.value) || 1))) })}
+                                  aria-label={draft.trackedMetric === 'xp_total' ? 'XP threshold for this goal' : 'Responses required per student'}
+                                  style={{border:'1px solid #bae6fd',borderRadius:6,padding:'0.25rem',fontSize:'0.68rem',color:'#0c4a6e'}}
+                                />
+                              </label>
+                            ) : null}
+                          </div>
+                          <div style={{display:'flex',gap:6,justifyContent:'flex-end'}}>
+                            <button type="button" onClick={() => setClassGoalDraft(null)} style={{border:'1px solid #cbd5e1',borderRadius:7,background:'white',color:'#475569',padding:'0.26rem 0.5rem',fontSize:'0.66rem',fontWeight:800,cursor:'pointer'}}>Cancel</button>
+                            <button
+                              type="button"
+                              disabled={!draft.label.trim()}
+                              onClick={() => {
+                                const label = draft.label.trim().slice(0, 80);
+                                if (!label) return;
+                                const goal = normalizeClassGoal({
+                                  id: 'goal-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
+                                  label,
+                                  templateId: draft.templateId,
+                                  tokens: draft.tokens,
+                                  allowance: draft.allowance,
+                                  mode: draft.mode,
+                                  team: draft.team,
+                                  tracked: draft.trackedMetric !== 'none' ? { metric: draft.trackedMetric, threshold: draft.trackedThreshold } : null,
+                                  active: true,
+                                });
+                                if (goal) saveGoals(goals.concat([goal]).slice(0, 20));
+                                setClassGoalDraft(null);
+                              }}
+                              style={{border:'1px solid #0369a1',borderRadius:7,background:'#0284c7',color:'white',padding:'0.26rem 0.5rem',fontSize:'0.66rem',fontWeight:800,cursor:'pointer',opacity:!draft.label.trim()?0.5:1}}
+                            >Add goal</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setClassGoalDraft({ templateId: 'transition_smooth', label: 'Smooth transition', tokens: 1, allowance: 1, mode: 'interdependent', team: 'class', trackedMetric: 'none', trackedThreshold: 1 })}
+                          style={{alignSelf:'flex-start',border:'1px dashed #7dd3fc',borderRadius:7,background:'white',color:'#0369a1',padding:'0.28rem 0.5rem',fontSize:'0.66rem',fontWeight:800,cursor:'pointer'}}
+                        >＋ Add class goal</button>
+                      )}
+                    </div>
+                  );
+                })()}
                 {(() => {
                   // Students: delivery status (which resource each student is
                   // actually viewing vs their target) + per-student push of the
@@ -37414,6 +37905,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         isParentMode={isParentMode}
         isIndependentMode={isIndependentMode}
         onOpenSubmissionInbox={() => { setIsRosterKeyOpen(false); setIsSubmissionInboxOpen(true); }}
+        onOpenSeatingChart={() => { setIsRosterKeyOpen(false); if (typeof window.__alloLazySeatingChart === 'function') { try { window.__alloLazySeatingChart(); } catch(_) {} } setIsSeatingChartOpen(true); }}
       />
       {isSubmissionInboxOpen && (() => {
         const M = window.AlloModules && window.AlloModules.SubmissionInbox;
@@ -37429,6 +37921,16 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           />
         );
       })()}
+      <CDNModuleGate moduleKey="SeatingChart.SeatingChartPanel" isOpen={isSeatingChartOpen} onClose={() => setIsSeatingChartOpen(false)} icon="🪑" displayName="Seating Chart" t={t}>
+        {(SeatingChartPanel) => React.createElement(SeatingChartPanel, {
+          isOpen: true,
+          onClose: () => setIsSeatingChartOpen(false),
+          rosterKey,
+          setRosterKey,
+          t,
+          addToast,
+        })}
+      </CDNModuleGate>
       <StudentSubmitModal
           isOpen={showSubmitModal}
           onClose={handleCloseSubmitModal}

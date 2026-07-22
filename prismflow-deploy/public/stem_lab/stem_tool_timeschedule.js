@@ -484,10 +484,10 @@
         return h('div', { className: 'inline-flex rounded-lg border border-slate-300 bg-slate-100 p-1',
           role: 'group', 'aria-label': t('stem.timeschedule.time_display_format', "Time display format") },
           h('button', { type: 'button', onClick: function () { upd({ use24: false }); },
-            'aria-pressed': !use24, className: t('stem.timeschedule.px_3_py_1_5_rounded_md_text_xs_font_bo', "px-3 py-1.5 rounded-md text-xs font-bold ") +
+            'aria-pressed': !use24, className: "px-3 py-1.5 rounded-md text-xs font-bold " +
               (!use24 ? 'bg-white text-sky-800 shadow-sm' : 'text-slate-600') }, '12-hour'),
           h('button', { type: 'button', onClick: function () { upd({ use24: true }); },
-            'aria-pressed': use24, className: t('stem.timeschedule.px_3_py_1_5_rounded_md_text_xs_font_bo', "px-3 py-1.5 rounded-md text-xs font-bold ") +
+            'aria-pressed': use24, className: "px-3 py-1.5 rounded-md text-xs font-bold " +
               (use24 ? 'bg-white text-sky-800 shadow-sm' : 'text-slate-600') }, '24-hour')
         );
       }
@@ -606,7 +606,7 @@
           'aria-labelledby': 'ts-elapsed-heading' },
           heading('ts-elapsed-heading', t('stem.timeschedule.elapsed_time_timeline', "Elapsed-Time Timeline"),
             t('stem.timeschedule.break_an_interval_into_friendly_jumps_', "Break an interval into friendly jumps to the hour, then combine the jumps.")),
-          h('div', { className: t('stem.timeschedule.grid_grid_cols_1_lg_grid_cols_300px_1f', "grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-4") },
+          h('div', { className: "grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-4" },
             h('div', { className: 'rounded-2xl border border-slate-200 bg-white p-4 space-y-4' },
               h('label', { className: 'block text-xs font-black text-slate-700' }, t('stem.timeschedule.starting_time', "Starting time"),
                 h('input', { type: 'time', value: time24(start),
@@ -731,7 +731,7 @@
           'aria-labelledby': 'ts-schedule-heading' },
           heading('ts-schedule-heading', t('stem.timeschedule.schedule_planner', "Schedule Planner"),
             t('stem.timeschedule.compare_event_lengths_free_time_gaps_a', "Compare event lengths, free-time gaps, and the span of an entire plan.")),
-          h('div', { className: t('stem.timeschedule.grid_grid_cols_1_lg_grid_cols_1_2fr_8f', "grid grid-cols-1 lg:grid-cols-[1.2fr_.8fr] gap-4") },
+          h('div', { className: "grid grid-cols-1 lg:grid-cols-[1.2fr_.8fr] gap-4" },
             h('div', { className: 'rounded-2xl border border-violet-200 bg-white overflow-hidden' },
               h('div', { className: 'bg-violet-700 text-white p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3' },
                 h('div', null, h('h4', { className: 'font-black' }, schedule.icon + ' ' + schedule.label),
@@ -789,15 +789,15 @@
                   placeholder: sq.answerFormat === '24' ? t('stem.timeschedule.example_13_25', "Example: 13:25") :
                     sq.answerFormat === '12' ? t('stem.timeschedule.example_1_25_pm', "Example: 1:25 PM") :
                     sq.type === 'time' ? t('stem.timeschedule.example_13_25_or_1_25_pm', "Example: 13:25 or 1:25 PM") : t('stem.timeschedule.example_75_min', "Example: 75 min"),
-                  className: t('stem.timeschedule.mt_1_w_full_rounded_lg_border_border_a', "mt-1 w-full rounded-lg border border-amber-300 px-3 py-2.5 font-bold") })),
+                  className: "mt-1 w-full rounded-lg border border-amber-300 px-3 py-2.5 font-bold" })),
               h('div', { className: 'flex gap-2' },
                 h('button', { type: 'button', onClick: check,
-                  className: t('stem.timeschedule.flex_1_rounded_lg_bg_amber_800_px_4_py', "flex-1 rounded-lg bg-amber-800 px-4 py-2.5 text-sm font-black text-white hover:bg-amber-900") },
+                  className: "flex-1 rounded-lg bg-amber-800 px-4 py-2.5 text-sm font-black text-white hover:bg-amber-900" },
                   t('stem.timeschedule.check_answer', "Check answer")),
                 h('button', { type: 'button', onClick: function () {
                   upd({ scheduleQuestionIndex: (sqIndex + 1) % sqs.length,
                     scheduleAnswer: '', scheduleFeedback: null });
-                }, className: t('stem.timeschedule.rounded_lg_border_border_amber_300_bg_', "rounded-lg border border-amber-300 bg-white px-4 py-2.5 text-sm font-black text-amber-800") },
+                }, className: "rounded-lg border border-amber-300 bg-white px-4 py-2.5 text-sm font-black text-amber-800" },
                   t('stem.timeschedule.next', "Next"))),
               feedback && h('div', { id: 'ts-schedule-feedback', role: 'status', 'aria-live': 'polite', className: 'rounded-xl border p-3 text-sm font-bold ' +
                 (feedback.ok ? 'border-emerald-300 bg-emerald-50 text-emerald-800' :
@@ -980,7 +980,7 @@
               (challengePosition + 1) + t('stem.timeschedule.of', " of ") + challengeList.length + t('stem.timeschedule.in', " in ") + selectedDifficulty.label },
             h('div', { className: 'h-full bg-gradient-to-r from-sky-500 to-indigo-600',
               style: { width: (solvedChallengeCount / CHALLENGES.length * 100) + '%' } })),
-          h('div', { className: t('stem.timeschedule.grid_grid_cols_1_lg_grid_cols_8fr_1_2f', "grid grid-cols-1 lg:grid-cols-[.8fr_1.2fr] gap-4") },
+          h('div', { className: "grid grid-cols-1 lg:grid-cols-[.8fr_1.2fr] gap-4" },
             h('div', { className: 'rounded-2xl border border-indigo-200 bg-gradient-to-b from-indigo-50 to-white p-4 flex items-center justify-center min-h-[280px]' },
               challenge.clock != null ? analog(challenge.clock, 'ts-challenge-clock-' + challengeId, true) :
                 h('div', { className: 'text-center max-w-xs' },
@@ -1054,7 +1054,7 @@
             h('div', { className: 'flex items-center gap-3 min-w-0 flex-1' },
               h('button', { type: 'button', 'aria-label': t('stem.timeschedule.back_to_stem_tools', "Back to STEM tools"),
                 onClick: function () { if (typeof ctx.setStemLabTool === 'function') ctx.setStemLabTool(null); },
-                className: t('stem.timeschedule.shrink_0_rounded_xl_border_border_whit', "shrink-0 rounded-xl border border-white/30 bg-white/10 p-2.5 hover:bg-white/20 focus:ring-2 focus:ring-white") },
+                className: "shrink-0 rounded-xl border border-white/30 bg-white/10 p-2.5 hover:bg-white/20 focus:ring-2 focus:ring-white" },
                 ArrowLeft ? h(ArrowLeft, { size: 19 }) : '←'),
               h('div', { className: 'text-4xl shrink-0', 'aria-hidden': 'true' }, '🕰️'),
               h('div', { className: 'min-w-0' },
