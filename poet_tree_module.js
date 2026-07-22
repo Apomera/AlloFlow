@@ -50,9 +50,10 @@
     st.id = 'pt-a11y-css';
     st.textContent = [
       '@media (prefers-reduced-motion: reduce) { .pt-tool *, .pt-tool *::before, .pt-tool *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }',
+      '.pt-tool button:focus-visible, .pt-tool input:focus-visible, .pt-tool textarea:focus-visible, .pt-tool select:focus-visible, .pt-tool [tabindex]:focus-visible { outline: 3px solid #0f766e !important; outline-offset: 2px !important; }',
+      '@media (forced-colors: active) { .pt-tool button:focus-visible, .pt-tool input:focus-visible, .pt-tool textarea:focus-visible, .pt-tool select:focus-visible, .pt-tool [tabindex]:focus-visible { outline-color: CanvasText !important; } }',
       '.pt-erasure-word { display: inline-block; min-width: 24px; min-height: 24px; line-height: 24px; text-align: center; }',
-      '.pt-erasure-word:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }',
-      '.pt-erasure-word:focus:not(:focus-visible) { outline: none; }'
+      '.pt-erasure-word:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -2171,7 +2172,7 @@
         // Tab content
         e('div', { style: { flex: 1, overflowY: 'auto', padding: '20px' } },
           // ── FORM TAB ──
-          activeTab === 'form' && e('div', { role: 'tabpanel', id: 'pt-panel-form', 'aria-labelledby': 'pt-tab-form', tabIndex: 0, style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '14px', outline: 'none' } },
+          activeTab === 'form' && e('div', { role: 'tabpanel', id: 'pt-panel-form', 'aria-labelledby': 'pt-tab-form', tabIndex: 0, style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '14px' } },
 
             // ── Assignment prompt banner (visible to students when teacher set a prompt) ──
             teacherPrompt && !onSaveConfig && e('div', { role: 'note', 'aria-label': 'Assignment prompt from teacher', style: { background: '#fffbeb', border: '2px solid #fde68a', borderRadius: '12px', padding: '12px 14px' } },
@@ -2270,7 +2271,7 @@
           ),
 
           // ── WRITE TAB ──
-          activeTab === 'write' && e('div', { role: 'tabpanel', id: 'pt-panel-write', 'aria-labelledby': 'pt-tab-write', tabIndex: 0, style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px', outline: 'none' } },
+          activeTab === 'write' && e('div', { role: 'tabpanel', id: 'pt-panel-write', 'aria-labelledby': 'pt-tab-write', tabIndex: 0, style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px' } },
             // Form badge + reading-mode toggle
             e('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' } },
               form
@@ -2933,7 +2934,7 @@
                               placeholder: 'Tweak this image (e.g. "make it sunset", "add stars")',
                               'aria-label': 'Image edit instruction for ' + (m.vehicle || m.excerpt),
                               disabled: loading,
-                              style: { flex: 1, minWidth: '140px', padding: '5px 10px', borderRadius: '6px', border: '1px solid #94a3b8', fontSize: '11px', outline: 'none', background: '#fff' }
+                              style: { flex: 1, minWidth: '140px', padding: '5px 10px', borderRadius: '6px', border: '1px solid #94a3b8', fontSize: '11px', background: '#fff' }
                             }),
                             e('button', { onClick: function () { refineMetaphorImage(m); }, disabled: loading || !edit.trim(),
                               'aria-busy': loading ? 'true' : 'false',
@@ -3011,7 +3012,7 @@
           ),
 
           // ── FEEDBACK TAB ──
-          activeTab === 'feedback' && e('div', { role: 'tabpanel', id: 'pt-panel-feedback', 'aria-labelledby': 'pt-tab-feedback', tabIndex: 0, style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px', outline: 'none' } },
+          activeTab === 'feedback' && e('div', { role: 'tabpanel', id: 'pt-panel-feedback', 'aria-labelledby': 'pt-tab-feedback', tabIndex: 0, style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px' } },
             e('h3', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, '✨ AI Feedback'),
             !poemText.trim() && e('p', { style: { color: '#475569', fontSize: '13px', margin: 0 } }, tr('Write a poem in the Write tab first, then come back for feedback.')),
 
@@ -3211,7 +3212,7 @@
           ),
 
           // ── PERFORM TAB ──
-          activeTab === 'perform' && e('div', { role: 'tabpanel', id: 'pt-panel-perform', 'aria-labelledby': 'pt-tab-perform', tabIndex: 0, style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px', outline: 'none' } },
+          activeTab === 'perform' && e('div', { role: 'tabpanel', id: 'pt-panel-perform', 'aria-labelledby': 'pt-tab-perform', tabIndex: 0, style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px' } },
             e('h3', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, '🎙️ Perform'),
             !poemText.trim() && e('p', { style: { color: '#475569', fontSize: '13px', margin: 0 } }, tr('Write a poem first.')),
             poemText.trim() && e('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
@@ -3330,7 +3331,7 @@
           })(),
 
           // ── LIBRARY (SHARE) TAB ──
-          activeTab === 'share' && e('div', { role: 'tabpanel', id: 'pt-panel-share', 'aria-labelledby': 'pt-tab-share', tabIndex: 0, style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '10px', outline: 'none' } },
+          activeTab === 'share' && e('div', { role: 'tabpanel', id: 'pt-panel-share', 'aria-labelledby': 'pt-tab-share', tabIndex: 0, style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '10px' } },
             e('h3', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, '📚 Library'),
             saved.length === 0
               ? e('p', { style: { color: '#cbd5e1', fontSize: '13px', fontStyle: 'italic' } }, tr('No poems saved yet. Save one from the Write tab to see it here.'))
