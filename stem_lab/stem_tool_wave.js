@@ -88,6 +88,7 @@ window.StemLab = window.StemLab || {
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var canvasNarrate = ctx.canvasNarrate;
       var props = ctx.props;
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
 
       // ── Tool body (wave) ──
       // Guard: ensure wave state exists (main module doesn't pre-init plugin state)
@@ -103,7 +104,7 @@ window.StemLab = window.StemLab || {
             }});
           });
         }
-        return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading Wave Simulator…');
+        return h('div', { className: 'p-8 text-center text-slate-600' }, __alloT('stem.wave.loading', 'Loading Wave Simulator…'));
       }
       var __waveMainView = (function() {
 const d = labToolData.wave;
@@ -125,13 +126,13 @@ const d = labToolData.wave;
           var displayPeriod = 1 / displayFreq;
           var activeWaveType = d.waveType || 'sine';
           var WAVE_VIEW_META = {
-            free: { label: 'Free wave', accent: '#22d3ee', chip: 'Waveform lab' },
-            standing: { label: 'Standing', accent: '#a855f7', chip: 'Nodes + antinodes' },
-            ripple: { label: 'Ripple tank', accent: '#60a5fa', chip: 'Interference field' },
-            reflection: { label: 'Reflection', accent: '#f59e0b', chip: 'Boundary lab' },
-            longitudinal: { label: 'Longitudinal', accent: '#fb923c', chip: 'Compression map' },
-            doppler: { label: 'Doppler', accent: '#fb7185', chip: 'Motion shift' },
-            spectrum: { label: 'Spectrum', accent: '#34d399', chip: 'Frequency analyzer' }
+            free: { label: __alloT('stem.wave.mode_free_label', 'Free wave'), accent: '#22d3ee', chip: __alloT('stem.wave.mode_free_chip', 'Waveform lab') },
+            standing: { label: __alloT('stem.wave.mode_standing_label', 'Standing'), accent: '#a855f7', chip: __alloT('stem.wave.mode_standing_chip', 'Nodes + antinodes') },
+            ripple: { label: __alloT('stem.wave.mode_ripple_label', 'Ripple tank'), accent: '#60a5fa', chip: __alloT('stem.wave.mode_ripple_chip', 'Interference field') },
+            reflection: { label: __alloT('stem.wave.mode_reflection_label', 'Reflection'), accent: '#f59e0b', chip: __alloT('stem.wave.mode_reflection_chip', 'Boundary lab') },
+            longitudinal: { label: __alloT('stem.wave.mode_longitudinal_label', 'Longitudinal'), accent: '#fb923c', chip: __alloT('stem.wave.mode_longitudinal_chip', 'Compression map') },
+            doppler: { label: __alloT('stem.wave.mode_doppler_label', 'Doppler'), accent: '#fb7185', chip: __alloT('stem.wave.mode_doppler_chip', 'Motion shift') },
+            spectrum: { label: __alloT('stem.wave.mode_spectrum_label', 'Spectrum'), accent: '#34d399', chip: __alloT('stem.wave.mode_spectrum_chip', 'Frequency analyzer') }
           };
           var waveViewMeta = WAVE_VIEW_META[waveMode] || WAVE_VIEW_META.free;
 
@@ -144,18 +145,18 @@ const d = labToolData.wave;
             var _a1 = d.amplitude || 50, _a2 = d.amplitude2 || 30;
             if (_f1 === _f2) {
               var _phN = (((d.phase2 || 0) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-              if (Math.min(_phN, Math.PI * 2 - _phN) < 0.35) interferenceLabel = Math.abs(_a1 - _a2) < 1 ? 'Full constructive' : 'Partial constructive';
-              else if (Math.abs(_phN - Math.PI) < 0.35) interferenceLabel = Math.abs(_a1 - _a2) < 1 ? 'Full destructive' : 'Partial destructive';
-              else interferenceLabel = 'Partial (φ₂ = ' + (_phN / Math.PI).toFixed(1) + 'π)';
+              if (Math.min(_phN, Math.PI * 2 - _phN) < 0.35) interferenceLabel = Math.abs(_a1 - _a2) < 1 ? __alloT('stem.wave.interference_full_constructive', 'Full constructive') : __alloT('stem.wave.interference_partial_constructive', 'Partial constructive');
+              else if (Math.abs(_phN - Math.PI) < 0.35) interferenceLabel = Math.abs(_a1 - _a2) < 1 ? __alloT('stem.wave.interference_full_destructive', 'Full destructive') : __alloT('stem.wave.interference_partial_destructive', 'Partial destructive');
+              else interferenceLabel = __alloT('stem.wave.interference_partial', 'Partial') + ' (φ₂ = ' + (_phN / Math.PI).toFixed(1) + 'π)';
             } else if (Math.abs(_f1 - _f2) <= 1) {
-              interferenceLabel = 'Beats — pulses at ' + Math.abs(_f1 - _f2).toFixed(1) + ' Hz (|f₁−f₂|)';
-            } else interferenceLabel = 'Complex';
+              interferenceLabel = __alloT('stem.wave.interference_beats', 'Beats — pulses at') + ' ' + Math.abs(_f1 - _f2).toFixed(1) + ' Hz (|f₁−f₂|)';
+            } else interferenceLabel = __alloT('stem.wave.interference_complex', 'Complex');
           }
 
-          var timbreNote = activeWaveType === 'sine' ? 'Pure sine — ONE frequency, no harmonics'
-            : activeWaveType === 'square' ? 'Square — odd harmonics (1f, 3f, 5f…), ~1/n'
-            : activeWaveType === 'triangle' ? 'Triangle — odd harmonics fading fast (~1/n²)'
-            : 'Sawtooth — ALL harmonics (1f, 2f, 3f…), ~1/n';
+          var timbreNote = activeWaveType === 'sine' ? __alloT('stem.wave.timbre_sine', 'Pure sine — ONE frequency, no harmonics')
+            : activeWaveType === 'square' ? __alloT('stem.wave.timbre_square', 'Square — odd harmonics (1f, 3f, 5f…), ~1/n')
+            : activeWaveType === 'triangle' ? __alloT('stem.wave.timbre_triangle', 'Triangle — odd harmonics fading fast (~1/n²)')
+            : __alloT('stem.wave.timbre_sawtooth', 'Sawtooth — ALL harmonics (1f, 2f, 3f…), ~1/n');
 
 
 
