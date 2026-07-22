@@ -62,6 +62,7 @@ These sections were independently committed:
 | Identity Map | `5b375c3cb` |
 | Question Log | `5da6940cc` |
 | Success Log | `175920ca7` |
+| Teacher Email Builder | `f952f8178` |
 
 The most recently completed section, Personal Reference Sheet Builder, passed:
 
@@ -141,9 +142,15 @@ Three more sections with the standard wave, all gate-verified (full suite 2,250/
 - Full suite 2,277/2,277. Mirror SHA-256: `AFDAB149DBD60A77994C1E0BB175CAB9ACC4308809FABE4E98F9AFF77C69B86D`.
 - Process tip that saved time twice this session: patch contract tests via a small Node script written to the scratchpad (PowerShell mangles quotes in inline `node -e` args).
 
+## Session notes (2026-07-21 evening, Fable — ninth continuation)
+
+- **Teacher Email Builder** `f952f8178`: already the strongest-built component in the tail (explicit "prepares text only — does not address, send, or submit" honesty, clipboard fallback with manual-copy selection, dirty-back confirmation, disclosed 10-draft cap — all kept). Fixed: timer-focus → pendingFocus with the select-text option preserved as `{ id, select }` state; null drafts crashed the saved list; textValue/date guards; 11px→12px; catalog stat guard. Render test covers live placeholder substitution, empty-body save/copy rejection, the clipboard-unavailable manual-copy path (deterministic in jsdom), discard-confirm, save-to-list, and removal.
+- **CAUTION — Vitest JSON reporter races under load:** two consecutive `--reporter=json` full runs reported fewer passed than total with 0 failed plus a "tests are still running when generating the JSON report" warning. The default reporter run was definitive: 2,285/2,285 across 153 files. If the JSON gate ever shows passed < total with failed == 0 AND that warning, re-run with the default reporter before diagnosing — do not treat it as a regression. Mirror SHA-256: `E86053D9F87B50B8A35D4D5A63D07C5F5D81EBFA839CFAEF8361C234020E9740`.
+- Teacher Email and Parent Message share near-identical helper code — Edit anchors needed template-body context to disambiguate. Expect the same when auditing **Parent Message** (it still has the timer focusById + `String(draft.body)` patterns; likely the same fix set applies nearly verbatim).
+
 ## Next section
 
-Remaining unaudited (no-render-test list): **Teacher Email, Body Check, Achievement Wall, Affirmations, Role Models, Self Assessment, Learning Contract, Emotion Regulator** — plus the ~28 timer-focus conversions as their sections come up. One independently tested and committed section at a time. Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
+Remaining unaudited (no-render-test list): **Body Check, Achievement Wall, Affirmations, Role Models, Self Assessment, Learning Contract, Emotion Regulator** — plus Parent Message (see note above) and the ~28 timer-focus conversions as their sections come up. One independently tested and committed section at a time. Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
 
 ## Completed section reference: Optional Support Request Notes
 
