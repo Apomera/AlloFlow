@@ -619,7 +619,7 @@
                 'aria-expanded': show ? 'true' : 'false',
                 onFocus: () => setShow(true),
                 onBlur: () => setShow(false),
-                onClick: () => setShow((current) => !current),
+                onClick: () => setShow(true),
                 className: 'w-6 h-6 min-w-6 min-h-6 rounded-full bg-indigo-100 text-indigo-700 text-xs font-black inline-flex items-center justify-center cursor-help border border-indigo-300 transition-colors hover:bg-indigo-700 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700'
             }, h('span', { 'aria-hidden': 'true' }, '?')),
             show && h('span', {

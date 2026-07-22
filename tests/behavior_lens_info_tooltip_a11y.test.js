@@ -32,7 +32,7 @@ describe('BehaviorLens shared information tooltip accessibility', () => {
     expect(tooltip).toContain('onMouseEnter: () => setShow(true)');
     expect(tooltip).toContain('onMouseLeave: () => setShow(false)');
     expect(tooltip).toContain('onFocus: () => setShow(true)');
-    expect(tooltip).toContain('onClick: () => setShow((current) => !current)');
+    expect(tooltip).toContain('onClick: () => setShow(true)');
     expect(tooltip).toContain("if (event.key === 'Escape')");
     expect(tooltip).toContain("document.addEventListener('keydown', dismissOnEscape)");
     expect(tooltip).not.toContain('pointer-events-none');
