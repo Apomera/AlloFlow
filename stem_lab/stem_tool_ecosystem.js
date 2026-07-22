@@ -2550,7 +2550,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             // Title
             ctxC.font = '8px sans-serif';
             ctxC.fillStyle = '#94a3b8';
-            ctxC.fillText('Last ~10s', miniX + 6, miniY + 9);
+            ctxC.fillText(__alloT('stem.ecosystem.last_10s', 'Last ~10s'), miniX + 6, miniY + 9);
             // Max-of-pools as the y-axis ceiling (so both lines fit)
             var miniMax = Math.max(preyEntities.length, predEntities.length, 1);
             var plotX = miniX + 4;
@@ -2603,8 +2603,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           // even when the gradient over a lit sky thins it out.
           ctxC.font = '10px sans-serif';
           ctxC.fillStyle = '#e2e8f0';
-          ctxC.fillText('\uD83D\uDC07 Prey: ' + hudPreyAlive, 14, 24);
-          ctxC.fillText('\uD83E\uDD8A Predators: ' + hudPredAlive, 14, 38);
+          ctxC.fillText('\uD83D\uDC07 ' + __alloT('stem.ecosystem.prey_colon', 'Prey: ') + hudPreyAlive, 14, 24);
+          ctxC.fillText('\uD83E\uDD8A ' + __alloT('stem.ecosystem.predators_colon', 'Predators: ') + hudPredAlive, 14, 38);
 
           // Population bars — normalized to actual pool sizes so the bars
           // stay informative even when populations boom past the old
@@ -2703,7 +2703,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             ctxC.font = 'bold 24px sans-serif';
             ctxC.textAlign = 'center';
             ctxC.fillStyle = 'rgba(255,255,255,0.85)';
-            ctxC.fillText('\u23F8 PAUSED', cw / 2, ch / 2);
+            ctxC.fillText('\u23F8 ' + __alloT('stem.ecosystem.paused_caps', 'PAUSED'), cw / 2, ch / 2);
             ctxC.textAlign = 'start';
             ctxC.restore();
           }
@@ -3224,7 +3224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('canvas', { 
               ref: canvasRef,
               role: 'img',
-              'aria-label': 'Ecosystem simulation. ' + biome + ' biome. Initial prey: ' + prey0 + ', initial predators: ' + pred0 + '. ' + (simPaused ? 'Paused.' : 'Running.'),
+              'aria-label': __alloT('stem.ecosystem.aria_eco_sim_prefix', 'Ecosystem simulation. ') + biome + __alloT('stem.ecosystem.aria_biome_initial_prey', ' biome. Initial prey: ') + prey0 + __alloT('stem.ecosystem.aria_initial_predators', ', initial predators: ') + pred0 + '. ' + (simPaused ? __alloT('stem.ecosystem.paused_dot', 'Paused.') : __alloT('stem.ecosystem.running_dot', 'Running.')),
               tabIndex: 0,
               'data-eco-canvas': 'true',
               'data-biome': biome,
