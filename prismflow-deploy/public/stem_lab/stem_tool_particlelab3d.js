@@ -370,6 +370,8 @@
       var [trials, setTrials] = useState(Array.isArray(bucket.trials) ? bucket.trials.slice(-2) : []);
       var [tracerTrials, setTracerTrials] = useState(Array.isArray(bucket.tracerTrials) ? bucket.tracerTrials.slice(-2) : []);
       var [ready, setReady] = useState(!!(window.THREE && window.THREE.OrbitControls));
+      var [loadError, setLoadError] = useState('');
+      var [loadAttempt, setLoadAttempt] = useState(0);
       var [stats, setStats] = useState({ temperature: temperature, pressure: 0, energy: 0, collisions: 0 });
       var [distribution, setDistribution] = useState({ bins: new Array(12).fill(0), max: 1, mean: 0, p90: 0 });
       var [speciesMotion, setSpeciesMotion] = useState({ a: { bins: new Array(12).fill(0), mean: 0, temperature: temperature, count: 0 }, b: { bins: new Array(12).fill(0), mean: 0, temperature: temperature, count: 0 }, max: 1 });
@@ -389,16 +391,51 @@
         });
       }
 
+      // Resilient engine loader: try each CDN in order with a timeout per
+      // attempt (a filtered school network can black-hole a request — neither
+      // load nor error ever fires), remove failed tags, and surface a real
+      // error with a Retry instead of spinning forever. The old loader had no
+      // onerror at all: one CDN hiccup froze 'Loading Three.js…' permanently.
+      function loadEngineScript(urls, index, check, onDone) {
+        if (check()) { onDone(true); return; }
+        if (index >= urls.length) { onDone(false); return; }
+        var script = document.createElement('script');
+        var settled = false;
+        var timer = window.setTimeout(function () { finish(false); }, 20000);
+        function finish(ok) {
+          if (settled) return;
+          settled = true;
+          window.clearTimeout(timer);
+          if (ok && check()) { onDone(true); return; }
+          if (script.parentNode) script.parentNode.removeChild(script);
+          loadEngineScript(urls, index + 1, check, onDone);
+        }
+        script.src = urls[index];
+        script.async = true;
+        script.crossOrigin = 'anonymous';
+        script.onload = function () { finish(true); };
+        script.onerror = function () { finish(false); };
+        document.head.appendChild(script);
+      }
       useEffect(function () {
         if (ready) return;
-        function loadOrbit() {
-          if (window.THREE && window.THREE.OrbitControls) { setReady(true); return; }
-          var script = document.createElement('script'); script.src = ORBIT_URL; script.async = true;
-          script.onload = function () { setReady(true); }; document.head.appendChild(script);
-        }
-        if (window.THREE) { loadOrbit(); return; }
-        var script = document.createElement('script'); script.src = THREE_URL; script.async = true; script.onload = loadOrbit; document.head.appendChild(script);
-      }, [ready]);
+        var cancelled = false;
+        loadEngineScript([THREE_URL, 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js'], 0,
+          function () { return !!window.THREE; },
+          function (coreOk) {
+            if (cancelled) return;
+            if (!coreOk) { setLoadError('The 3D engine could not be loaded from any source. School network filters sometimes block CDNs — press Retry, or check the connection.'); return; }
+            loadEngineScript([ORBIT_URL, 'https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js'], 0,
+              function () { return !!(window.THREE && window.THREE.OrbitControls); },
+              function (orbitOk) {
+                if (cancelled) return;
+                if (!orbitOk) { setLoadError('The 3D camera controls could not be loaded. Press Retry to try again.'); return; }
+                setLoadError('');
+                setReady(true);
+              });
+          });
+        return function () { cancelled = true; };
+      }, [ready, loadAttempt]);
 
       useEffect(function () {
         if (!ready || !canvasRef.current || !window.THREE) return;
@@ -927,7 +964,15 @@
                 h('div', { className: 'mt-2 flex flex-wrap gap-x-2 gap-y-1 border-t border-white/10 pt-2 text-[7px] font-bold text-slate-300' }, h('span', { className: 'inline-flex items-center gap-1' }, h('span', { className: 'h-1.5 w-1.5 rounded-full bg-cyan-300' }), 'pass'), h('span', { className: 'inline-flex items-center gap-1' }, h('span', { className: 'h-1.5 w-1.5 rounded-full bg-rose-400' }), 'reflect'), h('span', { className: 'ml-auto font-mono' }, Number(diffusionInfo.flux || 0).toFixed(1) + '/' + Number(diffusionInfo.blocked || 0).toFixed(1) + ' s'))
               ),              running && h('div', { className: 'pointer-events-none absolute bottom-3 right-3 flex items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-950/60 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-emerald-300 backdrop-blur' }, h('span', { className: 'h-2 w-2 animate-pulse rounded-full bg-emerald-300 shadow-[0_0_10px_2px_rgba(110,231,183,0.7)]' }), 'Live simulation'),
               systemProbe && h('div', { className: 'pointer-events-none absolute bottom-3 left-1/2 min-w-[220px] -translate-x-1/2 rounded-xl border border-yellow-200/30 bg-slate-950/75 px-3 py-2 text-center shadow-[0_0_24px_rgba(253,224,71,0.15)] backdrop-blur' }, h('div', { className: 'text-[9px] font-black uppercase tracking-[0.18em] text-yellow-300' }, '\u25C8 Collective system probe'), h('div', { className: 'mt-1 flex justify-center gap-3 font-mono text-[9px] text-slate-200' }, h('span', null, 'spread ' + systemInfo.spread.toFixed(2)), h('span', null, 'density ' + systemInfo.density.toFixed(3)), h('span', null, 'drift ' + systemInfo.drift.toFixed(2))), h('div', { className: 'mt-0.5 font-mono text-[8px] text-slate-500' }, 'COM ' + systemInfo.x.toFixed(1) + ', ' + systemInfo.y.toFixed(1) + ', ' + systemInfo.z.toFixed(1))),
-              !ready && h('div', { className: 'absolute inset-0 flex items-center justify-center bg-slate-950 text-sm font-bold text-cyan-200' }, 'Loading Three.js\u2026'),
+              !ready && h('div', { className: 'absolute inset-0 z-10 flex items-center justify-center bg-slate-950 p-6 text-center' },
+                loadError
+                  ? h('div', { role: 'alert', className: 'max-w-sm' },
+                      h('p', { className: 'text-sm font-black text-red-300' }, '3D engine unavailable'),
+                      h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-300' }, loadError),
+                      h('button', { type: 'button', onClick: function () { setLoadError(''); setLoadAttempt(function (a) { return a + 1; }); }, className: 'mt-3 rounded-lg bg-cyan-300 px-4 py-2 text-sm font-black text-cyan-950' }, 'Retry'))
+                  : h('div', { role: 'status', 'aria-live': 'polite' },
+                      h('div', { className: 'mx-auto h-9 w-9 animate-spin rounded-full border-4 border-cyan-300/20 border-t-cyan-300', 'aria-hidden': true }),
+                      h('p', { className: 'mt-3 text-sm font-bold text-cyan-200' }, 'Loading Three.js\u2026'))),
               !showHud && h('button', { type: 'button', onClick: function () { setShowHud(true); if (ctx.announceToSR) ctx.announceToSR('Simulation controls shown.'); }, className: 'absolute left-3 top-3 z-20 rounded-full border border-white/20 bg-slate-950/80 px-3 py-1.5 text-[11px] font-bold text-cyan-200 shadow-lg backdrop-blur hover:bg-slate-800', 'aria-label': 'Show the simulation controls' }, 'Show controls (H)'),
               showKeys && h('div', { className: 'absolute inset-0 z-30 flex items-center justify-center bg-slate-950/70 p-4', onClick: function () { setShowKeys(false); } },
                 h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Keyboard shortcuts', onClick: function (event) { event.stopPropagation(); }, className: 'max-h-full w-full max-w-md overflow-y-auto rounded-2xl border border-cyan-300/30 bg-slate-950/95 p-5 shadow-2xl backdrop-blur' },

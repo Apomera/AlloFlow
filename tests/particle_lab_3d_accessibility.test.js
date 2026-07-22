@@ -75,4 +75,60 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     const b = readFileSync(resolve(process.cwd(), TOOL_PATHS[1]));
     expect(a.equals(b)).toBe(true);
   });
+
+  it('loads its 3D engine resiliently: CDN fallback, timeout, error UI with Retry', () => {
+    TOOL_PATHS.forEach((filePath) => {
+      const source = readFileSync(resolve(process.cwd(), filePath), 'utf8');
+      // fallback CDNs for both the core engine and camera controls
+      expect(source).toContain("cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js");
+      expect(source).toContain("unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js");
+      // per-attempt timeout so a black-holed request cannot hang the spinner
+      expect(source).toContain('var timer = window.setTimeout(function () { finish(false); }, 20000)');
+      // failed tags are removed (their events never re-fire)
+      expect(source).toContain('if (script.parentNode) script.parentNode.removeChild(script)');
+      // real error state + Retry instead of an eternal 'Loading Three.js'
+      expect(source).toContain("'3D engine unavailable'");
+      expect(source).toContain('setLoadAttempt(function (a) { return a + 1; })');
+      expect(source).toContain('School network filters sometimes block CDNs');
+      // the old no-onerror single-shot loader is gone
+      expect(source).not.toContain('script.onload = loadOrbit');
+    });
+  });
+});
+
+describe('STEM Lab host 3D loader resilience (stem_lab_module.js)', () => {
+  const MODULE_PATHS = [
+    'stem_lab/stem_lab_module.js',
+    'prismflow-deploy/public/stem_lab/stem_lab_module.js',
+  ];
+
+  it('exposes a shared resilient script loader on the StemLab registry', () => {
+    MODULE_PATHS.forEach((filePath) => {
+      const source = readFileSync(resolve(process.cwd(), filePath), 'utf8');
+      expect(source).toContain('loadScriptResilient: function (urls, opts)');
+      expect(source).toContain('window.__stemScriptPromises');
+      // cache cleared on total failure so a retry starts fresh
+      expect(source).toContain('if (cacheKey) cache[cacheKey] = null; throw error;');
+    });
+  });
+
+  it('the host Three.js path uses the helper with fallback CDNs and stays retryable', () => {
+    const source = readFileSync(resolve(process.cwd(), MODULE_PATHS[0]), 'utf8');
+    expect(source).toContain("window.StemLab.loadScriptResilient(\n          ['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js']");
+    expect(source).toContain("cacheKey: 'three-core'");
+    expect(source).toContain("cacheKey: 'three-orbit'");
+    // OrbitControls failure stays non-fatal for host-driven tools
+    expect(source).toContain('proceeding without orbit controls');
+    // a retry lever exists in the effect deps
+    expect(source).toContain('labToolData._threeAttempt');
+    // success clears any stale error; failure names the school-network culprit
+    expect(source).toContain('_threeLoaded: true, _threeLoadError: undefined');
+    expect(source).toContain('School network filters sometimes block CDNs. The accessible 2D view remains available.');
+  });
+
+  it('the host module mirror matches root byte-for-byte', () => {
+    const a = readFileSync(resolve(process.cwd(), MODULE_PATHS[0]));
+    const b = readFileSync(resolve(process.cwd(), MODULE_PATHS[1]));
+    expect(a.equals(b)).toBe(true);
+  });
 });
