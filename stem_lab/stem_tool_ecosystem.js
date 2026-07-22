@@ -3783,7 +3783,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('canvas', { 
               ref: canvasRef,
               role: 'img',
-              'aria-label': 'Ecosystem sandbox. Click to place prey (left) or predators (right). ' + (simPaused ? 'Paused.' : 'Running.'),
+              'aria-label': __alloT('stem.ecosystem.aria_sandbox_prefix', 'Ecosystem sandbox. Click to place prey (left) or predators (right). ') + (simPaused ? __alloT('stem.ecosystem.paused_dot', 'Paused.') : __alloT('stem.ecosystem.running_dot', 'Running.')),
               tabIndex: 0,
               'data-eco-canvas': 'true',
               'data-paused': simPaused ? '1' : '0',
@@ -3795,8 +3795,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             }),
             // Bottom info bar
             h('div', { className: 'absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent px-3 py-1.5 flex items-center gap-2' },
-              h('span', { className: 'text-[11px] text-white/80 font-bold' }, '\uD83E\uDDEA Sandbox Mode'),
-              h('span', { className: 'text-[11px] text-white/80 ml-auto' }, 'Click to place entities')
+              h('span', { className: 'text-[11px] text-white/80 font-bold' }, '\uD83E\uDDEA ' + __alloT('stem.ecosystem.sandbox_mode', 'Sandbox Mode')),
+              h('span', { className: 'text-[11px] text-white/80 ml-auto' }, __alloT('stem.ecosystem.click_place_entities', 'Click to place entities'))
             )
           ),
 
@@ -3822,12 +3822,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // ── Placement count display ──
           h('div', { className: 'flex items-center justify-between bg-teal-50 dark:bg-teal-900/20 rounded-lg px-3 py-2' },
-            h('span', { className: 'text-xs font-semibold text-teal-700 dark:text-teal-300' }, 'Entities Placed:'),
+            h('span', { className: 'text-xs font-semibold text-teal-700 dark:text-teal-300' }, __alloT('stem.ecosystem.entities_placed', 'Entities Placed:')),
             h('span', { className: 'text-sm font-bold text-teal-700 dark:text-teal-300' }, sandboxPlaceCount),
-            h('button', { 'aria-label': 'Sync Count',
+            h('button', { 'aria-label': __alloT('stem.ecosystem.sync_count', 'Sync Count'),
               className: 'transition-colors text-[11px] text-teal-700 hover:text-teal-800 dark:text-teal-300 dark:hover:text-teal-200 underline',
               onClick: syncSandboxCount
-            }, 'Sync Count')
+            }, __alloT('stem.ecosystem.sync_count', 'Sync Count'))
           ),
 
           // ── Pause/Speed controls (shared) ──
@@ -3848,7 +3848,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('span', { className: 'text-[11px] font-semibold text-slate-700 dark:text-slate-200' }, __alloT('stem.ecosystem.speed_label', 'Speed:')),
               h('input', {
                 type: 'range', min: 1, max: 6, step: 1, value: simSpeed,
-                'aria-label': 'Sandbox simulation speed',
+                'aria-label': __alloT('stem.ecosystem.aria_sandbox_speed', 'Sandbox simulation speed'),
                 className: 'flex-1 h-1.5 accent-teal-500',
                 onChange: function(e) {
                   var newSpeed = parseInt(e.target.value, 10);
@@ -3863,10 +3863,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // ── Event injection (sandbox version) ──
           h('div', { className: 'space-y-1' },
-            h('p', { className: 'text-[11px] font-bold text-teal-700 dark:text-teal-300' }, '\u26A1 Inject Events'),
+            h('p', { className: 'text-[11px] font-bold text-teal-700 dark:text-teal-300' }, '\u26A1 ' + __alloT('stem.ecosystem.inject_events', 'Inject Events')),
             h('div', { className: 'flex gap-1 flex-wrap' },
               eventDefs.map(function(ev) {
-                return h('button', { 'aria-label': 'Trigger Event',
+                return h('button', { 'aria-label': __alloT('stem.ecosystem.trigger_event', 'Trigger Event'),
                   key: 'sb-' + ev.id,
                   className: 'flex-1 min-w-[55px] px-1 py-1 text-[11px] font-bold rounded-lg text-white transition-all hover:opacity-90 active:scale-95 ' + ev.color,
                   onClick: function() { triggerEvent(ev.id); },
@@ -3883,7 +3883,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('span', { className: 'text-amber-600 font-bold' }, carryingCapacity)
             ),
             h('input', {
-              type: 'range', 'aria-label': 'carrying capacity', min: 30, max: 200, step: 5, value: carryingCapacity,
+              type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_carrying_capacity_lc', 'carrying capacity'), min: 30, max: 200, step: 5, value: carryingCapacity,
               className: 'w-full h-1.5 accent-amber-500',
               onChange: function(e) {
                 var newK = parseInt(e.target.value, 10);
@@ -3904,7 +3904,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               var vegNow = lastPop && lastPop.vegHealth !== undefined ? Math.round(lastPop.vegHealth * 100) : 50;
               return [
                 h('div', { key: 'sbp', className: 'bg-green-50 dark:bg-green-900/20 rounded p-1.5' },
-                  h('div', { className: 'text-[11px] text-slate-600' }, '\uD83D\uDC07 Prey'),
+                  h('div', { className: 'text-[11px] text-slate-600' }, '\uD83D\uDC07 ' + __alloT('stem.ecosystem.prey', 'Prey')),
                   h('div', { className: 'text-sm font-bold text-green-600' }, preyNow)
                 ),
                 h('div', { key: 'sbd', className: 'bg-red-50 dark:bg-red-900/20 rounded p-1.5' },
@@ -3912,7 +3912,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   h('div', { className: 'text-sm font-bold text-red-600' }, predNow)
                 ),
                 h('div', { key: 'sbv', className: 'bg-emerald-50 dark:bg-emerald-900/20 rounded p-1.5' },
-                  h('div', { className: 'text-[11px] text-slate-600' }, '\uD83C\uDF3F Vegetation'),
+                  h('div', { className: 'text-[11px] text-slate-600' }, '\uD83C\uDF3F ' + __alloT('stem.ecosystem.vegetation', 'Vegetation')),
                   h('div', { className: 'text-sm font-bold text-emerald-600' }, vegNow + '%')
                 )
               ];
@@ -3921,25 +3921,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // ── Instructions text ──
           h('div', { className: 'bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-xs text-slate-600 dark:text-slate-300 space-y-1' },
-            h('p', { className: 'font-bold text-slate-700 dark:text-slate-200' }, '\uD83D\uDCA1 Sandbox Instructions'),
-            h('p', null, 'Select a tool above, then click on the canvas to interact:'),
+            h('p', { className: 'font-bold text-slate-700 dark:text-slate-200' }, '\uD83D\uDCA1 ' + __alloT('stem.ecosystem.sandbox_instructions', 'Sandbox Instructions')),
+            h('p', null, __alloT('stem.ecosystem.select_tool_intro', 'Select a tool above, then click on the canvas to interact:')),
             h('ul', { className: 'list-disc pl-4 space-y-0.5' },
-              h('li', null, 'Place Rabbit/Fox/Tree: Click anywhere to spawn'),
-              h('li', null, 'Erase: Click near an entity to remove it'),
-              h('li', null, 'Move: Click and drag an entity to reposition it')
+              h('li', null, __alloT('stem.ecosystem.instr_place', 'Place Rabbit/Fox/Tree: Click anywhere to spawn')),
+              h('li', null, __alloT('stem.ecosystem.instr_erase', 'Erase: Click near an entity to remove it')),
+              h('li', null, __alloT('stem.ecosystem.instr_move', 'Move: Click and drag an entity to reposition it'))
             ),
-            h('p', { className: 'text-[11px] italic text-slate-600 dark:text-slate-400' }, 'Tip: Pause the simulation first for precise placement!')
+            h('p', { className: 'text-[11px] italic text-slate-600 dark:text-slate-400' }, __alloT('stem.ecosystem.instr_tip', 'Tip: Pause the simulation first for precise placement!'))
           ),
 
           // ── Sandbox experiment suggestions ──
           h('div', { className: 'bg-teal-50 dark:bg-teal-900/20 rounded-lg p-3 border border-teal-200 dark:border-teal-700 space-y-1' },
-            h('p', { className: 'text-[11px] font-bold text-teal-700 dark:text-teal-300' }, '\uD83E\uDD14 Experiment Ideas'),
+            h('p', { className: 'text-[11px] font-bold text-teal-700 dark:text-teal-300' }, '\uD83E\uDD14 ' + __alloT('stem.ecosystem.experiment_ideas', 'Experiment Ideas')),
             h('ul', { className: 'list-disc pl-4 text-[11px] text-slate-600 dark:text-slate-200 space-y-0.5' },
-              h('li', null, 'Remove all predators and watch what happens to prey and vegetation'),
-              h('li', null, 'Create a "wall" of trees and see if it affects hunting patterns'),
-              h('li', null, 'Add many foxes at once, then trigger a Food Boom to save the rabbits'),
-              h('li', null, 'Pause, place prey in one corner and predators in the other, then resume'),
-              h('li', null, 'Trigger a Wildfire then immediately add trees to observe recovery')
+              h('li', null, __alloT('stem.ecosystem.exp_idea_1', 'Remove all predators and watch what happens to prey and vegetation')),
+              h('li', null, __alloT('stem.ecosystem.exp_idea_2', 'Create a "wall" of trees and see if it affects hunting patterns')),
+              h('li', null, __alloT('stem.ecosystem.exp_idea_3', 'Add many foxes at once, then trigger a Food Boom to save the rabbits')),
+              h('li', null, __alloT('stem.ecosystem.exp_idea_4', 'Pause, place prey in one corner and predators in the other, then resume')),
+              h('li', null, __alloT('stem.ecosystem.exp_idea_5', 'Trigger a Wildfire then immediately add trees to observe recovery'))
             )
           ),
 
