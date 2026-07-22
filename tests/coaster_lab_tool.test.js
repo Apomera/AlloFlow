@@ -162,98 +162,115 @@ describe('coaster lab — bridge is render-safe (no setState inside the reducer)
   });
 });
 
-describe('coaster lab — Ride & Solve topic + grade adaptation', () => {
-  // The checkpoint questions can pose arithmetic tuned to a grade band instead
-  // of physics. The generator is pure — eval-slice it and drive it for real.
+describe('coaster lab — Ride & Solve math is GROUNDED in the checkpoint element', () => {
+  // Math topics ask about the SAME element as the physics question (the real drop
+  // height, this train's cars, the current speed), posed as arithmetic. The
+  // generator is pure and takes the checkpoint facts explicitly — eval-slice and
+  // drive it for real.
   function loadGen(p) {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
     const s = src.indexOf('/* @clab-mathgen-start');
     const e = src.indexOf('/* @clab-mathgen-end');
     expect(s).toBeGreaterThan(-1);
     expect(e).toBeGreaterThan(s);
-    return new Function(
-      src.slice(s, e) + '\nreturn { genMathQuestion, _bandCfg };'
-    )();
+    return new Function(src.slice(s, e) + '\nreturn { genElementMath, _bandCfg };')();
   }
   const BANDS = ['k2', 'g35', 'g68', 'g912'];
-  const OPS = ['addition', 'subtraction', 'multiplication', 'division'];
+  const OPS = ['addition', 'subtraction', 'multiplication', 'division', 'arithmetic'];
+  // a realistic checkpoint: crest 24 m, valley 6 m, currently 20 m up doing 18 m/s, 3-car train
+  const FACTS = { crestH: 24, valleyH: 6, liveH: 20, liveV: 18, loopH: 15, turnH: 9, cars: 3, trackLen: 400, tag: 'Checkpoint · crest' };
   const parseExplain = (ex) => {
     const m = ex.replace(/,/g, '').match(/^(\d+)\s(.)\s(\d+)\s=\s(\d+)\./);
     return m ? { a: +m[1], sign: m[2], b: +m[3], ans: +m[4] } : null;
   };
 
-  it.each(TOOL_PATHS)('%s: generator exists and is pure', (p) => {
-    const { genMathQuestion, _bandCfg } = loadGen(p);
-    expect(typeof genMathQuestion).toBe('function');
-    expect(_bandCfg('k2').choices).toBe(true);   // youngest → multiple choice
-    expect(_bandCfg('g68').choices).toBe(false);  // older → typed number
+  it.each(TOOL_PATHS)('%s: generator exists and is pure over an explicit facts object', (p) => {
+    const { genElementMath, _bandCfg } = loadGen(p);
+    expect(typeof genElementMath).toBe('function');
+    expect(_bandCfg('k2').choices).toBe(true);   // youngest → tap a choice
+    expect(_bandCfg('g68').choices).toBe(false);  // older → type the number
   });
 
-  it('every topic × band produces a correct, grade-tuned, coaster-themed question', () => {
-    const { genMathQuestion, _bandCfg } = loadGen(TOOL_PATHS[0]);
+  it('every topic × band yields correct, non-negative, checkpoint-grounded arithmetic', () => {
+    const { genElementMath } = loadGen(TOOL_PATHS[0]);
     for (const band of BANDS) {
-      const cfg = _bandCfg(band);
       for (const op of OPS) {
-        for (let i = 0; i < 120; i++) {
-          const q = genMathQuestion(op, band);
+        for (let i = 0; i < 150; i++) {
+          const q = genElementMath(op, band, FACTS);
           const parts = parseExplain(q.explain);
           expect(parts, `${op}/${band} explain: ${q.explain}`).toBeTruthy();
-          // the stored answer matches the arithmetic and is a non-negative integer
-          expect(q.answer).toBe(parts.ans);
+          const { a, b, ans, sign } = parts;
+          expect(q.answer).toBe(ans);
           expect(Number.isInteger(q.answer)).toBe(true);
           expect(q.answer).toBeGreaterThanOrEqual(0);
-          // the arithmetic itself is right
-          const { a, b, ans } = parts;
-          if (op === 'addition') expect(a + b).toBe(ans);
-          if (op === 'subtraction') { expect(a - b).toBe(ans); expect(a).toBeGreaterThanOrEqual(b); } // never negative
-          if (op === 'multiplication') expect(a * b).toBe(ans);
-          if (op === 'division') { expect(a % b).toBe(0); expect(a / b).toBe(ans); } // always exact
-          // operands respect the band range (grade tuning is real)
-          if (op === 'addition') { expect(a).toBeGreaterThanOrEqual(cfg.add[0]); expect(a).toBeLessThanOrEqual(cfg.add[1]); }
-          if (op === 'multiplication') { expect(a).toBeLessThanOrEqual(cfg.mulA[1]); expect(b).toBeLessThanOrEqual(cfg.mulB[1]); }
-          // coaster-themed prose, not a bare sum
-          expect(q.text).toMatch(/rider|ticket|seat|car|lap|photo|people|inspector|metre|m\b/i);
-          // k2 gets 3 choices incl. the right one; older bands type a number
+          if (sign === '+') expect(a + b).toBe(ans);
+          if (sign === '−') { expect(a - b).toBe(ans); expect(a).toBeGreaterThanOrEqual(b); } // never negative
+          if (sign === '×') expect(a * b).toBe(ans);
+          if (sign === '÷') { expect(a % b).toBe(0); expect(a / b).toBe(ans); } // always exact
+          // the operands the student sees appear in the question prose
+          expect(q.text).toContain(String(a));
+          expect(q.text).toContain(String(b));
+          // still coaster prose, and the tag names the real checkpoint
+          expect(q.text).toMatch(/rider|seat|car|drop|valley|crest|m\/s|m<\/b>|metre|fall|carry/i);
+          expect(q.tag).toContain('Checkpoint · crest');
           if (band === 'k2') {
             expect(q.choices).toHaveLength(3);
             expect(q.choices.map(c => c[0])).toContain(q.correct);
             expect(q.correct).toBe(String(q.answer));
           } else {
             expect(q.choices).toBeUndefined();
-            expect(q.tolAbs).toBe(0.4); // exact-integer matching for typed answers
+            expect(q.tolAbs).toBe(0.4);
           }
         }
       }
     }
   });
 
-  it('mixed math ("arithmetic") stays within the allowed operations per band', () => {
-    const { genMathQuestion } = loadGen(TOOL_PATHS[0]);
-    // k2 excludes division (no clean remainders for the youngest); older bands include it
-    const k2ops = new Set();
-    for (let i = 0; i < 400; i++) k2ops.add(genMathQuestion('arithmetic', 'k2').mathOp);
-    expect(k2ops.has('division')).toBe(false);
-    const g68ops = new Set();
-    for (let i = 0; i < 400; i++) g68ops.add(genMathQuestion('arithmetic', 'g68').mathOp);
-    expect(g68ops.has('division')).toBe(true);
+  it('uses the REAL checkpoint numbers — the drop is crest minus valley', () => {
+    const { genElementMath } = loadGen(TOOL_PATHS[0]);
+    // over many draws, the subtraction topic surfaces the actual 24 - 6 = 18 drop
+    let sawDrop = false, sawCars = false;
+    for (let i = 0; i < 400; i++) {
+      const s = genElementMath('subtraction', 'g68', FACTS);
+      if (s.answer === 18 && /24 m/.test(s.text) && /6 m/.test(s.text)) sawDrop = true;
+      const m = genElementMath('multiplication', 'g68', FACTS);
+      if (/\b3\b\s*<\/b>\s*cars|3<\/b> cars/.test(m.text)) sawCars = true; // the real 3-car train
+    }
+    expect(sawDrop).toBe(true);
+    expect(sawCars).toBe(true);
   });
 
-  it.each(TOOL_PATHS)('%s: physics remains the default and is swapped at the checkpoint, not in buildRideStops', (p) => {
+  it('mixed math mixes +, −, × and never division; a flat/empty checkpoint still works', () => {
+    const { genElementMath } = loadGen(TOOL_PATHS[0]);
+    const ops = new Set();
+    for (let i = 0; i < 600; i++) ops.add(genElementMath('arithmetic', 'g68', FACTS).mathOp);
+    expect(ops.has('addition')).toBe(true);
+    expect(ops.has('subtraction')).toBe(true);
+    expect(ops.has('multiplication')).toBe(true);
+    expect(ops.has('division')).toBe(false);
+    // no facts at all (e.g. a flat track with no drop) → still a valid question, never a throw
+    for (const op of OPS) {
+      const q = genElementMath(op, 'g35', {});
+      expect(Number.isInteger(q.answer)).toBe(true);
+      expect(q.answer).toBeGreaterThanOrEqual(0);
+      expect(parseExplain(q.explain)).toBeTruthy();
+    }
+  });
+
+  it.each(TOOL_PATHS)('%s: physics is the default; math reads live facts at the checkpoint', (p) => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
-    // default topic is physics
     expect(src).toContain("localStorage.getItem('coaster_lab_ride_topic') || 'physics'");
-    // pauseForQuestion swaps content only for non-physics topics
     expect(src).toContain("if(rideTopic === 'physics'){");
-    expect(src).toContain('ride.current = genMathQuestion(rideTopic, rideBand());');
+    // the checkpoint math is grounded via facts read from the live sim + analysis
+    expect(src).toContain('ride.current = genElementMath(rideTopic, rideBand(), _coasterFacts(liveState, stop));');
+    expect(src).toContain('function _coasterFacts(live, stop){');
+    expect(src).toContain('crestH: a.A ? R(a.A.h) : null');
   });
 
   it.each(TOOL_PATHS)('%s: grade band comes from the host (auto) or a manual override', (p) => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
-    // host passes the app grade band down the bridge
     expect(src).toContain('bridge.gradeBand = (typeof ctx.gradeBand === \'string\')');
-    // rideBand honors a manual override, else falls back to the bridge band, else g68
     expect(src).toContain('const b = __clabBridge && __clabBridge.gradeBand;');
-    // the two header controls exist with all options
     expect(src).toContain('id=\\"clab-rideTopic\\"');
     expect(src).toContain('id=\\"clab-rideGrade\\"');
     for (const v of ['physics', 'addition', 'subtraction', 'multiplication', 'division', 'arithmetic']) {
@@ -332,9 +349,9 @@ describe('coaster lab — AI "any topic" Ride & Solve questions', () => {
     // AI is only offered when the host provides it; otherwise the option is removed
     expect(src).toContain('function aiAvailable(){ return !!(__clabBridge && typeof __clabBridge.ai === \'function\'); }');
     expect(src).toContain("const opt = tSel.querySelector('option[value=\"ai\"]');");
-    // a checkpoint serves a buffered question, else falls back to a math question
+    // a checkpoint serves a buffered question, else falls back to a grounded math question
     expect(src).toContain('if(aiQ.buffer.length){');
-    expect(src).toContain("ride.current = genMathQuestion('arithmetic', rideBand());");
+    expect(src).toContain("ride.current = genElementMath('arithmetic', rideBand(), _coasterFacts(liveState, stop));");
     // questions are pre-fetched (never fetched synchronously at the freeze)
     expect(src).toContain('fetchAiQuestions(rideAiSubject, rideBand())');
     // grade-tuned prompt + JSON-only contract

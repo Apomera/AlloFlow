@@ -2401,11 +2401,11 @@ const rq = {
 /* ---- Ride & Solve: topic + grade adaptation --------------------------------
    Checkpoint questions can pose arithmetic (add / subtract / multiply / divide /
    mixed) instead of physics, tuned to a grade band. Physics stays the default
-   and keeps the energy-conservation questions built from the live track. The
-   grade band is 'auto' (from the host app's grade level, via the bridge) or a
-   manual override the teacher picks in the header. Math problems are woven into
-   the coaster's world and use grade-appropriate whole numbers so answers stay
-   clean — youngest riders get multiple choice, older riders type the number. */
+   (conceptual "explore" or formula "engineer"); the math topics ask about the
+   SAME checkpoint element — the drop you're about to take, this train's cars,
+   your speed right now — as plain arithmetic on the real numbers. The grade band
+   is 'auto' (from the host app's grade level, via the bridge) or a manual
+   override; it scales any invented operand and picks tap-choices vs typing. */
 let rideTopic = (() => { try { return localStorage.getItem('coaster_lab_ride_topic') || 'physics'; } catch(_e){ return 'physics'; } })();
 let rideGradeSel = (() => { try { return localStorage.getItem('coaster_lab_ride_grade') || 'auto'; } catch(_e){ return 'auto'; } })();
 function rideBand(){
@@ -2416,76 +2416,108 @@ function rideBand(){
 /* @clab-mathgen-start — pure question generator (eval-sliced by the test suite) */
 function _ri(lo, hi){ return lo + Math.floor(Math.random() * (hi - lo + 1)); }
 function _bandCfg(band){
+  // choices = youngest riders answer by tapping; partner = range for any invented
+  // second operand (seats per car, laps, speed boost) layered onto real numbers.
   switch(band){
-    case 'k2':   return { add:[1,9],     sub:[1,10],     mulA:[1,5],   mulB:[1,5],   div:[1,5],   choices:true,  timer:26 };
-    case 'g35':  return { add:[10,199],   sub:[10,200],   mulA:[2,12],  mulB:[2,12],  div:[2,12],  choices:false, timer:24 };
-    case 'g68':  return { add:[50,1999],  sub:[50,2000],  mulA:[11,99], mulB:[2,9],   div:[3,12],  choices:false, timer:22 };
-    default:     return { add:[500,49999],sub:[500,50000],mulA:[12,99], mulB:[11,99], div:[6,25],  choices:false, timer:22 }; // g912
+    case 'k2':  return { choices: true,  timer: 26, partner: [1, 5] };
+    case 'g35': return { choices: false, timer: 24, partner: [2, 12] };
+    case 'g68': return { choices: false, timer: 22, partner: [2, 20] };
+    default:    return { choices: false, timer: 22, partner: [5, 40] }; // g912
   }
 }
-const _mathThemes = {
-  addition: [
-    ['Car A loaded <b>{a}</b> riders and Car B loaded <b>{b}</b>. How many riders on the whole train?', 'riders'],
-    ['The morning run sold <b>{a}</b> tickets and the afternoon <b>{b}</b>. How many tickets today?', 'tickets'],
-    ['You climbed <b>{a}</b> m up the lift hill, then the next hill adds <b>{b}</b> m. How many metres climbed in all?', 'm']
-  ],
-  subtraction: [
-    ['<b>{a}</b> people were in line. <b>{b}</b> just boarded the coaster. How many are still waiting?', 'people'],
-    ['The park printed <b>{a}</b> on-ride photos and sold <b>{b}</b>. How many photos are left?', 'photos'],
-    ['Your train seats <b>{a}</b>, but only <b>{b}</b> riders showed up. How many empty seats?', 'seats']
-  ],
-  multiplication: [
-    ['The train has <b>{a}</b> cars with <b>{b}</b> seats each. How many seats in all?', 'seats'],
-    ['Each of <b>{a}</b> rows holds <b>{b}</b> riders. How many riders fit?', 'riders'],
-    ['<b>{a}</b> trains each make <b>{b}</b> laps tonight. How many laps altogether?', 'laps']
-  ],
-  division: [
-    ['<b>{a}</b> riders split evenly into <b>{b}</b> cars. How many riders per car?', 'riders'],
-    ['<b>{a}</b> safety checks are shared equally by <b>{b}</b> inspectors. How many checks each?', 'checks'],
-    ['<b>{a}</b> tickets are printed in <b>{b}</b> equal rolls. How many tickets per roll?', 'tickets']
-  ]
-};
-function _genOp(op, cfg){
-  let a, b, ans, sign;
-  if(op === 'subtraction'){ a = _ri(cfg.sub[0], cfg.sub[1]); b = _ri(cfg.sub[0], cfg.sub[1]); if(b > a){ const t = a; a = b; b = t; } ans = a - b; sign = '−'; }
-  else if(op === 'division'){ b = _ri(cfg.div[0], cfg.div[1]); const q = _ri(cfg.div[0], cfg.div[1]); a = b * q; ans = q; sign = '÷'; }
-  else if(op === 'multiplication'){ a = _ri(cfg.mulA[0], cfg.mulA[1]); b = _ri(cfg.mulB[0], cfg.mulB[1]); ans = a * b; sign = '×'; }
-  else { a = _ri(cfg.add[0], cfg.add[1]); b = _ri(cfg.add[0], cfg.add[1]); ans = a + b; sign = '+'; }
-  return { a, b, ans, sign };
+function _mathChoices(ans){
+  // three friendly numeric options for the youngest riders (incl. the answer)
+  const opts = new Set([ans]);
+  let guard = 0;
+  while(opts.size < 3 && guard++ < 30){ const d = ans + _ri(-3, 3); if(d >= 0) opts.add(d); }
+  let bump = 1;
+  while(opts.size < 3){ opts.add(ans + bump++); }
+  const arr = Array.from(opts).sort(() => Math.random() - 0.5);
+  return { choices: arr.map(n => [String(n), String(n)]), correct: String(ans) };
 }
-function genMathQuestion(topic, band){
+const _MATH_OP_NAME = { '+': 'addition', '−': 'subtraction', '×': 'multiplication', '÷': 'division' };
+// genElementMath — arithmetic GROUNDED in the real coaster element at this
+// checkpoint. `f` carries whole-number facts read from the live sim + track
+// analysis (crest / valley / live height, live speed, car count), so the numbers
+// the student computes describe the ride they are actually on — the drop they are
+// about to take, this train's cars, their speed right now. It's the same physics
+// moment as the "engineer" question, posed as plain arithmetic instead of a
+// formula. The band scales any invented second operand and the display mode.
+// Every result is a non-negative integer and the arithmetic is exact.
+function genElementMath(topic, band, f){
+  f = f || {};
   const cfg = _bandCfg(band);
-  let op = topic;
-  if(topic === 'arithmetic'){
-    const pool = (band === 'k2')
-      ? ['addition', 'subtraction', 'multiplication']
-      : ['addition', 'subtraction', 'multiplication', 'division'];
-    op = pool[Math.floor(Math.random() * pool.length)];
+  const rp = () => _ri(cfg.partner[0], cfg.partner[1]);
+  const has = v => (typeof v === 'number' && isFinite(v) && v >= 0);
+  const cars = (has(f.cars) && f.cars > 0) ? f.cars : 3;
+  const cand = [];
+  const add = (op, a, b, ans, text, unit) => cand.push({ op, a, b, ans, text, unit });
+  const wantSub = topic === 'subtraction' || topic === 'arithmetic';
+  const wantAdd = topic === 'addition' || topic === 'arithmetic';
+  const wantMul = topic === 'multiplication' || topic === 'arithmetic';
+  const wantDiv = topic === 'division';
+  if(wantSub){
+    if(has(f.crestH) && has(f.valleyH) && f.crestH > f.valleyH)
+      add('−', f.crestH, f.valleyH, f.crestH - f.valleyH,
+        'You\'re cresting at <b>' + f.crestH + ' m</b> and the valley below sits at <b>' + f.valleyH + ' m</b>. How many metres will you drop?', 'm');
+    if(has(f.liveH) && has(f.valleyH) && f.liveH > f.valleyH)
+      add('−', f.liveH, f.valleyH, f.liveH - f.valleyH,
+        'Right now you\'re <b>' + f.liveH + ' m</b> up and the valley ahead is <b>' + f.valleyH + ' m</b>. How many more metres will you fall?', 'm');
+    const seats = rp(), cap = cars * seats, boarded = _ri(0, cap);
+    add('−', cap, boarded, cap - boarded,
+      'The train\'s <b>' + cars + '</b> cars each seat <b>' + seats + '</b> (<b>' + cap + '</b> seats). Only <b>' + boarded + '</b> riders boarded. How many empty seats?', 'seats');
   }
-  if(!_mathThemes[op]) op = 'addition';
-  const r = _genOp(op, cfg);
-  const tpl = _mathThemes[op][Math.floor(Math.random() * _mathThemes[op].length)];
-  const text = tpl[0].replace('{a}', r.a.toLocaleString()).replace('{b}', r.b.toLocaleString());
+  if(wantAdd){
+    if(has(f.liveV)){ const boost = rp(); add('+', f.liveV, boost, f.liveV + boost,
+      'You\'re moving <b>' + f.liveV + ' m/s</b> and this drop will add about <b>' + boost + ' m/s</b>. How fast at the bottom?', 'm/s'); }
+    if(has(f.crestH)){ const climb = rp(); add('+', f.crestH, climb, f.crestH + climb,
+      'This crest is <b>' + f.crestH + ' m</b> high. The next hill climbs <b>' + climb + ' m</b> higher. How tall is that next crest?', 'm'); }
+  }
+  if(wantMul){
+    const seats = rp(); add('×', cars, seats, cars * seats,
+      'This train has <b>' + cars + '</b> cars with <b>' + seats + '</b> seats each. How many riders can it carry?', 'riders');
+    const laps = rp(), capL = cars * _ri(2, 5); add('×', capL, laps, capL * laps,
+      'Each full ride carries <b>' + capL + '</b> riders and the coaster runs <b>' + laps + '</b> rides tonight. How many riders in all?', 'riders');
+  }
+  if(wantDiv){
+    const seats = rp(), cap = cars * seats; add('÷', cap, cars, seats,
+      'The train\'s <b>' + cap + '</b> seats are spread evenly over its <b>' + cars + '</b> cars. How many seats per car?', 'seats');
+    const per = rp(), lines = _ri(2, Math.max(2, Math.min(9, cfg.partner[1]))), tot = per * lines;
+    add('÷', tot, lines, per,
+      '<b>' + tot + '</b> riders wait in <b>' + lines + '</b> equal lines for the coaster. How many riders per line?', 'riders');
+  }
+  // pick a grounded candidate; if none fit (e.g. a flat track has no drop) fall
+  // back to the always-available capacity question so a ride never stalls
+  let p = cand.length ? cand[Math.floor(Math.random() * cand.length)] : null;
+  if(!p){ const seats = rp(); p = { op: '×', a: cars, b: seats, ans: cars * seats,
+    text: 'This train has <b>' + cars + '</b> cars with <b>' + seats + '</b> seats each. How many riders can it carry?', unit: 'riders' }; }
   const q = {
-    text: text, unit: tpl[1], answer: r.ans, tolAbs: 0.4,
-    explain: r.a.toLocaleString() + ' ' + r.sign + ' ' + r.b.toLocaleString() + ' = ' + r.ans.toLocaleString() + '.',
-    tag: '🔢 Checkpoint · quick math', timerLen: cfg.timer, mathOp: op
+    text: p.text, unit: p.unit, answer: p.ans, tolAbs: 0.4,
+    explain: p.a.toLocaleString() + ' ' + p.op + ' ' + p.b.toLocaleString() + ' = ' + p.ans.toLocaleString() + '.',
+    tag: (f.tag ? '🔢 ' + f.tag : '🔢 Checkpoint · ride math'),
+    timerLen: cfg.timer, mathOp: _MATH_OP_NAME[p.op] || 'addition'
   };
-  if(cfg.choices){
-    // three friendly numeric choices for the youngest riders
-    const opts = new Set([r.ans]);
-    let guard = 0;
-    while(opts.size < 3 && guard++ < 30){ const d = r.ans + _ri(-3, 3); if(d >= 0) opts.add(d); }
-    let bump = 1;
-    while(opts.size < 3){ opts.add(r.ans + bump++); }
-    const arr = Array.from(opts).sort(() => Math.random() - 0.5);
-    q.choices = arr.map(n => [String(n), String(n)]);
-    q.correct = String(r.ans);
-    delete q.unit;
-  }
+  if(cfg.choices){ const c = _mathChoices(p.ans); q.choices = c.choices; q.correct = c.correct; delete q.unit; }
   return q;
 }
 /* @clab-mathgen-end */
+// Read the whole-number facts of the checkpoint the train is frozen at, so the
+// math questions describe the real ride. Impure (reads analysis/cars/track).
+function _coasterFacts(live, stop){
+  const a = analysis || {};
+  const R = v => (typeof v === 'number' && isFinite(v)) ? Math.max(0, Math.round(v)) : null;
+  return {
+    crestH: a.A ? R(a.A.h) : null,
+    valleyH: a.B ? R(a.B.h) : null,
+    loopH: a.C ? R(a.C.h) : null,
+    turnH: a.D ? R(a.D.h) : null,
+    liveH: R(live && live.h),
+    liveV: R(live && live.v),
+    cars: (typeof cars !== 'undefined' && cars) ? cars.length : 3,
+    trackLen: (typeof track !== 'undefined' && track) ? Math.round(track.L) : null,
+    tag: (stop && stop.tag) ? stop.tag : 'Checkpoint'
+  };
+}
 
 /* ---- Ride & Solve: AI "any topic" questions --------------------------------
    With the 🤖 topic, the teacher types a subject and the host app's Gemini
@@ -2677,20 +2709,21 @@ function pauseForQuestion(){
   // Physics keeps the live, track-derived question; any other topic swaps in a
   // grade-tuned math problem at the same checkpoint (the freeze choreography is
   // unchanged — only the question content differs).
+  const liveState = { v: Math.abs(sim.v), h: tr.y };
   if(rideTopic === 'physics'){
-    ride.current = stop.make({ v: Math.abs(sim.v), h: tr.y });
+    ride.current = stop.make(liveState);
     ride.timerLen = level === 'engineer' ? 32 : 18;
   } else if(rideTopic === 'ai'){
     // serve a pre-fetched AI question; if the buffer is empty (still loading or
-    // AI unavailable), keep the ride moving with a grade-tuned math question
+    // AI unavailable), keep the ride moving with a grounded math question
     if(aiQ.buffer.length){
       ride.current = aiQ.buffer.shift();
     } else {
-      ride.current = genMathQuestion('arithmetic', rideBand());
+      ride.current = genElementMath('arithmetic', rideBand(), _coasterFacts(liveState, stop));
     }
     ride.timerLen = ride.current.timerLen || 26;
   } else {
-    ride.current = genMathQuestion(rideTopic, rideBand());
+    ride.current = genElementMath(rideTopic, rideBand(), _coasterFacts(liveState, stop));
     ride.timerLen = ride.current.timerLen || 24;
   }
   ride.total++;
@@ -3182,12 +3215,8 @@ return { destroy: __clabDestroy };
 }
 
   function loadThreeAnd(cb){
-    if (window.THREE) return cb(window.THREE);
-    var s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
-    s.onload = function () { cb(window.THREE || null); };
-    s.onerror = function () { cb(null); };
-    document.head.appendChild(s);
+    // Shared resilient loader: multi-CDN fallback + timeout (host provides it).
+    window.StemLab.ensureThree({ orbit: false }).then(function () { cb(window.THREE || null); }).catch(function () { cb(null); });
   }
 
   window.StemLab.registerTool('coasterLab', {
