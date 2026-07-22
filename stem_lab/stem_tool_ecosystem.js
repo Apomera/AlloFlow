@@ -4072,19 +4072,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             var salmon = getSp(conserve.species, 'salmon');
             if (deer.pop >= 75 && wolf.pop === 0) {
               return {
-                priority: 'Build toward wolf reintroduction AND raise deer quota',
-                text: 'Deer are hyperabundant (' + Math.round(deer.pop) + ' index) and wolves are absent. Without predators, deer degrade every habitat through browse pressure. Two parallel moves: raise the deer hunting quota for immediate relief, and start the long arc toward wolf reintroduction (Compensation fund + Public education to lift wolf support above 50, plus Habitat protection to lift wolf habitat above 60).'
+                priority: __alloT('stem.ecosystem.tip_wolf_priority', 'Build toward wolf reintroduction AND raise deer quota'),
+                text: __alloT('stem.ecosystem.tip_wolf_text_pre', 'Deer are hyperabundant (') + Math.round(deer.pop) + __alloT('stem.ecosystem.tip_wolf_text_post', ' index) and wolves are absent. Without predators, deer degrade every habitat through browse pressure. Two parallel moves: raise the deer hunting quota for immediate relief, and start the long arc toward wolf reintroduction (Compensation fund + Public education to lift wolf support above 50, plus Habitat protection to lift wolf habitat above 60).')
               };
             }
             if (salmon.pop < 25) {
               return {
-                priority: 'Stream restoration for salmon and trout',
-                text: 'Atlantic salmon are critically low (' + Math.round(salmon.pop) + '). Stream restoration helps salmon, brook trout, and beaver in one move. Dam removal is a bigger lever but costs public support.'
+                priority: __alloT('stem.ecosystem.tip_salmon_priority', 'Stream restoration for salmon and trout'),
+                text: __alloT('stem.ecosystem.tip_salmon_text_pre', 'Atlantic salmon are critically low (') + Math.round(salmon.pop) + __alloT('stem.ecosystem.tip_salmon_text_post', '). Stream restoration helps salmon, brook trout, and beaver in one move. Dam removal is a bigger lever but costs public support.')
               };
             }
             return {
-              priority: 'Hold steady and read the land',
-              text: 'No single zone is in crisis. Use Year 1 to monitor and protect habitat; the cascade rules will compound your moves in later years.'
+              priority: __alloT('stem.ecosystem.tip_hold_priority', 'Hold steady and read the land'),
+              text: __alloT('stem.ecosystem.tip_hold_text', 'No single zone is in crisis. Use Year 1 to monitor and protect habitat; the cascade rules will compound your moves in later years.')
             };
           }
 
@@ -4336,16 +4336,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
                 ),
                 h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '📰 Case work'),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '📰 ' + __alloT('stem.ecosystem.case_work', 'Case work')),
                   h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
                 ),
                 h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌍 Modern context'),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌍 ' + __alloT('stem.ecosystem.modern_context', 'Modern context')),
                   h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
                 )
               ),
               applicable.length > 0 ? h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(21,128,61,0.10)', borderTop: '1px solid rgba(21,128,61,0.4)', borderRight: '1px solid rgba(21,128,61,0.4)', borderBottom: '1px solid rgba(21,128,61,0.4)', borderLeft: '3px solid #15803d', borderRadius: 10 } },
-                h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🛠 What you can do for this species in the sim'),
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🛠 ' + __alloT('stem.ecosystem.what_you_can_do', 'What you can do for this species in the sim')),
                 applicable.map(function(t, i) {
                   return h('div', { key: i, style: { margin: '4px 0', fontSize: 12.5, color: '#d1fae5', lineHeight: 1.5 } },
                     h('strong', { style: { color: '#bbf7d0' } }, t.icon + ' ' + t.name), ' (' + t.hours + 'h): ', t.desc
@@ -4375,8 +4375,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               return pts.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x + ',' + p.y; }).join(' ');
             }
             return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, marginBottom: 14, border: '1px solid var(--allo-stem-border, #1e293b)' } },
-              h('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, '📈 Population trends across the campaign'),
-              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' }, role: 'img', 'aria-label': 'Population-index trend chart by species year-by-year' },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, '📈 ' + __alloT('stem.ecosystem.pop_trends_campaign', 'Population trends across the campaign')),
+              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' }, role: 'img', 'aria-label': __alloT('stem.ecosystem.aria_trend_chart', 'Population-index trend chart by species year-by-year') },
                 // gridlines
                 [0, 25, 50, 75, 100].map(function(g, gi) {
                   var y = padT + iy - (g / 100) * iy;
@@ -4432,7 +4432,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             var pickRng = conserveRng(conserve.seed, conserve.year, 'pick');
             var ev;
             if (skipRng() < (diff.eventSkip || 0)) {
-              ev = { id: 'quietYear', name: 'A Quiet Year', icon: '🌤️', desc: 'No major event. Routine fieldwork, steady progress.', apply: function() {} };
+              ev = { id: 'quietYear', name: __alloT('stem.ecosystem.event_quiet_year_name', 'A Quiet Year'), icon: '🌤️', desc: __alloT('stem.ecosystem.event_quiet_year_desc', 'No major event. Routine fieldwork, steady progress.'), apply: function() {} };
             } else {
               ev = CONSERVATION_EVENTS[Math.floor(pickRng() * CONSERVATION_EVENTS.length)];
             }
@@ -4498,10 +4498,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               var avgPop = Math.round(sp.reduce(function(a, s) { return a + s.pop; }, 0) / sp.length);
               var avgHab = Math.round(sp.reduce(function(a, s) { return a + s.habitat; }, 0) / sp.length);
               var outcome;
-              if (targetsMet >= 5 && avgPop >= 55) outcome = { tier: 'mastery', label: 'Conservation Mastery', color: '#16a34a', icon: '🏆', desc: 'You held the whole web together. Wolves are back. Beavers are reshaping streams. Salmon are running. Brook trout hold the headwaters. This is what landscape-scale recovery looks like.' };
-              else if (targetsMet >= 3 && avgPop >= 45) outcome = { tier: 'skilled', label: 'Skilled Conservation Manager', color: '#22c55e', icon: '🌲', desc: 'You met most of the recovery targets. Some species are thriving, others are still climbing. The trajectory is good.' };
-              else if (avgPop >= 35) outcome = { tier: 'mixed', label: 'Mixed Results', color: '#f59e0b', icon: '🍃', desc: 'A few species made meaningful gains. Others stalled or slipped. Conservation is rarely clean.' };
-              else outcome = { tier: 'losing', label: 'Losing Ground', color: '#ef4444', icon: '⚠️', desc: 'The ecosystem is slipping. Populations are low, habitat is degraded, public support is fragile. This is how species disappear quietly.' };
+              if (targetsMet >= 5 && avgPop >= 55) outcome = { tier: 'mastery', label: __alloT('stem.ecosystem.outcome_mastery_label', 'Conservation Mastery'), color: '#16a34a', icon: '🏆', desc: __alloT('stem.ecosystem.outcome_mastery_desc', 'You held the whole web together. Wolves are back. Beavers are reshaping streams. Salmon are running. Brook trout hold the headwaters. This is what landscape-scale recovery looks like.') };
+              else if (targetsMet >= 3 && avgPop >= 45) outcome = { tier: 'skilled', label: __alloT('stem.ecosystem.outcome_skilled_label', 'Skilled Conservation Manager'), color: '#22c55e', icon: '🌲', desc: __alloT('stem.ecosystem.outcome_skilled_desc', 'You met most of the recovery targets. Some species are thriving, others are still climbing. The trajectory is good.') };
+              else if (avgPop >= 35) outcome = { tier: 'mixed', label: __alloT('stem.ecosystem.outcome_mixed_label', 'Mixed Results'), color: '#f59e0b', icon: '🍃', desc: __alloT('stem.ecosystem.outcome_mixed_desc', 'A few species made meaningful gains. Others stalled or slipped. Conservation is rarely clean.') };
+              else outcome = { tier: 'losing', label: __alloT('stem.ecosystem.outcome_losing_label', 'Losing Ground'), color: '#ef4444', icon: '⚠️', desc: __alloT('stem.ecosystem.outcome_losing_desc', 'The ecosystem is slipping. Populations are low, habitat is degraded, public support is fragile. This is how species disappear quietly.') };
               if (conserve.difficulty === 'director' && (outcome.tier === 'mastery' || outcome.tier === 'skilled')) checkConsBadge('directorRank');
               setConserve({ phase: 'debrief', finalOutcome: outcome, targetsMet: targetsMet });
               awardXP && awardXP('conserve_complete', 50, outcome.label);
@@ -4522,8 +4522,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
                   h('span', { style: { fontSize: 36 } }, '🌲'),
                   h('div', null,
-                    h('h3', { style: { margin: 0, color: T_GREEN_HI, fontSize: 22 } }, 'Conservation Manager: Maine'),
-                    h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, 'Steward six species across 10 years of fieldwork.')
+                    h('h3', { style: { margin: 0, color: T_GREEN_HI, fontSize: 22 } }, __alloT('stem.ecosystem.cons_manager_maine', 'Conservation Manager: Maine')),
+                    h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, __alloT('stem.ecosystem.steward_intro', 'Steward six species across 10 years of fieldwork.'))
                   )
                 ),
                 h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } },
