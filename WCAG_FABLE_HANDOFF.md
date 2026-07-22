@@ -72,6 +72,7 @@ These sections were independently committed:
 | Learning Reflection (Self Assessment) | `332389994` |
 | Learning Contracts | `2932fcc13` |
 | Emotion Check + Tools | `dce5a7881` |
+| Timer-focus class: all 32 remaining sites | `ba6e1f784` |
 
 The most recently completed section, Personal Reference Sheet Builder, passed:
 
@@ -183,9 +184,14 @@ Both issues surfaced last session are now FIXED:
 - **Mid-session incident**: the machine exhausted its paging file (concurrent sessions) — PowerShell/Node couldn't spawn for a stretch. The gate runner correctly errored rather than passing incomplete runs; work resumed cleanly. Sessions on this machine should treat "Could not determine Node.js install directory" + assembly-load failures as memory pressure, not tooling breakage. Also: the shell CWD resets to HOME after such crashes — re-`Set-Location` before diagnosing "missing" files.
 - Final gate: **2,329/2,329 across 160 files** (1 worker). Mirror SHA-256: `772BD4BAB626124117FC42CCC4E72A136EE95B8C96518395711EAA8AF0A6B512`.
 
+## Session notes (2026-07-22, Fable — fourteenth continuation) — TWO CROSS-CUTTING DEBTS CLOSED
+
+- **CDN verification RESOLVED**: the live artifact at `https://alloflow-cdn.pages.dev/stem_lab/stem_tool_learning_lab.js` hashes to `D6BD6176…` == commit `deb110ec2` (Achievement Wall). The deployed bundle therefore INCLUDES the P0 free-focusById fix, the UTC-date fixes, and everything through 26 audit sections. Only the sections after `deb110ec2` await the next batch deploy (Aaron batches deploys by design). Verify method: `curl.exe -sL` the URL, `Get-FileHash`, match against `git show <commit>:prismflow-deploy/public/...` candidates.
+- **Timer-focus class COMPLETE** `ba6e1f784`: codemodded all 32 remaining convertible sites (31 components + GoalTracker's `focusGoalView` + 4 selectText variants incl. Script Library / Accommodation Request) to the render-synchronized pendingFocus pattern. The mass-conversion effect deliberately has NO deps array (runs every render) so pending focus lands regardless of which local state change produced the target. **Exactly 2 timer-focus sites remain, both legitimate and now PINNED by the focus-binding gate test**: the shell's `focusCurrentView` (target persists across renders) and the render-error catch path (hooks impossible there). Gate 2,330/2,330; six converted components have rendered focus assertions that passed.
+
 ## Goal status
 
-**The Personal Toolkit component tail is fully audited** — every `Personal*` component now has the current-wave treatment (render-synchronized focus where it had timer focus, malformed-data guards, honest non-notification/claims wording, paired contract + render tests, guarded hub stats). 33 broad-pattern `setTimeout`-focus sites remain OUTSIDE the audited components (shell/hub regions and non-toolkit areas of this file) plus 1 narrow variant — convert as those areas are audited. The comprehensive WCAG goal continues with the remaining app areas beyond the Learning Lab Personal Toolkit (other STEM tools, shell, SEL hub), plus the known cross-cutting debts: stale i18n keys serving old framing in 63 packs, and verifying the CDN artifact contains the focus-class fix (@1c513b558 stamp vs `784de7477`). Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
+**The Learning Lab file is now fully consistent**: every component uses render-synchronized focus (2 documented exceptions), malformed-data guards, honest wording, and gated tests. The comprehensive WCAG goal continues with the remaining app areas beyond this file (other STEM tools, app shell, SEL hub) plus one decision that is Aaron's: the stale i18n keys serving pre-audit framing in translated packs (mint new keys → English fallback everywhere, or hand-update the affected keys across the 63 packs). Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
 
 ## Completed section reference: Optional Support Request Notes
 
