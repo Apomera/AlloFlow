@@ -28,5 +28,17 @@
   "route_show_laws": "Show Laws",
   "route_ask_tutor": "Ask Tutor",
   "route_kirchhoff_support": "Kirchhoff support",
-  "route_circuit_hint": "Get a circuit hint"
+  "route_circuit_hint": "Get a circuit hint",
+  "electronics_bench": "Electronics bench",
+  "bench_headline": "Build the loop, then prove the numbers",
+  "aria_bench_visual": "Circuit bench visual showing battery, wire loop, load, and live meter readouts",
+  "add_resistance": "Add resistance",
+  "svg_series_caption": "Series: same current through every part",
+  "svg_parallel_caption": "Parallel: branches share voltage",
+  "back_to_tools": "Back to tools",
+  "circuit_builder": "Circuit Builder",
+  "interactive_badge": "INTERACTIVE",
+  "short_circuit_banner": "SHORT CIRCUIT!",
+  "ai_tutor": "AI Tutor",
+  "field_signal_light_speed": "field signal ≈ light speed"
 }

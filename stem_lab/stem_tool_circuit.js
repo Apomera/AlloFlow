@@ -856,8 +856,8 @@ window.StemLab = window.StemLab || {
               style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 14 }
             },
               h('div', { style: { minWidth: 0 } },
-                h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-cyan-300 mb-2' }, 'Electronics bench'),
-                h('h2', { id: 'circuit-bench-title', className: 'text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight mb-2' }, 'Build the loop, then prove the numbers'),
+                h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-cyan-300 mb-2' }, __alloT('stem.circuit.electronics_bench', 'Electronics bench')),
+                h('h2', { id: 'circuit-bench-title', className: 'text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight mb-2' }, __alloT('stem.circuit.bench_headline', 'Build the loop, then prove the numbers')),
                 h('p', { className: 'text-sm text-slate-300 leading-relaxed mb-3' }, introText),
                 h('div', { className: 'rounded-xl border p-3', style: { borderColor: circuitState.tone + '66', background: circuitState.soft } },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
@@ -878,7 +878,7 @@ window.StemLab = window.StemLab || {
               ),
               h('div', { style: { minWidth: 0 } },
                 h('div', { className: 'rounded-xl border border-slate-700 bg-slate-950/60 p-3 mb-3' },
-                  h('svg', { viewBox: '0 0 330 164', width: '100%', role: 'img', 'aria-label': 'Circuit bench visual showing battery, wire loop, load, and live meter readouts' },
+                  h('svg', { viewBox: '0 0 330 164', width: '100%', role: 'img', 'aria-label': __alloT('stem.circuit.aria_bench_visual', 'Circuit bench visual showing battery, wire loop, load, and live meter readouts') },
                     h('rect', { x: 0, y: 0, width: 330, height: 164, rx: 18, fill: '#0f172a' }),
                     h('path', { d: 'M46 48 H112 V34 H232 V48 H284 V122 H46 Z', fill: 'none', stroke: current > 0.001 && !isShort ? '#22d3ee' : '#64748b', strokeWidth: 5, strokeLinejoin: 'round' }),
                     h('rect', { x: 28, y: 58, width: 36, height: 52, rx: 6, fill: '#ca8a04', stroke: '#facc15', strokeWidth: 2 }),
@@ -893,9 +893,9 @@ window.StemLab = window.StemLab || {
                     }),
                     isShort && h('g', null,
                       h('path', { d: 'M154 74 l18 18 l-10 2 l16 22 l-32 -26 l12 -2 z', fill: '#f87171', opacity: 0.85 }),
-                      h('text', { x: 166, y: 134, textAnchor: 'middle', fill: '#fecaca', fontSize: 11, fontWeight: 900 }, 'Add resistance')
+                      h('text', { x: 166, y: 134, textAnchor: 'middle', fill: '#fecaca', fontSize: 11, fontWeight: 900 }, __alloT('stem.circuit.add_resistance', 'Add resistance'))
                     ),
-                    h('text', { x: 22, y: 146, fill: '#94a3b8', fontSize: 10, fontWeight: 700 }, mode === 'series' ? 'Series: same current through every part' : 'Parallel: branches share voltage')
+                    h('text', { x: 22, y: 146, fill: '#94a3b8', fontSize: 10, fontWeight: 700 }, mode === 'series' ? __alloT('stem.circuit.svg_series_caption', 'Series: same current through every part') : __alloT('stem.circuit.svg_parallel_caption', 'Parallel: branches share voltage'))
                   )
                 ),
                 h('div', { className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(132px, 1fr))' } },
@@ -923,26 +923,26 @@ window.StemLab = window.StemLab || {
               h('button', {
                 onClick: function() { if (typeof setStemLabTool === 'function') setStemLabTool(null); },
                 className: 'p-1.5 hover:bg-slate-800 rounded-lg transition-all active:scale-[0.97]',
-                'aria-label': 'Back to tools'
+                'aria-label': __alloT('stem.circuit.back_to_tools', 'Back to tools')
               }, h(ArrowLeft, { size: 18, className: 'text-slate-400' })),
 
-              h('h3', { className: 'text-lg font-bold text-white tracking-tight' }, '\uD83D\uDD0C Circuit Builder'),
+              h('h3', { className: 'text-lg font-bold text-white tracking-tight' }, '\uD83D\uDD0C ' + __alloT('stem.circuit.circuit_builder', 'Circuit Builder')),
 
-              h('span', { className: 'px-2 py-0.5 bg-yellow-950/60 text-yellow-400 text-[10px] font-black rounded-full border border-yellow-500/20' }, 'INTERACTIVE'),
+              h('span', { className: 'px-2 py-0.5 bg-yellow-950/60 text-yellow-400 text-[10px] font-black rounded-full border border-yellow-500/20' }, __alloT('stem.circuit.interactive_badge', 'INTERACTIVE')),
 
-              isShort && h('span', { className: 'px-2 py-0.5 bg-red-950/60 text-red-400 text-[10px] font-black rounded-full border border-red-500/30 animate-pulse' }, '\u26A0 SHORT CIRCUIT!'),
+              isShort && h('span', { className: 'px-2 py-0.5 bg-red-950/60 text-red-400 text-[10px] font-black rounded-full border border-red-500/30 animate-pulse' }, '\u26A0 ' + __alloT('stem.circuit.short_circuit_banner', 'SHORT CIRCUIT!')),
 
               // Badge toggle
-              h('button', { 'aria-label': 'Badges',
+              h('button', { 'aria-label': __alloT('stem.circuit.badges', 'Badges'),
                 onClick: function() { upd('showBadges', !showBadges); },
                 className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showBadges ? 'bg-amber-950/40 text-amber-400 border border-amber-600/40' : 'transition-colors bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-white active:scale-[0.97]')
-              }, '\uD83C\uDFC5 Badges'),
+              }, '\uD83C\uDFC5 ' + __alloT('stem.circuit.badges', 'Badges')),
 
               // AI toggle
-              h('button', { 'aria-label': 'AI Tutor',
+              h('button', { 'aria-label': __alloT('stem.circuit.ai_tutor', 'AI Tutor'),
                 onClick: function() { upd('showAI', !showAI); },
                 className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showAI ? 'bg-blue-950/40 text-blue-400 border border-blue-600/40' : 'transition-colors bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-white active:scale-[0.97]')
-              }, '\uD83E\uDD16 AI Tutor'),
+              }, '\uD83E\uDD16 ' + __alloT('stem.circuit.ai_tutor', 'AI Tutor')),
 
               // Mode buttons
               h('div', { className: 'flex gap-1 ml-auto' },
@@ -1080,7 +1080,7 @@ window.StemLab = window.StemLab || {
                     h('circle', { cx: 57, cy: 20, r: 3.2, fill: '#ecfeff', stroke: '#22d3ee', strokeWidth: 1 }),
                     h('path', { d: 'M51 20 H63', stroke: '#ffffff', strokeWidth: 1.2, opacity: 0.9 })
                   ),
-                  h('text', { x: 302, y: 15, fill: '#a5f3fc', style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' } }, 'field signal ≈ light speed')
+                  h('text', { x: 302, y: 15, fill: '#a5f3fc', style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' } }, __alloT('stem.circuit.field_signal_light_speed', 'field signal ≈ light speed'))
                 ),
                 // Current direction arrow
                 !isShort && current > 0.01 && h('g', null,
