@@ -1442,7 +1442,12 @@ window.StemLab = window.StemLab || {
                 React.createElement('h4', { className: 'text-sm font-bold text-indigo-700' }, __alloT('stem.funcgrapher.function_zoo_six_common_function_shape', 'Function Zoo \u2014 Six common function shapes'))
               ),
               React.createElement('div', { className: 'rounded-xl overflow-hidden border border-indigo-200', style: { background: '#020210', aspectRatio: '16/6' } },
+                React.createElement('p', { id: 'funcgrapher-zoo-description', className: srOnly }, 'Six coordinate plots compare common function shapes: linear is a straight rising line, quadratic is a U-shaped curve, cubic is an S-shaped curve, exponential rises increasingly quickly, logarithmic rises increasingly slowly, and sine repeats in a wave.'),
                 React.createElement('canvas', {
+                  role: 'img',
+                  'aria-label': 'Function Zoo comparison of six common function shapes',
+                  'aria-describedby': 'funcgrapher-zoo-description',
+                  'data-a11y-static': 'true',
                   ref: function(cvEl) {
                     if (!cvEl) return;
                     if (cvEl._fzAnim) return;
