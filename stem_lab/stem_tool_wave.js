@@ -4276,9 +4276,9 @@ const d = labToolData.wave;
 
       function renderTvfreqSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📺 Display technologies + resolutions'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📺 ' + __alloT('stem.wave.sec_tvfreq_title', 'Display technologies + resolutions')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Display types'),
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_display_types', 'Display types')),
             React.createElement('div', { className: 'space-y-1' },
               SCREEN_TYPES.map(function(s, i) {
                 return React.createElement('div', { key: 's'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
@@ -4291,7 +4291,7 @@ const d = labToolData.wave;
               })
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Standard resolutions'),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_standard_resolutions', 'Standard resolutions')),
           React.createElement('div', { className: 'space-y-1' },
             SCREEN_RESOLUTIONS.map(function(r, i) {
               return React.createElement('div', { key: 'r'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
@@ -4308,13 +4308,13 @@ const d = labToolData.wave;
 
       function renderNoiseSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔊 Sound levels (dB SPL)'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Decibels are logarithmic: +10 dB ≈ 10× sound intensity but ~2× perceived loudness. Sustained exposure >85 dB damages hearing.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔊 ' + __alloT('stem.wave.sec_noise_title', 'Sound levels (dB SPL)')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_noise_intro', 'Decibels are logarithmic: +10 dB ≈ 10× sound intensity but ~2× perceived loudness. Sustained exposure >85 dB damages hearing.')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
-                  ['Source', 'Level', 'Notes'].map(function(hh, i) {
+                  [__alloT('stem.wave.col_source', 'Source'), __alloT('stem.wave.col_level', 'Level'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
                     return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
@@ -4338,61 +4338,61 @@ const d = labToolData.wave;
       // ═════════════════════════════════════════════════════════════════════
 
       var ANIMAL_HEARING = [
-        { animal: 'Human (young)', range: '20 Hz - 20 kHz', notes: 'Upper limit drops with age; adults often only ~14-16 kHz.' },
-        { animal: 'Human (elderly)', range: '20 Hz - 10-12 kHz', notes: 'Presbycusis — gradual high-frequency loss after age ~50.' },
-        { animal: 'Dog', range: '40 Hz - 60 kHz', notes: 'Dog whistles at 20-25 kHz inaudible to humans.' },
-        { animal: 'Cat', range: '55 Hz - 79 kHz', notes: 'Wide range. Sensitive to mouse squeaks.' },
-        { animal: 'Bat (echolocation)', range: '1 kHz - 200 kHz', notes: 'Chirp out + listen. Some species at 100+ kHz.' },
-        { animal: 'Dolphin', range: '~150 Hz - 150 kHz', notes: 'Echolocate underwater; clicks up to 200 kHz.' },
-        { animal: 'Whale (baleen)', range: '~10 Hz - 30 kHz', notes: 'Use infrasound (low freq) for very long-distance communication.' },
-        { animal: 'Elephant', range: '~5 Hz - 12 kHz', notes: 'Infrasonic rumbles travel miles. Use for long-range communication.' },
-        { animal: 'Mouse', range: '1 kHz - 90 kHz', notes: 'Ultrasonic vocalizations.' },
-        { animal: 'Bird (chicken)', range: '125 Hz - 2 kHz', notes: 'Narrower range than mammals. Used in cock crow.' },
-        { animal: 'Owl', range: '~50 Hz - 12 kHz', notes: 'Asymmetric ears for precise location of prey rustles.' },
-        { animal: 'Moth', range: '~20-60 kHz', notes: 'Hear bat echolocation — drop to evade.' },
-        { animal: 'Fish (most)', range: '50 Hz - 1 kHz', notes: 'Use lateral line for water vibrations + ears for sound.' },
-        { animal: 'Cricket', range: '~5-90 kHz', notes: 'Ears on legs! Tympanic organs near "knee".' }
+        { animal: __alloT('stem.wave.ah_human_young', 'Human (young)'), range: '20 Hz - 20 kHz', notes: __alloT('stem.wave.ah_human_young_notes', 'Upper limit drops with age; adults often only ~14-16 kHz.') },
+        { animal: __alloT('stem.wave.ah_human_elderly', 'Human (elderly)'), range: '20 Hz - 10-12 kHz', notes: __alloT('stem.wave.ah_human_elderly_notes', 'Presbycusis — gradual high-frequency loss after age ~50.') },
+        { animal: __alloT('stem.wave.ah_dog', 'Dog'), range: '40 Hz - 60 kHz', notes: __alloT('stem.wave.ah_dog_notes', 'Dog whistles at 20-25 kHz inaudible to humans.') },
+        { animal: __alloT('stem.wave.ah_cat', 'Cat'), range: '55 Hz - 79 kHz', notes: __alloT('stem.wave.ah_cat_notes', 'Wide range. Sensitive to mouse squeaks.') },
+        { animal: __alloT('stem.wave.ah_bat', 'Bat (echolocation)'), range: '1 kHz - 200 kHz', notes: __alloT('stem.wave.ah_bat_notes', 'Chirp out + listen. Some species at 100+ kHz.') },
+        { animal: __alloT('stem.wave.ah_dolphin', 'Dolphin'), range: '~150 Hz - 150 kHz', notes: __alloT('stem.wave.ah_dolphin_notes', 'Echolocate underwater; clicks up to 200 kHz.') },
+        { animal: __alloT('stem.wave.ah_whale', 'Whale (baleen)'), range: '~10 Hz - 30 kHz', notes: __alloT('stem.wave.ah_whale_notes', 'Use infrasound (low freq) for very long-distance communication.') },
+        { animal: __alloT('stem.wave.ah_elephant', 'Elephant'), range: '~5 Hz - 12 kHz', notes: __alloT('stem.wave.ah_elephant_notes', 'Infrasonic rumbles travel miles. Use for long-range communication.') },
+        { animal: __alloT('stem.wave.ah_mouse', 'Mouse'), range: '1 kHz - 90 kHz', notes: __alloT('stem.wave.ah_mouse_notes', 'Ultrasonic vocalizations.') },
+        { animal: __alloT('stem.wave.ah_bird', 'Bird (chicken)'), range: '125 Hz - 2 kHz', notes: __alloT('stem.wave.ah_bird_notes', 'Narrower range than mammals. Used in cock crow.') },
+        { animal: __alloT('stem.wave.ah_owl', 'Owl'), range: '~50 Hz - 12 kHz', notes: __alloT('stem.wave.ah_owl_notes', 'Asymmetric ears for precise location of prey rustles.') },
+        { animal: __alloT('stem.wave.ah_moth', 'Moth'), range: '~20-60 kHz', notes: __alloT('stem.wave.ah_moth_notes', 'Hear bat echolocation — drop to evade.') },
+        { animal: __alloT('stem.wave.ah_fish', 'Fish (most)'), range: '50 Hz - 1 kHz', notes: __alloT('stem.wave.ah_fish_notes', 'Use lateral line for water vibrations + ears for sound.') },
+        { animal: __alloT('stem.wave.ah_cricket', 'Cricket'), range: '~5-90 kHz', notes: __alloT('stem.wave.ah_cricket_notes', 'Ears on legs! Tympanic organs near "knee".') }
       ];
 
       var INSTRUMENT_FREQS = [
-        { instrument: 'Piano', range: '27.5 Hz - 4186 Hz', fundamental: 'A0-C8 (88 keys)', notes: 'Widest range of standard orchestral instruments.' },
-        { instrument: 'Violin', range: '196 Hz - 3520 Hz', fundamental: 'G3-A7', notes: 'Highest pitch of orchestral strings.' },
-        { instrument: 'Viola', range: '130 Hz - 1318 Hz', fundamental: 'C3-E6', notes: 'Pitched fifth below violin.' },
-        { instrument: 'Cello', range: '65 Hz - 1046 Hz', fundamental: 'C2-C6', notes: 'Pitched octave below viola.' },
-        { instrument: 'Double bass', range: '41 Hz - 246 Hz', fundamental: 'E1-B3', notes: 'Lowest of standard orchestral strings.' },
-        { instrument: 'Guitar (standard tuning)', range: '82 Hz - 1318 Hz', fundamental: 'E2-E6', notes: 'EADGBE strings. Range varies with frets.' },
-        { instrument: 'Bass guitar', range: '41 Hz - 350 Hz', fundamental: 'E1-E4', notes: 'Octave below standard guitar (4-string).' },
-        { instrument: 'Flute', range: '262 Hz - 2093 Hz', fundamental: 'C4-C7', notes: 'Highest standard woodwind.' },
-        { instrument: 'Clarinet (Bb)', range: '147 Hz - 1568 Hz', fundamental: 'D3-G6', notes: 'Wide range. Distinctive timbre via odd harmonics.' },
-        { instrument: 'Oboe', range: '233 Hz - 1568 Hz', fundamental: 'Bb3-G6', notes: 'Reedy tone. Tunes the orchestra (its A is hardest to adjust).' },
-        { instrument: 'Bassoon', range: '58 Hz - 622 Hz', fundamental: 'Bb1-Eb5', notes: 'Lowest standard woodwind.' },
-        { instrument: 'Trumpet', range: '165 Hz - 988 Hz', fundamental: 'E3-B5', notes: 'Highest standard brass.' },
-        { instrument: 'Trombone', range: '82 Hz - 622 Hz', fundamental: 'E2-Eb5', notes: 'Slide changes pitch — continuous glissando possible.' },
-        { instrument: 'French horn', range: '62 Hz - 698 Hz', fundamental: 'B1-F5', notes: 'Wide tonal range; difficult to control.' },
-        { instrument: 'Tuba', range: '41 Hz - 349 Hz', fundamental: 'E1-F4', notes: 'Lowest brass.' },
-        { instrument: 'Voice (soprano)', range: '262 Hz - 1046 Hz', fundamental: 'C4-C6', notes: 'Highest female voice type.' },
-        { instrument: 'Voice (alto)', range: '196 Hz - 698 Hz', fundamental: 'G3-F5', notes: 'Lower female voice.' },
-        { instrument: 'Voice (tenor)', range: '131 Hz - 523 Hz', fundamental: 'C3-C5', notes: 'Highest male voice.' },
-        { instrument: 'Voice (baritone)', range: '110 Hz - 440 Hz', fundamental: 'A2-A4', notes: 'Most common male voice.' },
-        { instrument: 'Voice (bass)', range: '82 Hz - 349 Hz', fundamental: 'E2-F4', notes: 'Lowest standard voice.' },
-        { instrument: 'Drum kit (kick)', range: '60-100 Hz', fundamental: 'low rumble', notes: 'Felt as much as heard.' },
-        { instrument: 'Drum kit (snare)', range: '~200 Hz fundamental', fundamental: 'sharp attack', notes: 'Wires (snares) add high-frequency rattle.' },
-        { instrument: 'Cymbal (crash)', range: 'broad ~300 Hz - 10+ kHz', fundamental: 'inharmonic', notes: 'Not tonally pitched — many frequencies together.' }
+        { instrument: __alloT('stem.wave.if_piano', 'Piano'), range: '27.5 Hz - 4186 Hz', fundamental: 'A0-C8 (88 keys)', notes: __alloT('stem.wave.if_piano_notes', 'Widest range of standard orchestral instruments.') },
+        { instrument: __alloT('stem.wave.if_violin', 'Violin'), range: '196 Hz - 3520 Hz', fundamental: 'G3-A7', notes: __alloT('stem.wave.if_violin_notes', 'Highest pitch of orchestral strings.') },
+        { instrument: __alloT('stem.wave.if_viola', 'Viola'), range: '130 Hz - 1318 Hz', fundamental: 'C3-E6', notes: __alloT('stem.wave.if_viola_notes', 'Pitched fifth below violin.') },
+        { instrument: __alloT('stem.wave.if_cello', 'Cello'), range: '65 Hz - 1046 Hz', fundamental: 'C2-C6', notes: __alloT('stem.wave.if_cello_notes', 'Pitched octave below viola.') },
+        { instrument: __alloT('stem.wave.if_bass', 'Double bass'), range: '41 Hz - 246 Hz', fundamental: 'E1-B3', notes: __alloT('stem.wave.if_bass_notes', 'Lowest of standard orchestral strings.') },
+        { instrument: __alloT('stem.wave.if_guitar', 'Guitar (standard tuning)'), range: '82 Hz - 1318 Hz', fundamental: 'E2-E6', notes: __alloT('stem.wave.if_guitar_notes', 'EADGBE strings. Range varies with frets.') },
+        { instrument: __alloT('stem.wave.if_bassguitar', 'Bass guitar'), range: '41 Hz - 350 Hz', fundamental: 'E1-E4', notes: __alloT('stem.wave.if_bassguitar_notes', 'Octave below standard guitar (4-string).') },
+        { instrument: __alloT('stem.wave.if_flute', 'Flute'), range: '262 Hz - 2093 Hz', fundamental: 'C4-C7', notes: __alloT('stem.wave.if_flute_notes', 'Highest standard woodwind.') },
+        { instrument: __alloT('stem.wave.if_clarinet', 'Clarinet (Bb)'), range: '147 Hz - 1568 Hz', fundamental: 'D3-G6', notes: __alloT('stem.wave.if_clarinet_notes', 'Wide range. Distinctive timbre via odd harmonics.') },
+        { instrument: __alloT('stem.wave.if_oboe', 'Oboe'), range: '233 Hz - 1568 Hz', fundamental: 'Bb3-G6', notes: __alloT('stem.wave.if_oboe_notes', 'Reedy tone. Tunes the orchestra (its A is hardest to adjust).') },
+        { instrument: __alloT('stem.wave.if_bassoon', 'Bassoon'), range: '58 Hz - 622 Hz', fundamental: 'Bb1-Eb5', notes: __alloT('stem.wave.if_bassoon_notes', 'Lowest standard woodwind.') },
+        { instrument: __alloT('stem.wave.if_trumpet', 'Trumpet'), range: '165 Hz - 988 Hz', fundamental: 'E3-B5', notes: __alloT('stem.wave.if_trumpet_notes', 'Highest standard brass.') },
+        { instrument: __alloT('stem.wave.if_trombone', 'Trombone'), range: '82 Hz - 622 Hz', fundamental: 'E2-Eb5', notes: __alloT('stem.wave.if_trombone_notes', 'Slide changes pitch — continuous glissando possible.') },
+        { instrument: __alloT('stem.wave.if_frenchhorn', 'French horn'), range: '62 Hz - 698 Hz', fundamental: 'B1-F5', notes: __alloT('stem.wave.if_frenchhorn_notes', 'Wide tonal range; difficult to control.') },
+        { instrument: __alloT('stem.wave.if_tuba', 'Tuba'), range: '41 Hz - 349 Hz', fundamental: 'E1-F4', notes: __alloT('stem.wave.if_tuba_notes', 'Lowest brass.') },
+        { instrument: __alloT('stem.wave.if_soprano', 'Voice (soprano)'), range: '262 Hz - 1046 Hz', fundamental: 'C4-C6', notes: __alloT('stem.wave.if_soprano_notes', 'Highest female voice type.') },
+        { instrument: __alloT('stem.wave.if_alto', 'Voice (alto)'), range: '196 Hz - 698 Hz', fundamental: 'G3-F5', notes: __alloT('stem.wave.if_alto_notes', 'Lower female voice.') },
+        { instrument: __alloT('stem.wave.if_tenor', 'Voice (tenor)'), range: '131 Hz - 523 Hz', fundamental: 'C3-C5', notes: __alloT('stem.wave.if_tenor_notes', 'Highest male voice.') },
+        { instrument: __alloT('stem.wave.if_baritone', 'Voice (baritone)'), range: '110 Hz - 440 Hz', fundamental: 'A2-A4', notes: __alloT('stem.wave.if_baritone_notes', 'Most common male voice.') },
+        { instrument: __alloT('stem.wave.if_bassvoice', 'Voice (bass)'), range: '82 Hz - 349 Hz', fundamental: 'E2-F4', notes: __alloT('stem.wave.if_bassvoice_notes', 'Lowest standard voice.') },
+        { instrument: __alloT('stem.wave.if_kick', 'Drum kit (kick)'), range: '60-100 Hz', fundamental: __alloT('stem.wave.if_kick_fund', 'low rumble'), notes: __alloT('stem.wave.if_kick_notes', 'Felt as much as heard.') },
+        { instrument: __alloT('stem.wave.if_snare', 'Drum kit (snare)'), range: '~200 Hz fundamental', fundamental: __alloT('stem.wave.if_snare_fund', 'sharp attack'), notes: __alloT('stem.wave.if_snare_notes', 'Wires (snares) add high-frequency rattle.') },
+        { instrument: __alloT('stem.wave.if_cymbal', 'Cymbal (crash)'), range: 'broad ~300 Hz - 10+ kHz', fundamental: __alloT('stem.wave.if_cymbal_fund', 'inharmonic'), notes: __alloT('stem.wave.if_cymbal_notes', 'Not tonally pitched — many frequencies together.') }
       ];
 
       var RADIO_BANDS = [
-        { band: 'ELF (extremely low)', range: '3-30 Hz', wavelength: '100,000-10,000 km', use: 'Submarine communication (penetrates water).' },
-        { band: 'SLF (super low)', range: '30-300 Hz', wavelength: '10,000-1,000 km', use: 'Submarines, AC power harmonics.' },
-        { band: 'ULF (ultra low)', range: '300 Hz-3 kHz', wavelength: '1,000-100 km', use: 'Mine communication, geophysics.' },
-        { band: 'VLF (very low)', range: '3-30 kHz', wavelength: '100-10 km', use: 'Submarine comms, navigation beacons.' },
-        { band: 'LF (low)', range: '30-300 kHz', wavelength: '10-1 km', use: 'AM longwave radio (Europe), time signals (WWVB), aircraft navigation.' },
-        { band: 'MF (medium)', range: '300 kHz-3 MHz', wavelength: '1 km-100 m', use: 'AM broadcast radio (525-1705 kHz).' },
-        { band: 'HF (high)', range: '3-30 MHz', wavelength: '100-10 m', use: 'Shortwave radio, ham radio. Reflects off ionosphere → global propagation.' },
-        { band: 'VHF (very high)', range: '30-300 MHz', wavelength: '10-1 m', use: 'FM radio (88-108 MHz), TV channels 2-13, air traffic, weather radio.' },
-        { band: 'UHF (ultra high)', range: '300 MHz-3 GHz', wavelength: '1 m-10 cm', use: 'TV channels 14+, cellular (700 MHz - 2.6 GHz), Wi-Fi 2.4 GHz, microwave ovens.' },
-        { band: 'SHF (super high)', range: '3-30 GHz', wavelength: '10 cm-1 cm', use: 'Wi-Fi 5/6 GHz, satellite TV, radar.' },
-        { band: 'EHF (extremely high)', range: '30-300 GHz', wavelength: '1 cm-1 mm', use: '5G mmWave, automotive radar, radio astronomy.' },
-        { band: 'THF (terahertz)', range: '300 GHz-3 THz', wavelength: '1 mm-100 μm', use: 'Research band. Some imaging applications (terahertz cameras).' }
+        { band: __alloT('stem.wave.rb_elf', 'ELF (extremely low)'), range: '3-30 Hz', wavelength: '100,000-10,000 km', use: __alloT('stem.wave.rb_elf_use', 'Submarine communication (penetrates water).') },
+        { band: __alloT('stem.wave.rb_slf', 'SLF (super low)'), range: '30-300 Hz', wavelength: '10,000-1,000 km', use: __alloT('stem.wave.rb_slf_use', 'Submarines, AC power harmonics.') },
+        { band: __alloT('stem.wave.rb_ulf', 'ULF (ultra low)'), range: '300 Hz-3 kHz', wavelength: '1,000-100 km', use: __alloT('stem.wave.rb_ulf_use', 'Mine communication, geophysics.') },
+        { band: __alloT('stem.wave.rb_vlf', 'VLF (very low)'), range: '3-30 kHz', wavelength: '100-10 km', use: __alloT('stem.wave.rb_vlf_use', 'Submarine comms, navigation beacons.') },
+        { band: __alloT('stem.wave.rb_lf', 'LF (low)'), range: '30-300 kHz', wavelength: '10-1 km', use: __alloT('stem.wave.rb_lf_use', 'AM longwave radio (Europe), time signals (WWVB), aircraft navigation.') },
+        { band: __alloT('stem.wave.rb_mf', 'MF (medium)'), range: '300 kHz-3 MHz', wavelength: '1 km-100 m', use: __alloT('stem.wave.rb_mf_use', 'AM broadcast radio (525-1705 kHz).') },
+        { band: __alloT('stem.wave.rb_hf', 'HF (high)'), range: '3-30 MHz', wavelength: '100-10 m', use: __alloT('stem.wave.rb_hf_use', 'Shortwave radio, ham radio. Reflects off ionosphere → global propagation.') },
+        { band: __alloT('stem.wave.rb_vhf', 'VHF (very high)'), range: '30-300 MHz', wavelength: '10-1 m', use: __alloT('stem.wave.rb_vhf_use', 'FM radio (88-108 MHz), TV channels 2-13, air traffic, weather radio.') },
+        { band: __alloT('stem.wave.rb_uhf', 'UHF (ultra high)'), range: '300 MHz-3 GHz', wavelength: '1 m-10 cm', use: __alloT('stem.wave.rb_uhf_use', 'TV channels 14+, cellular (700 MHz - 2.6 GHz), Wi-Fi 2.4 GHz, microwave ovens.') },
+        { band: __alloT('stem.wave.rb_shf', 'SHF (super high)'), range: '3-30 GHz', wavelength: '10 cm-1 cm', use: __alloT('stem.wave.rb_shf_use', 'Wi-Fi 5/6 GHz, satellite TV, radar.') },
+        { band: __alloT('stem.wave.rb_ehf', 'EHF (extremely high)'), range: '30-300 GHz', wavelength: '1 cm-1 mm', use: __alloT('stem.wave.rb_ehf_use', '5G mmWave, automotive radar, radio astronomy.') },
+        { band: __alloT('stem.wave.rb_thf', 'THF (terahertz)'), range: '300 GHz-3 THz', wavelength: '1 mm-100 μm', use: __alloT('stem.wave.rb_thf_use', 'Research band. Some imaging applications (terahertz cameras).') }
       ];
 
       var NAMED_COLORS = [
