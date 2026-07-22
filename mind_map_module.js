@@ -1439,6 +1439,7 @@
       tbBtn('💾 ' + (t('throughline.export') || 'Export unit'), false, exportUnit, t('throughline.export_title') || 'Download this unit as one file'),
       tbBtn('📂 ' + (t('throughline.import') || 'Import'), false, function () { if (fileInputRef.current) fileInputRef.current.click(); }, t('throughline.import_title') || 'Open a unit or lesson-pack file'),
       h('input', { ref: fileInputRef, type: 'file', accept: 'application/json,.json', style: { display: 'none' },
+        'aria-label': t('throughline.import_title') || 'Import unit file',
         onChange: function (e) { var f = e.target && e.target.files && e.target.files[0]; if (f) importFile(f); if (e.target) e.target.value = ''; } }),
       h('div', { style: { flex: 1 } }),
       tbBtn(t('throughline.clear') || 'Clear', false, clearUnit)
@@ -1571,6 +1572,7 @@
           h('div', { style: { fontWeight: 800, fontSize: 14, color: '#1e293b', marginBottom: 8 } },
             pickerForNode === 'BULK' ? (t('throughline.add_lessons') || 'Add lessons to this unit') : (t('throughline.pick_lesson') || 'Pick a lesson for this node')),
           h('input', { autoFocus: true, value: pickerQuery, onChange: function (e) { setPickerQuery(e.target.value); },
+            'aria-label': t('throughline.search_lessons') || 'Search your lessons',
             placeholder: t('throughline.search_lessons') || 'Search your lessons…',
             style: { width: '100%', padding: '8px 10px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13, boxSizing: 'border-box' } })
         ),
@@ -1638,9 +1640,9 @@
     },
       h('div', { style: { background: '#fff', borderRadius: 14, width: '100%', maxWidth: 440, padding: 18 } },
         h('div', { style: { fontWeight: 800, fontSize: 14, color: '#1e293b', marginBottom: 10 } }, t('throughline.edit_node') || 'Edit node'),
-        h('label', { style: { fontSize: 11, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4 } }, t('throughline.description_label') || 'Why this lesson lives here (description)'),
+        h('label', { htmlFor: 'tl-node-description', style: { fontSize: 11, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4 } }, t('throughline.description_label') || 'Why this lesson lives here (description)'),
         h('textarea', {
-          value: editNode.description || '', rows: 3,
+          id: 'tl-node-description', value: editNode.description || '', rows: 3,
           onChange: function (e) { setNodeFields(editNode.nodeId, { description: e.target.value }); },
           placeholder: t('throughline.description_ph') || 'e.g. Hook — surfaces prior knowledge. Gates the exit ticket.',
           style: { width: '100%', padding: 8, border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13, boxSizing: 'border-box', resize: 'vertical' }
@@ -1719,15 +1721,15 @@
         sub = t('throughline.gen_setup_sub') || 'AI drafts a backward-designed structure, then builds each lesson with the blueprint engine. You review and refine every step. This makes several AI calls and is paced to respect rate limits.';
         body = h('div', null,
           gen.error && h('div', { style: { background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', borderRadius: 8, padding: '8px 10px', fontSize: 12, marginBottom: 10, fontWeight: 600 } }, '⚠️ ' + gen.error),
-          field((t('throughline.gen_topic') || 'Topic or focus') + ' *', h('input', { autoFocus: true, 'aria-required': true, value: inp.topic || '', onChange: function (e) { setInput({ topic: e.target.value }); }, placeholder: t('throughline.gen_topic_ph') || 'e.g. The water cycle; Causes of the American Revolution', style: inStyle })),
+          field((t('throughline.gen_topic') || 'Topic or focus') + ' *', h('input', { autoFocus: true, 'aria-required': true, 'aria-label': t('throughline.gen_topic') || 'Topic or focus', value: inp.topic || '', onChange: function (e) { setInput({ topic: e.target.value }); }, placeholder: t('throughline.gen_topic_ph') || 'e.g. The water cycle; Causes of the American Revolution', style: inStyle })),
           h('div', { style: { display: 'flex', gap: 10 } },
-            h('div', { style: { flex: 2 } }, field(t('throughline.gen_grade') || 'Grade band', h('input', { value: inp.gradeLevel || '', onChange: function (e) { setInput({ gradeLevel: e.target.value }); }, placeholder: t('throughline.gen_grade_ph') || 'e.g. 5th grade (blank = use app setting)', style: inStyle }))),
-            h('div', { style: { flex: 1 } }, field(t('throughline.gen_count') || 'Lessons', h('input', { type: 'number', min: 2, max: 8, value: inp.lessonCount || 4, onChange: function (e) { var v = parseInt(e.target.value, 10); setInput({ lessonCount: isNaN(v) ? 4 : Math.max(2, Math.min(8, v)) }); }, style: inStyle })))
+            h('div', { style: { flex: 2 } }, field(t('throughline.gen_grade') || 'Grade band', h('input', { 'aria-label': t('throughline.gen_grade') || 'Grade band', value: inp.gradeLevel || '', onChange: function (e) { setInput({ gradeLevel: e.target.value }); }, placeholder: t('throughline.gen_grade_ph') || 'e.g. 5th grade (blank = use app setting)', style: inStyle }))),
+            h('div', { style: { flex: 1 } }, field(t('throughline.gen_count') || 'Lessons', h('input', { type: 'number', min: 2, max: 8, 'aria-label': t('throughline.gen_count') || 'Lessons', value: inp.lessonCount || 4, onChange: function (e) { var v = parseInt(e.target.value, 10); setInput({ lessonCount: isNaN(v) ? 4 : Math.max(2, Math.min(8, v)) }); }, style: inStyle })))
           ),
-          field(t('throughline.gen_standards') || 'Standards (optional)', h('input', { value: inp.standards || '', onChange: function (e) { setInput({ standards: e.target.value }); }, placeholder: t('throughline.gen_standards_ph') || 'e.g. NGSS 5-ESS2-1', style: inStyle })),
-          field(t('throughline.gen_tone') || 'Tone / approach (optional)', h('input', { value: inp.tone || '', onChange: function (e) { setInput({ tone: e.target.value }); }, placeholder: t('throughline.gen_tone_ph') || 'e.g. inquiry-first, lots of scaffolding', style: inStyle })),
-          field(t('throughline.gen_source') || 'Source text (optional)', h('textarea', { value: inp.sourceText || '', rows: 3, onChange: function (e) { setInput({ sourceText: e.target.value }); }, placeholder: t('throughline.gen_source_ph') || 'Paste a text to ground the whole unit in it. Leave blank to generate from the topic.', style: Object.assign({}, inStyle, { resize: 'vertical' }) })),
-          field(t('throughline.gen_notes') || 'Notes for the planner (optional)', h('textarea', { value: inp.notes || '', rows: 2, onChange: function (e) { setInput({ notes: e.target.value }); }, placeholder: t('throughline.gen_notes_ph') || 'e.g. my class has several emerging bilingual students', style: Object.assign({}, inStyle, { resize: 'vertical' }) }))
+          field(t('throughline.gen_standards') || 'Standards (optional)', h('input', { 'aria-label': t('throughline.gen_standards') || 'Standards (optional)', value: inp.standards || '', onChange: function (e) { setInput({ standards: e.target.value }); }, placeholder: t('throughline.gen_standards_ph') || 'e.g. NGSS 5-ESS2-1', style: inStyle })),
+          field(t('throughline.gen_tone') || 'Tone / approach (optional)', h('input', { 'aria-label': t('throughline.gen_tone') || 'Tone / approach (optional)', value: inp.tone || '', onChange: function (e) { setInput({ tone: e.target.value }); }, placeholder: t('throughline.gen_tone_ph') || 'e.g. inquiry-first, lots of scaffolding', style: inStyle })),
+          field(t('throughline.gen_source') || 'Source text (optional)', h('textarea', { 'aria-label': t('throughline.gen_source') || 'Source text (optional)', value: inp.sourceText || '', rows: 3, onChange: function (e) { setInput({ sourceText: e.target.value }); }, placeholder: t('throughline.gen_source_ph') || 'Paste a text to ground the whole unit in it. Leave blank to generate from the topic.', style: Object.assign({}, inStyle, { resize: 'vertical' }) })),
+          field(t('throughline.gen_notes') || 'Notes for the planner (optional)', h('textarea', { 'aria-label': t('throughline.gen_notes') || 'Notes for the planner (optional)', value: inp.notes || '', rows: 2, onChange: function (e) { setInput({ notes: e.target.value }); }, placeholder: t('throughline.gen_notes_ph') || 'e.g. my class has several emerging bilingual students', style: Object.assign({}, inStyle, { resize: 'vertical' }) }))
         );
         footer = h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8 } },
           h('button', { onClick: closeGenerate, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', fontSize: 13, cursor: 'pointer' } }, t('common.cancel') || 'Cancel'),
@@ -1751,13 +1753,13 @@
         body = h('div', null,
           h('div', { style: { background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 8, padding: '8px 10px', fontSize: 12, color: '#5b21b6', marginBottom: 12, fontWeight: 600 } },
             '~' + calls + ' ' + (t('throughline.gen_calls') || 'AI generations across') + ' ' + proposal.lessons.length + ' ' + (t('throughline.lessons') || 'lessons') + '. ' + (t('throughline.gen_paced_note') || 'Paced, and you review each one as it is built.')),
-          field(t('throughline.gen_unit_title') || 'Unit title', h('input', { value: proposal.title || '', onChange: function (e) { patchProposal({ title: e.target.value }); }, style: inStyle })),
-          field(t('throughline.eq_label') || 'Essential question', h('textarea', { value: proposal.essentialQuestion || '', rows: 2, onChange: function (e) { patchProposal({ essentialQuestion: e.target.value }); }, style: Object.assign({}, inStyle, { resize: 'vertical' }) })),
-          field(t('throughline.gen_eu') || 'Enduring understandings (the big ideas this unit is designed backward from)', h('textarea', { value: (proposal.desiredResults || []).join('\n'), rows: 2, onChange: function (e) { patchProposal({ desiredResults: e.target.value.split('\n') }); }, placeholder: t('throughline.gen_eu_ph') || 'One per line — these now ground every lesson the AI builds', style: Object.assign({}, inStyle, { resize: 'vertical' }) })),
+          field(t('throughline.gen_unit_title') || 'Unit title', h('input', { 'aria-label': t('throughline.gen_unit_title') || 'Unit title', value: proposal.title || '', onChange: function (e) { patchProposal({ title: e.target.value }); }, style: inStyle })),
+          field(t('throughline.eq_label') || 'Essential question', h('textarea', { 'aria-label': t('throughline.eq_label') || 'Essential question', value: proposal.essentialQuestion || '', rows: 2, onChange: function (e) { patchProposal({ essentialQuestion: e.target.value }); }, style: Object.assign({}, inStyle, { resize: 'vertical' }) })),
+          field(t('throughline.gen_eu') || 'Enduring understandings (the big ideas this unit is designed backward from)', h('textarea', { 'aria-label': t('throughline.gen_eu') || 'Enduring understandings (the big ideas this unit is designed backward from)', value: (proposal.desiredResults || []).join('\n'), rows: 2, onChange: function (e) { patchProposal({ desiredResults: e.target.value.split('\n') }); }, placeholder: t('throughline.gen_eu_ph') || 'One per line — these now ground every lesson the AI builds', style: Object.assign({}, inStyle, { resize: 'vertical' }) })),
           (proposal.keyTerms && proposal.keyTerms.length > 0) && h('div', { style: { marginBottom: 10 } },
             h('div', { style: { fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 4 } }, t('throughline.gen_key_terms') || 'Key terms (carried through every lesson)'),
             h('div', null, proposal.keyTerms.slice(0, 14).map(function (kt, i) { return chip(kt, 'kt' + i); }))),
-          field(t('throughline.gen_golden') || 'Golden thread — recurring concepts carried into every lesson', h('textarea', { value: (proposal.goldenThread || []).join('\n'), rows: 2, onChange: function (e) { patchProposal({ goldenThread: e.target.value.split('\n') }); }, placeholder: t('throughline.gen_golden_ph') || 'One concept per line — these steer every lesson the AI builds', style: Object.assign({}, inStyle, { resize: 'vertical' }) })),
+          field(t('throughline.gen_golden') || 'Golden thread — recurring concepts carried into every lesson', h('textarea', { 'aria-label': t('throughline.gen_golden') || 'Golden thread — recurring concepts carried into every lesson', value: (proposal.goldenThread || []).join('\n'), rows: 2, onChange: function (e) { patchProposal({ goldenThread: e.target.value.split('\n') }); }, placeholder: t('throughline.gen_golden_ph') || 'One concept per line — these steer every lesson the AI builds', style: Object.assign({}, inStyle, { resize: 'vertical' }) })),
           (function () {
             var _scDefault = { lengthWords: 350, tone: 'Informative', readingLevel: proposal.gradeBand || '' };
             var _sc = (proposal.sourceConfig && typeof proposal.sourceConfig === 'object') ? proposal.sourceConfig : _scDefault;
@@ -1780,13 +1782,13 @@
             return h('div', { key: 'L' + i, style: { border: '1px solid #e2e8f0', borderRadius: 10, padding: 10, marginBottom: 8, background: '#fff' } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
                 h('span', { style: { fontWeight: 800, color: '#6366f1', fontSize: 13, minWidth: 20 } }, (i + 1) + '.'),
-                h('input', { value: l.title || '', onChange: function (e) { patchLessonSpec(i, { title: e.target.value }); }, style: Object.assign({}, inStyle, { flex: 1, fontWeight: 700 }) }),
+                h('input', { 'aria-label': (t('throughline.lesson_label') || 'Lesson') + ' ' + (i + 1) + ' ' + (t('throughline.title_label') || 'title'), value: l.title || '', onChange: function (e) { patchLessonSpec(i, { title: e.target.value }); }, style: Object.assign({}, inStyle, { flex: 1, fontWeight: 700 }) }),
                 h('button', { onClick: function () { moveLessonSpec(i, -1); }, disabled: i === 0, title: t('throughline.move_up') || 'Move up', style: { border: '1px solid #cbd5e1', background: '#fff', borderRadius: 6, cursor: i === 0 ? 'not-allowed' : 'pointer', padding: '4px 7px', color: '#475569' } }, '↑'),
                 h('button', { onClick: function () { moveLessonSpec(i, 1); }, disabled: i === proposal.lessons.length - 1, title: t('throughline.move_down') || 'Move down', style: { border: '1px solid #cbd5e1', background: '#fff', borderRadius: 6, cursor: i === proposal.lessons.length - 1 ? 'not-allowed' : 'pointer', padding: '4px 7px', color: '#475569' } }, '↓'),
                 h('button', { onClick: function () { removeLessonSpec(i); }, disabled: proposal.lessons.length <= 1, title: t('throughline.gen_remove_lesson') || 'Remove lesson', style: { border: '1px solid #fecaca', background: '#fef2f2', borderRadius: 6, cursor: proposal.lessons.length <= 1 ? 'not-allowed' : 'pointer', padding: '4px 7px', color: '#b91c1c' } }, '✕')
               ),
-              h('input', { value: l.objective || '', onChange: function (e) { patchLessonSpec(i, { objective: e.target.value }); }, placeholder: t('throughline.gen_objective_ph') || 'Measurable objective', style: Object.assign({}, inStyle, { marginBottom: 6, fontSize: 12 }) }),
-              h('input', { value: l.focus || '', onChange: function (e) { patchLessonSpec(i, { focus: e.target.value }); }, placeholder: t('throughline.gen_focus_ph') || 'One-line focus that steers every resource in this lesson', style: Object.assign({}, inStyle, { marginBottom: 6, fontSize: 12 }) }),
+              h('input', { 'aria-label': (t('throughline.lesson_label') || 'Lesson') + ' ' + (i + 1) + ': ' + (t('throughline.gen_objective_ph') || 'Measurable objective'), value: l.objective || '', onChange: function (e) { patchLessonSpec(i, { objective: e.target.value }); }, placeholder: t('throughline.gen_objective_ph') || 'Measurable objective', style: Object.assign({}, inStyle, { marginBottom: 6, fontSize: 12 }) }),
+              h('input', { 'aria-label': (t('throughline.lesson_label') || 'Lesson') + ' ' + (i + 1) + ': ' + (t('throughline.gen_focus_ph') || 'One-line focus that steers every resource in this lesson'), value: l.focus || '', onChange: function (e) { patchLessonSpec(i, { focus: e.target.value }); }, placeholder: t('throughline.gen_focus_ph') || 'One-line focus that steers every resource in this lesson', style: Object.assign({}, inStyle, { marginBottom: 6, fontSize: 12 }) }),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
                 // standard palette + any AI-proposed type not in it, so every type that
                 // will actually generate is visible and can be toggled off
