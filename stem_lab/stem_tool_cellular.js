@@ -1183,7 +1183,7 @@
           style: { padding: '6px 10px', borderRadius: '8px', border: '1px solid ' + C.border, background: C.panel, color: C.text, cursor: 'pointer', fontSize: '12px', fontWeight: 700 } }, '← Back') : null),
         h('div', { style: { fontSize: '22px' }, 'aria-hidden': 'true' }, '🧫'),
         h('div', null,
-          h('div', { style: { fontSize: '17px', fontWeight: 800 } }, 'Cellular Automaton Lab'),
+          h('h1', { style: { margin: 0, fontSize: '17px', fontWeight: 800 } }, 'Cellular Automaton Lab'),
           h('div', { style: { fontSize: '11px', color: C.sub } }, 'Simple rules · surprising worlds'))
       ),
       h('section', { 'data-cellularlab-focus-panel': 'true', 'aria-label': 'Cellular Automaton Lab focus panel',
@@ -1193,7 +1193,7 @@
         h('div', { style: { display: 'flex', flexDirection: 'column', gap: '9px', minWidth: 0 } },
           h('div', null,
             h('div', { style: { fontSize: '10px', fontWeight: 900, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em' } }, 'Start here'),
-            h('div', { style: { marginTop: '2px', fontSize: '16px', fontWeight: 900, color: C.text } }, 'Pick the world you want to investigate')),
+            h('h2', { style: { margin: '2px 0 0', fontSize: '16px', fontWeight: 900, color: C.text } }, 'Pick the world you want to investigate')),
           h('div', { 'data-cellularlab-route-grid': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '8px' } },
             cellularRoutes.map(function (route) {
               var active = tab === route.id;
