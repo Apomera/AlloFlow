@@ -431,10 +431,10 @@ window.StemLab = window.StemLab || {
       // ── COACH TIPS ──
       var showCoach = d.showCoach || false;
       var COACH_TIPS = [
-        { icon: '\u25CB', tip: 'Open dot (\u25CB) means the boundary value is NOT part of the solution  \u2014  used with < and >' },
-        { icon: '\u25CF', tip: 'Closed dot (\u25CF) means the boundary value IS part of the solution  \u2014  used with \u2264 and \u2265' },
-        { icon: '( )', tip: 'Interval notation uses ( ) for open boundaries and [ ] for closed boundaries' },
-        { icon: '\u221E', tip: 'Infinity (\u221E) always uses ( ) because infinity is not a reachable value' },
+        { icon: '\u25CB', tip: __alloT('stem.inequality.coach_tip_open_dot', 'Open dot (\u25CB) means the boundary value is NOT part of the solution  \u2014  used with < and >') },
+        { icon: '\u25CF', tip: __alloT('stem.inequality.coach_tip_closed_dot', 'Closed dot (\u25CF) means the boundary value IS part of the solution  \u2014  used with \u2264 and \u2265') },
+        { icon: '( )', tip: __alloT('stem.inequality.coach_tip_interval_notation', 'Interval notation uses ( ) for open boundaries and [ ] for closed boundaries') },
+        { icon: '\u221E', tip: __alloT('stem.inequality.coach_tip_infinity', 'Infinity (\u221E) always uses ( ) because infinity is not a reachable value') },
       ];
 
       // ── RANGE CONTROLS ──
@@ -888,19 +888,19 @@ window.StemLab = window.StemLab || {
         // ── Notation display ──
         ineq && h('div', { className: 'mt-3 grid grid-cols-2 gap-3' },
           h('div', { className: 'bg-fuchsia-50 rounded-lg p-3 border border-fuchsia-200 text-center' },
-            h('p', { className: 'text-[11px] font-bold text-fuchsia-500 uppercase tracking-wider mb-1' }, 'Interval Notation'),
+            h('p', { className: 'text-[11px] font-bold text-fuchsia-500 uppercase tracking-wider mb-1' }, __alloT('stem.inequality.interval_notation', 'Interval Notation')),
             h('p', { className: 'text-lg font-bold text-fuchsia-800 font-mono' }, intervalStr)),
           h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-200 text-center' },
-            h('p', { className: 'text-[11px] font-bold text-violet-500 uppercase tracking-wider mb-1' }, 'Set-Builder Notation'),
+            h('p', { className: 'text-[11px] font-bold text-violet-500 uppercase tracking-wider mb-1' }, __alloT('stem.inequality.set_builder_notation', 'Set-Builder Notation')),
             h('p', { className: 'text-sm font-bold text-violet-800 font-mono' }, setBuilderStr))
         ),
 
         // ── Test-a-Value panel ──
         h('div', { className: 'mt-3 bg-sky-50 rounded-lg p-3 border border-sky-200' },
-          h('p', { className: 'text-[11px] font-bold text-sky-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDEA Test a Value'),
+          h('p', { className: 'text-[11px] font-bold text-sky-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDEA ' + __alloT('stem.inequality.test_a_value', 'Test a Value')),
           h('div', { className: 'flex items-center gap-2' },
             h('input', {
-              type: 'number', step: 'any', value: testVal, placeholder: 'Enter a number\u2026',
+              type: 'number', step: 'any', value: testVal, placeholder: __alloT('stem.inequality.enter_a_number', 'Enter a number\u2026'),
               onChange: function(e) {
                 upd('testVal', e.target.value);
                 if (e.target.value !== '') {
@@ -909,24 +909,24 @@ window.StemLab = window.StemLab || {
                   if (newTC >= 10) checkBadges({ testMaster: true });
                 }
               },
-              'aria-label': 'Test a value against the inequality',
+              'aria-label': __alloT('stem.inequality.aria_test_a_value', 'Test a value against the inequality'),
               className: 'px-3 py-1.5 border-2 border-sky-600 rounded-lg font-mono text-sm w-36 text-center focus:ring-2 focus:ring-sky-400 outline-none'
             }),
             testResult !== null && h('span', { className: 'text-sm font-bold ' + (testResult ? 'text-emerald-600' : 'text-red-600') },
               testResult
-                ? '\u2705 ' + testVal + ' IS in the solution set'
-                : '\u274C ' + testVal + ' is NOT in the solution set'),
-            testResult === null && ineq && testVal !== '' && h('span', { className: 'text-xs text-slate-600 italic' }, 'Enter a valid number')
+                ? '\u2705 ' + testVal + __alloT('stem.inequality.is_in_solution_set', ' IS in the solution set')
+                : '\u274C ' + testVal + __alloT('stem.inequality.is_not_in_solution_set', ' is NOT in the solution set')),
+            testResult === null && ineq && testVal !== '' && h('span', { className: 'text-xs text-slate-600 italic' }, __alloT('stem.inequality.enter_a_valid_number', 'Enter a valid number'))
           )
         ),
 
         // ── Coach tips ──
         h('div', { className: 'mt-3' },
-          h('button', { 'aria-label': 'Toggle tips (C)',
+          h('button', { 'aria-label': __alloT('stem.inequality.toggle_tips', 'Toggle tips (C)'),
             onClick: function() { upd('showCoach', !showCoach); },
             className: 'text-[11px] font-bold text-amber-600 hover:text-amber-700 transition-all',
-            title: 'Toggle tips (C)'
-          }, (showCoach ? '\u25BC' : '\u25B6') + ' \uD83D\uDCA1 Learning Tips'),
+            title: __alloT('stem.inequality.toggle_tips', 'Toggle tips (C)')
+          }, (showCoach ? '\u25BC' : '\u25B6') + ' \uD83D\uDCA1 ' + __alloT('stem.inequality.learning_tips', 'Learning Tips')),
           showCoach && h('div', { className: 'mt-2 bg-amber-50 rounded-lg p-3 border border-amber-200 space-y-2' },
             COACH_TIPS.map(function(ct, i) {
               return h('div', { key: i, className: 'flex items-start gap-2' },

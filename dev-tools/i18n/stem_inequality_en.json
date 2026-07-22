@@ -1,4 +1,8 @@
 {
+  "coach_tip_open_dot": "Open dot (○) means the boundary value is NOT part of the solution  —  used with < and >",
+  "coach_tip_closed_dot": "Closed dot (●) means the boundary value IS part of the solution  —  used with ≤ and ≥",
+  "coach_tip_interval_notation": "Interval notation uses ( ) for open boundaries and [ ] for closed boundaries",
+  "coach_tip_infinity": "Infinity (∞) always uses ( ) because infinity is not a reachable value",
   "back_to_tools": "Back to tools",
   "solution_set_studio": "Solution-set studio",
   "inequality_grapher": "Inequality Grapher",
@@ -44,5 +48,15 @@
   "prompt_why_flip": "Why does multiplying by negative flip < to >?",
   "understand_explain": "I understand — explain in own words",
   "explain_placeholder": "Explain inequality test logic.",
-  "design_note_test": "Design note: discrete 3-state test marker; no answer reveal — by design."
+  "design_note_test": "Design note: discrete 3-state test marker; no answer reveal — by design.",
+  "interval_notation": "Interval Notation",
+  "set_builder_notation": "Set-Builder Notation",
+  "test_a_value": "Test a Value",
+  "enter_a_number": "Enter a number…",
+  "aria_test_a_value": "Test a value against the inequality",
+  "is_in_solution_set": " IS in the solution set",
+  "is_not_in_solution_set": " is NOT in the solution set",
+  "enter_a_valid_number": "Enter a valid number",
+  "toggle_tips": "Toggle tips (C)",
+  "learning_tips": "Learning Tips"
 }
