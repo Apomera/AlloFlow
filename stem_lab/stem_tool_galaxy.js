@@ -2929,9 +2929,9 @@ if (!window._galaxyHasLoadedOnce) {
 
             { key: 'labels', icon: '\uD83C\uDFF7\uFE0F', label: t('stem.galaxy.labels') },
 
-            { key: 'dust', icon: '\uD83C\uDF2B\uFE0F', label: 'Dust Lanes' },
+            { key: 'dust', icon: '\uD83C\uDF2B\uFE0F', label: __alloT('stem.galaxy.layer_dust_lanes', 'Dust Lanes') },
 
-            { key: 'gas', icon: '\uD83C\uDF0C', label: 'Gas Clouds' }
+            { key: 'gas', icon: '\uD83C\uDF0C', label: __alloT('stem.galaxy.layer_gas_clouds', 'Gas Clouds') }
 
           ];
 
@@ -2945,13 +2945,13 @@ if (!window._galaxyHasLoadedOnce) {
 
             React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': __alloT('stem.galaxy.aria_back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0C Galaxy Explorer"),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0C " + __alloT('stem.galaxy.header_title', 'Galaxy Explorer')),
 
               React.createElement("div", { className: "flex flex-wrap gap-1 ml-auto bg-slate-100 rounded-lg p-0.5 max-sm:w-full max-sm:justify-center" },
 
-                [{ key: 'galaxy', icon: '\uD83C\uDF0C', label: 'Galaxy' }, { key: 'blackHole', icon: '\uD83D\uDD73\uFE0F', label: 'Black Hole' }, { key: 'realSky', icon: '\uD83D\uDD2D', label: 'Real Sky' }, { key: 'star', icon: '\u2B50', label: 'Star Life' }, { key: 'quiz', icon: '\uD83E\uDDE0', label: 'Quiz' }, { key: 'metalHunt', icon: '\uD83C\uDF1F', label: 'Metallicity' }].map(function (m) {
+                [{ key: 'galaxy', icon: '\uD83C\uDF0C', label: __alloT('stem.galaxy.mode_galaxy', 'Galaxy') }, { key: 'blackHole', icon: '\uD83D\uDD73\uFE0F', label: __alloT('stem.galaxy.mode_black_hole', 'Black Hole') }, { key: 'realSky', icon: '\uD83D\uDD2D', label: __alloT('stem.galaxy.mode_real_sky', 'Real Sky') }, { key: 'star', icon: '\u2B50', label: __alloT('stem.galaxy.mode_star_life', 'Star Life') }, { key: 'quiz', icon: '\uD83E\uDDE0', label: __alloT('stem.galaxy.mode_quiz', 'Quiz') }, { key: 'metalHunt', icon: '\uD83C\uDF1F', label: __alloT('stem.galaxy.mode_metallicity', 'Metallicity') }].map(function (m) {
 
                   var isActive = m.key === 'quiz' ? d.quizMode : (!d.quizMode && simMode === m.key);
 
@@ -3064,10 +3064,10 @@ if (!window._galaxyHasLoadedOnce) {
 
               // ── Hubble tuning-fork classification (highlights the current galaxy type) ──
               React.createElement("div", { className: "mb-3 p-2 rounded-lg border border-indigo-100 bg-white" },
-                React.createElement("p", { className: "text-[10px] font-bold text-indigo-700 uppercase tracking-wider mb-1" }, "Hubble Tuning Fork — classified by shape"),
+                React.createElement("p", { className: "text-[10px] font-bold text-indigo-700 uppercase tracking-wider mb-1" }, __alloT('stem.galaxy.hubble_tuning_fork_title', 'Hubble Tuning Fork — classified by shape')),
                 (function () {
                   var hl = { elliptical: { x: 78, y: 75 }, grandDesign: { x: 260, y: 40 }, barredSpiral: { x: 260, y: 112 }, irregular: { x: 338, y: 75 } }[galaxyType] || null;
-                  return React.createElement("svg", { viewBox: "0 0 360 150", className: "w-full", style: { maxHeight: '150px' }, role: "img", "aria-label": "Hubble tuning fork: ellipticals on the handle, spirals on the top prong, barred spirals on the bottom prong, with the current galaxy type highlighted" },
+                  return React.createElement("svg", { viewBox: "0 0 360 150", className: "w-full", style: { maxHeight: '150px' }, role: "img", "aria-label": __alloT('stem.galaxy.aria_hubble_tuning_fork', 'Hubble tuning fork: ellipticals on the handle, spirals on the top prong, barred spirals on the bottom prong, with the current galaxy type highlighted') },
                     React.createElement("path", { d: "M30 75 H120 M120 75 C150 75 170 52 200 40 H330 M120 75 C150 75 170 100 200 112 H330", fill: "none", stroke: "#94a3b8", strokeWidth: 2 }),
                     React.createElement("ellipse", { cx: 45, cy: 75, rx: 9, ry: 9, fill: "#fca5a5" }),
                     React.createElement("ellipse", { cx: 75, cy: 75, rx: 11, ry: 7, fill: "#fca5a5" }),
@@ -3083,15 +3083,15 @@ if (!window._galaxyHasLoadedOnce) {
                     React.createElement("line", { x1: 252, y1: 112, x2: 272, y2: 112, stroke: "#8b5cf6", strokeWidth: 2 }),
                     React.createElement("text", { x: 330, y: 97, fill: "#f59e0b", style: { fontSize: '8px', fontWeight: 'bold' } }, "Irr"),
                     hl && React.createElement("circle", { cx: hl.x, cy: hl.y, r: 17, fill: "none", stroke: "#f43f5e", strokeWidth: 2.5 }),
-                    hl && React.createElement("text", { x: hl.x, y: hl.y - 20, fill: "#f43f5e", textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold' } }, "you are here")
+                    hl && React.createElement("text", { x: hl.x, y: hl.y - 20, fill: "#f43f5e", textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold' } }, __alloT('stem.galaxy.you_are_here', 'you are here'))
                   );
                 })(),
-                React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, "Edwin Hubble's 1936 scheme sorts galaxies by SHAPE — it is NOT a timeline. Galaxies do not evolve along the fork from one type to the next.")
+                React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, __alloT('stem.galaxy.hubble_scheme_note', "Edwin Hubble's 1936 scheme sorts galaxies by SHAPE — it is NOT a timeline. Galaxies do not evolve along the fork from one type to the next."))
               ),
 
               // ── Cosmological redshift mini-visual (Hubble's law) ──
               React.createElement("div", { className: "mb-3 p-2.5 rounded-lg border border-indigo-200 bg-white" },
-                React.createElement("p", { className: "text-[10px] font-bold text-indigo-700 uppercase tracking-wider mb-1" }, "Cosmological redshift — farther = faster = redder"),
+                React.createElement("p", { className: "text-[10px] font-bold text-indigo-700 uppercase tracking-wider mb-1" }, __alloT('stem.galaxy.cosmo_redshift_title', 'Cosmological redshift — farther = faster = redder')),
                 (function() {
                   var W = 360, rowH = 24, gap = 20, lines = [0.22, 0.41, 0.63];
                   var spectrum = function(y, shift, label) {
@@ -3104,7 +3104,7 @@ if (!window._galaxyHasLoadedOnce) {
                       })
                     );
                   };
-                  return React.createElement("svg", { viewBox: "0 0 " + W + " " + (2 * rowH + gap + 12), className: "w-full", style: { maxHeight: '108px' }, role: "img", "aria-label": "Two spectra: a nearby galaxy's absorption lines, and a distant galaxy's same lines shifted toward the red end (redshift)." },
+                  return React.createElement("svg", { viewBox: "0 0 " + W + " " + (2 * rowH + gap + 12), className: "w-full", style: { maxHeight: '108px' }, role: "img", "aria-label": __alloT('stem.galaxy.aria_two_spectra', "Two spectra: a nearby galaxy's absorption lines, and a distant galaxy's same lines shifted toward the red end (redshift).") },
                     React.createElement("defs", null,
                       React.createElement("linearGradient", { id: "galSpecGrad", x1: "0", y1: "0", x2: "1", y2: "0" },
                         React.createElement("stop", { offset: "0%", stopColor: "#7c3aed" }),
@@ -3112,11 +3112,11 @@ if (!window._galaxyHasLoadedOnce) {
                         React.createElement("stop", { offset: "52%", stopColor: "#16a34a" }),
                         React.createElement("stop", { offset: "74%", stopColor: "#eab308" }),
                         React.createElement("stop", { offset: "100%", stopColor: "#dc2626" }))),
-                    spectrum(11, 0, "🪐 Nearby galaxy (rest frame)"),
-                    spectrum(11 + rowH + gap, 0.22, "🌌 Distant galaxy (redshifted)")
+                    spectrum(11, 0, "🪐 " + __alloT('stem.galaxy.spectrum_nearby_rest', 'Nearby galaxy (rest frame)')),
+                    spectrum(11 + rowH + gap, 0.22, "🌌 " + __alloT('stem.galaxy.spectrum_distant_redshift', 'Distant galaxy (redshifted)'))
                   );
                 })(),
-                React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, "Each dark line is the fingerprint of the same element. In a more distant galaxy those lines sit farther toward red — expanding space stretched the light on its way here (Hubble's law: recession speed ∝ distance).")
+                React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, __alloT('stem.galaxy.redshift_note', "Each dark line is the fingerprint of the same element. In a more distant galaxy those lines sit farther toward red — expanding space stretched the light on its way here (Hubble's law: recession speed ∝ distance)."))
               ),
 
               // ── Doppler shift lab: motion toward/away changes wavelength ──
@@ -3124,8 +3124,8 @@ if (!window._galaxyHasLoadedOnce) {
                 React.createElement("div", { className: "flex flex-wrap items-start gap-2 mb-2" },
                   React.createElement("span", { className: "text-lg", "aria-hidden": true }, dopplerVelocity < -8 ? "\uD83D\uDD35" : dopplerVelocity > 8 ? "\uD83D\uDD34" : "\u26AA"),
                   React.createElement("div", { className: "min-w-0 flex-1" },
-                    React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider", style: { color: dopplerColor } }, "Doppler Shift Lab — toward = blue, away = red"),
-                    React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" }, "Move the source along your line of sight. Negative radial velocity moves spectral lines toward blue; positive radial velocity moves them toward red.")
+                    React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider", style: { color: dopplerColor } }, __alloT('stem.galaxy.doppler_lab_title', 'Doppler Shift Lab — toward = blue, away = red')),
+                    React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" }, __alloT('stem.galaxy.doppler_lab_desc', 'Move the source along your line of sight. Negative radial velocity moves spectral lines toward blue; positive radial velocity moves them toward red.'))
                   ),
                   React.createElement("span", { className: "px-2 py-0.5 rounded-full text-[11px] font-black border", style: { color: dopplerColor, borderColor: dopplerColor + '66', background: dopplerColor + '12' } }, dopplerDirection + " • " + dopplerVelocity + " km/s")
                 ),
@@ -3142,7 +3142,7 @@ if (!window._galaxyHasLoadedOnce) {
                       })
                     );
                   };
-                  return React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full", style: { maxHeight: '168px' }, role: "img", "aria-label": "Doppler shift spectrum: absorption lines move left for blueshift and right for redshift." },
+                  return React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full", style: { maxHeight: '168px' }, role: "img", "aria-label": __alloT('stem.galaxy.aria_doppler_spectrum', 'Doppler shift spectrum: absorption lines move left for blueshift and right for redshift.') },
                     React.createElement("defs", null,
                       React.createElement("linearGradient", { id: "galDopplerGrad", x1: "0", y1: "0", x2: "1", y2: "0" },
                         React.createElement("stop", { offset: "0%", stopColor: "#4338ca" }),
@@ -3150,22 +3150,22 @@ if (!window._galaxyHasLoadedOnce) {
                         React.createElement("stop", { offset: "48%", stopColor: "#16a34a" }),
                         React.createElement("stop", { offset: "72%", stopColor: "#eab308" }),
                         React.createElement("stop", { offset: "100%", stopColor: "#dc2626" }))),
-                    spectrum(20, 0, "Rest spectrum", "transparent"),
-                    spectrum(80, visualShift, "Observed spectrum", dopplerVelocity < -8 ? "#2563eb" : dopplerVelocity > 8 ? "#dc2626" : "transparent"),
+                    spectrum(20, 0, __alloT('stem.galaxy.spectrum_rest', 'Rest spectrum'), "transparent"),
+                    spectrum(80, visualShift, __alloT('stem.galaxy.spectrum_observed', 'Observed spectrum'),dopplerVelocity < -8 ? "#2563eb" : dopplerVelocity > 8 ? "#dc2626" : "transparent"),
                     React.createElement("line", { x1: lineX(0.43, 0), y1: 54, x2: lineX(0.43, visualShift), y2: 76, stroke: dopplerColor, strokeWidth: 2, strokeDasharray: "4 3" }),
-                    React.createElement("text", { x: lineX(0.43, visualShift), y: 124, fill: dopplerColor, textAnchor: "middle", style: { fontSize: '9px', fontWeight: '900' } }, dopplerVelocity < -8 ? "compressed toward blue" : dopplerVelocity > 8 ? "stretched toward red" : "same wavelength"),
+                    React.createElement("text", { x: lineX(0.43, visualShift), y: 124, fill: dopplerColor, textAnchor: "middle", style: { fontSize: '9px', fontWeight: '900' } }, dopplerVelocity < -8 ? __alloT('stem.galaxy.doppler_compressed_blue', 'compressed toward blue') : dopplerVelocity > 8 ? __alloT('stem.galaxy.doppler_stretched_red', 'stretched toward red') : __alloT('stem.galaxy.doppler_same_wavelength', 'same wavelength')),
                     React.createElement("text", { x: 2, y: 144, fill: "#64748b", style: { fontSize: '8px', fontWeight: '700' } }, "Screen shift magnified for clarity; actual z = " + dopplerZ.toFixed(5))
                   );
                 })(),
                 React.createElement("div", { className: "mt-2" },
                   React.createElement("div", { className: "flex items-center justify-between text-[10px] font-bold mb-1" },
-                    React.createElement("span", { className: "text-blue-700" }, "\u2190 Toward us / blueshift"),
-                    React.createElement("span", { className: "text-slate-500" }, "Radial velocity"),
-                    React.createElement("span", { className: "text-red-700" }, "Away / redshift \u2192")
+                    React.createElement("span", { className: "text-blue-700" }, "\u2190 " + __alloT('stem.galaxy.doppler_toward_us', 'Toward us / blueshift')),
+                    React.createElement("span", { className: "text-slate-500" }, __alloT('stem.galaxy.doppler_radial_velocity', 'Radial velocity')),
+                    React.createElement("span", { className: "text-red-700" }, __alloT('stem.galaxy.doppler_away', 'Away / redshift') + " \u2192")
                   ),
                   React.createElement("input", {
                     type: "range", min: -1800, max: 1800, step: 25, value: dopplerVelocity,
-                    "aria-label": "Doppler radial velocity in kilometers per second",
+                    "aria-label": __alloT('stem.galaxy.aria_doppler_velocity', 'Doppler radial velocity in kilometers per second'),
                     onChange: function (e) {
                       var val = parseInt(e.target.value, 10);
                       var nextLog = addInspectKey('dopplerShift');
@@ -3191,19 +3191,19 @@ if (!window._galaxyHasLoadedOnce) {
                   })
                 ),
                 React.createElement("div", { className: "mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px]" },
-                  React.createElement("div", { className: "rounded-lg border border-blue-100 bg-blue-50 p-2 text-blue-900" }, React.createElement("span", { className: "font-black" }, "Blueshift: "), "the source is moving toward us, so wave crests arrive closer together and wavelengths get shorter."),
-                  React.createElement("div", { className: "rounded-lg border border-red-100 bg-red-50 p-2 text-red-900" }, React.createElement("span", { className: "font-black" }, "Redshift: "), "the source is moving away, so wave crests arrive farther apart and wavelengths get longer.")
+                  React.createElement("div", { className: "rounded-lg border border-blue-100 bg-blue-50 p-2 text-blue-900" }, React.createElement("span", { className: "font-black" }, __alloT('stem.galaxy.doppler_blueshift_label', 'Blueshift: ')), __alloT('stem.galaxy.doppler_blueshift_body', 'the source is moving toward us, so wave crests arrive closer together and wavelengths get shorter.')),
+                  React.createElement("div", { className: "rounded-lg border border-red-100 bg-red-50 p-2 text-red-900" }, React.createElement("span", { className: "font-black" }, __alloT('stem.galaxy.doppler_redshift_label', 'Redshift: ')), __alloT('stem.galaxy.doppler_redshift_body', 'the source is moving away, so wave crests arrive farther apart and wavelengths get longer.'))
                 )
               ),
 
               // ── Cosmic myth-busters ──
               React.createElement("div", { className: "mb-3 p-2.5 rounded-lg border border-amber-200 bg-amber-50 text-[11px] text-amber-900 leading-relaxed" },
-                React.createElement("p", { className: "font-bold mb-1" }, "⚠ Cosmic myth-busters"),
+                React.createElement("p", { className: "font-bold mb-1" }, "⚠ " + __alloT('stem.galaxy.myth_busters_title', 'Cosmic myth-busters')),
                 React.createElement("ul", { className: "list-disc pl-4 space-y-0.5" },
-                  React.createElement("li", null, "This 3-D view is a MODEL — no spacecraft has ever photographed the Milky Way from outside. We live inside the disk, which is why we see it edge-on as a band of light across the night sky."),
-                  React.createElement("li", null, "A galaxy is NOT a solar system. Our entire solar system is just one of ~100–400 billion star systems in the Milky Way."),
-                  React.createElement("li", null, "Stars in a constellation only LOOK close together — they're often wildly different distances away, just along the same line of sight."),
-                  React.createElement("li", null, "Cosmic expansion stretches SPACE ITSELF — galaxies aren't flying outward through space, and there's no center. The Big Bang happened everywhere at once, not at one spot.")
+                  React.createElement("li", null, __alloT('stem.galaxy.myth_model', "This 3-D view is a MODEL — no spacecraft has ever photographed the Milky Way from outside. We live inside the disk, which is why we see it edge-on as a band of light across the night sky.")),
+                  React.createElement("li", null, __alloT('stem.galaxy.myth_not_solar_system', 'A galaxy is NOT a solar system. Our entire solar system is just one of ~100–400 billion star systems in the Milky Way.')),
+                  React.createElement("li", null, __alloT('stem.galaxy.myth_constellation', "Stars in a constellation only LOOK close together — they're often wildly different distances away, just along the same line of sight.")),
+                  React.createElement("li", null, __alloT('stem.galaxy.myth_expansion', "Cosmic expansion stretches SPACE ITSELF — galaxies aren't flying outward through space, and there's no center. The Big Bang happened everywhere at once, not at one spot."))
                 )
               ),
 
@@ -3212,7 +3212,7 @@ if (!window._galaxyHasLoadedOnce) {
                 React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-2" },
                   React.createElement("span", { className: "text-lg", "aria-hidden": true }, activeMission.icon),
                   React.createElement("div", { className: "min-w-0" },
-                    React.createElement("p", { className: "text-xs font-black text-slate-800" }, "Mission Control"),
+                    React.createElement("p", { className: "text-xs font-black text-slate-800" }, __alloT('stem.galaxy.mission_control_title', 'Mission Control')),
                     React.createElement("p", { className: "text-[11px] text-slate-500" }, activeMission.title + " • " + activeMissionDone + "/" + activeMission.steps.length + " complete")
                   ),
                   React.createElement("div", { className: "ml-auto h-2 w-24 rounded-full bg-slate-100 overflow-hidden", "aria-hidden": true },
