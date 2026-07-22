@@ -81,7 +81,7 @@ describe('teacher side: ANTI source contracts', () => {
   });
 
   it('goal labels stay device-local: the wire event is exactly {id, reasonId, amount, at}', () => {
-    const rewardShape = ANTI.slice(ANTI.indexOf('const handleRecognizeStudents'), ANTI.indexOf('const handleAwardClassGoal'));
+    const rewardShape = ANTI.slice(ANTI.indexOf('const handleRecognizeStudents'), ANTI.indexOf('const _bumpClassGoalMet'));
     // The reward object literal that lands in roster.{uid}.havenRewards
     // carries only the fixed schema — never the teacher's goal label.
     expect(rewardShape).toMatch(/reasonId: effectiveReasonId,\s*\n\s*amount,\s*\n\s*at: awardedAt\s*\n\s*\};/);
@@ -147,7 +147,7 @@ describe('Ring B/C: teams, tracked criteria, independent checklist (ANTI contrac
 
   it('independent awards ride the existing goal_progress reason and count deliveries', () => {
     expect(ANTI).toContain("{ reasonId: 'goal_progress', amount: goal.tokens }");
-    expect(ANTI).toContain('_bumpClassGoalMet(goalId, delivered);');
+    expect(ANTI).toContain('_bumpClassGoalMet(goal, delivered, delivered);');
   });
 
   it('interdependent awards are team-scoped and bail with guidance when the team is empty', () => {
@@ -158,5 +158,44 @@ describe('Ring B/C: teams, tracked criteria, independent checklist (ANTI contrac
   it('tracked criteria are an option, never a default — teacher-observed is the default path', () => {
     expect(ANTI).toContain('<option value="none">Teacher observed (none)</option>');
     expect(ANTI).toContain("trackedMetric: 'none'");
+  });
+});
+
+describe('session record: goals met land in the roster summary', () => {
+  // Run the REAL builder extracted from ANTI (same harness as
+  // roster_session_history.test.js).
+  const helperStart = ANTI.indexOf('const normalizeRosterSessionCodename');
+  const helperEnd = ANTI.indexOf('const generateSessionCode', helperStart);
+  // eslint-disable-next-line no-new-func
+  const helpers = new Function(ANTI.slice(helperStart, helperEnd) + '\nreturn { buildRosterSessionSummary };')();
+
+  it('summary includes only THIS session’s goal awards, schema-clamped', () => {
+    const summary = helpers.buildRosterSessionSummary({
+      sessionCode: 'AB123', mode: 'firebase', endedAt: '2026-07-21T11:00:00.000Z',
+      rosterKey: {
+        students: { 'Brave Otter': 'blue' },
+        classGoalLog: [
+          { goalId: 'goal-1', label: 'Smooth transition', mode: 'interdependent', tokens: 1, delivered: 17, sessionCode: 'AB123', at: 1 },
+          { goalId: 'goal-2', label: 'Everyone participated', mode: 'independent', tokens: 9, delivered: 4.7, sessionCode: 'AB123', at: 2 },
+          { goalId: 'goal-3', label: 'Other session', mode: 'interdependent', tokens: 1, delivered: 5, sessionCode: 'ZZ999', at: 3 },
+          { goalId: 'goal-4', label: 'No session', tokens: 1, delivered: 5, sessionCode: null, at: 4 },
+        ],
+      },
+      sessionData: { createdAt: '2026-07-21T10:00:00.000Z', roster: {} },
+    });
+    expect(summary.classGoals).toHaveLength(2);
+    expect(summary.classGoals[0]).toMatchObject({ label: 'Smooth transition', mode: 'interdependent', tokens: 1, delivered: 17 });
+    expect(summary.classGoals[1]).toMatchObject({ mode: 'independent', tokens: 1, delivered: 4 }); // tokens 9 → 1 (only exactly-2 passes), 4.7 → 4 floor
+  });
+
+  it('_bumpClassGoalMet stamps the award log with the session code', () => {
+    expect(ANTI).toContain('sessionCode: activeSessionCode || null,');
+    expect(ANTI).toContain(']).slice(-60),');
+  });
+
+  it('teacher history card renders goals met and import preserves the log', () => {
+    const teacherSrc = readFileSync('teacher_source.jsx', 'utf8');
+    expect(teacherSrc).toContain('Class Goals met:');
+    expect(teacherSrc).toContain('...(Array.isArray(data.classGoalLog) ? { classGoalLog: data.classGoalLog.slice(-60) } : {})');
   });
 });

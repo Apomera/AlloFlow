@@ -495,7 +495,9 @@ function escapeXml(s) {
     return { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&apos;' }[ch];
   });
 }
-function buildPrintableSvg(layout, displayNameOf, title) {
+function buildPrintableSvg(layout, displayNameOf, title, opts) {
+  opts = opts || {};
+  var blank = !!opts.blank;   // substitute/student-facing chart: numbers, no names
   var SCALE = 9;
   var W = ROOM_W * SCALE, H = ROOM_H * SCALE + 40;
   var parts = [];
@@ -509,11 +511,16 @@ function buildPrintableSvg(layout, displayNameOf, title) {
     parts.push('<rect x="' + (f.x * SCALE) + '" y="' + (f.y * SCALE) + '" width="' + (f.w * SCALE) + '" height="' + (f.h * SCALE) + '" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="4 3"/>');
     parts.push('<text x="' + ((f.x + f.w / 2) * SCALE) + '" y="' + ((f.y + f.h / 2) * SCALE + 4) + '" text-anchor="middle" font-size="11" fill="#64748b">' + escapeXml(f.label || furnitureLabel(f.kind)) + '</text>');
   });
+  var sortedForNumbers = layout.seats.slice().sort(function (a, b) { return (a.y - b.y) || (a.x - b.x); });
+  var numberOf = {};
+  sortedForNumbers.forEach(function (s, i) { numberOf[s.id] = i + 1; });
   layout.seats.forEach(function (s) {
-    var name = layout.assignments[s.id] || '';
+    var name = blank ? '' : (layout.assignments[s.id] || '');
     parts.push('<rect x="' + (s.x * SCALE) + '" y="' + (s.y * SCALE) + '" width="' + (s.w * SCALE) + '" height="' + (s.h * SCALE) + '" rx="8" fill="' + (name ? '#eef2ff' : '#ffffff') + '" stroke="#6366f1" stroke-width="1.5"/>');
     if (name) {
       parts.push('<text x="' + ((s.x + s.w / 2) * SCALE) + '" y="' + ((s.y + s.h / 2) * SCALE + 4) + '" text-anchor="middle" font-size="13" font-weight="600" fill="#1e293b">' + escapeXml(displayNameOf ? displayNameOf(name) : name) + '</text>');
+    } else if (blank) {
+      parts.push('<text x="' + ((s.x + s.w / 2) * SCALE) + '" y="' + ((s.y + s.h / 2) * SCALE + 5) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#94a3b8">' + numberOf[s.id] + '</text>');
     }
   });
   parts.push('</g></svg>');
@@ -634,6 +641,21 @@ function listPods(rosterKey) {
   });
 }
 
+// Seats sitting on top of PHYSICAL furniture (rug excluded — seats on a rug
+// are a real arrangement). Soft warning only; teachers can keep the overlap.
+function overlappingSeatIds(layout) {
+  var out = {};
+  if (!layout) return out;
+  var solid = (layout.furniture || []).filter(function (f) { return f.kind !== 'rug'; });
+  (layout.seats || []).forEach(function (s) {
+    var hit = solid.some(function (f) {
+      return s.x < f.x + f.w && f.x < s.x + s.w && s.y < f.y + f.h && f.y < s.y + s.h;
+    });
+    if (hit) out[s.id] = 1;
+  });
+  return out;
+}
+
 function furnitureLabel(kind) {
   if (kind === 'teacher_desk') return tr('Teacher desk');
   if (kind === 'table') return tr('Table');
@@ -666,7 +688,15 @@ var FURN_EMOJI = { teacher_desk: '🧑‍🏫', table: '🟫', rug: '🟪', shel
 var _scHooks = (typeof window !== 'undefined' && window.__alloHooks) || {};
 var useFocusTrap = _scHooks.useFocusTrap || function () {};
 
-function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToast }) {
+// live (optional, teacher-side only): the host app passes this during an
+// active session to turn the map into a live overlay —
+//   { sessionCode, recognitionEnabled, signalFreshMs, staleMs, signals:[{id,
+//     emoji,label}], studentsByName: {normalizedCodename: {uid, signal,
+//     signalAt, lastSeen, xp}}, normalizeName(fn), onRecognizeStudent(uid),
+//     onRecognizeStudents(uids, scopeLabel) }
+// The module never touches the session itself — award taps call back into
+// the host's existing capped recognition handlers.
+function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToast, live }) {
   // ── UI localization state (drives tr() above) ──
   var _llCtx = React.useContext(LANG_CTX);
   var uiLang = (_llCtx && _llCtx.currentUiLanguage) || (typeof window !== 'undefined' && window.__alloTextLanguage) || 'English';
@@ -703,8 +733,33 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   const seating = React.useMemo(() => normalizeSeating(rosterKey && rosterKey.seating, studentNames), [rosterKey, studentNames]);
   const layout = seating.activeLayoutId ? seating.layouts[seating.activeLayoutId] : null;
 
-  const [mode, setMode] = useState('assign');            // 'assign' | 'edit'
+  const [mode, setMode] = useState(live ? 'live' : 'assign');   // 'assign' | 'edit' | 'live'
   const [view, setView] = useState('map');               // 'map' | 'list'
+  // Staleness ticks so "quiet" badges update even between session snapshots.
+  const [, setLiveTick] = useState(0);
+  React.useEffect(() => {
+    if (!live || mode !== 'live') return undefined;
+    const id = setInterval(() => setLiveTick(n => n + 1), 30000);
+    return () => clearInterval(id);
+  }, [!!live, mode]);
+  // Live lookup: seat's roster name → session presence/signal/xp (or null).
+  const liveInfoFor = (name) => {
+    if (!live || !name) return null;
+    const key = typeof live.normalizeName === 'function'
+      ? live.normalizeName(name)
+      : String(name).toLowerCase().replace(/[^a-z0-9]/g, '');
+    return (key && live.studentsByName && live.studentsByName[key]) || null;
+  };
+  const liveStatusOf = (entry) => {
+    if (!entry || !entry.lastSeen) return 'off';
+    return (Date.now() - entry.lastSeen) < (live && live.staleMs || 180000) ? 'on' : 'quiet';
+  };
+  const liveSignalOf = (entry) => {
+    if (!entry || !entry.signal || !entry.signalAt) return null;
+    if ((Date.now() - entry.signalAt) > ((live && live.signalFreshMs) || 600000)) return null;
+    const spec = ((live && live.signals) || []).find(s => s.id === entry.signal);
+    return spec || { id: entry.signal, emoji: '💬', label: entry.signal };
+  };
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null); // edit mode: seat/furniture id
   const [showConstraints, setShowConstraints] = useState(false);
@@ -739,6 +794,30 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
     if (!layout) return;
     const nextLayout = { ...layout, ...patch };
     commitSeating({ ...seating, layouts: { ...seating.layouts, [layout.id]: nextLayout } });
+  };
+
+  // ── Undo (room edits) ── snapshot BEFORE each edit-mode action; a drag
+  // pushes once at pointer-down (not per move), nudges coalesce per burst.
+  const undoRef = useRef([]);
+  const lastUndoPushRef = useRef(0);
+  const [undoCount, setUndoCount] = useState(0);
+  const pushUndo = (coalesceMs) => {
+    if (!layout) return;
+    const nowMs = Date.now();
+    if (coalesceMs && nowMs - lastUndoPushRef.current < coalesceMs) return;
+    lastUndoPushRef.current = nowMs;
+    undoRef.current = undoRef.current.concat([JSON.parse(JSON.stringify(layout))]).slice(-10);
+    setUndoCount(undoRef.current.length);
+  };
+  const undoRoomEdit = () => {
+    const stack = undoRef.current;
+    if (!stack.length) return;
+    const snapshot = stack[stack.length - 1];
+    undoRef.current = stack.slice(0, -1);
+    setUndoCount(undoRef.current.length);
+    if (!seating.layouts[snapshot.id]) return;   // that layout was deleted since
+    commitSeating({ ...seating, layouts: { ...seating.layouts, [snapshot.id]: snapshot } });
+    announce(tr('Room edit undone'));
   };
 
   // ── Layout management ──
@@ -809,12 +888,14 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   // ── Edit-room actions ──
   const addSeat = () => {
     if (!layout) return;
+    pushUndo();
     const id = nextId(layout.seats.map(s => s.id), 'seat');
     patchLayout({ seats: layout.seats.concat([{ id, x: Math.round((ROOM_W - SEAT_W) / 2), y: Math.round((ROOM_H - SEAT_H) / 2), w: SEAT_W, h: SEAT_H }]) });
     setSelectedItem(id);
   };
   const addFurniture = (kind) => {
     if (!layout) return;
+    pushUndo();
     const spec = FURNITURE_KINDS.filter(k => k.kind === kind)[0] || FURNITURE_KINDS[1];
     const id = nextId(layout.furniture.map(f => f.id), 'furn');
     patchLayout({ furniture: layout.furniture.concat([{ id, kind: spec.kind, x: Math.round((ROOM_W - spec.w) / 2), y: Math.round((ROOM_H - spec.h) / 2), w: spec.w, h: spec.h, label: '' }]) });
@@ -822,6 +903,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   };
   const deleteSelectedItem = () => {
     if (!layout || !selectedItem) return;
+    pushUndo();
     if (layout.seats.some(s => s.id === selectedItem)) {
       const next = { ...layout.assignments };
       delete next[selectedItem];
@@ -843,6 +925,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   const startDrag = (evt, item, isSeat) => {
     if (mode !== 'edit') return;
     evt.preventDefault();
+    pushUndo();
     setSelectedItem(item.id);
     const p = roomPoint(evt);
     dragRef.current = { id: item.id, isSeat, dx: p.x - item.x, dy: p.y - item.y, moved: false };
@@ -867,7 +950,9 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   // Keyboard nudge for the selected item in edit mode (WCAG 2.1.1 — drag has
   // a keyboard path).
   const nudgeSelected = (evt) => {
-    if (mode !== 'edit' || !layout || !selectedItem) return;
+    if (mode !== 'edit' || !layout) return;
+    if ((evt.ctrlKey || evt.metaKey) && (evt.key === 'z' || evt.key === 'Z')) { evt.preventDefault(); undoRoomEdit(); return; }
+    if (!selectedItem) return;
     const step = evt.shiftKey ? 5 : 1;
     let dx = 0, dy = 0;
     if (evt.key === 'ArrowLeft') dx = -step; else if (evt.key === 'ArrowRight') dx = step;
@@ -875,6 +960,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
     else if (evt.key === 'Delete' || evt.key === 'Backspace') { evt.preventDefault(); deleteSelectedItem(); return; }
     else return;
     evt.preventDefault();
+    pushUndo(800);
     const isSeat = layout.seats.some(s => s.id === selectedItem);
     const list = isSeat ? layout.seats : layout.furniture;
     const nextList = list.map(it => {
@@ -928,9 +1014,9 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
 
   // ── Print ── hidden iframe with the pure SVG string; nothing else on the
   // page is touched.
-  const printChart = () => {
+  const printChart = (blank) => {
     if (!layout) return;
-    const svg = buildPrintableSvg(layout, displayNameOf, (rosterKey && rosterKey.className ? rosterKey.className + ' — ' : '') + layout.name);
+    const svg = buildPrintableSvg(layout, displayNameOf, (rosterKey && rosterKey.className ? rosterKey.className + ' — ' : '') + layout.name, { blank: !!blank });
     const html = '<!DOCTYPE html><html><head><title>' + escapeXml(tr('Seating Chart')) + '</title><style>body{margin:0;padding:16px}svg{width:100%;height:auto}</style></head><body>' + svg + '</body></html>';
     const frame = document.createElement('iframe');
     frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
@@ -951,6 +1037,9 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   const sortedSeats = layout ? layout.seats.slice().sort((a, b) => (a.y - b.y) || (a.x - b.x)) : [];
   const seatNumberOf = {};
   sortedSeats.forEach((s, i) => { seatNumberOf[s.id] = i + 1; });
+  const overlaps = (mode === 'edit' && layout) ? overlappingSeatIds(layout) : {};
+  const overlapCount = Object.keys(overlaps).length;
+  const livePods = (live && mode === 'live') ? listPods(rosterKey) : [];
 
   if (!isOpen) return null;
 
@@ -996,6 +1085,9 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
             {/* Toolbar */}
             <div className="flex flex-wrap items-center gap-2 px-4 py-2 border-b border-slate-100">
               <div role="group" aria-label={tr('Mode')} className="flex rounded-lg overflow-hidden border border-slate-300">
+                {live && (
+                  <button type="button" aria-pressed={mode === 'live'} onClick={() => { setMode('live'); setSelectedItem(null); setSelectedStudent(null); }} className={'px-3 py-1.5 text-xs font-bold ' + (mode === 'live' ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-700 hover:bg-emerald-50')}>{'🟢 ' + tr('Live')}</button>
+                )}
                 <button type="button" aria-pressed={mode === 'assign'} onClick={() => { setMode('assign'); setSelectedItem(null); }} className={'px-3 py-1.5 text-xs font-bold ' + (mode === 'assign' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50')}>{tr('Assign')}</button>
                 <button type="button" aria-pressed={mode === 'edit'} onClick={() => { setMode('edit'); setSelectedStudent(null); }} className={'px-3 py-1.5 text-xs font-bold ' + (mode === 'edit' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50')}>{tr('Edit room')}</button>
               </div>
@@ -1011,6 +1103,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
               <div className="ml-auto flex gap-2">
                 {mode === 'edit' && (
                   <React.Fragment>
+                    <button type="button" onClick={undoRoomEdit} disabled={!undoCount} title={tr('Undo the last room edit (Ctrl+Z)')} className={btn + ' bg-slate-100 text-slate-700 hover:bg-slate-200'}>↩ {tr('Undo')}</button>
                     <button type="button" onClick={addSeat} className={btn + ' bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}>＋ {tr('Desk')}</button>
                     <select value="" onChange={e => { if (e.target.value) addFurniture(e.target.value); e.target.value = ''; }} aria-label={tr('Add furniture')} className="px-2 py-1.5 rounded-lg border border-slate-400 text-xs font-bold bg-white">
                       <option value="">＋ {tr('Furniture')}…</option>
@@ -1022,12 +1115,20 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                   </React.Fragment>
                 )}
                 <button type="button" onClick={clearAssignments} className={btn + ' bg-slate-100 text-slate-700 hover:bg-slate-200'}>{tr('Clear seats')}</button>
-                <button type="button" onClick={printChart} className={btn + ' bg-slate-100 text-slate-700 hover:bg-slate-200'}>🖨 {tr('Print')}</button>
+                <button type="button" onClick={() => printChart(false)} className={btn + ' bg-slate-100 text-slate-700 hover:bg-slate-200'}>🖨 {tr('Print')}</button>
+                <button type="button" onClick={() => printChart(true)} title={tr('Numbered seats, no names — for substitutes or posting.')} className={btn + ' bg-slate-100 text-slate-700 hover:bg-slate-200'}>🖨 {tr('Blank')}</button>
               </div>
             </div>
 
+            {mode === 'live' && (
+              <div className="px-4 py-1.5 text-[11px] text-emerald-800 bg-emerald-50/70 border-b border-emerald-100">
+                {tr('Live overlay: tap a seat to send the recognition selected in the Live Dock. Dim = quiet for a few minutes; dashed = not joined. Awards are private.')}
+                {!live.recognitionEnabled && <b> {tr('Recognition is OFF — enable it in the Live Dock to award from here.')}</b>}
+              </div>
+            )}
             {mode === 'edit' && (
               <div className="px-4 py-1.5 text-[11px] text-slate-600 bg-indigo-50/60 border-b border-indigo-100">
+                {overlapCount > 0 && <b className="text-rose-700">{tr('{n} seats overlap furniture (outlined red) — drag them clear or leave them if intended.', { n: overlapCount })} </b>}
                 {tr('Drag desks and furniture to match your room. Click an item then use arrow keys to nudge (Shift = faster), Delete to remove.')}
                 {layout && ' '}
                 <label className="inline-flex items-center gap-1 ml-2 font-bold">
@@ -1066,24 +1167,41 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                     {layout.seats.map(s => {
                       const name = layout.assignments[s.id];
                       const isSel = (mode === 'edit' && selectedItem === s.id) || (mode === 'assign' && name && selectedStudent === name);
+                      const isOverlap = mode === 'edit' && overlaps[s.id];
+                      const entry = mode === 'live' && name ? liveInfoFor(name) : null;
+                      const status = mode === 'live' ? liveStatusOf(entry) : null;
+                      const signal = entry ? liveSignalOf(entry) : null;
+                      const liveAria = mode === 'live' && name
+                        ? (entry
+                          ? (signal ? ' — ' + signal.label : '') + (status === 'quiet' ? ' — ' + tr('gone quiet') : '') + ' — ' + (entry.xp || 0) + ' XP' + (live.recognitionEnabled ? ' — ' + tr('press Enter to recognize') : '')
+                          : ' — ' + tr('not joined'))
+                        : '';
+                      const liveTap = () => {
+                        if (!name) return;
+                        if (!entry) { toast(tr('{name} has not joined this session.', { name: displayNameOf(name) }), 'info'); return; }
+                        if (!live.recognitionEnabled) { toast(tr('Enable recognition in the Live Dock to award from the map.'), 'info'); return; }
+                        live.onRecognizeStudent(entry.uid);
+                      };
                       return (
                         <g key={s.id}
                           onPointerDown={e => startDrag(e, s, true)}
-                          onClick={() => { if (mode === 'assign') { if (dragRef.current && dragRef.current.moved) return; assignToSeat(s.id); } else setSelectedItem(s.id); }}
-                          onKeyDown={e => { if (mode === 'assign' && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); assignToSeat(s.id); } }}
+                          onClick={() => { if (mode === 'assign') { if (dragRef.current && dragRef.current.moved) return; assignToSeat(s.id); } else if (mode === 'live') liveTap(); else setSelectedItem(s.id); }}
+                          onKeyDown={e => { if ((e.key === 'Enter' || e.key === ' ') && (mode === 'assign' || mode === 'live')) { e.preventDefault(); if (mode === 'assign') assignToSeat(s.id); else liveTap(); } }}
                           onFocus={() => mode === 'edit' && setSelectedItem(s.id)}
                           tabIndex={0} role="button"
-                          aria-label={tr('Seat {n}', { n: seatNumberOf[s.id] }) + ': ' + (name ? displayNameOf(name) : tr('empty'))}
-                          style={{ cursor: mode === 'edit' ? 'move' : 'pointer', outline: 'none' }}>
+                          aria-label={tr('Seat {n}', { n: seatNumberOf[s.id] }) + ': ' + (name ? displayNameOf(name) : tr('empty')) + liveAria + (isOverlap ? ' — ' + tr('overlaps furniture') : '')}
+                          style={{ cursor: mode === 'edit' ? 'move' : 'pointer', outline: 'none', opacity: mode === 'live' && name && status !== 'on' ? 0.55 : 1 }}>
                           <rect x={s.x} y={s.y} width={s.w} height={s.h} rx="1.4"
-                            fill={name ? '#eef2ff' : '#ffffff'}
-                            stroke={isSel ? '#f59e0b' : name ? groupColorOf(name) : '#94a3b8'}
-                            strokeWidth={isSel ? 1 : 0.6}
-                            strokeDasharray={name ? undefined : '1.6 1'} />
+                            fill={name ? (mode === 'live' && status === 'on' ? '#ecfdf5' : '#eef2ff') : '#ffffff'}
+                            stroke={isOverlap ? '#e11d48' : isSel ? '#f59e0b' : (mode === 'live' && name) ? (status === 'on' ? '#10b981' : '#94a3b8') : name ? groupColorOf(name) : '#94a3b8'}
+                            strokeWidth={isSel || isOverlap ? 1 : 0.6}
+                            strokeDasharray={name ? (mode === 'live' && status === 'off' ? '1.6 1' : undefined) : '1.6 1'} />
                           <text x={s.x + 1.2} y={s.y + 2.6} fontSize="2" fill="#94a3b8">{seatNumberOf[s.id]}</text>
                           {name
                             ? <text x={s.x + s.w / 2} y={s.y + s.h / 2 + 1} textAnchor="middle" fontSize={displayNameOf(name).length > 10 ? 2 : 2.6} fontWeight="700" fill="#1e293b">{displayNameOf(name).slice(0, 14)}</text>
                             : <text x={s.x + s.w / 2} y={s.y + s.h / 2 + 1} textAnchor="middle" fontSize="2.2" fill="#cbd5e1">{mode === 'assign' && selectedStudent ? '⬇' : '·'}</text>}
+                          {signal ? <text x={s.x + s.w - 1.2} y={s.y + 2.8} textAnchor="end" fontSize="2.8" aria-hidden="true">{signal.emoji}</text> : null}
+                          {mode === 'live' && entry && entry.xp > 0 ? <text x={s.x + s.w - 1.2} y={s.y + s.h - 1} textAnchor="end" fontSize="1.8" fill="#64748b">{entry.xp}</text> : null}
                         </g>
                       );
                     })}
@@ -1096,6 +1214,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                       <tr className="text-left text-xs text-slate-600 uppercase tracking-wide">
                         <th scope="col" className="py-1.5 pr-3">{tr('Seat')}</th>
                         <th scope="col" className="py-1.5">{tr('Student')}</th>
+                        {mode === 'live' && <th scope="col" className="py-1.5 ps-3">{tr('Live')}</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -1122,6 +1241,26 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                                 {unassigned.map(n2 => <option key={n2} value={n2}>{displayNameOf(n2)}</option>)}
                               </select>
                             </td>
+                            {mode === 'live' && (() => {
+                              const entry = name ? liveInfoFor(name) : null;
+                              const status = liveStatusOf(entry);
+                              const signal = entry ? liveSignalOf(entry) : null;
+                              return (
+                                <td className="py-1.5 ps-3">
+                                  {!name ? <span className="text-slate-400">—</span> : !entry ? <span className="text-slate-500 italic">{tr('not joined')}</span> : (
+                                    <span className="inline-flex items-center gap-2 text-xs">
+                                      <span className={status === 'on' ? 'text-emerald-700 font-bold' : 'text-slate-500'}>
+                                        {(signal ? signal.emoji + ' ' + signal.label + ' · ' : '') + (status === 'on' ? tr('active') : tr('quiet')) + (entry.xp ? ' · ' + entry.xp + ' XP' : '')}
+                                      </span>
+                                      <button type="button" disabled={!live.recognitionEnabled}
+                                        onClick={() => live.onRecognizeStudent(entry.uid)}
+                                        aria-label={tr('Recognize {name}', { name: displayNameOf(name) })}
+                                        className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 disabled:opacity-40">🌿</button>
+                                    </span>
+                                  )}
+                                </td>
+                              );
+                            })()}
                           </tr>
                         );
                       })}
@@ -1133,6 +1272,28 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
               {/* ── Sidebar ── */}
               <div className="w-64 shrink-0 border-l border-slate-100 flex flex-col min-h-0">
                 <div className="p-3 flex-1 overflow-y-auto custom-scrollbar space-y-3">
+                  {/* Live pod recognition strip */}
+                  {mode === 'live' && livePods.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-black text-emerald-700 uppercase tracking-wide mb-1.5">{tr('Recognize a pod')}</h3>
+                      <div className="flex flex-wrap gap-1.5">
+                        {livePods.map(pod => {
+                          const podUids = pod.students.map(n2 => liveInfoFor(n2)).filter(Boolean).map(entry => entry.uid);
+                          const disabled = !live.recognitionEnabled || podUids.length === 0;
+                          return (
+                            <button key={'live-pod-' + pod.index} type="button" disabled={disabled}
+                              onClick={() => live.onRecognizeStudents(podUids, tr('students in Pod {n}', { n: pod.index }))}
+                              title={live.recognitionEnabled ? tr('Recognize every connected student in this pod (Live Dock reason and tokens).') : tr('Enable recognition in the Live Dock first.')}
+                              aria-label={tr('Recognize Pod {n} — {k} connected students', { n: pod.index, k: podUids.length })}
+                              className={'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (disabled ? 'border-slate-200 text-slate-400 bg-slate-50' : 'border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100')}>
+                              {tr('Pod {n}', { n: pod.index })} ({podUids.length})
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <p className="text-[10px] text-slate-500 mt-1">{tr('Pod goals with tokens live in the Live Dock’s Class Goals; this strip sends the standard recognition.')}</p>
+                    </div>
+                  )}
                   {/* Unassigned tray */}
                   <div>
                     <h3 className="text-xs font-black text-slate-600 uppercase tracking-wide mb-1.5">{tr('Unseated')} ({unassigned.length})</h3>

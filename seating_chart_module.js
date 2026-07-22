@@ -544,7 +544,9 @@ function escapeXml(s) {
     return { "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&apos;" }[ch];
   });
 }
-function buildPrintableSvg(layout, displayNameOf, title) {
+function buildPrintableSvg(layout, displayNameOf, title, opts) {
+  opts = opts || {};
+  var blank = !!opts.blank;
   var SCALE = 9;
   var W = ROOM_W * SCALE, H = ROOM_H * SCALE + 40;
   var parts = [];
@@ -558,11 +560,20 @@ function buildPrintableSvg(layout, displayNameOf, title) {
     parts.push('<rect x="' + f.x * SCALE + '" y="' + f.y * SCALE + '" width="' + f.w * SCALE + '" height="' + f.h * SCALE + '" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="4 3"/>');
     parts.push('<text x="' + (f.x + f.w / 2) * SCALE + '" y="' + ((f.y + f.h / 2) * SCALE + 4) + '" text-anchor="middle" font-size="11" fill="#64748b">' + escapeXml(f.label || furnitureLabel(f.kind)) + "</text>");
   });
+  var sortedForNumbers = layout.seats.slice().sort(function(a, b) {
+    return a.y - b.y || a.x - b.x;
+  });
+  var numberOf = {};
+  sortedForNumbers.forEach(function(s, i) {
+    numberOf[s.id] = i + 1;
+  });
   layout.seats.forEach(function(s) {
-    var name = layout.assignments[s.id] || "";
+    var name = blank ? "" : layout.assignments[s.id] || "";
     parts.push('<rect x="' + s.x * SCALE + '" y="' + s.y * SCALE + '" width="' + s.w * SCALE + '" height="' + s.h * SCALE + '" rx="8" fill="' + (name ? "#eef2ff" : "#ffffff") + '" stroke="#6366f1" stroke-width="1.5"/>');
     if (name) {
       parts.push('<text x="' + (s.x + s.w / 2) * SCALE + '" y="' + ((s.y + s.h / 2) * SCALE + 4) + '" text-anchor="middle" font-size="13" font-weight="600" fill="#1e293b">' + escapeXml(displayNameOf ? displayNameOf(name) : name) + "</text>");
+    } else if (blank) {
+      parts.push('<text x="' + (s.x + s.w / 2) * SCALE + '" y="' + ((s.y + s.h / 2) * SCALE + 5) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#94a3b8">' + numberOf[s.id] + "</text>");
     }
   });
   parts.push("</g></svg>");
@@ -690,6 +701,20 @@ function listPods(rosterKey) {
     };
   });
 }
+function overlappingSeatIds(layout) {
+  var out = {};
+  if (!layout) return out;
+  var solid = (layout.furniture || []).filter(function(f) {
+    return f.kind !== "rug";
+  });
+  (layout.seats || []).forEach(function(s) {
+    var hit = solid.some(function(f) {
+      return s.x < f.x + f.w && f.x < s.x + s.w && s.y < f.y + f.h && f.y < s.y + s.h;
+    });
+    if (hit) out[s.id] = 1;
+  });
+  return out;
+}
 function furnitureLabel(kind) {
   if (kind === "teacher_desk") return tr("Teacher desk");
   if (kind === "table") return tr("Table");
@@ -713,7 +738,7 @@ var FURN_EMOJI = { teacher_desk: "\u{1F9D1}\u200D\u{1F3EB}", table: "\u{1F7EB}",
 var _scHooks = typeof window !== "undefined" && window.__alloHooks || {};
 var useFocusTrap = _scHooks.useFocusTrap || function() {
 };
-function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToast }) {
+function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToast, live }) {
   var _llCtx = React.useContext(LANG_CTX);
   var uiLang = _llCtx && _llCtx.currentUiLanguage || typeof window !== "undefined" && window.__alloTextLanguage || "English";
   var _llCacheRef = React.useRef(llLoad());
@@ -769,8 +794,29 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   };
   const seating = React.useMemo(() => normalizeSeating(rosterKey && rosterKey.seating, studentNames), [rosterKey, studentNames]);
   const layout = seating.activeLayoutId ? seating.layouts[seating.activeLayoutId] : null;
-  const [mode, setMode] = useState("assign");
+  const [mode, setMode] = useState(live ? "live" : "assign");
   const [view, setView] = useState("map");
+  const [, setLiveTick] = useState(0);
+  React.useEffect(() => {
+    if (!live || mode !== "live") return void 0;
+    const id = setInterval(() => setLiveTick((n) => n + 1), 3e4);
+    return () => clearInterval(id);
+  }, [!!live, mode]);
+  const liveInfoFor = (name) => {
+    if (!live || !name) return null;
+    const key = typeof live.normalizeName === "function" ? live.normalizeName(name) : String(name).toLowerCase().replace(/[^a-z0-9]/g, "");
+    return key && live.studentsByName && live.studentsByName[key] || null;
+  };
+  const liveStatusOf = (entry) => {
+    if (!entry || !entry.lastSeen) return "off";
+    return Date.now() - entry.lastSeen < (live && live.staleMs || 18e4) ? "on" : "quiet";
+  };
+  const liveSignalOf = (entry) => {
+    if (!entry || !entry.signal || !entry.signalAt) return null;
+    if (Date.now() - entry.signalAt > (live && live.signalFreshMs || 6e5)) return null;
+    const spec = (live && live.signals || []).find((s) => s.id === entry.signal);
+    return spec || { id: entry.signal, emoji: "\u{1F4AC}", label: entry.signal };
+  };
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showConstraints, setShowConstraints] = useState(false);
@@ -807,6 +853,27 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
     if (!layout) return;
     const nextLayout = { ...layout, ...patch };
     commitSeating({ ...seating, layouts: { ...seating.layouts, [layout.id]: nextLayout } });
+  };
+  const undoRef = useRef([]);
+  const lastUndoPushRef = useRef(0);
+  const [undoCount, setUndoCount] = useState(0);
+  const pushUndo = (coalesceMs) => {
+    if (!layout) return;
+    const nowMs = Date.now();
+    if (coalesceMs && nowMs - lastUndoPushRef.current < coalesceMs) return;
+    lastUndoPushRef.current = nowMs;
+    undoRef.current = undoRef.current.concat([JSON.parse(JSON.stringify(layout))]).slice(-10);
+    setUndoCount(undoRef.current.length);
+  };
+  const undoRoomEdit = () => {
+    const stack = undoRef.current;
+    if (!stack.length) return;
+    const snapshot = stack[stack.length - 1];
+    undoRef.current = stack.slice(0, -1);
+    setUndoCount(undoRef.current.length);
+    if (!seating.layouts[snapshot.id]) return;
+    commitSeating({ ...seating, layouts: { ...seating.layouts, [snapshot.id]: snapshot } });
+    announce(tr("Room edit undone"));
   };
   const createLayout = (templateKind) => {
     const id = nextId(Object.keys(seating.layouts), "layout");
@@ -870,12 +937,14 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   };
   const addSeat = () => {
     if (!layout) return;
+    pushUndo();
     const id = nextId(layout.seats.map((s) => s.id), "seat");
     patchLayout({ seats: layout.seats.concat([{ id, x: Math.round((ROOM_W - SEAT_W) / 2), y: Math.round((ROOM_H - SEAT_H) / 2), w: SEAT_W, h: SEAT_H }]) });
     setSelectedItem(id);
   };
   const addFurniture = (kind) => {
     if (!layout) return;
+    pushUndo();
     const spec = FURNITURE_KINDS.filter((k) => k.kind === kind)[0] || FURNITURE_KINDS[1];
     const id = nextId(layout.furniture.map((f) => f.id), "furn");
     patchLayout({ furniture: layout.furniture.concat([{ id, kind: spec.kind, x: Math.round((ROOM_W - spec.w) / 2), y: Math.round((ROOM_H - spec.h) / 2), w: spec.w, h: spec.h, label: "" }]) });
@@ -883,6 +952,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   };
   const deleteSelectedItem = () => {
     if (!layout || !selectedItem) return;
+    pushUndo();
     if (layout.seats.some((s) => s.id === selectedItem)) {
       const next = { ...layout.assignments };
       delete next[selectedItem];
@@ -901,6 +971,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   const startDrag = (evt, item, isSeat) => {
     if (mode !== "edit") return;
     evt.preventDefault();
+    pushUndo();
     setSelectedItem(item.id);
     const p = roomPoint(evt);
     dragRef.current = { id: item.id, isSeat, dx: p.x - item.x, dy: p.y - item.y, moved: false };
@@ -927,7 +998,13 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
     dragRef.current = null;
   };
   const nudgeSelected = (evt) => {
-    if (mode !== "edit" || !layout || !selectedItem) return;
+    if (mode !== "edit" || !layout) return;
+    if ((evt.ctrlKey || evt.metaKey) && (evt.key === "z" || evt.key === "Z")) {
+      evt.preventDefault();
+      undoRoomEdit();
+      return;
+    }
+    if (!selectedItem) return;
     const step = evt.shiftKey ? 5 : 1;
     let dx = 0, dy = 0;
     if (evt.key === "ArrowLeft") dx = -step;
@@ -940,6 +1017,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
       return;
     } else return;
     evt.preventDefault();
+    pushUndo(800);
     const isSeat = layout.seats.some((s) => s.id === selectedItem);
     const list = isSeat ? layout.seats : layout.furniture;
     const nextList = list.map((it) => {
@@ -1001,9 +1079,9 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
       setLastSolve(null);
     } });
   };
-  const printChart = () => {
+  const printChart = (blank) => {
     if (!layout) return;
-    const svg = buildPrintableSvg(layout, displayNameOf, (rosterKey && rosterKey.className ? rosterKey.className + " \u2014 " : "") + layout.name);
+    const svg = buildPrintableSvg(layout, displayNameOf, (rosterKey && rosterKey.className ? rosterKey.className + " \u2014 " : "") + layout.name, { blank: !!blank });
     const html = "<!DOCTYPE html><html><head><title>" + escapeXml(tr("Seating Chart")) + "</title><style>body{margin:0;padding:16px}svg{width:100%;height:auto}</style></head><body>" + svg + "</body></html>";
     const frame = document.createElement("iframe");
     frame.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;";
@@ -1033,6 +1111,9 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   sortedSeats.forEach((s, i) => {
     seatNumberOf[s.id] = i + 1;
   });
+  const overlaps = mode === "edit" && layout ? overlappingSeatIds(layout) : {};
+  const overlapCount = Object.keys(overlaps).length;
+  const livePods = live && mode === "live" ? listPods(rosterKey) : [];
   if (!isOpen) return null;
   const btn = "px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none disabled:opacity-40";
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center p-2 sm:p-4", onClick: onClose }, /* @__PURE__ */ React.createElement(
@@ -1062,16 +1143,20 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
     !layout ? (
       /* ── Empty state: template chooser ── */
       /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col items-center justify-center gap-4 p-8 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl", "aria-hidden": "true" }, "\u{1F9ED}"), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-slate-800" }, tr("Start your classroom map")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 max-w-md" }, tr("Pick a starting arrangement for {n} students \u2014 you can drag every desk afterwards.", { n: studentNames.length })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => createLayout("rows"), className: btn + " bg-indigo-50 text-indigo-700 hover:bg-indigo-100" }, "\u25A6 ", tr("Rows")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => createLayout("pairs"), className: btn + " bg-indigo-50 text-indigo-700 hover:bg-indigo-100" }, "\u26AD ", tr("Pairs")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => createLayout("pods"), className: btn + " bg-indigo-50 text-indigo-700 hover:bg-indigo-100" }, "\u229E ", tr("Pods of 4")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => createLayout("horseshoe"), className: btn + " bg-indigo-50 text-indigo-700 hover:bg-indigo-100" }, "\u222A ", tr("Horseshoe")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => createLayout("blank"), className: btn + " bg-slate-100 text-slate-700 hover:bg-slate-200" }, tr("Blank room"))), !studentNames.length && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2" }, tr("Tip: add students to the roster first so seats can be assigned.")))
-    ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 px-4 py-2 border-b border-slate-100" }, /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": tr("Mode"), className: "flex rounded-lg overflow-hidden border border-slate-300" }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": mode === "assign", onClick: () => {
+    ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 px-4 py-2 border-b border-slate-100" }, /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": tr("Mode"), className: "flex rounded-lg overflow-hidden border border-slate-300" }, live && /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": mode === "live", onClick: () => {
+      setMode("live");
+      setSelectedItem(null);
+      setSelectedStudent(null);
+    }, className: "px-3 py-1.5 text-xs font-bold " + (mode === "live" ? "bg-emerald-600 text-white" : "bg-white text-emerald-700 hover:bg-emerald-50") }, "\u{1F7E2} " + tr("Live")), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": mode === "assign", onClick: () => {
       setMode("assign");
       setSelectedItem(null);
     }, className: "px-3 py-1.5 text-xs font-bold " + (mode === "assign" ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50") }, tr("Assign")), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": mode === "edit", onClick: () => {
       setMode("edit");
       setSelectedStudent(null);
-    }, className: "px-3 py-1.5 text-xs font-bold " + (mode === "edit" ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50") }, tr("Edit room"))), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": tr("View"), className: "flex rounded-lg overflow-hidden border border-slate-300" }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": view === "map", onClick: () => setView("map"), className: "px-3 py-1.5 text-xs font-bold " + (view === "map" ? "bg-slate-700 text-white" : "bg-white text-slate-700 hover:bg-slate-50") }, tr("Map")), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": view === "list", onClick: () => setView("list"), className: "px-3 py-1.5 text-xs font-bold " + (view === "list" ? "bg-slate-700 text-white" : "bg-white text-slate-700 hover:bg-slate-50") }, tr("List"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => runSolve(false), className: btn + " bg-emerald-600 text-white hover:bg-emerald-700" }, "\u2728 ", tr("Auto-arrange")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => runSolve(true), title: tr("New arrangement that still honors your constraints"), className: btn + " bg-emerald-50 text-emerald-700 hover:bg-emerald-100" }, "\u{1F500} ", tr("Reshuffle")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowConstraints((v) => !v), "aria-expanded": showConstraints, className: btn + " " + (liveScore.violations.length ? "bg-amber-100 text-amber-800 hover:bg-amber-200" : "bg-slate-100 text-slate-700 hover:bg-slate-200") }, "\u2696\uFE0F ", tr("Constraints"), " (", seating.constraints.length, liveScore.violations.length ? " \xB7 " + tr("{n} unmet", { n: liveScore.violations.length }) : "", ")"), /* @__PURE__ */ React.createElement("div", { className: "ml-auto flex gap-2" }, mode === "edit" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addSeat, className: btn + " bg-indigo-50 text-indigo-700 hover:bg-indigo-100" }, "\uFF0B ", tr("Desk")), /* @__PURE__ */ React.createElement("select", { value: "", onChange: (e) => {
+    }, className: "px-3 py-1.5 text-xs font-bold " + (mode === "edit" ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50") }, tr("Edit room"))), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": tr("View"), className: "flex rounded-lg overflow-hidden border border-slate-300" }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": view === "map", onClick: () => setView("map"), className: "px-3 py-1.5 text-xs font-bold " + (view === "map" ? "bg-slate-700 text-white" : "bg-white text-slate-700 hover:bg-slate-50") }, tr("Map")), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": view === "list", onClick: () => setView("list"), className: "px-3 py-1.5 text-xs font-bold " + (view === "list" ? "bg-slate-700 text-white" : "bg-white text-slate-700 hover:bg-slate-50") }, tr("List"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => runSolve(false), className: btn + " bg-emerald-600 text-white hover:bg-emerald-700" }, "\u2728 ", tr("Auto-arrange")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => runSolve(true), title: tr("New arrangement that still honors your constraints"), className: btn + " bg-emerald-50 text-emerald-700 hover:bg-emerald-100" }, "\u{1F500} ", tr("Reshuffle")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowConstraints((v) => !v), "aria-expanded": showConstraints, className: btn + " " + (liveScore.violations.length ? "bg-amber-100 text-amber-800 hover:bg-amber-200" : "bg-slate-100 text-slate-700 hover:bg-slate-200") }, "\u2696\uFE0F ", tr("Constraints"), " (", seating.constraints.length, liveScore.violations.length ? " \xB7 " + tr("{n} unmet", { n: liveScore.violations.length }) : "", ")"), /* @__PURE__ */ React.createElement("div", { className: "ml-auto flex gap-2" }, mode === "edit" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: undoRoomEdit, disabled: !undoCount, title: tr("Undo the last room edit (Ctrl+Z)"), className: btn + " bg-slate-100 text-slate-700 hover:bg-slate-200" }, "\u21A9 ", tr("Undo")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addSeat, className: btn + " bg-indigo-50 text-indigo-700 hover:bg-indigo-100" }, "\uFF0B ", tr("Desk")), /* @__PURE__ */ React.createElement("select", { value: "", onChange: (e) => {
       if (e.target.value) addFurniture(e.target.value);
       e.target.value = "";
-    }, "aria-label": tr("Add furniture"), className: "px-2 py-1.5 rounded-lg border border-slate-400 text-xs font-bold bg-white" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\uFF0B ", tr("Furniture"), "\u2026"), FURNITURE_KINDS.map((f) => /* @__PURE__ */ React.createElement("option", { key: f.kind, value: f.kind }, FURN_EMOJI[f.kind], " ", furnitureLabel(f.kind)))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: deleteSelectedItem, disabled: !selectedItem, className: btn + " bg-rose-50 text-rose-700 hover:bg-rose-100" }, "\u{1F5D1} ", tr("Remove")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: duplicateLayout, className: btn + " bg-slate-100 text-slate-700 hover:bg-slate-200" }, tr("Duplicate")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: deleteLayout, className: btn + " bg-slate-100 text-slate-700 hover:bg-slate-200" }, tr("Delete layout"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearAssignments, className: btn + " bg-slate-100 text-slate-700 hover:bg-slate-200" }, tr("Clear seats")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: printChart, className: btn + " bg-slate-100 text-slate-700 hover:bg-slate-200" }, "\u{1F5A8} ", tr("Print")))), mode === "edit" && /* @__PURE__ */ React.createElement("div", { className: "px-4 py-1.5 text-[11px] text-slate-600 bg-indigo-50/60 border-b border-indigo-100" }, tr("Drag desks and furniture to match your room. Click an item then use arrow keys to nudge (Shift = faster), Delete to remove."), layout && " ", /* @__PURE__ */ React.createElement("label", { className: "inline-flex items-center gap-1 ml-2 font-bold" }, tr("Layout name"), ":", /* @__PURE__ */ React.createElement("input", { type: "text", value: layout.name, onChange: (e) => patchLayout({ name: e.target.value.slice(0, 60) }), className: "px-2 py-0.5 rounded border border-slate-400 text-[11px] w-36" }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0 p-3 overflow-auto custom-scrollbar", onKeyDown: nudgeSelected }, view === "map" ? /* @__PURE__ */ React.createElement(
+    }, "aria-label": tr("Add furniture"), className: "px-2 py-1.5 rounded-lg border border-slate-400 text-xs font-bold bg-white" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\uFF0B ", tr("Furniture"), "\u2026"), FURNITURE_KINDS.map((f) => /* @__PURE__ */ React.createElement("option", { key: f.kind, value: f.kind }, FURN_EMOJI[f.kind], " ", furnitureLabel(f.kind)))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: deleteSelectedItem, disabled: !selectedItem, className: btn + " bg-rose-50 text-rose-700 hover:bg-rose-100" }, "\u{1F5D1} ", tr("Remove")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: duplicateLayout, className: btn + " bg-slate-100 text-slate-700 hover:bg-slate-200" }, tr("Duplicate")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: deleteLayout, className: btn + " bg-slate-100 text-slate-700 hover:bg-slate-200" }, tr("Delete layout"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearAssignments, className: btn + " bg-slate-100 text-slate-700 hover:bg-slate-200" }, tr("Clear seats")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => printChart(false), className: btn + " bg-slate-100 text-slate-700 hover:bg-slate-200" }, "\u{1F5A8} ", tr("Print")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => printChart(true), title: tr("Numbered seats, no names \u2014 for substitutes or posting."), className: btn + " bg-slate-100 text-slate-700 hover:bg-slate-200" }, "\u{1F5A8} ", tr("Blank")))), mode === "live" && /* @__PURE__ */ React.createElement("div", { className: "px-4 py-1.5 text-[11px] text-emerald-800 bg-emerald-50/70 border-b border-emerald-100" }, tr("Live overlay: tap a seat to send the recognition selected in the Live Dock. Dim = quiet for a few minutes; dashed = not joined. Awards are private."), !live.recognitionEnabled && /* @__PURE__ */ React.createElement("b", null, " ", tr("Recognition is OFF \u2014 enable it in the Live Dock to award from here."))), mode === "edit" && /* @__PURE__ */ React.createElement("div", { className: "px-4 py-1.5 text-[11px] text-slate-600 bg-indigo-50/60 border-b border-indigo-100" }, overlapCount > 0 && /* @__PURE__ */ React.createElement("b", { className: "text-rose-700" }, tr("{n} seats overlap furniture (outlined red) \u2014 drag them clear or leave them if intended.", { n: overlapCount }), " "), tr("Drag desks and furniture to match your room. Click an item then use arrow keys to nudge (Shift = faster), Delete to remove."), layout && " ", /* @__PURE__ */ React.createElement("label", { className: "inline-flex items-center gap-1 ml-2 font-bold" }, tr("Layout name"), ":", /* @__PURE__ */ React.createElement("input", { type: "text", value: layout.name, onChange: (e) => patchLayout({ name: e.target.value.slice(0, 60) }), className: "px-2 py-0.5 rounded border border-slate-400 text-[11px] w-36" }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0 p-3 overflow-auto custom-scrollbar", onKeyDown: nudgeSelected }, view === "map" ? /* @__PURE__ */ React.createElement(
       "svg",
       {
         ref: svgRef,
@@ -1116,6 +1201,23 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
       layout.seats.map((s) => {
         const name = layout.assignments[s.id];
         const isSel = mode === "edit" && selectedItem === s.id || mode === "assign" && name && selectedStudent === name;
+        const isOverlap = mode === "edit" && overlaps[s.id];
+        const entry = mode === "live" && name ? liveInfoFor(name) : null;
+        const status = mode === "live" ? liveStatusOf(entry) : null;
+        const signal = entry ? liveSignalOf(entry) : null;
+        const liveAria = mode === "live" && name ? entry ? (signal ? " \u2014 " + signal.label : "") + (status === "quiet" ? " \u2014 " + tr("gone quiet") : "") + " \u2014 " + (entry.xp || 0) + " XP" + (live.recognitionEnabled ? " \u2014 " + tr("press Enter to recognize") : "") : " \u2014 " + tr("not joined") : "";
+        const liveTap = () => {
+          if (!name) return;
+          if (!entry) {
+            toast(tr("{name} has not joined this session.", { name: displayNameOf(name) }), "info");
+            return;
+          }
+          if (!live.recognitionEnabled) {
+            toast(tr("Enable recognition in the Live Dock to award from the map."), "info");
+            return;
+          }
+          live.onRecognizeStudent(entry.uid);
+        };
         return /* @__PURE__ */ React.createElement(
           "g",
           {
@@ -1125,19 +1227,21 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
               if (mode === "assign") {
                 if (dragRef.current && dragRef.current.moved) return;
                 assignToSeat(s.id);
-              } else setSelectedItem(s.id);
+              } else if (mode === "live") liveTap();
+              else setSelectedItem(s.id);
             },
             onKeyDown: (e) => {
-              if (mode === "assign" && (e.key === "Enter" || e.key === " ")) {
+              if ((e.key === "Enter" || e.key === " ") && (mode === "assign" || mode === "live")) {
                 e.preventDefault();
-                assignToSeat(s.id);
+                if (mode === "assign") assignToSeat(s.id);
+                else liveTap();
               }
             },
             onFocus: () => mode === "edit" && setSelectedItem(s.id),
             tabIndex: 0,
             role: "button",
-            "aria-label": tr("Seat {n}", { n: seatNumberOf[s.id] }) + ": " + (name ? displayNameOf(name) : tr("empty")),
-            style: { cursor: mode === "edit" ? "move" : "pointer", outline: "none" }
+            "aria-label": tr("Seat {n}", { n: seatNumberOf[s.id] }) + ": " + (name ? displayNameOf(name) : tr("empty")) + liveAria + (isOverlap ? " \u2014 " + tr("overlaps furniture") : ""),
+            style: { cursor: mode === "edit" ? "move" : "pointer", outline: "none", opacity: mode === "live" && name && status !== "on" ? 0.55 : 1 }
           },
           /* @__PURE__ */ React.createElement(
             "rect",
@@ -1147,19 +1251,21 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
               width: s.w,
               height: s.h,
               rx: "1.4",
-              fill: name ? "#eef2ff" : "#ffffff",
-              stroke: isSel ? "#f59e0b" : name ? groupColorOf(name) : "#94a3b8",
-              strokeWidth: isSel ? 1 : 0.6,
-              strokeDasharray: name ? void 0 : "1.6 1"
+              fill: name ? mode === "live" && status === "on" ? "#ecfdf5" : "#eef2ff" : "#ffffff",
+              stroke: isOverlap ? "#e11d48" : isSel ? "#f59e0b" : mode === "live" && name ? status === "on" ? "#10b981" : "#94a3b8" : name ? groupColorOf(name) : "#94a3b8",
+              strokeWidth: isSel || isOverlap ? 1 : 0.6,
+              strokeDasharray: name ? mode === "live" && status === "off" ? "1.6 1" : void 0 : "1.6 1"
             }
           ),
           /* @__PURE__ */ React.createElement("text", { x: s.x + 1.2, y: s.y + 2.6, fontSize: "2", fill: "#94a3b8" }, seatNumberOf[s.id]),
-          name ? /* @__PURE__ */ React.createElement("text", { x: s.x + s.w / 2, y: s.y + s.h / 2 + 1, textAnchor: "middle", fontSize: displayNameOf(name).length > 10 ? 2 : 2.6, fontWeight: "700", fill: "#1e293b" }, displayNameOf(name).slice(0, 14)) : /* @__PURE__ */ React.createElement("text", { x: s.x + s.w / 2, y: s.y + s.h / 2 + 1, textAnchor: "middle", fontSize: "2.2", fill: "#cbd5e1" }, mode === "assign" && selectedStudent ? "\u2B07" : "\xB7")
+          name ? /* @__PURE__ */ React.createElement("text", { x: s.x + s.w / 2, y: s.y + s.h / 2 + 1, textAnchor: "middle", fontSize: displayNameOf(name).length > 10 ? 2 : 2.6, fontWeight: "700", fill: "#1e293b" }, displayNameOf(name).slice(0, 14)) : /* @__PURE__ */ React.createElement("text", { x: s.x + s.w / 2, y: s.y + s.h / 2 + 1, textAnchor: "middle", fontSize: "2.2", fill: "#cbd5e1" }, mode === "assign" && selectedStudent ? "\u2B07" : "\xB7"),
+          signal ? /* @__PURE__ */ React.createElement("text", { x: s.x + s.w - 1.2, y: s.y + 2.8, textAnchor: "end", fontSize: "2.8", "aria-hidden": "true" }, signal.emoji) : null,
+          mode === "live" && entry && entry.xp > 0 ? /* @__PURE__ */ React.createElement("text", { x: s.x + s.w - 1.2, y: s.y + s.h - 1, textAnchor: "end", fontSize: "1.8", fill: "#64748b" }, entry.xp) : null
         );
       })
     ) : (
       /* List view — same data, native controls, full AT parity. */
-      /* @__PURE__ */ React.createElement("table", { className: "w-full text-sm border-collapse" }, /* @__PURE__ */ React.createElement("caption", { className: "sr-only" }, tr("Seat assignments, front to back")), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { className: "text-left text-xs text-slate-600 uppercase tracking-wide" }, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "py-1.5 pr-3" }, tr("Seat")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "py-1.5" }, tr("Student")))), /* @__PURE__ */ React.createElement("tbody", null, sortedSeats.map((s) => {
+      /* @__PURE__ */ React.createElement("table", { className: "w-full text-sm border-collapse" }, /* @__PURE__ */ React.createElement("caption", { className: "sr-only" }, tr("Seat assignments, front to back")), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { className: "text-left text-xs text-slate-600 uppercase tracking-wide" }, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "py-1.5 pr-3" }, tr("Seat")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "py-1.5" }, tr("Student")), mode === "live" && /* @__PURE__ */ React.createElement("th", { scope: "col", className: "py-1.5 ps-3" }, tr("Live")))), /* @__PURE__ */ React.createElement("tbody", null, sortedSeats.map((s) => {
         const name = layout.assignments[s.id] || "";
         return /* @__PURE__ */ React.createElement("tr", { key: s.id, className: "border-t border-slate-100" }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "py-1.5 pr-3 font-bold text-slate-700" }, tr("Seat {n}", { n: seatNumberOf[s.id] })), /* @__PURE__ */ React.createElement("td", { className: "py-1.5" }, /* @__PURE__ */ React.createElement(
           "select",
@@ -1183,9 +1289,43 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
           /* @__PURE__ */ React.createElement("option", { value: "" }, tr("\u2014 empty \u2014")),
           name && /* @__PURE__ */ React.createElement("option", { value: name }, displayNameOf(name)),
           unassigned.map((n2) => /* @__PURE__ */ React.createElement("option", { key: n2, value: n2 }, displayNameOf(n2)))
-        )));
+        )), mode === "live" && (() => {
+          const entry = name ? liveInfoFor(name) : null;
+          const status = liveStatusOf(entry);
+          const signal = entry ? liveSignalOf(entry) : null;
+          return /* @__PURE__ */ React.createElement("td", { className: "py-1.5 ps-3" }, !name ? /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "\u2014") : !entry ? /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 italic" }, tr("not joined")) : /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-2 text-xs" }, /* @__PURE__ */ React.createElement("span", { className: status === "on" ? "text-emerald-700 font-bold" : "text-slate-500" }, (signal ? signal.emoji + " " + signal.label + " \xB7 " : "") + (status === "on" ? tr("active") : tr("quiet")) + (entry.xp ? " \xB7 " + entry.xp + " XP" : "")), /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              type: "button",
+              disabled: !live.recognitionEnabled,
+              onClick: () => live.onRecognizeStudent(entry.uid),
+              "aria-label": tr("Recognize {name}", { name: displayNameOf(name) }),
+              className: "px-2 py-0.5 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 disabled:opacity-40"
+            },
+            "\u{1F33F}"
+          )));
+        })());
       })))
-    )), /* @__PURE__ */ React.createElement("div", { className: "w-64 shrink-0 border-l border-slate-100 flex flex-col min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 flex-1 overflow-y-auto custom-scrollbar space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black text-slate-600 uppercase tracking-wide mb-1.5" }, tr("Unseated"), " (", unassigned.length, ")"), unassigned.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic" }, tr("Everyone has a seat.")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, unassigned.map((n2) => /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { className: "w-64 shrink-0 border-l border-slate-100 flex flex-col min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 flex-1 overflow-y-auto custom-scrollbar space-y-3" }, mode === "live" && livePods.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black text-emerald-700 uppercase tracking-wide mb-1.5" }, tr("Recognize a pod")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, livePods.map((pod) => {
+      const podUids = pod.students.map((n2) => liveInfoFor(n2)).filter(Boolean).map((entry) => entry.uid);
+      const disabled = !live.recognitionEnabled || podUids.length === 0;
+      return /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: "live-pod-" + pod.index,
+          type: "button",
+          disabled,
+          onClick: () => live.onRecognizeStudents(podUids, tr("students in Pod {n}", { n: pod.index })),
+          title: live.recognitionEnabled ? tr("Recognize every connected student in this pod (Live Dock reason and tokens).") : tr("Enable recognition in the Live Dock first."),
+          "aria-label": tr("Recognize Pod {n} \u2014 {k} connected students", { n: pod.index, k: podUids.length }),
+          className: "px-2 py-1 rounded-lg text-[11px] font-bold border " + (disabled ? "border-slate-200 text-slate-400 bg-slate-50" : "border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100")
+        },
+        tr("Pod {n}", { n: pod.index }),
+        " (",
+        podUids.length,
+        ")"
+      );
+    })), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, tr("Pod goals with tokens live in the Live Dock\u2019s Class Goals; this strip sends the standard recognition."))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black text-slate-600 uppercase tracking-wide mb-1.5" }, tr("Unseated"), " (", unassigned.length, ")"), unassigned.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic" }, tr("Everyone has a seat.")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, unassigned.map((n2) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: n2,
@@ -1227,6 +1367,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
       describeSeatForStudent: describeSeatForStudent,
       pushHistory: pushHistory,
       listPods: listPods,
+      overlappingSeatIds: overlappingSeatIds,
       normalizeSeating: normalizeSeating,
       normalizeConstraint: normalizeConstraint,
       buildTemplate: buildTemplate,

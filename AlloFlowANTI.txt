@@ -5771,7 +5771,22 @@ const buildRosterSessionSummary = ({ sessionCode, sessionData, rosterKey, mode, 
     const durationMinutes = Number.isFinite(startMs) && Number.isFinite(endMs) && endMs >= startMs ? Math.max(0, Math.round((endMs - startMs) / 60000)) : null;
     const resourceTitles = Array.isArray(sessionData?.resources) ? Array.from(new Set(sessionData.resources.map(item => String(item?.title || '').trim()).filter(Boolean))).slice(0, 20) : [];
     const absentCodenames = Object.keys(rosterStudents).filter(name => !participants[name]);
-    return { schemaVersion: 1, id: String(sessionCode || ('session-' + endMs)), startedAt: createdAt, endedAt, durationMinutes, mode: mode === 'mailbox' ? 'mailbox' : 'firebase', resourceTitles, participants, unmatchedCodenames, absentCodenames };
+    // Class Goals met this session — pulled from the device-local award log
+    // (rosterKey.classGoalLog, sessionCode-stamped at award time). Gives the
+    // roster's session history longitudinal implementation evidence: which
+    // contingencies ran, how often, reaching how many students. Labels are
+    // teacher-authored and stay in rosterKey like the rest of the summary.
+    const classGoals = (Array.isArray(rosterKey?.classGoalLog) ? rosterKey.classGoalLog : [])
+        .filter(entry => entry && sessionCode && entry.sessionCode === sessionCode)
+        .slice(0, 40)
+        .map(entry => ({
+            label: String(entry.label || '').slice(0, 80),
+            mode: entry.mode === 'independent' ? 'independent' : 'interdependent',
+            tokens: Number(entry.tokens) === 2 ? 2 : 1,
+            delivered: Math.max(0, Math.floor(Number(entry.delivered) || 0)),
+            at: Number(entry.at) || 0,
+        }));
+    return { schemaVersion: 1, id: String(sessionCode || ('session-' + endMs)), startedAt: createdAt, endedAt, durationMinutes, mode: mode === 'mailbox' ? 'mailbox' : 'firebase', resourceTitles, participants, unmatchedCodenames, absentCodenames, classGoals };
 };
 const saveRosterSessionSummary = (rosterKey, summary, note = '', retentionLimit = 30) => {
     if (!rosterKey || !summary?.id) return rosterKey;
@@ -24421,14 +24436,27 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // goal's team via the standard batched path (same caps, same validators,
   // same receipts). The goal's label stays device-local in
   // rosterKey.classGoals; only the enum id crosses.
-  const _bumpClassGoalMet = (goalId, by) => {
+  const _bumpClassGoalMet = (goal, metBy, studentsAwarded) => {
+      const at = Date.now();
       setRosterKey(prev => {
           const prevGoals = normalizeClassGoals(prev && prev.classGoals);
+          const log = Array.isArray(prev && prev.classGoalLog) ? prev.classGoalLog : [];
           return {
               ...(prev || { groups: {}, students: {} }),
-              classGoals: prevGoals.map(item => item.id === goalId
-                  ? { ...item, metCount: item.metCount + (by || 1), lastMetAt: Date.now() }
+              classGoals: prevGoals.map(item => item.id === goal.id
+                  ? { ...item, metCount: item.metCount + (metBy || 1), lastMetAt: at }
                   : item),
+              // Device-local award log, sessionCode-stamped so the roster's
+              // session summary can report which goals ran in which session.
+              classGoalLog: log.concat([{
+                  goalId: goal.id,
+                  label: goal.label,
+                  mode: goal.mode,
+                  tokens: goal.tokens,
+                  delivered: Math.max(0, Math.floor(Number(studentsAwarded) || 0)),
+                  sessionCode: activeSessionCode || null,
+                  at,
+              }]).slice(-60),
           };
       });
   };
@@ -24449,7 +24477,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           { reasonId: 'group_goal', amount: goal.tokens }
       );
       if (!delivered) return;
-      _bumpClassGoalMet(goalId, 1);
+      _bumpClassGoalMet(goal, 1, delivered);
   };
   // ── Ring C: independent goals ── each MARKED student earns on their own
   // accomplishment. Rides the existing 'goal_progress' reason (already in
@@ -24464,7 +24492,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           { reasonId: 'goal_progress', amount: goal.tokens }
       );
       if (!delivered) return;
-      _bumpClassGoalMet(goalId, delivered);
+      _bumpClassGoalMet(goal, delivered, delivered);
   };
   // Notify-confirm prompt (§4.6): when a TRACKED goal's criterion first
   // crosses its threshold this session, surface a quiet toast. This effect
@@ -37929,6 +37957,35 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           setRosterKey,
           t,
           addToast,
+          // Ring 2 live overlay: during an active session the map shows
+          // presence/signals/XP and taps call back into the SAME capped
+          // recognition handlers the Live Dock uses. Codename→uid matching
+          // uses the roster-sync normalization so the module never invents
+          // its own. Null outside a session → the panel hides Live mode.
+          live: (isTeacherMode && activeSessionCode && sessionData && sessionData.roster) ? {
+            sessionCode: activeSessionCode,
+            recognitionEnabled: !!havenRecognitionConfig.enabled,
+            signalFreshMs: LIVE_SIGNAL_FRESH_MS,
+            staleMs: 180000, // ~3× the 60s presence heartbeat
+            signals: LIVE_SIGNAL_OPTIONS,
+            normalizeName: normalizeRosterSessionCodename,
+            studentsByName: (() => {
+              const map = {};
+              Object.entries(sessionData.roster).forEach(([uid, entry]) => {
+                const key = normalizeRosterSessionCodename(entry && entry.name);
+                if (key && !map[key]) map[key] = {
+                  uid,
+                  signal: (entry && entry.signal) || null,
+                  signalAt: Number(entry && entry.signalAt) || 0,
+                  lastSeen: Number(entry && entry.lastSeen) || 0,
+                  xp: Number(entry && entry.xp) || 0,
+                };
+              });
+              return map;
+            })(),
+            onRecognizeStudent: handleRecognizeStudent,
+            onRecognizeStudents: handleRecognizeStudents,
+          } : null,
         })}
       </CDNModuleGate>
       <StudentSubmitModal

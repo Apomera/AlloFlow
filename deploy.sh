@@ -426,7 +426,9 @@ else
   if [[ ${#STALE[@]} -gt 0 ]]; then
     pv_warn "${#STALE[@]} module(s) still stale after ${CDN_RETRIES} retries: ${STALE[*]}"
     echo "    (Cloudflare Pages can take a few min. Re-check later with:)"
-    echo "    for m in ${STALE[*]}; do curl -s \"$CDN_BASE/\$m\" | md5sum; git show \"HEAD:\$m\" | md5sum; done"
+    # -sL matters: Pages 308-redirects .html to extensionless, and a bare -s
+    # reads an EMPTY body (md5 d41d8cd9…) — a healthy deploy looks stale.
+    echo "    for m in ${STALE[*]}; do curl -sL \"$CDN_BASE/\$m\" | md5sum; git show \"HEAD:\$m\" | md5sum; done"
   fi
 fi
 

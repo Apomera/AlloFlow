@@ -20,7 +20,7 @@ const TMP = path.join(ROOT, '_tmp_seating_chart_entry.jsx');
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
 
 const source = fs.readFileSync(SOURCE, 'utf-8');
-const entry = `/* global React, useState, useEffect, useRef */\n\n${source}\n\nwindow.__seatingChartExports = { SeatingChartPanel, normalizeSeating, buildTemplate, solveSeating, scoreAssignment, anchorGaps, buildPrintableSvg, nextId, makeRng, centerDist, normalizeConstraint, describeSeatForStudent, pushHistory, listPods, CONSTRAINT_TYPES, FURNITURE_KINDS, ROOM_W, ROOM_H, ADJ_DIST, NEAR_RADIUS, WINDOW_RADIUS };\n`;
+const entry = `/* global React, useState, useEffect, useRef */\n\n${source}\n\nwindow.__seatingChartExports = { SeatingChartPanel, normalizeSeating, buildTemplate, solveSeating, scoreAssignment, anchorGaps, buildPrintableSvg, nextId, makeRng, centerDist, normalizeConstraint, describeSeatForStudent, pushHistory, listPods, overlappingSeatIds, CONSTRAINT_TYPES, FURNITURE_KINDS, ROOM_W, ROOM_H, ADJ_DIST, NEAR_RADIUS, WINDOW_RADIUS };\n`;
 fs.writeFileSync(TMP, entry, 'utf-8');
 
 console.log('Compiling seating_chart_source.jsx with esbuild...');
@@ -96,6 +96,7 @@ ${compiled}
       describeSeatForStudent: describeSeatForStudent,
       pushHistory: pushHistory,
       listPods: listPods,
+      overlappingSeatIds: overlappingSeatIds,
       normalizeSeating: normalizeSeating,
       normalizeConstraint: normalizeConstraint,
       buildTemplate: buildTemplate,

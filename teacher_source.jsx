@@ -65,7 +65,8 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             // module re-validates this blob with normalizeSeating on read).
             ...(data.seating && typeof data.seating === 'object' && !Array.isArray(data.seating) ? { seating: data.seating } : {}),
             // Class Goals travel too (re-validated by normalizeClassGoals on read).
-            ...(Array.isArray(data.classGoals) ? { classGoals: data.classGoals } : {})
+            ...(Array.isArray(data.classGoals) ? { classGoals: data.classGoals } : {}),
+            ...(Array.isArray(data.classGoalLog) ? { classGoalLog: data.classGoalLog.slice(-60) } : {})
           });
           if (window.AlloFlowUX) window.AlloFlowUX.toast('Roster imported, including class settings and submission setup.', 'success');
         }
@@ -537,6 +538,9 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                     <div className="mt-2 text-xs text-slate-600 space-y-1">
                       {typeof session.durationMinutes === 'number' && <p>Duration: {session.durationMinutes} min</p>}
                       {session.teacherNote && <p><span className="font-bold">Teacher note:</span> {session.teacherNote}</p>}
+                      {Array.isArray(session.classGoals) && session.classGoals.length > 0 && (
+                        <p><span className="font-bold">Class Goals met:</span> {session.classGoals.map(goal => `${goal.label} (${goal.mode === 'independent' ? goal.delivered + ' students' : '+' + goal.tokens + ' each, ' + goal.delivered + ' students'})`).join(' · ')}</p>
+                      )}
                       {Object.entries(session.participants || {}).map(([codename, record]) => <p key={codename}><span className="font-bold">{codename}</span>: {record.responseCount || 0} live response{record.responseCount === 1 ? '' : 's'}{record.groupId ? ` · group ${record.groupId}` : ''}</p>)}
                       {(session.unmatchedCodenames || []).length > 0 && <p className="text-rose-700"><span className="font-bold">Unmatched:</span> {session.unmatchedCodenames.join(', ')}</p>}
                     </div>

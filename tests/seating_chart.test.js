@@ -372,6 +372,50 @@ describe('listPods (Class Goals bridge)', () => {
   });
 });
 
+describe('blank print + overlap warnings (QoL)', () => {
+  it('blank chart shows seat numbers, never names', () => {
+    const layout = gridLayout(4);
+    layout.assignments = { [layout.seats[0].id]: 'Ana Real-Name' };
+    const named = S.buildPrintableSvg(layout, (n) => n, 'P3');
+    const blank = S.buildPrintableSvg(layout, (n) => n, 'P3', { blank: true });
+    expect(named).toContain('Ana Real-Name');
+    expect(blank).not.toContain('Ana Real-Name');
+    expect(blank).toContain('>1</text>');   // seat number rendered
+  });
+
+  it('overlappingSeatIds flags seats on physical furniture but not rugs', () => {
+    const layout = {
+      id: 'layout1', name: 'X', assignments: {},
+      seats: [
+        { id: 'seatA', x: 10, y: 10, w: 10, h: 7 },   // on the table
+        { id: 'seatB', x: 40, y: 10, w: 10, h: 7 },   // on the rug — fine
+        { id: 'seatC', x: 70, y: 40, w: 10, h: 7 },   // clear
+      ],
+      furniture: [
+        { id: 'furnT', kind: 'table', x: 8, y: 8, w: 16, h: 10, label: '' },
+        { id: 'furnR', kind: 'rug', x: 36, y: 6, w: 20, h: 14, label: '' },
+      ],
+    };
+    expect(Object.keys(S.overlappingSeatIds(layout))).toEqual(['seatA']);
+    expect(S.overlappingSeatIds(null)).toEqual({});
+  });
+});
+
+describe('ANTI live-overlay contract (Ring 2)', () => {
+  const ANTI = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+  it('live prop is session-gated, uses roster-sync normalization, and reuses the capped handlers', () => {
+    expect(ANTI).toContain('live: (isTeacherMode && activeSessionCode && sessionData && sessionData.roster) ? {');
+    expect(ANTI).toContain('normalizeName: normalizeRosterSessionCodename,');
+    expect(ANTI).toContain('onRecognizeStudent: handleRecognizeStudent,');
+    expect(ANTI).toContain('onRecognizeStudents: handleRecognizeStudents,');
+    // Only enum/numeric session fields cross into the module map — never
+    // free text beyond the codename the session already carries.
+    const block = ANTI.slice(ANTI.indexOf('live: (isTeacherMode && activeSessionCode'), ANTI.indexOf('onRecognizeStudent: handleRecognizeStudent'));
+    for (const field of ['signal', 'signalAt', 'lastSeen', 'xp']) expect(block).toContain(field);
+    expect(block).not.toContain('viewingResourceId');
+  });
+});
+
 describe('nextId', () => {
   it('takes max numeric suffix + 1 for the matching prefix only', () => {
     expect(S.nextId(['seat1', 'seat9', 'seat3'], 'seat')).toBe('seat10');
