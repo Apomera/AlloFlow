@@ -2087,28 +2087,28 @@ window.StemLab = window.StemLab || {
             // AI Tutor panel (collapsible)
             // ══════════════════════════════════════
             showAI && h('div', { className: 'mt-4 bg-blue-950/10 border border-blue-500/20 p-4 rounded-xl backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-blue-400 uppercase tracking-wider mb-2' }, '\uD83E\uDD16 AI Circuit Tutor'),
+              h('p', { className: 'text-[11px] font-bold text-blue-400 uppercase tracking-wider mb-2' }, '\uD83E\uDD16 ' + __alloT('stem.circuit.ai_circuit_tutor', 'AI Circuit Tutor')),
               h('div', { className: 'flex gap-2' },
                 h('input', {
                   type: 'text',
-                  placeholder: "Ask about circuits, Ohm's Law, components...",
+                  placeholder: __alloT('stem.circuit.placeholder_ask', "Ask about circuits, Ohm's Law, components..."),
                   value: aiQuestion,
                   onChange: function(e) { upd('aiQuestion', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter') askAI(); },
                   className: 'flex-1 px-3 py-2 text-xs border border-blue-800 bg-slate-950/80 text-slate-100 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500'
                 }),
-                h('button', { 'aria-label': aiLoading ? 'AI is thinking' : 'Ask the AI tutor', 'aria-busy': aiLoading,
+                h('button', { 'aria-label': aiLoading ? __alloT('stem.circuit.aria_ai_thinking', 'AI is thinking') : __alloT('stem.circuit.aria_ask_ai_tutor', 'Ask the AI tutor'), 'aria-busy': aiLoading,
                   onClick: askAI,
                   disabled: aiLoading,
                   className: 'px-4 py-2 text-xs font-bold rounded-lg transition-all ' + (aiLoading ? 'bg-slate-800 text-slate-600' : 'transition-colors bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-600/10 active:scale-[0.97]')
-                }, aiLoading ? 'Thinking...' : 'Ask')
+                }, aiLoading ? __alloT('stem.circuit.thinking_ellipsis', 'Thinking...') : __alloT('stem.circuit.ask_btn', 'Ask'))
               ),
-              aiLoading && h('div', { className: 'mt-2 text-xs text-blue-400 animate-pulse' }, 'AI is thinking...'),
+              aiLoading && h('div', { className: 'mt-2 text-xs text-blue-400 animate-pulse' }, __alloT('stem.circuit.ai_is_thinking', 'AI is thinking...')),
               aiResponse && h('div', { role: 'status', 'aria-live': 'polite', className: 'mt-2 bg-slate-950/80 rounded-lg p-3 border border-blue-900/50 text-xs text-blue-200 whitespace-pre-wrap leading-relaxed' }, aiResponse),
               // Quick-ask suggestions
               h('div', { className: 'flex flex-wrap gap-1.5 mt-2' },
-                ["What is Ohm's Law?", 'Series vs parallel?', 'What is a short circuit?', 'How do capacitors work?', 'What does an ammeter measure?'].map(function(q) {
-                  return h('button', { 'aria-label': 'Ask question',
+                [__alloT('stem.circuit.qa_ohms_law', "What is Ohm's Law?"), __alloT('stem.circuit.qa_series_parallel', 'Series vs parallel?'), __alloT('stem.circuit.qa_short_circuit', 'What is a short circuit?'), __alloT('stem.circuit.qa_capacitors', 'How do capacitors work?'), __alloT('stem.circuit.qa_ammeter', 'What does an ammeter measure?')].map(function(q) {
+                  return h('button', { 'aria-label': __alloT('stem.circuit.aria_ask_question', 'Ask question'),
                     key: q,
                     onClick: function() { updMulti({ aiQuestion: q }); },
                     className: 'px-2.5 py-1 text-[10px] bg-slate-950/60 text-blue-400 border border-blue-900/50 rounded-full hover:bg-blue-950/30 hover:text-blue-300 transition-all active:scale-[0.97]'
@@ -2121,20 +2121,20 @@ window.StemLab = window.StemLab || {
             // Kirchhoff's Laws educational panel (g68/g912)
             // ══════════════════════════════════════
             (band === 'g68' || band === 'g912') && h('div', { className: 'mt-4 bg-violet-950/10 border border-violet-500/20 p-4 rounded-xl backdrop-blur-md' },
-              h('button', { 'aria-label': 'Kirchhoff Laws', 'aria-expanded': showKirchhoff, onClick: function() { upd('showKirchhoff', !showKirchhoff); },
+              h('button', { 'aria-label': __alloT('stem.circuit.aria_kirchhoff_laws', 'Kirchhoff Laws'), 'aria-expanded': showKirchhoff, onClick: function() { upd('showKirchhoff', !showKirchhoff); },
                 className: 'flex items-center gap-2 w-full text-left'
               },
-                h('p', { className: 'text-[11px] font-bold text-violet-400 uppercase tracking-wider' }, '\u2696 Kirchhoff\'s Laws'),
+                h('p', { className: 'text-[11px] font-bold text-violet-400 uppercase tracking-wider' }, '\u2696 ' + __alloT('stem.circuit.kirchhoff_laws_title', "Kirchhoff's Laws")),
                 h('span', { className: 'ml-auto text-violet-400 text-xs' }, showKirchhoff ? '\u25B2' : '\u25BC')
               ),
               showKirchhoff && h('div', { className: 'mt-3 space-y-3' },
                 // KCL
                 h('div', { className: 'bg-slate-950/40 rounded-lg p-3 border border-violet-900/40' },
-                  h('p', { className: 'text-xs font-bold text-violet-300 mb-1' }, 'Kirchhoff\'s Current Law (KCL)'),
-                  h('p', { className: 'text-xs text-slate-400' }, 'The total current entering a junction equals the total current leaving that junction.'),
+                  h('p', { className: 'text-xs font-bold text-violet-300 mb-1' }, __alloT('stem.circuit.kcl_title', "Kirchhoff's Current Law (KCL)")),
+                  h('p', { className: 'text-xs text-slate-400' }, __alloT('stem.circuit.kcl_desc', 'The total current entering a junction equals the total current leaving that junction.')),
                   h('p', { className: 'text-xs text-violet-400 font-mono mt-1' }, '\u2211 I_in = \u2211 I_out'),
                   mode === 'parallel' && components.length > 0 && h('div', { className: 'mt-2 bg-violet-950/20 rounded p-2 border border-violet-900/30' },
-                    h('p', { className: 'text-[10px] font-bold text-violet-300 mb-1' }, 'Your circuit:'),
+                    h('p', { className: 'text-[10px] font-bold text-violet-300 mb-1' }, __alloT('stem.circuit.your_circuit_label', 'Your circuit:')),
                     h('p', { className: 'text-[10px] text-slate-400 font-mono' }, 'Total current from source: ' + current.toFixed(3) + 'A'),
                     h('p', { className: 'text-[10px] text-slate-400 font-mono mt-0.5' }, 'Branch currents: ' + components.map(function(c, i) {
                       var cR = getCompR(c);
@@ -2151,11 +2151,11 @@ window.StemLab = window.StemLab || {
 
                 // KVL
                 h('div', { className: 'bg-slate-950/40 rounded-lg p-3 border border-violet-900/40' },
-                  h('p', { className: 'text-xs font-bold text-violet-300 mb-1' }, 'Kirchhoff\'s Voltage Law (KVL)'),
-                  h('p', { className: 'text-xs text-slate-400' }, 'The sum of all voltage drops around any closed loop equals the source voltage (EMF).'),
+                  h('p', { className: 'text-xs font-bold text-violet-300 mb-1' }, __alloT('stem.circuit.kvl_law_title', "Kirchhoff's Voltage Law (KVL)")),
+                  h('p', { className: 'text-xs text-slate-400' }, __alloT('stem.circuit.kvl_law_desc', 'The sum of all voltage drops around any closed loop equals the source voltage (EMF).')),
                   h('p', { className: 'text-xs text-violet-400 font-mono mt-1' }, '\u2211 V_drops = V_source'),
                   mode === 'series' && components.length > 0 && current > 0.001 && h('div', { className: 'mt-2 bg-violet-950/20 rounded p-2 border border-violet-900/30' },
-                    h('p', { className: 'text-[10px] font-bold text-violet-300 mb-1' }, 'Your circuit:'),
+                    h('p', { className: 'text-[10px] font-bold text-violet-300 mb-1' }, __alloT('stem.circuit.your_circuit_label', 'Your circuit:')),
                     components.map(function(c, i) {
                       if (c.type === 'ammeter' || c.type === 'voltmeter') return null;
                       var cR = getCompR(c);
@@ -2176,7 +2176,7 @@ window.StemLab = window.StemLab || {
 
                 // Additional formulas for g912
                 band === 'g912' && h('div', { className: 'bg-slate-950/40 rounded-lg p-3 border border-violet-900/40' },
-                  h('p', { className: 'text-xs font-bold text-violet-300 mb-1' }, 'Key Relationships'),
+                  h('p', { className: 'text-xs font-bold text-violet-300 mb-1' }, __alloT('stem.circuit.key_relationships', 'Key Relationships')),
                   h('div', { className: 'grid grid-cols-2 gap-2 text-[10px] text-slate-400 font-mono' },
                     h('p', null, 'V = IR (Ohm\'s Law)'),
                     h('p', null, 'P = IV = I\u00B2R = V\u00B2/R'),
@@ -2195,11 +2195,11 @@ window.StemLab = window.StemLab || {
             components.length > 0 && !isOpen ? h('div', { className: 'mt-4 bg-slate-950 rounded-xl border border-slate-800 overflow-hidden shadow-xl' },
               h('div', { className: 'px-3 py-2 flex items-center gap-2 border-b border-slate-800 bg-slate-950/60' },
                 h('div', { className: 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse' }),
-                h('span', { className: 'text-[10px] font-bold text-emerald-400 uppercase tracking-wider font-mono' }, 'Oscilloscope'),
+                h('span', { className: 'text-[10px] font-bold text-emerald-400 uppercase tracking-wider font-mono' }, __alloT('stem.circuit.oscilloscope_label', 'Oscilloscope')),
                 h('span', { className: 'ml-auto text-[10px] text-slate-500 font-mono' },
                   voltage.toFixed(1) + 'V  ' + current.toFixed(3) + 'A  ' + totalR.toFixed(1) + '\u03A9')
               ),
-              h('canvas', { role: 'img', tabIndex: 0, 'aria-label': 'Circuit oscilloscope visualization showing voltage, current, and capacitor charge traces',
+              h('canvas', { role: 'img', tabIndex: 0, 'aria-label': __alloT('stem.circuit.aria_oscilloscope', 'Circuit oscilloscope visualization showing voltage, current, and capacitor charge traces'),
                 ref: function(canvas) {
                   if (!canvas) return;
                   var oc = canvas.getContext('2d');
