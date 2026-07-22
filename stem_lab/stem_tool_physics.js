@@ -87,6 +87,9 @@ window.StemLab = window.StemLab || {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
+      // i18n: __alloT(key, englishFallback) → ctx.t if available, else the English string.
+      // Keys are stem.physics.<snake_case>; harvested by dev-tools/i18n/extract_stem_tool_en.cjs.
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var labToolData = ctx.toolData;
       var setLabToolData = ctx.setToolData;
       var setStemLabTool = ctx.setStemLabTool;
@@ -146,23 +149,23 @@ window.StemLab = window.StemLab || {
                 isPlayerTurn: true, battleConstraint: null, battleFeedback: null, battleLog: []
               }});
             });
-            return React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading...');
+            return React.createElement('div', { className: 'p-8 text-center text-slate-600' }, __alloT('stem.physics.loading', 'Loading...'));
           }
 const d = labToolData.physics;
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, physics: { ...prev.physics, [key]: val } }));
           // ═══ TARGET DESTRUCTION MODE — Constraint Engine ═══
           var TARGET_LEVELS = [
-            { round: 1,  targets: [{x:80, y:0}],   constraint: {type:'fixedAngle', value:45},  gravity: 9.8, drag: false, label: 'Cadet 1', desc: 'Angle locked at 45°. Calculate velocity to hit 80m.', xp: 15, tol: 10 },
-            { round: 2,  targets: [{x:120, y:0}],  constraint: {type:'fixedVelocity', value:35}, gravity: 9.8, drag: false, label: 'Cadet 2', desc: 'Velocity locked at 35 m/s. Calculate angle to hit 120m.', xp: 15, tol: 10 },
-            { round: 3,  targets: [{x:60, y:0}],   constraint: {type:'fixedAngle', value:30},  gravity: 9.8, drag: false, label: 'Cadet 3', desc: 'Angle locked at 30°. Hit the 60m crate.', xp: 15, tol: 8 },
-            { round: 4,  targets: [{x:150, y:0}],  constraint: {type:'fixedVelocity', value:40}, gravity: 9.8, drag: false, label: 'Gunner 1', desc: 'Velocity locked at 40 m/s. Hit 150m.', xp: 25, tol: 12 },
-            { round: 5,  targets: [{x:100, y:0}],  constraint: {type:'fixedAngle', value:55},  gravity: 1.6, drag: false, label: 'Gunner 2', desc: 'On the Moon! Angle locked at 55°. Hit 100m.', xp: 25, tol: 12 },
-            { round: 6,  targets: [{x:80, y:0}, {x:160, y:0}], constraint: {type:'fixedAngle', value:40}, gravity: 9.8, drag: false, label: 'Gunner 3', desc: 'Two targets! Angle locked at 40°. Hit both.', xp: 30, tol: 10 },
-            { round: 7,  targets: [{x:90, y:0}],   constraint: {type:'fixedAngle', value:35},  gravity: 9.8, drag: true, label: 'Sniper 1', desc: 'Air drag ON! Angle locked at 35°. Compensate!', xp: 40, tol: 15 },
-            { round: 8,  targets: [{x:200, y:0}],  constraint: {type:'fixedVelocity', value:45}, gravity: 3.7, drag: false, label: 'Sniper 2', desc: 'Mars gravity. Velocity locked at 45 m/s. Hit 200m.', xp: 40, tol: 15 },
-            { round: 9,  targets: [{x:70, y:0}, {x:140, y:0}, {x:220, y:0}], constraint: {type:'fixedAngle', value:42}, gravity: 9.8, drag: false, label: 'Sniper 3', desc: 'Triple targets! Same angle, adjust velocity each shot.', xp: 50, tol: 10 },
-            { round: 10, targets: [{x:130, y:0}],  constraint: {type:'fixedVelocity', value:38}, gravity: 9.8, drag: true, label: 'Ace', desc: 'Final challenge: drag ON, velocity locked at 38 m/s. Prove your mastery.', xp: 60, tol: 12 },
+            { round: 1,  targets: [{x:80, y:0}],   constraint: {type:'fixedAngle', value:45},  gravity: 9.8, drag: false, label: __alloT('stem.physics.target_cadet_1', 'Cadet 1'), desc: __alloT('stem.physics.target_r1_desc', 'Angle locked at 45°. Calculate velocity to hit 80m.'), xp: 15, tol: 10 },
+            { round: 2,  targets: [{x:120, y:0}],  constraint: {type:'fixedVelocity', value:35}, gravity: 9.8, drag: false, label: __alloT('stem.physics.target_cadet_2', 'Cadet 2'), desc: __alloT('stem.physics.target_r2_desc', 'Velocity locked at 35 m/s. Calculate angle to hit 120m.'), xp: 15, tol: 10 },
+            { round: 3,  targets: [{x:60, y:0}],   constraint: {type:'fixedAngle', value:30},  gravity: 9.8, drag: false, label: __alloT('stem.physics.target_cadet_3', 'Cadet 3'), desc: __alloT('stem.physics.target_r3_desc', 'Angle locked at 30°. Hit the 60m crate.'), xp: 15, tol: 8 },
+            { round: 4,  targets: [{x:150, y:0}],  constraint: {type:'fixedVelocity', value:40}, gravity: 9.8, drag: false, label: __alloT('stem.physics.target_gunner_1', 'Gunner 1'), desc: __alloT('stem.physics.target_r4_desc', 'Velocity locked at 40 m/s. Hit 150m.'), xp: 25, tol: 12 },
+            { round: 5,  targets: [{x:100, y:0}],  constraint: {type:'fixedAngle', value:55},  gravity: 1.6, drag: false, label: __alloT('stem.physics.target_gunner_2', 'Gunner 2'), desc: __alloT('stem.physics.target_r5_desc', 'On the Moon! Angle locked at 55°. Hit 100m.'), xp: 25, tol: 12 },
+            { round: 6,  targets: [{x:80, y:0}, {x:160, y:0}], constraint: {type:'fixedAngle', value:40}, gravity: 9.8, drag: false, label: __alloT('stem.physics.target_gunner_3', 'Gunner 3'), desc: __alloT('stem.physics.target_r6_desc', 'Two targets! Angle locked at 40°. Hit both.'), xp: 30, tol: 10 },
+            { round: 7,  targets: [{x:90, y:0}],   constraint: {type:'fixedAngle', value:35},  gravity: 9.8, drag: true, label: __alloT('stem.physics.target_sniper_1', 'Sniper 1'), desc: __alloT('stem.physics.target_r7_desc', 'Air drag ON! Angle locked at 35°. Compensate!'), xp: 40, tol: 15 },
+            { round: 8,  targets: [{x:200, y:0}],  constraint: {type:'fixedVelocity', value:45}, gravity: 3.7, drag: false, label: __alloT('stem.physics.target_sniper_2', 'Sniper 2'), desc: __alloT('stem.physics.target_r8_desc', 'Mars gravity. Velocity locked at 45 m/s. Hit 200m.'), xp: 40, tol: 15 },
+            { round: 9,  targets: [{x:70, y:0}, {x:140, y:0}, {x:220, y:0}], constraint: {type:'fixedAngle', value:42}, gravity: 9.8, drag: false, label: __alloT('stem.physics.target_sniper_3', 'Sniper 3'), desc: __alloT('stem.physics.target_r9_desc', 'Triple targets! Same angle, adjust velocity each shot.'), xp: 50, tol: 10 },
+            { round: 10, targets: [{x:130, y:0}],  constraint: {type:'fixedVelocity', value:38}, gravity: 9.8, drag: true, label: __alloT('stem.physics.target_ace', 'Ace'), desc: __alloT('stem.physics.target_r10_desc', 'Final challenge: drag ON, velocity locked at 38 m/s. Prove your mastery.'), xp: 60, tol: 12 },
           ];
 
           function startTargetRound(roundNum) {

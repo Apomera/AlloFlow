@@ -1,1 +1,23 @@
-{}
+{
+  "loading": "Loading...",
+  "target_cadet_1": "Cadet 1",
+  "target_r1_desc": "Angle locked at 45°. Calculate velocity to hit 80m.",
+  "target_cadet_2": "Cadet 2",
+  "target_r2_desc": "Velocity locked at 35 m/s. Calculate angle to hit 120m.",
+  "target_cadet_3": "Cadet 3",
+  "target_r3_desc": "Angle locked at 30°. Hit the 60m crate.",
+  "target_gunner_1": "Gunner 1",
+  "target_r4_desc": "Velocity locked at 40 m/s. Hit 150m.",
+  "target_gunner_2": "Gunner 2",
+  "target_r5_desc": "On the Moon! Angle locked at 55°. Hit 100m.",
+  "target_gunner_3": "Gunner 3",
+  "target_r6_desc": "Two targets! Angle locked at 40°. Hit both.",
+  "target_sniper_1": "Sniper 1",
+  "target_r7_desc": "Air drag ON! Angle locked at 35°. Compensate!",
+  "target_sniper_2": "Sniper 2",
+  "target_r8_desc": "Mars gravity. Velocity locked at 45 m/s. Hit 200m.",
+  "target_sniper_3": "Sniper 3",
+  "target_r9_desc": "Triple targets! Same angle, adjust velocity each shot.",
+  "target_ace": "Ace",
+  "target_r10_desc": "Final challenge: drag ON, velocity locked at 38 m/s. Prove your mastery."
+}
