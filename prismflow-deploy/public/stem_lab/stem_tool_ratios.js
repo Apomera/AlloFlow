@@ -744,6 +744,8 @@
         var maxY = positiveAxisMaximum(graphPairs.map(function(pair) { return pair.y; }));
         function scaleX(value) { return 42 + (value / maxX) * 290; }
         function scaleY(value) { return 185 - (value / maxY) * 145; }
+        var xTicks = [0, maxX / 2, maxX];
+        var yTicks = [0, maxY / 2, maxY];
         var includesOrigin = graphPairs.some(function(pair) { return pair.x === 0 && pair.y === 0; });
         var verdict = pairInput.errors.length ? pairInput.errors[0] : !validForDecision ? t('stem.ratios.enter_at_least_two_valid_coordinate_pa', "Enter at least two valid coordinate pairs, including one with a nonzero x-value.") : (proportional ? t('stem.ratios.proportional_the_unit_rate_is_constant', "Proportional: the unit rate is constant.") : t('stem.ratios.not_proportional_the_evidence_does_not', "Not proportional: the evidence does not show one constant unit rate through the origin."));
 
@@ -799,10 +801,22 @@
               h('svg', { viewBox: '0 0 360 220', className: 'w-full min-h-[220px]', role: 'img', 'aria-labelledby': 'ratio-graph-title ratio-graph-desc', 'data-axis-max-x': formatNumber(maxX, 6), 'data-axis-max-y': formatNumber(maxY, 6) },
                 h('title', { id: 'ratio-graph-title' }, t('stem.ratios.relationship_graph', "Relationship graph")),
                 h('desc', { id: 'ratio-graph-desc' }, graphPairs.length ? t('stem.ratios.graph_of', "Graph of ") + graphPairs.length + t('stem.ratios.plotted_table_points', " plotted table points. ") + (proportional && !includesOrigin ? t('stem.ratios.a_proportional_model_ray_is_extended_t', "A proportional model ray is extended through the origin. ") : '') + verdict : t('stem.ratios.no_complete_set_of_points_is_available', "No complete set of points is available to graph. ") + verdict),
+                xTicks.map(function(value, index) {
+                  return h('g', { key: 'x-tick-' + index },
+                    h('line', { x1: scaleX(value), y1: 40, x2: scaleX(value), y2: 185, stroke: border, strokeWidth: 1, strokeDasharray: '3 4' }),
+                    h('text', { x: scaleX(value), y: 201, textAnchor: 'middle', style: { fill: muted, fontSize: '9px' } }, formatNumber(value))
+                  );
+                }),
+                yTicks.map(function(value, index) {
+                  return h('g', { key: 'y-tick-' + index },
+                    h('line', { x1: 42, y1: scaleY(value), x2: 332, y2: scaleY(value), stroke: border, strokeWidth: 1, strokeDasharray: '3 4' }),
+                    h('text', { x: 36, y: scaleY(value) + 3, textAnchor: 'end', style: { fill: muted, fontSize: '9px' } }, formatNumber(value))
+                  );
+                }),
                 h('line', { x1: 42, y1: 185, x2: 340, y2: 185, stroke: text, strokeWidth: 2 }),
                 h('line', { x1: 42, y1: 185, x2: 42, y2: 28, stroke: text, strokeWidth: 2 }),
-                h('text', { x: 340, y: 205, textAnchor: 'end', style: { fill: muted, fontSize: '11px' } }, 'x'),
-                h('text', { x: 24, y: 35, style: { fill: muted, fontSize: '11px' } }, 'y'),
+                h('text', { x: 340, y: 216, textAnchor: 'end', style: { fill: muted, fontSize: '10px', fontWeight: 'bold' } }, t('stem.ratios.x_quantity', "x quantity")),
+                h('text', { x: 8, y: 24, style: { fill: muted, fontSize: '10px', fontWeight: 'bold' } }, t('stem.ratios.y_quantity', "y quantity")),
                 validForDecision && proportional && analysis.constant !== null && h('line', { x1: scaleX(0), y1: scaleY(0), x2: scaleX(maxX), y2: scaleY(analysis.constant * maxX), stroke: success, strokeWidth: 3, 'data-proportional-ray': 'true' }),
                 graphPairs.map(function(pair, index) {
                   return h('g', { key: index },
@@ -843,6 +857,15 @@
       var challengeIndex = cursorChallengeIndex >= 0 ? cursorChallengeIndex : (directChallengeIndex >= 0 ? directChallengeIndex : legacyChallengeIndex);
       var challenge = modeChallenges[challengeIndex];
       var challengeSolved = !!((d.solvedChallenges || {})[challenge.id]);
+      var challengeHintStage = d.challengeHintId === challenge.id ? clamp(Math.floor(finiteNumber(d.challengeHintStage, 0)), 0, 2) : 0;
+      var strategyHint = mode === 'numberLine' ? t('stem.ratios.hint_align_known_values_first', "First align the known values, then locate a helpful unit or scale step.") :
+        mode === 'unitRates' ? t('stem.ratios.hint_rewrite_each_situation_per_one', "Rewrite each situation per one unit before comparing.") :
+        mode === 'percent' ? t('stem.ratios.hint_identify_part_percent_and_whole', "Identify the part, percent, and whole before choosing an operation.") :
+        mode === 'proportional' ? t('stem.ratios.hint_compare_y_divided_by_x', "Compare y divided by x and check whether the graph follows one line through the origin.") :
+        t('stem.ratios.hint_find_a_common_scale_factor', "Look for one scale factor that changes both quantities together.");
+      var missedChallengeIds = modeChallenges.filter(function(item) {
+        return !!((d.missedChallenges || {})[item.id]) && !((d.solvedChallenges || {})[item.id]);
+      }).map(function(item) { return item.id; });
       var feedback = d.challengeFeedback;
       if (feedback && feedback.challengeId !== challenge.id) feedback = null;
       if (challengeSolved && (!feedback || !feedback.correct)) {
@@ -851,6 +874,12 @@
       var scopedChallengeAnswer = d.challengeAnswerId === challenge.id && d.challengeAnswer != null ? d.challengeAnswer : '';
       var displayedChallengeAnswer = challengeSolved ? canonicalChallengeAnswer(challenge) : scopedChallengeAnswer;
       var challengeCheckPending = false;
+
+      function advanceChallengeHint() {
+        var nextStage = challengeHintStage >= 2 ? 0 : challengeHintStage + 1;
+        update({ challengeHintId: nextStage ? challenge.id : null, challengeHintStage: nextStage });
+        announce(nextStage ? t('stem.ratios.hint_revealed', "Hint revealed.") : t('stem.ratios.hints_hidden', "Hints hidden."));
+      }
 
       function checkChallenge() {
         if (challengeSolved || challengeCheckPending) return;
@@ -866,8 +895,12 @@
           var firstSolve = !((d.solvedChallenges || {})[challenge.id]);
           update(function(current) {
             var solved = Object.assign({}, current.solvedChallenges || {});
+            var missed = Object.assign({}, current.missedChallenges || {});
             solved[challenge.id] = true;
-            return { solvedChallenges: solved, challengeFeedback: { challengeId: challenge.id, correct: true, message: t('stem.ratios.correct', "Correct! ") + challenge.explain } };
+            delete missed[challenge.id];
+            return { solvedChallenges: solved, missedChallenges: missed,
+              challengeAttempts: (current.challengeAttempts || 0) + 1,
+              challengeFeedback: { challengeId: challenge.id, correct: true, message: t('stem.ratios.correct', "Correct! ") + challenge.explain } };
           });
           announce(t('stem.ratios.correct_2', "Correct. ") + challenge.explain);
           if (firstSolve && typeof ctx.awardXP === 'function') {
@@ -875,21 +908,37 @@
           }
           if (firstSolve) notify(t('stem.ratios.challenge_solved_15_xp', "Challenge solved! +15 XP"), 'success');
         } else {
-          update({ challengeFeedback: { challengeId: challenge.id, correct: false, message: t('stem.ratios.not_yet', "Not yet. ") + challenge.hint } });
+          update(function(current) {
+            var missed = Object.assign({}, current.missedChallenges || {});
+            missed[challenge.id] = true;
+            return { missedChallenges: missed, challengeAttempts: (current.challengeAttempts || 0) + 1,
+              challengeFeedback: { challengeId: challenge.id, correct: false, message: t('stem.ratios.not_yet', "Not yet. ") + challenge.hint } };
+          });
           announce(t('stem.ratios.not_yet', "Not yet. ") + challenge.hint);
         }
       }
 
-      function nextChallenge() {
-        var next = (challengeIndex + 1) % modeChallenges.length;
+      function selectChallenge(next, message) {
         var nextChallengeItem = modeChallenges[next];
         update(function(current) {
           var cursors = Object.assign({}, current.challengeCursorByMode || {});
           cursors[mode] = nextChallengeItem.id;
           return { challengeCursorByMode: cursors, challengeId: nextChallengeItem.id,
-            challengeIndex: next, challengeAnswer: '', challengeAnswerId: null, challengeFeedback: null };
+            challengeIndex: next, challengeAnswer: '', challengeAnswerId: null, challengeFeedback: null, challengeHintId: null, challengeHintStage: 0 };
         });
-        announce(t('stem.ratios.challenge', "Challenge ") + (next + 1) + t('stem.ratios.of', " of ") + modeChallenges.length + '.');
+        announce(message || (t('stem.ratios.challenge', "Challenge ") + (next + 1) + t('stem.ratios.of', " of ") + modeChallenges.length + '.'));
+      }
+
+      function moveChallenge(direction) {
+        selectChallenge((challengeIndex + direction + modeChallenges.length) % modeChallenges.length);
+      }
+
+      function retryMissedChallenge() {
+        if (!missedChallengeIds.length) return;
+        var currentPosition = missedChallengeIds.indexOf(challenge.id);
+        var nextId = missedChallengeIds[currentPosition < 0 ? 0 : (currentPosition + 1) % missedChallengeIds.length];
+        var next = modeChallenges.findIndex(function(item) { return item.id === nextId; });
+        selectChallenge(next, t('stem.ratios.retrying_missed_challenge', "Retrying missed challenge."));
       }
 
       return h('div', { className: 'p-3 sm:p-5 space-y-4', style: { color: text, background: isContrast ? '#000000' : (isDark ? '#0c1322' : '#f8fafc') } },
@@ -954,7 +1003,10 @@
               h('h2', { id: 'ratio-challenge-heading', className: 'font-black' }, t('stem.ratios.deterministic_challenge', "🎯 Deterministic challenge")),
               h('p', { className: 'text-xs', style: { color: muted } }, modeInfo.title + t('stem.ratios.challenge_2', " • Challenge ") + (challengeIndex + 1) + t('stem.ratios.of', " of ") + modeChallenges.length)
             ),
-            h('button', { type: 'button', onClick: nextChallenge, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: panel, color: text, border: '1px solid ' + border } }, t('stem.ratios.next_challenge', "Next challenge"))
+            h('div', { className: 'flex flex-wrap gap-2' },
+              h('button', { type: 'button', onClick: function() { moveChallenge(-1); }, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: panel, color: text, border: '1px solid ' + border } }, t('stem.ratios.previous_challenge', "Previous challenge")),
+              h('button', { type: 'button', onClick: function() { moveChallenge(1); }, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: panel, color: text, border: '1px solid ' + border } }, t('stem.ratios.next_challenge', "Next challenge")),
+              h('button', { type: 'button', onClick: retryMissedChallenge, disabled: !missedChallengeIds.length, className: 'rounded-lg px-3 py-2 text-xs font-bold disabled:opacity-50', style: { background: soft, color: text, border: '1px solid ' + border } }, t('stem.ratios.retry_missed', "Retry missed (") + missedChallengeIds.length + ')'))
           ),
           h('p', { id: 'ratio-challenge-prompt', className: 'text-sm sm:text-base font-semibold' }, challenge.prompt),
           h('form', { className: 'flex flex-col sm:flex-row gap-2', 'aria-labelledby': 'ratio-challenge-prompt', onSubmit: function(event) { event.preventDefault(); checkChallenge(); } },
@@ -992,14 +1044,21 @@
             ),
             h('button', { type: 'submit', disabled: challengeSolved, className: "rounded-lg px-5 py-2.5 font-bold disabled:opacity-70", style: { background: accentStrong, color: accentText, border: isContrast ? '2px solid #ffffff' : 'none' } }, challengeSolved ? t('stem.ratios.solved_2', "Solved") : t('stem.ratios.check_answer', "Check answer"))
           ),
+          h('div', { className: 'flex flex-wrap items-start gap-2' },
+            h('button', { type: 'button', onClick: advanceChallengeHint, 'aria-expanded': challengeHintStage > 0, 'aria-controls': 'ratio-challenge-hints', className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: soft, color: text, border: '1px solid ' + border } }, challengeHintStage === 0 ? t('stem.ratios.show_hint_1', "Show hint 1") : challengeHintStage === 1 ? t('stem.ratios.show_hint_2', "Show hint 2") : t('stem.ratios.hide_hints', "Hide hints")),
+            challengeHintStage > 0 && h('div', { id: 'ratio-challenge-hints', role: 'note', className: 'flex-1 rounded-lg p-3 text-sm', style: { background: panel, border: '1px solid ' + border } },
+              h('p', { className: 'font-semibold' }, h('strong', null, t('stem.ratios.hint_1', "Hint 1: ")), strategyHint),
+              challengeHintStage > 1 && h('p', { className: 'mt-2 font-semibold' }, h('strong', null, t('stem.ratios.hint_2', "Hint 2: ")), challenge.hint)
+            )
+          ),
           feedback && h('div', { id: 'ratio-challenge-feedback', role: 'status', 'aria-live': 'polite', className: 'rounded-lg p-3 text-sm font-semibold', style: { background: panel, border: '1px solid ' + (feedback.correct ? success : warning), color: feedback.correct ? success : warning } }, feedback.message)
         ),
 
         h('details', { className: 'rounded-xl p-4', style: cardStyle },
           h('summary', { className: 'font-bold cursor-pointer', style: { color: accent } }, t('stem.ratios.representation_strategy_guide', "Representation strategy guide")),
           h('div', { className: 'grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3 text-sm' },
-            h('div', { className: 'rounded-lg p-3', style: { background: soft } }, h('strong', null, t('stem.ratios.ratio_table', "Ratio table")), h('p', { className: 'mt-1', style: { color: muted } }, 'Best for listing many equivalent pairs and spotting a common scale factor.')),
-            h('div', { className: 'rounded-lg p-3', style: { background: soft } }, h('strong', null, t('stem.ratios.double_number_line', "Double number line")), h('p', { className: 'mt-1', style: { color: muted } }, 'Best for seeing aligned quantities, intermediate values, and how far each scale travels.')),
+            h('div', { className: 'rounded-lg p-3', style: { background: soft } }, h('strong', null, t('stem.ratios.ratio_table', "Ratio table")), h('p', { className: 'mt-1', style: { color: muted } }, t('stem.ratios.best_for_listing_equivalent_pairs', "Best for listing many equivalent pairs and spotting a common scale factor."))),
+            h('div', { className: 'rounded-lg p-3', style: { background: soft } }, h('strong', null, t('stem.ratios.double_number_line', "Double number line")), h('p', { className: 'mt-1', style: { color: muted } }, t('stem.ratios.best_for_aligned_quantities', "Best for seeing aligned quantities, intermediate values, and how far each scale travels."))),
             h('div', { className: 'rounded-lg p-3', style: { background: soft } }, h('strong', null, t('stem.ratios.unit_rate', "Unit rate")), h('p', { className: 'mt-1', style: { color: muted } }, t('stem.ratios.best_for_fair_comparisons_because_ever', "Best for fair comparisons because every situation is rewritten per one unit."))),
             h('div', { className: 'rounded-lg p-3', style: { background: soft } }, h('strong', null, t('stem.ratios.percent', "Percent")), h('p', { className: 'mt-1', style: { color: muted } }, t('stem.ratios.a_ratio_measured_against_a_whole_of_10', "A ratio measured against a whole of 100; use part = percent × whole."))),
             h('div', { className: 'rounded-lg p-3', style: { background: soft } }, h('strong', null, t('stem.ratios.proportional_graph', "Proportional graph")), h('p', { className: 'mt-1', style: { color: muted } }, t('stem.ratios.a_straight_line_through_the_origin_sho', "A straight line through the origin shows one constant multiplier from x to y."))),

@@ -369,8 +369,24 @@ describe('Time & Schedule Lab', () => {
       .find((button) => button.textContent === 'Check answer');
     expect(check.classList.contains('bg-amber-800')).toBe(true);
     expect(check.classList.contains('hover:bg-amber-900')).toBe(true);
+    const scheduleRegion = document.querySelector('[role="region"][aria-label$="scrollable event schedule"]');
+    expect(scheduleRegion).toBeTruthy();
+    expect(scheduleRegion.tabIndex).toBe(0);
+    expect(scheduleRegion.classList.contains('focus:ring-violet-600')).toBe(true);
   });
 
+  it('exposes scoped light, dark, and high-contrast theme states', () => {
+    loadTool(FILE, ID);
+    const light = renderTool(ID, { _timeSchedule: { tab: 'clock' } });
+    const dark = renderTool(ID, { _timeSchedule: { tab: 'schedule' } }, { isDark: true });
+    const contrast = renderTool(ID, { _timeSchedule: { tab: 'challenge' } }, { isDark: true, isContrast: true });
+    expect(light).toContain('data-theme="light"');
+    expect(dark).toContain('time-schedule-lab--dark');
+    expect(dark).toContain('data-theme="dark"');
+    expect(contrast).toContain('time-schedule-lab--contrast');
+    expect(contrast).toContain('data-theme="contrast"');
+    expect(contrast).toContain(':focus-visible{outline:3px solid #ff0');
+  });
   it('builds friendly jumps across midnight in both directions', () => {
     loadTool(FILE, ID);
     const pure = window.TimeSchedulePure;
@@ -640,5 +656,7 @@ describe('Time & Schedule Lab', () => {
     expect(deployedHost).toBe(host);
     expect(app).toContain("'stem_lab/stem_tool_timeschedule.js'");
     expect(fs.readFileSync('prismflow-deploy/public/stem_lab/stem_tool_timeschedule.js', 'utf8')).toBe(fs.readFileSync(FILE, 'utf8'));
+    expect(fs.readFileSync(FILE, 'utf8')).toContain("selected ? 'text-white' : 'text-slate-700'");
+    expect(fs.readFileSync(FILE, 'utf8')).toContain("text-indigo-700 font-bold");
   });
 });

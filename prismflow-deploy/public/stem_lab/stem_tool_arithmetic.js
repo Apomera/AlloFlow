@@ -370,6 +370,12 @@
       var wordAnswerInput = d.wordAnswer == null ? '' : String(d.wordAnswer);
       var wordRemainderInput = d.wordRemainder == null ? '' : String(d.wordRemainder);
       var wordMissedIds = missedWordProblemIds(d);
+      var practiceMissedIds = candidates.filter(function(item) {
+        return !!((d.practiceMissed || {})[item.id]) && !((d.practiceSolved || {})[item.id]);
+      }).map(function(item) { return item.id; });
+      var errorMissedIds = ERROR_CASES.filter(function(item) {
+        return !!((d.errorMissedCases || {})[item.id]) && !((d.errorSolvedCases || {})[item.id]);
+      }).map(function(item) { return item.id; });
       var practiceEstimateInput = practiceStateMatches && d.estimateInput != null ? String(d.estimateInput) : '';
       var practiceAnswerInput = practiceStateMatches && d.answerInput != null ? String(d.answerInput) : '';
       var practiceRemainderInput = practiceStateMatches && d.remainderInput != null ? String(d.remainderInput) : '';
@@ -421,12 +427,16 @@
         var firstSolve = complete && !(d.practiceSolved && d.practiceSolved[problem.id]);
         update(function (current) {
           var solved = Object.assign({}, current.practiceSolved || {});
+          var missed = Object.assign({}, current.practiceMissed || {});
           var used = Object.assign({}, current.operationsUsed || {});
           var completedOperations = Object.assign({}, current.operationsCompleted || {});
           if (complete) {
             solved[problem.id] = true;
             used[problem.op] = true;
             completedOperations[problem.op] = true;
+            delete missed[problem.id];
+          } else {
+            missed[problem.id] = true;
           }
           return {
             attempts: (current.attempts || 0) + 1,
@@ -435,6 +445,7 @@
             practiceProblemId: problem.id,
             practiceIndex: practiceIndex,
             practiceSolved: solved,
+            practiceMissed: missed,
             operationsUsed: used,
             operationsCompleted: completedOperations
           };
@@ -443,9 +454,21 @@
         announce(complete ? t('stem.arithmetic.correct_the_exact_answer_and_estimate_', "Correct. The exact answer and estimate are consistent.") : exactCorrect ? t('stem.arithmetic.your_exact_answer_is_correct_revise_th', "Your exact answer is correct. Revise the estimate so it is close enough to check reasonableness.") : t('stem.arithmetic.not_yet_compare_your_answer_with_your_', "Not yet. Compare your answer with your estimate and try a strategy."));
       }
 
-      function nextPractice() {
-        var nextIndex = (practiceIndex + 1) % candidates.length;
+      function selectPractice(nextIndex, message) {
         update({ practiceIndex: nextIndex, practiceProblemId: candidates[nextIndex].id, answerInput: '', remainderInput: '', estimateInput: '', feedback: null, showPracticeHint: false });
+        if (message) announce(message);
+      }
+
+      function nextPractice() {
+        selectPractice((practiceIndex + 1) % candidates.length);
+      }
+
+      function retryMissedPractice() {
+        if (!practiceMissedIds.length) return;
+        var currentPosition = practiceMissedIds.indexOf(problem.id);
+        var nextId = practiceMissedIds[currentPosition < 0 ? 0 : (currentPosition + 1) % practiceMissedIds.length];
+        var nextIndex = candidates.findIndex(function(item) { return item.id === nextId; });
+        selectPractice(nextIndex, t('stem.arithmetic.retrying_missed_problem', "Retrying a missed practice problem."));
       }
 
       var errorCheckPending = false;
@@ -456,11 +479,25 @@
         if (correct) errorCheckPending = true;
         update(function (current) {
           var solved = Object.assign({}, current.errorSolvedCases || {});
-          if (correct) solved[errorCase.id] = true;
-          return { errorChoice: choice, errorFeedback: correct ? 'correct' : 'try', errorSolvedCases: solved, errorSolved: countSolved(solved, ERROR_IDS) };
+          var missed = Object.assign({}, current.errorMissedCases || {});
+          if (correct) { solved[errorCase.id] = true; delete missed[errorCase.id]; }
+          else missed[errorCase.id] = true;
+          return { errorChoice: choice, errorFeedback: correct ? 'correct' : 'try', errorSolvedCases: solved, errorMissedCases: missed, errorSolved: countSolved(solved, ERROR_IDS) };
         });
         if (firstSolve && typeof ctx.awardXP === 'function') ctx.awardXP('arithmeticStudio', 2, t('stem.arithmetic.arithmetic_error_detective', "Arithmetic error detective"));
         announce(correct ? t('stem.arithmetic.correct_diagnosis', "Correct diagnosis. ") + errorCase.explain : t('stem.arithmetic.that_is_not_the_key_error_read_the_wor', "That is not the key error. Read the work one place at a time."));
+      }
+
+      function selectError(nextIndex, message) {
+        update({ errorIndex: nextIndex, errorChoice: null, errorFeedback: null });
+        if (message) announce(message);
+      }
+
+      function retryMissedError() {
+        if (!errorMissedIds.length) return;
+        var currentPosition = errorMissedIds.indexOf(errorCase.id);
+        var nextId = errorMissedIds[currentPosition < 0 ? 0 : (currentPosition + 1) % errorMissedIds.length];
+        selectError(ERROR_IDS.indexOf(nextId), t('stem.arithmetic.retrying_missed_diagnosis', "Retrying a missed diagnosis."));
       }
 
       var wordCheckPending = false;
@@ -687,7 +724,8 @@
           h('div', { className: 'flex flex-wrap gap-2' },
             h('button', { type: 'button', onClick: checkPractice, disabled: practiceAnswerInput === '' || practiceEstimateInput === '' || (problem.op === 'divide' && practiceRemainderInput === '') || solved, className: 'rounded-lg px-4 py-2 text-sm font-black text-white disabled:opacity-40', style: { background: opMeta.color } }, solved ? t('stem.arithmetic.solved', "Solved") : t('stem.arithmetic.check_answer', "Check answer")),
             h('button', { onClick: function () { update({ showPracticeHint: !d.showPracticeHint }); }, 'aria-expanded': !!d.showPracticeHint, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: accentText, border: '1px solid ' + opMeta.color } }, d.showPracticeHint ? t('stem.arithmetic.hide_hint', "Hide hint") : t('stem.arithmetic.strategy_hint', "Strategy hint")),
-            h('button', { onClick: nextPractice, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: text, border: '1px solid ' + border } }, t('stem.arithmetic.next_problem', "Next problem"))
+            h('button', { onClick: nextPractice, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: text, border: '1px solid ' + border } }, t('stem.arithmetic.next_problem', "Next problem")),
+            h('button', { onClick: retryMissedPractice, disabled: !practiceMissedIds.length, className: 'rounded-lg px-3 py-2 text-xs font-bold disabled:opacity-40', style: { background: '#fef3c7', color: '#92400e', border: '1px solid #f59e0b' } }, t('stem.arithmetic.retry_missed', "Retry missed (") + practiceMissedIds.length + ')')
           ),
           d.showPracticeHint && h('div', { className: 'rounded-xl p-3 text-sm', style: { background: opMeta.soft, color: '#0f172a' } }, strategySteps(problem.op, problem.a, problem.b)[0]),
           feedbackBox(visiblePracticeFeedback, t('stem.arithmetic.correct_your_exact_answer_and_estimate', "Correct. Your exact answer and estimate support each other."), visiblePracticeFeedback === 'estimate' ? t('stem.arithmetic.your_exact_answer_is_right_revise_the_', "Your exact answer is right. Revise the estimate so it is within a reasonable range of about ") + estimateFor(problem.op, problem.a, problem.b) + '.' : t('stem.arithmetic.not_yet_recheck_each_place_and_compare', "Not yet. Recheck each place and compare with your estimate."), visiblePracticeFeedback === 'correct' ? strategySteps(problem.op, problem.a, problem.b).join(' ') : null)
@@ -709,7 +747,9 @@
             return h('button', { key: choice.id, type: 'button', 'data-error-choice': choice.id, onClick: function () { checkError(choice.id); }, 'aria-pressed': selected, disabled: errorSolved, className: 'w-full rounded-xl p-3 text-left text-sm font-semibold disabled:opacity-70', style: { background: selected ? opMeta.soft : card, color: selected ? '#0f172a' : text, border: '1px solid ' + (selected ? opMeta.color : border) } }, choice.label);
           })),
           feedbackBox(visibleErrorFeedback, t('stem.arithmetic.good_diagnosis', "Good diagnosis."), t('stem.arithmetic.look_again_at_what_happened_to_each_pl', "Look again at what happened to each place or partial result."), visibleErrorFeedback === 'correct' ? errorCase.explain : null),
-          h('button', { onClick: function () { update({ errorIndex: (errorIndex + 1) % ERROR_CASES.length, errorChoice: null, errorFeedback: null }); }, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: opMeta.color, color: '#fff' } }, t('stem.arithmetic.next_mistake', "Next mistake"))
+          h('div', { className: 'flex flex-wrap gap-2' },
+            h('button', { onClick: function () { selectError((errorIndex + 1) % ERROR_CASES.length); }, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: opMeta.color, color: '#fff' } }, t('stem.arithmetic.next_mistake', "Next mistake")),
+            h('button', { onClick: retryMissedError, disabled: !errorMissedIds.length, className: 'rounded-lg px-3 py-2 text-xs font-bold disabled:opacity-40', style: { background: '#fef3c7', color: '#92400e', border: '1px solid #f59e0b' } }, t('stem.arithmetic.retry_missed', "Retry missed (") + errorMissedIds.length + ')'))
         );
       }
 

@@ -150,6 +150,53 @@ describe('Arithmetic Strategy Studio', () => {
     expect(document.body.textContent).toContain('Correct. Your exact answer and estimate support each other');
     await React.act(async () => { root.unmount(); });
   });
+  it('tracks and retries missed Practice and Error Detective items by stable ID', async () => {
+    const tool = loadTool(FILE, ID);
+    let latest;
+
+    function PracticeApp() {
+      const [state, setState] = React.useState({
+        _arithmeticStudio: { tab: 'practice', operation: 'add', level: 1, answerInput: '61', estimateInput: '60' },
+      });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState }));
+    }
+
+    let root = ReactDOMClient.createRoot(document.getElementById('root'));
+    await React.act(async () => { root.render(React.createElement(PracticeApp)); });
+    let button = [...document.querySelectorAll('button')].find((item) => item.textContent === 'Check answer');
+    await React.act(async () => { button.click(); });
+    expect(latest._arithmeticStudio.practiceMissed.a1).toBe(true);
+    expect(document.body.textContent).toContain('Retry missed (1)');
+    button = [...document.querySelectorAll('button')].find((item) => item.textContent === 'Next problem');
+    await React.act(async () => { button.click(); });
+    expect(latest._arithmeticStudio.practiceProblemId).toBe('a2');
+    button = [...document.querySelectorAll('button')].find((item) => item.textContent === 'Retry missed (1)');
+    await React.act(async () => { button.click(); });
+    expect(latest._arithmeticStudio.practiceProblemId).toBe('a1');
+    expect(latest._arithmeticStudio.answerInput).toBe('');
+    await React.act(async () => { root.unmount(); });
+
+    document.body.innerHTML = '<div id="root"></div>';
+    function ErrorApp() {
+      const [state, setState] = React.useState({ _arithmeticStudio: { tab: 'errors', errorIndex: 0 } });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState }));
+    }
+
+    root = ReactDOMClient.createRoot(document.getElementById('root'));
+    await React.act(async () => { root.render(React.createElement(ErrorApp)); });
+    await React.act(async () => { document.querySelector('[data-error-choice="place"]').click(); });
+    expect(latest._arithmeticStudio.errorMissedCases.e1).toBe(true);
+    button = [...document.querySelectorAll('button')].find((item) => item.textContent === 'Next mistake');
+    await React.act(async () => { button.click(); });
+    expect(latest._arithmeticStudio.errorIndex).toBe(1);
+    button = [...document.querySelectorAll('button')].find((item) => item.textContent === 'Retry missed (1)');
+    await React.act(async () => { button.click(); });
+    expect(latest._arithmeticStudio.errorIndex).toBe(0);
+    expect(latest._arithmeticStudio.errorChoice).toBeNull();
+    await React.act(async () => { root.unmount(); });
+  });
   it('normalizes blank and numeric-zero practice inputs correctly', () => {
     loadTool(FILE, ID);
     document.body.innerHTML = renderTool(ID, { _arithmeticStudio: { tab: 'practice', operation: 'add' } });

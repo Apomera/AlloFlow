@@ -149,6 +149,9 @@ describe('Ratios, Rates & Proportions Lab', () => {
     expect(html).toContain('data-axis-max-y="0.6"');
     expect(html).toContain('cx="332"');
     expect(html).toContain('cy="40"');
+    expect(html).toContain('x quantity');
+    expect(html).toContain('y quantity');
+    expect(html.match(/stroke-dasharray="3 4"/g)).toHaveLength(6);
     expect(html).toContain('Proportional: the unit rate is constant');
   });
 
@@ -211,6 +214,76 @@ describe('Ratios, Rates & Proportions Lab', () => {
     expect(latest._ratioLab.challengeId).toBe('ratio-simplify');
     expect(latest._ratioLab.challengeCursorByMode.ratioTable).toBe('ratio-simplify');
     expect(latest._ratioLab.challengeAnswerId).toBeNull();
+    await React.act(async () => { root.unmount(); });
+  });
+  it('tracks missed challenges and supports previous and retry navigation', async () => {
+    const tool = loadTool(FILE, ID);
+    let latest;
+
+    function App() {
+      const [state, setState] = React.useState({
+        _ratioLab: {
+          mode: 'ratioTable', challengeId: 'ratio-paint',
+          challengeCursorByMode: { ratioTable: 'ratio-paint' },
+          challengeAnswer: '10', challengeAnswerId: 'ratio-paint',
+        },
+      });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState }));
+    }
+
+    const root = ReactDOMClient.createRoot(document.getElementById('root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+    let button = [...document.querySelectorAll('button')].find((item) => item.textContent === 'Check answer');
+    await React.act(async () => { button.click(); });
+    expect(latest._ratioLab.missedChallenges['ratio-paint']).toBe(true);
+    expect(latest._ratioLab.challengeAttempts).toBe(1);
+    expect(document.body.textContent).toContain('Retry missed (1)');
+
+    button = [...document.querySelectorAll('button')].find((item) => item.textContent === 'Retry missed (1)');
+    await React.act(async () => { button.click(); });
+    expect(latest._ratioLab.challengeId).toBe('ratio-paint');
+    expect(latest._ratioLab.challengeAnswer).toBe('');
+
+    button = [...document.querySelectorAll('button')].find((item) => item.textContent === 'Previous challenge');
+    await React.act(async () => { button.click(); });
+    expect(latest._ratioLab.challengeId).toBe('ratio-scale');
+    expect(latest._ratioLab.challengeCursorByMode.ratioTable).toBe('ratio-scale');
+    await React.act(async () => { root.unmount(); });
+  });
+  it('reveals challenge hints in two stages and resets them on navigation', async () => {
+    const tool = loadTool(FILE, ID);
+    let latest;
+
+    function App() {
+      const [state, setState] = React.useState({
+        _ratioLab: {
+          mode: 'ratioTable', challengeId: 'ratio-paint',
+          challengeCursorByMode: { ratioTable: 'ratio-paint' },
+        },
+      });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState }));
+    }
+
+    const root = ReactDOMClient.createRoot(document.getElementById('root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+    let button = [...document.querySelectorAll('button')].find((item) => item.textContent === 'Show hint 1');
+    await React.act(async () => { button.click(); });
+    expect(latest._ratioLab.challengeHintStage).toBe(1);
+    expect(document.getElementById('ratio-challenge-hints').textContent).toContain('one scale factor');
+    expect(document.getElementById('ratio-challenge-hints').textContent).not.toContain('multiplied by 4');
+
+    button = [...document.querySelectorAll('button')].find((item) => item.textContent === 'Show hint 2');
+    await React.act(async () => { button.click(); });
+    expect(latest._ratioLab.challengeHintStage).toBe(2);
+    expect(document.getElementById('ratio-challenge-hints').textContent).toContain('multiplied by 4');
+
+    button = [...document.querySelectorAll('button')].find((item) => item.textContent === 'Next challenge');
+    await React.act(async () => { button.click(); });
+    expect(latest._ratioLab.challengeHintStage).toBe(0);
+    expect(latest._ratioLab.challengeHintId).toBeNull();
+    expect(document.getElementById('ratio-challenge-hints')).toBeNull();
     await React.act(async () => { root.unmount(); });
   });
   it('restores and locks the canonical answer and explanation for solved challenges', async () => {

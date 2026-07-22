@@ -372,6 +372,25 @@
       var React = ctx.React, h = React.createElement;
       var d = ((ctx.toolData || {})._timeSchedule) || {};
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
+      var isContrast = !!ctx.isContrast;
+      var isDark = !isContrast && !!ctx.isDark;
+      var themeClass = isContrast ? ' time-schedule-lab--contrast' : (isDark ? ' time-schedule-lab--dark' : '');
+      var themeCss = [
+        '.time-schedule-lab--dark,.time-schedule-lab--contrast{padding:12px;border-radius:16px}',
+        '.time-schedule-lab--dark{background:#020617;color:#f8fafc}',
+        '.time-schedule-lab--dark [class*="bg-"]{background-color:#0f172a!important;background-image:none!important}',
+        '.time-schedule-lab--dark *{color:#f8fafc!important;border-color:#64748b!important;background-color:#0f172a!important;background-image:none!important}',
+        '.time-schedule-lab--dark input,.time-schedule-lab--dark select{background:#020617!important;color:#f8fafc!important}',
+        '.time-schedule-lab--dark [aria-selected="true"],.time-schedule-lab--dark [aria-pressed="true"]{background:#1d4ed8!important;color:#fff!important;border-color:#93c5fd!important}',
+        '.time-schedule-lab--dark svg{background:#fff;border-radius:12px}',
+        '.time-schedule-lab--contrast{background:#000;color:#fff}',
+        '.time-schedule-lab--contrast [class*="bg-"],.time-schedule-lab--contrast header,.time-schedule-lab--contrast main,.time-schedule-lab--contrast footer{background:#000!important;background-image:none!important}',
+        '.time-schedule-lab--contrast *{color:#fff!important;border-color:#fff!important;background-color:#000!important;background-image:none!important;box-shadow:none!important}',
+        '.time-schedule-lab--contrast input,.time-schedule-lab--contrast select{background:#000!important;color:#fff!important;border:2px solid #fff!important}',
+        '.time-schedule-lab--contrast [aria-selected="true"],.time-schedule-lab--contrast [aria-pressed="true"]{background:#fff!important;color:#000!important;outline:3px solid #ff0!important}',
+        '.time-schedule-lab--contrast :focus-visible{outline:3px solid #ff0!important;outline-offset:3px!important}',
+        '.time-schedule-lab--contrast svg{background:#fff;border:2px solid #fff;border-radius:12px}'
+      ].join('');
       var announce = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : function () {};
       var award = typeof ctx.awardXP === 'function' ? ctx.awardXP : function () {};
       function upd(patch) {
@@ -589,10 +608,10 @@
                 h('h4', { className: 'text-sm font-black text-indigo-900' }, t('stem.timeschedule.n_12_24_hour_bridge', "12 ↔ 24-hour bridge")),
                 h('div', { className: 'grid grid-cols-2 gap-3 mt-2 text-center' },
                   h('div', { className: 'rounded-lg bg-white border border-indigo-100 p-3' },
-                    h('div', { className: 'text-[10px] uppercase text-indigo-500 font-bold' }, '12-hour'),
+                    h('div', { className: 'text-[10px] uppercase text-indigo-700 font-bold' }, t('stem.timeschedule.n_12_hour', "12-hour")),
                     h('div', { className: 'text-lg font-black text-indigo-950' }, time12(clock))),
                   h('div', { className: 'rounded-lg bg-white border border-indigo-100 p-3' },
-                    h('div', { className: 'text-[10px] uppercase text-indigo-500 font-bold' }, '24-hour'),
+                    h('div', { className: 'text-[10px] uppercase text-indigo-700 font-bold' }, t('stem.timeschedule.n_24_hour', "24-hour")),
                     h('div', { className: 'text-lg font-black text-indigo-950 font-mono' }, time24(clock)))),
                 h('p', { className: 'text-xs text-indigo-800 mt-2' }, rule)))));
       }
@@ -746,11 +765,15 @@
                   Object.keys(SCHEDULES).map(function (key) {
                     return h('option', { key: key, value: key }, SCHEDULES[key].label);
                   }))),
-              h('div', { className: 'overflow-x-auto' },
+              h('div', {
+                className: 'overflow-x-auto rounded-b-xl focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-inset',
+                role: 'region', tabIndex: 0,
+                'aria-label': schedule.label + t('stem.timeschedule.scrollable_event_schedule', " scrollable event schedule")
+              },
                 h('table', { className: 'w-full text-sm border-collapse' },
                   h('caption', { className: 'sr-only' }, schedule.label + t('stem.timeschedule.event_schedule', " event schedule")),
                   h('thead', { className: 'bg-violet-50 text-violet-900' },
-                    h('tr', null, [t('stem.timeschedule.event', "Event"), t('stem.timeschedule.start', "Start"), 'End', t('stem.timeschedule.length', "Length"), t('stem.timeschedule.gap_after', "Gap after")].map(function (label) {
+                    h('tr', null, [t('stem.timeschedule.event', "Event"), t('stem.timeschedule.start', "Start"), t('stem.timeschedule.end', "End"), t('stem.timeschedule.length', "Length"), t('stem.timeschedule.gap_after', "Gap after")].map(function (label) {
                       return h('th', { key: label, scope: 'col',
                         className: 'text-left px-3 py-3 font-black' }, label);
                     }))),
@@ -1048,7 +1071,8 @@
       var view = tab === 'elapsed' ? elapsedView() :
         tab === 'schedule' ? scheduleView() :
         tab === 'challenge' ? challengeView() : clockView();
-      return h('div', { className: 'max-w-6xl mx-auto space-y-4 pb-6 text-slate-900' },
+      return h('div', { className: 'time-schedule-lab max-w-6xl mx-auto space-y-4 pb-6 text-slate-900' + themeClass, 'data-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light') },
+        h('style', { key: 'theme' }, themeCss),
         h('header', { className: 'rounded-2xl overflow-hidden shadow-lg border border-sky-700/20 bg-gradient-to-br from-sky-700 via-cyan-700 to-indigo-800 text-white' },
           h('div', { className: 'p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4' },
             h('div', { className: 'flex items-center gap-3 min-w-0 flex-1' },
@@ -1068,7 +1092,7 @@
                 return h('div', { key: x[1],
                   className: 'rounded-xl bg-white/10 border border-white/20 px-3 py-2' },
                   h('div', { className: 'text-lg font-black' }, x[0]),
-                  h('div', { className: 'text-[10px] uppercase tracking-wide text-sky-100' }, x[1]));
+                  h('div', { className: 'text-[10px] uppercase tracking-wide text-white font-semibold' }, x[1]));
               })))),
         h('div', { className: 'grid grid-cols-2 lg:grid-cols-4 gap-2',
           role: 'tablist', 'aria-label': t('stem.timeschedule.time_and_schedule_lab_sections', "Time and Schedule Lab sections") },
@@ -1085,7 +1109,7 @@
                 h('span', { className: 'text-xl', 'aria-hidden': 'true' }, item[2]),
                 h('span', null, h('span', { className: 'block text-sm font-black' }, item[1]),
                   h('span', { className: 'block text-[10px] ' +
-                    (selected ? 'text-sky-100' : 'text-slate-500') }, item[3]))));
+                    (selected ? 'text-white' : 'text-slate-700') }, item[3]))));
           })),
         h('main', { id: 'ts-tab-panel', role: 'tabpanel', 'aria-labelledby': 'ts-tab-' + tab,
           className: 'rounded-2xl border border-slate-200 bg-slate-50/70 p-3 sm:p-5 shadow-sm' },

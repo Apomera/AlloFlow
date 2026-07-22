@@ -81,9 +81,10 @@ describe('Area & Perimeter Lab', () => {
     const html = renderTool(ID, { _areaPerimeter: { mode: 'explore', width: 3, height: 2 } });
     expect(html).toContain('role="group"');
     expect(html.match(/role="button"/g)).toHaveLength(6);
-    expect(html.match(/tabindex="0"/g)).toHaveLength(3); // active mode tab, panel, and roving tile
+    expect(html.match(/tabindex="0"/g)).toHaveLength(4); // active mode tab, panel, roving tile, and focusable formula scroller
     expect(html.match(/tabindex="-1"/g)).toHaveLength(9); // four mode tabs and five tiles
     expect(html).not.toContain('outline:none');
+    expect(html).toContain('min-width:334px'); // preserves a 24 CSS-pixel tile target at narrow widths
   });
 
   it('uses high-contrast revealed and hidden tile fills in light and dark themes', () => {
@@ -286,5 +287,7 @@ describe('Area & Perimeter Lab', () => {
     expect(deployedHost).toBe(host);
     expect(app).toContain("'stem_lab/stem_tool_areaperimeter.js'");
     expect(fs.readFileSync('prismflow-deploy/public/stem_lab/stem_tool_areaperimeter.js', 'utf8')).toBe(fs.readFileSync(FILE, 'utf8'));
+    expect(fs.readFileSync(FILE, 'utf8')).not.toContain('.find.indexOf(t(');
+    expect(fs.readFileSync(FILE, 'utf8')).not.toMatch(/(?:fontSize|flex):\s*t\(/);
   });
 });
