@@ -318,14 +318,89 @@ describe('coaster lab — Ride & Solve math is GROUNDED in the checkpoint elemen
     }
   });
 
-  it.each(TOOL_PATHS)('%s: a correct math answer reveals the number + a reduced-motion-guarded burst', (p) => {
+  it.each(TOOL_PATHS)('%s: a correct math answer reveals the number + an anchored, reduced-motion-guarded burst', (p) => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
     expect(src).toContain("_ansEl.classList.add('reveal')");
-    expect(src).toContain('function spawnAnswerBurst(){');
-    expect(src).toContain('if(REDUCED_MOTION) return;');
+    expect(src).toContain('function spawnAnswerBurst(anchor){');
+    expect(src).toContain('if(reducedMotion()) return;');
+    expect(src).toContain('spawnAnswerBurst(_ansEl)');
     expect(src).toContain('@keyframes clabAnsPop');
     expect(src).toContain('@keyframes clabSpark');
-    expect(src).toMatch(/if\(_ansEl\)\{[\s\S]*?spawnAnswerBurst\(\);[\s\S]*?\n      \}/);
+  });
+
+  it('positions sparks at the revealed answer and removes every particle', () => {
+    const src = readFileSync(resolve(process.cwd(), TOOL_PATHS[0]), 'utf8');
+    const s = src.indexOf('function spawnAnswerBurst(anchor){');
+    const e = src.indexOf('function submitRideAnswer', s);
+    expect(s).toBeGreaterThan(-1);
+    expect(e).toBeGreaterThan(s);
+    const host = document.createElement('div');
+    const answer = document.createElement('span');
+    host.appendChild(answer);
+    host.getBoundingClientRect = () => ({ left: 100, top: 50, width: 400, height: 300 });
+    answer.getBoundingClientRect = () => ({ left: 240, top: 130, width: 20, height: 10 });
+    const cleanup = [];
+    const loadBurst = reduced => new Function('rq', 'document', 'reducedMotion', 'setTimeout',
+      src.slice(s, e) + '\nreturn spawnAnswerBurst;')(
+        { box: host }, document, () => reduced, fn => { cleanup.push(fn); return cleanup.length; });
+
+    loadBurst(false)(answer);
+    const sparks = [...host.querySelectorAll('.clab-spark')];
+    expect(sparks).toHaveLength(12);
+    expect(sparks.every(p => p.style.left === '146.5px' && p.style.top === '81.5px')).toBe(true);
+    expect(sparks.every(p => p.getAttribute('aria-hidden') === 'true')).toBe(true);
+    cleanup.splice(0).forEach(fn => fn());
+    expect(host.querySelectorAll('.clab-spark')).toHaveLength(0);
+    loadBurst(true)(answer);
+    expect(host.querySelectorAll('.clab-spark')).toHaveLength(0);
+  });
+
+  it('ignores a delayed resume after the ride has been interrupted', () => {
+    const src = readFileSync(resolve(process.cwd(), TOOL_PATHS[0]), 'utf8');
+    const s = src.indexOf('function submitRideAnswer(val, instant){');
+    const e = src.indexOf('function cleanupRide', s);
+    const scheduled = [];
+    const rideState = {
+      active: true, idx: 0, current: { choices: [['a', 'A']], correct: 'a', explain: 'Correct.' },
+      qStart: 0, timerLen: 30, times: [], score: 0, streak: 0, correct: 0, bestStreak: 0,
+      resumeId: null, burstId: null,
+    };
+    const choices = document.createElement('div');
+    choices.innerHTML = '<button>A</button>';
+    const rqState = {
+      choices, num: document.createElement('input'), go: document.createElement('button'),
+      timer: document.createElement('span'), feed: document.createElement('p'), score: document.createElement('span'),
+      viz: null, box: { hidden: false },
+    };
+    const submit = new Function(
+      'ride', 'rq', 'performance', 'clearInterval', 'clearTimeout', 'setTimeout',
+      'fmt', 'blip', 'reducedMotion', 'sim', 'spawnAnswerBurst',
+      src.slice(s, e) + '\nreturn submitRideAnswer;'
+    )(
+      rideState, rqState, { now: () => 1000 }, () => {}, () => {},
+      (fn, delay) => { scheduled.push({ fn, delay }); return scheduled.length; },
+      String, () => {}, () => false, { paused: true }, () => {}
+    );
+
+    submit('a', false);
+    expect(scheduled.map(x => x.delay)).toEqual([1300]);
+    rideState.active = false;
+    scheduled[0].fn();
+    expect(rideState.idx).toBe(0);
+    expect(rqState.box.hidden).toBe(false);
+  });
+  it.each(TOOL_PATHS)('%s: question flow is accessible, interruptible, and contained on short screens', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    expect(src).toContain('role=\\"dialog\\" aria-modal=\\"false\\" aria-labelledby=\\"clab-rqText\\"');
+    expect(src).toContain('role=\\"progressbar\\" aria-label=\\"Time remaining\\"');
+    expect(src).toContain('role=\\"status\\" aria-live=\\"polite\\" aria-atomic=\\"true\\"');
+    expect(src).toContain("focusTarget = rq.choices.querySelector('button')");
+    expect(src).toContain('if(ride.current && focusTarget && focusTarget.isConnected) focusTarget.focus()');
+    expect(src).toContain('clearTimeout(ride.resumeId); ride.resumeId = null;');
+    expect(src).toContain('if(!ride.active || ride.idx !== answerIdx) return;');
+    expect(src).toContain('.clab-root #clab-rideQ{max-height:calc(100% - 156px);overflow-y:auto');
+    expect(src).toContain('@media (max-width:760px),(max-height:620px)');
+    expect(src).toContain("function reducedMotion(){ return !!(REDUCED_MOTION_QUERY && REDUCED_MOTION_QUERY.matches); }");
   });
 
   it.each(TOOL_PATHS)('%s: the question card renders the viz only for math topics', (p) => {
@@ -394,6 +469,21 @@ describe('coaster lab — AI "any topic" Ride & Solve questions', () => {
     expect(qs[0].explain).toBe('Photosynthesis uses CO2.');
   });
 
+  it('escapes model-authored HTML in questions, choices, and explanations', () => {
+    const parse = loadParser(TOOL_PATHS[0]);
+    const raw = JSON.stringify([{
+      q: '<img src=x onerror="boom()"> Is A & B?',
+      choices: ['<svg onload="boom()">', 'A & B'],
+      answer: 1,
+      explain: 'Use <b onclick="boom()">facts</b>.',
+    }]);
+    const [q] = parse(raw, 'safety');
+    expect(q.text).toBe('&lt;img src=x onerror=&quot;boom()&quot;&gt; Is A &amp; B?');
+    expect(q.choices[0][1]).toBe('&lt;svg onload=&quot;boom()&quot;&gt;');
+    expect(q.choices[1][1]).toBe('A &amp; B');
+    expect(q.explain).toBe('Use &lt;b onclick=&quot;boom()&quot;&gt;facts&lt;/b&gt;.');
+    expect(JSON.stringify(q)).not.toMatch(/<(?:img|svg|b)\b/i);
+  });
   it('digs the array out of code fences and prose the model wraps around it', () => {
     const parse = loadParser(TOOL_PATHS[0]);
     const wrapped = 'Sure! Here are your questions:\n```json\n' +
