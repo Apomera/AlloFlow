@@ -488,7 +488,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             { label: t('stem.galaxy.stars'), value: '100\u2013400 billion' },
 
-            { label: 'Age', value: '~13.6 billion years' }
+            { label: __alloT('stem.galaxy.scale_age', 'Age'), value: '~13.6 billion years' }
 
           ];
 
@@ -498,21 +498,21 @@ if (!window._galaxyHasLoadedOnce) {
 
           var EPOCH_NARRATION = [
 
-            { age: 0.1, title: t('stem.galaxy.cosmic_dawn'), emoji: '\u2728', desc: 'The first stars ignite, ending the cosmic dark ages. These massive Population III stars forge the first heavy elements.' },
+            { age: 0.1, title: t('stem.galaxy.cosmic_dawn'), emoji: '\u2728', desc: __alloT('stem.galaxy.cosmic_dawn_desc', 'The first stars ignite, ending the cosmic dark ages. These massive Population III stars forge the first heavy elements.') },
 
-            { age: 0.4, title: t('stem.galaxy.first_galaxies'), emoji: '\uD83C\uDF0C', desc: 'Protogalaxies begin to coalesce from dark matter halos. The first quasars blaze to life, powered by supermassive black holes.' },
+            { age: 0.4, title: t('stem.galaxy.first_galaxies'), emoji: '\uD83C\uDF0C', desc: __alloT('stem.galaxy.first_galaxies_desc', 'Protogalaxies begin to coalesce from dark matter halos. The first quasars blaze to life, powered by supermassive black holes.') },
 
-            { age: 1.0, title: t('stem.galaxy.galaxy_assembly'), emoji: '\uD83C\uDF00', desc: 'Galaxies collide and merge, building larger structures. Spiral arms begin to form as gas settles into rotating disks.' },
+            { age: 1.0, title: t('stem.galaxy.galaxy_assembly'), emoji: '\uD83C\uDF00', desc: __alloT('stem.galaxy.galaxy_assembly_desc', 'Galaxies collide and merge, building larger structures. Spiral arms begin to form as gas settles into rotating disks.') },
 
-            { age: 4.6, title: t('stem.galaxy.milky_way_forms'), emoji: '\uD83C\uDF1F', desc: 'Our galaxy takes shape. The galactic bar forms, organizing the inner structure. Star formation peaks in the spiral arms.' },
+            { age: 4.6, title: t('stem.galaxy.milky_way_forms'), emoji: '\uD83C\uDF1F', desc: __alloT('stem.galaxy.milky_way_forms_desc', 'Our galaxy takes shape. The galactic bar forms, organizing the inner structure. Star formation peaks in the spiral arms.') },
 
-            { age: 9.2, title: t('stem.galaxy.sun_is_born'), emoji: '\u2600\uFE0F', desc: 'A cloud of gas collapses in the Orion Arm, forming our Sun and Solar System 4.6 billion years ago. Life will eventually arise on Earth.' },
+            { age: 9.2, title: t('stem.galaxy.sun_is_born'), emoji: '\u2600\uFE0F', desc: __alloT('stem.galaxy.sun_is_born_desc', 'A cloud of gas collapses in the Orion Arm, forming our Sun and Solar System 4.6 billion years ago. Life will eventually arise on Earth.') },
 
-            { age: 10.0, title: t('stem.galaxy.mature_galaxy'), emoji: '\uD83D\uDD2D', desc: 'The Milky Way settles into its current form with 200-400 billion stars. Star formation slows as gas reserves deplete.' },
+            { age: 10.0, title: t('stem.galaxy.mature_galaxy'), emoji: '\uD83D\uDD2D', desc: __alloT('stem.galaxy.mature_galaxy_desc', 'The Milky Way settles into its current form with 200-400 billion stars. Star formation slows as gas reserves deplete.') },
 
-            { age: 13.0, title: t('stem.galaxy.present_era'), emoji: '\uD83C\uDF0D', desc: 'We are here! Humanity looks outward. The universe continues expanding, and dark energy accelerates its growth.' },
+            { age: 13.0, title: t('stem.galaxy.present_era'), emoji: '\uD83C\uDF0D', desc: __alloT('stem.galaxy.present_era_desc', 'We are here! Humanity looks outward. The universe continues expanding, and dark energy accelerates its growth.') },
 
-            { age: 13.8, title: t('stem.galaxy.right_now'), emoji: '\uD83D\uDE80', desc: 'The observable universe is 93 billion light-years across. We can see the cosmic microwave background\u2014the afterglow of the Big Bang.' }
+            { age: 13.8, title: t('stem.galaxy.right_now'), emoji: '\uD83D\uDE80', desc: __alloT('stem.galaxy.right_now_desc', 'The observable universe is 93 billion light-years across. We can see the cosmic microwave background\u2014the afterglow of the Big Bang.') }
 
           ];
 
@@ -572,28 +572,28 @@ if (!window._galaxyHasLoadedOnce) {
               { id: 'protostar', name: t('stem.galaxy.protostar'), emoji: '\uD83D\uDFE0', desc: t('stem.galaxy.core_heats_up_from_gravitational'), color: '#fb923c' }
             ];
             if (mass < HYDROGEN_FUSION_LIMIT) {
-              stages.push({ id: 'main_sequence', name: 'Brown Dwarf', emoji: '\uD83E\uDDF4', desc: 'Too small for sustained hydrogen fusion; it glows faintly while cooling.', color: '#a16207' });
-              stages.push({ id: 'black_dwarf', name: 'Cooling Brown Dwarf', emoji: '\u26AB', desc: 'A substellar ember fading slowly over cosmic time.', color: '#18181b' });
+              stages.push({ id: 'main_sequence', name: __alloT('stem.galaxy.stage_brown_dwarf_name', 'Brown Dwarf'), emoji: '\uD83E\uDDF4', desc: __alloT('stem.galaxy.stage_brown_dwarf_desc', 'Too small for sustained hydrogen fusion; it glows faintly while cooling.'), color: '#a16207' });
+              stages.push({ id: 'black_dwarf', name: __alloT('stem.galaxy.stage_cooling_brown_dwarf_name', 'Cooling Brown Dwarf'), emoji: '\u26AB', desc: __alloT('stem.galaxy.stage_cooling_brown_dwarf_desc', 'A substellar ember fading slowly over cosmic time.'), color: '#18181b' });
             } else if (mass < M_DWARF_LIMIT) {
-              stages.push({ id: 'main_sequence', name: 'Red Dwarf', emoji: '\uD83D\uDD34', desc: 'Burns slowly for hundreds of billions of years.', color: '#dc2626' });
-              stages.push({ id: 'blue_dwarf', name: 'Blue Dwarf', emoji: '\uD83D\uDD35', desc: 'Theoretical phase where a red dwarf heats up as its opacity changes.', color: '#3b82f6' });
+              stages.push({ id: 'main_sequence', name: __alloT('stem.galaxy.stage_red_dwarf_name', 'Red Dwarf'), emoji: '\uD83D\uDD34', desc: __alloT('stem.galaxy.stage_red_dwarf_desc', 'Burns slowly for hundreds of billions of years.'), color: '#dc2626' });
+              stages.push({ id: 'blue_dwarf', name: __alloT('stem.galaxy.stage_blue_dwarf_name', 'Blue Dwarf'), emoji: '\uD83D\uDD35', desc: __alloT('stem.galaxy.stage_blue_dwarf_desc', 'Theoretical phase where a red dwarf heats up as its opacity changes.'), color: '#3b82f6' });
               stages.push({ id: 'white_dwarf', name: t('stem.galaxy.white_dwarf'), emoji: '\u26AA', desc: t('stem.galaxy.dense_stellar_core_slowly_cools'), color: 'var(--allo-stem-text, #e2e8f0)' });
-              stages.push({ id: 'black_dwarf', name: 'Black Dwarf', emoji: '\u26AB', desc: 'Theoretical future: a white dwarf cooled after far longer than the universe has existed.', color: '#18181b' });
+              stages.push({ id: 'black_dwarf', name: __alloT('stem.galaxy.stage_black_dwarf_name', 'Black Dwarf'), emoji: '\u26AB', desc: __alloT('stem.galaxy.stage_black_dwarf_desc', 'Theoretical future: a white dwarf cooled after far longer than the universe has existed.'), color: '#18181b' });
             } else if (mass < 8) {
-              stages.push({ id: 'main_sequence', name: t('stem.galaxy.main_sequence'), emoji: '\u2B50', desc: 'Hydrogen fusion ignites! Stable for billions of years.', color: '#fbbf24' });
+              stages.push({ id: 'main_sequence', name: t('stem.galaxy.main_sequence'), emoji: '\u2B50', desc: __alloT('stem.galaxy.stage_ms_desc_sunlike', 'Hydrogen fusion ignites! Stable for billions of years.'), color: '#fbbf24' });
               stages.push({ id: 'red_giant', name: t('stem.galaxy.red_giant'), emoji: '\uD83D\uDD34', desc: t('stem.galaxy.core_contracts_outer_layers_expand'), color: '#ef4444' });
               stages.push({ id: 'planetary_nebula', name: t('stem.galaxy.planetary_nebula'), emoji: '\uD83D\uDFE3', desc: t('stem.galaxy.outer_layers_shed_gently_into'), color: '#818cf8' });
               stages.push({ id: 'white_dwarf', name: t('stem.galaxy.white_dwarf'), emoji: '\u26AA', desc: t('stem.galaxy.dense_stellar_core_slowly_cools'), color: 'var(--allo-stem-text, #e2e8f0)' });
-              stages.push({ id: 'black_dwarf', name: 'Black Dwarf', emoji: '\u26AB', desc: 'Theoretical future: a white dwarf cooled after far longer than the universe has existed.', color: '#18181b' });
+              stages.push({ id: 'black_dwarf', name: __alloT('stem.galaxy.stage_black_dwarf_name', 'Black Dwarf'), emoji: '\u26AB', desc: __alloT('stem.galaxy.stage_black_dwarf_desc', 'Theoretical future: a white dwarf cooled after far longer than the universe has existed.'), color: '#18181b' });
             } else if (mass < 25) {
-              stages.push({ id: 'main_sequence', name: t('stem.galaxy.main_sequence'), emoji: '\u2B50', desc: 'Hot and enormous. Burns through fuel in millions of years.', color: '#60a5fa' });
-              stages.push({ id: 'red_supergiant', name: 'Red Supergiant', emoji: '\uD83D\uDD34', desc: 'Expands to massive proportions, large enough to swallow Jupiter!', color: '#b91c1c' });
-              stages.push({ id: 'supernova', name: t('stem.galaxy.supernova'), emoji: '\uD83D\uDCA5', desc: 'Core collapses! A catastrophic explosion outshining entire galaxies.', color: '#fbbf24' });
+              stages.push({ id: 'main_sequence', name: t('stem.galaxy.main_sequence'), emoji: '\u2B50', desc: __alloT('stem.galaxy.stage_ms_desc_massive', 'Hot and enormous. Burns through fuel in millions of years.'), color: '#60a5fa' });
+              stages.push({ id: 'red_supergiant', name: __alloT('stem.galaxy.stage_red_supergiant_name', 'Red Supergiant'), emoji: '\uD83D\uDD34', desc: __alloT('stem.galaxy.stage_red_supergiant_desc', 'Expands to massive proportions, large enough to swallow Jupiter!'), color: '#b91c1c' });
+              stages.push({ id: 'supernova', name: t('stem.galaxy.supernova'), emoji: '\uD83D\uDCA5', desc: __alloT('stem.galaxy.stage_supernova_desc_core', 'Core collapses! A catastrophic explosion outshining entire galaxies.'), color: '#fbbf24' });
               stages.push({ id: 'neutron_star', name: t('stem.galaxy.neutron_star'), emoji: '\u2B50', desc: t('stem.galaxy.ultradense_remnant_a_teaspoon_weighs'), color: '#38bdf8' });
             } else {
-              stages.push({ id: 'main_sequence', name: t('stem.galaxy.main_sequence'), emoji: '\u2B50', desc: 'An ultra-hot blue giant blazing with intense radiation.', color: '#818cf8' });
-              stages.push({ id: 'blue_supergiant', name: 'Blue Supergiant', emoji: '\uD83D\uDD35', desc: 'Sheds immense mass through violent stellar winds.', color: '#3b82f6' });
-              stages.push({ id: 'supernova', name: t('stem.galaxy.supernova'), emoji: '\uD83D\uDCA5', desc: 'A hypernova explosion obliterates the star.', color: '#fbbf24' });
+              stages.push({ id: 'main_sequence', name: t('stem.galaxy.main_sequence'), emoji: '\u2B50', desc: __alloT('stem.galaxy.stage_ms_desc_ultramassive', 'An ultra-hot blue giant blazing with intense radiation.'), color: '#818cf8' });
+              stages.push({ id: 'blue_supergiant', name: __alloT('stem.galaxy.stage_blue_supergiant_name', 'Blue Supergiant'), emoji: '\uD83D\uDD35', desc: __alloT('stem.galaxy.stage_blue_supergiant_desc', 'Sheds immense mass through violent stellar winds.'), color: '#3b82f6' });
+              stages.push({ id: 'supernova', name: t('stem.galaxy.supernova'), emoji: '\uD83D\uDCA5', desc: __alloT('stem.galaxy.stage_supernova_desc_hyper', 'A hypernova explosion obliterates the star.'), color: '#fbbf24' });
               stages.push({ id: 'black_hole', name: t('stem.galaxy.black_hole'), emoji: '\uD83D\uDD73\uFE0F', desc: t('stem.galaxy.gravity_so_strong_nothing_escapes'), color: '#1e1b4b' });
             }
             return stages;
