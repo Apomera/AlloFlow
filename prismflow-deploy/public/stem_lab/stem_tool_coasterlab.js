@@ -2971,36 +2971,59 @@ return { destroy: __clabDestroy };
       var callGemini = ctx.callGemini;
       var aiOn = !!(ctx.aiHintsEnabled && typeof callGemini === 'function');
 
+      // Milestone tracker seeded from persisted state. Award decisions read from
+      // THIS closure — never from inside the setToolData reducer. The old code
+      // called awardXP()/addToast() inside the reducer; React runs a reducer
+      // during the host's (AlloFlowContent's) render pass, so those setters fired
+      // mid-render → "Cannot update a component (StemLabModal) while rendering a
+      // different component (AlloFlowContent)". A reducer must be pure; side
+      // effects run AFTER it, below.
+      var _clabPersist = (ctx.toolData && ctx.toolData.coasterLab) || {};
+      var _clabMs = {
+        certified: !!_clabPersist.certified,
+        explored: !!_clabPersist.explored,
+        rideBestCorrect: _clabPersist.rideBestCorrect || 0,
+        missionCount: _clabPersist.missionCount || 0
+      };
       function bridge(ev){
         if (typeof setToolData !== 'function') return;
+        // Decide awards from the milestone tracker (pure read, no setState).
+        // awardXP signature is (activityId, points, reason); the tool caps at
+        // 100 XP per activityId, so a single 'coasterLab' id is the whole tool.
+        var _awards = []; // [pts, reason, toastMsgOrNull]
+        if (ev.event === 'cert') {
+          if (!_clabMs.certified) { _clabMs.certified = true; _awards.push([25, 'Coaster certified', '★ Coaster certified!']); }
+        } else if (ev.event === 'explore') {
+          if (!_clabMs.explored) { _clabMs.explored = true; _awards.push([15, 'Coaster predictions badge', null]); }
+        } else if (ev.event === 'ride') {
+          var _c = ev.correct || 0;
+          if (_c >= 4 && _clabMs.rideBestCorrect < 4) _awards.push([10, 'Ride & Solve streak', null]);
+          _clabMs.rideBestCorrect = Math.max(_clabMs.rideBestCorrect, _c);
+        } else if (ev.event === 'missions') {
+          var _nc = Math.max(_clabMs.missionCount, ev.count || 0);
+          if (_nc > _clabMs.missionCount) _awards.push([5 * (_nc - _clabMs.missionCount), 'Coaster missions', null]);
+          _clabMs.missionCount = _nc;
+        }
+        // Persist coaster progress — PURE updater, no side effects.
         setToolData(function (prev) {
           var s = Object.assign({}, (prev && prev.coasterLab) || {});
           if (ev.event === 'run') s.runs = (s.runs || 0) + 1;
-          else if (ev.event === 'cert') {
-            if (!s.certified) {
-              if (typeof addToast === 'function') { try { addToast('★ Coaster certified!', 'success'); } catch (e) {} }
-              if (awardXP) { try { awardXP(25, 'Coaster certified'); } catch (e) {} }
-            }
-            s.certified = true;
-          }
-          else if (ev.event === 'explore') {
-            if (!s.explored && awardXP) { try { awardXP(15, 'Coaster predictions badge'); } catch (e) {} }
-            s.explored = true;
-          }
+          else if (ev.event === 'cert') s.certified = true;
+          else if (ev.event === 'explore') s.explored = true;
           else if (ev.event === 'ride') {
-            if ((ev.correct || 0) >= 4 && (s.rideBestCorrect || 0) < 4 && awardXP) {
-              try { awardXP(10, 'Ride & Solve streak'); } catch (e) {}
-            }
             s.rideBestCorrect = Math.max(s.rideBestCorrect || 0, ev.correct || 0);
             s.rideBestScore = Math.max(s.rideBestScore || 0, ev.score || 0);
           }
           else if (ev.event === 'missions') {
-            var prevCount = s.missionCount || 0;
-            var nextCount = Math.max(prevCount, ev.count || 0);
-            if (nextCount > prevCount && awardXP) { try { awardXP(5 * (nextCount - prevCount), 'Coaster missions'); } catch (e) {} }
-            s.missionCount = nextCount;
+            s.missionCount = Math.max(s.missionCount || 0, ev.count || 0);
           }
           return Object.assign({}, prev, { coasterLab: s });
+        });
+        // Side effects now — outside the reducer, in the engine's event context
+        // (not a render pass), so these setStates are safe.
+        _awards.forEach(function (a) {
+          if (a[2] && typeof addToast === 'function') { try { addToast(a[2], 'success'); } catch (e) {} }
+          if (awardXP) { try { awardXP('coasterLab', a[0], a[1]); } catch (e) {} }
         });
       }
       if (announceToSR) bridge.announce = function (msg) { announceToSR(msg); };

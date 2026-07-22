@@ -130,6 +130,38 @@ describe('coaster lab — ctx capabilities (AI, XP, grade level)', () => {
   });
 });
 
+describe('coaster lab — bridge is render-safe (no setState inside the reducer)', () => {
+  // Regression: the bridge used to call awardXP()/addToast() INSIDE the
+  // setToolData(prev => …) reducer. React runs a reducer during the host's
+  // (AlloFlowContent's) render pass, and awardXP → _setXpPopupTick/_setXpBadgePulse
+  // updates StemLabModal — firing "Cannot update a component (StemLabModal) while
+  // rendering a different component (AlloFlowContent)". A reducer must be pure;
+  // the side effects now run AFTER it, and awardXP uses the (activityId, points,
+  // reason) signature so coaster XP actually accrues.
+  it.each(TOOL_PATHS)('%s: the setToolData reducer body is side-effect-free', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const start = src.indexOf('function bridge(ev){');
+    expect(start).toBeGreaterThan(-1);
+    // isolate the persistence reducer: setToolData(function (prev) { … return … { coasterLab: s }; });
+    const reducerStart = src.indexOf('setToolData(function (prev) {', start);
+    const reducerEnd = src.indexOf('{ coasterLab: s });', reducerStart);
+    expect(reducerStart).toBeGreaterThan(-1);
+    expect(reducerEnd).toBeGreaterThan(reducerStart);
+    const reducerBody = src.slice(reducerStart, reducerEnd);
+    expect(reducerBody).not.toContain('awardXP');
+    expect(reducerBody).not.toContain('addToast');
+  });
+
+  it.each(TOOL_PATHS)('%s: awardXP uses the (activityId, points, reason) signature', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    // the correct call carries the tool's activityId so per-activity XP accrues
+    expect(src).toContain("awardXP('coasterLab', a[0], a[1])");
+    // the old, arg-misaligned, in-reducer calls are gone
+    expect(src).not.toContain("awardXP(25, 'Coaster certified')");
+    expect(src).not.toContain("awardXP(15, 'Coaster predictions badge')");
+  });
+});
+
 describe('coaster lab — wired into every load site', () => {
   it.each([
     'AlloFlowANTI.txt',
