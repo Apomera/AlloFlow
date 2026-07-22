@@ -17,8 +17,9 @@ function pixelValue(value) {
   return match ? Number(match[1]) : null;
 }
 
-function hasLargeFixedWidth(style, widthAttribute, threshold) {
+function hasLargeFixedWidth(style, widthAttribute, threshold, intrinsicThreshold) {
   const minimum = Number.isFinite(threshold) ? threshold : 700;
+  const intrinsicMinimum = Number.isFinite(intrinsicThreshold) ? intrinsicThreshold : minimum;
   const declarations = parseDeclarations(style);
   const width = pixelValue(declarations.width);
   const minWidth = pixelValue(declarations['min-width']);
@@ -28,7 +29,7 @@ function hasLargeFixedWidth(style, widthAttribute, threshold) {
   if (width !== null && width >= minimum && !responsiveCap) return true;
 
   const intrinsicMatch = String(widthAttribute || '').trim().match(/^(\d+(?:\.\d+)?)$/);
-  if (!intrinsicMatch || Number(intrinsicMatch[1]) < minimum) return false;
+  if (!intrinsicMatch || Number(intrinsicMatch[1]) < intrinsicMinimum) return false;
   if (declarations.width === '100%' || responsiveCap) return false;
   return true;
 }

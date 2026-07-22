@@ -10,6 +10,8 @@ describe('STEM visual overflow heuristic', () => {
     expect(hasLargeFixedWidth('min-width:720px')).toBe(true);
     expect(hasLargeFixedWidth('width: 699px')).toBe(false);
     expect(hasLargeFixedWidth('width: 100%')).toBe(false);
+    expect(hasLargeFixedWidth('width: 480px')).toBe(false);
+    expect(hasLargeFixedWidth('width: 480px', '', 400)).toBe(true);
   });
 
   it('does not mistake radii or responsive maximums for overflow', () => {
@@ -23,5 +25,7 @@ describe('STEM visual overflow heuristic', () => {
     expect(hasLargeFixedWidth('width:100%', '840')).toBe(false);
     expect(hasLargeFixedWidth('max-width:100%', '840')).toBe(false);
     expect(hasLargeFixedWidth('', '640')).toBe(false);
+    expect(hasLargeFixedWidth('', '640', 400, 700)).toBe(false);
+    expect(hasLargeFixedWidth('', '840', 400, 700)).toBe(true);
   });
 });

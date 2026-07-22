@@ -19,6 +19,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { hasLargeFixedWidth } = require('./stem_visual_overflow_heuristic.cjs');
 
 const ROOT = process.cwd();
 const MODULES = path.join(ROOT, 'prismflow-deploy', 'node_modules');
@@ -637,14 +638,7 @@ function auditMarkup(toolId, html, tool) {
   }
 
   const overflowEls = Array.from(doc.querySelectorAll('[style], [width]')).filter(function (el) {
-    const st = parseStyle(attr(el, 'style'));
-    const width = st.width || attr(el, 'width');
-    const minWidth = st['min-width'];
-    const maxWidth = st['max-width'];
-    return /\b([4-9]\d{2,}|1\d{3,})px\b/.test(String(width || '')) ||
-      /\b([4-9]\d{2,}|1\d{3,})px\b/.test(String(minWidth || '')) ||
-      /\b([7-9]\d{2,}|1\d{3,})\b/.test(String(attr(el, 'width') || '')) ||
-      (/^\d+$/.test(String(width || '')) && Number(width) >= 700 && !maxWidth);
+    return hasLargeFixedWidth(attr(el, 'style'), attr(el, 'width'), 400, 700);
   });
   if (overflowEls.length) {
     issues.push(issue(toolId, 'notice', 'horizontal-overflow-risk', 'Tool includes fixed-width surfaces that need mobile visual review.', {
