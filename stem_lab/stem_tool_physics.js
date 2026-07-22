@@ -3081,15 +3081,15 @@ const d = labToolData.physics;
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
-                  h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, '\uD83D\uDCCB Log'),
+                  h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, '\uD83D\uDCCB ' + __alloT('stem.physics.iq_log', 'Log')),
                   h('button', { onClick: function() { setIQ({ gravity: 9.8, angle: 45, velocity: 30, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                    className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, '\u21BA Reset'),
-                  (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+                    className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, '\u21BA ' + __alloT('stem.physics.iq_reset', 'Reset')),
+                  (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + __alloT('stem.physics.iq_logged', ' logged'))
                 ),
                 (iq.log || []).length > 0 && h('div', { className: 'mb-3 overflow-x-auto' },
                   h('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
                     h('thead', null, h('tr', { className: 'bg-slate-100' },
-                      ['g', 'angle\u00B0', 'v', 'range m', 'state'].map(function(c, i) {
+                      ['g', __alloT('stem.physics.iq_col_angle', 'angle\u00B0'), 'v', __alloT('stem.physics.iq_col_range', 'range m'), __alloT('stem.physics.iq_col_state', 'state')].map(function(c, i) {
                         return h('th', { key: 'h' + i, className: 'px-2 py-1 border border-slate-200 text-left' }, c);
                       }))),
                     h('tbody', null, iq.log.map(function(o, idx) {
@@ -3102,40 +3102,40 @@ const d = labToolData.physics;
                     })))
                 ),
                 h('div', { className: 'mb-3' },
-                  h('label', { htmlFor: 'gh-hypo', className: 'block text-[11px] font-bold text-slate-700 mb-1' }, 'Your hypothesis (free text \u2014 no right answer):'),
+                  h('label', { htmlFor: 'gh-hypo', className: 'block text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.physics.iq_hypothesis_label', 'Your hypothesis (free text \u2014 no right answer):')),
                   h('textarea', { id: 'gh-hypo', value: iq.hypothesis || '',
                     onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
-                    placeholder: 'Is the optimal angle the same on every planet? Does doubling velocity double range? Type your own theory.',
+                    placeholder: __alloT('stem.physics.iq_hypothesis_placeholder', 'Is the optimal angle the same on every planet? Does doubling velocity double range? Type your own theory.'),
                     className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 })
                 ),
                 h('div', { className: 'mb-3' },
                   !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
                     className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300' },
-                    '\uD83E\uDD14 I\'m stuck \u2014 show me questions to think about (no answers)'),
+                    '\uD83E\uDD14 ' + __alloT('stem.physics.iq_stuck_btn', "I'm stuck \u2014 show me questions to think about (no answers)")),
                   iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
-                    h('div', { className: 'font-bold text-amber-900 mb-1' }, 'Open prompts \u2014 investigate by manipulating:'),
+                    h('div', { className: 'font-bold text-amber-900 mb-1' }, __alloT('stem.physics.iq_open_prompts', 'Open prompts \u2014 investigate by manipulating:')),
                     h('ul', { className: 'list-disc pl-5 space-y-1' },
-                      h('li', null, 'Hold two sliders steady. Move the third. Watch what happens.'),
-                      h('li', null, 'Find two different settings that both produce the same state. What do they share?'),
-                      h('li', null, 'Try switching planets via the gravity slider. Does the best angle change?'),
-                      h('li', null, 'Log several "optimal" observations. What angle do they share?'),
-                      h('li', null, 'Real artillery uses tables not formulas. What does that suggest about the relationship between angle and range?')),
-                    h('div', { className: 'text-[10px] italic text-amber-700 mt-2' }, 'No answers. Investigate.'))
+                      h('li', null, __alloT('stem.physics.iq_prompt_1', 'Hold two sliders steady. Move the third. Watch what happens.')),
+                      h('li', null, __alloT('stem.physics.iq_prompt_2', 'Find two different settings that both produce the same state. What do they share?')),
+                      h('li', null, __alloT('stem.physics.iq_prompt_3', 'Try switching planets via the gravity slider. Does the best angle change?')),
+                      h('li', null, __alloT('stem.physics.iq_prompt_4', 'Log several "optimal" observations. What angle do they share?')),
+                      h('li', null, __alloT('stem.physics.iq_prompt_5', 'Real artillery uses tables not formulas. What does that suggest about the relationship between angle and range?'))),
+                    h('div', { className: 'text-[10px] italic text-amber-700 mt-2' }, __alloT('stem.physics.iq_no_answers', 'No answers. Investigate.')))
                 ),
                 h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
                   h('div', { className: 'flex items-center gap-2 mb-2' },
                     h('input', { type: 'checkbox', id: 'gh-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                     h('label', { htmlFor: 'gh-und', className: 'text-[12px] font-bold text-emerald-800 cursor-pointer' },
-                      'I think I understand the trade-offs \u2014 let me explain them in my own words')),
+                      __alloT('stem.physics.iq_understand_label', 'I think I understand the trade-offs \u2014 let me explain them in my own words'))),
                   iq.understood && h('textarea', { value: iq.explanation || '',
                     onChange: function(e) { setIQ({ explanation: e.target.value }); },
-                    placeholder: 'Explain in your own words: how do gravity, angle, and velocity interact? Why is 45\u00B0 special \u2014 or is it?',
+                    placeholder: __alloT('stem.physics.iq_explain_placeholder', 'Explain in your own words: how do gravity, angle, and velocity interact? Why is 45\u00B0 special \u2014 or is it?'),
                     className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 }),
                   iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
-                    '\u2713 Saved. Notice \u2014 nobody checked your answer.')
+                    '\u2713 ' + __alloT('stem.physics.iq_saved_note', 'Saved. Notice \u2014 nobody checked your answer.'))
                 ),
                 h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[10px] italic text-slate-600' },
-                  'Design note: no numeric range target, no reveal button. Range quality is shown as a discrete 3-state marker, not a continuous gradient \u2014 by design, to discourage optimization-gaming behavior.')
+                  __alloT('stem.physics.iq_design_note', 'Design note: no numeric range target, no reveal button. Range quality is shown as a discrete 3-state marker, not a continuous gradient \u2014 by design, to discourage optimization-gaming behavior.'))
               );
             })(),
 
@@ -3147,12 +3147,12 @@ const d = labToolData.physics;
               var aiLoading = !!d.aiLoading;
               var aiError = d.aiError || '';
               var LEVELS = [
-                { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences' },
-                { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student, brief and friendly' },
-                { id: 'hs', label: 'High School', hint: 'for a high school physics student, with the right equations' }
+                { id: 'plain', label: __alloT('stem.physics.level_plain', 'Plain'), hint: 'using simple everyday words and short sentences' },
+                { id: 'grade5', label: __alloT('stem.physics.level_grade5', 'Grade 5'), hint: 'for a 5th grade student, brief and friendly' },
+                { id: 'hs', label: __alloT('stem.physics.level_high_school', 'High School'), hint: 'for a high school physics student, with the right equations' }
               ];
               function explain() {
-                if (typeof callGemini !== 'function') { upd('aiError', 'AI tutor not available.'); return; }
+                if (typeof callGemini !== 'function') { upd('aiError', __alloT('stem.physics.ai_not_available', 'AI tutor not available.')); return; }
                 upd('aiLoading', true); upd('aiError', ''); upd('aiExplain', '');
                 var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
                 var prompt = 'Explain this projectile motion setup ' + lv.hint + '. '
@@ -3163,19 +3163,19 @@ const d = labToolData.physics;
                   upd('aiExplain', String(resp || '').trim()); upd('aiLoading', false);
                   if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
                 }).catch(function () {
-                  upd('aiLoading', false); upd('aiError', 'Could not reach AI tutor. Try again in a moment.');
+                  upd('aiLoading', false); upd('aiError', __alloT('stem.physics.ai_could_not_reach', 'Could not reach AI tutor. Try again in a moment.'));
                 });
               }
               return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", },
                 React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
-                  React.createElement("span", { className: "text-sm font-bold text-purple-700" }, "\u2728 Explain at my level"),
-                  React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },
+                  React.createElement("span", { className: "text-sm font-bold text-purple-700" }, "\u2728 " + __alloT('stem.physics.explain_at_my_level', 'Explain at my level')),
+                  React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": __alloT('stem.physics.aria_reading_level', 'Reading level') },
                     LEVELS.map(function (L) {
                       var active = aiLevel === L.id;
                       return React.createElement("button", {
                         key: L.id,
                         onClick: function () { upd('aiLevel', L.id); },
-                        "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
+                        "aria-label": __alloT('stem.physics.aria_reading_level_prefix', 'Reading level: ') + L.label + (active ? __alloT('stem.physics.selected_suffix', ' (selected)') : ""),
                         "aria-pressed": active,
                         className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100')
                       }, L.label);
@@ -3184,13 +3184,13 @@ const d = labToolData.physics;
                   React.createElement("button", {
                     onClick: explain,
                     disabled: aiLoading,
-                    "aria-label": "Generate AI explanation at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
+                    "aria-label": __alloT('stem.physics.aria_generate_ai_prefix', 'Generate AI explanation at ') + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || __alloT('stem.physics.level_grade5', 'Grade 5')) + __alloT('stem.physics.aria_level_suffix', ' level'),
                     className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
-                  }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
+                  }, aiLoading ? '\u23F3 ' + __alloT('stem.physics.thinking', 'Thinking...') : (aiText ? '\uD83D\uDD04 ' + __alloT('stem.physics.re_explain', 'Re-explain') : '\uD83E\uDDE0 ' + __alloT('stem.physics.explain', 'Explain')))
                 ),
                 aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
                 aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
-                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-300" }, "Click \u201CExplain\u201D for the AI tutor to describe what happens at the current angle, velocity, and gravity settings.")
+                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-300" }, __alloT('stem.physics.ai_empty_hint', 'Click \u201CExplain\u201D for the AI tutor to describe what happens at the current angle, velocity, and gravity settings.'))
               );
             })()
 
