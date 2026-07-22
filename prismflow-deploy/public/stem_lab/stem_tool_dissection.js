@@ -27,6 +27,8 @@
 [data-dissection-root] *, [data-dissection-root] *::before, [data-dissection-root] *::after { box-sizing: border-box; }
 [data-dissection-root] button, [data-dissection-root] input, [data-dissection-root] summary { font: inherit; }
 [data-dissection-root] button { min-height: 2.5rem; }
+[data-dissection-root] [class*="text-[10px]"] { font-size: .75rem !important; line-height: 1.4 !important; }
+[data-dissection-root] [class*="text-[11px]"] { font-size: .8125rem !important; line-height: 1.4 !important; }
 [data-dissection-root] button:focus-visible,
 [data-dissection-root] input:focus-visible,
 [data-dissection-root] textarea:focus-visible,
@@ -174,6 +176,33 @@
 .diss-canvas { display: block; width: min(100%, 650px) !important; height: auto; margin: 0 auto; border: 0 !important; border-radius: .75rem !important; box-shadow: 0 14px 32px rgba(2,6,23,.24); }
 .diss-canvas:fullscreen { width: auto !important; height: min(96vh, 1100px) !important; max-width: 96vw !important; margin: auto; border-radius: 0 !important; background: #0f172a !important; object-fit: contain; }
 .diss-stage__live { margin: .55rem .1rem 0; color: #36506f; font-size: .72rem; line-height: 1.4; }
+.diss-procedure { margin-top: .7rem; padding: .75rem; border: 1px solid #99c7be; border-radius: .9rem; background: linear-gradient(145deg, #f0fdfa, #f8fbff); }
+.diss-procedure__header { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; }
+.diss-procedure__header h4 { margin: 0; color: #134e4a; font-size: .82rem; font-weight: 900; }
+.diss-procedure__header p { margin: .2rem 0 0; color: #426568; font-size: .7rem; line-height: 1.4; }
+.diss-procedure__mode { display: flex; flex: 0 0 auto; gap: .25rem; padding: .2rem; border: 1px solid #b9d8d2; border-radius: .65rem; background: #fff; }
+.diss-procedure__mode button { min-height: 2rem !important; padding: .35rem .55rem; border: 0; border-radius: .45rem; background: transparent; color: #466a68; font-size: .66rem; font-weight: 850; cursor: pointer; }
+.diss-procedure__mode button[aria-pressed="true"] { background: #0f766e; color: #fff; }
+.diss-instruments { display: grid; grid-template-columns: repeat(auto-fit, minmax(5.2rem, 1fr)); gap: .35rem; margin-top: .65rem; }
+.diss-instrument { min-height: 2.8rem !important; padding: .35rem .25rem; border: 1px solid #b8ccc9; border-radius: .65rem; background: #fff; color: #315b58; font-size: .67rem; font-weight: 850; cursor: pointer; }
+.diss-instrument[aria-checked="true"] { border-color: #0f766e; background: #0f766e; box-shadow: 0 5px 14px rgba(15,118,110,.18); color: #fff; }
+.diss-procedure__steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .28rem; margin-top: .6rem; }
+.diss-procedure__step { min-width: 0; padding: .3rem .2rem; border-radius: .45rem; background: #dfeae9; color: #5c7472; font-size: .61rem; font-weight: 800; text-align: center; }
+.diss-procedure__step[data-complete="true"] { background: #ccfbf1; color: #0f766e; }
+.diss-procedure__step[data-current="true"] { box-shadow: inset 0 0 0 2px #f59e0b; background: #fffbeb; color: #92400e; }
+.diss-procedure__controls { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; margin-top: .65rem; }
+.diss-procedure__controls button { min-height: 2.4rem !important; padding: .5rem .7rem; border: 1px solid #9dbab6; border-radius: .65rem; background: #fff; color: #315b58; font-size: .7rem; font-weight: 850; cursor: pointer; }
+.diss-procedure__controls .diss-procedure__next { border-color: #0f766e; background: #0f766e; color: #fff; }
+.diss-procedure__controls button:disabled { cursor: not-allowed; opacity: .55; }
+.diss-procedure__feedback { margin: .55rem 0 0; padding: .5rem .6rem; border-left: 4px solid #0f766e; border-radius: .45rem; background: #fff; color: #355754; font-size: .7rem; line-height: 1.4; }
+.diss-procedure__feedback[data-tone="caution"] { border-left-color: #f59e0b; background: #fffbeb; color: #7c3f10; }
+.diss-procedure__notice { margin: .5rem 0 0; color: #5a6d73; font-size: .64rem; line-height: 1.4; }
+.diss-procedure__metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(6.2rem, 1fr)); gap: .35rem; margin-top: .6rem; }
+.diss-procedure__metric { min-width: 0; padding: .45rem; border: 1px solid #c3d8d4; border-radius: .55rem; background: rgba(255,255,255,.84); }
+.diss-procedure__metric span { display: block; color: #5b7471; font-size: .58rem; font-weight: 850; letter-spacing: .04em; text-transform: uppercase; }
+.diss-procedure__metric strong { display: block; margin-top: .12rem; overflow: hidden; color: #134e4a; font-size: .76rem; text-overflow: ellipsis; white-space: nowrap; }
+.diss-procedure__timeline { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .55rem; }
+.diss-procedure__timeline span { padding: .28rem .45rem; border: 1px solid #b9d8d2; border-radius: 999px; background: #fff; color: #3c625f; font-size: .62rem; font-weight: 800; }
 .diss-zoom-bar { min-height: 2.7rem; margin-top: .6rem !important; background: #edf4fb !important; }
 .diss-zoom-bar button { min-width: 2.5rem; min-height: 2.25rem !important; }
 .diss-overlay-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
@@ -183,6 +212,8 @@
 .diss-selection-summary { margin: .65rem 0; padding: .7rem; border-left: 4px solid #f59e0b; border-radius: .65rem; background: #fff7ed; }
 .diss-selection-summary__label { display: block; color: #9a4d08; font-size: .62rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
 .diss-selection-summary p { margin: .2rem 0 0; color: #4a3b2b; font-size: .78rem; line-height: 1.48; }
+.diss-evidence-note { width: 100%; min-height: 5rem; margin-top: .4rem; padding: .65rem; border: 1px solid #aebed2; border-radius: .65rem; background: #fff; color: #24364d; resize: vertical; }
+.diss-science-scope { margin: .55rem 0 0; padding: .55rem .65rem; border: 1px solid #bfdbfe; border-radius: .65rem; background: #eff6ff; color: #294f79; font-size: .75rem; line-height: 1.45; }
 .diss-structure-list button { min-height: 2.7rem !important; }
 .diss-study-card { min-width: 0; }
 .diss-flashcard { width: 100%; min-height: 7rem !important; border: 2px solid #c4b5fd; cursor: pointer; }
@@ -194,6 +225,16 @@
 .diss-disclosure__body { padding: 0 .8rem .8rem; }
 .diss-disclosure--inset { padding: 0 .8rem .8rem; }
 .diss-disclosure--inset > summary { margin: 0 -.8rem .7rem; }
+@media print {
+  [data-dissection-root] { color: #000 !important; background: #fff !important; }
+  [data-dissection-root] .diss-mode-rail, [data-dissection-root] .diss-picker, [data-dissection-root] .diss-layer-stepper,
+  [data-dissection-root] .diss-toolbar, [data-dissection-root] .diss-tool-panel, [data-dissection-root] .diss-zoom-bar,
+  [data-dissection-root] .diss-overlay-actions, [data-dissection-root] .diss-primary-action { display: none !important; }
+  [data-dissection-root] .diss-mission { display: block; padding: .6rem; border: 1px solid #777; background: #fff !important; box-shadow: none; color: #000 !important; }
+  [data-dissection-root] .diss-mission * { color: #000 !important; }
+  [data-dissection-root] .diss-workspace { grid-template-columns: 58% 40% !important; gap: 2% !important; }
+  [data-dissection-root] .diss-stage, [data-dissection-root] .diss-selection-card, [data-dissection-root] .diss-disclosure { break-inside: avoid; box-shadow: none !important; }
+}
 @media (max-width: 980px) {
   .diss-mission { grid-template-columns: 1fr; }
   .diss-mission__stats { grid-column: auto; }
@@ -210,6 +251,10 @@
   .diss-stage { padding: .55rem; }
   .diss-stage__header { align-items: flex-start; flex-direction: column; }
   .diss-stage__status { max-width: 100%; text-align: left; }
+  .diss-procedure__header { flex-direction: column; }
+  .diss-instruments { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .diss-procedure__steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .diss-procedure__metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .diss-overlay-actions { grid-template-columns: 1fr; }
 }
 `;
@@ -223,9 +268,20 @@
   // â•â•â• ðŸ”¬ dissection (dissection) â•â•â•
   // ── Dissection Lab Audio System ──
   var _disAC = null;
+  var _disSaveTimer = null;
+  function disSoundEnabled() { try { return window.__alloDissectionSoundEnabled !== false; } catch (e) { return true; } }
+  function scheduleDissectionSave(key, data) {
+    try {
+      if (_disSaveTimer) clearTimeout(_disSaveTimer);
+      _disSaveTimer = setTimeout(function () {
+        try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) {}
+        _disSaveTimer = null;
+      }, 120);
+    } catch (e) {}
+  }
   function getDisAC() { if (!_disAC) { try { _disAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_disAC && _disAC.state === 'suspended') { try { _disAC.resume(); } catch(e) {} } return _disAC; }
-  function disTone(f,d,tp,v) { var ac = getDisAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
-  function disNoise(dur,vol,hz) { var ac = getDisAC(); if (!ac) return; try { var bs = Math.floor(ac.sampleRate*(dur||0.05)); var b = ac.createBuffer(1,bs,ac.sampleRate); var dd = b.getChannelData(0); for(var i=0;i<bs;i++) dd[i]=(Math.random()*2-1)*(1-i/bs); var s = ac.createBufferSource(); s.buffer=b; var f = ac.createBiquadFilter(); f.type='lowpass'; f.frequency.value=hz||600; var g = ac.createGain(); g.gain.setValueAtTime(vol||0.04,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(dur||0.05)); s.connect(f); f.connect(g); g.connect(ac.destination); s.start(); } catch(e) {} }
+  function disTone(f,d,tp,v) { if (!disSoundEnabled()) return; var ac = getDisAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function disNoise(dur,vol,hz) { if (!disSoundEnabled()) return; var ac = getDisAC(); if (!ac) return; try { var bs = Math.floor(ac.sampleRate*(dur||0.05)); var b = ac.createBuffer(1,bs,ac.sampleRate); var dd = b.getChannelData(0); for(var i=0;i<bs;i++) dd[i]=(Math.random()*2-1)*(1-i/bs); var s = ac.createBufferSource(); s.buffer=b; var f = ac.createBiquadFilter(); f.type='lowpass'; f.frequency.value=hz||600; var g = ac.createGain(); g.gain.setValueAtTime(vol||0.04,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(dur||0.05)); s.connect(f); f.connect(g); g.connect(ac.destination); s.start(); } catch(e) {} }
   function sfxDisCut() { disNoise(0.06, 0.05, 800); disTone(300, 0.08, 'sawtooth', 0.05); }
   function sfxDisProbe() { disTone(800, 0.04, 'sine', 0.05); setTimeout(function() { disTone(1000, 0.03, 'sine', 0.04); }, 30); }
   function sfxDisReveal() { disTone(440, 0.06, 'sine', 0.06); setTimeout(function() { disTone(554, 0.06, 'sine', 0.06); }, 50); setTimeout(function() { disTone(659, 0.08, 'sine', 0.07); }, 100); }
@@ -335,7 +391,7 @@ var d = labToolData.dissection || {};
               'Your heart beats about 100,000 times per day \u2014 3 billion times in a lifetime.',
               'The left ventricle wall is 3x thicker than the right.',
               'The heart creates enough pressure to squirt blood 30 feet.',
-              'A sheep\u2019s heart is almost identical in size and structure to a human\u2019s.',
+              'A sheep heart shares the four-chamber mammalian plan, while size, vessel branching, rate, and pressure differ by species.',
               'The SA node fires 60-100 times per minute with zero input from the brain.'
             ]
           };
@@ -355,6 +411,12 @@ var d = labToolData.dissection || {};
     document.body.appendChild(liveRegion);
   })();
  var o = {}; o[k] = v; return o; })()) }); }); };
+          var updMany = function (patch) {
+            setLabToolData(function (p) {
+              return Object.assign({}, p, { dissection: Object.assign({}, p.dissection || {}, patch || {}) });
+            });
+          };
+          try { window.__alloDissectionSoundEnabled = d.soundEnabled !== false; } catch (e) {}
 
           // Canvas Narration: Dissection Lab init
           if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'init', {
@@ -884,7 +946,7 @@ var d = labToolData.dissection || {};
               specTerms: [
                 { term: 'Accommodation', def: 'Process by which the ciliary muscle changes lens shape to focus on near or far objects.' },
                 { term: 'Tapetum lucidum', def: 'Reflective layer behind the retina enhancing night vision; absent in humans.' },
-                { term: 'Fovea', def: 'Cone-dense pit in the retina center providing the sharpest central vision.' },
+                { term: 'Human fovea comparison', def: 'Humans use a cone-dense fovea for sharp central vision; sheep retinal specialization differs and should not be treated as identical.' },
                 { term: 'Aqueous humor', def: 'Clear fluid in the anterior chamber; produced by ciliary body, drains via trabecular meshwork.' },
                 { term: 'Vitreous humor', def: 'Clear gel filling the posterior 80% of the eye; maintains shape, does not regenerate.' }
               ],
@@ -923,7 +985,7 @@ var d = labToolData.dissection || {};
 
                   { id: 'ciliary_body', name: 'Ciliary Body', x: 0.38, y: 0.35, fn: 'Ring of muscle + epithelium. Ciliary muscle changes lens shape for focusing. Epithelium produces aqueous humor.', clinical: 'Glaucoma: excess aqueous humor \u2192 increased IOP \u2192 optic nerve damage. Treated with drugs reducing production.' },
 
-                  { id: 'retina', name: 'Retina', x: 0.65, y: 0.45, fn: '10 neural layers. Rods (~120M, light sensitivity) and cones (~6M, color/acuity). Fovea: cone-dense center for sharp vision. Macula: surrounding high-acuity region.', clinical: 'Retinal detachment = surgical emergency. Diabetic retinopathy. Macular degeneration = leading cause of blindness in elderly.' },
+                  { id: 'retina', name: 'Retina', x: 0.65, y: 0.45, fn: 'Neural sensory tissue containing rods and cones. In the sheep specimen, observe the retina as a delicate layer against the choroid; avoid applying human fovea and macula measurements directly to sheep anatomy.', clinical: 'Retinal detachment = surgical emergency. Diabetic retinopathy. Macular degeneration = leading cause of blindness in elderly.' },
 
                   { id: 'tapetum', name: 'Tapetum Lucidum', x: 0.65, y: 0.55, fn: 'Reflective layer behind retina in sheep (absent in humans). Reflects light back through retina for enhanced night vision. Causes "eyeshine."', clinical: 'Present in many animals (cats, dogs, sheep) but not humans or pigs. This is why animal eyes glow in headlights.' },
 
@@ -943,7 +1005,7 @@ var d = labToolData.dissection || {};
 
               name: 'Sheep Heart', icon: '\u2764\uFE0F',
 
-              desc: 'Organ dissection \u2014 4-chambered mammalian heart. Functionally identical to human heart.',
+              desc: 'Organ dissection \u2014 a four-chambered mammalian heart with a body plan useful for comparison to humans. Vessel branching, size, rate, and pressure remain species-specific.',
 
               bodyShape: 'heart',
               objectives: ['Trace blood flow through all four chambers and valves','Distinguish the coronary arteries and explain myocardial blood supply','Compare wall thickness of left vs right ventricles','Identify the conduction system pathway from SA node to Purkinje fibers'],
@@ -969,15 +1031,15 @@ var d = labToolData.dissection || {};
 
                   { id: 'pericardium', name: 'Pericardium', x: 0.50, y: 0.30, fn: 'Double-walled sac enclosing heart. Fibrous (outer, tough) and serous (inner, 2 layers with fluid). Anchors heart. 15-50mL pericardial fluid reduces friction.', clinical: 'Pericarditis: inflammation causing chest pain. Cardiac tamponade: fluid compresses heart = emergency. Beck triad: hypotension, JVD, muffled sounds.' },
 
-                  { id: 'aorta_h', name: 'Aorta', x: 0.45, y: 0.15, fn: 'Largest artery. Ascending aorta exits LV, curves as aortic arch (brachiocephalic, L carotid, L subclavian), descends as thoracic/abdominal aorta.', clinical: 'Aortic aneurysm: >5.5cm \u2192 surgical repair risk. Aortic dissection: tearing pain, emergency surgery.' },
+                  { id: 'aorta_h', name: 'Aorta', x: 0.45, y: 0.15, fn: 'Largest artery. The ascending aorta exits the left ventricle and distributes oxygenated blood to the body. Aortic-arch branch patterns differ between sheep and humans.', clinical: 'Aortic aneurysm: >5.5cm \u2192 surgical repair risk. Aortic dissection: tearing pain, emergency surgery.' },
 
                   { id: 'pulm_trunk', name: 'Pulmonary Trunk', x: 0.55, y: 0.18, fn: 'Exits RV, bifurcates into R and L pulmonary arteries carrying deoxygenated blood to lungs. Only arteries carrying deoxy blood.', clinical: 'Pulmonary embolism: clot lodges here. Saddle PE across bifurcation is life-threatening.' },
 
                   { id: 'coronary_aa', name: 'Coronary Arteries', x: 0.40, y: 0.40, fn: 'Left main \u2192 LAD + circumflex. Right coronary artery (RCA). Supply myocardium with oxygenated blood. First aortic branches.', clinical: 'LAD = "widow maker." Coronary artery disease is #1 cause of death. CABG bypasses blockages using vein/artery grafts.' },
 
-                  { id: 'sup_vena_h', name: 'Superior Vena Cava', x: 0.55, y: 0.12, fn: 'Returns deoxygenated blood from upper body to RA. Formed by brachiocephalic veins.', clinical: 'SVC syndrome from lung cancer: facial swelling and dyspnea.' },
+                  { id: 'sup_vena_h', name: 'Cranial (Superior) Vena Cava', x: 0.55, y: 0.12, fn: 'Returns deoxygenated blood from upper body to RA. Formed by brachiocephalic veins.', clinical: 'SVC syndrome from lung cancer: facial swelling and dyspnea.' },
 
-                  { id: 'inf_vena_h', name: 'Inferior Vena Cava', x: 0.55, y: 0.70, fn: 'Returns blood from lower body to RA. Largest vein.', clinical: 'IVC filter prevents PE from DVT. Compression in pregnancy causes supine hypotension.' },
+                  { id: 'inf_vena_h', name: 'Caudal (Inferior) Vena Cava', x: 0.55, y: 0.70, fn: 'Returns blood from lower body to RA. Largest vein.', clinical: 'IVC filter prevents PE from DVT. Compression in pregnancy causes supine hypotension.' },
 
                   { id: 'apex', name: 'Apex', x: 0.45, y: 0.75, fn: 'Inferior tip of heart formed by LV. Points left and anterior. PMI (point of maximum impulse) at 5th intercostal space, midclavicular line.', clinical: 'Displaced PMI = ventricular enlargement. PMI palpation is key clinical exam finding.' }
 
@@ -987,11 +1049,11 @@ var d = labToolData.dissection || {};
 
                   { id: 'ra', name: 'Right Atrium', x: 0.60, y: 0.38, fn: 'Receives deoxygenated blood from SVC (upper body), IVC (lower body), and coronary sinus (heart). Thin-walled. SA node here sets heart rhythm.', clinical: 'SA node = "pacemaker of the heart" \u2014 sets sinus rhythm at 60-100 bpm. Atrial fibrillation: chaotic atrial activity.' },
 
-                  { id: 'rv', name: 'Right Ventricle', x: 0.55, y: 0.55, fn: 'Pumps blood to lungs via pulmonary trunk. Thinner wall than LV (lower pressure: 25/5 mmHg vs 120/80). Crescent shape wraps around LV.', clinical: 'RV failure from pulmonary hypertension or massive PE. RV infarction from RCA occlusion.' },
+                  { id: 'rv', name: 'Right Ventricle', x: 0.55, y: 0.55, fn: 'Pumps blood to the lungs through the pulmonary trunk. Its wall is thinner than the left ventricle because it works against lower pulmonary resistance; exact pressures vary by species and condition.', clinical: 'RV failure from pulmonary hypertension or massive PE. RV infarction from RCA occlusion.' },
 
                   { id: 'la', name: 'Left Atrium', x: 0.45, y: 0.35, fn: 'Receives oxygenated blood from 4 pulmonary veins. Smooth walled. Left atrial appendage is common site of thrombus formation in AFib.', clinical: 'Atrial appendage clots in AFib = stroke risk. Anticoagulation or appendage occlusion devices prevent this.' },
 
-                  { id: 'lv', name: 'Left Ventricle', x: 0.42, y: 0.55, fn: 'Thickest wall (3x RV). Pumps oxygenated blood to entire body via aorta at 120/80 mmHg. Conical shape. Apex formed by LV.', clinical: 'LV hypertrophy from chronic hypertension or aortic stenosis. LV ejection fraction (normal 55-70%) = key cardiac metric.' },
+                  { id: 'lv', name: 'Left Ventricle', x: 0.42, y: 0.55, fn: 'The thick-walled systemic pump. It sends oxygenated blood through the aorta; its muscular wall is substantially thicker than the right ventricle. Exact pressure values vary by species and condition.', clinical: 'LV hypertrophy from chronic hypertension or aortic stenosis. LV ejection fraction (normal 55-70%) = key cardiac metric.' },
 
                   { id: 'tricuspid', name: 'Tricuspid Valve', x: 0.58, y: 0.45, fn: 'AV valve with 3 cusps between RA and RV. Chordae tendineae attach to papillary muscles preventing prolapse during systole.', clinical: 'Tricuspid regurgitation: blood leaks backward. Endocarditis in IV drug users often affects tricuspid.' },
 
@@ -1005,7 +1067,7 @@ var d = labToolData.dissection || {};
 
                   { id: 'chordae', name: 'Chordae Tendineae', x: 0.50, y: 0.48, fn: '"Heart strings" \u2014 fibrous cords connecting AV valve leaflets to papillary muscles. Prevent valve prolapse during ventricular contraction.', clinical: 'Ruptured chordae = sudden severe valve regurgitation = acute heart failure. Can occur in endocarditis or MI.' },
 
-                  { id: 'conduction', name: 'Conduction System', x: 0.52, y: 0.42, fn: 'SA node (pacemaker, 60-100) \u2192 AV node (delay, 40-60) \u2192 Bundle of His \u2192 R/L bundle branches \u2192 Purkinje fibers. Coordinates cardiac contraction.', clinical: 'Heart blocks: 1st degree (delayed), 2nd degree (dropped beats), 3rd degree (complete dissociation). Pacemaker implantation.' }
+                  { id: 'conduction', name: 'Conduction System', x: 0.52, y: 0.42, fn: 'SA node \u2192 AV node \u2192 atrioventricular bundle \u2192 right and left bundle branches \u2192 Purkinje fibers. This pathway coordinates contraction; normal rates differ between sheep and humans.', clinical: 'Heart blocks: 1st degree (delayed), 2nd degree (dropped beats), 3rd degree (complete dissociation). Pacemaker implantation.' }
 
                 ]
 
@@ -1043,32 +1105,407 @@ var d = labToolData.dissection || {};
 
           var guidedMode = d.guidedMode || false;
 
+          var PROCEDURE_INSTRUMENTS = [
+            { id: 'probe', label: 'Probe', icon: '\u2022', help: 'Trace and identify a visible structure.' },
+            { id: 'forceps', label: 'Forceps', icon: '\u2195', help: 'Lift and retract the opened layer.' },
+            { id: 'scalpel', label: 'Scalpel', icon: '\u2712', help: 'Create the first shallow guided incision.' },
+            { id: 'scissors', label: 'Scissors', icon: '\u2702', help: 'Extend an opening that has already been started.' },
+            { id: 'pin', label: 'Pins', icon: '\u25C6', help: 'Hold retracted tissue so structures remain visible.' }
+          ];
+          if (spec.bodyShape === 'eye') {
+            PROCEDURE_INSTRUMENTS.push({ id: 'dropper', label: 'Dropper', icon: '\u25C9', help: 'Clear the simulated viewing surface with a controlled drop.' });
+          }
+          var specimenTrayNote = spec.bodyShape === 'eye'
+            ? 'Eye tray: probe, forceps, shallow cutting tools, pins, and an optional viewing-surface dropper.'
+            : (spec.bodyShape === 'heart'
+              ? 'Heart tray: blunt probing is emphasized for tracing chambers and vessels before opening a layer.'
+              : 'Comparative tray: inspect and probe before using shallow access tools.');
+          var PROCEDURE_STEPS = [
+            { id: 'inspect', label: 'Inspect' }, { id: 'scalpel', label: 'Incise' },
+            { id: 'scissors', label: 'Extend' }, { id: 'forceps', label: 'Retract' },
+            { id: 'pin', label: 'Pin' }, { id: 'probe', label: 'Probe' }
+          ];
+          var activeInstrument = d.activeInstrument || 'probe';
+          var procedureMode = d.procedureMode || 'guided';
+          var visualRealism = d.visualRealism || 'guided';
+          var labLight = d.labLight || 'neutral';
+          var inspectionLens = !!d.inspectionLens;
+          var variationSeed = Number(d.variationSeed) || 1;
+          var procedureByLayer = d.procedureByLayer || {};
+          var currentProcedure = Object.assign({
+            inspected: false, incisionStarted: false, incisionExtended: false,
+            retracted: false, pins: [], probed: false, errors: 0, history: [], actionLog: []
+          }, procedureByLayer[activeLayer] || {});
 
-
-          // Quiz
-
-          var quizPool = organs.filter(function (o) { return o.fn; });
-
-          var quizQ = d.quizMode && quizPool.length > 0 ? quizPool[(d.quizIdx || 0) % quizPool.length] : null;
-
-          var quizOptions = d._dissQuizOpts || [];
-
-          if (quizQ && d._dissQuizFor !== (specimen + '|' + activeLayer + '|' + d.quizIdx)) {
-
-            var wrong = quizPool.filter(function (o) { return o.id !== quizQ.id; });
-
-            var shuffled = wrong.sort(function () { return Math.random() - 0.5; }).slice(0, 3);
-
-            quizOptions = shuffled.concat([quizQ]).sort(function () { return Math.random() - 0.5; });
-
-            var _qo = quizOptions, _qf = specimen + '|' + activeLayer + '|' + d.quizIdx;
-
-            setTimeout(function () { upd('_dissQuizOpts', _qo); upd('_dissQuizFor', _qf); }, 0);
-
+          function specimenVariationValue(salt) {
+            var liveVariationSeed = Number(d.variationSeed) || variationSeed;
+            return (dissHash(specimen + '|' + liveVariationSeed + '|' + salt) % 1001) / 1000;
+          }
+          function variedOrganPoint(org) {
+            var variedMode = d.visualRealism || visualRealism;
+            var amount = variedMode === 'accessible' ? 0 : (variedMode === 'realistic' ? 0.016 : 0.007);
+            return {
+              x: Math.max(0.04, Math.min(0.96, org.x + (specimenVariationValue(org.id + '|x') - 0.5) * amount * 2)),
+              y: Math.max(0.04, Math.min(0.96, org.y + (specimenVariationValue(org.id + '|y') - 0.5) * amount * 2))
+            };
+          }
+          function specimenScaleFactors() {
+            var scaleMode = d.visualRealism || visualRealism;
+            var amount = scaleMode === 'accessible' ? 0 : (scaleMode === 'realistic' ? 0.045 : 0.018);
+            return {
+              x: 1 + (specimenVariationValue('body-scale-x') - 0.5) * amount * 2,
+              y: 1 + (specimenVariationValue('body-scale-y') - 0.5) * amount * 2
+            };
+          }
+          function inverseSpecimenVariation(point) {
+            var factors = specimenScaleFactors();
+            return { x: (point.x - 0.5) / factors.x + 0.5, y: (point.y - 0.45) / factors.y + 0.45 };
+          }
+          function setVisualRealism(mode) {
+            var patch = { visualRealism: mode };
+            if (mode === 'accessible') { patch.highContrast = true; patch.animSpeed = 'slow'; }
+            updMany(patch);
+            setProcedureFeedback(mode === 'realistic'
+              ? 'Realistic visuals enabled: richer materials, natural landmark variation, and reduced teaching emphasis.'
+              : (mode === 'accessible'
+                ? 'Accessible visuals enabled: high contrast, larger visual targets, and slower motion.'
+                : 'Guided visuals enabled: balanced materials and visible technique targets.'));
           }
 
+          function procedureActionLabel(action) {
+            return {
+              inspect: 'Inspected', scalpel: 'Incised', scissors: 'Extended',
+              forceps: 'Retracted', pin: 'Pinned', probe: 'Probed', dropper: 'Cleared surface'
+            }[action] || action;
+          }
+          function procedureTactile(kind) {
+            if (d.tactileFeedback === false) return;
+            try {
+              if (window._alloHaptic) {
+                window._alloHaptic(kind === 'warning' ? 'error' : (kind === 'firm' ? 'break' : 'selection'));
+                return;
+              }
+              if (navigator.vibrate) navigator.vibrate(kind === 'warning' ? [18, 28, 18] : (kind === 'firm' ? 24 : 8));
+            } catch (e) {}
+          }
+          function procedureCoachingCue(metrics) {
+            if (!metrics) return '';
+            if (metrics.alignment < 72) return ' Keep the instrument tip closer to the access corridor.';
+            if (metrics.coverage < 68) return ' Carry the stroke farther toward both endpoints.';
+            if (metrics.control < 72) return ' Use a steadier pace and smoother hand motion.';
+            return ' The stroke showed balanced alignment, coverage, and control.';
+          }
+          function showProcedureReplay() {
+            var actions = (currentProcedure.actionLog || []).slice();
+            if (!actions.length) actions = (currentProcedure.history || []).map(function (action, idx) {
+              return { action: action, label: procedureActionLabel(action), at: idx };
+            });
+            if (!actions.length) { setProcedureFeedback('Complete at least one technique action before replaying the attempt.'); return; }
+            var duration = Math.max(2800, actions.length * 650);
+            try {
+              if (window.__alloDissectionReplayTimer) clearTimeout(window.__alloDissectionReplayTimer);
+              window.__alloDissectionReplayTimer = setTimeout(function () { upd('_procedureReplay', null); window.__alloDissectionReplayTimer = null; }, duration + 250);
+            } catch (e) {}
+            upd('_procedureReplay', { layer: activeLayer, startedAt: Date.now(), duration: duration, actions: actions });
+            setProcedureFeedback('Attempt replay started. The canvas will retrace the recorded technique sequence.');
+          }
 
+          function procedureStepIndex(state) {
+            if (!state.inspected) return 0;
+            if (!state.incisionStarted) return 1;
+            if (!state.incisionExtended) return 2;
+            if (!state.retracted) return 3;
+            if ((state.pins || []).length < 2) return 4;
+            if (!state.probed) return 5;
+            return 6;
+          }
+          function procedureGuidePoints() {
+            var x = 0.5, y = 0.5;
+            if (organs.length) {
+              x = organs.reduce(function (sum, org) { return sum + org.x; }, 0) / organs.length;
+              y = organs.reduce(function (sum, org) { return sum + org.y; }, 0) / organs.length;
+            }
+            x = Math.max(0.32, Math.min(0.68, x)); y = Math.max(0.34, Math.min(0.66, y));
+            if (spec.bodyShape === 'worm' || spec.bodyShape === 'fish') {
+              return [{ x: Math.max(0.2, x - 0.2), y: y }, { x: x, y: y }, { x: Math.min(0.8, x + 0.2), y: y }];
+            }
+            return [{ x: x, y: Math.max(0.22, y - 0.18) }, { x: x, y: y }, { x: x, y: Math.min(0.8, y + 0.18) }];
+          }
+          function distanceToGuide(point, guide) {
+            var best = Infinity;
+            for (var i = 1; i < guide.length; i++) {
+              var a = guide[i - 1], b = guide[i], vx = b.x - a.x, vy = b.y - a.y;
+              var lengthSq = vx * vx + vy * vy || 1;
+              var t = Math.max(0, Math.min(1, ((point.x - a.x) * vx + (point.y - a.y) * vy) / lengthSq));
+              var px = a.x + t * vx, py = a.y + t * vy, dx = point.x - px, dy = point.y - py;
+              best = Math.min(best, Math.sqrt(dx * dx + dy * dy));
+            }
+            return best;
+          }
+          function procedurePointDistance(a, b) {
+            var dx = a.x - b.x, dy = a.y - b.y;
+            return Math.sqrt(dx * dx + dy * dy);
+          }
+          function procedurePathMetrics(points, samples) {
+            var guide = procedureGuidePoints();
+            if (!points || points.length < 2) return { alignment: 0, coverage: 0, smoothness: 0, control: 0, precision: 0 };
+            var close = points.filter(function (point) { return distanceToGuide(point, guide) <= 0.075; }).length;
+            var alignment = close / points.length;
+            var first = points[0], last = points[points.length - 1];
+            var forward = (procedurePointDistance(first, guide[0]) + procedurePointDistance(last, guide[guide.length - 1])) / 2;
+            var reverse = (procedurePointDistance(first, guide[guide.length - 1]) + procedurePointDistance(last, guide[0])) / 2;
+            var coverage = Math.max(0, Math.min(1, 1 - Math.min(forward, reverse) / 0.2));
+            var turns = [];
+            for (var mi = 1; mi < points.length - 1; mi++) {
+              var ax = points[mi].x - points[mi - 1].x, ay = points[mi].y - points[mi - 1].y;
+              var bx = points[mi + 1].x - points[mi].x, by = points[mi + 1].y - points[mi].y;
+              var denom = Math.sqrt(ax * ax + ay * ay) * Math.sqrt(bx * bx + by * by);
+              if (denom > 0) turns.push(Math.max(0, Math.min(1, (ax * bx + ay * by) / denom)));
+            }
+            var smoothness = turns.length ? turns.reduce(function (sum, value) { return sum + value; }, 0) / turns.length : 1;
+            var usableSamples = (samples || []).filter(function (sample) { return sample && sample.at != null; });
+            var paceControl = 1, pressureControl = 1;
+            if (usableSamples.length > 2) {
+              var intervals = [], pressures = [];
+              for (var si = 1; si < usableSamples.length; si++) intervals.push(Math.max(1, usableSamples[si].at - usableSamples[si - 1].at));
+              usableSamples.forEach(function (sample) { if (sample.pressure > 0) pressures.push(sample.pressure); });
+              var meanInterval = intervals.reduce(function (sum, value) { return sum + value; }, 0) / intervals.length;
+              var intervalSpread = Math.sqrt(intervals.reduce(function (sum, value) { var delta = value - meanInterval; return sum + delta * delta; }, 0) / intervals.length);
+              paceControl = Math.max(0, Math.min(1, 1 - intervalSpread / Math.max(18, meanInterval * 1.8)));
+              if (pressures.length > 2) {
+                var meanPressure = pressures.reduce(function (sum, value) { return sum + value; }, 0) / pressures.length;
+                var pressureSpread = Math.sqrt(pressures.reduce(function (sum, value) { var delta = value - meanPressure; return sum + delta * delta; }, 0) / pressures.length);
+                pressureControl = Math.max(0, Math.min(1, 1 - pressureSpread / 0.22));
+              }
+            }
+            var control = smoothness * 0.45 + paceControl * 0.3 + pressureControl * 0.25;
+            var precision = alignment * 0.55 + coverage * 0.25 + smoothness * 0.1 + control * 0.1;
+            return { alignment: Math.round(alignment * 100), coverage: Math.round(coverage * 100), smoothness: Math.round(smoothness * 100), control: Math.round(control * 100), precision: Math.round(precision * 100) };
+          }
+          function procedurePathQuality(points) { return procedurePathMetrics(points).precision / 100; }
+          function procedureTechniqueScore(state) {
+            var step = procedureStepIndex(state);
+            if (!step) return 0;
+            var metrics = [state.incisionMetrics, state.extensionMetrics].filter(Boolean);
+            var meanPrecision = metrics.length ? metrics.reduce(function (sum, item) { return sum + (item.precision || 0); }, 0) / metrics.length / 100 : 0;
+            var meanControl = metrics.length ? metrics.reduce(function (sum, item) { return sum + (item.control == null ? item.smoothness || 0 : item.control); }, 0) / metrics.length / 100 : 0;
+            var completion = step / 6;
+            var safety = Math.max(0, 1 - (Number(state.errors) || 0) * 0.12);
+            return Math.max(0, Math.min(100, Math.round(completion * 65 + meanPrecision * 20 + meanControl * 5 + safety * 10)));
+          }
+          function showProcedureDemonstration() {
+            var demo = { layer: activeLayer, startedAt: Date.now() };
+            try {
+              if (window.__alloDissectionDemoTimer) clearTimeout(window.__alloDissectionDemoTimer);
+              window.__alloDissectionDemoTimer = setTimeout(function () { upd('_procedureDemo', null); window.__alloDissectionDemoTimer = null; }, 3200);
+            } catch (e) {}
+            upd('_procedureDemo', demo);
+            setProcedureFeedback('Safe-technique demonstration playing. Watch the moving marker follow the generalized teaching corridor.');
+          }
+          function setProcedureFeedback(message, tone) {
+            upd('procedureFeedback', { message: message, tone: tone || 'success', at: Date.now() });
+            if (typeof announceToSR === 'function') announceToSR(message);
+          }
+          function updateProcedure(patch, message, action, tone) {
+            var map = Object.assign({}, d.procedureByLayer || {});
+            var next = Object.assign({}, currentProcedure, patch);
+            if (action) {
+              next.history = (currentProcedure.history || []).concat([action]).slice(-12);
+              next.actionLog = (currentProcedure.actionLog || []).concat([{ action: action, label: procedureActionLabel(action), at: Date.now() }]).slice(-18);
+              procedureTactile(action === 'scalpel' || action === 'scissors' || action === 'forceps' ? 'firm' : 'tick');
+            }
+            map[activeLayer] = next;
+            updMany({ procedureByLayer: map, procedureFeedback: { message: message, tone: tone || 'success', at: Date.now() } });
+            if (typeof announceToSR === 'function') announceToSR(message);
+          }
+          function procedureMistake(message) {
+            procedureTactile('warning');
+            updateProcedure({ errors: (currentProcedure.errors || 0) + 1 }, message, null, 'caution');
+          }
+          function performProcedureAction(action, payload) {
+            payload = payload || {};
+            if (revealedLayers[activeLayer]) { setProcedureFeedback('This layer is complete. Continue to the next layer.'); return; }
+            if (action === 'inspect') {
+              if (currentProcedure.inspected) { setProcedureFeedback('Orientation is already recorded for this layer.'); return; }
+              updateProcedure({ inspected: true }, 'Orientation recorded. Select the scalpel and use a shallow stroke along the teaching guide.', 'inspect'); return;
+            }
+            if (action === 'scalpel') {
+              if (!currentProcedure.inspected) { procedureMistake('Pause and inspect the layer before choosing an incision path.'); return; }
+              if (currentProcedure.incisionStarted) { setProcedureFeedback('The initial incision is complete. Use scissors to extend the opening.'); return; }
+              if ((d.incisionDepth || 'shallow') !== 'shallow') { procedureMistake('That depth could obscure underlying structures. Switch to shallow depth and try again; no cut was recorded.'); return; }
+              var cutPath = payload.points || procedureGuidePoints();
+              var cutMetrics = procedurePathMetrics(cutPath, payload.samples);
+              if (cutMetrics.precision < 55 || cutMetrics.coverage < 45) { procedureMistake('The stroke needs more corridor alignment or end-to-end coverage. Try again; no cut was recorded.'); return; }
+              sfxDisCut();
+              updateProcedure({ incisionStarted: true, incisionPath: cutPath, incisionMetrics: cutMetrics }, 'Shallow access incision complete. Precision ' + cutMetrics.precision + '%, control ' + cutMetrics.control + '%.' + procedureCoachingCue(cutMetrics) + ' Switch to scissors.', 'scalpel'); return;
+            }
+            if (action === 'scissors') {
+              if (!currentProcedure.incisionStarted) { procedureMistake('Scissors extend an opening; begin with a shallow scalpel incision first.'); return; }
+              if (currentProcedure.incisionExtended) { setProcedureFeedback('The opening is already extended. Use forceps next.'); return; }
+              var extensionPath = payload.points || procedureGuidePoints();
+              var extensionMetrics = procedurePathMetrics(extensionPath, payload.samples);
+              if (extensionMetrics.precision < 50 || extensionMetrics.coverage < 40) { procedureMistake('Keep the scissors within the opening and extend farther toward both endpoints. Try again; no extension was recorded.'); return; }
+              sfxDisCut();
+              updateProcedure({ incisionExtended: true, extensionPath: extensionPath, extensionMetrics: extensionMetrics }, 'Opening extended. Precision ' + extensionMetrics.precision + '%, control ' + extensionMetrics.control + '%.' + procedureCoachingCue(extensionMetrics) + ' Use forceps next.', 'scissors'); return;
+            }
+            if (action === 'forceps') {
+              if (!currentProcedure.incisionExtended) { procedureMistake('Extend the opening with scissors before using forceps.'); return; }
+              if (currentProcedure.retracted) { setProcedureFeedback('The layer is already retracted. Place two pins.'); return; }
+              if (payload.point && distanceToGuide(payload.point, procedureGuidePoints()) > 0.11) {
+                procedureMistake('Grip near the opened teaching corridor so the layer can be lifted without obscuring the field. Try again.'); return;
+              }
+              playDissectSound('peel');
+              updateProcedure({ retracted: true, forcepsPoint: payload.point || procedureGuidePoints()[1] }, 'Layer lifted and retracted from the opening. Place two well-spaced pins.', 'forceps'); return;
+            }
+            if (action === 'pin') {
+              if (!currentProcedure.retracted) { procedureMistake('Retract the opened layer with forceps before placing a pin.'); return; }
+              var pins = (currentProcedure.pins || []).slice();
+              if (pins.length >= 2) { setProcedureFeedback('Two pins already secure this layer. Use the probe next.'); return; }
+              var guide = procedureGuidePoints(), defaultPoint = pins.length ? guide[guide.length - 1] : guide[0];
+              var pinPoint = payload.point || defaultPoint;
+              if (payload.point) {
+                var endpointDistance = Math.min(procedurePointDistance(pinPoint, guide[0]), procedurePointDistance(pinPoint, guide[guide.length - 1]));
+                if (endpointDistance > 0.14) { procedureMistake('Place the pin near an end of the opened corridor, away from the observation field. Try again.'); return; }
+                if (pins.length && procedurePointDistance(pinPoint, pins[0]) < 0.18) { procedureMistake('The pins are too close together. Place the second pin on the opposite side of the opening.'); return; }
+              }
+              pins.push(pinPoint); sfxDisPin();
+              updateProcedure({ pins: pins }, pins.length < 2 ? 'First pin placed. Add a second pin on the opposite side.' : 'Layer secured with two well-spaced pins. Use the probe to trace a structure.', 'pin'); return;
+            }
+            if (action === 'dropper') {
+              if (spec.bodyShape !== 'eye') { procedureMistake('The viewing-surface dropper is available only in the eye tray.'); return; }
+              var dropPoint = payload.point || procedureGuidePoints()[1];
+              sfxDisProbe();
+              updateProcedure({ surfaceCleared: true, dropperPoint: dropPoint }, 'Controlled drop applied. The simulated viewing surface is clearer for optical inspection.', 'dropper'); return;
+            }
+            if (action === 'probe') {
+              if ((currentProcedure.pins || []).length < 2) { procedureMistake('Secure the retracted layer with two pins before probing.'); return; }
+              var target = payload.organ || organs.find(function (org) { return !(d.exploredOrgans || {})[specimen + '|' + org.id]; }) || organs[0];
+              if (!target) { procedureMistake('No visible structure is available to probe in this layer.'); return; }
+              chooseOrganFromDirectory(target); sfxDisProbe();
+              updateProcedure({ probed: true, probedOrganId: target.id }, 'Probe trace complete: ' + target.name + '. Record evidence or complete the layer.', 'probe');
+            }
+          }
+          function undoProcedureAction() {
+            var history = (currentProcedure.history || []).slice(), action = history.pop();
+            if (!action) { setProcedureFeedback('There is no technique action to undo.'); return; }
+            var patch = { history: history, actionLog: (currentProcedure.actionLog || []).slice(0, -1) };
+            if (action === 'probe') { patch.probed = false; patch.probedOrganId = null; }
+            else if (action === 'dropper') { patch.surfaceCleared = false; patch.dropperPoint = null; }
+            else if (action === 'pin') patch.pins = (currentProcedure.pins || []).slice(0, -1);
+            else if (action === 'forceps') patch.retracted = false;
+            else if (action === 'scissors') { patch.incisionExtended = false; patch.extensionPath = null; patch.extensionMetrics = null; }
+            else if (action === 'scalpel') { patch.incisionStarted = false; patch.incisionPath = null; patch.incisionMetrics = null; }
+            else if (action === 'inspect') patch.inspected = false;
+            var map = Object.assign({}, d.procedureByLayer || {});
+            map[activeLayer] = Object.assign({}, currentProcedure, patch);
+            updMany({ procedureByLayer: map, procedureFeedback: { message: 'Undid ' + action + '. You can try that step again.', tone: 'success', at: Date.now() } });
+          }
+          function nextProcedureInfo() {
+            var idx = procedureStepIndex(currentProcedure);
+            if (idx === 0) return { action: 'inspect', instrument: 'probe', label: 'Inspect and orient the layer' };
+            if (idx === 1) return { action: 'scalpel', instrument: 'scalpel', label: 'Make a shallow guided incision' };
+            if (idx === 2) return { action: 'scissors', instrument: 'scissors', label: 'Extend the opening with scissors' };
+            if (idx === 3) return { action: 'forceps', instrument: 'forceps', label: 'Lift and retract with forceps' };
+            if (idx === 4) return { action: 'pin', instrument: 'pin', label: (currentProcedure.pins || []).length ? 'Place the second pin' : 'Place the first pin' };
+            if (idx === 5) return { action: 'probe', instrument: 'probe', label: 'Probe a visible structure' };
+            return { action: 'complete', instrument: 'probe', label: 'Complete and reveal the layer' };
+          }
+          function performNextProcedureStep() {
+            var next = nextProcedureInfo();
+            if (next.action === 'complete') { peelCurrentLayer(); return; }
+            upd('activeInstrument', next.instrument); performProcedureAction(next.action);
+          }
+          function canvasPointFromEvent(e) {
+            var canvas = e.currentTarget || e.target, rect = canvas.getBoundingClientRect();
+            var rawX = (e.clientX - rect.left) / rect.width, rawY = (e.clientY - rect.top) / rect.height;
+            var zoom = d.canvasZoom || 1, panX = d.canvasPanX || 0, panY = d.canvasPanY || 0;
+            return inverseSpecimenVariation({ x: (rawX - 0.5 - panX / rect.width) / zoom + 0.5, y: (rawY - 0.5 - panY / rect.height) / zoom + 0.5 });
+          }
+          function beginProcedureStroke(e) {
+            var canvas = e.currentTarget, point = canvasPointFromEvent(e);
+            canvas._toolDrawing = true; canvas._toolStroke = [point];
+            canvas._toolSamples = [{ pressure: Number(e.pressure) || 0.5, at: Date.now() }];
+            canvas._toolResistance = { level: 'low', value: 0.12 };
+            if (canvas.setPointerCapture && e.pointerId != null) canvas.setPointerCapture(e.pointerId); e.preventDefault();
+          }
+          function appendProcedureStroke(e) {
+            var canvas = e.currentTarget; if (!canvas._toolDrawing) return;
+            var point = canvasPointFromEvent(e), previous = canvas._toolStroke[canvas._toolStroke.length - 1];
+            canvas._toolPointer = point;
+            if (!previous || Math.abs(point.x - previous.x) + Math.abs(point.y - previous.y) > 0.006) {
+              canvas._toolStroke.push(point);
+              canvas._toolSamples.push({ pressure: Number(e.pressure) || 0.5, at: Date.now() });
+            }
+            var corridorDistance = distanceToGuide(point, procedureGuidePoints());
+            var resistanceLevel = corridorDistance <= 0.04 ? 'low' : (corridorDistance <= 0.075 ? 'moderate' : 'high');
+            canvas._toolResistance = { level: resistanceLevel, value: Math.max(0.08, Math.min(1, corridorDistance / 0.12)) };
+            if (canvas._lastResistanceLevel !== resistanceLevel) {
+              procedureTactile(resistanceLevel === 'high' ? 'warning' : 'tick');
+              canvas._lastResistanceLevel = resistanceLevel;
+            }
+            e.preventDefault();
+          }
+          function finishProcedureStroke(e) {
+            var canvas = e.currentTarget; if (!canvas._toolDrawing) return false;
+            canvas._toolDrawing = false; var points = (canvas._toolStroke || []).slice(), samples = (canvas._toolSamples || []).slice();
+            canvas._toolStroke = null; canvas._toolSamples = null; canvas._toolResistance = null; canvas._lastResistanceLevel = null; canvas._suppressToolClick = true;
+            if (canvas.releasePointerCapture && e.pointerId != null && canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
+            if (points.length < 2) {
+              procedureMistake('Drag along the corridor to practice the instrument stroke, or use the equivalent action button.');
+              return true;
+            }
+            performProcedureAction(activeInstrument, { points: points, samples: samples }); return true;
+          }
 
+          // Quiz: deterministic shuffling keeps questions stable during a render while
+          // still varying their order for each new study session.
+          var quizPool = organs.filter(function (o) { return o.fn; });
+          function dissHash(value) {
+            var hash = 2166136261;
+            var input = String(value || '');
+            for (var hi = 0; hi < input.length; hi++) { hash ^= input.charCodeAt(hi); hash = Math.imul(hash, 16777619); }
+            return hash >>> 0;
+          }
+          function dissStableOrder(items, salt) {
+            return items.slice().sort(function (a, b) {
+              return dissHash(salt + '|' + a.id) - dissHash(salt + '|' + b.id);
+            });
+          }
+          var quizSalt = specimen + '|' + activeLayer + '|' + (d.quizSeed || 'default');
+          var orderedQuizPool = dissStableOrder(quizPool, quizSalt);
+          var quizQ = d.quizMode && orderedQuizPool.length > 0 ? orderedQuizPool[(d.quizIdx || 0) % orderedQuizPool.length] : null;
+          var quizOptions = quizQ
+            ? dissStableOrder(quizPool.filter(function (o) { return o.id !== quizQ.id; }), quizSalt + '|' + (d.quizIdx || 0)).slice(0, 3).concat([quizQ])
+            : [];
+          quizOptions = dissStableOrder(quizOptions, quizSalt + '|options|' + (d.quizIdx || 0));
+          var quizKind = ((d.quizIdx || 0) % 2 === 0) ? 'function' : 'location';
+          function dissDiagramRegion(org) {
+            var vertical = org.y < 0.34 ? 'upper' : (org.y > 0.66 ? 'lower' : 'middle');
+            var horizontal = org.x < 0.4 ? 'left' : (org.x > 0.6 ? 'right' : 'central');
+            return vertical + (horizontal === 'central' ? '-central' : '-' + horizontal);
+          }
+          var quizPrompt = quizQ ? (quizKind === 'location'
+            ? 'Diagram location clue: which structure is in the ' + dissDiagramRegion(quizQ) + ' region of this view?'
+            : 'Function clue: "' + quizQ.fn.split('.')[0] + '."') : '';
+
+          function submitQuizAnswer(answerId) {
+            if (!quizQ || d.quizFeedback) return;
+            var correct = answerId === quizQ.id;
+            var nextScore = (d.quizScore || 0) + (correct ? 1 : 0);
+            var nextTotal = (d.quizTotal || 0) + 1;
+            updMany({
+              quizFeedback: { correct: correct, chosen: answerId },
+              quizScore: nextScore,
+              quizTotal: nextTotal,
+              quizExplanation: quizQ.fn.split('.').slice(0, 2).join('.') + '.'
+            });
+            if (d.practicalMode) {
+              try { window.__alloDissectionPracticalScore = nextScore; } catch (e) {}
+            }
+            if (correct) awardStemXP('dissection', 2, 'Correct quiz answer');
+            if (addToast) addToast(correct ? '\u2705 Correct!' : '\u274C It was ' + quizQ.name, correct ? 'success' : 'error');
+            if (typeof announceToSR === 'function') announceToSR(correct ? 'Correct. ' + quizQ.name + '.' : 'Not quite. The correct structure is ' + quizQ.name + '.');
+          }
           function peelCurrentLayer() {
 
             // Trigger animated incision line before peeling
@@ -1156,6 +1593,12 @@ var d = labToolData.dissection || {};
 
             var dissTick = 0;
             var dissAlive = true;
+            var dissLastDrawAt = 0;
+            var dissTimeTimer = setInterval(function () {
+              if (!dissAlive || !canvas.isConnected || isDissectionHidden()) return;
+              var latest = canvas._drawD || {};
+              upd('timeSpent', (Number(latest.timeSpent) || 0) + 30);
+            }, 30000);
             var dissMotionReduced = false;
             try { dissMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
 
@@ -1177,6 +1620,10 @@ var d = labToolData.dissection || {};
             function cleanupDissectionCanvas() {
               dissAlive = false;
               cancelDissectionFrame();
+              if (dissTimeTimer) { clearInterval(dissTimeTimer); dissTimeTimer = null; }
+              try { if (window.__alloDissectionPracticalInterval) { clearInterval(window.__alloDissectionPracticalInterval); window.__alloDissectionPracticalInterval = null; } } catch (e) {}
+              try { if (window.__alloDissectionDemoTimer) { clearTimeout(window.__alloDissectionDemoTimer); window.__alloDissectionDemoTimer = null; } } catch (e) {}
+              try { if (window.__alloDissectionReplayTimer) { clearTimeout(window.__alloDissectionReplayTimer); window.__alloDissectionReplayTimer = null; } } catch (e) {}
               if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onDissectionVisibilityChange);
               if (window.__alloDissectionCanvasCleanup === canvas._dissCleanup) window.__alloDissectionCanvasCleanup = null;
               canvas._dissCleanup = null;
@@ -1203,7 +1650,10 @@ var d = labToolData.dissection || {};
               if (!canvas.isConnected) { cleanupDissectionCanvas(); return; }
               if (isDissectionHidden()) { cancelDissectionFrame(); return; }
 
-              if (!dissMotionReduced) dissTick++;
+              var drawState = canvas._drawD || d || {};
+              var minFrameMs = drawState.animSpeed === 'fast' ? 16 : (drawState.animSpeed === 'slow' ? 66 : 33);
+              if (!dissMotionReduced && dissLastDrawAt && arguments[0] && arguments[0] - dissLastDrawAt < minFrameMs) { scheduleDissectionFrame(); return; }
+              if (!dissMotionReduced) { dissLastDrawAt = arguments[0] || Date.now(); dissTick++; }
 
               // Guard: skip frame if canvas dimensions are not finite or zero
 
@@ -1301,6 +1751,9 @@ var d = labToolData.dissection || {};
               for (var gx = 0; gx < W; gx += 30) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
 
               for (var gy = 0; gy < H; gy += 30) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
+
+              var specimenScale = specimenScaleFactors();
+              ctx.save(); ctx.translate(cx, cy); ctx.scale(specimenScale.x, specimenScale.y); ctx.translate(-cx, -cy);
 
               ctx.lineJoin = 'round'; ctx.lineCap = 'round';
 
@@ -4573,7 +5026,8 @@ var d = labToolData.dissection || {};
 
               organs.forEach(function (org, oi) {
 
-                var px = org.x * W, py = org.y * H;
+                var organPoint = variedOrganPoint(org);
+                var px = organPoint.x * W, py = organPoint.y * H;
 
                 var isSel = d.selectedOrgan === org.id;
 
@@ -4699,6 +5153,168 @@ var d = labToolData.dissection || {};
 
                 ctx.fillText('Double-click to clear', 10, H - 5);
 
+              }
+
+              // Procedural instrument overlays
+              var canvasProcedure = d.beforeTechniqueView ? {} : ((d.procedureByLayer || {})[activeLayer] || {});
+              if (d.beforeTechniqueView) {
+                ctx.save(); ctx.font = 'bold 11px Inter, system-ui'; ctx.fillStyle = 'rgba(15,23,42,0.82)';
+                if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(W - 132, 14, 116, 25, 7); ctx.fill(); } else { ctx.fillRect(W - 132, 14, 116, 25); }
+                ctx.fillStyle = '#f8fafc'; ctx.fillText('Before technique', W - 121, 31); ctx.restore();
+              }
+              function drawProcedurePath(points, color, width, dashed) {
+                if (!points || points.length < 2) return;
+                ctx.save();
+                ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                ctx.setLineDash(dashed ? [6, 5] : []);
+                ctx.beginPath(); ctx.moveTo(points[0].x * W, points[0].y * H);
+                for (var pi = 1; pi < points.length; pi++) ctx.lineTo(points[pi].x * W, points[pi].y * H);
+                ctx.stroke(); ctx.restore();
+              }
+              function drawProcedureOpening(points, extended) {
+                if (!points || points.length < 2) return;
+                var openingMode = d.visualRealism || visualRealism;
+                ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                ctx.shadowColor = 'rgba(2,6,23,0.72)'; ctx.shadowBlur = extended ? 9 : 4;
+                ctx.strokeStyle = openingMode === 'accessible' ? '#020617' : '#271316';
+                ctx.lineWidth = extended ? 14 : 7;
+                ctx.beginPath(); ctx.moveTo(points[0].x * W, points[0].y * H);
+                for (var oi = 1; oi < points.length; oi++) ctx.lineTo(points[oi].x * W, points[oi].y * H);
+                ctx.stroke(); ctx.shadowBlur = 0;
+                ctx.strokeStyle = openingMode === 'accessible' ? '#f8fafc' : 'rgba(251,191,184,0.72)';
+                ctx.lineWidth = extended ? 1.8 : 1.2; ctx.stroke();
+                ctx.restore();
+              }
+              function drawTissueFlaps(guide) {
+                if (!guide || guide.length < 3) return;
+                var flapMode = d.visualRealism || visualRealism;
+                var start = guide[0], end = guide[guide.length - 1];
+                var vertical = Math.abs(end.y - start.y) >= Math.abs(end.x - start.x);
+                var spread = flapMode === 'realistic' ? 0.09 : 0.068;
+                var inset = 0.012;
+                var layerColor = ((spec.layers[currentLayerIdx] || {}).color) || '#d89b8f';
+                var flaps = vertical
+                  ? [
+                      [{ x: start.x - inset, y: start.y }, { x: end.x - inset, y: end.y }, { x: end.x - spread, y: end.y + 0.025 }, { x: start.x - spread, y: start.y - 0.025 }],
+                      [{ x: start.x + inset, y: start.y }, { x: start.x + spread, y: start.y - 0.025 }, { x: end.x + spread, y: end.y + 0.025 }, { x: end.x + inset, y: end.y }]
+                    ]
+                  : [
+                      [{ x: start.x, y: start.y - inset }, { x: start.x - 0.025, y: start.y - spread }, { x: end.x + 0.025, y: end.y - spread }, { x: end.x, y: end.y - inset }],
+                      [{ x: start.x, y: start.y + inset }, { x: end.x, y: end.y + inset }, { x: end.x + 0.025, y: end.y + spread }, { x: start.x - 0.025, y: start.y + spread }]
+                    ];
+                flaps.forEach(function (flap, flapIdx) {
+                  ctx.save(); ctx.beginPath(); ctx.moveTo(flap[0].x * W, flap[0].y * H);
+                  for (var fi = 1; fi < flap.length; fi++) ctx.lineTo(flap[fi].x * W, flap[fi].y * H);
+                  ctx.closePath(); ctx.shadowColor = 'rgba(2,6,23,0.65)'; ctx.shadowBlur = 12; ctx.shadowOffsetX = flapIdx ? 5 : -5;
+                  var flapGrad = ctx.createLinearGradient(flap[0].x * W, flap[0].y * H, flap[2].x * W, flap[2].y * H);
+                  flapGrad.addColorStop(0, layerColor); flapGrad.addColorStop(1, flapMode === 'realistic' ? '#7f4f55' : '#94666b');
+                  ctx.fillStyle = flapGrad; ctx.fill(); ctx.shadowBlur = 0;
+                  ctx.strokeStyle = flapMode === 'accessible' ? '#f8fafc' : 'rgba(254,202,202,0.65)'; ctx.lineWidth = flapMode === 'accessible' ? 2.5 : 1.2; ctx.stroke();
+                  ctx.restore();
+                });
+              }
+              if ((d.procedureMode || 'guided') === 'guided' && (d.visualRealism || 'guided') !== 'realistic' && !d.beforeTechniqueView && !canvasProcedure.incisionStarted && !revealedLayers[activeLayer]) {
+                drawProcedurePath(procedureGuidePoints(), 'rgba(45,212,191,0.9)', 3, true);
+                var guideMid = procedureGuidePoints()[1];
+                ctx.font = 'bold 9px Inter, system-ui'; ctx.fillStyle = '#99f6e4';
+                ctx.fillText('Teaching access path', guideMid.x * W + 8, guideMid.y * H - 8);
+              }
+              var overlayGuide = procedureGuidePoints();
+              var liveDemo = d._procedureDemo;
+              if (liveDemo && liveDemo.layer === activeLayer && Date.now() - liveDemo.startedAt < 3000) {
+                var demoProgress = Math.max(0, Math.min(1, (Date.now() - liveDemo.startedAt) / 2600));
+                var demoPath = [overlayGuide[0]], demoPoint;
+                if (demoProgress <= 0.5) {
+                  var firstProgress = demoProgress * 2;
+                  demoPoint = { x: overlayGuide[0].x + (overlayGuide[1].x - overlayGuide[0].x) * firstProgress, y: overlayGuide[0].y + (overlayGuide[1].y - overlayGuide[0].y) * firstProgress };
+                  demoPath.push(demoPoint);
+                } else {
+                  var secondProgress = (demoProgress - 0.5) * 2;
+                  demoPath.push(overlayGuide[1]);
+                  demoPoint = { x: overlayGuide[1].x + (overlayGuide[2].x - overlayGuide[1].x) * secondProgress, y: overlayGuide[1].y + (overlayGuide[2].y - overlayGuide[1].y) * secondProgress };
+                  demoPath.push(demoPoint);
+                }
+                drawProcedurePath(demoPath, '#67e8f9', 5, false);
+                ctx.beginPath(); ctx.arc(demoPoint.x * W, demoPoint.y * H, 7, 0, Math.PI * 2);
+                ctx.fillStyle = '#fef08a'; ctx.fill(); ctx.strokeStyle = '#0e7490'; ctx.lineWidth = 2; ctx.stroke();
+              }
+              var liveReplay = d._procedureReplay;
+              if (liveReplay && liveReplay.layer === activeLayer && Date.now() - liveReplay.startedAt < liveReplay.duration) {
+                var replayProgress = Math.max(0, Math.min(0.999, (Date.now() - liveReplay.startedAt) / liveReplay.duration));
+                var replayActions = liveReplay.actions || [];
+                var replayIndex = Math.min(replayActions.length - 1, Math.floor(replayProgress * replayActions.length));
+                var replayEntry = replayActions[Math.max(0, replayIndex)] || { action: 'inspect', label: 'Inspect' };
+                var replayLocal = replayProgress * Math.max(1, replayActions.length) - Math.max(0, replayIndex);
+                var replayPath = replayEntry.action === 'scissors' && canvasProcedure.extensionPath
+                  ? canvasProcedure.extensionPath
+                  : (canvasProcedure.incisionPath || overlayGuide);
+                var replayPoint = replayPath[0] || overlayGuide[1];
+                if (replayPath.length > 1) {
+                  var replayFloat = replayLocal * (replayPath.length - 1);
+                  var replaySegment = Math.min(replayPath.length - 2, Math.floor(replayFloat));
+                  var replaySegmentProgress = replayFloat - replaySegment;
+                  replayPoint = {
+                    x: replayPath[replaySegment].x + (replayPath[replaySegment + 1].x - replayPath[replaySegment].x) * replaySegmentProgress,
+                    y: replayPath[replaySegment].y + (replayPath[replaySegment + 1].y - replayPath[replaySegment].y) * replaySegmentProgress
+                  };
+                }
+                if (replayEntry.action === 'forceps' && canvasProcedure.forcepsPoint) replayPoint = canvasProcedure.forcepsPoint;
+                if (replayEntry.action === 'pin' && (canvasProcedure.pins || []).length) replayPoint = canvasProcedure.pins[Math.min((canvasProcedure.pins || []).length - 1, replayIndex)];
+                drawProcedurePath(replayPath, 'rgba(34,211,238,0.78)', 4, false);
+                ctx.save();
+                ctx.shadowColor = 'rgba(8,145,178,0.7)'; ctx.shadowBlur = 10;
+                ctx.beginPath(); ctx.arc(replayPoint.x * W, replayPoint.y * H, 7, 0, Math.PI * 2);
+                ctx.fillStyle = '#fef08a'; ctx.fill(); ctx.strokeStyle = '#0e7490'; ctx.lineWidth = 2; ctx.stroke();
+                ctx.shadowBlur = 0; ctx.font = 'bold 9px Inter, system-ui'; ctx.fillStyle = '#ecfeff';
+                ctx.fillText('Replay: ' + (replayEntry.label || procedureActionLabel(replayEntry.action)), Math.min(W - 115, replayPoint.x * W + 10), Math.max(14, replayPoint.y * H - 10));
+                ctx.restore();
+              }
+              var liveInstrument = d.activeInstrument || 'probe';
+              if ((d.visualRealism || 'guided') !== 'realistic' && liveInstrument === 'forceps' && canvasProcedure.incisionExtended && !canvasProcedure.retracted) {
+                ctx.save(); ctx.setLineDash([4, 3]); ctx.strokeStyle = '#5eead4'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(overlayGuide[1].x * W, overlayGuide[1].y * H, 18, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+              }
+              if ((d.visualRealism || 'guided') !== 'realistic' && liveInstrument === 'pin' && canvasProcedure.retracted && (canvasProcedure.pins || []).length < 2) {
+                [overlayGuide[0], overlayGuide[overlayGuide.length - 1]].forEach(function (target) {
+                  ctx.save(); ctx.setLineDash([3, 3]); ctx.strokeStyle = '#f9a8d4'; ctx.lineWidth = 2;
+                  ctx.beginPath(); ctx.arc(target.x * W, target.y * H, 13, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+                });
+              }
+              if (canvasProcedure.incisionStarted) drawProcedureOpening(canvasProcedure.incisionPath, false);
+              if (canvasProcedure.incisionExtended) drawProcedureOpening(canvasProcedure.extensionPath, true);
+              if (canvasProcedure.retracted) drawTissueFlaps(overlayGuide);
+              if (canvasProcedure.surfaceCleared && canvasProcedure.dropperPoint) {
+                var dropX = canvasProcedure.dropperPoint.x * W, dropY = canvasProcedure.dropperPoint.y * H;
+                var dropRadius = dissMotionReduced ? 22 : 22 + Math.sin(dissTick * 0.08) * 3;
+                var dropGrad = ctx.createRadialGradient(dropX - 5, dropY - 6, 2, dropX, dropY, dropRadius);
+                dropGrad.addColorStop(0, 'rgba(224,242,254,0.62)'); dropGrad.addColorStop(1, 'rgba(56,189,248,0.06)');
+                ctx.beginPath(); ctx.arc(dropX, dropY, dropRadius, 0, Math.PI * 2); ctx.fillStyle = dropGrad; ctx.fill();
+                ctx.strokeStyle = 'rgba(125,211,252,0.72)'; ctx.lineWidth = 1.5; ctx.stroke();
+              }
+              (canvasProcedure.pins || []).forEach(function (pin, pinIdx) {
+                var pinX = pin.x * W, pinY = pin.y * H;
+                var tensionX = (pin.x - overlayGuide[1].x) * 28, tensionY = (pin.y - overlayGuide[1].y) * 28;
+                ctx.save(); ctx.strokeStyle = 'rgba(226,232,240,0.82)'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(pinX - tensionX, pinY - tensionY); ctx.lineTo(pinX + tensionX, pinY + tensionY); ctx.stroke();
+                ctx.shadowColor = 'rgba(2,6,23,0.65)'; ctx.shadowBlur = 5;
+                var pinGrad = ctx.createRadialGradient(pinX - 3, pinY - 3, 1, pinX, pinY, 7);
+                pinGrad.addColorStop(0, '#ffffff'); pinGrad.addColorStop(0.3, pinIdx ? '#7dd3fc' : '#f9a8d4'); pinGrad.addColorStop(1, pinIdx ? '#0369a1' : '#be185d');
+                ctx.beginPath(); ctx.arc(pinX, pinY, (d.visualRealism || visualRealism) === 'accessible' ? 8 : 6, 0, Math.PI * 2); ctx.fillStyle = pinGrad; ctx.fill();
+                ctx.restore();
+              });
+              if (canvas._toolStroke && canvas._toolStroke.length > 1) drawProcedurePath(canvas._toolStroke, '#fef08a', 3, true);
+              if (canvas._toolResistance && canvas._toolPointer) {
+                var resistance = canvas._toolResistance, resistancePoint = canvas._toolPointer;
+                var resistanceColor = resistance.level === 'high' ? '#fb7185' : (resistance.level === 'moderate' ? '#fbbf24' : '#34d399');
+                ctx.save();
+                ctx.beginPath(); ctx.arc(resistancePoint.x * W, resistancePoint.y * H, 13 + resistance.value * 8, 0, Math.PI * 2);
+                ctx.strokeStyle = resistanceColor; ctx.lineWidth = 2.5; ctx.stroke();
+                ctx.fillStyle = 'rgba(15,23,42,0.86)';
+                if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(resistancePoint.x * W + 18, resistancePoint.y * H - 14, 84, 21, 6); ctx.fill(); }
+                else ctx.fillRect(resistancePoint.x * W + 18, resistancePoint.y * H - 14, 84, 21);
+                ctx.font = 'bold 9px Inter, system-ui'; ctx.fillStyle = resistanceColor;
+                ctx.fillText('Resistance: ' + resistance.level, resistancePoint.x * W + 23, resistancePoint.y * H);
+                ctx.restore();
               }
 
               // Ruler tool overlay
@@ -5659,7 +6275,8 @@ var d = labToolData.dissection || {};
 
               if (hovOrg && d.selectedOrgan !== hovOrg.id) {
 
-                var hpx = hovOrg.x * W, hpy = hovOrg.y * H;
+                var hoverPoint = variedOrganPoint(hovOrg);
+                var hpx = hoverPoint.x * W, hpy = hoverPoint.y * H;
 
                 var hText = hovOrg.name + ': ' + hovOrg.fn.split('.')[0] + '.';
 
@@ -5731,7 +6348,8 @@ var d = labToolData.dissection || {};
 
                 if (gOrg) {
 
-                  var gx = gOrg.x * W, gy = gOrg.y * H;
+                  var guidedPoint = variedOrganPoint(gOrg);
+                  var gx = guidedPoint.x * W, gy = guidedPoint.y * H;
 
                   ctx.beginPath(); ctx.arc(gx, gy, 16 + Math.sin(dissTick * 0.08) * 3, 0, Math.PI * 2);
 
@@ -5743,7 +6361,106 @@ var d = labToolData.dissection || {};
 
 
 
+              ctx.restore(); // End deterministic specimen-proportion transform
+
+              // Material, moisture, and adjustable lab-light pass.
+              var liveVisualMode = d.visualRealism || 'guided';
+              var liveLight = d.labLight || 'neutral';
+              if (liveVisualMode !== 'accessible') {
+                ctx.save();
+                ctx.globalCompositeOperation = 'soft-light';
+                for (var textureIdx = 0; textureIdx < (liveVisualMode === 'realistic' ? 34 : 16); textureIdx++) {
+                  var textureX = (0.18 + specimenVariationValue('texture-x-' + textureIdx) * 0.64) * W;
+                  var textureY = (0.16 + specimenVariationValue('texture-y-' + textureIdx) * 0.68) * H;
+                  var textureR = 0.8 + specimenVariationValue('texture-r-' + textureIdx) * 2.2;
+                  ctx.beginPath(); ctx.arc(textureX, textureY, textureR, 0, Math.PI * 2);
+                  ctx.fillStyle = textureIdx % 2 ? 'rgba(255,255,255,0.11)' : 'rgba(15,23,42,0.08)'; ctx.fill();
+                }
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = liveVisualMode === 'realistic' ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.08)';
+                ctx.lineWidth = 2;
+                for (var sheenIdx = 0; sheenIdx < 4; sheenIdx++) {
+                  var sheenY = H * (0.34 + sheenIdx * 0.095);
+                  ctx.beginPath(); ctx.moveTo(W * 0.36, sheenY); ctx.quadraticCurveTo(W * 0.48, sheenY - 10, W * 0.6, sheenY + 2); ctx.stroke();
+                }
+                ctx.restore();
+              }
+              ctx.save();
+              var lightPointer = canvas._toolPointer;
+              var lightX = lightPointer ? lightPointer.x * W : W * 0.42;
+              var lightY = lightPointer ? lightPointer.y * H : H * 0.32;
+              var lightTint = liveLight === 'warm' ? '255,214,170' : (liveLight === 'cool' ? '186,230,253' : '241,245,249');
+              var labGlow = ctx.createRadialGradient(lightX, lightY, 12, lightX, lightY, liveVisualMode === 'realistic' ? W * 0.52 : W * 0.66);
+              labGlow.addColorStop(0, 'rgba(' + lightTint + ',0.16)');
+              labGlow.addColorStop(0.55, 'rgba(' + lightTint + ',0.045)');
+              labGlow.addColorStop(1, 'rgba(2,6,23,0.17)');
+              ctx.fillStyle = labGlow; ctx.fillRect(0, 0, W, H); ctx.restore();
+
               ctx.restore(); // End zoom transform
+
+              var screenPointer = canvas._toolPointer;
+              if (screenPointer) {
+                var pointerScale = specimenScaleFactors();
+                var displayedPointerX = (screenPointer.x - 0.5) * pointerScale.x + 0.5;
+                var displayedPointerY = (screenPointer.y - 0.45) * pointerScale.y + 0.45;
+                var pointerScreenX = (displayedPointerX * W - W / 2) * zoom + W / 2 + panX;
+                var pointerScreenY = (displayedPointerY * H - H / 2) * zoom + H / 2 + panY;
+                if (d.inspectionLens && pointerScreenX > 0 && pointerScreenX < W && pointerScreenY > 0 && pointerScreenY < H) {
+                  var lensRadius = liveVisualMode === 'accessible' ? 72 : 58;
+                  var lensMagnification = liveVisualMode === 'realistic' ? 1.9 : 1.65;
+                  var lensBuffer = canvas._dissLensBuffer;
+                  if (!lensBuffer) { lensBuffer = document.createElement('canvas'); canvas._dissLensBuffer = lensBuffer; }
+                  if (lensBuffer.width !== canvas.width || lensBuffer.height !== canvas.height) { lensBuffer.width = canvas.width; lensBuffer.height = canvas.height; }
+                  var lensCtx = lensBuffer.getContext('2d');
+                  if (lensCtx) {
+                    lensCtx.setTransform(1, 0, 0, 1, 0, 0); lensCtx.clearRect(0, 0, lensBuffer.width, lensBuffer.height); lensCtx.drawImage(canvas, 0, 0);
+                    var sourceRadius = lensRadius / lensMagnification;
+                    ctx.save(); ctx.beginPath(); ctx.arc(pointerScreenX, pointerScreenY, lensRadius, 0, Math.PI * 2); ctx.clip();
+                    ctx.drawImage(lensBuffer, pointerScreenX - sourceRadius, pointerScreenY - sourceRadius, sourceRadius * 2, sourceRadius * 2, pointerScreenX - lensRadius, pointerScreenY - lensRadius, lensRadius * 2, lensRadius * 2);
+                    var lensShade = ctx.createRadialGradient(pointerScreenX - 15, pointerScreenY - 18, 4, pointerScreenX, pointerScreenY, lensRadius);
+                    lensShade.addColorStop(0, 'rgba(255,255,255,0.17)'); lensShade.addColorStop(0.72, 'rgba(255,255,255,0)'); lensShade.addColorStop(1, 'rgba(2,6,23,0.24)');
+                    ctx.fillStyle = lensShade; ctx.fillRect(pointerScreenX - lensRadius, pointerScreenY - lensRadius, lensRadius * 2, lensRadius * 2); ctx.restore();
+                    ctx.save(); ctx.beginPath(); ctx.arc(pointerScreenX, pointerScreenY, lensRadius, 0, Math.PI * 2);
+                    ctx.strokeStyle = liveVisualMode === 'accessible' ? '#f8fafc' : '#94a3b8'; ctx.lineWidth = liveVisualMode === 'accessible' ? 5 : 3; ctx.shadowColor = 'rgba(2,6,23,0.75)'; ctx.shadowBlur = 8; ctx.stroke();
+                    ctx.font = 'bold 10px Inter, system-ui'; ctx.fillStyle = '#f8fafc'; ctx.fillText(lensMagnification.toFixed(1) + 'x', pointerScreenX + lensRadius - 25, pointerScreenY + lensRadius - 8); ctx.restore();
+                  }
+                }
+                if (!d.quizMode && !d.annotateMode && !d.rulerMode) {
+                  var cursorTool = d.activeInstrument || 'probe';
+                  var cursorScale = liveVisualMode === 'accessible' ? 1.3 : 1;
+                  var cursorAngle = -0.72 + (dissMotionReduced ? 0 : Math.sin(dissTick * 0.035) * 0.025);
+                  ctx.save(); ctx.translate(pointerScreenX, pointerScreenY); ctx.rotate(cursorAngle); ctx.scale(cursorScale, cursorScale);
+                  ctx.shadowColor = 'rgba(2,6,23,0.72)'; ctx.shadowBlur = 7; ctx.shadowOffsetX = 4; ctx.shadowOffsetY = 5;
+                  if (cursorTool === 'scalpel') {
+                    ctx.fillStyle = '#64748b'; ctx.fillRect(-42, -5, 34, 10);
+                    ctx.fillStyle = '#e2e8f0'; ctx.beginPath(); ctx.moveTo(-8, -5); ctx.lineTo(15, -2); ctx.lineTo(2, 5); ctx.lineTo(-8, 5); ctx.closePath(); ctx.fill();
+                    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1; ctx.stroke();
+                  } else if (cursorTool === 'scissors') {
+                    var jaw = canvas._toolDrawing && !dissMotionReduced ? 0.22 : 0.1;
+                    ctx.strokeStyle = '#dbeafe'; ctx.lineWidth = 3;
+                    ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(27, -9 - jaw * 18); ctx.moveTo(-8, 0); ctx.lineTo(27, 9 + jaw * 18); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(-18, -8, 8, 0, Math.PI * 2); ctx.arc(-18, 8, 8, 0, Math.PI * 2); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(-7, 0, 3, 0, Math.PI * 2); ctx.fillStyle = '#94a3b8'; ctx.fill();
+                  } else if (cursorTool === 'forceps') {
+                    ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2.5;
+                    ctx.beginPath(); ctx.moveTo(-38, -5); ctx.quadraticCurveTo(-2, -2, 20, -1); ctx.moveTo(-38, 5); ctx.quadraticCurveTo(-2, 2, 20, 1); ctx.stroke();
+                    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(-38, 0); ctx.lineTo(-25, 0); ctx.stroke();
+                  } else if (cursorTool === 'pin') {
+                    ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-28, 0); ctx.lineTo(17, 0); ctx.stroke();
+                    var cursorPinGrad = ctx.createRadialGradient(-31, -3, 1, -28, 0, 8); cursorPinGrad.addColorStop(0, '#fff'); cursorPinGrad.addColorStop(1, '#db2777');
+                    ctx.beginPath(); ctx.arc(-28, 0, 7, 0, Math.PI * 2); ctx.fillStyle = cursorPinGrad; ctx.fill();
+                  } else if (cursorTool === 'dropper') {
+                    ctx.fillStyle = '#bae6fd'; ctx.fillRect(-28, -4, 39, 8);
+                    ctx.fillStyle = '#475569'; ctx.beginPath(); ctx.ellipse(-31, 0, 12, 9, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#7dd3fc'; ctx.beginPath(); ctx.moveTo(15, 0); ctx.quadraticCurveTo(22, 7, 15, 13); ctx.quadraticCurveTo(8, 7, 15, 0); ctx.fill();
+                  } else {
+                    ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(-42, 0); ctx.lineTo(18, 0); ctx.stroke();
+                    ctx.fillStyle = '#0f766e'; ctx.fillRect(-44, -5, 28, 10);
+                    ctx.beginPath(); ctx.arc(20, 0, 3, 0, Math.PI * 2); ctx.fillStyle = '#f8fafc'; ctx.fill();
+                  }
+                  ctx.restore();
+                }
+              }
 
               } catch (e) { console.error('[DissectionLab] render error:', e); try { ctx.restore(); ctx.restore(); } catch (_) {} }
 
@@ -5757,65 +6474,75 @@ var d = labToolData.dissection || {};
 
 
 
-          // Auto-save progress to localStorage (non-hook: inline during render)
-
+          // Save current-specimen progress with a short debounce. Each specimen owns
+          // its own layer, notes, assessment, and annotation state.
           if (d._dissLoadedSpec === specimen) {
-            try {
-
-            var saveKey = 'dissection_progress_' + specimen;
-
-            var saveData = {
-
+            scheduleDissectionSave('dissection_progress_' + specimen, {
+              schemaVersion: 4,
               exploredOrgans: d.exploredOrgans || {},
-
+              revealedLayers: d.revealedLayers || {},
               quizScore: d.quizScore || 0,
-
+              quizTotal: d.quizTotal || 0,
               completedObjectives: d.completedObjectives || {},
-
+              organNotes: d.organNotes || {},
+              organConfidence: d.organConfidence || {},
+              annotations: d.annotations || [],
               activeLayer: activeLayer,
-
-              timeSpent: d.timeSpent || 0
-
-            };
-
-            localStorage.setItem(saveKey, JSON.stringify(saveData));
-
-            } catch (e) { }
+              timeSpent: d.timeSpent || 0,
+              guidedComplete: !!d.guidedComplete,
+              procedureByLayer: d.procedureByLayer || {},
+              procedureMode: procedureMode,
+              activeInstrument: activeInstrument,
+              incisionDepth: d.incisionDepth || 'shallow',
+              visualRealism: visualRealism,
+              labLight: labLight,
+              inspectionLens: inspectionLens,
+              variationSeed: variationSeed,
+              tactileFeedback: d.tactileFeedback !== false
+            });
           }
 
-          // Load progress (non-hook: deferred to avoid setState-during-render)
-
-          if (!d._dissLoadedSpec || d._dissLoadedSpec !== (specimen)) {
-
+          // Load the selected specimen after render; defaults deliberately clear
+          // progress from the previously viewed specimen.
+          if (!d._dissLoadedSpec || d._dissLoadedSpec !== specimen) {
+            var loadSpecimenKey = specimen;
+            var loadSpecimenDef = spec;
             setTimeout(function () {
-
-              var saveKey2 = 'dissection_progress_' + specimen;
-
+              var data = {};
               try {
-
-                var saved = localStorage.getItem(saveKey2);
-
-                if (saved) {
-
-                  var data = JSON.parse(saved);
-
-                  if (data.exploredOrgans) upd('exploredOrgans', data.exploredOrgans);
-
-                  if (data.quizScore) upd('quizScore', data.quizScore);
-
-                  if (data.completedObjectives) upd('completedObjectives', data.completedObjectives);
-                  if (data.activeLayer && spec.layers.some(function (layer) { return layer.id === data.activeLayer; })) upd('activeLayer', data.activeLayer);
-
-                }
-
-              } catch (e) { }
-
-              upd('_dissLoadedSpec', specimen);
-
+                var saved = localStorage.getItem('dissection_progress_' + loadSpecimenKey);
+                if (saved) data = JSON.parse(saved) || {};
+              } catch (e) { data = {}; }
+              var savedLayer = data.activeLayer && loadSpecimenDef.layers.some(function (layer) { return layer.id === data.activeLayer; })
+                ? data.activeLayer
+                : ((loadSpecimenDef.layers[0] || {}).id || 'skin');
+              updMany({
+                exploredOrgans: data.exploredOrgans || {},
+                revealedLayers: data.revealedLayers || {},
+                quizScore: Number(data.quizScore) || 0,
+                quizTotal: Number(data.quizTotal) || 0,
+                completedObjectives: data.completedObjectives || {},
+                organNotes: data.organNotes || {},
+                organConfidence: data.organConfidence || {},
+                annotations: Array.isArray(data.annotations) ? data.annotations : [],
+                activeLayer: savedLayer,
+                timeSpent: Number(data.timeSpent) || 0,
+                guidedComplete: !!data.guidedComplete,
+                procedureByLayer: data.procedureByLayer || {},
+                procedureMode: data.procedureMode === 'independent' ? 'independent' : 'guided',
+                activeInstrument: data.activeInstrument || 'probe',
+                incisionDepth: data.incisionDepth === 'deep' ? 'deep' : 'shallow',
+                visualRealism: ['guided', 'realistic', 'accessible'].indexOf(data.visualRealism) >= 0 ? data.visualRealism : 'guided',
+                labLight: ['neutral', 'warm', 'cool'].indexOf(data.labLight) >= 0 ? data.labLight : 'neutral',
+                inspectionLens: !!data.inspectionLens,
+                variationSeed: Number(data.variationSeed) || 1,
+                tactileFeedback: data.tactileFeedback !== false,
+                procedureFeedback: null,
+                selectedOrgan: null,
+                _dissLoadedSpec: loadSpecimenKey
+              });
             }, 0);
-
           }
-
           // Keyboard shortcuts stay inside the active lab and never intercept form controls.
           window._dissectionKeyHandler = function (e) {
             var target = e.target;
@@ -5854,6 +6581,7 @@ var d = labToolData.dissection || {};
 
           function playDissectSound(type) {
 
+            if (!disSoundEnabled()) return;
             try {
 
               if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -5881,6 +6609,7 @@ var d = labToolData.dissection || {};
           var canvasClick = function (e) {
 
             if (e.target._wasPanning) { e.target._wasPanning = false; return; }
+            if (e.target._suppressToolClick) { e.target._suppressToolClick = false; return; }
 
             var canvas = e.target; var rect = canvas.getBoundingClientRect();
 
@@ -5893,11 +6622,21 @@ var d = labToolData.dissection || {};
             var mx = (rawX - 0.5 - _px / rect.width) / _z + 0.5;
 
             var my = (rawY - 0.5 - _py / rect.height) / _z + 0.5;
+            var mappedPoint = inverseSpecimenVariation({ x: mx, y: my });
+            mx = mappedPoint.x; my = mappedPoint.y;
+
+            if (!d.quizMode && !d.annotateMode && !d.rulerMode) {
+              if (activeInstrument === 'forceps') { performProcedureAction('forceps', { point: { x: mx, y: my } }); return; }
+              if (activeInstrument === 'pin') { performProcedureAction('pin', { point: { x: mx, y: my } }); return; }
+              if (activeInstrument === 'dropper') { performProcedureAction('dropper', { point: { x: mx, y: my } }); return; }
+              if (activeInstrument === 'scalpel' || activeInstrument === 'scissors') return;
+            }
 
             var hit = null;
 
-            organs.forEach(function (org) { var dx = mx - org.x, dy = my - org.y; if (Math.sqrt(dx * dx + dy * dy) < 0.04) hit = org; });
+            organs.forEach(function (org) { var orgPoint = variedOrganPoint(org); var dx = mx - orgPoint.x, dy = my - orgPoint.y; if (Math.sqrt(dx * dx + dy * dy) < (visualRealism === 'accessible' ? 0.065 : 0.05)) hit = org; });
 
+            if (hit && d.quizMode && d.quizAnswerMode === 'hotspot' && !d.quizFeedback) submitQuizAnswer(hit.id);
             upd('selectedOrgan', hit ? (hit.id === d.selectedOrgan ? null : hit.id) : null);
 
             if (hit) {
@@ -6004,14 +6743,20 @@ var d = labToolData.dissection || {};
             var mx = (rawX - 0.5 - _px / rect.width) / _z + 0.5;
 
             var my = (rawY - 0.5 - _py / rect.height) / _z + 0.5;
+            var mappedPoint = inverseSpecimenVariation({ x: mx, y: my });
+            mx = mappedPoint.x; my = mappedPoint.y;
+            canvas._toolPointer = { x: mx, y: my, at: Date.now() };
 
             var hit = null;
 
-            organs.forEach(function (org) { var dx = mx - org.x, dy = my - org.y; if (Math.sqrt(dx * dx + dy * dy) < 0.04) hit = org; });
+            organs.forEach(function (org) { var orgPoint = variedOrganPoint(org); var dx = mx - orgPoint.x, dy = my - orgPoint.y; if (Math.sqrt(dx * dx + dy * dy) < (visualRealism === 'accessible' ? 0.06 : 0.04)) hit = org; });
 
             upd('hoveredOrgan', hit ? hit.id : null);
 
-            canvas.style.cursor = hit ? 'pointer' : (canvas._isPanning ? 'grabbing' : ((d.canvasZoom || 1) > 1 ? 'grab' : 'crosshair'));
+            var toolCursor = (activeInstrument === 'scalpel' || activeInstrument === 'scissors') ? 'crosshair' : (activeInstrument === 'forceps' ? 'grab' : 'pointer');
+            canvas.style.cursor = visualRealism === 'accessible'
+              ? (hit ? 'pointer' : (canvas._isPanning ? 'grabbing' : ((d.canvasZoom || 1) > 1 && activeInstrument === 'probe' ? 'grab' : toolCursor)))
+              : (canvas._isPanning ? 'grabbing' : 'none');
 
           };
 
@@ -6059,6 +6804,10 @@ var d = labToolData.dissection || {};
           var currentLayerDef = spec.layers[currentLayerIdx] || spec.layers[0] || { id: activeLayer, name: activeLayer, desc: '' };
           var currentLayerDone = !!revealedLayers[activeLayer];
           var nextLayerDef = spec.layers[currentLayerIdx + 1] || null;
+          var procedureStageIdx = procedureStepIndex(currentProcedure);
+          var procedureNext = nextProcedureInfo();
+          var techniqueScore = procedureTechniqueScore(currentProcedure);
+          var recentTechniqueMetrics = currentProcedure.extensionMetrics || currentProcedure.incisionMetrics || null;
           var revealedLayerCount = spec.layers.filter(function (layer) { return !!revealedLayers[layer.id]; }).length;
           var unlockedLayerIdx = Math.max(0, currentLayerIdx);
           spec.layers.forEach(function (layer, layerIdx) {
@@ -6072,17 +6821,14 @@ var d = labToolData.dissection || {};
 
           function selectSpecimen(sk) {
             var sp = SPECIMENS[sk];
-            if (!sp) return;
-            upd('specimen', sk);
-            upd('activeLayer', (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'));
-            upd('selectedOrgan', null);
-            upd('guidedStep', 0);
-            upd('organSearch', '');
-            upd('specimensViewed', Object.assign({}, d.specimensViewed, (function () { var o = {}; o[sk] = true; return o; })()));
-            if (typeof announceToSR === 'function') announceToSR('Selected ' + sp.name + '. Starting on ' + ((sp.layers[0] || {}).name || 'first') + ' layer.');
+            if (!sp || sk === specimen) return;
+            closeTimedPractical();
+            var viewed = Object.assign({}, d.specimensViewed || {});
+            viewed[sk] = true;
+            updMany({ specimen: sk, activeLayer: (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'), selectedOrgan: null, guidedStep: 0, organSearch: '', exploredOrgans: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFeedback: null, completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], timeSpent: 0, guidedComplete: false, procedureByLayer: {}, procedureFeedback: null, activeInstrument: 'probe', incisionDepth: 'shallow', specimensViewed: viewed, _dissLoadedSpec: null });
+            if (typeof announceToSR === 'function') announceToSR('Selected ' + sp.name + '. Loading saved progress for the ' + ((sp.layers[0] || {}).name || 'first') + ' layer.');
             if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'specimenSelect', 'Selected ' + sp.name + '. ' + sp.desc, { debounce: 500 });
           }
-
           function onSpecimenKeyDown(e, sk) {
             var idx = SPEC_KEYS.indexOf(sk);
             var nextIdx = idx;
@@ -6112,54 +6858,32 @@ var d = labToolData.dissection || {};
 
           function moveThroughLayer() {
             if (d._incisionAnim && d._incisionAnim.active) return;
-            if (currentLayerDone && nextLayerDef) {
-              selectLayer(nextLayerDef.id);
-              return;
-            }
-            if (!currentLayerDone) peelCurrentLayer();
+            if (currentLayerDone && nextLayerDef) { selectLayer(nextLayerDef.id); return; }
+            if (!currentLayerDone) performNextProcedureStep();
           }
 
           function closeTimedPractical() {
-            if (d._practicalInterval) {
-              clearInterval(d._practicalInterval);
-              upd('_practicalInterval', null);
-            }
+            try { if (window.__alloDissectionPracticalInterval) clearInterval(window.__alloDissectionPracticalInterval); window.__alloDissectionPracticalInterval = null; window.__alloDissectionPracticalScore = 0; } catch (e) {}
             if (!d.practicalMode) return;
-            upd('practicalMode', false);
-            upd('labelMode', d._prePracticalLabelMode || 'show');
+            updMany({ practicalMode: false, quizMode: false, labelMode: d._prePracticalLabelMode || 'show' });
           }
 
           function setStudyRoute(route) {
             var secondaryStudyOpen = !!(d.flashcardMode || d.compareMode || d.practicalMode);
-            var routeIsClean = route === 'explore'
-              ? !d.guidedMode && !d.quizMode
-              : route === 'guided'
-                ? !!d.guidedMode && !d.quizMode
-                : !!d.quizMode && !d.guidedMode && !d.practicalMode;
+            var routeIsClean = route === 'explore' ? !d.guidedMode && !d.quizMode : route === 'guided' ? !!d.guidedMode && !d.quizMode : !!d.quizMode && !d.guidedMode && !d.practicalMode;
             if (routeIsClean && !secondaryStudyOpen) return;
             closeTimedPractical();
-            upd('flashcardMode', false);
-            upd('compareMode', false);
             if (route === 'guided') {
-              upd('quizMode', false);
-              upd('guidedMode', true);
-              upd('guidedStep', 0);
-              if (typeof announceToSR === 'function') announceToSR('Guided tour started. ' + (currentGuided ? currentGuided.prompt : 'Choose a structure on the canvas.'));
+              updMany({ flashcardMode: false, compareMode: false, quizMode: false, guidedMode: true, guidedStep: 0 });
+              if (typeof announceToSR === 'function') announceToSR('Guided investigation started. ' + (currentGuided ? currentGuided.prompt : 'Choose a structure on the canvas.'));
             } else if (route === 'quiz') {
-              upd('guidedMode', false);
-              upd('quizMode', true);
-              upd('quizIdx', 0);
-              upd('quizScore', 0);
-              upd('quizTotal', 0);
-              upd('quizFeedback', null);
-              if (typeof announceToSR === 'function') announceToSR('Identification quiz started.');
+              updMany({ flashcardMode: false, compareMode: false, guidedMode: false, quizMode: true, quizIdx: 0, quizScore: 0, quizTotal: 0, quizFeedback: null, quizExplanation: null, quizSeed: Date.now(), quizAnswerMode: d.quizAnswerMode || 'choices' });
+              if (typeof announceToSR === 'function') announceToSR('Practice assessment started. Choose multiple choice or answer directly on the specimen.');
             } else {
-              upd('guidedMode', false);
-              upd('quizMode', false);
-              if (typeof announceToSR === 'function') announceToSR('Explore mode active.');
+              updMany({ flashcardMode: false, compareMode: false, guidedMode: false, quizMode: false, quizFeedback: null });
+              if (typeof announceToSR === 'function') announceToSR('Free explore mode active.');
             }
           }
-
           function chooseOrganFromDirectory(org) {
             upd('selectedOrgan', org.id);
             var explored = Object.assign({}, d.exploredOrgans || {});
@@ -6191,17 +6915,18 @@ var d = labToolData.dissection || {};
 
             React.createElement("section", { className: "diss-mission", "data-dissection-mission": true, "aria-labelledby": "diss-mission-title" },
               React.createElement("div", { className: "diss-mission__main" },
-                React.createElement("p", { className: "diss-mission__eyebrow" }, 'Virtual Biology Laboratory'),
-                React.createElement("h2", { id: "diss-mission-title" }, 'Virtual Dissection Lab'),
+                React.createElement("p", { className: "diss-mission__eyebrow" }, __alloT('stem.dissection.virtual_biology_laboratory', 'Virtual Biology Laboratory')),
+                React.createElement("h2", { id: "diss-mission-title" }, __alloT('stem.dissection.virtual_dissection_lab', 'Virtual Dissection Lab')),
                 React.createElement("p", { className: "diss-mission__copy" }, missionText),
                 React.createElement("ol", { className: "diss-workflow", "aria-label": "Dissection workflow" },
-                  ['Choose a specimen', 'Reveal a layer', 'Identify structures'].map(function (step, stepIdx) {
+                  [__alloT('stem.dissection.orient', 'Orient'), __alloT('stem.dissection.predict', 'Predict'), __alloT('stem.dissection.reveal_a_layer', 'Reveal'), __alloT('stem.dissection.identify_structures', 'Identify'), __alloT('stem.dissection.record_evidence', 'Record evidence'), __alloT('stem.dissection.compare', 'Compare')].map(function (step, stepIdx) {
                     return React.createElement("li", { key: step },
                       React.createElement("span", { className: "diss-workflow__number", "aria-hidden": "true" }, String(stepIdx + 1)),
                       step
                     );
                   })
-                )
+                ),
+                React.createElement("p", { className: "diss-mission__copy" }, __alloT('stem.dissection.virtual_practice_notice', 'Virtual practice supports observation and comparison. Follow your instructor’s safety, ethics, handling, and disposal procedures for any physical specimen.'))
               ),
               React.createElement("aside", { className: "diss-mission__action", "aria-label": "Current layer action" },
                 React.createElement("span", { className: "diss-mission__action-label" }, 'Current investigation'),
@@ -6215,12 +6940,10 @@ var d = labToolData.dissection || {};
                   "aria-describedby": "diss-layer-action-help",
                   onClick: moveThroughLayer
                 }, (d._incisionAnim && d._incisionAnim.active)
-                  ? '✂ Revealing layer…'
+                  ? 'Technique in progress...'
                   : (currentLayerDone && nextLayerDef)
-                    ? '→ Continue to ' + nextLayerDef.name
-                    : (!currentLayerDone && nextLayerDef)
-                      ? 'Peel ' + currentLayerDef.name + ' → ' + nextLayerDef.name
-                      : (!currentLayerDone ? '🔬 Complete final layer' : '✓ All layers revealed'))
+                    ? 'Continue to ' + nextLayerDef.name
+                    : (currentLayerDone ? 'All layers revealed' : procedureNext.label))
               ),
               React.createElement("div", { className: "diss-mission__stats", "aria-label": "Current lab status" },
                 [
@@ -6238,9 +6961,9 @@ var d = labToolData.dissection || {};
 
             React.createElement("div", { className: "diss-mode-rail", role: "toolbar", "aria-label": "Learning route" },
               [
-                { id: 'explore', icon: '🔎', label: 'Explore' },
-                { id: 'guided', icon: '🧭', label: 'Guided tour' },
-                { id: 'quiz', icon: '🧠', label: 'Practice quiz' }
+                { id: 'explore', icon: '🔎', label: __alloT('stem.dissection.free_explore', 'Free explore') },
+                { id: 'guided', icon: '🧭', label: __alloT('stem.dissection.guided_investigation', 'Guided investigation') },
+                { id: 'quiz', icon: '🧠', label: __alloT('stem.dissection.practice_assessment', 'Practice assessment') }
               ].map(function (route) {
                 var active = studyRoute === route.id;
                 return React.createElement("button", {
@@ -6333,47 +7056,22 @@ var d = labToolData.dissection || {};
             ),
 
             // ── View group expanded ──
-            d.toolbarViewOpen && React.createElement("div", { id: "diss-view-tools", className: "diss-tool-panel flex flex-wrap bg-blue-50 rounded-xl border border-blue-200 animate-[fadeIn_0.2s_ease-out]", role: "region", "aria-label": "View controls" },
-
-              React.createElement("button", { "aria-label": "Toggle organ name labels", "aria-pressed": d.labelMode !== 'hidden',
-                onClick: function () { var m = d.labelMode === 'show' ? 'hidden' : 'show'; upd('labelMode', m); },
-                title: 'Labels' + ' — Toggle organ name labels on the canvas',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.labelMode !== 'hidden' ? 'bg-blue-600 text-white' : 'transition-colors bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 active:scale-[0.97]')
-              }, '\uD83C\uDFF7 ' + 'Labels'),
-
-              React.createElement("button", { "aria-label": "Toggle high contrast mode", "aria-pressed": !!d.highContrast,
-                onClick: function () { upd('highContrast', !d.highContrast); },
-                title: 'Hi-Con' + ' — Enhance colors for accessibility',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.highContrast ? 'bg-yellow-500 text-black' : 'transition-colors bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 active:scale-[0.97]')
-              }, '\u2600 ' + 'Hi-Con'),
-
-              React.createElement("button", { "aria-label": "Switch anatomical view: dorsal or ventral", "aria-pressed": d.viewAngle === 'dorsal',
-                onClick: function () { var nextView = d.viewAngle === 'dorsal' ? 'ventral' : 'dorsal'; upd('viewAngle', nextView); upd('viewDorsal', nextView === 'dorsal'); },
-                title: (d.viewAngle === 'dorsal' ? 'Dorsal' : 'Ventral') + ' view — switch anatomical orientation',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.viewAngle === 'dorsal' ? 'bg-indigo-500 text-white' : 'transition-colors bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 active:scale-[0.97]')
-              }, d.viewAngle === 'dorsal' ? '\uD83D\uDD04 Ventral' : '\uD83D\uDD04 Dorsal'),
-
-              React.createElement("button", { "aria-label": "Enter fullscreen canvas mode",
-                onClick: function () { try { var c = document.querySelector('[data-diss-canvas]'); if (window.__alloStemFS) window.__alloStemFS(c); } catch (e) {} },
-                title: 'Fullscreen' + ' — Expand canvas to full screen',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all active:scale-[0.97]"
-              }, '\u26F6 ' + 'Fullscreen'),
-
-              React.createElement("button", { "aria-label": "Animation Speed — Cycle: normal / slow / fast",
-                onClick: function () { var s = d.animSpeed === 'fast' ? 'normal' : (d.animSpeed === 'normal' ? 'slow' : 'fast'); upd('animSpeed', s); },
-                title: 'Animation Speed — Cycle: normal / slow / fast',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all active:scale-[0.97]"
-              }, '\u23E9 ' + (d.animSpeed === 'slow' ? 'Slow' : d.animSpeed === 'fast' ? 'Fast' : 'Normal')),
-
-              React.createElement("button", { "aria-label": "Print",
-                onClick: function () { upd('printMode', !d.printMode); },
-                title: 'Print / Clean View — Remove UI chrome for printing',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.printMode ? 'bg-slate-700 text-white' : 'transition-colors bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 active:scale-[0.97]')
-              }, '\uD83D\uDDA8 Print')
-
+            d.toolbarViewOpen && React.createElement("div", { id: "diss-view-tools", className: "diss-tool-panel flex flex-wrap bg-blue-50 rounded-xl border border-blue-200 animate-[fadeIn_0.2s_ease-out]", role: "region", "aria-label": "View and accessibility controls" },
+              React.createElement("button", { "aria-label": "Toggle organ name labels", "aria-pressed": d.labelMode !== 'hidden', onClick: function () { upd('labelMode', d.labelMode === 'show' ? 'hidden' : 'show'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.labelMode !== 'hidden' ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83C\uDFF7 Labels'),
+              React.createElement("button", { "aria-label": "Toggle high contrast mode", "aria-pressed": !!d.highContrast, onClick: function () { upd('highContrast', !d.highContrast); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.highContrast ? 'bg-yellow-500 text-black' : 'bg-white text-blue-700 border border-blue-200') }, '\u2600 High contrast'),
+              React.createElement("button", { "aria-label": "Toggle dissection sound effects", "aria-pressed": d.soundEnabled !== false, onClick: function () { var enabled = d.soundEnabled === false; try { window.__alloDissectionSoundEnabled = enabled; } catch (e) {} upd('soundEnabled', enabled); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.soundEnabled !== false ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.soundEnabled !== false ? '\uD83D\uDD0A Sound on' : '\uD83D\uDD07 Sound off'),
+              React.createElement("button", { "aria-label": "Toggle tactile instrument feedback", "aria-pressed": d.tactileFeedback !== false, onClick: function () { upd('tactileFeedback', d.tactileFeedback === false); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.tactileFeedback !== false ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.tactileFeedback !== false ? '\u223F Tactile on' : '\u223F Tactile off'),
+              React.createElement("button", { "aria-label": "Visual presentation: cycle guided, realistic, and accessible", onClick: function () { setVisualRealism(visualRealism === 'guided' ? 'realistic' : (visualRealism === 'realistic' ? 'accessible' : 'guided')); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2726 Visuals: ' + (visualRealism === 'realistic' ? 'Realistic' : visualRealism === 'accessible' ? 'Accessible' : 'Guided')),
+              React.createElement("button", { "aria-label": "Toggle movable inspection lens", "aria-pressed": inspectionLens, onClick: function () { upd('inspectionLens', !inspectionLens); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (inspectionLens ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83D\uDD0D Lens ' + (inspectionLens ? 'on' : 'off')),
+              React.createElement("button", { "aria-label": "Lab light: cycle neutral, warm, and cool", onClick: function () { upd('labLight', labLight === 'neutral' ? 'warm' : (labLight === 'warm' ? 'cool' : 'neutral')); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\uD83D\uDCA1 ' + labLight + ' light'),
+              React.createElement("button", { "aria-label": "Generate another deterministic specimen variation", onClick: function () { upd('variationSeed', variationSeed + 1); setProcedureFeedback('Loaded specimen variation ' + (variationSeed + 1) + '. Landmark shifts are small and deterministic.'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u21BB Variation ' + variationSeed),
+              React.createElement("button", { "aria-label": "Toggle before and after technique view", "aria-pressed": !!d.beforeTechniqueView, onClick: function () { upd('beforeTechniqueView', !d.beforeTechniqueView); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (d.beforeTechniqueView ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.beforeTechniqueView ? '\u25C0 Before view' : '\u25B6 After view'),
+              React.createElement("button", { "aria-label": "Enter fullscreen canvas mode", onClick: function () { try { var c = document.querySelector('[data-diss-canvas]'); if (window.__alloStemFS) window.__alloStemFS(c); } catch (e) {} }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u26F6 Fullscreen'),
+              React.createElement("button", { "aria-label": "Animation speed: cycle normal, slow, and fast", onClick: function () { var s = d.animSpeed === 'fast' ? 'normal' : (d.animSpeed === 'normal' ? 'slow' : 'fast'); upd('animSpeed', s); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u23E9 ' + (d.animSpeed === 'slow' ? 'Slow' : d.animSpeed === 'fast' ? 'Fast' : 'Normal')),
+              React.createElement("button", { "aria-label": "Print clean dissection report", onClick: function () { try { window.print(); } catch (e) { if (addToast) addToast('Print is unavailable in this view.', 'error'); } }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\uD83D\uDDA8 Print')
             ),
 
-            // ── Tools group expanded ──
+            // Tools group expanded
             d.toolbarToolsOpen && React.createElement("div", { id: "diss-lab-tools", className: "diss-tool-panel flex flex-wrap bg-emerald-50 rounded-xl border border-emerald-200 animate-[fadeIn_0.2s_ease-out]", role: "region", "aria-label": "Lab tools" },
 
               React.createElement("button", { "aria-label": "Ruler", "aria-pressed": !!d.rulerMode,
@@ -6399,57 +7097,57 @@ var d = labToolData.dissection || {};
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all active:scale-[0.97]"
               }, '\uD83D\uDCF8 ' + 'Screenshot'),
 
-              React.createElement("button", { "aria-label": "Copy lab report to clipboard",
+              React.createElement("button", { "aria-label": "Copy accurate lab report to clipboard",
                 onClick: function () {
-                  var report = '\uD83E\uDD9A Lab Report: ' + spec.name + '\n';
-                  report += '\u2500'.repeat(30) + '\n';
-                  report += 'Specimen: ' + spec.name + String.fromCharCode(10);
-                  report += 'Layers explored: ' + spec.layers.length + '\n';
-                  report += 'Organs examined: ' + exploredCount + '/' + totalOrgansInSpecimen + '\n';
-                  report += 'Quiz score: ' + (d.quizScore || 0) + '\n';
-                  report += '\u2500'.repeat(30) + '\n';
-                  organs.forEach(function (o) { report += '\u2022 ' + o.name + ': ' + o.fn.substring(0, 80) + '\n'; });
-                  try { navigator.clipboard.writeText(report); if (addToast) addToast('\uD83D\uDCCB Lab report copied!', 'success'); } catch (e) {}
+                  var report = 'Virtual Dissection Lab Report: ' + spec.name + '\n' + '\u2500'.repeat(36) + '\n';
+                  report += 'Specimen: ' + spec.name + '\nLayers revealed: ' + revealedLayerCount + '/' + spec.layers.length + '\n';
+                  report += 'Structures examined: ' + exploredCount + '/' + totalOrgansInSpecimen + '\nPractice score: ' + (d.quizScore || 0) + '/' + (d.quizTotal || 0) + '\n';
+                  report += 'Active investigation time: ' + (d.timeSpent || 0) + ' seconds\n';
+                  var techniqueLayers = spec.layers.map(function (layer) { return (d.procedureByLayer || {})[layer.id] || {}; });
+                  var completedTechniques = techniqueLayers.filter(function (state) { return procedureStepIndex(state) >= 6; }).length;
+                  var techniqueCautions = techniqueLayers.reduce(function (sum, state) { return sum + (Number(state.errors) || 0); }, 0);
+                  report += 'Technique sequences complete: ' + completedTechniques + '/' + spec.layers.length + '\n';
+                  report += 'Technique cautions reviewed: ' + techniqueCautions + '\n';
+                  report += 'Technique support: ' + (procedureMode === 'independent' ? 'Independent' : 'Guided') + '\n';
+                  report += 'Current layer technique score: ' + procedureTechniqueScore((d.procedureByLayer || {})[activeLayer] || {}) + '/100\n';
+                  var reportMetrics = currentProcedure.extensionMetrics || currentProcedure.incisionMetrics;
+                  report += 'Current tool control: ' + (reportMetrics ? (reportMetrics.control == null ? reportMetrics.smoothness : reportMetrics.control) + '%' : 'Not scored') + '\n';
+                  report += 'Technique timeline: ' + ((currentProcedure.actionLog || []).map(function (entry) { return entry.label || procedureActionLabel(entry.action); }).join(' > ') || 'Not started') + '\n';
+                  report += 'Visual presentation: ' + visualRealism + '; lab light: ' + labLight + '; inspection lens: ' + (inspectionLens ? 'on' : 'off') + '; tactile feedback: ' + (d.tactileFeedback !== false ? 'on' : 'off') + '\n';
+                  report += 'Specimen variation: ' + variationSeed + '\n';
+                  spec.layers.forEach(function (layer) {
+                    var examined = (spec.organs[layer.id] || []).filter(function (o) { return !!(d.exploredOrgans || {})[specimen + '|' + o.id]; });
+                    if (!examined.length) return;
+                    report += '\n' + layer.name + '\n';
+                    examined.forEach(function (o) {
+                      var noteKey = specimen + '|' + o.id;
+                      report += '\u2022 ' + o.name + ': ' + o.fn + '\n';
+                      if ((d.organConfidence || {})[noteKey]) report += '  Confidence: ' + (d.organConfidence || {})[noteKey] + '/3\n';
+                      if ((d.organNotes || {})[noteKey]) report += '  Evidence note: ' + (d.organNotes || {})[noteKey] + '\n';
+                    });
+                  });
+                  try { var copied = navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(report) : null; if (copied && copied.catch) copied.catch(function () { if (addToast) addToast('Could not copy the lab report.', 'error'); }); if (addToast) addToast('\uD83D\uDCCB Lab report copied!', 'success'); } catch (e) { if (addToast) addToast('Could not copy the lab report.', 'error'); }
                 },
-                title: 'Lab Report' + ' — Generate and copy a summary lab report',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all active:scale-[0.97]"
-              }, '\uD83D\uDCCB ' + 'Lab Report'),
-
-              React.createElement("button", { "aria-label": "Reset dissection view",
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200"
+              }, '\uD83D\uDCCB Lab Report'),
+              React.createElement("button", { "aria-label": "Reset progress for this specimen",
                 onClick: function () {
-                  upd('activeLayer', (spec.layers[0] || {}).id || 'skin'); upd('selectedOrgan', null); upd('exploredOrgans', {});
-                  upd('canvasZoom', 1); upd('canvasPanX', 0); upd('canvasPanY', 0);
-                  upd('traceNervous', false); upd('showEndocrine', false);
-                  upd('rulerMode', false); upd('annotateMode', false);
-                  upd('labelMode', 'show'); upd('highContrast', false);
-                  if (addToast) addToast('\u21BA ' + 'Reset Complete', 'info');
+                  updMany({ activeLayer: (spec.layers[0] || {}).id || 'skin', selectedOrgan: null, exploredOrgans: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFeedback: null, completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], timeSpent: 0, guidedComplete: false, procedureByLayer: {}, procedureFeedback: null, activeInstrument: 'probe', incisionDepth: 'shallow', canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, rulerMode: false, annotateMode: false, labelMode: 'show', highContrast: false });
+                  try { localStorage.removeItem('dissection_progress_' + specimen); } catch (e) {}
+                  if (addToast) addToast('\u21BA Progress reset for ' + spec.name, 'info');
                 },
-                title: 'Reset' + ' — Reset all settings for this specimen',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-red-600 border border-red-200 hover:bg-red-50 transition-all active:scale-[0.97]"
-              }, '\u21BA ' + 'Reset')
-
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-red-600 border border-red-200"
+              }, '\u21BA Reset specimen')
             ),
 
-            // ── Study group expanded ──
+            // Study group expanded
             d.toolbarStudyOpen && React.createElement("div", { id: "diss-study-tools", className: "diss-tool-panel flex flex-wrap bg-amber-50 rounded-xl border border-amber-200 animate-[fadeIn_0.2s_ease-out]", role: "region", "aria-label": "Study tools" },
-
-              React.createElement("button", { "aria-label": "Quiz", "aria-pressed": !!d.quizMode,
-                onClick: function () { if (d.quizMode && !d.practicalMode) upd('quizMode', false); else setStudyRoute('quiz'); },
-                title: 'Quiz' + ' — Test your knowledge of organ identification',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.quizMode ? 'bg-amber-700 text-white' : 'transition-colors bg-white text-amber-700 border border-amber-200 hover:bg-amber-100 active:scale-[0.97]')
-              }, '\uD83E\uDDE0 ' + 'Quiz'),
 
               React.createElement("button", { "aria-label": "Flashcard", "aria-pressed": !!d.flashcardMode,
                 onClick: function () { if (d.flashcardMode) upd('flashcardMode', false); else { closeTimedPractical(); upd('guidedMode', false); upd('quizMode', false); upd('compareMode', false); upd('flashcardMode', true); upd('flashcardIdx', 0); upd('flashcardFlipped', false); } },
                 title: 'Flashcard' + ' — Review organs with flip cards',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.flashcardMode ? 'bg-violet-600 text-white' : 'transition-colors bg-white text-amber-700 border border-amber-200 hover:bg-amber-100 active:scale-[0.97]')
               }, '\uD83C\uDCCF ' + 'Flashcard'),
-
-              React.createElement("button", { "aria-label": "Guided", "aria-pressed": !!d.guidedMode,
-                onClick: function () { if (d.guidedMode) upd('guidedMode', false); else setStudyRoute('guided'); },
-                title: 'Guided' + ' — Follow a step-by-step organ tour',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.guidedMode ? 'bg-teal-700 text-white' : 'transition-colors bg-white text-amber-700 border border-amber-200 hover:bg-amber-100 active:scale-[0.97]')
-              }, '\uD83E\uDDED ' + 'Guided'),
 
               React.createElement("button", { "aria-label": "Compare", "aria-pressed": !!d.compareMode,
                 onClick: function () { if (d.compareMode) upd('compareMode', false); else { closeTimedPractical(); upd('guidedMode', false); upd('quizMode', false); upd('flashcardMode', false); upd('compareMode', true); } },
@@ -6461,42 +7159,30 @@ var d = labToolData.dissection || {};
                 onClick: function () {
                   if (!d.practicalMode) {
                     var previousLabelMode = d.labelMode || 'show';
-                    upd('_prePracticalLabelMode', previousLabelMode);
-                    upd('guidedMode', false);
-                    upd('flashcardMode', false);
-                    upd('compareMode', false);
-                    upd('practicalMode', true);
-                    upd('labelMode', 'hidden');
-                    upd('quizMode', true);
-                    upd('quizIdx', 0);
-                    upd('quizScore', 0);
-                    upd('quizTotal', 0);
-                    upd('quizFeedback', null);
-                    upd('practicalTimer', 120);
-                    // Count down from a LOCAL counter \u2014 reading d.practicalTimer here
-                    // reads the click-time closure snapshot (always 120), so ct stuck
-                    // at 119 and the time-up branch never fired. Local var decrements live.
+                    try { if (window.__alloDissectionPracticalInterval) clearInterval(window.__alloDissectionPracticalInterval); window.__alloDissectionPracticalScore = 0; } catch (e) {}
+                    updMany({ _prePracticalLabelMode: previousLabelMode, guidedMode: false, flashcardMode: false, compareMode: false, practicalMode: true, labelMode: 'hidden', quizMode: true, quizAnswerMode: 'hotspot', quizSeed: Date.now(), quizIdx: 0, quizScore: 0, quizTotal: 0, quizFeedback: null, quizExplanation: null, practicalTimer: 120 });
                     var remaining = 120;
-                    var tmr2 = setInterval(function () {
+                    var practicalTimerId = setInterval(function () {
                       remaining -= 1;
-                      if (remaining <= 0) { clearInterval(tmr2); upd('_practicalInterval', null); upd('practicalMode', false); upd('labelMode', previousLabelMode); if (addToast) addToast('\u23F0 Time up! Score: ' + (d.quizScore || 0), 'info'); }
+                      if (remaining <= 0) {
+                        clearInterval(practicalTimerId);
+                        var finalScore = 0;
+                        try { finalScore = window.__alloDissectionPracticalScore || 0; window.__alloDissectionPracticalInterval = null; } catch (e) {}
+                        updMany({ practicalTimer: 0, practicalMode: false, quizMode: false, labelMode: previousLabelMode });
+                        if (addToast) addToast('\u23F0 Time up! Score: ' + finalScore, 'info');
+                        if (typeof announceToSR === 'function') announceToSR('Practical assessment complete. Score ' + finalScore + '.');
+                        return;
+                      }
                       upd('practicalTimer', remaining);
                     }, 1000);
-                    upd('_practicalInterval', tmr2);
-                  } else {
-                    if (d._practicalInterval) clearInterval(d._practicalInterval);
-                    upd('_practicalInterval', null);
-                    upd('practicalMode', false);
-                    upd('labelMode', d._prePracticalLabelMode || 'show');
-                    upd('quizMode', false);
-                  }
+                    try { window.__alloDissectionPracticalInterval = practicalTimerId; } catch (e) {}
+                  } else closeTimedPractical();
                 },
-                title: 'Practical' + ' — Timed practical exam mode',
+                title: 'Practical — timed canvas identification assessment',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.practicalMode ? 'bg-red-600 text-white animate-pulse' : 'transition-colors bg-white text-orange-700 border border-orange-200 hover:bg-orange-100 active:scale-[0.97]')
-              }, d.practicalMode ? '\u23F0 ' + Math.floor((d.practicalTimer || 0) / 60) + ':' + String((d.practicalTimer || 0) % 60).padStart(2, '0') : '\u23F1 ' + 'Practical')
+              }, d.practicalMode ? '\u23F0 ' + Math.floor((d.practicalTimer || 0) / 60) + ':' + String((d.practicalTimer || 0) % 60).padStart(2, '0') : '\u23F1 Practical')
 
             ),
-
 
             // Main: Canvas + sidebar
 
@@ -6523,13 +7209,14 @@ var d = labToolData.dissection || {};
                       'data-diss-canvas': true,
                       tabIndex: 0,
                       'aria-label': d.quizMode
-                        ? spec.name + ' practice quiz reference view, ' + currentLayerDef.name + ' layer. Answer with the keyboard-accessible choices in the quiz panel.'
-                        : spec.name + ' virtual dissection, ' + currentLayerDef.name + ' layer, ' + organs.length + ' structures. Use the structure directory for keyboard selection.',
+                        ? spec.name + ' practice assessment, ' + currentLayerDef.name + ' layer. ' + (d.quizAnswerMode === 'hotspot' ? 'Select a structure on the specimen, or switch to the keyboard-accessible multiple-choice answers.' : 'Answer with the keyboard-accessible choices in the assessment panel.')
+                        : spec.name + ' virtual dissection, ' + currentLayerDef.name + ' layer, ' + organs.length + ' structures. Active instrument: ' + activeInstrument + '. ' + ((activeInstrument === 'scalpel' || activeInstrument === 'scissors') ? 'Drag on the canvas to practice a stroke, or use the equivalent technique action button.' : 'Select on the canvas or use the equivalent technique action button.') + ' Use the structure directory for keyboard selection.',
                       'aria-describedby': 'diss-canvas-status',
 
-                  onMouseMove: function (e) {
+                  onPointerMove: function (e) {
 
                     var canvas = e.currentTarget;
+                    if (canvas._toolDrawing) { appendProcedureStroke(e); return; }
 
                     // Pan via drag when zoomed > 1
 
@@ -6547,43 +7234,59 @@ var d = labToolData.dissection || {};
                     }
                     canvasHover(e);
                   },
-                  onMouseDown: function (e) {
+                  onPointerDown: function (e) {
                     var canvas = e.currentTarget;
-                    if ((d.canvasZoom || 1) > 1.01 && !d.annotateMode && !d.rulerMode) {
+                    if (!d.quizMode && !d.annotateMode && !d.rulerMode && (activeInstrument === 'scalpel' || activeInstrument === 'scissors')) {
+                      beginProcedureStroke(e); return;
+                    }
+                    if ((d.canvasZoom || 1) > 1.01 && activeInstrument === 'probe' && !d.annotateMode && !d.rulerMode) {
                       canvas._isPanning = true;
                       canvas._panStartX = e.clientX;
                       canvas._panStartY = e.clientY;
                       canvas._panOrigX = d.canvasPanX || 0;
                       canvas._panOrigY = d.canvasPanY || 0;
                       canvas._wasPanning = false;
+                      if (canvas.setPointerCapture && e.pointerId != null) canvas.setPointerCapture(e.pointerId);
                       canvas.style.cursor = 'grabbing';
                       e.preventDefault();
                     }
                   },
 
-                  onMouseUp: function (e) {
+                  onPointerUp: function (e) {
 
                     var canvas = e.currentTarget;
+                    if (finishProcedureStroke(e)) return;
 
                     canvas._isPanning = false;
-
+                    if (canvas.releasePointerCapture && e.pointerId != null && canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
                     canvas.style.cursor = (canvas._zoom || 1) > 1.01 ? 'grab' : 'crosshair';
 
                   },
 
-                  onMouseLeave: function (e) {
+                  onPointerCancel: function (e) {
 
                     var canvas = e.currentTarget;
 
                     canvas._isPanning = false;
+                    canvas._toolDrawing = false;
+                    canvas._toolStroke = null;
+                    canvas._toolSamples = null;
+                    canvas._toolResistance = null;
+                    canvas._lastResistanceLevel = null;
+                    canvas._toolPointer = null;
+                    upd('hoveredOrgan', null);
 
+                  },
+                  onPointerLeave: function (e) {
+                    e.currentTarget._toolPointer = null;
+                    upd('hoveredOrgan', null);
                   },
 
                   width: 500, height: 600,
 
                       className: "diss-canvas w-full rounded-xl border border-slate-400 cursor-crosshair",
 
-                      style: { aspectRatio: '5/6', background: 'var(--allo-stem-canvas, #0f172a)', touchAction: 'pan-y' }
+                      style: { aspectRatio: '5/6', background: 'var(--allo-stem-canvas, #0f172a)', touchAction: ((d.canvasZoom || 1) > 1.01 || d.annotateMode || d.rulerMode || activeInstrument === 'scalpel' || activeInstrument === 'scissors') ? 'none' : 'pan-y' }
 
                     })
                   ),
@@ -6612,6 +7315,73 @@ var d = labToolData.dissection || {};
                       : sel
                         ? ('Selected ' + sel.name + ' in the ' + currentLayerDef.name + ' layer. ' + sel.fn.split('.')[0] + '.')
                         : ('Select a structure on the specimen or use the accessible structure directory. Arrow keys move between structures when the canvas is focused.')
+                  ),
+
+                  React.createElement("section", { className: "diss-procedure", "aria-labelledby": "diss-procedure-title" },
+                    React.createElement("div", { className: "diss-procedure__header" },
+                      React.createElement("div", null,
+                        React.createElement("h4", { id: "diss-procedure-title" }, 'Technique practice \u00B7 ' + (procedureStageIdx >= 6 ? 'ready to complete' : 'step ' + (procedureStageIdx + 1) + ' of 6')),
+                        React.createElement("p", null, procedureMode === 'guided' ? 'Follow the teaching corridor or use the equivalent action button.' : 'Choose instruments yourself; safety prerequisites and feedback remain active.')
+                      ),
+                      React.createElement("div", { className: "diss-procedure__mode", role: "group", "aria-label": "Technique support level" },
+                        ['guided', 'independent'].map(function (mode) {
+                          return React.createElement("button", { type: "button", key: mode, "aria-pressed": procedureMode === mode, onClick: function () { upd('procedureMode', mode); setProcedureFeedback(mode === 'guided' ? 'Guided technique shows the teaching access path.' : 'Independent technique hides the access path while preserving safety feedback.'); } }, mode === 'guided' ? 'Guided' : 'Independent');
+                        })
+                      )
+                    ),
+                    React.createElement("div", { className: "diss-instruments", role: "radiogroup", "aria-label": "Dissection instruments" },
+                      PROCEDURE_INSTRUMENTS.map(function (tool) {
+                        return React.createElement("button", {
+                          type: "button", role: "radio", key: tool.id,
+                          className: "diss-instrument", "aria-checked": activeInstrument === tool.id,
+                          "aria-label": tool.label + '. ' + tool.help,
+                          title: tool.help,
+                          onClick: function () { updMany({ activeInstrument: tool.id, annotateMode: false, rulerMode: false }); setProcedureFeedback(tool.label + ' selected. ' + tool.help); }
+                        }, tool.icon + ' ' + tool.label);
+                      })
+                    ),
+                    activeInstrument === 'scalpel' && React.createElement("div", { className: "diss-procedure__controls", role: "group", "aria-label": "Scalpel depth" },
+                      React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, 'Depth:'),
+                      ['shallow', 'deep'].map(function (depth) {
+                        return React.createElement("button", { type: "button", key: depth, "aria-pressed": (d.incisionDepth || 'shallow') === depth, onClick: function () { upd('incisionDepth', depth); } }, depth === 'shallow' ? 'Shallow' : 'Deep (practice warning)');
+                      })
+                    ),
+                    React.createElement("div", { className: "diss-procedure__steps", "aria-label": procedureStageIdx + ' of 6 technique steps complete' },
+                      PROCEDURE_STEPS.map(function (step, idx) {
+                        return React.createElement("span", { key: step.id, className: "diss-procedure__step", "data-complete": procedureStageIdx > idx ? "true" : "false", "data-current": procedureStageIdx === idx ? "true" : "false" }, (procedureStageIdx > idx ? '\u2713 ' : '') + step.label);
+                      })
+                    ),
+                    React.createElement("div", { className: "diss-procedure__metrics", role: "group", "aria-label": "Technique feedback metrics" },
+                      [
+                        { label: 'Technique score', value: techniqueScore + '/100' },
+                        { label: 'Stroke precision', value: recentTechniqueMetrics ? recentTechniqueMetrics.precision + '%' : 'Not scored' },
+                        { label: 'Path coverage', value: recentTechniqueMetrics ? recentTechniqueMetrics.coverage + '%' : 'Not scored' },
+                        { label: 'Tool control', value: recentTechniqueMetrics ? (recentTechniqueMetrics.control == null ? recentTechniqueMetrics.smoothness : recentTechniqueMetrics.control) + '%' : 'Not scored' },
+                        { label: 'Cautions', value: String(currentProcedure.errors || 0) }
+                      ].map(function (metric) {
+                        return React.createElement("div", { className: "diss-procedure__metric", key: metric.label },
+                          React.createElement("span", null, metric.label),
+                          React.createElement("strong", null, metric.value)
+                        );
+                      })
+                    ),
+                    (currentProcedure.actionLog || []).length > 0 && React.createElement("div", { className: "diss-procedure__timeline", "aria-label": "Recorded technique timeline" },
+                      (currentProcedure.actionLog || []).slice(-6).map(function (entry, idx) {
+                        return React.createElement("span", { key: String(entry.at || idx) + entry.action }, (idx + 1) + '. ' + (entry.label || procedureActionLabel(entry.action)));
+                      })
+                    ),
+                    React.createElement("div", { className: "diss-procedure__controls" },
+                      React.createElement("button", { type: "button", className: "diss-procedure__next", disabled: !!(d._incisionAnim && d._incisionAnim.active), onClick: performNextProcedureStep }, procedureNext.label),
+                      React.createElement("button", { type: "button", onClick: showProcedureDemonstration, "aria-label": "Show a generalized safe-technique demonstration on the specimen" }, '\u25B6 Show technique'),
+                      React.createElement("button", { type: "button", disabled: !((currentProcedure.actionLog || []).length || (currentProcedure.history || []).length), onClick: showProcedureReplay, "aria-label": "Replay the recorded technique attempt on the specimen" }, '\u21BB Replay attempt'),
+                      activeInstrument === 'dropper' && React.createElement("button", { type: "button", onClick: function () { performProcedureAction('dropper'); } }, '\u25C9 Apply controlled drop'),
+                      React.createElement("button", { type: "button", disabled: !(currentProcedure.history || []).length, onClick: undoProcedureAction }, '\u21A9 Undo last technique action')
+                    ),
+                    React.createElement("p", { className: "diss-procedure__feedback", "data-tone": (d.procedureFeedback || {}).tone || 'success', role: "status", "aria-live": "polite" },
+                      (d.procedureFeedback || {}).message || 'Begin by inspecting the visible layer and planning an access path.'
+                    ),
+                    React.createElement("p", { className: "diss-procedure__notice" }, specimenTrayNote),
+                    React.createElement("p", { className: "diss-procedure__notice" }, 'This is a generalized, non-graphic teaching simulation, not a specimen-specific physical-dissection or surgical protocol. Follow instructor-approved procedures in a physical lab.')
                   ),
 
                   React.createElement("div", { className: "diss-overlay-actions", "data-dissection-overlays": true, role: "group", "aria-label": "System overlays" },
@@ -6825,7 +7595,7 @@ var d = labToolData.dissection || {};
                   ),
 
                   React.createElement("div", { className: "diss-selection-summary" },
-                    React.createElement("span", { className: "diss-selection-summary__label" }, 'Primary function'),
+                    React.createElement("span", { className: "diss-selection-summary__label" }, __alloT('stem.dissection.specimen_anatomy_and_function', 'Specimen anatomy and function')),
                     React.createElement("p", null, sel.fn)
                   ),
                   // Embryological origin badge
@@ -6936,7 +7706,7 @@ var d = labToolData.dissection || {};
 
                   sel.clinical && React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200" },
 
-                    React.createElement("span", { className: "text-[11px] font-bold text-amber-700" }, '\uD83C\uDFEB ' + 'Did You Know?'),
+                    React.createElement("span", { className: "text-[11px] font-bold text-amber-700" }, '\uD83C\uDFE5 ' + __alloT('stem.dissection.human_clinical_connection', 'Human/clinical connection')),
 
                     React.createElement("p", { className: "text-[11px] text-amber-600 leading-relaxed mt-0.5" }, sel.clinical)
 
@@ -7028,6 +7798,22 @@ var d = labToolData.dissection || {};
 
                   })(),
 
+                  (function () {
+                    var evidenceKey = specimen + '|' + sel.id;
+                    var noteValue = (d.organNotes || {})[evidenceKey] || '';
+                    var confidenceValue = (d.organConfidence || {})[evidenceKey] || 0;
+                    return React.createElement("div", { className: "mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3", "data-dissection-evidence": true },
+                      React.createElement("label", { htmlFor: 'diss-note-' + sel.id, className: "block text-xs font-black text-blue-900" }, __alloT('stem.dissection.evidence_note', 'Evidence note')),
+                      React.createElement("p", { className: "text-[11px] text-blue-700 mt-1" }, __alloT('stem.dissection.evidence_note_help', 'Record what you observed, where it is located, and how that evidence supports your identification.')),
+                      React.createElement("textarea", { id: 'diss-note-' + sel.id, className: "diss-evidence-note", rows: 3, value: noteValue, placeholder: __alloT('stem.dissection.evidence_note_placeholder', 'I identified this structure because…'), onChange: function (e) { var notes = Object.assign({}, d.organNotes || {}); notes[evidenceKey] = e.target.value; upd('organNotes', notes); } }),
+                      React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-2", role: "group", "aria-label": __alloT('stem.dissection.identification_confidence', 'Identification confidence') },
+                        React.createElement("span", { className: "text-xs font-bold text-blue-900" }, __alloT('stem.dissection.confidence', 'Confidence') + ':'),
+                        [1, 2, 3].map(function (level) {
+                          return React.createElement("button", { type: "button", key: level, "aria-label": 'Confidence ' + level + ' of 3', "aria-pressed": confidenceValue === level, onClick: function () { var confidence = Object.assign({}, d.organConfidence || {}); confidence[evidenceKey] = level; upd('organConfidence', confidence); }, className: "min-w-10 rounded-lg border px-2 py-1 text-xs font-bold " + (confidenceValue === level ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-blue-800 border-blue-300') }, String(level));
+                        })
+                      )
+                    );
+                  })(),
                   // Action buttons
 
                   React.createElement("div", { className: "mt-2 flex gap-1" },
@@ -7036,7 +7822,7 @@ var d = labToolData.dissection || {};
 
                         if (typeof callGemini === 'function') {
 
-                          var _aiPrompt = 'Explain the ' + sel.name + ' in a ' + spec.name + ' in simple terms for a biology student. Include: function, location, clinical significance, and one interesting fact.';
+                          var _aiPrompt = 'Explain the ' + sel.name + ' in a ' + spec.name + ' for a biology student. Clearly separate specimen-specific anatomy from any human comparison. Include function, location, one observable identification clue, and cite uncertainty when species details vary.';
                           callGemini(_aiPrompt).then(function(res) {
                             if (addToast) addToast('\uD83E\uDD16 ' + sel.name + ': ' + (res || 'Response received'), 'info', 8000);
                           }).catch(function(err) {
@@ -7180,9 +7966,14 @@ var d = labToolData.dissection || {};
 
                   ),
 
-                  React.createElement("p", { className: "text-xs text-amber-700 mb-2 italic" }, '"' + quizQ.fn.split('.')[0] + '."'),
+                  React.createElement("p", { className: "text-xs text-amber-700 mb-2" }, quizPrompt),
+                  React.createElement("div", { className: "flex flex-wrap gap-2 mb-3", role: "group", "aria-label": "Answer method" },
+                    React.createElement("button", { type: "button", "aria-pressed": (d.quizAnswerMode || 'choices') === 'choices', onClick: function () { upd('quizAnswerMode', 'choices'); }, className: "px-3 py-1 rounded-lg text-xs font-bold border " + ((d.quizAnswerMode || 'choices') === 'choices' ? 'bg-amber-700 text-white border-amber-700' : 'bg-white text-amber-800 border-amber-300') }, 'Multiple choice'),
+                    React.createElement("button", { type: "button", "aria-pressed": d.quizAnswerMode === 'hotspot', onClick: function () { upd('quizAnswerMode', 'hotspot'); }, className: "px-3 py-1 rounded-lg text-xs font-bold border " + (d.quizAnswerMode === 'hotspot' ? 'bg-amber-700 text-white border-amber-700' : 'bg-white text-amber-800 border-amber-300') }, 'Select on specimen')
+                  ),
+                  d.quizAnswerMode === 'hotspot' && !d.quizFeedback && React.createElement("p", { className: "text-xs font-bold text-blue-700 mb-2", role: "status" }, 'Select the matching structure on the specimen. Keyboard users can choose Multiple choice.'),
 
-                  React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" },
+                  (d.quizAnswerMode || 'choices') === 'choices' && React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" },
 
                     quizOptions.map(function (opt) {
 
@@ -7196,22 +7987,8 @@ var d = labToolData.dissection || {};
 
                       return React.createElement("button", { type: "button", key: opt.id, disabled: !!fb, "aria-label": opt.name + (isCorrect ? ', correct answer' : isWrong ? ', selected answer, incorrect' : ''),
 
-                        onClick: function () {
+                        onClick: function () { submitQuizAnswer(opt.id); },
 
-                          var correct = opt.id === quizQ.id;
-
-                          upd('quizFeedback', { correct: correct, chosen: opt.id });
-
-                          upd('quizScore', (d.quizScore || 0) + (correct ? 1 : 0));
-
-                          upd('quizTotal', (d.quizTotal || 0) + 1);
-
-                          if (correct) awardStemXP('dissection', 2, 'Correct quiz answer');
-
-                          addToast(correct ? '\u2705 ' + 'Correct!' : '\u274C ' + 'It was' + ' ' + quizQ.name, correct ? 'success' : 'error');
-                          upd('quizExplanation', quizQ.fn.split('.').slice(0, 2).join('.') + '.');
-
-                        },
 
                         className: "min-h-11 px-3 py-2 rounded-lg text-xs font-bold border transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-600' : 'transition-colors border-amber-200 bg-white text-slate-700 hover:border-amber-400')
 
@@ -7267,6 +8044,7 @@ var d = labToolData.dissection || {};
                   React.createElement("div", { className: "mt-2 pt-2 border-t border-slate-200" },
 
                     React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed mb-1" }, __alloT('stem.dissection.' + (specimen) + '_desc', spec.desc)),
+                    React.createElement("p", { className: "diss-science-scope" }, __alloT('stem.dissection.comparative_model_notice', 'Comparative learning model: specimen observations and human clinical connections are labeled separately. Anatomy varies by species, age, preservation, and individual.')),
 
                     React.createElement("div", { className: "grid grid-cols-2 gap-1 mt-1" },
 
@@ -7359,7 +8137,7 @@ var d = labToolData.dissection || {};
 
                     React.createElement("div", { className: "text-[11px] text-emerald-500 mt-0.5" },
 
-                      '\uD83C\uDFC6 ' + 'Identified'.replace('{count}', Object.keys(d.exploredOrgans || {}).length).replace('{total}', totalOrgansInSpecimen)
+                      '\uD83C\uDFC6 Identified ' + exploredCount + ' of ' + totalOrgansInSpecimen
 
                     ),
 
@@ -7375,9 +8153,9 @@ var d = labToolData.dissection || {};
 
                         cert += 'Structures' + ': ' + totalOrgansInSpecimen + '/' + totalOrgansInSpecimen + '\n';
 
-                        cert += 'Layers' + ': ' + spec.layers.length + '\n';
+                        cert += 'Layers revealed: ' + revealedLayerCount + '/' + spec.layers.length + '\n';
 
-                        cert += 'Quiz Score' + ': ' + (d.quizScore || 0) + '\n';
+                        cert += 'Practice score: ' + (d.quizScore || 0) + '/' + (d.quizTotal || 0) + '\n';
 
                         cert += 'Date' + ': ' + new Date().toLocaleDateString() + '\n';
 

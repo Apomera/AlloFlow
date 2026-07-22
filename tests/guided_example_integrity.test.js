@@ -32,7 +32,8 @@ describe('Guided worked examples - data + wiring present', () => {
   });
 
   it('keeps example viewing in local tab/modal state instead of host state', () => {
-    expect(banner).toContain('const [infoTab, setInfoTab] = React.useState(null)');
+    expect(banner).toContain('const [infoTab, setInfoTab] = React.useState(');
+    expect(banner).toContain('_savedUiState.infoTab');
     expect(banner).toContain('const [showFullLesson, setShowFullLesson] = React.useState(false)');
     expect(banner).toContain("onClick={() => setInfoTab(infoTab === 'example' ? null : 'example')}");
     expect(banner).toContain('onClick={() => setShowFullLesson(true)}');

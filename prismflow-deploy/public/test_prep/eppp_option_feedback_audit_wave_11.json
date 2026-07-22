@@ -1,0 +1,284 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-option-feedback-wave-11",
+  "reviewedAt": "2026-07-22",
+  "scope": "Two questions per EPPP domain selected from the highest-severity option-feedback warnings, with item-level source and key review before all three incorrect explanations were replaced.",
+  "feedbackCriteria": [
+    "at least 100 characters and 16 words",
+    "identifies the specific neighboring construct or misconception",
+    "explains when the neighboring construct would apply",
+    "contrasts that construct with the evidence in the stem",
+    "does not restate the option, paste the rationale, append the full key, or use a stock rejection template"
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "reviewedItems": 16,
+    "domainsCovered": 8,
+    "detailedIncorrectOptionExplanations": 48,
+    "keyPositionsPreserved": 16,
+    "selectedOptionsWithWarningsAfter": 0,
+    "itemsWithStrengthenedReferences": 6,
+    "bankWarningsBefore": {
+      "itemsWithWarnings": 1405,
+      "incorrectOptionsWithWarnings": 4066,
+      "insufficientDetailOptions": 1481,
+      "genericTemplateOptions": 2522,
+      "choiceRestatementOptions": 1809,
+      "fullKeyEchoOptions": 1538
+    },
+    "bankWarningsAfter": {
+      "itemsWithWarnings": 1389,
+      "incorrectOptionsWithWarnings": 4018,
+      "insufficientDetailOptions": 1465,
+      "genericTemplateOptions": 2474,
+      "choiceRestatementOptions": 1767,
+      "fullKeyEchoOptions": 1517
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-v3-assessment-020",
+      "domainId": "assessment",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Spitzer and colleagues developed and validated the GAD-7 as a brief self-report measure for probable generalized anxiety disorder and anxiety symptom severity, supporting the keyed construct and the two-week response window.",
+      "feedbackDesign": [
+        "depression-screen substitution",
+        "psychosis-assessment substitution",
+        "trauma-specificity error"
+      ],
+      "incorrectOptionExplanations": 3,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b008-assessment-2",
+      "domainId": "assessment",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The NIST Engineering Statistics Handbook derives principal components from the correlation matrix and states that the component variances are the corresponding eigenvalues, directly supporting the keyed interpretation.",
+      "feedbackDesign": [
+        "sample-size confusion",
+        "loading-or-validity confusion",
+        "p-value confusion"
+      ],
+      "incorrectOptionExplanations": 3,
+      "referencesStrengthened": false
+    },
+    {
+      "id": "eppp-b009-research-2",
+      "domainId": "research",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Bland and Altman describe the basic Bonferroni procedure as dividing the desired familywise alpha by the number of significance tests; applying .05 divided by 10 yields the keyed .005 cutoff.",
+      "feedbackDesign": [
+        "multiplication reversal",
+        "unadjusted-alpha error",
+        "unsupported subtraction rule"
+      ],
+      "incorrectOptionExplanations": 3,
+      "referencesStrengthened": false
+    },
+    {
+      "id": "eppp-b010-research-1",
+      "domainId": "research",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The APA Task Force on Statistical Inference distinguishes statistical significance from indices of effect magnitude and recommends reporting effect sizes to communicate the strength or practical size of findings.",
+      "feedbackDesign": [
+        "sampling-method confusion",
+        "null-probability misconception",
+        "model-size confusion"
+      ],
+      "incorrectOptionExplanations": 3,
+      "referencesStrengthened": false
+    },
+    {
+      "id": "eppp-v3-biological-028",
+      "domainId": "biological",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The NCBI Bookshelf neuroanatomy review locates the RAS in brainstem circuits and identifies attention, arousal, focus, wakefulness, and sleep-wake regulation as its central functions.",
+      "feedbackDesign": [
+        "hippocampal-memory substitution",
+        "motor-planning substitution",
+        "limbic-appraisal substitution"
+      ],
+      "incorrectOptionExplanations": 3,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-v3-biological-041",
+      "domainId": "biological",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The reviewed visual-neuroscience literature characterizes the ventral temporal stream as primarily supporting object identity and recognition, while dorsal parietal processing emphasizes spatial relations and visually guided action.",
+      "feedbackDesign": [
+        "motor-network substitution",
+        "language-network substitution",
+        "dorsal-stream reversal"
+      ],
+      "incorrectOptionExplanations": 3,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-034",
+      "domainId": "cognitive-affective",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "sourceCheck": "OpenStax and Sternberg’s published descriptions distinguish analytical abilities used to evaluate problems, creative abilities used with novelty, and practical abilities used to adapt to real-world contexts.",
+      "feedbackDesign": [
+        "single-component truncation",
+        "Wechsler-model substitution",
+        "Gardner-model substitution"
+      ],
+      "incorrectOptionExplanations": 3,
+      "referencesStrengthened": false
+    },
+    {
+      "id": "eppp-b004-cognitive-2",
+      "domainId": "cognitive-affective",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Rosch and Mervis empirically linked rated prototypicality to family resemblance within semantic categories, supporting graded representativeness rather than equal typicality among all category members.",
+      "feedbackDesign": [
+        "classical-category limitation",
+        "association-learning substitution",
+        "equal-typicality contradiction"
+      ],
+      "incorrectOptionExplanations": 3,
+      "referencesStrengthened": false
+    },
+    {
+      "id": "eppp-v3-lifespan-005",
+      "domainId": "lifespan",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "sourceCheck": "OpenStax’s lifespan-development account describes preoperational egocentrism, animism, and centration and explains that conservation succeeds later as children can coordinate more than one dimension.",
+      "feedbackDesign": [
+        "conservation-stage reversal",
+        "formal-abstraction substitution",
+        "hypothesis-testing substitution"
+      ],
+      "incorrectOptionExplanations": 3,
+      "referencesStrengthened": false
+    },
+    {
+      "id": "eppp-v3-lifespan-036",
+      "domainId": "lifespan",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Elkind’s original theory of adolescent egocentrism introduced the imaginary-audience and personal-fable constructs; later empirical work treats them as related but distinguishable forms of adolescent self-focus.",
+      "feedbackDesign": [
+        "sensorimotor-construct substitution",
+        "preoperational-conservation substitution",
+        "preoperational-animism substitution"
+      ],
+      "incorrectOptionExplanations": 3,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-v3-intervention-043",
+      "domainId": "intervention",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The APA Dictionary attributes “musturbation” to Albert Ellis, defines it as unrealistic rigid demands expressed through musts or shoulds, and explicitly cross-references rational emotive behavior therapy.",
+      "feedbackDesign": [
+        "behavioral-technique substitution",
+        "person-centered-stance substitution",
+        "psychoanalytic-vocabulary substitution"
+      ],
+      "incorrectOptionExplanations": 3,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-v3-intervention-042",
+      "domainId": "intervention",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Peer-reviewed descriptions of FAP identify the therapeutic relationship as an agent of change and define CRB1 and CRB2 as problematic and improved client behaviors occurring in session.",
+      "feedbackDesign": [
+        "psychoanalytic-method substitution",
+        "homework-focus substitution",
+        "family-systems substitution"
+      ],
+      "incorrectOptionExplanations": 3,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-v3-professional-065",
+      "domainId": "professional",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "sourceCheck": "APA Ethics Code Standard 3.04 addresses reasonable steps to avoid harm and to minimize foreseeable and unavoidable harm; the other named standards regulate distinct professional activities.",
+      "feedbackDesign": [
+        "testimonial-rule substitution",
+        "recordkeeping-rule substitution",
+        "student-evaluation-rule substitution"
+      ],
+      "incorrectOptionExplanations": 3,
+      "referencesStrengthened": false
+    },
+    {
+      "id": "eppp-b004-professional-1",
+      "domainId": "professional",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "sourceCheck": "APA Ethics Code Standard 2.01 explicitly grounds competence in relevant education, training, supervised experience, consultation, study, or professional experience, not confidence, consent, or reimbursement.",
+      "feedbackDesign": [
+        "confidence-for-competence substitution",
+        "consent-as-waiver error",
+        "administrative-authorization substitution"
+      ],
+      "incorrectOptionExplanations": 3,
+      "referencesStrengthened": false
+    },
+    {
+      "id": "eppp-b008-social-1",
+      "domainId": "social-cultural",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Steele and Aronson experimentally varied whether a difficult test was framed as ability-diagnostic and showed that identity-relevant stereotype vulnerability can impair performance without requiring stereotype endorsement.",
+      "feedbackDesign": [
+        "positive-stereotype overgeneralization",
+        "endorsement requirement error",
+        "automatic-invalidity error"
+      ],
+      "incorrectOptionExplanations": 3,
+      "referencesStrengthened": false
+    },
+    {
+      "id": "eppp-b009-social-1",
+      "domainId": "social-cultural",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Weiner’s attributional theory organizes causal explanations along locus, stability, and controllability and links those dimensions to emotion and motivation, directly supporting the keyed domain of causal explanation.",
+      "feedbackDesign": [
+        "sensory-memory substitution",
+        "formal-probability substitution",
+        "language-learning substitution"
+      ],
+      "incorrectOptionExplanations": 3,
+      "referencesStrengthened": false
+    }
+  ],
+  "limitations": [
+    "Editorial and source review is not psychometric calibration or independent licensed-psychologist validation."
+  ]
+}

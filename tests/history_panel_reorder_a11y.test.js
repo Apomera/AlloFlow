@@ -8,30 +8,42 @@ const built = readFileSync(resolve(root, 'view_history_panel_module.js'), 'utf8'
 const deployed = readFileSync(resolve(root, 'prismflow-deploy/public/view_history_panel_module.js'), 'utf8');
 
 describe('HistoryPanel pointer-independent resource controls', () => {
-  it('exposes the saved resources as a named list with keyboard-reorderable items', () => {
+  it('exposes a named list with a dedicated pointer and keyboard reorder handle', () => {
     expect(source).toContain('role="list" aria-label={t(\'sidebar.resource_pack_history\')');
     expect(source).toContain('role="listitem"');
-    expect(source).toContain('aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"');
-    expect(source).toContain("if (e.target !== e.currentTarget || !e.altKey || isSyncMode) return;");
+                                                                                  expect(source).toContain("const unitFilteredHistory = ");
+    expect(source).toContain('overflow-y-auto overflow-x-hidden');
+           expect(source).toContain('aria-keyshortcuts={canReorderResources');
+           expect(source).toContain("!canReorderResources) return;");
     expect(source).toContain("moveItem(e, idx, 'up')");
     expect(source).toContain("moveItem(e, idx, 'down')");
-    expect(source).toContain('draggable={editingId === null && !isSyncMode}');
+                    expect(source).toContain('draggable={editingId === null');
+    expect(source).not.toContain('tabIndex={editingId === null ? 0 : -1}');
   });
 
-  it('uses a native, focus-visible Open action instead of a mouse-only card action', () => {
-    expect(source).toContain("{(t('common.open') || 'Open')}:");
+  it('uses one compact native Open row with an explicit current-resource state', () => {
+    expect(source).toContain("const openLabel = t('common.open') || 'Open';");
+    expect(source).toContain("const currentLabel = t('launch_pad.current_language') || 'Current';");
+    expect(source).toContain('aria-label={isCurrent ? `${itemTitle}. ${currentLabel}` : `${openLabel}: ${itemTitle}`}');
+    expect(source).toContain("aria-current={isCurrent ? 'page' : undefined}");
+    expect(source).toContain('min-h-11 min-w-0 flex-grow rounded-lg');
+    expect(source).toContain('{isCurrent ? currentLabel : openLabel}');
     expect(source).toContain('handleRestoreView(item);');
-    expect(source).toContain('min-h-11 w-full');
-    expect(source).toContain('focus-visible:ring-2');
-    expect(source).toContain('aria-disabled={isSyncMode}');
-    expect(source).not.toContain('onClick={() => {\n                                if (isSyncMode)');
+    expect(source).not.toContain("{(t('common.open') || 'Open')}:");
+    expect(source).not.toContain('mt-2 min-h-11 w-full');
+  });
+
+  it('renders only displayable metadata instead of object coercion noise', () => {
+    expect(source).toContain("const itemMeta = typeof item.meta === 'string' ? item.meta.trim() : '';");
+    expect(source).toContain('{itemMeta && <span>');
+    expect(built).not.toContain('String(item.meta || "")');
   });
 
   it('keeps reorder actions accurately named, large enough, and validly nested', () => {
     expect(source).toContain("t('actions.move_up') || 'Move up'");
     expect(source).toContain("t('actions.move_down') || 'Move down'");
-    expect(source).toContain('disabled={idx === getFilteredHistory().length - 1}');
-    expect(source.match(/min-h-11 min-w-11/g)?.length).toBeGreaterThanOrEqual(2);
+                        expect(source).toContain('disabled={!canReorderResources');
+    expect(source.match(/min-h-11 min-w-11/g)?.length).toBeGreaterThanOrEqual(3);
     expect(source).not.toContain('<div role="button" tabIndex={0}');
   });
 

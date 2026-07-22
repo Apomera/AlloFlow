@@ -21,6 +21,14 @@
   structure metadata and student observations, not full sequences.
 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/molstar@4.9.0/build/viewer/molstar.css">
+<script>
+(function () {
+  var requested = new URLSearchParams(window.location.search).get('theme');
+  var theme = requested === 'light' || requested === 'contrast' ? requested : 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+  document.documentElement.style.colorScheme = theme === 'light' ? 'light' : 'dark';
+})();
+</script>
 <style>
   :root {
     --bg: #0b1020;
@@ -39,6 +47,29 @@
     --red: #f87171;
     --green: #4ade80;
     --violet: #a78bfa;
+  }
+  :root[data-theme="light"] {
+    --bg: #f8fafc; --panel: #ffffff; --panel2: #f1f5f9; --stage: #e2e8f0;
+    --line: #64748b; --line2: #475569; --text: #0f172a; --dim: #475569;
+    --muted: #475569; --soft: #334155; --accent: #1d4ed8; --accent2: #4338ca;
+    --teal: #0f766e; --teal2: #115e59; --sky: #0369a1; --amber: #92400e;
+    --red: #b91c1c; --green: #047857; --violet: #6d28d9; --ok: #047857; --warn: #92400e;
+  }
+  :root[data-theme="contrast"] {
+    --bg: #000000; --panel: #000000; --panel2: #0a0a0a; --stage: #000000;
+    --line: #fbbf24; --line2: #ffff00; --text: #ffffff; --dim: #ffffff;
+    --muted: #ffffff; --soft: #ffffff; --accent: #fbbf24; --accent2: #fbbf24;
+    --teal: #00ffff; --teal2: #00ffff; --sky: #00ffff; --amber: #ffff00;
+    --red: #ff6b6b; --green: #00ff66; --violet: #ffff00; --ok: #00ff66; --warn: #ffff00;
+  }
+  :root[data-theme="contrast"] * { box-shadow: none !important; text-shadow: none !important; }
+  :root[data-theme="contrast"] button,
+  :root[data-theme="contrast"] input,
+  :root[data-theme="contrast"] select,
+  :root[data-theme="contrast"] textarea { border-color: var(--line) !important; }
+  :focus-visible { outline: 3px solid var(--line); outline-offset: 2px; }
+  @media (forced-colors: active) {
+    button, input, select, textarea, a { forced-color-adjust: auto; }
   }
   * { box-sizing: border-box; }
   .skipLink {
@@ -1195,6 +1226,7 @@
       <div class="row">
         <button class="primary" id="addNotebookEntryBtn" type="button">Add entry</button>
         <button class="secondary" id="captureWorkspaceBtn" type="button">Capture current workspace</button>
+        <button class="secondary" id="sendResearchHubBtn" type="button">Send snapshot to Inquiry Portfolio</button>
       </div>
       <div class="notebookEntries" id="notebookEntries" aria-live="polite"><span class="notebookEmpty">No notebook entries yet.</span></div>
       <div class="row">
@@ -2184,6 +2216,7 @@
   var notebookEntryInput = document.getElementById('notebookEntryInput');
   var addNotebookEntryBtn = document.getElementById('addNotebookEntryBtn');
   var captureWorkspaceBtn = document.getElementById('captureWorkspaceBtn');
+  var sendResearchHubBtn = document.getElementById('sendResearchHubBtn');
   var notebookEntries = document.getElementById('notebookEntries');
   var saveNotebookBtn = document.getElementById('saveNotebookBtn');
   var restoreNotebookBtn = document.getElementById('restoreNotebookBtn');
@@ -4701,15 +4734,122 @@
     setStatus(notebookStatus, 'Current sequence-free workspace summary captured.', 'ok');
   }
 
+  var ALPHAFOLD_RESEARCH_CONTRACT = {
+    schemaVersion: 1,
+    id: 'alphafold_explorer',
+    name: 'AlphaFold Explorer',
+    version: '2026.07',
+    license: {
+      name: 'GNU Affero General Public License v3.0',
+      spdx: 'AGPL-3.0-only',
+      note: 'Linked structure records retain their provider terms.'
+    },
+    citation: {
+      text: 'Cite the exact AlphaFold Database or learner-provided structure record identified in the exported reproducibility receipt.',
+      url: 'https://alphafold.ebi.ac.uk/'
+    },
+    supportedMethodPacks: ['scientific_investigation','engineering_design'],
+    capabilities: { captureArtifact: true, rawDataIncluded: false },
+    privacy: { learnerApprovalRequired: true, directIdentifiersAllowed: false, rawStructureFilesIncluded: false },
+    reproducibility: { requiredFields: ['softwareVersion','sourceRecordId','parameters','randomSeed','limitations'] }
+  };
+  function redactSequenceLikeText(value) {
+    return String(value || '')
+      .replace(/\b[ACGTUN]{40,}\b/gi, '[nucleic-acid sequence omitted]')
+      .replace(/\b[ACDEFGHIKLMNPQRSTVWY]{40,}\b/gi, '[protein sequence omitted]');
+  }
+
+  function researchHubCaptureHost() {
+    var candidates = [window.opener, window.parent, window];
+    for (var i = 0; i < candidates.length; i++) {
+      try {
+        if (candidates[i] && candidates[i].ResearchHub && typeof candidates[i].ResearchHub.captureArtifact === 'function') return candidates[i].ResearchHub;
+      } catch (_) {}
+    }
+    return null;
+  }
+
+  function sendWorkspaceToResearchHub() {
+    var snapshot = notebookSnapshot();
+    var hasReasoning = snapshot.reasoning.claim || snapshot.reasoning.evidence || snapshot.reasoning.caution;
+    if (!snapshot.context && !snapshot.entries.length && !hasReasoning) {
+      setStatus(notebookStatus, 'Load a structure, add a note, or write reasoning before sending a snapshot.', 'warn');
+      return;
+    }
+    var host = researchHubCaptureHost();
+    if (!host) {
+      setStatus(notebookStatus, 'Open this explorer from AlloFlow, then open the Research Hub once so the portfolio bridge is available.', 'warn');
+      return;
+    }
+    var contextLabel = snapshot.context ? [snapshot.context.name, snapshot.context.accession].filter(Boolean).join(' / ') : 'No structure record loaded';
+    var safeReasoning = {
+      claim: redactSequenceLikeText(snapshot.reasoning.claim),
+      evidence: redactSequenceLikeText(snapshot.reasoning.evidence),
+      caution: redactSequenceLikeText(snapshot.reasoning.caution)
+    };
+    var summaryParts = ['AlphaFold workspace: ' + contextLabel + '.'];
+    if (safeReasoning.claim) summaryParts.push('Claim: ' + safeReasoning.claim);
+    if (safeReasoning.evidence) summaryParts.push('Evidence: ' + safeReasoning.evidence);
+    if (safeReasoning.caution) summaryParts.push('Limit or next test: ' + safeReasoning.caution);
+    if (snapshot.entries.length) summaryParts.push('Notebook entries: ' + snapshot.entries.length + '.');
+    var result = host.captureArtifact({
+      sourceToolId: 'alphafold_explorer',
+      sourceToolName: 'AlphaFold Explorer',
+      sourceToolVersion: '2026.07',
+      artifactKind: 'protein_structure_workspace',
+      integrationContract: ALPHAFOLD_RESEARCH_CONTRACT,
+      title: snapshot.name || 'AlphaFold structure investigation',
+      summary: summaryParts.join(' ').slice(0, 4000),
+      sourceRecordId: snapshot.context && snapshot.context.accession || '',
+      sourceUrl: current && current.dbUrl || '',
+      generatedAt: snapshot.savedAt,
+      reproducibility: {
+        softwareName: 'AlphaFold Explorer',
+        softwareVersion: ALPHAFOLD_RESEARCH_CONTRACT.version,
+        sourceRecordId: snapshot.context && snapshot.context.accession || '',
+        sourceDatabase: snapshot.context && snapshot.context.source || 'learner-provided structure',
+        parameters: {
+          activeSubstitutionCount: variantChanges.length,
+          comparisonLoaded: !!comparisonLoaded,
+          paeComparisonPresent: !!paeComparisonStatement,
+          coordinateAnalysisPresent: !!coordinateAnalysis
+        },
+        randomSeed: 'not applicable',
+        transformations: [
+          variantChanges.length ? 'Learner-specified amino-acid substitutions were summarized.' : 'No amino-acid substitutions were active.',
+          comparisonLoaded ? 'A structure comparison was loaded.' : 'No structure comparison was loaded.',
+          coordinateAnalysis ? 'Coordinate alignment and contact differences were summarized.' : 'No coordinate alignment summary was produced.'
+        ],
+        limitations: [
+          'Predicted structure confidence is not experimental validation.',
+          'The receipt omits raw sequences and structure-file contents.',
+          'Learner-authored interpretation and uncertainty must be reviewed in the Inquiry Portfolio.'
+        ],
+        recordedAt: snapshot.savedAt
+      },
+      privacy: 'No raw structure-file contents are included. Sequence-like strings of 40 or more characters are redacted; review free-text notes before approval.',
+      data: {
+        context: snapshot.context,
+        reasoning: safeReasoning,
+        entries: snapshot.entries.slice(-10).map(function (entry) {
+          return { provenance: entry.provenance, text: redactSequenceLikeText(entry.text).slice(0, 1000), createdAt: entry.createdAt };
+        })
+      }
+    });
+    if (result && result.ok) setStatus(notebookStatus, 'Snapshot queued. Open the Research Hub to review, interpret, and approve it.', 'ok');
+    else setStatus(notebookStatus, (result && result.reason) || 'The Inquiry Portfolio could not accept this snapshot.', 'err');
+  }
   function notebookSnapshot() {
     return {
       version: 1,
-      name: String(notebookNameInput.value || 'AlphaFold variant investigation').trim().slice(0, 120),
+      name: redactSequenceLikeText(String(notebookNameInput.value || 'AlphaFold variant investigation').trim()).slice(0, 120),
       savedAt: new Date().toISOString(),
-      privacy: 'No raw sequences or structure-file contents are stored.',
-      entries: notebookEntryState.slice(0, 100),
-      reasoning: { claim: claimInput.value.trim(), evidence: evidenceInput.value.trim(), caution: cautionInput.value.trim() },
-      context: current ? { source: current.source || '', name: current.name || '', accession: current.accession || '' } : null
+      privacy: 'No raw sequences or structure-file contents are stored. Sequence-like text is redacted.',
+      entries: notebookEntryState.slice(0, 100).map(function (entry) {
+        return Object.assign({}, entry, { text: redactSequenceLikeText(entry && entry.text) });
+      }),
+      reasoning: { claim: redactSequenceLikeText(claimInput.value.trim()), evidence: redactSequenceLikeText(evidenceInput.value.trim()), caution: redactSequenceLikeText(cautionInput.value.trim()) },
+      context: current ? { source: redactSequenceLikeText(current.source), name: redactSequenceLikeText(current.name), accession: redactSequenceLikeText(current.accession) } : null
     };
   }
 
@@ -5627,6 +5767,7 @@
   coachBtn.addEventListener('click', coach);
   addNotebookEntryBtn.addEventListener('click', addNotebookEntry);
   captureWorkspaceBtn.addEventListener('click', captureWorkspace);
+  sendResearchHubBtn.addEventListener('click', sendWorkspaceToResearchHub);
   saveNotebookBtn.addEventListener('click', saveNotebook);
   restoreNotebookBtn.addEventListener('click', restoreNotebook);
   downloadNotebookBtn.addEventListener('click', downloadNotebook);

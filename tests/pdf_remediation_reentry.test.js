@@ -54,7 +54,7 @@ describe('host: result survives close and is re-openable in-session', () => {
   });
 
   it('starting a NEW audit drops the stash (no stale re-entry for a cleared result)', () => {
-    expect(host).toMatch(/startNewPdfAudit = \(\) => \{\s*invalidatePdfAuditRun\(\);\s*lastPdfAuditResultRef\.current = null;/);
+    expect(host).toMatch(/startNewPdfAudit = \(\) => \{\s*const documentIntakeEpoch = \+\+pdfDocumentSelectionEpochRef\.current;\s*invalidatePdfAuditRun\(\);\s*lastPdfAuditResultRef\.current = null;/);
     expect(host.indexOf('invalidatePdfAuditRun();', host.indexOf('const startNewPdfAudit'))).toBeLessThan(host.indexOf('lastPdfAuditResultRef.current = null', host.indexOf('const startNewPdfAudit')));
   });
 });

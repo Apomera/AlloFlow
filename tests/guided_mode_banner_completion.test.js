@@ -18,7 +18,7 @@
 // click-vs-completion transition, so a regression to the old behavior fails here.
 // Also covers the source-step "Try this example" loader and the About read-aloud.
 
-import { describe, it, expect, beforeAll, vi } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
@@ -38,6 +38,9 @@ const STEPS = [
 const TOUR_MAP = { 'source-input': 'tour-input-panel', 'analysis': 'tour-tool-analysis', 'faq': 'tour-tool-faq' };
 const TOUR_STEPS = [{ id: 'tour-tool-analysis', title: 'About Analysis', text: 'Analysis scans your text for **reading level** and key vocabulary.' }];
 
+beforeEach(() => {
+  localStorage.clear();
+});
 beforeAll(() => {
   React = require(resolve(MODULES_DIR, 'react'));
   ReactDOMClient = require(resolve(MODULES_DIR, 'react-dom/client'));
@@ -62,7 +65,8 @@ function baseProps(overrides) {
     GUIDED_TOUR_MAP: TOUR_MAP, guidedStep: 1, guidedRect: null, guidedEngaged: false, wizardOpen: false,
     handleExitGuidedMode: () => {}, handleGuidedSkip: () => {}, setGuidedStep: () => {}, setShowGuidedTip: () => {},
     showGuidedTip: false, t: () => '', tourSteps: TOUR_STEPS, history: [], getDefaultTitle: (type) => type,
-    inputText: '', setInputText: () => {},
+    inputText: '', setInputText: () => {}, guidedCompletedIds: [], guidedSkippedIds: [],
+    guidedCreatedHistoryIds: [], wordSoundsHistory: [], markGuidedStepDone: () => {},
     ...overrides,
   };
 }
@@ -219,5 +223,157 @@ describe('Guided banner - per-step "Worked example" tab', () => {
     expect(b.button('Worked example')).toBeFalsy();
     expect(b.button('example passage')).toBeTruthy();
     b.cleanup();
+  });
+});
+
+describe('Guided banner - progress, skips, and real interaction completion', () => {
+  it('reports the visible step number with one-based progress', () => {
+    const b = mountBanner(baseProps({ guidedStep: 0 }));
+    const progress = b.host.querySelector('[role="progressbar"]');
+    expect(progress.getAttribute('aria-valuenow')).toBe('1');
+    expect(progress.getAttribute('aria-valuemin')).toBe('1');
+    expect(progress.getAttribute('aria-valuemax')).toBe(String(STEPS.length));
+    b.cleanup();
+  });
+
+  it('tells the host whether an advance was an explicit skip', () => {
+    const handleGuidedSkip = vi.fn();
+    const pending = mountBanner(baseProps({ guidedStep: 1, handleGuidedSkip }));
+    act(() => { pending.button('Skip').click(); });
+    expect(handleGuidedSkip).toHaveBeenCalledWith(true);
+    pending.cleanup();
+
+    const done = mountBanner(baseProps({ guidedStep: 1, history: [], guidedCompletedIds: ['analysis'], handleGuidedSkip }));
+    act(() => { done.button('Next step').click(); });
+    expect(handleGuidedSkip).toHaveBeenLastCalledWith(false);
+    done.cleanup();
+  });
+
+  it('recaps only resources recorded as created during this Guided run', () => {
+    const history = [
+      { id: 'old', type: 'analysis', title: 'Old unrelated resource' },
+      { id: 'new', type: 'faq', title: 'Guided FAQ' },
+    ];
+    const b = mountBanner(baseProps({ guidedStep: 2, history, guidedCreatedHistoryIds: ['new'] }));
+    expect(b.text()).toContain('Guided FAQ');
+    expect(b.text()).not.toContain('Old unrelated resource');
+    b.cleanup();
+  });
+
+  it('does not complete Word Sounds or Adventure from a panel click alone', () => {
+    const wordSteps = [
+      STEPS[0],
+      { id: 'ui-tool-wordsounds', label: 'Word Sounds', action: 'Practice words.', success: 'Word Sounds set.' },
+      STEPS[2],
+    ];
+    const wordProps = { ...baseProps(), GUIDED_STEPS: wordSteps, allGuidedSteps: wordSteps, guidedStep: 1, guidedEngaged: true };
+    const words = mountBanner(wordProps);
+    expect(words.text()).not.toContain('Word Sounds set.');
+    words.render({ ...wordProps, wordSoundsHistory: [{ word: 'plant', correct: true }] });
+    expect(words.text()).toContain('Word Sounds set.');
+    words.cleanup();
+
+    const adventureSteps = [
+      STEPS[0],
+      { id: 'adventure', label: 'Adventure', action: 'Build an adventure.', success: 'Adventure ready.' },
+      STEPS[2],
+    ];
+    const adventureProps = { ...baseProps(), GUIDED_STEPS: adventureSteps, allGuidedSteps: adventureSteps, guidedStep: 1, guidedEngaged: true };
+    const adventure = mountBanner(adventureProps);
+    expect(adventure.text()).not.toContain('Adventure ready.');
+    adventure.render({ ...adventureProps, history: [{ id: 'adv1', type: 'adventure' }] });
+    expect(adventure.text()).toContain('Adventure ready.');
+    adventure.cleanup();
+  });
+});
+
+describe('Guided banner - navigation, summary, and declared localization', () => {
+  it('supports Back without clearing completion and Resume later through the host exit handler', () => {
+    const setGuidedStep = vi.fn();
+    const handleExitGuidedMode = vi.fn();
+    const b = mountBanner(baseProps({ guidedStep: 1, guidedCompletedIds: ['analysis'], setGuidedStep, handleExitGuidedMode }));
+    act(() => { b.button('Back').click(); });
+    expect(setGuidedStep).toHaveBeenCalledTimes(1);
+    expect(setGuidedStep.mock.calls[0][0](1)).toBe(0);
+    act(() => { b.button('Resume later').click(); });
+    expect(handleExitGuidedMode).toHaveBeenCalledTimes(1);
+    b.cleanup();
+  });
+
+  it('summarizes completed, skipped, and Guided-created resources on the final step', () => {
+    const history = [{ id: 'guided-faq', type: 'faq', title: 'Guided FAQ' }];
+    const b = mountBanner(baseProps({
+      guidedStep: 2,
+      guidedCompletedIds: ['analysis'],
+      guidedSkippedIds: ['source-input'],
+      guidedCreatedHistoryIds: ['guided-faq'],
+      history,
+    }));
+    const summary = b.host.querySelector('[role="list"][aria-label="Guided Mode completion summary"]');
+    expect(summary).toBeTruthy();
+    const items = Array.from(summary.querySelectorAll('[role="listitem"]')).map(item => item.textContent);
+    expect(items).toEqual(['1Completed', '1Skipped', '1Resources']);
+    b.cleanup();
+  });
+
+  it('uses the declared tour translation map and avoids an English success sentence in non-English UI', () => {
+    const translated = {
+      'tour.analysis_title': 'Analizar el material',
+      'tour.analysis_text': 'Ejecuta el análisis del texto.',
+    };
+    const b = mountBanner(baseProps({
+      guidedStep: 1,
+      guidedCompletedIds: ['analysis'],
+      currentUiLanguage: 'Spanish',
+      t: (key) => translated[key] || '',
+    }));
+    expect(b.text()).toContain('Analizar el material');
+    expect(b.text()).toContain('Analizar el material ✓');
+    expect(b.text()).not.toContain('Analysis done');
+    b.cleanup();
+  });
+});
+describe('Guided banner - controlled journey UX', () => {
+  it('locks step-changing controls while a resource is being generated', () => {
+    localStorage.removeItem('allo_guided_ui_state');
+    const b = mountBanner(baseProps({ guidedStep: 1, isGuidedRetrying: true }));
+    expect(b.text()).toContain('Step navigation is paused');
+    expect(b.button('Back').disabled).toBe(true);
+    expect(b.button('Skip').disabled).toBe(true);
+    expect(b.button('Resume later').disabled).toBe(true);
+    expect(b.host.querySelector('select').disabled).toBe(true);
+    b.cleanup();
+  });
+
+  it('shows entered source text as completed in the segmented progress display', () => {
+    localStorage.removeItem('allo_guided_ui_state');
+    const b = mountBanner(baseProps({ guidedStep: 1, inputText: 'A source passage that is definitely longer than twenty characters.' }));
+    const firstSegment = b.host.querySelector('[role="progressbar"] > div');
+    expect(firstSegment.style.background).toContain('linear-gradient');
+    expect(firstSegment.style.background).toContain('52, 211, 153');
+    b.cleanup();
+  });
+
+  it('confirms a path change after progress and exposes opt-in auto-advance', () => {
+    localStorage.removeItem('allo_guided_ui_state');
+    const applyGuidedPreset = vi.fn();
+    const setGuidedAutoAdvance = vi.fn();
+    const presets = [{ id: 'reading-access', label: 'Adapt a reading', description: 'Reading support', stepIds: ['analysis'] }];
+    const b = mountBanner(baseProps({ guidedCompletedIds: ['analysis'], toggleGuidedStepId: vi.fn(), guidedPresets: presets, applyGuidedPreset, guidedAutoAdvance: false, setGuidedAutoAdvance }));
+    act(() => { b.host.querySelector('[aria-controls="guided-step-picker"]').click(); });
+    act(() => { b.button('Adapt a reading').click(); });
+    expect(b.text()).toContain('Change Guided path?');
+    expect(applyGuidedPreset).not.toHaveBeenCalled();
+    act(() => { b.button('Change path').click(); });
+    expect(applyGuidedPreset).toHaveBeenCalledWith(presets[0]);
+    b.cleanup();
+
+    const c = mountBanner(baseProps({ toggleGuidedStepId: vi.fn(), guidedAutoAdvance: false, setGuidedAutoAdvance }));
+    act(() => { c.host.querySelector('[aria-controls="guided-step-picker"]').click(); });
+    const autoSwitch = c.host.querySelector('[role="switch"]');
+    expect(autoSwitch.getAttribute('aria-checked')).toBe('false');
+    act(() => { autoSwitch.click(); });
+    expect(setGuidedAutoAdvance).toHaveBeenCalledTimes(1);
+    c.cleanup();
   });
 });

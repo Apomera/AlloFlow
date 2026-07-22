@@ -13213,6 +13213,8 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             oto: { w: 28, h: 20, emoji: 18 }, shrimp: { w: 24, h: 18, emoji: 16 },
 
+            nerite: { w: 22, h: 18, emoji: 18 }, dwarffrog: { w: 34, h: 26, emoji: 23 }, stonycoral: { w: 44, h: 38, emoji: 30 }, copepods: { w: 24, h: 18, emoji: 18 }, pistol: { w: 27, h: 20, emoji: 18 }, pederson: { w: 25, h: 19, emoji: 17 },
+
             betta: { w: 48, h: 36, emoji: 26 },
 
             // Reef
@@ -13333,8 +13335,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               { id: 'platy', name: __alloT('stem.aquarium.platy', 'Platy'), icon: '🐠', load: 1, minTank: 10, tempRange: [70, 80], pHRange: [7.0, 8.2], compat: ['neon', 'guppy', 'cory', 'molly'], diet: 'Omnivore — algae, blanched vegetables, and small invertebrates', habitat: 'Warm, spring-fed streams and drainage ditches in southern Mexico and Guatemala', fact: __alloT('stem.aquarium.platys_are_livebearers_they_give_birth', 'Platys are livebearers — they give birth to free-swimming fry.') },
 
-              { id: 'molly', name: __alloT('stem.aquarium.molly', 'Molly'), icon: '🐟', load: 2, minTank: 15, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['guppy', 'platy'], diet: 'Herbivore-leaning omnivore — algae films, spirulina, and occasional insect larvae', habitat: 'Brackish coastal lagoons, mangrove swamps, and freshwater streams from Mexico to Colombia', fact: __alloT('stem.aquarium.mollies_can_survive_in_both_fresh_and_', 'Mollies can survive in both fresh and saltwater!') }
+              { id: 'molly', name: __alloT('stem.aquarium.molly', 'Molly'), icon: '🐟', load: 2, minTank: 15, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['guppy', 'platy'], diet: 'Herbivore-leaning omnivore — algae films, spirulina, and occasional insect larvae', habitat: 'Brackish coastal lagoons, mangrove swamps, and freshwater streams from Mexico to Colombia', fact: __alloT('stem.aquarium.mollies_can_survive_in_both_fresh_and_', 'Mollies can survive in both fresh and saltwater!') },
 
+              { id: 'nerite', name: 'Nerite Snail', icon: '\uD83D\uDC0C', organismType: 'Mollusk', ecosystemRole: 'Surface algae grazer', load: 0.5, minTank: 5, tempRange: [72, 80], pHRange: [7.0, 8.4], compat: ['neon', 'guppy', 'cory', 'platy', 'molly'], diet: 'Obligate grazer \u2014 scrapes algae and biofilm from glass, rock, and plant surfaces', habitat: 'Fresh and brackish coastal streams with hard surfaces and steady biofilm growth', fact: 'A grazer still produces waste and can starve in a spotless tank; it does not replace filtration or maintenance.', grazeRate: 0.18, shellBuilder: true, obligateGrazer: true, passiveStock: true },
+
+              { id: 'dwarffrog', name: 'African Dwarf Frog', icon: '\uD83D\uDC38', organismType: 'Amphibian', ecosystemRole: 'Surface-breathing insectivore', load: 1.5, minTank: 10, tempRange: [72, 80], pHRange: [6.5, 7.8], compat: ['neon', 'guppy', 'cory', 'platy', 'nerite'], diet: 'Carnivore \u2014 small worms, insect larvae, daphnia, and sinking amphibian foods', habitat: 'Slow, shallow forest pools and streams in equatorial Africa with easy access to the surface', fact: 'This fully aquatic frog has lungs and must regularly reach the surface to breathe air.', surfaceBreather: true, passiveStock: true }
             ],
 
             planted: [
@@ -13345,10 +13350,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               { id: 'oto', name: __alloT('stem.aquarium.otocinclus', 'Otocinclus'), icon: '🐡', load: 1, minTank: 10, tempRange: [72, 79], pHRange: [6.0, 7.5], compat: ['cardinal', 'rummy', 'shrimp', 'betta'], diet: 'Herbivore — biofilm, soft green algae, and blanched zucchini', habitat: 'Shallow, sunlit, plant-rich margins of South American rivers with moderate current', fact: __alloT('stem.aquarium.these_tiny_catfish_are_the_best_algae_', 'These tiny catfish are the best algae cleaners in the hobby.') },
 
-              { id: 'shrimp', name: __alloT('stem.aquarium.cherry_shrimp', 'Cherry Shrimp'), icon: '🦐', load: 0.5, minTank: 5, tempRange: [68, 78], pHRange: [6.5, 8.0], compat: ['cardinal', 'rummy', 'oto'], diet: 'Detritivore — biofilm, decaying plant matter, algae, and microorganisms', habitat: 'Densely vegetated freshwater streams and ponds in Taiwan', fact: __alloT('stem.aquarium.a_colony_can_double_in_size_every_2_3_', 'A colony can double in size every 2-3 months.') },
+              { id: 'shrimp', name: __alloT('stem.aquarium.cherry_shrimp', 'Cherry Shrimp'), icon: '🦐', load: 0.5, minTank: 5, tempRange: [68, 78], pHRange: [6.5, 8.0], compat: ['cardinal', 'rummy', 'oto'], diet: 'Detritivore — biofilm, decaying plant matter, algae, and microorganisms', habitat: 'Densely vegetated freshwater streams and ponds in Taiwan', fact: __alloT('stem.aquarium.a_colony_can_double_in_size_every_2_3_', 'A colony can double in size every 2-3 months.'), organismType: 'Crustacean', ecosystemRole: 'Biofilm recycler' },
 
-              { id: 'betta', name: __alloT('stem.aquarium.betta', 'Betta'), icon: '🐠', load: 2, minTank: 5, tempRange: [76, 82], pHRange: [6.5, 7.5], compat: ['oto'], diet: 'Insectivore — mosquito larvae, small insects, daphnia, and brine shrimp', habitat: 'Shallow rice paddies, stagnant ponds, and floodplains of Thailand and Cambodia', fact: __alloT('stem.aquarium.bettas_build_bubble_nests_at_the_surfa', 'Bettas build bubble nests at the surface for their eggs.') }
+              { id: 'betta', name: __alloT('stem.aquarium.betta', 'Betta'), icon: '🐠', load: 2, minTank: 5, tempRange: [76, 82], pHRange: [6.5, 7.5], compat: ['oto'], diet: 'Insectivore — mosquito larvae, small insects, daphnia, and brine shrimp', habitat: 'Shallow rice paddies, stagnant ponds, and floodplains of Thailand and Cambodia', fact: __alloT('stem.aquarium.bettas_build_bubble_nests_at_the_surfa', 'Bettas build bubble nests at the surface for their eggs.') },
 
+              { id: 'nerite', name: 'Nerite Snail', icon: '\uD83D\uDC0C', organismType: 'Mollusk', ecosystemRole: 'Surface algae grazer', load: 0.5, minTank: 5, tempRange: [72, 80], pHRange: [7.0, 8.4], compat: ['cardinal', 'rummy', 'oto', 'shrimp'], diet: 'Obligate grazer \u2014 scrapes algae and biofilm from glass, rock, and plant surfaces', habitat: 'Fresh and brackish coastal streams with hard surfaces and steady biofilm growth', fact: 'Low pH can erode its calcium-carbonate shell, and a spotless tank may not provide enough natural food.', grazeRate: 0.18, shellBuilder: true, obligateGrazer: true, passiveStock: true }
             ],
 
             reef: [
@@ -13357,10 +13363,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               { id: 'tang', name: __alloT('stem.aquarium.blue_tang', 'Blue Tang'), icon: '🐠', load: 5, minTank: 55, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'goby'], diet: 'Herbivore — filamentous algae and seaweed, essential for reef health', habitat: 'Coral-rich outer reef slopes and lagoons throughout the Indo-Pacific', fact: __alloT('stem.aquarium.blue_tangs_can_play_dead_when_stressed', 'Blue tangs can "play dead" when stressed, lying on their side.') },
 
-              { id: 'goby', name: __alloT('stem.aquarium.watchman_goby', 'Watchman Goby'), icon: '🐡', load: 2, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'tang', 'anemone'], diet: 'Micro-predator — copepods, mysis shrimp, and sand-dwelling invertebrates', habitat: 'Sandy rubble zones adjacent to coral reefs, often sharing a burrow with a pistol shrimp', fact: __alloT('stem.aquarium.gobies_form_symbiotic_partnerships_wit', 'Gobies form symbiotic partnerships with pistol shrimp.') },
+              { id: 'goby', name: __alloT('stem.aquarium.watchman_goby', 'Watchman Goby'), icon: '🐡', load: 2, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'tang', 'anemone'], diet: 'Micro-predator — copepods, mysis shrimp, and sand-dwelling invertebrates', habitat: 'Sandy rubble zones adjacent to coral reefs, often sharing a burrow with a pistol shrimp', fact: __alloT('stem.aquarium.gobies_form_symbiotic_partnerships_wit', 'Gobies form symbiotic partnerships with pistol shrimp.'), organismType: 'Fish', ecosystemRole: 'Burrow sentinel', symbiosisWith: 'pistol' },
 
-              { id: 'anemone', name: __alloT('stem.aquarium.sea_anemone', 'Sea Anemone'), icon: '🪸', load: 3, minTank: 30, tempRange: [76, 82], pHRange: [8.1, 8.4], compat: ['clown', 'goby'], diet: 'Carnivore — captures small fish and shrimp with nematocyst-armed tentacles; also hosts photosynthetic zooxanthellae', habitat: 'Well-lit, current-swept sections of tropical reefs in the Indo-Pacific', fact: __alloT('stem.aquarium.anemones_can_live_over_100_years_in_th', 'Anemones can live over 100 years in the right conditions.') }
+              { id: 'anemone', name: __alloT('stem.aquarium.sea_anemone', 'Sea Anemone'), icon: '🪸', load: 3, minTank: 30, tempRange: [76, 82], pHRange: [8.1, 8.4], compat: ['clown', 'goby'], diet: 'Carnivore — captures small fish and shrimp with nematocyst-armed tentacles; also hosts photosynthetic zooxanthellae', habitat: 'Well-lit, current-swept sections of tropical reefs in the Indo-Pacific', fact: __alloT('stem.aquarium.anemones_can_live_over_100_years_in_th', 'Anemones can live over 100 years in the right conditions.'), organismType: 'Cnidarian', ecosystemRole: 'Ambush predator / photosymbiont' },
 
+              { id: 'stonycoral', name: 'Stony Coral Colony', icon: '\uD83E\uDEB8', organismType: 'Cnidarian colony', ecosystemRole: 'Photosynthetic reef builder', load: 1.5, minTank: 30, tempRange: [75, 81], pHRange: [8.1, 8.4], compat: ['clown', 'tang', 'goby', 'anemone', 'copepods'], diet: 'Mixotroph \u2014 receives sugars from symbiotic algae and captures suspended plankton', habitat: 'Clear, sunlit tropical reefs where stable temperature and chemistry support calcification', fact: 'Corals are animals partnered with photosynthetic algae; heat stress can break that partnership and cause bleaching.', photosyntheticStock: true, dayO2: 0.16, dayCO2: 0.12, nightO2: 0.04, nightCO2: 0.03, bleachingTemp: 82, passiveStock: true },
+
+              { id: 'copepods', name: 'Copepod Colony', icon: '\uD83E\uDDA0', organismType: 'Microcrustacean colony', ecosystemRole: 'Living food-web link', load: 0.25, minTank: 10, tempRange: [72, 82], pHRange: [7.8, 8.4], compat: ['clown', 'tang', 'goby', 'anemone', 'stonycoral'], diet: 'Micrograzer \u2014 consumes phytoplankton, microalgae, and suspended organic particles', habitat: 'Water column, rock pores, and refugiums where tiny crustaceans can reproduce away from predators', fact: 'Copepods transfer energy from microscopic producers to fish and other larger consumers.', grazeRate: 0.04, foodWebSupport: 1.5, isColony: true, passiveStock: true },
+
+              { id: 'pistol', name: 'Pistol Shrimp', icon: '\uD83E\uDD90', organismType: 'Crustacean', ecosystemRole: 'Burrow engineer', load: 1, minTank: 20, tempRange: [74, 82], pHRange: [8.0, 8.4], compat: ['goby', 'clown', 'stonycoral', 'copepods'], diet: 'Omnivore \u2014 benthic invertebrates, detritus, and prepared sinking foods', habitat: 'Sandy reef flats where it excavates and maintains a shared burrow with a watchman goby', fact: 'The shrimp maintains the burrow while the better-sighted goby warns of approaching danger.', symbiosisWith: 'goby', passiveStock: true },
+
+              { id: 'pederson', name: 'Pederson Cleaner Shrimp', icon: '\uD83E\uDD90', organismType: 'Crustacean', ecosystemRole: 'Ectoparasite cleaner', load: 0.75, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'tang', 'goby', 'anemone', 'stonycoral'], diet: 'Cleaner omnivore \u2014 ectoparasites, dead tissue, mucus, and small prepared foods', habitat: 'Caribbean reef cleaning stations associated with anemones and visiting client fish', fact: 'Cleaning can reduce some external parasite loads, but it does not replace quarantine or treatment.', cleaningRate: 0.05, passiveStock: true }
             ],
 
             predator: [
@@ -13375,7 +13388,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             turtle: [
 
-              { id: 'slider', name: __alloT('stem.aquarium.red_eared_slider', 'Red-Eared Slider'), icon: '🐢', load: 15, minTank: 40, tempRange: [75, 85], pHRange: [6.5, 8.0], compat: ['goldfish'], diet: 'Omnivore — aquatic plants, snails, insects, and commercial turtle pellets; diet shifts to more vegetation with age', habitat: 'Calm ponds, lakes, and slow streams with muddy bottoms and basking logs in the southern United States', fact: __alloT('stem.aquarium.they_can_hold_their_breath_for_over_30', 'They can hold their breath for over 30 minutes!') },
+              { id: 'slider', name: __alloT('stem.aquarium.red_eared_slider', 'Red-Eared Slider'), icon: '🐢', load: 15, minTank: 40, tempRange: [75, 85], pHRange: [6.5, 8.0], compat: ['goldfish'], diet: 'Omnivore — aquatic plants, snails, insects, and commercial turtle pellets; diet shifts to more vegetation with age', habitat: 'Calm ponds, lakes, and slow streams with muddy bottoms and basking logs in the southern United States', fact: __alloT('stem.aquarium.they_can_hold_their_breath_for_over_30', 'They can hold their breath for over 30 minutes!'), organismType: 'Reptile', ecosystemRole: 'Air-breathing omnivore', surfaceBreather: true },
 
               { id: 'goldfish', name: __alloT('stem.aquarium.feeder_goldfish', 'Feeder Goldfish'), icon: '🐠', load: 3, minTank: 20, tempRange: [65, 75], pHRange: [7.0, 8.4], compat: ['slider'], diet: 'Omnivore — algae, aquatic plants, detritus, small invertebrates, and prepared pellets', habitat: 'Cool, slow-moving freshwater ponds and rivers; originally domesticated from wild carp in East Asia', fact: __alloT('stem.aquarium.goldfish_can_live_20_years_with_proper', 'Goldfish can live 20+ years with proper care.') }
 
@@ -13383,23 +13396,26 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             invert: [
 
-              { id: 'cleaner', name: __alloT('stem.aquarium.cleaner_shrimp', 'Cleaner Shrimp'), icon: '🦐', load: 1, minTank: 10, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['urchin', 'crab', 'starfish'], diet: 'Ectoparasite feeder — removes parasites, dead skin, and mucus from visiting reef fish', habitat: 'Coral ledges and reef crevices throughout the Indo-Pacific where it establishes cleaning stations', fact: __alloT('stem.aquarium.they_set_up_cleaning_stations_where_fi', 'They set up cleaning stations where fish line up to be groomed!') },
+              { id: 'cleaner', name: __alloT('stem.aquarium.cleaner_shrimp', 'Cleaner Shrimp'), icon: '🦐', load: 1, minTank: 10, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['urchin', 'crab', 'starfish'], diet: 'Ectoparasite feeder — removes parasites, dead skin, and mucus from visiting reef fish', habitat: 'Coral ledges and reef crevices throughout the Indo-Pacific where it establishes cleaning stations', fact: __alloT('stem.aquarium.they_set_up_cleaning_stations_where_fi', 'They set up cleaning stations where fish line up to be groomed!'), organismType: 'Crustacean', ecosystemRole: 'Cleaning-station partner', cleaningRate: 0.04 },
 
-              { id: 'urchin', name: __alloT('stem.aquarium.sea_urchin', 'Sea Urchin'), icon: '🦔', load: 2, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'crab', 'starfish'], diet: 'Herbivore — rasps coralline and filamentous algae off rocks using a five-toothed jaw called Aristotle\'s lantern', habitat: 'Rocky subtidal reef zones and kelp forests in temperate and tropical seas', fact: __alloT('stem.aquarium.urchin_spines_are_actually_modified_te', 'Urchin spines are actually modified teeth.') },
+              { id: 'urchin', name: __alloT('stem.aquarium.sea_urchin', 'Sea Urchin'), icon: '🦔', load: 2, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'crab', 'starfish'], diet: 'Herbivore — rasps coralline and filamentous algae off rocks using a five-toothed jaw called Aristotle\'s lantern', habitat: 'Rocky subtidal reef zones and kelp forests in temperate and tropical seas', fact: __alloT('stem.aquarium.urchin_spines_are_actually_modified_te', 'Urchin spines are actually modified teeth.'), organismType: 'Echinoderm', ecosystemRole: 'Rock-surface grazer' },
 
-              { id: 'crab', name: __alloT('stem.aquarium.hermit_crab', 'Hermit Crab'), icon: '🦀', load: 2, minTank: 10, tempRange: [72, 80], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'starfish'], diet: 'Scavenger/omnivore — detritus, algae, leftover food scraps, and small worms', habitat: 'Intertidal rock pools and shallow coral rubble zones in tropical seas', fact: __alloT('stem.aquarium.hermit_crabs_form_vacancy_chains_swapp', 'Hermit crabs form "vacancy chains" — swapping shells in order of size!') },
+              { id: 'crab', name: __alloT('stem.aquarium.hermit_crab', 'Hermit Crab'), icon: '🦀', load: 2, minTank: 10, tempRange: [72, 80], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'starfish'], diet: 'Scavenger/omnivore — detritus, algae, leftover food scraps, and small worms', habitat: 'Intertidal rock pools and shallow coral rubble zones in tropical seas', fact: __alloT('stem.aquarium.hermit_crabs_form_vacancy_chains_swapp', 'Hermit crabs form "vacancy chains" — swapping shells in order of size!'), organismType: 'Crustacean', ecosystemRole: 'Mobile scavenger' },
 
-              { id: 'starfish', name: __alloT('stem.aquarium.sea_star', 'Sea Star'), icon: '⭐', load: 3, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'crab'], diet: 'Predator — everts its stomach to digest mussels, clams, and oysters externally', habitat: 'Rocky intertidal zones to deep reef slopes in nearly every ocean', fact: __alloT('stem.aquarium.sea_stars_can_regenerate_lost_arms_and', 'Sea stars can regenerate lost arms — and sometimes an entire body from one arm.') }
+              { id: 'starfish', name: __alloT('stem.aquarium.sea_star', 'Sea Star'), icon: '⭐', load: 3, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'crab'], diet: 'Predator — everts its stomach to digest mussels, clams, and oysters externally', habitat: 'Rocky intertidal zones to deep reef slopes in nearly every ocean', fact: __alloT('stem.aquarium.sea_stars_can_regenerate_lost_arms_and', 'Sea stars can regenerate lost arms — and sometimes an entire body from one arm.'), organismType: 'Echinoderm', ecosystemRole: 'Benthic predator' },
 
+              { id: 'stonycoral', name: 'Stony Coral Colony', icon: '\uD83E\uDEB8', organismType: 'Cnidarian colony', ecosystemRole: 'Photosynthetic reef builder', load: 1.5, minTank: 30, tempRange: [75, 81], pHRange: [8.1, 8.4], compat: ['cleaner', 'urchin', 'crab', 'copepods'], diet: 'Mixotroph \u2014 receives sugars from symbiotic algae and captures suspended plankton', habitat: 'Clear, sunlit tropical reefs where stable temperature and chemistry support calcification', fact: 'Corals are animals partnered with photosynthetic algae; heat stress can break that partnership and cause bleaching.', photosyntheticStock: true, dayO2: 0.16, dayCO2: 0.12, nightO2: 0.04, nightCO2: 0.03, bleachingTemp: 82, passiveStock: true },
+
+              { id: 'copepods', name: 'Copepod Colony', icon: '\uD83E\uDDA0', organismType: 'Microcrustacean colony', ecosystemRole: 'Living food-web link', load: 0.25, minTank: 10, tempRange: [72, 82], pHRange: [7.8, 8.4], compat: ['cleaner', 'urchin', 'crab', 'starfish', 'stonycoral'], diet: 'Micrograzer \u2014 consumes phytoplankton, microalgae, and suspended organic particles', habitat: 'Water column, rock pores, and refugiums where tiny crustaceans can reproduce away from predators', fact: 'Copepods transfer energy from microscopic producers to fish and other larger consumers.', grazeRate: 0.04, foodWebSupport: 1.5, isColony: true, passiveStock: true }
             ],
 
             coldwater: [
 
               { id: 'rockfish', name: __alloT('stem.aquarium.rockfish', 'Rockfish'), icon: '🐡', load: 5, minTank: 55, tempRange: [50, 60], pHRange: [7.8, 8.4], compat: ['seastar', 'kelp'], diet: 'Ambush predator — small fish, shrimp, and planktonic crustaceans near rocky structure', habitat: 'Deep rocky reefs and kelp forests along the Pacific coast of North America', fact: __alloT('stem.aquarium.some_rockfish_live_over_200_years', 'Some rockfish live over 200 years!') },
 
-              { id: 'seastar', name: __alloT('stem.aquarium.sunflower_star', 'Sunflower Star'), icon: '⭐', load: 4, minTank: 40, tempRange: [48, 58], pHRange: [7.8, 8.4], compat: ['rockfish', 'kelp'], diet: 'Voracious predator — sea urchins, clams, snails, and other sea stars', habitat: 'Kelp forests and rocky reefs from Alaska to Baja California, critical for controlling urchin populations', fact: __alloT('stem.aquarium.sunflower_stars_have_up_to_24_arms_and', 'Sunflower stars have up to 24 arms and can move 1 meter per minute.') },
+              { id: 'seastar', name: __alloT('stem.aquarium.sunflower_star', 'Sunflower Star'), icon: '⭐', load: 4, minTank: 40, tempRange: [48, 58], pHRange: [7.8, 8.4], compat: ['rockfish', 'kelp'], diet: 'Voracious predator — sea urchins, clams, snails, and other sea stars', habitat: 'Kelp forests and rocky reefs from Alaska to Baja California, critical for controlling urchin populations', fact: __alloT('stem.aquarium.sunflower_stars_have_up_to_24_arms_and', 'Sunflower stars have up to 24 arms and can move 1 meter per minute.'), organismType: 'Echinoderm', ecosystemRole: 'Keystone urchin predator' },
 
-              { id: 'kelp', name: __alloT('stem.aquarium.giant_kelp', 'Giant Kelp'), icon: '🌿', load: 1, minTank: 30, tempRange: [50, 65], pHRange: [7.5, 8.5], compat: ['rockfish', 'seastar'], diet: 'Photosynthetic autotroph — converts sunlight, CO₂, and dissolved nutrients into biomass', habitat: 'Cool, nutrient-rich, sunlit coastal waters from 6-30m depth along temperate coastlines', fact: __alloT('stem.aquarium.giant_kelp_can_grow_up_to_2_feet_per_d', 'Giant kelp can grow up to 2 feet per day!') }
+              { id: 'kelp', name: __alloT('stem.aquarium.giant_kelp', 'Giant Kelp'), icon: '🌿', load: 1, minTank: 30, tempRange: [50, 65], pHRange: [7.5, 8.5], compat: ['rockfish', 'seastar'], diet: 'Photosynthetic autotroph — converts sunlight, CO₂, and dissolved nutrients into biomass', habitat: 'Cool, nutrient-rich, sunlit coastal waters from 6-30m depth along temperate coastlines', fact: __alloT('stem.aquarium.giant_kelp_can_grow_up_to_2_feet_per_d', 'Giant kelp can grow up to 2 feet per day!'), organismType: 'Macroalga', ecosystemRole: 'Habitat-forming producer', photosyntheticStock: true, dayO2: 0.22, dayCO2: 0.16, nightO2: 0.05, nightCO2: 0.04 }
 
             ],
 
@@ -14075,6 +14091,7 @@ var d = (labToolData && labToolData._aquarium) || {};
           var fishBirthTicks = migrateFishState(d.fishBirthTicks, 0, true);
           var fishCareLog = migrateFishState(d.fishCareLog);
           var expandedCareFish = d.expandedCareFish || null;
+          var stockCatalogFilter = typeof d.stockCatalogFilter === 'string' ? d.stockCatalogFilter : 'All';
           var quarantinedFish = migrateFishState(d.quarantinedFish); // { fishInstanceId: { sinceTick, reason } }
 
           var fishSickness = migrateFishState(d.fishSickness); // { fishInstanceId: { disease: 'ich', severity: 1-3, tick: when } }
@@ -14170,7 +14187,7 @@ var d = (labToolData && labToolData._aquarium) || {};
           function getTutorialEvidence(stepId) {
             if (tutorialProgress[stepId]) return { complete: true, label: tutorialProgress[stepId].evidence || 'Completed and recorded.' };
             if (stepId === 'habitat') return { complete: !!selectedTank, label: selectedTank ? 'Habitat selected.' : 'Choose a tank type.' };
-            if (stepId === 'stock') return { complete: tankFish.length > 0, label: tankFish.length > 0 ? tankFish.length + ' fish stocked.' : 'Add at least one fish.' };
+            if (stepId === 'stock') return { complete: tankFish.length > 0, label: tankFish.length > 0 ? tankFish.length + ' organisms stocked.' : 'Add at least one organism.' };
             if (stepId === 'cycle') return { complete: simTick >= 3, label: simTick >= 3 ? simTick + ' aquarium hours observed.' : Math.max(0, 3 - simTick) + ' more aquarium-hour ticks needed.' };
             if (stepId === 'feed') return { complete: !!feedingLog, label: feedingLog ? 'Feeding impact recorded.' : 'Feed the display tank once.' };
             if (stepId === 'water') return { complete: maintenanceLog.length > 0, label: maintenanceLog.length > 0 ? maintenanceLog.length + ' water change record' + (maintenanceLog.length === 1 ? '' : 's') + ' available.' : 'Perform a recommended water change.' };
@@ -14231,7 +14248,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               'NO2 ' + waterChem.nitrite.toFixed(2) + ' ppm',
               'NO3 ' + waterChem.nitrate.toFixed(1) + ' ppm',
               'O2 ' + waterChem.dissolvedO2.toFixed(1) + ' mg/L',
-              tankFish.length + ' fish',
+              tankFish.length + ' organisms',
               equipmentFaultCount + ' equipment faults'
             ].join(' | ');
             var combinedObservation = (currentTutorialNote.observation.trim() ? currentTutorialNote.observation.trim() + '\n' : '') + snapshot;
@@ -14371,6 +14388,18 @@ var d = (labToolData && labToolData._aquarium) || {};
             crab: { anim: 'aquaScuttle', yZone: 'bottom', speed: [1.5, 3] },
 
             shrimp: { anim: 'aquaScuttle', yZone: 'bottom', speed: [2, 3.5] },
+
+            nerite: { anim: 'aquaDrift', yZone: 'bottom', speed: [9, 14] },
+
+            stonycoral: { anim: 'aquaPulse', yZone: 'bottom', speed: [7, 10] },
+
+            copepods: { anim: 'aquaBobble', yZone: 'mid', speed: [2, 4] },
+
+            dwarffrog: { anim: 'aquaBobble', yZone: 'top', speed: [3, 5] },
+
+            pistol: { anim: 'aquaScuttle', yZone: 'bottom', speed: [2, 4] },
+
+            pederson: { anim: 'aquaScuttle', yZone: 'mid', speed: [2, 4] },
 
             cleaner: { anim: 'aquaScuttle', yZone: 'bottom', speed: [2, 4] },
 
@@ -15419,11 +15448,20 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             if (currentLoad + species.load > maxLoad) {
 
-              if (addToast) addToast('⚠️ Tank is at capacity! Bioload would exceed safe limits.', 'warning');
+              if (addToast) addToast('\u26A0\uFE0F Cannot add ' + species.name + ': projected bioload ' + (currentLoad + species.load) + ' exceeds the safe limit of ' + maxLoad + '.', 'warning');
 
               return;
 
             }
+
+            var compatibilityConflicts = tankFish.map(function (existingId) {
+              return (SPECIES_BY_TANK[selectedTank] || []).find(function (candidate) { return candidate.id === existingId; });
+            }).filter(function (existingSpecies) {
+              if (!existingSpecies || existingSpecies.id === species.id) return false;
+              var listedEitherWay = (species.compat && species.compat.indexOf(existingSpecies.id) !== -1) || (existingSpecies.compat && existingSpecies.compat.indexOf(species.id) !== -1);
+              return !listedEitherWay && !species.passiveStock && !existingSpecies.passiveStock;
+            });
+            var compatibilityNames = compatibilityConflicts.map(function (candidate) { return candidate.name; }).filter(function (name, index, names) { return names.indexOf(name) === index; });
 
             var newFish = tankFish.concat([speciesId]);
             var newInstanceId = 'fish-' + nextFishInstanceId;
@@ -15445,7 +15483,9 @@ var d = (labToolData && labToolData._aquarium) || {};
             newHunger[newInstanceId] = 50;
             updMulti({ fishInstanceIds: newFishInstanceIds, nextFishInstanceId: newNextFishInstanceId, fishIdentityVersion: 3, fishNames: newNames, fishBirthTicks: newBirthTicks, fishCareLog: newCareLog });
 
-            updMulti({ tankFish: newFish, fishHealth: newHealth, hungerLevels: newHunger, eventLog: eventLog.concat([{ tick: simTick, msg: '🐟 Added ' + species.name + ' to tank' }]) });
+            updMulti({ tankFish: newFish, fishHealth: newHealth, hungerLevels: newHunger, eventLog: eventLog.concat([{ tick: simTick, msg: '\uD83D\uDC1F Added ' + species.name + ' to tank' + (compatibilityNames.length ? ' \u2014 monitor compatibility with ' + compatibilityNames.join(', ') : '') }]) });
+
+            if (compatibilityNames.length && addToast) addToast('\u26A0\uFE0F ' + species.name + ' added for observation. Monitor compatibility with ' + compatibilityNames.join(', ') + '.', 'warning');
 
             sfxAddFish(); sfxSplash();
 
@@ -15879,7 +15919,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             var speciesId = tankFish[fishIndex];
             var species = (SPECIES_BY_TANK[selectedTank] || []).find(function (candidate) { return candidate.id === speciesId; });
-            var displayName = fishNames[fishId] || (species ? species.name : 'Fish');
+            var displayName = fishNames[fishId] || (species ? species.name : 'Organism');
             var nextQuarantined = Object.assign({}, quarantinedFish);
             var nextCareLog = Object.assign({}, fishCareLog);
             var nextStress = Object.assign({}, fishStress);
@@ -16194,6 +16234,26 @@ var d = (labToolData && labToolData._aquarium) || {};
               // Day cycle: if lights are on AND it's daytime (6-20), plants photosynthesize
 
               var isDaylight = _lightsOn && (_simHour >= 6 && _simHour < 20);
+              var stockDayO2Produced = 0;
+              var stockDayCO2Consumed = 0;
+              var stockNightO2Consumed = 0;
+              var stockNightCO2Released = 0;
+              var stockLightFactor = Math.max(0.1, _equipmentOutput.light);
+              _tankFish.forEach(function (speciesId, stockIndex) {
+                if (_quarantinedFish[_fishInstanceIds[stockIndex]]) return;
+                var stockSpecies = (SPECIES_BY_TANK[_selectedTank] || []).find(function (candidate) { return candidate.id === speciesId; });
+                if (!stockSpecies || !stockSpecies.photosyntheticStock) return;
+                var heatFactor = stockSpecies.bleachingTemp && _waterChem.temp >= stockSpecies.bleachingTemp ? 0.1 : 1;
+                if (isDaylight) {
+                  stockDayO2Produced += (stockSpecies.dayO2 || 0) * stockLightFactor * heatFactor;
+                  stockDayCO2Consumed += (stockSpecies.dayCO2 || 0) * stockLightFactor * heatFactor;
+                } else {
+                  stockNightO2Consumed += stockSpecies.nightO2 || 0;
+                  stockNightCO2Released += stockSpecies.nightCO2 || 0;
+                }
+              });
+              deltaO2 += stockDayO2Produced - stockNightO2Consumed;
+              deltaCO2 += stockNightCO2Released - stockDayCO2Consumed;
 
               var plantNitrateAbsorb = 0;
 
@@ -16456,6 +16516,23 @@ var d = (labToolData && labToolData._aquarium) || {};
                 newHunger[fishKey] = Math.min(100, cur + 2);
 
               });
+              var foodWebHungerRelief = 0;
+              var foodWebSupport = _tankFish.reduce(function (sum, speciesId, stockIndex) {
+                if (_quarantinedFish[_fishInstanceIds[stockIndex]]) return sum;
+                var supportSpecies = (SPECIES_BY_TANK[_selectedTank] || []).find(function (candidate) { return candidate.id === speciesId; });
+                return sum + (supportSpecies && supportSpecies.foodWebSupport ? supportSpecies.foodWebSupport : 0);
+              }, 0);
+              if (foodWebSupport > 0) {
+                _tankFish.forEach(function (speciesId, stockIndex) {
+                  var stockKey = _fishInstanceIds[stockIndex];
+                  if (_quarantinedFish[stockKey]) return;
+                  var consumerSpecies = (SPECIES_BY_TANK[_selectedTank] || []).find(function (candidate) { return candidate.id === speciesId; });
+                  if (!consumerSpecies || consumerSpecies.foodWebSupport || !consumerSpecies.diet || !/copepods|zooplankton|plankton|micro-crustaceans/i.test(consumerSpecies.diet)) return;
+                  var relief = Math.min(foodWebSupport, newHunger[stockKey] || 0);
+                  newHunger[stockKey] = Math.max(0, (newHunger[stockKey] || 0) - relief);
+                  foodWebHungerRelief += relief;
+                });
+              }
 
               // ── Disease progression ──
 
@@ -16463,8 +16540,20 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var sickChanged = false;
 
-              var susceptibleIndexes = _tankFish.map(function (fId, index) { return index; }).filter(function (index) { return !_quarantinedFish[_fishInstanceIds[index]]; });
-              if (_waterChem.ammonia > 0.8 && Math.random() < 0.15 && susceptibleIndexes.length > 0) {
+              function isFishDiseaseHostByIndex(index) {
+                var diseaseSpecies = (SPECIES_BY_TANK[_selectedTank] || []).find(function (candidate) { return candidate.id === _tankFish[index]; });
+                return !!diseaseSpecies && (diseaseSpecies.organismType || 'Fish') === 'Fish';
+              }
+              var susceptibleIndexes = _tankFish.map(function (fId, index) { return index; }).filter(function (index) {
+                return !_quarantinedFish[_fishInstanceIds[index]] && isFishDiseaseHostByIndex(index);
+              });
+              var cleaningClientCount = susceptibleIndexes.length;
+              var cleanerProtection = cleaningClientCount > 0 ? _tankFish.reduce(function (sum, speciesId, stockIndex) {
+                if (_quarantinedFish[_fishInstanceIds[stockIndex]]) return sum;
+                var cleanerSpecies = (SPECIES_BY_TANK[_selectedTank] || []).find(function (candidate) { return candidate.id === speciesId; });
+                return sum + (cleanerSpecies && cleanerSpecies.cleaningRate ? cleanerSpecies.cleaningRate : 0);
+              }, 0) : 0;
+              if (_waterChem.ammonia > 0.8 && Math.random() < Math.max(0, 0.15 - cleanerProtection) && susceptibleIndexes.length > 0) {
 
                 var victimIndex = susceptibleIndexes[Math.floor(Math.random() * susceptibleIndexes.length)];
                 var victim = _fishInstanceIds[victimIndex];
@@ -16486,12 +16575,13 @@ var d = (labToolData && labToolData._aquarium) || {};
               }
               var contagiousFishIds = Object.keys(newSickness).filter(function (fishId) {
                 var illness = newSickness[fishId];
-                return _fishInstanceIds.indexOf(fishId) !== -1 && !_quarantinedFish[fishId] && illness && /^(ich|velvet)$/.test(illness.disease);
+                var fishIndex = _fishInstanceIds.indexOf(fishId);
+                return fishIndex !== -1 && isFishDiseaseHostByIndex(fishIndex) && !_quarantinedFish[fishId] && illness && /^(ich|velvet)$/.test(illness.disease);
               });
-              var healthyMainTankFishIds = _fishInstanceIds.filter(function (fishId) {
-                return !_quarantinedFish[fishId] && !newSickness[fishId];
+              var healthyMainTankFishIds = _fishInstanceIds.filter(function (fishId, fishIndex) {
+                return isFishDiseaseHostByIndex(fishIndex) && !_quarantinedFish[fishId] && !newSickness[fishId];
               });
-              var transmissionChance = Math.min(0.35, contagiousFishIds.length * 0.08);
+              var transmissionChance = Math.max(0, Math.min(0.35, contagiousFishIds.length * 0.08) - cleanerProtection);
               if (contagiousFishIds.length > 0 && healthyMainTankFishIds.length > 0 && Math.random() < transmissionChance) {
                 var sourceFishId = contagiousFishIds[Math.floor(Math.random() * contagiousFishIds.length)];
                 var exposedFishId = healthyMainTankFishIds[Math.floor(Math.random() * healthyMainTankFishIds.length)];
@@ -16541,6 +16631,27 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 var fishKey = _fishInstanceIds[idx]; var hunger = newHunger[fishKey] !== undefined ? newHunger[fishKey] : 50;
                 if (_quarantinedFish[fishKey]) newStress[fishKey] = Math.max(0, (newStress[fishKey] || 0) - 4);
+                if (!_quarantinedFish[fishKey]) {
+                  var environmentSpecies = species.find(function (candidate) { return candidate.id === fId; });
+                  var legacyStressDelta = 0;
+                  if (newChem.dissolvedO2 < 5) legacyStressDelta += environmentSpecies && environmentSpecies.surfaceBreather ? 1 : 3;
+                  if (environmentSpecies && environmentSpecies.shellBuilder && newChem.pH < 7) legacyStressDelta += 2;
+                  if (environmentSpecies && environmentSpecies.photosyntheticStock && environmentSpecies.bleachingTemp && newChem.temp >= environmentSpecies.bleachingTemp) legacyStressDelta += 5;
+                  if (environmentSpecies && environmentSpecies.obligateGrazer && _algaeLevel < 3) legacyStressDelta += 2;
+                  if (environmentSpecies && environmentSpecies.symbiosisWith) {
+                    var symbiosisPartnerPresent = _tankFish.some(function (candidateSpeciesId, candidateIndex) {
+                      return candidateSpeciesId === environmentSpecies.symbiosisWith && !_quarantinedFish[_fishInstanceIds[candidateIndex]];
+                    });
+                    if (symbiosisPartnerPresent) legacyStressDelta -= 2;
+                  }
+                  newStress[fishKey] = Math.max(0, Math.min(100, (newStress[fishKey] || 0) + legacyStressDelta));
+                }
+                if (!_quarantinedFish[fishKey]) {
+                  var environmentSpecies = species.find(function (candidate) { return candidate.id === fId; });
+                  if (environmentSpecies && environmentSpecies.shellBuilder && newChem.pH < 7) newStress[fishKey] = Math.min(100, (newStress[fishKey] || 0) + 2);
+                  if (environmentSpecies && environmentSpecies.photosyntheticStock && environmentSpecies.bleachingTemp && newChem.temp >= environmentSpecies.bleachingTemp) newStress[fishKey] = Math.min(100, (newStress[fishKey] || 0) + 5);
+                  if (environmentSpecies && environmentSpecies.obligateGrazer && _algaeLevel < 3) newStress[fishKey] = Math.min(100, (newStress[fishKey] || 0) + 2);
+                }
 
                 if (hunger >= 100 && Math.random() < 0.25) {
 
@@ -16622,7 +16733,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   if (!sp1 || !sp2) continue;
 
-                  var compatible = sp1.compat && sp1.compat.indexOf(sp2.id) !== -1;
+                  var compatible = (sp1.compat && sp1.compat.indexOf(sp2.id) !== -1) || (sp2.compat && sp2.compat.indexOf(sp1.id) !== -1) || sp1.passiveStock || sp2.passiveStock;
 
                   if (!compatible) {
 
@@ -16723,6 +16834,16 @@ var d = (labToolData && labToolData._aquarium) || {};
                 newAlgae = Math.max(0, newAlgae - 0.3);
 
               }
+
+              var algaeGrazingRate = finalTankFish.reduce(function (sum, speciesId, fishIndex) {
+                if (_quarantinedFish[finalFishInstanceIds[fishIndex]]) return sum;
+                var grazingSpecies = species.find(function (candidate) { return candidate.id === speciesId; });
+                if (!grazingSpecies) return sum;
+                if (typeof grazingSpecies.grazeRate === 'number') return sum + grazingSpecies.grazeRate;
+                if (!grazingSpecies.diet || !/herbivore|algae|biofilm|vegetation|detritivore/i.test(grazingSpecies.diet)) return sum;
+                return sum + (grazingSpecies.load || 1) * 0.06;
+              }, 0);
+              newAlgae = Math.max(0, newAlgae - Math.min(newAlgae, algaeGrazingRate));
 
               // Low O2 events
 
@@ -17103,7 +17224,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           var getTankHealth = function () {
 
-            if (!waterChem || tankFish.length === 0) return { score: 100, tips: [{ icon: '\uD83D\uDC1F', text: __alloT('stem.aquarium.add_some_fish_to_get_started', 'Add some fish to get started!'), color: 'text-cyan-600' }] };
+            if (!waterChem || tankFish.length === 0) return { score: 100, tips: [{ icon: '\uD83D\uDC1F', text: __alloT('stem.aquarium.add_some_fish_to_get_started', 'Add at least one organism to get started!'), color: 'text-cyan-600' }] };
 
             var score = 100;
 
@@ -17487,7 +17608,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   [
                     { k: 'mode', label: __alloT('stem.aquarium.current_path', 'Current path'), value: activeModeMeta.icon + ' ' + activeModeMeta.label },
                     { k: 'tank', label: __alloT('stem.aquarium.active_tank', 'Active tank'), value: activeTankMeta ? activeTankMeta.name : __alloT('stem.aquarium.not_chosen_yet', 'Not chosen yet') },
-                    { k: 'fish', label: __alloT('stem.aquarium.living_stock', 'Living stock'), value: (tankFish || []).length + ' fish' },
+                    { k: 'fish', label: __alloT('stem.aquarium.living_stock', 'Living stock'), value: (tankFish || []).length + ' organisms' },
                     { k: 'day', label: __alloT('stem.aquarium.sim_day', 'Sim day'), value: selectedTank ? ('Day ' + (simDay || 0)) : __alloT('stem.aquarium.ready', 'Ready') }
                   ].map(function (stat) {
                     return React.createElement("div", { key: stat.k, className: "rounded-xl bg-white/80 border border-white/80 px-3 py-2 shadow-sm" },
@@ -18161,6 +18282,10 @@ var d = (labToolData && labToolData._aquarium) || {};
               var maxLoad = Math.floor(tank.size / 2);
 
               var loadPct = Math.min(100, Math.round(currentLoad / maxLoad * 100));
+              var availableStockTypes = species.map(function (candidate) { return candidate.organismType || 'Fish'; }).filter(function (type, index, types) { return types.indexOf(type) === index; });
+              var activeStockFilter = stockCatalogFilter === 'All' || availableStockTypes.indexOf(stockCatalogFilter) !== -1 ? stockCatalogFilter : 'All';
+              var filteredStockSpecies = species.filter(function (candidate) { return activeStockFilter === 'All' || (candidate.organismType || 'Fish') === activeStockFilter; });
+              var capacityRemaining = Math.max(0, Math.round((maxLoad - currentLoad) * 100) / 100);
 
               // Quick water-status summary for the objective banner.
               // Mirrors the same thresholds getChemStatus uses so the
@@ -19087,7 +19212,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   className: "relative rounded-2xl overflow-hidden border-2 border-cyan-300/60 shadow-lg shadow-cyan-500/20",
                   role: "region",
-                  'aria-label': tank.name + " interactive tank. " + tankFish.length + " fish and " + tankPlants.length + " plants. Ammonia " + waterChem.ammonia.toFixed(2) + " ppm, nitrite " + waterChem.nitrite.toFixed(2) + " ppm, nitrate " + waterChem.nitrate.toFixed(1) + " ppm. Activate a fish for anatomy or a plant for its care profile.",
+                  'aria-label': tank.name + " interactive tank. " + tankFish.length + " stocked organisms and " + tankPlants.length + " plants. Ammonia " + waterChem.ammonia.toFixed(2) + " ppm, nitrite " + waterChem.nitrite.toFixed(2) + " ppm, nitrate " + waterChem.nitrate.toFixed(1) + " ppm. Activate an organism or plant for details.",
 
                   style: { height: '240px', transition: 'filter 0.8s ease', filter: (d.tankLight === 'blue') ? 'saturate(0.5) hue-rotate(20deg) brightness(0.55)' : (d.tankLight === 'night') ? 'saturate(0.2) brightness(0.2)' : 'none', background: selectedTank === 'reef' || selectedTank === 'invert' ? 'linear-gradient(180deg, #67e8f9 0%, #22d3ee 15%, #0891b2 40%, #155e75 70%, #164e63 100%)' : selectedTank === 'coldwater' ? 'linear-gradient(180deg, #bae6fd 0%, #7dd3fc 15%, #3b82f6 40%, #1e40af 70%, #1e3a5f 100%)' : selectedTank === 'brackish' ? 'linear-gradient(180deg, #a7f3d0 0%, #6ee7b7 15%, #059669 40%, #065f46 70%, #064e3b 100%)' : 'linear-gradient(180deg, #a5f3fc 0%, #67e8f9 15%, #22d3ee 40%, #0891b2 70%, #155e75 100%)' }
 
@@ -19442,7 +19567,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     var fishKey = fishInstanceIds[idx];
                     var sp = species.find(function (s) { return s.id === fId; });
-                    var displayName = fishNames[fishKey] || ((sp ? sp.name : "Fish") + " " + (idx + 1));
+                    var displayName = fishNames[fishKey] || ((sp ? sp.name : "Organism") + " " + (idx + 1));
 
                     var animInfo = SPECIES_ANIM[fId] || null;
 
@@ -19502,7 +19627,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     var isSick = fishSickness[fishKey] ? true : false;
 
-                    return React.createElement("button", { type: "button", 'aria-label': displayName + (isSick ? ", sick with " + fishSickness[fishKey].disease : ", no disease detected") + ", hunger level " + (hungerLevels[fishKey] !== undefined ? hungerLevels[fishKey] : 50) + " percent. Open anatomy details.",
+                    return React.createElement("button", { type: "button", 'aria-label': displayName + (isSick ? ", sick with " + fishSickness[fishKey].disease : ", no disease detected") + ", hunger level " + (hungerLevels[fishKey] !== undefined ? hungerLevels[fishKey] : 50) + " percent. Open organism details.",
 
                       key: fishKey,
 
@@ -19702,40 +19827,109 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-                // Fish stocking list
+                // Living-stock catalog
 
                 React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400" },
 
-                  React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-2" }, __alloT('stem.aquarium.add_fish', "\u2795 Add Fish")),
+                  React.createElement("div", { className: "mb-2 flex flex-wrap items-end justify-between gap-1" },
+                    React.createElement("div", null,
+                      React.createElement("h4", { className: "text-xs font-extrabold text-slate-800" }, "\u2795 Add Living Stock"),
+                      React.createElement("p", { className: "text-[10px] text-slate-700" }, "Preview capacity, compatibility, and chemistry before stocking.")
+                    ),
+                    React.createElement("div", { className: "text-right" },
+                      React.createElement("span", { className: "block rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-bold text-cyan-900" }, filteredStockSpecies.length + " shown \u2022 " + species.length + " total"),
+                      React.createElement("span", { className: "mt-1 block text-[9px] font-bold text-slate-700" }, capacityRemaining + " load available")
+                    )
+                  ),
 
-                  React.createElement("div", { className: "flex flex-wrap gap-1" },
+                  React.createElement("div", { className: "mb-2 flex flex-wrap gap-1", role: "group", "aria-label": "Filter living stock by organism type" },
+                    ['All'].concat(availableStockTypes).map(function (filterType) {
+                      var filterActive = activeStockFilter === filterType;
+                      var filterCount = filterType === 'All' ? species.length : species.filter(function (candidate) { return (candidate.organismType || 'Fish') === filterType; }).length;
+                      return React.createElement("button", {
+                        key: filterType,
+                        type: "button",
+                        'aria-pressed': filterActive,
+                        onClick: function () { upd('stockCatalogFilter', filterType); },
+                        className: "rounded-full border px-2 py-1 text-[9px] font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 " + (filterActive ? "border-cyan-800 bg-cyan-800 text-white" : "border-slate-400 bg-white text-slate-800 hover:border-cyan-700 hover:bg-cyan-50")
+                      }, filterType + " " + filterCount);
+                    })
+                  ),
 
-                    species.map(function (sp) {
+                  React.createElement("div", { className: "grid grid-cols-1 gap-1.5 sm:grid-cols-2" },
 
-                      return React.createElement("button", { "aria-label": __alloT('stem.aquarium.add_fish_2', "Add Fish"),
+                    filteredStockSpecies.map(function (sp) {
+                      var organismType = sp.organismType || 'Fish';
+                      var ecosystemRole = sp.ecosystemRole || (/herbivore|algae|biofilm|vegetation|detritivore/i.test(sp.diet || '') ? 'Grazer / recycler' : 'Consumer');
+                      var mechanicLabel = sp.surfaceBreather ? 'Breathes at the surface'
+                        : sp.symbiosisWith ? 'Pairs with ' + (sp.symbiosisWith === 'goby' ? 'watchman goby' : 'pistol shrimp')
+                        : sp.cleaningRate ? 'Reduces fish parasite pressure'
+                        : sp.photosyntheticStock ? 'Light-dependent gas exchange'
+                        : sp.foodWebSupport ? 'Feeds plankton-eaters'
+                        : sp.shellBuilder ? 'Shell sensitive to low pH'
+                        : typeof sp.grazeRate === 'number' ? 'Actively reduces modeled algae'
+                        : null;
+                      var projectedLoad = Math.round((currentLoad + sp.load) * 100) / 100;
+                      var projectedPct = Math.round(projectedLoad / maxLoad * 100);
+                      var capacityExceeded = projectedLoad > maxLoad;
+                      var existingSpecies = tankFish.map(function (existingId) { return species.find(function (candidate) { return candidate.id === existingId; }); }).filter(Boolean);
+                      var conflictNames = existingSpecies.filter(function (existing) {
+                        if (existing.id === sp.id) return false;
+                        var listedEitherWay = (sp.compat && sp.compat.indexOf(existing.id) !== -1) || (existing.compat && existing.compat.indexOf(sp.id) !== -1);
+                        return !listedEitherWay && !sp.passiveStock && !existing.passiveStock;
+                      }).map(function (existing) { return existing.name; }).filter(function (name, index, names) { return names.indexOf(name) === index; });
+                      var chemistryWarnings = [];
+                      if (waterChem && sp.tempRange && (waterChem.temp < sp.tempRange[0] || waterChem.temp > sp.tempRange[1])) chemistryWarnings.push('temperature');
+                      if (waterChem && sp.pHRange && (waterChem.pH < sp.pHRange[0] || waterChem.pH > sp.pHRange[1])) chemistryWarnings.push('pH');
+                      var symbiosisPartnerPresent = !!sp.symbiosisWith && tankFish.indexOf(sp.symbiosisWith) !== -1;
+                      var compatibilityLabel = tankFish.length === 0 ? 'Good first resident' : conflictNames.length ? 'Review with ' + conflictNames.join(', ') : 'Compatible with current stock';
+                      var capacityLabel = capacityExceeded ? 'Over capacity at ' + projectedPct + '%' : 'After adding: ' + projectedPct + '% capacity';
+                      var cardTone = capacityExceeded ? 'border-rose-400 bg-rose-50 opacity-75' : conflictNames.length || chemistryWarnings.length ? 'border-amber-500 bg-amber-50 hover:bg-amber-100' : 'border-cyan-500 bg-cyan-50 hover:border-cyan-700 hover:bg-cyan-100';
+
+                      return React.createElement("button", {
+                        type: "button",
+                        disabled: capacityExceeded,
+                        "aria-label": "Add " + sp.name + ". " + organismType + ". Role: " + ecosystemRole + ". Bioload " + sp.load + ". " + capacityLabel + ". " + compatibilityLabel + (chemistryWarnings.length ? ". Check " + chemistryWarnings.join(' and ') : "") + (mechanicLabel ? ". Mechanic: " + mechanicLabel : "") + ".",
 
                         key: sp.id,
 
                         onClick: function () { addFish(sp.id); },
 
-                        className: "px-2 py-1 text-[11px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-600 rounded-full hover:bg-cyan-100 transition-all",
+                        className: "rounded-lg border px-2 py-1.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 disabled:cursor-not-allowed " + cardTone,
 
-                        title: sp.fact
+                        title: capacityExceeded ? capacityLabel : sp.fact
 
-                      }, sp.icon + " " + sp.name + " (" + sp.load + ")");
+                      },
+                        React.createElement("span", { className: "flex items-center justify-between gap-2 text-[11px] font-extrabold text-slate-900" },
+                          React.createElement("span", null, sp.icon + " " + sp.name),
+                          React.createElement("span", { className: "shrink-0 rounded bg-white px-1.5 py-0.5 text-[9px] text-slate-800 ring-1 ring-slate-300" }, sp.load + " load \u2192 " + projectedPct + "%")
+                        ),
+                        React.createElement("span", { className: "mt-0.5 block text-[9px] font-semibold text-slate-800" }, organismType + " \u2022 " + ecosystemRole),
+                        React.createElement("span", { className: "mt-1 flex flex-wrap gap-1" },
+                          React.createElement("span", { className: "inline-flex rounded-full px-1.5 py-0.5 text-[8px] font-bold " + (capacityExceeded ? "bg-rose-200 text-rose-900" : conflictNames.length ? "bg-amber-200 text-amber-950" : "bg-emerald-100 text-emerald-900") }, capacityExceeded ? '\u26D4 Over capacity' : conflictNames.length ? '\u26A0 Compatibility review' : '\u2713 Stock fit'),
+                          chemistryWarnings.length > 0 && React.createElement("span", { className: "inline-flex rounded-full bg-orange-100 px-1.5 py-0.5 text-[8px] font-bold text-orange-900" }, "Check " + chemistryWarnings.join(' + ')),
+                          sp.symbiosisWith && React.createElement("span", { className: "inline-flex rounded-full px-1.5 py-0.5 text-[8px] font-bold " + (symbiosisPartnerPresent ? "bg-violet-100 text-violet-900" : "bg-slate-200 text-slate-900") }, symbiosisPartnerPresent ? '\u21C4 Partner active' : '\u21C4 Partner absent'),
+                          mechanicLabel && React.createElement("span", { className: "inline-flex rounded-full bg-indigo-100 px-1.5 py-0.5 text-[8px] font-bold text-indigo-900" }, "\u2699 " + mechanicLabel)
+                        ),
+                        (conflictNames.length > 0 || chemistryWarnings.length > 0) && React.createElement("span", { className: "mt-1 block text-[9px] font-bold leading-snug text-amber-950" }, conflictNames.length ? "Observe behavior with " + conflictNames.join(', ') + "." : "Current " + chemistryWarnings.join(' and ') + " falls outside this organism's range.")
+                      );
 
                     })
 
                   ),
+                  React.createElement("div", { role: "note", className: "mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2 text-[10px] leading-relaxed text-amber-900" },
+                    React.createElement("strong", null, "Ecology, not a cleanup shortcut: "),
+                    "grazers turn algae into waste, corals exchange gases with their algal partners, and copepods move energy to plankton-eaters. Filtration and maintenance are still required."
+                  ),
 
-                  tankFish.length > 0 && React.createElement("div", { className: "mt-2 flex flex-wrap gap-1" },
+                  tankFish.length > 0 && React.createElement("div", { className: "mt-2 flex flex-wrap gap-1", "aria-label": "Organisms currently stocked" },
 
                     tankFish.map(function (fId, idx) {
 
                       var fishKey = fishInstanceIds[idx];
                       var sp = species.find(function (s) { return s.id === fId; });
 
-                      var displayName = fishNames[fishKey] || ((sp ? sp.name : "Fish") + " " + (idx + 1));
+                      var displayName = fishNames[fishKey] || ((sp ? sp.name : "Organism") + " " + (idx + 1));
                       return React.createElement("button", {
 
                         key: fishInstanceIds[idx],
@@ -20110,7 +20304,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 tankFish.length > 0 && React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400" },
 
                   React.createElement("div", { className: "mb-2 flex items-center justify-between gap-2" },
-                    React.createElement("h4", { className: "text-xs font-bold text-slate-600" }, __alloT('stem.aquarium.fish_hunger_status', "\uD83D\uDC1F Individual Fish Care")),
+                    React.createElement("h4", { className: "text-xs font-bold text-slate-600" }, "\uD83E\uDE7A Individual Organism Care"),
                     mainTankSickFishIds.length > 0 && React.createElement("button", {
                       type: "button",
                       onClick: quarantineAllSickFish,
@@ -20137,7 +20331,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         var fishKey = fishInstanceIds[idx];
                         var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === fId; });
 
-                        var displayName = fishNames[fishKey] || ((sp ? sp.name : "Fish") + " " + (idx + 1));
+                        var displayName = fishNames[fishKey] || ((sp ? sp.name : "Organism") + " " + (idx + 1));
                         var birthTick = fishBirthTicks[fishKey] !== undefined ? fishBirthTicks[fishKey] : 0;
                         var ageHours = Math.max(0, simTick - birthTick);
                         var ageLabel = ageHours < 24 ? ageHours + 'h' : Math.floor(ageHours / 24) + 'd ' + (ageHours % 24) + 'h';
@@ -20177,7 +20371,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                               value: fishNames[fishKey] || '',
                               placeholder: "Name this fish",
                               maxLength: 24,
-                              'aria-label': "Name for " + (sp ? sp.name : "fish") + " " + (idx + 1),
+                              'aria-label': "Name for " + (sp ? sp.name : "organism") + " " + (idx + 1),
                               onChange: function (event) { var updatedNames = Object.assign({}, fishNames); var nextName = event.target.value.slice(0, 24); if (nextName) updatedNames[fishKey] = nextName; else delete updatedNames[fishKey]; upd('fishNames', updatedNames); },
                               onBlur: function (event) { var completedName = event.target.value.trim(); if (completedName && (!lastCare || lastCare.msg !== 'Named ' + completedName)) appendFishCare(fishKey, 'Named ' + completedName); },
                               className: "mb-1 w-full rounded border border-slate-300 bg-white px-1 py-0.5 text-[10px] text-slate-700"

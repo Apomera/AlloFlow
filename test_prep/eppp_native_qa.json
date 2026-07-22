@@ -1,6 +1,6 @@
 {
   "schemaVersion": 5,
-  "generatedAt": "2026-07-19T04:31:54.862Z",
+  "generatedAt": "2026-07-22T15:54:47.206Z",
   "packId": "eppp-part-one",
   "packVersion": "3.1.0",
   "standard": {
@@ -63802,7 +63802,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/4-introduction"
+        "https://www.ncbi.nlm.nih.gov/books/NBK549835/"
       ]
     },
     {
@@ -64608,7 +64608,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/5-introduction"
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC6601918/"
       ]
     },
     {
@@ -74839,7 +74839,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/9-introduction"
+        "https://doi.org/10.2307/1127100"
       ]
     },
     {
@@ -77567,7 +77567,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
+        "https://pubmed.ncbi.nlm.nih.gov/16717171/"
       ]
     },
     {
@@ -83895,7 +83895,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-introduction"
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC2686982/"
       ]
     },
     {
@@ -83957,7 +83957,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-introduction"
+        "https://dictionary.apa.org/musturbation"
       ]
     },
     {

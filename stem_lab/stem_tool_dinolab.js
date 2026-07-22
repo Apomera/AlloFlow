@@ -5105,6 +5105,32 @@ window.StemLab = window.StemLab || {
   function periodName(id) { var p = periodOf(id); if (p) return p.name; return id ? id.charAt(0).toUpperCase() + id.slice(1) : id; }
   function pColor(id) { return PERIOD_COLOR[id] || '#64748b'; }
   function dColor(id) { return DIET_COLOR[id] || '#64748b'; }
+  function reconstructionProfileFor(dn) {
+    var clade = String((dn && dn.clade) || '');
+    var profile = { label: 'General clade proportions', stance: 1, shoulder: 1, neck: 1, tail: 1, bodyHeight: 1, bodyDepth: 1, head: 1 };
+    if (/Brachiosaur/i.test(clade)) profile = { label: 'High-browsing brachiosaur', stance: 1, shoulder: 1.12, neck: 1.06, tail: 0.96, bodyHeight: 1.02, bodyDepth: 1.04, head: 0.92 };
+    else if (/Diplodoc/i.test(clade)) profile = { label: 'Long, low-backed diplodocid', stance: 0.98, shoulder: 0.94, neck: 0.96, tail: 1.08, bodyHeight: 0.88, bodyDepth: 0.90, head: 0.84 };
+    else if (/Titanosaur/i.test(clade)) profile = { label: 'Broad-bodied titanosaur', stance: 1.02, shoulder: 1.02, neck: 1.01, tail: 1, bodyHeight: 1.08, bodyDepth: 1.16, head: 0.90 };
+    else if (/Tyrannosaur|Abelisaur/i.test(clade)) profile = { label: 'Deep-skulled large theropod', stance: 1, shoulder: 1.01, neck: 1.01, tail: 1.04, bodyHeight: 1.04, bodyDepth: 1.10, head: 1.16 };
+    else if (/Dromaeosaur|Troodont/i.test(clade)) profile = { label: 'Slender feathered hunter', stance: 1.04, shoulder: 1.02, neck: 1.02, tail: 1.08, bodyHeight: 0.86, bodyDepth: 0.82, head: 0.92 };
+    else if (/Spinosaur/i.test(clade)) profile = { label: 'Long-snouted sail-backed theropod', stance: 0.96, shoulder: 1, neck: 1.02, tail: 0.96, bodyHeight: 0.96, bodyDepth: 0.92, head: 1.10 };
+    else if (/Ceratops/i.test(clade)) profile = { label: 'Horned, weight-bearing quadruped', stance: 0.92, shoulder: 1, neck: 0.94, tail: 0.92, bodyHeight: 1.08, bodyDepth: 1.14, head: 1.22 };
+    else if (/Ankylosaur/i.test(clade)) profile = { label: 'Low, broad armored herbivore', stance: 0.82, shoulder: 1, neck: 0.96, tail: 0.90, bodyHeight: 0.88, bodyDepth: 1.28, head: 0.88 };
+    else if (/Stegosaur/i.test(clade)) profile = { label: 'Plated, high-backed herbivore', stance: 0.90, shoulder: 0.92, neck: 0.92, tail: 0.94, bodyHeight: 1.10, bodyDepth: 1.08, head: 0.82 };
+    else if (/Hadrosaur|Lambeosaur|Iguanodont/i.test(clade)) profile = { label: 'Deep-bodied facultative quadruped', stance: 0.96, shoulder: 0.98, neck: 1, tail: 1.02, bodyHeight: 1.08, bodyDepth: 1.12, head: 1.02 };
+    var evidence = String((dn && dn.howKnow) || '').toLowerCase();
+    if (/partial|handful|fragment|single |few |known from just|scaled from|incomplete/.test(evidence)) {
+      profile.coverage = 'limited';
+      profile.coverageNote = 'Limited fossil coverage; relatives and scaling contribute more to the silhouette.';
+    } else if (/abundant|hundreds|dozens|many skeletons|multiple skeletons|several good|complete skeleton/.test(evidence)) {
+      profile.coverage = 'strong';
+      profile.coverageNote = 'Strong fossil coverage for the main skeletal proportions.';
+    } else {
+      profile.coverage = 'moderate';
+      profile.coverageNote = 'Moderate fossil coverage; some proportions remain comparative.';
+    }
+    return profile;
+  }
   function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function continentOf(region) { var i = region.indexOf(' ('); return i === -1 ? region : region.slice(0, i); }
@@ -5314,6 +5340,14 @@ window.StemLab = window.StemLab || {
         { id: 'classroom', label: t('stem.dinolab.classroom', 'Classroom'), icon: '🍎' }
       ];
       if (!TABS.some(function (tb) { return tb.id === tab; })) tab = 'explore';
+      function tabGroupFor(id) {
+        if (['explore', 'timeline', 'deeptime', 'sites', 'map', 'ecosystem'].indexOf(id) >= 0) return 'Discover';
+        if (['compare', 'field3d', 'dig', 'classify', 'anatomy'].indexOf(id) >= 0) return 'Investigate';
+        if (['birds', 'extinction', 'records'].indexOf(id) >= 0) return 'Explain';
+        return 'Practice and teach';
+      }
+      var activeTabMeta = TABS.filter(function (tb) { return tb.id === tab; })[0] || TABS[0];
+      var activeTabGroup = tabGroupFor(activeTabMeta.id);
       function focusTabAt(index) {
         var next = TABS[modIndex(index, TABS.length)];
         upd('tab', next.id);
@@ -5335,8 +5369,17 @@ window.StemLab = window.StemLab || {
       }
       var tabBar = el('div', { className: 'dinolab-tablist', role: 'tablist', 'aria-label': t('stem.dinolab.dino_lab_sections', 'Dino Lab sections'), 'aria-orientation': 'horizontal', style: { display: 'flex', flexWrap: 'wrap', gap: 4, padding: '10px 12px', borderBottom: '1px solid ' + T.border, background: T.deeper } }, TABS.map(function (tb, tabIndex) {
         var active = tab === tb.id;
-        return el('button', { key: tb.id, id: 'dinotab-' + tb.id, role: 'tab', tabIndex: active ? 0 : -1, 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'dinopanel', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', onKeyDown: function (event) { handleTabKeyDown(event, tabIndex); }, onClick: function () { upd('tab', tb.id); announceToSR(tb.label + ' tab'); }, style: { padding: '7px 11px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: active ? 700 : 500, boxShadow: active ? '0 1px 4px rgba(21,128,61,0.45)' : 'none', background: active ? '#15803d' : 'transparent', color: active ? '#fff' : T.soft, whiteSpace: 'nowrap' } }, tb.icon + ' ' + tb.label);
+        return el('button', { key: tb.id, id: 'dinotab-' + tb.id, role: 'tab', 'data-tab-group': tabGroupFor(tb.id), title: tabGroupFor(tb.id) + ': ' + tb.label, tabIndex: active ? 0 : -1, 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'dinopanel', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', onKeyDown: function (event) { handleTabKeyDown(event, tabIndex); }, onClick: function () { upd('tab', tb.id); announceToSR(tb.label + ' tab'); }, style: { padding: '7px 11px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: active ? 700 : 500, boxShadow: active ? '0 1px 4px rgba(21,128,61,0.45)' : 'none', background: active ? '#15803d' : 'transparent', color: active ? '#fff' : T.soft, whiteSpace: 'nowrap' } }, tb.icon + ' ' + tb.label);
       }));
+      var tabNavigation = el('nav', { 'aria-label': 'Dino Lab section navigation', style: { background: T.deeper } },
+        el('div', { className: 'dinolab-section-cue', style: { display: 'flex', alignItems: 'center', gap: 7, padding: '7px 12px 0', color: T.soft, fontSize: 11.5 } },
+          el('span', { style: { textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 900, color: '#5eead4' } }, activeTabGroup),
+          el('span', { 'aria-hidden': 'true' }, '›'),
+          el('span', { style: { fontWeight: 800, color: T.text } }, activeTabMeta.label),
+          el('span', { style: { marginLeft: 'auto' } }, (TABS.indexOf(activeTabMeta) + 1) + ' of ' + TABS.length)
+        ),
+        tabBar
+      );
 
       function renderDetail(dn) {
         if (!dn) return null;
@@ -5530,44 +5573,61 @@ window.StemLab = window.StemLab || {
         var byCont = {};
         DINOS.forEach(function (dn) { if (dn.group === 'other') return; var c = continentOf(dn.region); (byCont[c] = byCont[c] || []).push(dn); });
         var TILES = [
-          { c: 'North America', emoji: '🦬', left: 5, top: 6, w: 27, h: 30 },
-          { c: 'South America', emoji: '🦥', left: 19, top: 50, w: 18, h: 38 },
-          { c: 'Europe', emoji: '🏰', left: 44, top: 5, w: 14, h: 17 },
-          { c: 'Africa', emoji: '🦒', left: 45, top: 28, w: 20, h: 38 },
-          { c: 'Asia', emoji: '🐼', left: 66, top: 6, w: 29, h: 33 },
-          { c: 'Australia', emoji: '🦘', left: 78, top: 62, w: 17, h: 22 },
-          { c: 'Antarctica', emoji: '🐧', left: 38, top: 85, w: 30, h: 12 }
+          { c: 'North America', emoji: '🦬', left: 4, top: 7, w: 29, h: 31, shape: 'polygon(10% 15%,34% 3%,68% 11%,96% 30%,80% 54%,60% 60%,48% 92%,26% 78%,18% 50%,0 36%)', rotate: -3 },
+          { c: 'South America', emoji: '🦥', left: 23, top: 47, w: 17, h: 43, shape: 'polygon(8% 2%,85% 10%,100% 28%,66% 54%,57% 88%,34% 100%,20% 62%,0 24%)', rotate: -5 },
+          { c: 'Europe', emoji: '🏰', left: 45, top: 10, w: 14, h: 18, shape: 'polygon(8% 24%,30% 4%,55% 18%,78% 5%,100% 35%,72% 62%,90% 90%,48% 82%,20% 100%,0 62%)', rotate: 2 },
+          { c: 'Africa', emoji: '🦒', left: 44, top: 29, w: 21, h: 39, shape: 'polygon(12% 8%,52% 0,94% 17%,100% 42%,74% 79%,49% 100%,28% 76%,15% 49%,0 27%)', rotate: 1 },
+          { c: 'Asia', emoji: '🐼', left: 58, top: 5, w: 38, h: 39, shape: 'polygon(0 25%,20% 4%,55% 0,76% 13%,100% 12%,91% 38%,72% 50%,64% 83%,38% 72%,24% 95%,11% 64%)', rotate: 1 },
+          { c: 'Australia', emoji: '🦘', left: 78, top: 62, w: 18, h: 24, shape: 'polygon(4% 31%,28% 8%,60% 13%,81% 0,100% 38%,89% 79%,58% 100%,26% 86%,0 61%)', rotate: 4 },
+          { c: 'Antarctica', emoji: '🐧', left: 35, top: 88, w: 37, h: 10, shape: 'polygon(0 36%,18% 8%,40% 26%,61% 0,80% 23%,100% 15%,93% 79%,66% 100%,41% 78%,19% 94%)', rotate: 0 }
         ];
-        var maxN = 1; TILES.forEach(function (t) { maxN = Math.max(maxN, (byCont[t.c] || []).length); });
+        var maxN = 1;
+        var totalMapped = 0;
+        TILES.forEach(function (tile) { var count = (byCont[tile.c] || []).length; maxN = Math.max(maxN, count); totalMapped += count; });
+        var richest = TILES.slice().sort(function (a, b) { return (byCont[b.c] || []).length - (byCont[a.c] || []).length; })[0];
         var sel = d.mapSel || null;
-        function heat(n) { return 'hsl(145, 55%, ' + Math.round(90 - (n / maxN) * 36) + '%)'; } // OPAQUE light→medium green: dark text passes WCAG in every theme
-        var tileEls = TILES.map(function (t) {
-          var list = byCont[t.c] || [], active = sel === t.c;
-          return el('button', { key: t.c, onClick: function () { upd('mapSel', active ? null : t.c); announceToSR(t.c + ', ' + list.length + ' dinosaurs found here'); }, 'aria-pressed': active ? 'true' : 'false', 'aria-label': t.c + ', ' + list.length + ' dinosaurs found here', style: { position: 'absolute', left: t.left + '%', top: t.top + '%', width: t.w + '%', height: t.h + '%', borderRadius: 10, cursor: 'pointer', border: '1px solid ' + (active ? '#15803d' : 'rgba(15,23,42,0.25)'), background: heat(list.length), color: '#0f172a', fontWeight: 700, padding: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', boxShadow: active ? '0 0 0 2px #22c55e' : 'none' } },
-            el('span', { key: 'e', 'aria-hidden': 'true', style: { fontSize: 18 } }, t.emoji),
-            el('span', { key: 'n', style: { fontSize: 10.5 } }, t.c),
-            el('span', { key: 'c', style: { fontSize: 14, fontWeight: 800 } }, String(list.length)));
+        function heat(n) { return 'hsl(145, 58%, ' + Math.round(88 - (n / maxN) * 40) + '%)'; }
+        var tileEls = TILES.map(function (tile) {
+          var list = byCont[tile.c] || [], active = sel === tile.c;
+          return el('button', {
+            key: tile.c,
+            onClick: function () { upd('mapSel', active ? null : tile.c); announceToSR(tile.c + ', ' + list.length + ' dinosaurs in this catalog'); },
+            'aria-pressed': active ? 'true' : 'false',
+            'aria-label': tile.c + ', ' + list.length + ' dinosaurs in this teaching catalog',
+            style: { position: 'absolute', left: tile.left + '%', top: tile.top + '%', width: tile.w + '%', height: tile.h + '%', clipPath: tile.shape, cursor: 'pointer', border: 'none', background: heat(list.length), color: '#0f172a', fontWeight: 800, padding: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', boxShadow: active ? 'inset 0 0 0 5px #14532d, 0 0 0 3px #5eead4' : 'inset 0 0 0 2px rgba(15,23,42,0.24)', transform: 'rotate(' + tile.rotate + 'deg)', zIndex: active ? 2 : 1 }
+          },
+            el('span', { key: 'e', 'aria-hidden': 'true', style: { fontSize: 17, lineHeight: 1 } }, tile.emoji),
+            el('span', { key: 'n', style: { fontSize: 10.5, lineHeight: 1.1, maxWidth: '88%' } }, tile.c),
+            el('span', { key: 'c', style: { fontSize: 14, lineHeight: 1.05, fontWeight: 900 } }, String(list.length)));
         });
-        var mapBox = el('div', { role: 'group', 'aria-label': t('stem.dinolab.map_of_where_dinosaur_fossils_are_foun', 'Map of where dinosaur fossils are found today, by continent'), style: { position: 'relative', width: '100%', height: 0, paddingBottom: '52%', borderRadius: 12, background: 'linear-gradient(180deg, rgba(56,189,248,0.16), rgba(56,189,248,0.05))', border: '1px solid ' + T.border, marginBottom: 8 } }, el('div', { style: { position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 } }, tileEls));
+        var mapBox = el('div', { className: 'dinolab-world-map', role: 'group', 'aria-label': t('stem.dinolab.map_of_where_dinosaur_fossils_are_foun', 'Map of where dinosaur fossils are found today, by continent'), style: { position: 'relative', width: '100%', height: 0, paddingBottom: '52%', overflow: 'hidden', borderRadius: 12, backgroundColor: '#0c2940', backgroundImage: 'linear-gradient(rgba(125,211,252,0.10) 1px, transparent 1px),linear-gradient(90deg, rgba(125,211,252,0.10) 1px, transparent 1px),radial-gradient(circle at 50% 42%, rgba(56,189,248,0.18), rgba(2,6,23,0.18))', backgroundSize: '12.5% 25%, 12.5% 25%, 100% 100%', border: '1px solid ' + T.border, marginBottom: 8 } },
+          el('div', { 'aria-hidden': 'true', style: { position: 'absolute', left: 9, bottom: 7, color: '#bae6fd', fontSize: 10, fontWeight: 800, letterSpacing: '0.05em' } }, 'PRESENT-DAY CONTINENTS'),
+          el('div', { style: { position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 } }, tileEls));
+        var stats = el('div', { className: 'dinolab-map-stats', 'aria-label': 'Map catalog summary', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8, margin: '8px 0 10px' } },
+          panel([el('div', { key: 'v', style: { fontSize: 18, fontWeight: 900, color: '#5eead4' } }, String(totalMapped)), el('div', { key: 'l', style: { fontSize: 11, color: T.soft } }, 'dinosaurs plotted')]),
+          panel([el('div', { key: 'v', style: { fontSize: 18, fontWeight: 900, color: '#7dd3fc' } }, String(TILES.length)), el('div', { key: 'l', style: { fontSize: 11, color: T.soft } }, 'continents represented')]),
+          panel([el('div', { key: 'v', style: { fontSize: 14, fontWeight: 900, color: '#fde68a' } }, richest.c), el('div', { key: 'l', style: { fontSize: 11, color: T.soft } }, 'largest catalog sample')])
+        );
         var detail;
         if (sel && byCont[sel]) {
           var slist = byCont[sel].slice().sort(function (a, b) { return a.common < b.common ? -1 : 1; });
+          var periodMix = PERIODS.map(function (period) { var count = slist.filter(function (dn) { return dn.period === period.id; }).length; return count ? badge(period.name + ' ' + count, pColor(period.id)) : null; });
           detail = panel([
-            el('div', { key: 'h', style: { fontWeight: 800, fontSize: 15, marginBottom: 6 } }, '📍 ' + sel + ' — ' + slist.length + ' dinosaurs found here'),
+            el('div', { key: 'h', style: { fontWeight: 800, fontSize: 15, marginBottom: 5 } }, '📍 ' + sel + ' — ' + slist.length + ' catalog entries'),
+            el('div', { key: 'mix', style: { marginBottom: 7 } }, periodMix),
             el('div', { key: 'chips', style: { display: 'flex', flexWrap: 'wrap', gap: 5 } }, slist.map(function (dn) { return el('button', { key: dn.id, onClick: function () { upd({ tab: 'explore', selected: dn.id }); }, 'aria-label': 'Open ' + dn.common, style: { fontSize: 11, padding: '3px 9px', borderRadius: 999, cursor: 'pointer', border: '1px solid ' + T.border, background: T.deeper, color: T.text } }, dn.common); }))
           ], { marginTop: 4 });
         } else {
-          detail = el('div', { style: { fontSize: 12.5, color: T.soft, fontStyle: 'italic', marginTop: 4 } }, 'Tap a continent to meet the dinosaurs found there. A greener tile means more have been dug up there.');
+          detail = el('div', { style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5, marginTop: 4 } }, 'Select a continent to inspect its catalog and period mix. Darker green means more entries here, not more dinosaurs in the ancient ecosystem. Uneven rock exposure, access, and research history strongly affect the pattern.');
         }
         var pangaea = panel([
           el('div', { key: 'h', style: { fontWeight: 800, fontSize: 14, marginBottom: 4 } }, '🧩 The map looked different back then'),
-          el('div', { key: 'b', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.55 } }, 'This shows where fossils are dug up today. At the start of the age of dinosaurs the continents were joined as one supercontinent, Pangaea; over the era it split into a northern half (Laurasia) and a southern half (Gondwana), and those kept drifting apart. That is why close dinosaur relatives turn up on lands now separated by whole oceans: the rock drifted apart and carried the fossils with it.')
+          el('div', { key: 'b', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.55 } }, 'This shows where fossils are dug up today. Pangaea split into Laurasia and Gondwana while dinosaurs lived, so close relatives now occur across oceans. The rock moved with the continents; the animals did not cross today’s Atlantic.')
         ], { marginTop: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.35)' });
         var others = DINOS.filter(function (dn) { return dn.group === 'other'; });
-        var foot = el('div', { style: { fontSize: 11.5, color: T.soft, marginTop: 8, lineHeight: 1.5 } }, 'Not plotted: ' + others.map(function (o) { return o.common; }).join(', ') + ' — included as teaching foils (a pterosaur, a marine reptile, and a Permian relative of mammals), none of them true dinosaurs.');
-        return el('div', null, sectionTitle('🌎', 'Where in the world?', 'Every continent — even Antarctica — has yielded dinosaurs. Tap one to explore its finds.'), mapBox, detail, pangaea, foot);
+        var foot = el('div', { style: { fontSize: 11.5, color: T.soft, marginTop: 8, lineHeight: 1.5 } }, 'Not plotted: ' + others.map(function (other) { return other.common; }).join(', ') + ' — teaching foils that are not true dinosaurs. Counts describe this curated catalog, not global abundance or biodiversity.');
+        return el('div', null, sectionTitle('🌎', 'Where in the world?', 'Present-day fossil locations, shaped by continental drift and an uneven discovery record.'), mapBox, stats, detail, pangaea, foot);
       }
-
       function renderClassroom() {
         var fp = d.filterPeriod || 'all', fdiet = d.filterDiet || 'all', fc = d.filterContinent || 'all', q = (d.query || '').trim().toLowerCase();
         var filtered = (fp !== 'all' || fdiet !== 'all' || fc !== 'all' || !!q);
@@ -5602,6 +5662,14 @@ window.StemLab = window.StemLab || {
         var canvasRef = React.useRef(null);
         var statusRef = React.useRef(null);
         var cameraReadoutRef = React.useRef(null);
+        var sceneRef = React.useRef(null);
+        var cameraRef = React.useRef(null);
+        var rendererRef = React.useRef(null);
+        var cameraControlRef = React.useRef(null);
+        var visualMaterialsRef = React.useRef(null);
+        var bodyOpacityRef = React.useRef(28);
+        var bodyOpacityState = React.useState(28), bodyOpacity = bodyOpacityState[0], setBodyOpacity = bodyOpacityState[1];
+        var reconstructionProfile = reconstructionProfileFor(props.species);
         var yawRef = React.useRef({ speciesId: props.species.id, value: -0.35, pitch: 0.18, zoom: 1 });
         var autoRotateRef = React.useRef(props.autoRotate);
         var readySpeciesRef = React.useRef(null);
@@ -5624,6 +5692,8 @@ window.StemLab = window.StemLab || {
           var pageVisible = document.visibilityState !== 'hidden';
           var lastCameraReadout = '';
           var cleanupFns = [];
+          var activeCameraControl = null;
+          var activeMaterialSet = null;
 
           function setStatus(msg) {
             if (statusRef.current) statusRef.current.textContent = msg;
@@ -5668,7 +5738,17 @@ window.StemLab = window.StemLab || {
             function clampView(value, min, max) { return Math.max(min, Math.min(max, value)); }
             function pauseAutoRotate(ms) { interactionPauseUntil = Math.max(interactionPauseUntil, performance.now() + (ms || 0)); }
 
-            scene = new THREE.Scene();
+            scene = sceneRef.current;
+            if (!scene) {
+              scene = new THREE.Scene();
+              sceneRef.current = scene;
+            } else {
+              if (scene.background && scene.background.dispose) scene.background.dispose();
+              var previousSceneChildren = scene.children.slice();
+              previousSceneChildren.forEach(function (child) { disposeObject(child); scene.remove(child); });
+              scene.background = null;
+              scene.fog = null;
+            }
             var skyCanvas = document.createElement('canvas');
             skyCanvas.width = 2;
             skyCanvas.height = 256;
@@ -5687,8 +5767,16 @@ window.StemLab = window.StemLab || {
             }
             scene.fog = new THREE.Fog(0x0f172a, Math.max(18, len * 0.7), Math.max(45, len * 2.4));
 
-            camera = new THREE.PerspectiveCamera(52, 1, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+            camera = cameraRef.current;
+            if (!camera) {
+              camera = new THREE.PerspectiveCamera(52, 1, 0.1, 1000);
+              cameraRef.current = camera;
+            }
+            renderer = rendererRef.current;
+            if (!renderer) {
+              renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+              rendererRef.current = renderer;
+            }
             renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
             if (THREE.sRGBEncoding !== undefined) renderer.outputEncoding = THREE.sRGBEncoding;
             if (THREE.ACESFilmicToneMapping !== undefined) {
@@ -5776,13 +5864,16 @@ window.StemLab = window.StemLab || {
             model = new THREE.Group();
             scene.add(model);
 
+            var inferenceOpacity = Math.max(10, Math.min(75, Number(bodyOpacityRef.current) || 28)) / 100;
             var boneMat = new THREE.MeshPhongMaterial({ color: 0xf8fafc, emissive: 0x18222f, shininess: 42 });
             var jointMat = new THREE.MeshPhongMaterial({ color: 0xfacc15, shininess: 32 });
             var anatomyCalloutMat = new THREE.MeshBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.62, depthWrite: false });
-            var bodyMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.28, shininess: 25, side: THREE.DoubleSide, depthWrite: false });
-            var headMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.40, shininess: 30, depthWrite: false });
-            var bodyWireMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.18, wireframe: true, depthWrite: false });
-            var anatomyAccentMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.68, shininess: 38, side: THREE.DoubleSide });
+            var bodyMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: inferenceOpacity, shininess: 25, side: THREE.DoubleSide, depthWrite: false });
+            var headMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: Math.min(0.87, inferenceOpacity + 0.12), shininess: 30, depthWrite: false });
+            var bodyWireMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: Math.max(0.10, inferenceOpacity * 0.64), wireframe: true, depthWrite: false });
+            var anatomyAccentMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: Math.min(0.90, inferenceOpacity + 0.40), shininess: 38, side: THREE.DoubleSide });
+            activeMaterialSet = { body: bodyMat, head: headMat, wire: bodyWireMat, accent: anatomyAccentMat };
+            visualMaterialsRef.current = activeMaterialSet;
             var markerMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
             var loggedMarkerMat = new THREE.MeshBasicMaterial({ color: 0x22c55e });
             var loggedRingMat = new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.24, side: THREE.DoubleSide, depthWrite: false, depthTest: false });
@@ -5930,7 +6021,8 @@ window.StemLab = window.StemLab || {
               return mesh;
             }
 
-            function addTextLabel(text, pos, color, scaleFactor) {
+            var measurementIntervalLabels = [];
+            function addTextLabel(text, pos, color, scaleFactor, parent) {
               var labelCanvas = document.createElement('canvas');
               labelCanvas.width = 256;
               labelCanvas.height = 96;
@@ -5956,18 +6048,18 @@ window.StemLab = window.StemLab || {
               var labelScale = scaleFactor == null ? 1 : scaleFactor;
               sprite.scale.set(Math.max(1.25, len * 0.13) * labelScale, Math.max(0.46, ht * 0.15) * labelScale, 1);
               sprite.renderOrder = 20;
-              model.add(sprite);
+              (parent || model).add(sprite);
               return sprite;
             }
-            var hip = vec(len * 0.12, Math.max(0.35, ht * 0.45), 0);
-            var shoulder = vec(-len * 0.18, Math.max(0.35, isSauropod ? ht * 0.55 : ht * 0.48), 0);
-            var tail = vec(len * 0.52, Math.max(0.22, ht * 0.34), 0);
-            var head = vec(-len * 0.42, Math.max(0.5, isSauropod ? ht * 0.90 : ht * 0.68), 0);
-            var snout = vec(-len * 0.49, Math.max(0.42, isSauropod ? ht * 0.86 : ht * 0.64), 0);
+            var hip = vec(len * 0.12, Math.max(0.35, ht * 0.45) * reconstructionProfile.stance, 0);
+            var shoulder = vec(-len * 0.18, Math.max(0.35, isSauropod ? ht * 0.55 : ht * 0.48) * reconstructionProfile.stance * reconstructionProfile.shoulder, 0);
+            var tail = vec(len * 0.52, Math.max(0.22, ht * 0.34) * reconstructionProfile.stance * reconstructionProfile.tail, 0);
+            var head = vec(-len * 0.42, Math.max(0.5, isSauropod ? ht * 0.90 : ht * 0.68) * reconstructionProfile.neck, 0);
+            var snout = vec(-len * 0.49, Math.max(0.42, isSauropod ? ht * 0.86 : ht * 0.64) * reconstructionProfile.neck, 0);
             var bodyCenter = new THREE.Vector3().copy(hip).add(shoulder).multiplyScalar(0.5);
             var bodyLen = Math.max(0.45, Math.abs(hip.x - shoulder.x) * 0.72);
-            var bodyHeight = Math.max(0.22, ht * (isSauropod ? 0.22 : 0.27));
-            var bodyDepth = Math.max(0.16, bodyHeight * (isTheropod ? 0.92 : 1.08));
+            var bodyHeight = Math.max(0.22, ht * (isSauropod ? 0.22 : 0.27)) * reconstructionProfile.bodyHeight;
+            var bodyDepth = Math.max(0.16, bodyHeight * (isTheropod ? 0.92 : 1.08)) * reconstructionProfile.bodyDepth;
             var evidenceAnchorPoints = { skull: head, shoulder: shoulder, hip: hip };
 
             var footprintMat = new THREE.MeshPhongMaterial({ color: 0x2b3a4f, transparent: true, opacity: 0.78, shininess: 4 });
@@ -5988,7 +6080,9 @@ window.StemLab = window.StemLab || {
               var tickX = snout.x + Math.min(rulerSpan, rt);
               var tickHalf = rt % 5 === 0 ? 0.20 : 0.11;
               addSceneCylinder(vec(tickX, 0.052, rulerZ - tickHalf), vec(tickX, 0.052, rulerZ + tickHalf), Math.max(0.008, rulerR * 0.66), rulerMat);
+              if (rt % 5 === 0) measurementIntervalLabels.push(addTextLabel(rt + ' m', vec(tickX, Math.max(0.20, ht * 0.025), rulerZ + Math.max(0.36, bodyDepth * 0.45)), '#38bdf8', 0.46, scene));
             }
+            addTextLabel(fmtLength(dn.lengthM), vec(tail.x, Math.max(0.20, ht * 0.025), rulerZ - Math.max(0.42, bodyDepth * 0.50)), '#38bdf8', 0.52, scene);
             var heightGuideMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
             var heightGuideX = snout.x - Math.max(0.42, len * 0.035);
             var heightGuideZ = -Math.max(1.0, bodyDepth * 2.2);
@@ -5999,7 +6093,9 @@ window.StemLab = window.StemLab || {
               var tickY = Math.min(heightGuideTop, htick);
               var heightTickHalf = htick % 5 === 0 ? 0.24 : 0.13;
               addSceneCylinder(vec(heightGuideX - heightTickHalf, tickY, heightGuideZ), vec(heightGuideX + heightTickHalf, tickY, heightGuideZ), Math.max(0.008, rulerR * 0.64), heightGuideMat);
+              if (htick % 5 === 0) measurementIntervalLabels.push(addTextLabel(htick + ' m', vec(heightGuideX - Math.max(0.52, len * 0.035), tickY, heightGuideZ), '#facc15', 0.44, scene));
             }
+            addTextLabel(fmtLength(dn.heightM), vec(heightGuideX + Math.max(0.65, len * 0.045), heightGuideTop, heightGuideZ), '#facc15', 0.50, scene);
             var surveyPostMat = new THREE.MeshPhongMaterial({ color: 0xf8fafc, shininess: 24 });
             var surveyRopeMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
             var surveyHalfX = Math.max(4.6, len * 0.56);
@@ -6027,7 +6123,7 @@ window.StemLab = window.StemLab || {
             addSceneCylinder(compassNorth, vec(compassNorth.x + compassRadius * 0.30, compassNorth.y, compassNorth.z + compassRadius * 0.42), Math.max(0.012, ht * 0.0035), surveyRopeMat);
 
             var bodyShell = addEllipsoid(bodyCenter, vec(bodyLen, bodyHeight, bodyDepth), bodyMat);
-            var headShell = addEllipsoid(head, vec(Math.max(0.18, len * (isSauropod ? 0.035 : 0.055)), Math.max(0.12, ht * 0.055), Math.max(0.10, ht * 0.050)), headMat);
+            var headShell = addEllipsoid(head, vec(Math.max(0.18, len * (isSauropod ? 0.035 : 0.055)) * reconstructionProfile.head, Math.max(0.12, ht * 0.055) * reconstructionProfile.head, Math.max(0.10, ht * 0.050) * reconstructionProfile.head), headMat);
             addBodyContour(bodyShell);
             addBodyContour(headShell);
             if (props.showBody) {
@@ -6093,6 +6189,28 @@ window.StemLab = window.StemLab || {
                     var feather = addAccentCone(featherBase, featherTip, Math.max(0.012, ht * 0.0045));
                     if (feather) feather.scale.x = 0.58;
                   }
+                });
+              } else if (/Tyrannosaur/i.test(cladeName)) {
+                var tyrantSnout = new THREE.Vector3().copy(head).lerp(snout, 0.60);
+                addEllipsoid(tyrantSnout, vec(Math.max(0.16, len * 0.040), Math.max(0.10, ht * 0.040), Math.max(0.10, bodyDepth * 0.52)), anatomyAccentMat);
+                [-1, 1].forEach(function (side) {
+                  addEllipsoid(head.clone().add(vec(-len * 0.012, ht * 0.045, side * bodyDepth * 0.32)), vec(Math.max(0.06, len * 0.012), Math.max(0.04, ht * 0.018), Math.max(0.04, bodyDepth * 0.15)), anatomyAccentMat);
+                });
+              } else if (/Abelisaur/i.test(cladeName)) {
+                [-1, 1].forEach(function (side) {
+                  var abelisaurHornBase = head.clone().add(vec(-len * 0.010, ht * 0.050, side * bodyDepth * 0.28));
+                  addAccentCone(abelisaurHornBase, abelisaurHornBase.clone().add(vec(0, Math.max(0.10, ht * 0.065), side * bodyDepth * 0.08)), Math.max(0.030, ht * 0.012));
+                });
+              } else if (/Oviraptor/i.test(cladeName)) {
+                var oviraptorCrestBase = head.clone().add(vec(len * 0.006, ht * 0.038, 0));
+                var oviraptorCrest = addAccentCone(oviraptorCrestBase, oviraptorCrestBase.clone().add(vec(len * 0.018, Math.max(0.18, ht * 0.13), 0)), Math.max(0.07, ht * 0.030));
+                if (oviraptorCrest) oviraptorCrest.scale.z = 0.46;
+                var beak = addAccentCone(snout, snout.clone().add(vec(-Math.max(0.16, len * 0.040), 0, 0)), Math.max(0.055, ht * 0.022));
+                if (beak) beak.scale.z = 1.28;
+              } else if (/Iguanodont/i.test(cladeName)) {
+                [-1, 1].forEach(function (side) {
+                  var thumbBase = vec(shoulder.x - len * 0.035, Math.max(0.12, shoulder.y * 0.25), side * bodyDepth * 0.52);
+                  addAccentCone(thumbBase, thumbBase.clone().add(vec(-Math.max(0.12, len * 0.025), Math.max(0.10, ht * 0.050), side * bodyDepth * 0.08)), Math.max(0.020, ht * 0.008));
                 });
               }
             }
@@ -6390,6 +6508,16 @@ window.StemLab = window.StemLab || {
               yawRef.current.zoom = zoom;
               updateCameraReadout();
             }
+            activeCameraControl = function (nextYaw, nextPitch, nextZoom, message) {
+              yaw = nextYaw;
+              pitch = clampView(nextPitch, 0.04, 0.72);
+              zoom = clampView(nextZoom, 0.68, 1.65);
+              yawRef.current.value = yaw;
+              interactionPauseUntil = performance.now() + 3000;
+              updateCameraView();
+              setStatus(message);
+            };
+            cameraControlRef.current = activeCameraControl;
             updateCameraView();
 
             function resize() {
@@ -6399,6 +6527,7 @@ window.StemLab = window.StemLab || {
               camera.aspect = w / h;
               camera.updateProjectionMatrix();
               renderer.setSize(w, h, false);
+              measurementIntervalLabels.forEach(function (label) { if (label) label.visible = w >= 560; });
             }
             resize();
             if (window.ResizeObserver) {
@@ -6529,27 +6658,77 @@ window.StemLab = window.StemLab || {
             cleanupFns.forEach(function (fn) { try { fn(); } catch (e) {} });
             if (resizeObserver) { try { resizeObserver.disconnect(); } catch (e) {} }
             if (intersectionObserver) { try { intersectionObserver.disconnect(); } catch (e) {} }
-            if (scene && scene.background && scene.background.dispose) { try { scene.background.dispose(); } catch (e) {} }
-            disposeObject(scene);
-            if (renderer && renderer.dispose) renderer.dispose();
+            if (cameraControlRef.current === activeCameraControl) cameraControlRef.current = null;
+            if (visualMaterialsRef.current === activeMaterialSet) visualMaterialsRef.current = null;
+
           };
         }, [props.species.id, props.showSkeleton, props.showBody, props.showHuman, props.showEvidence, props.dietColor, props.scanTarget, props.loggedAnchorKey, props.assemblyPlacedKey, props.assemblyFocus, props.assemblyUnlocked, props.claimEvidenceFocus, props.claimEvidenceAnchor]);
 
+        React.useEffect(function () {
+          return function () {
+            var mountedScene = sceneRef.current;
+            if (mountedScene && mountedScene.background && mountedScene.background.dispose) { try { mountedScene.background.dispose(); } catch (e) {} }
+            if (mountedScene && mountedScene.traverse) {
+              mountedScene.traverse(function (child) {
+                if (child.geometry && child.geometry.dispose) child.geometry.dispose();
+                if (child.material) {
+                  if (Array.isArray(child.material)) child.material.forEach(function (mat) { if (mat && mat.dispose) mat.dispose(); });
+                  else {
+                    if (child.material.map && child.material.map.dispose) child.material.map.dispose();
+                    if (child.material.dispose) child.material.dispose();
+                  }
+                }
+              });
+            }
+            if (rendererRef.current && rendererRef.current.dispose) rendererRef.current.dispose();
+            sceneRef.current = null;
+            cameraRef.current = null;
+            rendererRef.current = null;
+          };
+        }, []);
+
+        function applyCameraPreset(preset) {
+          if (!cameraControlRef.current) return;
+          var presets = {
+            front: { yaw: 0, pitch: 0.16, zoom: 1, message: 'Front reconstruction view selected.' },
+            side: { yaw: -Math.PI / 2, pitch: 0.16, zoom: 1, message: 'Side reconstruction view selected.' },
+            overhead: { yaw: -0.35, pitch: 0.70, zoom: 1.08, message: 'Overhead reconstruction view selected.' },
+            reset: { yaw: -0.35, pitch: 0.18, zoom: 1, message: 'Reconstruction returned to its starting view.' }
+          };
+          var view = presets[preset] || presets.reset;
+          cameraControlRef.current(view.yaw, view.pitch, view.zoom, view.message);
+        }
+        function updateBodyOpacity(event) {
+          var nextOpacity = Math.max(10, Math.min(75, Number(event.target.value) || 28));
+          bodyOpacityRef.current = nextOpacity;
+          setBodyOpacity(nextOpacity);
+          var materials = visualMaterialsRef.current;
+          if (materials) {
+            var alpha = nextOpacity / 100;
+            materials.body.opacity = alpha;
+            materials.head.opacity = Math.min(0.87, alpha + 0.12);
+            materials.wire.opacity = Math.max(0.10, alpha * 0.64);
+            materials.accent.opacity = Math.min(0.90, alpha + 0.40);
+          }
+          if (statusRef.current) statusRef.current.textContent = 'Body inference opacity ' + nextOpacity + ' percent. Skeleton and evidence remain unchanged.';
+        }
         function readoutChip(text, color) {
-          return el('span', { key: text, style: { padding: '5px 8px', borderRadius: 999, background: 'rgba(15,23,42,0.82)', border: '1px solid ' + color, color: '#e2e8f0', fontSize: 11, fontWeight: 800, boxShadow: '0 2px 8px rgba(0,0,0,0.22)' } }, text);
+          return el('span', { key: text, className: 'dinolab-3d-chip', style: { padding: '5px 8px', borderRadius: 999, background: 'rgba(15,23,42,0.82)', border: '1px solid ' + color, color: '#e2e8f0', fontSize: 11, fontWeight: 800, boxShadow: '0 2px 8px rgba(0,0,0,0.22)' } }, text);
         }
         var viewerDescId = 'dino3d-viewer-desc-' + props.species.id;
         var statusId = 'dino3d-status-' + props.species.id;
         var srOnlyStyle = { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 };
         var layerSummary = [props.showSkeleton ? 'skeleton proxy' : null, props.showBody ? 'body outline' : null, props.showHuman ? 'human scale' : null, props.showEvidence ? 'evidence markers' : null].filter(Boolean).join(', ') || 'no visual layers enabled';
-        var viewerSummary = props.species.common + ' 3D model summary. Visible layers: ' + layerSummary + '. Current scan focus: ' + (props.scanLabel || 'none') + '. Logged anchors: ' + (props.loggedCount == null ? 'not tracked' : (props.loggedCount + ' of ' + (props.scanTotal || 3))) + '. Evidence path: ' + (props.pathLoggedCount == null ? 'not tracked' : (props.pathLoggedCount + ' of ' + (props.pathTotal || 2))) + '. Assembly progress: ' + (props.assemblyPlacedCount == null ? 'not tracked' : (props.assemblyPlacedCount + ' of ' + (props.assemblyTotal || 6))) + '.' + (props.claimEvidenceLabel ? ' Claim evidence highlighted: ' + props.claimEvidenceLabel + '.' : '') + (props.claimEvidenceTrailLabel ? ' Evidence trail: ' + props.claimEvidenceTrailLabel.replace(' -> ', ' to ') + ' anchor.' : '') + ' Keyboard controls: Left and Right Arrow or A and D rotate; Up and Down Arrow raise or lower the camera; Page Up and Page Down zoom; Home resets the view.';
+        var viewerSummary = props.species.common + ' 3D model summary. Visible layers: ' + layerSummary + '. Reconstruction profile: ' + reconstructionProfile.label + ' with ' + reconstructionProfile.coverage + ' fossil coverage. Current scan focus: ' + (props.scanLabel || 'none') + '. Logged anchors: ' + (props.loggedCount == null ? 'not tracked' : (props.loggedCount + ' of ' + (props.scanTotal || 3))) + '. Evidence path: ' + (props.pathLoggedCount == null ? 'not tracked' : (props.pathLoggedCount + ' of ' + (props.pathTotal || 2))) + '. Assembly progress: ' + (props.assemblyPlacedCount == null ? 'not tracked' : (props.assemblyPlacedCount + ' of ' + (props.assemblyTotal || 6))) + '.' + (props.claimEvidenceLabel ? ' Claim evidence highlighted: ' + props.claimEvidenceLabel + '.' : '') + (props.claimEvidenceTrailLabel ? ' Evidence trail: ' + props.claimEvidenceTrailLabel.replace(' -> ', ' to ') + ' anchor.' : '') + ' Keyboard controls: Left and Right Arrow or A and D rotate; Up and Down Arrow raise or lower the camera; Page Up and Page Down zoom; Home resets the view.';
 
-        return el('div', { style: { position: 'relative', minHeight: 420, borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(148,163,184,0.26)', background: '#0f172a' } },
+        return el('div', { className: 'dinolab-3d-shell' },
+          el('div', { className: 'dinolab-3d-viewer', style: { position: 'relative', minHeight: 420, borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(148,163,184,0.26)', background: '#0f172a' } },
           el('div', { id: viewerDescId, style: srOnlyStyle }, viewerSummary),
-          el('canvas', { ref: canvasRef, tabIndex: 0, role: 'application', 'aria-roledescription': 'Interactive 3D dinosaur reconstruction', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown PageUp PageDown A D Home', 'aria-describedby': viewerDescId + ' ' + statusId, 'aria-label': props.species.common + ' procedural 3D reconstruction viewer. Drag in two directions to orbit and use the wheel to zoom. Arrow keys rotate and raise or lower the camera; Page Up and Page Down zoom; Home resets the view.' + (props.claimEvidenceLabel ? ' Claim evidence highlighted: ' + props.claimEvidenceLabel + '.' : '') + (props.claimEvidenceTrailLabel ? ' Evidence trail: ' + props.claimEvidenceTrailLabel.replace(' -> ', ' to ') + ' anchor.' : ''), onFocus: function () { setCanvasFocused(true); }, onBlur: function () { setCanvasFocused(false); }, style: { width: '100%', height: 420, display: 'block', touchAction: 'none', outline: canvasFocused ? '3px solid #5eead4' : 'none', outlineOffset: '-3px' } }),
-          el('div', { style: { position: 'absolute', left: 10, top: 10, right: 10, display: 'flex', gap: 6, flexWrap: 'wrap', pointerEvents: 'none' } },
+          el('canvas', { ref: canvasRef, className: 'dinolab-3d-canvas', tabIndex: 0, role: 'application', 'aria-roledescription': 'Interactive 3D dinosaur reconstruction', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown PageUp PageDown A D Home', 'aria-describedby': viewerDescId + ' ' + statusId, 'aria-label': props.species.common + ' procedural 3D reconstruction viewer. Drag in two directions to orbit and use the wheel to zoom. Arrow keys rotate and raise or lower the camera; Page Up and Page Down zoom; Home resets the view.' + (props.claimEvidenceLabel ? ' Claim evidence highlighted: ' + props.claimEvidenceLabel + '.' : '') + (props.claimEvidenceTrailLabel ? ' Evidence trail: ' + props.claimEvidenceTrailLabel.replace(' -> ', ' to ') + ' anchor.' : ''), onFocus: function () { setCanvasFocused(true); }, onBlur: function () { setCanvasFocused(false); }, style: { width: '100%', height: 420, display: 'block', touchAction: 'none', outline: canvasFocused ? '3px solid #5eead4' : 'none', outlineOffset: '-3px' } }),
+          el('div', { className: 'dinolab-3d-readouts', style: { position: 'absolute', left: 10, top: 10, right: 10, display: 'flex', gap: 6, flexWrap: 'wrap', pointerEvents: 'none' } },
             readoutChip('Length ' + fmtLength(props.species.lengthM), 'rgba(56,189,248,0.55)'),
             readoutChip('Height ' + fmtLength(props.species.heightM), 'rgba(250,204,21,0.55)'),
+            readoutChip('Profile ' + reconstructionProfile.label, 'rgba(94,234,212,0.62)'),
             props.scanLabel ? readoutChip('Focus ' + props.scanLabel, 'rgba(245,158,11,0.65)') : null,
             props.loggedCount != null ? readoutChip('Logged ' + props.loggedCount + '/' + (props.scanTotal || 3), 'rgba(34,197,94,0.65)') : null,
             props.pathLoggedCount != null ? readoutChip('Path ' + props.pathLoggedCount + '/' + (props.pathTotal || 2), 'rgba(20,184,166,0.65)') : null,
@@ -6558,8 +6737,19 @@ window.StemLab = window.StemLab || {
             props.claimEvidenceTrailLabel ? readoutChip('Trail ' + props.claimEvidenceTrailLabel, 'rgba(94,234,212,0.75)') : null,
             readoutChip('Mass ' + fmtWeight(props.species.weightKg), 'rgba(167,139,250,0.55)')
           ),
-          el('div', { ref: cameraReadoutRef, 'aria-label': 'Current 3D camera view', style: { position: 'absolute', right: 10, bottom: 56, padding: '5px 8px', borderRadius: 8, background: 'rgba(15,23,42,0.78)', color: '#e2e8f0', fontSize: 11, fontWeight: 800, pointerEvents: 'none' } }, 'Camera view loading...'),
-          el('div', { id: statusId, ref: statusRef, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', left: 10, bottom: 10, right: 10, padding: '7px 10px', borderRadius: 9, background: 'rgba(15,23,42,0.78)', color: '#cbd5e1', fontSize: 11, pointerEvents: 'none' } }, 'Loading 3D reconstruction...')
+          el('div', { ref: cameraReadoutRef, className: 'dinolab-3d-camera-readout', 'aria-label': 'Current 3D camera view', style: { position: 'absolute', right: 10, bottom: 56, padding: '5px 8px', borderRadius: 8, background: 'rgba(15,23,42,0.78)', color: '#e2e8f0', fontSize: 11, fontWeight: 800, pointerEvents: 'none' } }, 'Camera view loading...'),
+          el('div', { id: statusId, ref: statusRef, className: 'dinolab-3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', left: 10, bottom: 10, right: 10, padding: '7px 10px', borderRadius: 9, background: 'rgba(15,23,42,0.78)', color: '#cbd5e1', fontSize: 11, pointerEvents: 'none' } }, 'Loading 3D reconstruction...')
+        ),
+          el('div', { className: 'dinolab-3d-view-controls', role: 'group', 'aria-label': '3D camera viewpoints and body inference opacity', style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 8 } },
+            ['front', 'side', 'overhead', 'reset'].map(function (preset) {
+              var label = preset === 'overhead' ? 'Overhead' : (preset === 'reset' ? 'Reset view' : cap(preset));
+              return el('button', { key: preset, type: 'button', onClick: function () { applyCameraPreset(preset); }, style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, cursor: 'pointer', fontSize: 11.5, fontWeight: 800 } }, label);
+            }),
+            el('label', { style: { display: 'flex', alignItems: 'center', gap: 7, flex: '1 1 220px', minWidth: 190, paddingLeft: 4, color: T.soft, fontSize: 11.5, fontWeight: 800 } },
+              el('span', { style: { whiteSpace: 'nowrap' } }, 'Body inference ' + bodyOpacity + '%'),
+              el('input', { type: 'range', min: 10, max: 75, step: 1, value: bodyOpacity, disabled: !props.showBody, onChange: updateBodyOpacity, 'aria-label': 'Body inference opacity', 'aria-valuetext': bodyOpacity + ' percent', style: { flex: 1, minWidth: 90, accentColor: '#14b8a6' } })
+            )
+          )
         );
       }
 
@@ -6568,6 +6758,7 @@ window.StemLab = window.StemLab || {
       function renderField3D() {
         var fieldId = d.field3dSelected || selected || 'tyrannosaurus';
         var dn = byId(fieldId) || byId('tyrannosaurus') || DINOS[0];
+        var reconstructionProfile = reconstructionProfileFor(dn);
         var showSkeleton = d.field3dShowSkeleton !== false;
         var showBody = d.field3dShowBody !== false;
         var showHuman = d.field3dShowHuman !== false;
@@ -6968,7 +7159,7 @@ window.StemLab = window.StemLab || {
           el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 5 } }, 'Visual key'),
           keyItem('#f8fafc', 'Skeleton proxy', 'White rods, vertebrae, rib loops, pelvis, and joints show the inferred bone layout. Skull, spine, pelvis, and tail callouts keep the main landmarks easy to follow.'),
           keyItem(dColor(dn.diet), 'Body inference', 'Translucent color and a thin contour mesh show estimated soft-tissue volume around the visible skeleton.'),
-          keyItem(dColor(dn.diet), 'Species anatomy cues', 'Simplified horns, plates, sails, armor, crests, domes, claws, or feather fans appear for supported clades. They are diagram cues, not specimen scans.'),
+          keyItem(dColor(dn.diet), 'Species anatomy cues', 'Simplified horns, brow bosses, beaks, plates, sails, armor, crests, domes, claws, thumb spikes, or feather fans appear for supported clades. They are diagram cues, not specimen scans.'),
           keyItem('#38bdf8', 'Evidence marker', 'Blue points mark fossil anchor locations.'),
           keyItem('#14b8a6', 'Evidence path', 'Cyan links connect anchors; green links show a completed evidence chain.'),
           keyItem('#22c55e', 'Logged anchor', 'Green rings show evidence points already recorded in the observation log.'),
@@ -6977,8 +7168,8 @@ window.StemLab = window.StemLab || {
           keyItem('#f59e0b', 'Scan focus', 'Amber ring pulses around the current evidence target.'),
           keyItem('#0f172a', 'Anchor label', 'Floating labels identify skull, shoulder, and hip evidence points.'),
           keyItem('#94a3b8', 'Human scale', 'Gray figure keeps size estimates concrete.'),
-          keyItem('#38bdf8', 'Length guide', 'Cyan floor line spans snout to tail with one-meter ticks.'),
-          keyItem('#facc15', 'Height guide', 'Gold vertical staff marks estimated standing height with one-meter ticks.'),
+          keyItem('#38bdf8', 'Length guide', 'Cyan floor line spans snout to tail with one-meter ticks, five-meter labels, and the full estimated length.'),
+          keyItem('#facc15', 'Height guide', 'Gold vertical staff marks estimated standing height with one-meter ticks, five-meter labels, and the full estimated height.'),
           keyItem('#f59e0b', 'Survey compass', 'Amber boundary ropes and north arrow orient the reconstruction inside its excavation grid.')
         ], { marginBottom: 12 });
         var challengePanel = panel([
@@ -7034,6 +7225,11 @@ window.StemLab = window.StemLab || {
                 el('div', { key: 'h', style: { fontSize: 16, fontWeight: 900, marginBottom: 2 } }, dn.common),
                 el('div', { key: 's', style: { fontSize: 12, color: T.soft, fontStyle: 'italic', marginBottom: 8 } }, dn.name),
                 el('div', { key: 'b', style: { marginBottom: 8 } }, badge(periodName(dn.period) + ' · ' + fmtMya(dn), pColor(dn.period)), badge((DIET_ICON[dn.diet] || '') + ' ' + cap(dn.diet), dColor(dn.diet)), badge(GROUP_LABEL[dn.group] || cap(dn.group), '#38bdf8')),
+                el('div', { key: 'profile', style: { marginBottom: 9, padding: 9, borderRadius: 8, background: 'rgba(20,184,166,0.09)', border: '1px solid rgba(20,184,166,0.30)' } },
+                  el('div', { style: { fontSize: 11.5, fontWeight: 900, color: '#5eead4', marginBottom: 3 } }, 'Reconstruction profile | ' + cap(reconstructionProfile.coverage) + ' coverage'),
+                  el('div', { style: { fontSize: 12.5, fontWeight: 800, marginBottom: 3 } }, reconstructionProfile.label),
+                  el('div', { style: { fontSize: 11.5, color: T.soft, lineHeight: 1.45 } }, reconstructionProfile.coverageNote + ' Profile differences are clade-based and remain simplified.')
+                ),
                 el('div', { key: 'rows' }, evidenceRows)
               ], { marginBottom: 12 }),
               scanCoachPanel,
@@ -7057,33 +7253,65 @@ window.StemLab = window.StemLab || {
         var aId = d.compareA || null, bId = d.compareB || null;
         var picks = [aId, bId].filter(Boolean).map(byId).filter(Boolean);
         function picker(slot, current) {
-          return el('select', { key: slot, value: current || '', 'aria-label': 'Choose dinosaur ' + slot, onChange: function (e) { var v = e.target.value || null; upd(slot === 'A' ? 'compareA' : 'compareB', v); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, [el('option', { key: 'none', value: '' }, 'Pick a dinosaur...')].concat(DINOS.slice().sort(function (x, y) { return x.common < y.common ? -1 : 1; }).map(function (dn) { return el('option', { key: dn.id, value: dn.id }, dn.common); })));
+          return el('select', { key: slot, value: current || '', 'aria-label': 'Choose dinosaur ' + slot, onChange: function (event) { var value = event.target.value || null; upd(slot === 'A' ? 'compareA' : 'compareB', value); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, [el('option', { key: 'none', value: '' }, 'Pick a dinosaur...')].concat(DINOS.slice().sort(function (x, y) { return x.common < y.common ? -1 : 1; }).map(function (dn) { return el('option', { key: dn.id, value: dn.id }, dn.common); })));
         }
-        function bar(label, value, max, unit, color) {
-          var safeValue = value != null ? value : 0;
-          var pct = max > 0 ? Math.max(2, Math.round((safeValue / max) * 100)) : 0;
-          var valueText = value != null ? (label + ': ' + value + ' ' + unit + ', ' + pct + '% of the comparison maximum ' + max + ' ' + unit + '.') : (label + ': value unknown.');
-          return el('div', { style: { marginBottom: 8 } }, el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 2 } }, el('span', { style: { color: T.soft } }, label), el('span', { style: { fontWeight: 700 } }, value != null ? (value + ' ' + unit) : '?')), el('div', { role: 'progressbar', 'aria-label': label + ' comparison value', 'aria-valuemin': 0, 'aria-valuemax': max, 'aria-valuenow': safeValue, 'aria-valuetext': valueText, style: { height: 12, borderRadius: 6, background: T.deeper, overflow: 'hidden' } }, el('div', { style: { height: '100%', width: pct + '%', background: color, borderRadius: 6 } })));
+        function metricBar(label, value, max, unit, color, scale) {
+          var safeValue = value != null ? Math.max(0, value) : 0;
+          var ratio = max > 0 ? safeValue / max : 0;
+          if (scale === 'log') ratio = max > 0 ? Math.log10(safeValue + 1) / Math.log10(max + 1) : 0;
+          var pct = value != null ? Math.max(2, Math.round(ratio * 100)) : 0;
+          var scaleText = scale === 'log' ? ' on a logarithmic scale' : '';
+          var valueText = value != null ? (label + ': ' + value + ' ' + unit + scaleText + ', ' + pct + '% of the comparison scale.') : (label + ': value unknown.');
+          return el('div', { style: { marginBottom: 8 } },
+            el('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12, marginBottom: 2 } }, el('span', { style: { color: T.soft } }, label), el('span', { style: { fontWeight: 700 } }, value != null ? (value + ' ' + unit) : '?')),
+            el('div', { role: 'progressbar', 'aria-label': label + ' comparison value', 'aria-valuemin': 0, 'aria-valuemax': max, 'aria-valuenow': safeValue, 'aria-valuetext': valueText, style: { height: 12, borderRadius: 6, background: T.deeper, overflow: 'hidden', border: '1px solid rgba(148,163,184,0.18)' } }, el('div', { style: { height: '100%', width: pct + '%', background: color, borderRadius: 6 } })));
         }
         var content;
-        if (picks.length < 2) { content = el('div', { style: { color: T.soft, fontSize: 13 } }, 'Pick two dinosaurs to compare.'); }
-        else {
+        if (picks.length < 2) {
+          content = panel([el('div', { key: 'h', style: { fontWeight: 800, marginBottom: 4 } }, 'Build a comparison'), el('div', { key: 'b', style: { color: T.soft, fontSize: 13, lineHeight: 1.5 } }, 'Pick two animals. The charts use one shared scale per metric, then the verdict checks time overlap, present-day fossil regions, and evidence coverage.')]);
+        } else {
           var maxLen = Math.max(picks[0].lengthM, picks[1].lengthM, 1.7);
-          var maxWt = Math.max(picks[0].weightKg, picks[1].weightKg, 70);
+          var maxMassT = Math.max(picks[0].weightKg / 1000, picks[1].weightKg / 1000, 0.07);
           var maxSpd = Math.max(picks[0].speedKmh, picks[1].speedKmh, 1);
           var maxHt = Math.max(picks[0].heightM, picks[1].heightM, 1.7);
-          var cols = picks.map(function (dn, i) {
-            var color = i === 0 ? '#38bdf8' : '#f59e0b';
-            return panel([el('div', { key: 'nm', style: { fontWeight: 800, fontSize: 16, marginBottom: 2 } }, dn.common), el('div', { key: 'bd', style: { marginBottom: 8 } }, badge(periodName(dn.period), pColor(dn.period)), badge((DIET_ICON[dn.diet] || '') + ' ' + cap(dn.diet), dColor(dn.diet))), bar('Length', dn.lengthM, maxLen, 'm', color), bar('Height', dn.heightM, maxHt, 'm', color), bar('Weight (t)', Math.round(dn.weightKg / 100) / 10, Math.round(maxWt / 100) / 10, 't', color), bar('Top speed (estimate)', dn.speedKmh, maxSpd, 'km/h', color)], { key: dn.id, borderTop: '3px solid ' + color });
+          var cols = picks.map(function (dn, index) {
+            var color = index === 0 ? '#38bdf8' : '#f59e0b';
+            var profile = reconstructionProfileFor(dn);
+            var massT = Math.round(dn.weightKg / 100) / 10;
+            return panel([
+              el('div', { key: 'nm', style: { fontWeight: 900, fontSize: 16, marginBottom: 2 } }, dn.common),
+              el('div', { key: 'bd', style: { marginBottom: 7 } }, badge(periodName(dn.period), pColor(dn.period)), badge((DIET_ICON[dn.diet] || '') + ' ' + cap(dn.diet), dColor(dn.diet))),
+              el('div', { key: 'profile', style: { fontSize: 11.5, color: T.soft, marginBottom: 9, lineHeight: 1.4 } }, profile.label + ' | ' + cap(profile.coverage) + ' fossil coverage'),
+              metricBar('Length', dn.lengthM, maxLen, 'm', color, 'linear'),
+              metricBar('Height', dn.heightM, maxHt, 'm', color, 'linear'),
+              metricBar('Mass', massT, maxMassT, 't', color, 'log'),
+              metricBar('Top speed estimate', dn.speedKmh, maxSpd, 'km/h', color, 'linear'),
+              el('div', { key: 'unc', style: { marginTop: 8, padding: 8, borderRadius: 8, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', color: T.soft, fontSize: 11.5, lineHeight: 1.4 } }, 'Open question: ' + dn.uncertain)
+            ], { key: dn.id, borderTop: '3px solid ' + color });
           });
           var longer = picks[0].lengthM === picks[1].lengthM ? null : (picks[0].lengthM > picks[1].lengthM ? picks[0] : picks[1]);
           var heavier = picks[0].weightKg === picks[1].weightKg ? null : (picks[0].weightKg > picks[1].weightKg ? picks[0] : picks[1]);
-          var verdict = panel([el('div', { key: 't', style: { fontWeight: 700, marginBottom: 6 } }, '🏁 Head to head'), longer ? el('div', { key: 'l', style: { fontSize: 12.5, marginBottom: 3 } }, '📏 Longer: ' + longer.common + ' (' + fmtLength(longer.lengthM) + ')') : el('div', { key: 'l' }, 'Same length.'), heavier ? el('div', { key: 'w', style: { fontSize: 12.5, marginBottom: 3 } }, '⚖️ Heavier: ' + heavier.common + ' (' + fmtWeight(heavier.weightKg) + ')') : el('div', { key: 'w' }, 'Same weight.'), el('div', { key: 'n', style: { fontSize: 11.5, color: T.soft, marginTop: 6 } }, 'Speeds are estimates from leg bones and body models, not measurements.')], { marginTop: 12 });
-          content = el('div', null, el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 } }, cols), verdict);
+          var overlapLow = Math.max(picks[0].myaLo, picks[1].myaLo);
+          var overlapHigh = Math.min(picks[0].myaHi, picks[1].myaHi);
+          var timeOverlap = overlapLow <= overlapHigh;
+          var sameContinent = continentOf(picks[0].region) === continentOf(picks[1].region);
+          var verdict = panel([
+            el('div', { key: 't', style: { fontWeight: 900, marginBottom: 7 } }, 'Evidence-aware verdict'),
+            el('div', { key: 'l', style: { fontSize: 12.5, marginBottom: 4 } }, longer ? ('Longer: ' + longer.common + ' (' + fmtLength(longer.lengthM) + ')') : 'Same estimated length.'),
+            el('div', { key: 'w', style: { fontSize: 12.5, marginBottom: 4 } }, heavier ? ('Heavier: ' + heavier.common + ' (' + fmtWeight(heavier.weightKg) + ')') : 'Same estimated mass.'),
+            el('div', { key: 'time', style: { fontSize: 12.5, marginBottom: 4, color: timeOverlap ? '#86efac' : T.soft } }, timeOverlap ? ('Time ranges overlap around ' + overlapHigh + '–' + overlapLow + ' mya.') : 'Their known time ranges do not overlap.'),
+            el('div', { key: 'place', style: { fontSize: 12.5, marginBottom: 4, color: sameContinent ? '#7dd3fc' : T.soft } }, sameContinent ? ('Both are known from present-day ' + continentOf(picks[0].region) + '.') : 'Their fossils are known from different present-day continents.'),
+            el('div', { key: 'n', style: { fontSize: 11.5, color: T.soft, marginTop: 7, lineHeight: 1.45 } }, 'Length and height use linear scales. Mass uses a logarithmic scale so a multi-ton animal does not erase a small one. Speed, mass, posture, and soft tissue are estimates—not direct measurements.')
+          ], { marginTop: 12, background: 'rgba(20,184,166,0.07)', border: '1px solid rgba(20,184,166,0.26)' });
+          content = el('div', null, el('div', { className: 'dinolab-compare-grid', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 } }, cols), verdict);
         }
-        return el('div', null, sectionTitle('⚖️', 'Compare two dinosaurs', 'Bars are scaled to the larger of the two you pick.'), el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 } }, el('div', { key: 'a' }, el('div', { style: { fontSize: 12, color: T.text, fontWeight: 700, marginBottom: 4 } }, el('span', { 'aria-hidden': 'true', style: { color: '#38bdf8' } }, '● '), 'Dinosaur A'), picker('A', aId)), el('div', { key: 'b' }, el('div', { style: { fontSize: 12, color: T.text, fontWeight: 700, marginBottom: 4 } }, el('span', { 'aria-hidden': 'true', style: { color: '#f59e0b' } }, '● '), 'Dinosaur B'), picker('B', bId))), content);
+        return el('div', null,
+          sectionTitle('⚖️', 'Compare two dinosaurs', 'Shared axes reveal scale; time, place, and fossil coverage keep the conclusion honest.'),
+          el('div', { className: 'dinolab-compare-pickers', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 } },
+            el('div', { key: 'a' }, el('div', { style: { fontSize: 12, color: T.text, fontWeight: 700, marginBottom: 4 } }, el('span', { 'aria-hidden': 'true', style: { color: '#38bdf8' } }, '● '), 'Dinosaur A'), picker('A', aId)),
+            el('div', { key: 'b' }, el('div', { style: { fontSize: 12, color: T.text, fontWeight: 700, marginBottom: 4 } }, el('span', { 'aria-hidden': 'true', style: { color: '#f59e0b' } }, '● '), 'Dinosaur B'), picker('B', bId))),
+          content);
       }
-
       function renderDig() {
         var seed = Math.max(1, Math.floor(numVal(d.digSeed, 1)));
         var revealed = arrVal(d.digRevealed);
@@ -7405,9 +7633,9 @@ window.StemLab = window.StemLab || {
       }
 
       var accessibilityStyles = '.dinolab-root button:focus-visible,.dinolab-root input:focus-visible,.dinolab-root select:focus-visible,.dinolab-root textarea:focus-visible,.dinolab-root [tabindex]:focus-visible{outline:3px solid #f8fafc!important;outline-offset:2px;box-shadow:0 0 0 5px #0f766e!important}' +
-        '@media(max-width:720px){.dinolab-root .dinolab-explore-layout{grid-template-columns:minmax(0,1fr)!important}.dinolab-root .dinolab-mission-stats{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))!important}}' +
-        '@media(max-width:480px){.dinolab-root #dinopanel{padding:10px!important}.dinolab-root .dinolab-tablist{padding:8px!important}}';
-      return el('div', { className: 'dinolab-root', style: { minHeight: '100%', background: T.canvas, color: T.text } }, el('style', null, accessibilityStyles), tabBar, el('div', { id: 'dinopanel', role: 'tabpanel', 'aria-labelledby': 'dinotab-' + tab, style: { padding: 16 } }, tab === 'explore' ? renderMissionDeck() : null, content));
+        '@media(max-width:720px){.dinolab-root .dinolab-explore-layout{grid-template-columns:minmax(0,1fr)!important}.dinolab-root .dinolab-mission-stats{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))!important}.dinolab-root .dinolab-compare-grid,.dinolab-root .dinolab-compare-pickers{grid-template-columns:minmax(0,1fr)!important}.dinolab-root .dinolab-map-stats{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))!important}.dinolab-root .dinolab-3d-viewer{min-height:380px!important}.dinolab-root .dinolab-3d-canvas{height:380px!important}.dinolab-root .dinolab-3d-readouts{max-height:88px;overflow:hidden}.dinolab-root .dinolab-3d-chip{font-size:10px!important;padding:4px 7px!important}}' +
+        '@media(max-width:480px){.dinolab-root #dinopanel{padding:10px!important}.dinolab-root .dinolab-tablist{padding:8px!important;flex-wrap:nowrap!important;overflow-x:auto!important;scrollbar-width:thin}.dinolab-root .dinolab-section-cue{padding-left:10px!important;padding-right:10px!important}.dinolab-root .dinolab-3d-viewer{min-height:340px!important}.dinolab-root .dinolab-3d-canvas{height:340px!important}.dinolab-root .dinolab-3d-readouts{left:7px!important;right:7px!important;top:7px!important;gap:4px!important;max-height:70px}.dinolab-root .dinolab-3d-camera-readout{right:7px!important;bottom:58px!important;font-size:10px!important}.dinolab-root .dinolab-3d-status{left:7px!important;right:7px!important;bottom:7px!important;font-size:10px!important;padding:6px 8px!important}.dinolab-root .dinolab-3d-view-controls{align-items:stretch!important}.dinolab-root .dinolab-3d-view-controls>button{flex:1 1 72px}}';
+      return el('div', { className: 'dinolab-root', style: { minHeight: '100%', background: T.canvas, color: T.text } }, el('style', null, accessibilityStyles), tabNavigation, el('div', { id: 'dinopanel', role: 'tabpanel', 'aria-labelledby': 'dinotab-' + tab, style: { padding: 16 } }, tab === 'explore' ? renderMissionDeck() : null, content));
     }
   });
 })();

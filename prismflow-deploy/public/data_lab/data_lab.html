@@ -41,6 +41,7 @@
     --text: #e2e8f0; --dim: #94a3b8; --accent: #4f46e5; --ok: #4ade80; --warn: #fbbf24;
   }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html, body { height: 100%; }
   body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; display: flex; flex-direction: column; }
   header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); flex: 0 0 auto; }
@@ -64,8 +65,13 @@
   button:disabled { background: #3f3f5a; color: #7d7da0; cursor: not-allowed; }
   button.quiet { background: var(--panel2); color: var(--text); border: 1px solid var(--line); font-weight: 600; }
   .privacy { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 10.5px; color: var(--dim); line-height: 1.45; flex: 0 0 auto; }
-  .codap { flex: 1 1 auto; min-width: 0; background: #fff; }
+  .codap { position: relative; flex: 1 1 auto; min-width: 0; background: #fff; }
   .codap iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .workspace-status { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; background: #f8fafc; color: #1e293b; text-align: center; }
+  .workspace-status p { max-width: 36rem; margin: 0; font-size: 14px; line-height: 1.5; }
+  .workspace-status button { background: #4f46e5; color: #fff; }
+  .workspace-status button:hover { background: #4338ca; }
+  .workspace-status button:focus-visible { outline-color: #b45309; }
   @media (max-width: 760px) { .wrap { flex-direction: column; } .tutor { flex: 0 0 45%; border-right: 0; border-bottom: 1px solid var(--line); } }
 </style>
 </head>
@@ -86,7 +92,11 @@
     <div style="padding: 0 12px 10px;"><button type="button" class="quiet" id="nudgeBtn">🤔 Give me something to think about</button></div>
     <div class="privacy">Privacy: the tutor can see your <b>column names, dataset names, and counts</b> — never the values in your table. The conversation is not saved. AI answers only flow when your teacher has AI hints on.</div>
   </aside>
-  <main class="codap" aria-label="CODAP data workspace">
+  <main class="codap" id="codapRegion" aria-label="CODAP data workspace" aria-busy="true">
+    <div class="workspace-status" id="workspaceStatus" role="status" aria-live="polite" aria-atomic="true">
+      <p id="workspaceStatusText">Loading the CODAP workspace?</p>
+      <button type="button" id="retryWorkspace" hidden>Retry CODAP</button>
+    </div>
     <iframe id="codapFrame" title="CODAP — Common Online Data Analysis Platform" allow="clipboard-read; clipboard-write"></iframe>
   </main>
 </div>
@@ -97,14 +107,69 @@
 
   // ── CODAP embed (hosted release + our tutor plugin injected via ?di=) ──
   var CODAP_BASE = 'https://codap.concord.org/releases/latest/static/dg/en/cert/index.html';
-  var pluginUrl = new URL('tutor_plugin.html', window.location.href).href;
-  document.getElementById('codapFrame').src = CODAP_BASE + '?standalone=true&di=' + encodeURIComponent(pluginUrl);
+  var pluginUrl = new URL('tutor_plugin.html', document.baseURI || window.location.href).href;
+  var codapFrame = document.getElementById('codapFrame');
+  var codapRegion = document.getElementById('codapRegion');
+  var workspaceStatus = document.getElementById('workspaceStatus');
+  var workspaceStatusText = document.getElementById('workspaceStatusText');
+  var retryWorkspace = document.getElementById('retryWorkspace');
+  var workspaceTimer = null;
+  var workspaceReadyTimer = null;
 
   var logEl = document.getElementById('log');
   var aiStateEl = document.getElementById('aiState');
   var askForm = document.getElementById('askForm');
   var askInput = document.getElementById('askInput');
   var askBtn = document.getElementById('askBtn');
+  aiStateEl.setAttribute('role', 'status');
+  aiStateEl.setAttribute('aria-live', 'polite');
+  aiStateEl.setAttribute('aria-atomic', 'true');
+  askForm.setAttribute('aria-busy', 'false');
+  function setWorkspaceStatus(message, canRetry, isBusy) {
+    workspaceStatusText.textContent = message || '';
+    workspaceStatus.hidden = !message;
+    retryWorkspace.hidden = !canRetry;
+    codapRegion.setAttribute('aria-busy', isBusy ? 'true' : 'false');
+  }
+
+  function clearWorkspaceTimers() {
+    if (workspaceTimer) clearTimeout(workspaceTimer);
+    if (workspaceReadyTimer) clearTimeout(workspaceReadyTimer);
+    workspaceTimer = null;
+    workspaceReadyTimer = null;
+  }
+
+  function loadWorkspace() {
+    clearWorkspaceTimers();
+    if (navigator.onLine === false) {
+      setWorkspaceStatus('CODAP needs an internet connection. Reconnect, then retry the workspace.', true, false);
+      return;
+    }
+    setWorkspaceStatus('Loading the CODAP workspace?', false, true);
+    codapFrame.src = CODAP_BASE + '?standalone=true&di=' + encodeURIComponent(pluginUrl);
+    workspaceTimer = setTimeout(function () {
+      setWorkspaceStatus('CODAP is taking longer than expected. Check your connection, then retry if needed.', true, false);
+    }, 12000);
+  }
+
+  codapFrame.addEventListener('load', function () {
+    clearTimeout(workspaceTimer);
+    workspaceTimer = null;
+    setWorkspaceStatus('CODAP workspace loaded.', false, false);
+    workspaceReadyTimer = setTimeout(function () { workspaceStatus.hidden = true; }, 900);
+  });
+  codapFrame.addEventListener('error', function () {
+    clearTimeout(workspaceTimer);
+    workspaceTimer = null;
+    setWorkspaceStatus('CODAP could not load. Check your connection and retry.', true, false);
+  });
+  retryWorkspace.addEventListener('click', loadWorkspace);
+  window.addEventListener('offline', function () {
+    clearWorkspaceTimers();
+    setWorkspaceStatus('You are offline. Reconnect to load the CODAP workspace.', true, false);
+  });
+  window.addEventListener('online', loadWorkspace);
+  loadWorkspace();
 
   var aiAvailable = false;
   var openerOk = false;
@@ -148,6 +213,22 @@
   function nextNudge() {
     bankIndex = (bankIndex + 1) % SOCRATIC_BANK.length;
     return SOCRATIC_BANK[bankIndex];
+  }
+
+  function rememberTurn(role, text) {
+    history.push({
+      role: role === 'student' ? 'student' : 'tutor',
+      text: String(text || '').slice(0, 1200)
+    });
+    if (history.length > 40) history.splice(0, history.length - 40);
+  }
+
+  function tutorFallback(errorCode) {
+    var lead = 'The AI tutor is unavailable right now.';
+    if (errorCode === 'busy') lead = 'The tutor is still thinking about another question.';
+    else if (errorCode === 'ai-disabled') lead = 'AI hints are off right now.';
+    else if (errorCode === 'invalid-question') lead = 'I could not read that question. Try asking it another way.';
+    return lead + ' Meanwhile: ' + nextNudge();
   }
 
   // ── Opener handshake (AI bridge, Video Studio pattern) ──────────────
@@ -227,15 +308,16 @@
     if (!question) return;
     askInput.value = '';
     addMsg('student-msg', question);
-    history.push({ role: 'student', text: question });
+    rememberTurn('student', question);
     if (!(openerOk && aiAvailable)) {
       var fallback = 'I can’t reach the AI tutor right now — but here’s something to chew on: ' + nextNudge();
       addMsg('tutor-msg', fallback);
-      history.push({ role: 'tutor', text: fallback });
+      rememberTurn('tutor', fallback);
       return;
     }
     busy = true;
     askBtn.disabled = true;
+    askForm.setAttribute('aria-busy', 'true');
     addMsg('meta', 'thinking…');
     getSnapshot().then(function (snapshot) {
       return askAi(question, snapshot);
@@ -243,19 +325,20 @@
       var metas = logEl.querySelectorAll('.msg.meta');
       if (metas.length) metas[metas.length - 1].remove();
       var reply = res && !res.error && res.text ? String(res.text).trim() : '';
-      if (!reply) reply = 'The AI tutor didn’t answer' + (res && res.error ? ' (' + res.error + ')' : '') + '. Meanwhile: ' + nextNudge();
+      if (!reply) reply = tutorFallback(res && res.error);
       addMsg('tutor-msg', reply);
-      history.push({ role: 'tutor', text: reply });
+      rememberTurn('tutor', reply);
     }).finally(function () {
       busy = false;
       askBtn.disabled = false;
+      askForm.setAttribute('aria-busy', 'false');
     });
   });
 
   document.getElementById('nudgeBtn').addEventListener('click', function () {
     var nudge = nextNudge();
     addMsg('tutor-msg', nudge);
-    history.push({ role: 'tutor', text: nudge });
+    rememberTurn('tutor', nudge);
   });
 
   // ── Boot ─────────────────────────────────────────────────────────────

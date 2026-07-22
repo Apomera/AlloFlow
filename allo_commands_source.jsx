@@ -364,6 +364,15 @@ const PLAN_CONTRACTS = Object.freeze({
   generate_analysis: { requires: ['source'], produces: ['analysis'] },
   generate_outline: { requires: ['source'], produces: ['outline'] },
   find_reading: { params: ['topic', 'grade', 'language', 'source', 'format', 'raw'] },
+  send_teacher_signal: {
+    demoSafe: false,
+    interaction: 'external',
+    params: ['signal'],
+    reason: 'Sends one fixed-vocabulary signal to the teacher in an active live session.'
+  },
+  create_activity_rubric: { demoSafe: false, interaction: 'guided', reason: 'Runs rubric generation for the current activity.' },
+  share_assignment: { demoSafe: false, interaction: 'external', reason: 'Creates a student-facing assignment link after confirmation.' },
+  preview_assignment_as_student: { demoSafe: false, interaction: 'external', reason: 'Opens an already-shared student assignment in a new tab.' },
   launch_flashcards: { requires: ['glossary'] },
   export_pack: {
     demoSafe: false,
@@ -410,6 +419,10 @@ const DEMO_BLOCKED_COMMANDS = new Set([
   'open_pictionary_host',
   'open_group_tools',
   'open_student_signal',
+  'send_teacher_signal',
+  'share_assignment',
+  'preview_assignment_as_student',
+  'review_teacher_feedback',
   'open_class_analytics',
   'open_ai_settings',
   'open_roster',
@@ -466,6 +479,25 @@ function sanitizeCommandParams(commandOrId, params) {
   return _contractPlanParams(params, getCommandContract(commandOrId));
 }
 
+// Resolve the command audience once from the host's role state. `isTeacherMode`
+// is the presentation boundary used by the ordinary Teacher/Student view toggle,
+// while the explicit link/independent/parent flags identify specialized paths.
+// One resolver keeps palette, chat, voice, plans, and direct execution aligned.
+function getCommandAudience(ctx) {
+  const explicit = ctx && ctx.commandAudience;
+  if (['teacher', 'student', 'independent', 'parent'].includes(explicit)) return explicit;
+  if (ctx && (ctx.isStudentLinkMode || ctx.isTeacherMode === false)) return 'student';
+  if (ctx && ctx.isIndependentMode) return 'independent';
+  if (ctx && ctx.isParentMode) return 'parent';
+  return 'teacher';
+}
+
+function _commandAllowsAudience(command, audience) {
+  const roles = command && command.roles;
+  if (roles === 'all') return true;
+  if (Array.isArray(roles)) return roles.includes(audience) || roles.includes('all');
+  return roles === audience;
+}
 
 // Pure, non-mutating plan preflight. It simulates declared produces/requires
 // contracts while still checking today's live command guards. Both AlloBot and
@@ -533,13 +565,14 @@ function validatePlan(ctx, rawSteps, opts = {}) {
 
 function buildAlloCommands(ctx, opts = {}) {
   const t = _mkT(ctx && ctx.t);
+  const audience = getCommandAudience(ctx || {});
   const cmds = [
     // ── Navigate ──
     { id: 'open_educator_hub', opensPanel: 'educatorHub', icon: '🏫', roles: 'teacher', label: t('cmd.open_educator_hub', 'Open the Educator Hub'), aliases: ['educator hub', 'teacher hub', 'hub', 'document pipeline', 'remediation pipeline', 'make a document accessible', 'fix a pdf'], hint: t('cmd.open_educator_hub_hint', 'Lesson tools + the Document Pipeline card'), run: (c) => { c.setShowEducatorHub(true); return t('cmd.open_educator_hub_done', 'Educator Hub opened — the Document Pipeline card is near the top.'); } },
     { id: 'open_learning_hub', opensPanel: 'learningHub', icon: '🎓', roles: 'all', label: t('cmd.open_learning_hub', 'Open the Learning Hub'), aliases: ['learning hub', 'student hub', 'games'], hint: t('cmd.open_learning_hub_hint', 'Games, practice, and study tools'), run: (c) => { c.setShowLearningHub(true); return t('cmd.open_learning_hub_done', 'Learning Hub opened.'); } },
-    { id: 'open_source_input', icon: '📝', roles: 'all', label: t('cmd.open_source_input', 'Open source input'), aliases: ['source input', 'source material', 'input panel', 'paste text', 'write text', 'add source', 'new source'], hint: t('cmd.open_source_input_hint', 'Paste, write, search, or generate source material'), run: (c) => { c.openSourceInput(); return t('cmd.open_source_input_done', 'Source input opened.'); } },
-    { id: 'open_source_url', icon: '🔎', roles: 'all', label: t('cmd.open_source_url', 'Find a resource online'), aliases: ['find a resource online', 'resource online', 'paste a link', 'add a link', 'url input', 'import from url', 'web source', 'source link'], hint: t('cmd.open_source_url_hint', 'Paste a URL or search for a source'), run: (c) => { c.openSourceUrl(); return t('cmd.open_source_url_done', 'Resource finder opened.'); } },
-    { id: 'open_source_generator', icon: '✨', roles: 'all', label: t('cmd.open_source_generator', 'Generate source from a topic'), aliases: ['generate source', 'generate from a topic', 'source generator', 'write source text', 'make source text', 'generate reading passage', 'ai writes it'], hint: t('cmd.open_source_generator_hint', 'Open the topic-to-source generator'), run: (c) => { c.openSourceGenerator(); return t('cmd.open_source_generator_done', 'Source generator opened.'); } },
+    { id: 'open_source_input', icon: '📝', roles: ['teacher', 'independent', 'parent'], label: t('cmd.open_source_input', 'Open source input'), aliases: ['source input', 'source material', 'input panel', 'paste text', 'write text', 'add source', 'new source'], hint: t('cmd.open_source_input_hint', 'Paste, write, search, or generate source material'), run: (c) => { c.openSourceInput(); return t('cmd.open_source_input_done', 'Source input opened.'); } },
+    { id: 'open_source_url', icon: '🔎', roles: ['teacher', 'independent', 'parent'], label: t('cmd.open_source_url', 'Find a resource online'), aliases: ['find a resource online', 'resource online', 'paste a link', 'add a link', 'url input', 'import from url', 'web source', 'source link'], hint: t('cmd.open_source_url_hint', 'Paste a URL or search for a source'), run: (c) => { c.openSourceUrl(); return t('cmd.open_source_url_done', 'Resource finder opened.'); } },
+    { id: 'open_source_generator', icon: '✨', roles: ['teacher', 'independent', 'parent'], label: t('cmd.open_source_generator', 'Generate source from a topic'), aliases: ['generate source', 'generate from a topic', 'source generator', 'write source text', 'make source text', 'generate reading passage', 'ai writes it'], hint: t('cmd.open_source_generator_hint', 'Open the topic-to-source generator'), run: (c) => { c.openSourceGenerator(); return t('cmd.open_source_generator_done', 'Source generator opened.'); } },
     { id: 'open_history', icon: '🕘', roles: 'all', label: t('cmd.open_history', 'Open history'), aliases: ['history', 'my history', 'saved work', 'previous work', 'recent lessons', 'projects'], hint: t('cmd.open_history_hint', 'Browse saved lessons and projects'), run: (c) => { c.openHistory(); return t('cmd.open_history_done', 'History opened.'); } },
     { id: 'open_document_builder', opensPanel: 'exportPreview', icon: '📝', roles: 'teacher', label: t('cmd.open_document_builder', 'Open the Document Builder'), aliases: ['document builder', 'builder', 'export preview', 'differentiate'], hint: t('cmd.open_document_builder_hint', 'Build and export differentiated documents'), run: (c) => { c.openExportPreview(); return t('cmd.open_document_builder_done', 'Document Builder opened.'); } },
     { id: 'open_wizard', icon: '🪄', roles: 'teacher', label: t('cmd.open_wizard', 'Start the lesson wizard'), aliases: ['wizard', 'new lesson', 'create lesson', 'guided setup'], hint: t('cmd.open_wizard_hint', 'Step-by-step lesson creation'), run: (c) => { c.setShowWizard(true); return t('cmd.open_wizard_done', 'Lesson wizard started.'); } },
@@ -551,7 +584,7 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: 'open_quick_check', icon: '⚡', roles: 'teacher', when: (c) => !!c.activeSessionCode && !!c.openQuickCheck, label: t('cmd.open_quick_check', 'Run a quick check'), aliases: ['quick check', 'check understanding', 'confused ready', 'how is this landing', 'ready check'], hint: t('cmd.open_quick_check_hint', 'Prepare a 1-3 confused-to-ready check-in'), run: (c) => { c.openQuickCheck(); return t('cmd.open_quick_check_done', 'Quick Check opened. Review it, then broadcast from there.'); } },
     { id: 'open_pictionary_host', icon: '🎨', roles: 'teacher', when: (c) => !!c.activeSessionCode && !!c.openPictionaryHost, label: t('cmd.open_pictionary_host', 'Start Concept Pictionary'), aliases: ['concept pictionary', 'pictionary', 'drawing game', 'draw a concept', 'class drawing game'], hint: t('cmd.open_pictionary_host_hint', 'Open the teacher host for Concept Pictionary'), run: (c) => { c.openPictionaryHost(); return t('cmd.open_pictionary_host_done', 'Concept Pictionary opened. Choose a concept and start the round from there.'); } },
     { id: 'open_group_tools', icon: '👥', roles: 'teacher', when: (c) => !!c.activeSessionCode && !!c.openGroupTools, label: t('cmd.open_group_tools', 'Open group tools'), aliases: ['group tools', 'groups', 'manage groups', 'student groups', 'make groups'], hint: t('cmd.open_group_tools_hint', 'Manage live-session groups'), run: (c) => { c.openGroupTools(); return t('cmd.open_group_tools_done', 'Group tools opened.'); } },
-    { id: 'open_student_signal', icon: '✋', roles: 'all', when: (c) => !!c.activeSessionCode && !c.isTeacherMode && !!c.openStudentSignals, label: t('cmd.open_student_signal', 'Send a teacher signal'), aliases: ['signal teacher', 'help signal', 'quick signal', 'i need help', 'i am confused', 'send signal'], hint: t('cmd.open_student_signal_hint', 'Tell the teacher you need help, more time, or are ready'), run: (c) => { c.openStudentSignals(); return t('cmd.open_student_signal_done', 'Teacher signal panel opened. Pick one option to send.'); } },
+    { id: 'open_student_signal', icon: '✋', roles: 'student', when: (c) => !!c.activeSessionCode && !c.isTeacherMode && !!c.openStudentSignals, label: t('cmd.open_student_signal', 'Send a teacher signal'), aliases: ['signal teacher', 'help signal', 'quick signal', 'i need help', 'i am confused', 'send signal'], hint: t('cmd.open_student_signal_hint', 'Tell the teacher you need help, more time, or are ready'), run: (c) => { c.openStudentSignals(); return t('cmd.open_student_signal_done', 'Teacher signal panel opened. Pick one option to send.'); } },
     { id: 'open_class_analytics', opensPanel: 'classAnalytics', icon: '📈', roles: 'teacher', label: t('cmd.open_class_analytics', 'Open class analytics'), aliases: ['analytics', 'class data', 'progress data'], hint: t('cmd.open_class_analytics_hint', 'Whole-class progress'), run: (c) => { c.setShowClassAnalytics(true); return t('cmd.open_class_analytics_done', 'Class analytics opened.'); } },
     { id: 'open_export_menu', opensPanel: 'exportMenu', icon: '📤', roles: 'teacher', label: t('cmd.open_export_menu', 'Open the export menu'), aliases: ['export', 'download menu', 'share'], hint: t('cmd.open_export_menu_hint', 'Export the current content'), run: (c) => { c.setShowExportMenu(true); return t('cmd.open_export_menu_done', 'Export menu opened.'); } },
     { id: 'open_ai_settings', icon: '🤖', roles: 'teacher', label: t('cmd.open_ai_settings', 'Open AI settings'), aliases: ['ai settings', 'ai backend', 'api key', 'model settings'], hint: t('cmd.open_ai_settings_hint', 'Configure the AI backend'), run: (c) => { c.setShowAIBackendModal(true); return t('cmd.open_ai_settings_done', 'AI settings opened.'); } },
@@ -560,6 +593,13 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: 'go_dashboard', opensPanel: 'dashboard', icon: '🏠', roles: 'all', label: t('cmd.go_dashboard', 'Go to the dashboard'), aliases: ['dashboard', 'home', 'go home', 'main view', 'overview'], hint: t('cmd.go_dashboard_hint', 'Back to the main lesson view'), run: (c) => { c.goToDashboard(); return t('cmd.go_dashboard_done', 'Dashboard.'); } },
     { id: 'open_roster', icon: '🧑‍🤝‍🧑', roles: 'teacher', label: t('cmd.open_roster', 'Open the class roster'), aliases: ['roster', 'manage roster', 'class roster', 'roster key'], hint: t('cmd.open_roster_hint', 'Manage your class groups'), run: (c) => { c.openRoster(); return t('cmd.open_roster_done', 'Class roster opened.'); } },
     { id: 'open_project_settings', icon: '⚙️', roles: 'teacher', label: t('cmd.open_project_settings', 'Open project settings'), aliases: ['project settings', 'student settings', 'lesson settings', 'permissions', 'allow ai'], hint: t('cmd.open_project_settings_hint', 'Per-project AI, dictation, and Socratic gating'), run: (c) => { c.openProjectSettings(); return t('cmd.open_project_settings_done', 'Project settings opened.'); } },
+    { id: 'edit_assignment_directions', icon: '\u{1F4CB}', roles: 'teacher', when: (c) => !!c.canEditAssignmentDirections && !!c.editAssignmentDirections, label: t('cmd.edit_assignment_directions', 'Edit assignment directions'), aliases: ['edit directions', 'assignment directions editor', 'write directions', 'change assignment directions'], hint: t('cmd.edit_assignment_directions_hint', 'Open the directions and goals composer'), run: (c) => { c.editAssignmentDirections(); return t('cmd.edit_assignment_directions_done', 'Assignment directions editor opened.'); } },
+    { id: 'open_assessment_builder', icon: '\u{1F9ED}', roles: 'teacher', when: (c) => !!c.openAssessmentBuilder, label: t('cmd.open_assessment_builder', 'Open Assessment Builder'), aliases: ['assessment builder', 'build assessment', 'make an assessment', 'assessment tools'], hint: t('cmd.open_assessment_builder_hint', 'Design an assessment and supporting activities'), run: (c) => { c.openAssessmentBuilder(); return t('cmd.open_assessment_builder_done', 'Assessment Builder opened.'); } },
+    { id: 'open_udl_guide', icon: '\u267F', roles: 'teacher', when: (c) => !!c.openUdlGuide, label: t('cmd.open_udl_guide', 'Open the UDL Guide'), aliases: ['udl guide', 'universal design guide', 'udl help', 'accessibility guide'], hint: t('cmd.open_udl_guide_hint', 'Review UDL supports for the current lesson'), run: (c) => { c.openUdlGuide(); return t('cmd.open_udl_guide_done', 'UDL Guide opened.'); } },
+    { id: 'create_activity_rubric', icon: '\u{1F4D0}', roles: 'teacher', when: (c) => !!c.canGenerateCurrentRubric && !!c.generateCurrentRubric, label: t('cmd.create_activity_rubric', 'Create a rubric for this activity'), aliases: ['create rubric', 'make a rubric', 'generate rubric', 'rubric for this activity'], hint: t('cmd.create_activity_rubric_hint', 'Generate observable, student-friendly success criteria'), run: (c) => { c.generateCurrentRubric(); return t('cmd.create_activity_rubric_working', 'Generating an activity rubric...'); }, pendingNarration: t('cmd.create_activity_rubric_working', 'Generating an activity rubric...'), runAsync: async (c) => { const ok = await c.generateCurrentRubric(); if (ok === false) throw new Error(t('cmd.create_activity_rubric_failed', 'The activity rubric could not be created.')); return t('cmd.create_activity_rubric_done', 'Activity rubric created.'); } },
+    { id: 'share_assignment', icon: '\u{1F517}', roles: 'teacher', destructive: true, when: (c) => !!c.canShareAssignment && !!c.shareAssignment, label: t('cmd.share_assignment', 'Share this assignment'), aliases: ['share assignment', 'publish assignment', 'make homework link', 'create student link', 'assign this'], hint: t('cmd.share_assignment_hint', 'Create a student-facing homework link after confirmation'), confirmMessage: (c) => { const count = Math.max(1, Number(c.shareResourceCount) || 1); const days = Math.max(1, Number(c.shareExpiryDays) || 1); const ai = c.shareStudentAiPolicy === 'student-byok' ? t('cmd.share_assignment_confirm_ai_byok', 'Students may connect their own AI provider.') : t('cmd.share_assignment_confirm_ai_off', 'Student AI will stay off.'); return t('cmd.share_assignment_confirm', 'Create a student link containing {count} resource(s), expiring in {days} day(s). {ai} Press Enter again to confirm.').replace('{count}', count).replace('{days}', days).replace('{ai}', ai); }, run: (c) => { c.shareAssignment(); return t('cmd.share_assignment_working', 'Creating the student assignment link...'); }, pendingNarration: t('cmd.share_assignment_working', 'Creating the student assignment link...'), runAsync: async (c) => { const url = await c.shareAssignment(); if (!url) throw new Error(t('cmd.share_assignment_failed', 'The student assignment link was not created.')); return t('cmd.share_assignment_done', 'Student assignment link created.'); } },
+    { id: 'preview_assignment_as_student', icon: '\u{1F440}', roles: 'teacher', when: (c) => !!c.canPreviewStudentAssignment && !!c.previewStudentAssignment, label: t('cmd.preview_assignment_as_student', 'Preview the shared assignment as a student'), aliases: ['preview as student', 'student preview', 'test student link', 'view assignment as student'], hint: t('cmd.preview_assignment_as_student_hint', 'Open the latest shared link in a separate student tab'), run: (c) => { c.previewStudentAssignment(); return t('cmd.preview_assignment_as_student_done', 'Student preview opened in a new tab.'); } },
+    { id: 'resume_latest_work', icon: '\u21A9\uFE0F', roles: 'all', when: (c) => !!c.hasResumableWork && !!c.resumeLatestWork, label: t('cmd.resume_latest_work', 'Resume my latest work'), aliases: ['resume my work', 'continue my work', 'open latest work', 'pick up where i left off'], hint: t('cmd.resume_latest_work_hint', 'Open the most recent saved item directly'), run: (c) => { const item = c.resumeLatestWork(); return item ? (t('cmd.resume_latest_work_done', 'Resumed ') + (item.title || item.type || 'your latest work') + '.') : t('cmd.resume_latest_work_none', 'No saved work is available yet.'); } },
 
     // ── Open a tool (added 2026-06-13) — quick-launch the workspaces that normally live behind a
     //    hub card. Each is opensPanel-tagged so launching it CLOSES any open hub / other tool (the
@@ -595,7 +635,15 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: 'generate_simplified', icon: '📉', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_simplified', 'Simplify this text'), aliases: ['simplify', 'simplify this', 'make it easier', 'lower the reading level', 'leveled text', 'easier version'], hint: t('cmd.generate_simplified_hint', 'Generate a simpler reading level — say “to grade N” for a target'), run: (c, params) => { c.generateSimplified(params && params.grade ? { grade: params.grade } : {}); return t('cmd.generate_simplified_done', 'Generating a simpler version…'); }, runAsync: (c, params) => Promise.resolve(c.generateSimplified(params && params.grade ? { grade: params.grade } : {})).then(() => t('cmd.generate_simplified_ready', 'Simpler version ready.')) },
     { id: 'generate_sentence_frames', icon: '🧩', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_sentence_frames', 'Make sentence frames'), aliases: ['sentence frames', 'sentence starters', 'scaffolds', 'language support'], hint: t('cmd.generate_sentence_frames_hint', 'Generate sentence frames from the current content'), run: (c) => { c.generateSentenceFrames(); return t('cmd.generate_sentence_frames_done', 'Generating sentence frames…'); }, runAsync: (c) => Promise.resolve(c.generateSentenceFrames()).then(() => t('cmd.generate_sentence_frames_ready', 'Sentence frames ready.')) },
     { id: 'generate_analysis', icon: '🔬', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_analysis', 'Analyze this source'), aliases: ['analyze', 'analysis', 'source analysis', 'analyze this'], hint: t('cmd.generate_analysis_hint', 'Run a source analysis on the current content'), run: (c) => { c.generateAnalysis(); return t('cmd.generate_analysis_done', 'Analyzing this source…'); }, runAsync: (c) => Promise.resolve(c.generateAnalysis()).then(() => t('cmd.generate_analysis_ready', 'Source analysis ready.')) },
-    { id: 'submit_work', icon: '📨', roles: 'all', when: (c) => !c.isTeacherMode, label: t('cmd.submit_work', 'Submit my work'), aliases: ['submit', 'submit my work', 'hand it in', 'turn in'], hint: t('cmd.submit_work_hint', 'Send your work to your teacher'), run: (c) => { c.submitWork(); return t('cmd.submit_work_done', 'Opening the submit dialog…'); } },
+    { id: 'submit_work', icon: '📨', roles: 'student', when: (c) => !c.isTeacherMode, label: t('cmd.submit_work', 'Submit my work'), aliases: ['submit', 'submit my work', 'hand it in', 'turn in'], hint: t('cmd.submit_work_hint', 'Send your work to your teacher'), run: (c) => { c.submitWork(); return t('cmd.submit_work_done', 'Opening the submit dialog…'); } },
+    { id: 'open_assignment_directions', icon: '📋', roles: 'student', when: (c) => !!c.hasAssignmentDirections && !!c.openAssignmentDirections, label: t('directions.title', 'Open assignment directions'), aliases: ['assignment directions', 'read directions', 'show directions', 'what do i do', 'what am i supposed to do'], hint: t('directions.subtitle', 'Open the directions and goals for this assignment'), run: (c) => { c.openAssignmentDirections(); return 'Assignment directions opened.'; } },
+    { id: 'check_assignment_progress', icon: '🎯', roles: 'student', when: (c) => !!c.getAssignmentProgress && !!c.getAssignmentProgress(), label: t('directions.your_goals', 'Check assignment progress'), aliases: ['check my progress', 'my progress', 'how am i doing', 'what is left', 'goals left'], hint: t('directions.signals_note', 'Hear how many assignment goals are complete'), run: (c) => { const p = c.getAssignmentProgress(); return p ? ((p.title ? p.title + ': ' : '') + p.done + ' of ' + p.total + ' goals complete.') : 'No assignment progress is available yet.'; } },
+    { id: 'save_my_work', icon: '💾', roles: 'student', when: (c) => !!c.canSaveStudentWork && !!c.saveStudentWork, label: t('modals.save_project.title', 'Save my work'), aliases: ['save my work', 'download my work', 'save project', 'keep my work'], hint: t('modals.save_project.filename_label', 'Save a student work file on this device'), run: (c) => { c.saveStudentWork(); return 'Save my work dialog opened.'; } },
+    { id: 'next_assignment_step', icon: '\u27A1\uFE0F', roles: 'student', when: (c) => !!c.getNextAssignmentStep && !!c.getNextAssignmentStep() && !!c.openNextAssignmentStep, label: t('cmd.next_assignment_step', 'What should I do next?'), aliases: ['what should i do next', 'next step', 'where do i go next', 'next activity', 'continue assignment'], hint: t('cmd.next_assignment_step_hint', 'Open the recommended next activity or goal'), run: (c) => { const step = c.openNextAssignmentStep(); return step ? ((step.goalLabel ? step.goalLabel + ': ' : '') + 'Opening ' + (step.title || 'your next activity') + '.') : t('directions.all_done', 'Every assignment goal is complete.'); } },
+    { id: 'read_assignment_directions', icon: '\u{1F50A}', roles: 'student', when: (c) => !!c.hasAssignmentDirections && !!c.readAssignmentDirections, label: t('cmd.read_assignment_directions', 'Read my directions aloud'), aliases: ['read directions aloud', 'read my directions', 'say the directions', 'listen to directions'], hint: t('cmd.read_assignment_directions_hint', 'Open the directions and start read-aloud'), run: (c) => { c.readAssignmentDirections(); return t('cmd.read_assignment_directions_done', 'Assignment directions opened for read-aloud.'); } },
+    { id: 'show_success_criteria', icon: '\u{1F3C1}', roles: 'student', when: (c) => !!c.getSuccessCriteria && !!c.getSuccessCriteria(), label: t('cmd.show_success_criteria', 'Show the success criteria'), aliases: ['show rubric', 'what does success look like', 'success criteria', 'grading rubric', 'how will this be graded'], hint: t('cmd.show_success_criteria_hint', 'Hear the assignment goals or current rubric criteria'), run: (c) => { const r = c.getSuccessCriteria(); return r && r.criteria && r.criteria.length ? ((r.title ? r.title + ': ' : '') + r.criteria.slice(0, 6).join('; ') + '.') : t('cmd.show_success_criteria_none', 'No success criteria are available yet.'); } },
+    { id: 'send_teacher_signal', icon: '\u270B', roles: 'student', when: (c) => !!c.activeSessionCode && !c.isTeacherMode && !!c.sendTeacherSignal, label: t('cmd.send_teacher_signal', 'Ask my teacher for help'), aliases: ['tell teacher i am stuck', 'ask teacher to slow down', 'ask teacher to repeat', 'tell teacher i am ready'], hint: t('cmd.send_teacher_signal_hint', 'Send one private, fixed-choice signal in the live session'), run: (c, p) => { const raw = String((p && p.signal) || '').toLowerCase(); const signal = /slow/.test(raw) ? 'slow' : /repeat|again/.test(raw) ? 'repeat' : /ready|done/.test(raw) ? 'ready' : /stuck|help|confus/.test(raw) ? 'stuck' : ''; if (!signal) { if (c.openStudentSignals) c.openStudentSignals(); return t('cmd.open_student_signal_done', 'Teacher signal panel opened. Pick one option to send.'); } const sent = c.sendTeacherSignal(signal); return sent === false ? t('cmd.send_teacher_signal_failed', 'The signal could not be sent. Check the live session and try again.') : t('live_signals.sent', 'Signal sent to your teacher.'); } },
+    { id: 'review_teacher_feedback', icon: '\u{1F4AC}', roles: 'student', when: (c) => !!c.getTeacherFeedback && !!c.getTeacherFeedback(), label: t('cmd.review_teacher_feedback', 'Review teacher feedback'), aliases: ['teacher feedback', 'review feedback', 'what did my teacher say', 'returned feedback', 'comments from teacher'], hint: t('cmd.review_teacher_feedback_hint', 'Hear returned feedback when it is available'), run: (c) => { const f = c.getTeacherFeedback(); return f ? ((f.title ? f.title + ': ' : '') + f.text) : t('cmd.review_teacher_feedback_none', 'No returned teacher feedback is available yet.'); } },
 
     // ── Accessibility self-service (available in every mode) ──
     { id: 'font_bigger', icon: '🔍', roles: 'all', label: t('cmd.font_bigger', 'Make the text bigger'), aliases: ['bigger text', 'larger text', 'increase font', 'increase text size', 'make text bigger', 'zoom in text'], hint: t('cmd.font_bigger_hint', '+2 to the reading font size'), run: (c) => { const v = c.fontBigger(); return t('cmd.font_bigger_done', 'Text size increased to ') + v + '.'; } },
@@ -610,8 +658,8 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: 'toggle_bot', icon: '🤖', roles: 'all', chatSkip: true, label: t('cmd.toggle_bot', 'Show or hide AlloBot'), aliases: ['allobot', 'bot', 'assistant', 'hide bot', 'show bot'], hint: t('cmd.toggle_bot_hint', 'The assistant character'), run: (c) => { c.handleToggleIsBotVisible(); return t('cmd.toggle_bot_done', 'AlloBot visibility toggled.'); } },
     { id: 'toggle_line_focus', icon: '🔦', roles: 'all', label: t('cmd.toggle_line_focus', 'Toggle line focus'), aliases: ['line focus', 'focus line', 'one line'], hint: t('cmd.toggle_line_focus_hint', 'Highlight one line at a time'), run: (c) => { c.toggleLineFocus(); return t('cmd.toggle_line_focus_done', 'Line focus toggled.'); } },
     { id: 'toggle_visual_supports', icon: '🖼️', roles: 'all', label: t('cmd.toggle_visual_supports', 'Toggle visual supports'), aliases: ['visual supports', 'picture supports', 'visuals'], hint: t('cmd.toggle_visual_supports_hint', 'Picture cues alongside the text'), run: (c) => { c.handleToggleVisualSupports(); return t('cmd.toggle_visual_supports_done', 'Visual supports toggled.'); } },
-    { id: 'toggle_dictation', icon: '🎤', roles: 'all', label: t('cmd.toggle_dictation', 'Toggle dictation'), aliases: ['dictation', 'speech to text', 'type by voice'], hint: t('cmd.toggle_dictation_hint', 'Speak instead of typing'), run: (c) => { c.toggleDictation(); return t('cmd.toggle_dictation_done', 'Dictation toggled.'); } },
-    { id: 'toggle_socratic', icon: '💬', roles: 'all', label: t('cmd.toggle_socratic', 'Toggle the Socratic chat'), aliases: ['socratic', 'study chat', 'thinking partner'], hint: t('cmd.toggle_socratic_hint', 'A question-first study companion'), run: (c) => { c.handleToggleShowSocraticChat(); return t('cmd.toggle_socratic_done', 'Socratic chat toggled.'); } },
+    { id: 'toggle_dictation', icon: '🎤', roles: 'all', when: (c) => getCommandAudience(c) !== 'student' || c.allowStudentDictation !== false, label: t('cmd.toggle_dictation', 'Toggle dictation'), aliases: ['dictation', 'speech to text', 'type by voice'], hint: t('cmd.toggle_dictation_hint', 'Speak instead of typing'), run: (c) => { c.toggleDictation(); return t('cmd.toggle_dictation_done', 'Dictation toggled.'); } },
+    { id: 'toggle_socratic', icon: '💬', roles: 'student', when: (c) => c.allowStudentSocratic !== false && !c.studentAiFeaturesHidden, label: t('cmd.toggle_socratic', 'Toggle the Socratic chat'), aliases: ['socratic', 'study chat', 'thinking partner'], hint: t('cmd.toggle_socratic_hint', 'A question-first study companion'), run: (c) => { c.handleToggleShowSocraticChat(); return t('cmd.toggle_socratic_done', 'Socratic chat toggled.'); } },
     { id: 'zen_on', icon: '🧘', roles: 'all', when: (c) => !c.zenActive, label: t('cmd.zen_on', 'Enter zen mode'), aliases: ['zen', 'zen mode', 'quiet mode', 'minimal'], hint: t('cmd.zen_on_hint', 'Hide everything but the content'), run: (c) => { c.zenOn(); return t('cmd.zen_on_done', 'Zen mode on — press Ctrl+K and run “exit zen” to come back.'); } },
     { id: 'zen_off', icon: '🔙', roles: 'all', when: (c) => !!c.zenActive, label: t('cmd.zen_off', 'Exit zen mode'), aliases: ['exit zen', 'leave zen', 'show interface'], hint: t('cmd.zen_off_hint', 'Bring the interface back'), run: (c) => { c.zenOff(); return t('cmd.zen_off_done', 'Zen mode off.'); } },
 
@@ -633,15 +681,15 @@ function buildAlloCommands(ctx, opts = {}) {
 
     // ── Parameter-carrying commands (S3) ──
     { id: 'create_lesson', icon: '🧑‍🏫', roles: 'teacher', when: (c) => !!c.startLessonFlow, label: t('cmd.create_lesson', 'Create a lesson (tell me the topic)'), aliases: ['create a lesson', 'make a lesson', 'new lesson about', 'plan a lesson', 'lesson about'], hint: t('cmd.create_lesson_hint', 'Starts the guided flow — say a topic and grade'), run: (c, p) => { c.startLessonFlow(p || {}); return (p && p.topic) ? (t('cmd.create_lesson_done', 'Starting a lesson flow about “') + p.topic + '”' + (p.grade ? (t('cmd.create_lesson_done2', ' for grade ') + p.grade) : '') + t('cmd.create_lesson_done3', ' — AlloBot will guide the next steps.')) : t('cmd.create_lesson_done_blank', 'Starting the guided lesson flow — AlloBot will ask for your topic.'); } },
-    { id: 'set_grade_level', icon: '🎚️', roles: 'all', when: (c) => !!c.setSetupGradeLevel, label: t('cmd.set_grade_level', 'Set the grade level'), aliases: ['set grade level', 'grade level', 'target grade', 'reading level', 'set target level'], hint: t('cmd.set_grade_level_hint', 'e.g. set grade level to 5'), run: (c, p) => { const v = c.setSetupGradeLevel(p && p.grade); return v ? (t('cmd.set_grade_level_done', 'Grade level set to ') + v + '.') : t('cmd.set_grade_level_pick', 'Say a grade like grade 5.'); } },
-    { id: 'set_source_tone', icon: '🎙️', roles: 'all', when: (c) => !!c.setSetupSourceTone, label: t('cmd.set_source_tone', 'Set source tone'), aliases: ['set source tone', 'source tone', 'change tone', 'tone to', 'make the tone'], hint: t('cmd.set_source_tone_hint', 'Informative, narrative, dialogue, persuasive, humorous, or step-by-step'), run: (c, p) => { const v = c.setSetupSourceTone(p && p.tone); return v ? (t('cmd.set_source_tone_done', 'Source tone set to ') + v + '.') : t('cmd.set_source_tone_pick', 'Say a tone like narrative.'); } },
-    { id: 'set_source_length', icon: '📏', roles: 'all', when: (c) => !!c.setSetupSourceLength, label: t('cmd.set_source_length', 'Set source length'), aliases: ['set source length', 'source length', 'text length', 'reading length', 'word count'], hint: t('cmd.set_source_length_hint', 'Short, medium, long, or a word count'), run: (c, p) => { const v = c.setSetupSourceLength(p && p.length); return v ? (t('cmd.set_source_length_done', 'Source length set to about ') + v + t('cmd.set_source_length_done2', ' words.')) : t('cmd.set_source_length_pick', 'Say a length like 500 words.'); } },
-    { id: 'set_output_language', icon: '🌐', roles: 'all', when: (c) => !!c.setSetupLanguage, label: t('cmd.set_output_language', 'Set output language'), aliases: ['set output language', 'output language', 'text language', 'reading language', 'lesson language', 'write in'], hint: t('cmd.set_output_language_hint', 'Set the language used for generated resources'), run: (c, p) => { const v = c.setSetupLanguage(p && p.language); return v ? (t('cmd.set_output_language_done', 'Output language set to ') + v + '.') : t('cmd.set_output_language_pick', 'Say a language like Spanish.'); } },
+    { id: 'set_grade_level', icon: '🎚️', roles: ['teacher', 'independent', 'parent'], when: (c) => !!c.setSetupGradeLevel, label: t('cmd.set_grade_level', 'Set the grade level'), aliases: ['set grade level', 'grade level', 'target grade', 'reading level', 'set target level'], hint: t('cmd.set_grade_level_hint', 'e.g. set grade level to 5'), run: (c, p) => { const v = c.setSetupGradeLevel(p && p.grade); return v ? (t('cmd.set_grade_level_done', 'Grade level set to ') + v + '.') : t('cmd.set_grade_level_pick', 'Say a grade like grade 5.'); } },
+    { id: 'set_source_tone', icon: '🎙️', roles: ['teacher', 'independent', 'parent'], when: (c) => !!c.setSetupSourceTone, label: t('cmd.set_source_tone', 'Set source tone'), aliases: ['set source tone', 'source tone', 'change tone', 'tone to', 'make the tone'], hint: t('cmd.set_source_tone_hint', 'Informative, narrative, dialogue, persuasive, humorous, or step-by-step'), run: (c, p) => { const v = c.setSetupSourceTone(p && p.tone); return v ? (t('cmd.set_source_tone_done', 'Source tone set to ') + v + '.') : t('cmd.set_source_tone_pick', 'Say a tone like narrative.'); } },
+    { id: 'set_source_length', icon: '📏', roles: ['teacher', 'independent', 'parent'], when: (c) => !!c.setSetupSourceLength, label: t('cmd.set_source_length', 'Set source length'), aliases: ['set source length', 'source length', 'text length', 'reading length', 'word count'], hint: t('cmd.set_source_length_hint', 'Short, medium, long, or a word count'), run: (c, p) => { const v = c.setSetupSourceLength(p && p.length); return v ? (t('cmd.set_source_length_done', 'Source length set to about ') + v + t('cmd.set_source_length_done2', ' words.')) : t('cmd.set_source_length_pick', 'Say a length like 500 words.'); } },
+    { id: 'set_output_language', icon: '🌐', roles: ['teacher', 'independent', 'parent'], when: (c) => !!c.setSetupLanguage, label: t('cmd.set_output_language', 'Set output language'), aliases: ['set output language', 'output language', 'text language', 'reading language', 'lesson language', 'write in'], hint: t('cmd.set_output_language_hint', 'Set the language used for generated resources'), run: (c, p) => { const v = c.setSetupLanguage(p && p.language); return v ? (t('cmd.set_output_language_done', 'Output language set to ') + v + '.') : t('cmd.set_output_language_pick', 'Say a language like Spanish.'); } },
     { id: 'set_font_size', icon: '🔠', roles: 'all', when: (c) => !!c.setFontSizeTo, label: t('cmd.set_font_size', 'Set the text size (say a number)'), aliases: ['set text size', 'text size to', 'font size to'], hint: t('cmd.set_font_size_hint', 'e.g. “set text size to 20” (10–32)'), run: (c, p) => { const v = c.setFontSizeTo(p && p.size); return t('cmd.set_font_size_done', 'Text size set to ') + v + '.'; } },
     { id: 'translate_document', icon: '🌐', roles: 'teacher', when: (c) => !!c.pipelineOpen && !!c.prefillTranslateLang, label: t('cmd.translate_document', 'Translate this document (say a language)'), aliases: ['translate this document', 'translate document to', 'translate to', 'translate it into'], hint: t('cmd.translate_document_hint', 'Pre-fills the language and points at the button'), run: (c, p) => { const lang = (p && p.language) ? String(p.language).trim() : ''; if (lang) c.prefillTranslateLang(lang); try { if (c.whereIs) c.whereIs('translate document'); } catch (_) {} return lang ? (t('cmd.translate_document_done', 'Set the translation language to ') + lang + t('cmd.translate_document_done2', ' and spotlighted the button — press Translate to run it. (Translations use AI quota, so the click stays yours.)')) : t('cmd.translate_document_pick', 'Spotlighted the translation controls — pick a language and press Translate.'); } },
 
     // ── Voice control (S2) ──
-    { id: 'voice_start', icon: '🎙️', roles: 'all', when: (c) => !c.voiceActive && c.voiceAvailable, label: t('cmd.voice_start', 'Start voice control'), aliases: ['voice control', 'start listening', 'voice mode', 'hands free'], hint: t('cmd.voice_start_hint', 'AlloBot listens for commands until you stop it'), run: (c) => { c.startVoiceLoop(); return t('cmd.voice_start_done', 'Voice control on. Say a command like “bigger text” or “open the educator hub”. Say “stop listening” to finish.'); } },
+    { id: 'voice_start', icon: '🎙️', roles: 'all', when: (c) => !c.voiceActive && c.voiceAvailable, label: t('cmd.voice_start', 'Start voice control'), aliases: ['voice control', 'start listening', 'voice mode', 'hands free'], hint: t('cmd.voice_start_hint', 'AlloBot listens for commands until you stop it'), run: (c) => { c.startVoiceLoop(); return getCommandAudience(c) === 'student' ? (t('student.voice_control_on', 'Voice control on. Say a command like “bigger text” or “read directions”. Say “stop listening” to finish.') || 'Voice control on.') : t('cmd.voice_start_done', 'Voice control on. Say a command like “bigger text” or “open the educator hub”. Say “stop listening” to finish.'); } },
     { id: 'voice_stop', icon: '🛑', roles: 'all', when: (c) => !!c.voiceActive, label: t('cmd.voice_stop', 'Stop voice control'), aliases: ['stop listening', 'stop voice', 'voice off'], hint: t('cmd.voice_stop_hint', 'Stops the microphone'), run: (c) => { c.stopVoiceLoop(); return t('cmd.voice_stop_done', 'Voice control off — the microphone is released.'); } },
 
     // ── More coverage (2026-06-13, discovery w59vf8skj) — each maps to ONE existing host handler
@@ -670,12 +718,11 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: 'set_ui_language', icon: '🌐', roles: 'all', label: t('cmd.set_ui_language', 'Change the interface language'), aliases: ['interface language', 'app language', 'ui language', 'menu language', 'change interface language', 'language of the app', 'change language', 'switch language', 'my language'], hint: t('cmd.set_ui_language_hint', 'Jump to the language picker in the header'), run: (c) => { return c.spotlightUiLanguage() ? t('cmd.set_ui_language_done', 'Pointed you to the language picker in the header — choose your language there.') : t('cmd.set_ui_language_miss', 'The interface-language picker is in the top menu bar.'); } },
     { id: 'pipeline_new_doc', icon: '🆕', roles: 'teacher', destructive: true, when: (c) => !!c.pipelineOpen, label: t('cmd.pipeline_new_doc', 'Start over with a new document'), aliases: ['new document', 'new pdf', 'another document', 'clear pipeline', 'upload new'], hint: t('cmd.pipeline_new_doc_hint', 'Clear this result and upload a new file'), run: (c) => { c.startNewPdfAudit(); return t('cmd.pipeline_new_doc_done', 'Cleared — upload a new document to begin.'); } },
   ];
-  const isStudentish = !!(ctx.isStudentLinkMode || ctx.isIndependentMode);
   // opts.includeGated (agentic plans): keep when-gated commands in the list —
   // the PLANNER must see commands an earlier step will unlock (create lesson →
   // generate quiz), while every EXECUTION surface keeps the default filter and
   // runPlan re-checks availability at run time. Role filtering always applies.
-  return cmds.filter((c) => ((c.roles === 'all') || !isStudentish) && (opts.includeGated || !c.when || (() => { try { return !!c.when(ctx); } catch (_) { return false; } })()));
+  return cmds.filter((c) => _commandAllowsAudience(c, audience) && (opts.includeGated || !c.when || (() => { try { return !!c.when(ctx); } catch (_) { return false; } })()));
 }
 
 // ── S1: the hybrid utterance router (bot chat + voice share it) ──
@@ -719,6 +766,8 @@ async function routeUtterance(ctx, rawText, opts = {}) {
     { id: 'set_font_size', re: /^(?:set\s+)?(?:the\s+)?(?:text|font)\s*(?:size)?\s*(?:to)?\s*(\d{1,2})\s*\.?$/i, params: (m) => ({ size: m[1] }) },
     { id: 'translate_document', re: /^translate\s+(?:this|the\s+document|document|it)?\s*(?:to|into)\s+([a-z\u00C0-\u024F\s()-]{2,40})\??$/i, params: (m) => ({ language: m[1].trim() }) },
     { id: 'generate_simplified', re: /^(?:simplify|make (?:this|it) (?:easier|simpler)|lower the (?:reading )?level)(?:\s+(?:this|it))?(?:\s+(?:to|for)?\s*(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade)?)?\s*\??$/i, params: (m) => ({ grade: m[1] || null }) },
+    { id: 'send_teacher_signal', re: /^(?:tell|signal|let)\s+(?:my\s+)?teacher\s+(?:that\s+)?(?:i(?:'m| am)\s+)?(stuck|confused|ready|done)\s*\??$/i, params: (m) => ({ signal: m[1] }) },
+    { id: 'send_teacher_signal', re: /^(?:ask|tell)\s+(?:my\s+)?teacher\s+to\s+(slow down|repeat(?: that)?|say that again)\s*\??$/i, params: (m) => ({ signal: m[1] }) },
   ];
   let commands = buildAlloCommands(ctx);
   // The bot chat (preview) must not PROPOSE chatSkip commands (e.g. toggle_bot:
@@ -731,14 +780,9 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   // on both the bot router and the voice loop. (Audit wmb2t8o20, fix 2026-06-15.)
   const _runCmd = (cmd, via, params) => {
     const safeParams = sanitizeCommandParams(cmd, params || {});
-    // preview mode (bot chat): report the match WITHOUT running it, so the chat can confirm first.
-    if (opts.preview) return { handled: false, preview: true, commandId: cmd.id, label: cmd.label, params: safeParams, via, destructive: !!cmd.destructive };
-    if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t('router.needs_confirm', 'That action needs confirmation — use Ctrl+K to run it.'), commandId: cmd.id, via };
-    // Panel-stacking fix (shared with the palette runCmd): close other large surfaces first.
-    if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === 'function') { try { ctx.closeOtherPanels(cmd.opensPanel); } catch (_) {} }
-    let msg = null;
-    try { msg = cmd.run(ctx, safeParams); } catch (e) { return { handled: true, narration: t('router.failed', 'That didn’t work: ') + ((e && e.message) || 'unknown'), commandId: cmd.id, via }; }
-    return { handled: true, narration: msg || t('router.done', 'Done.'), commandId: cmd.id, via };
+    // Preview reports the match without running it; the chat asks first.
+    if (opts.preview) return { handled: false, preview: true, commandId: cmd.id, label: cmd.label, params: safeParams, via, destructive: !!cmd.destructive, confirmation: cmd.destructive ? _commandConfirmationText(cmd, ctx, t) : '' };
+    return executeCommand(ctx, cmd, safeParams, { confirmed: !!opts.confirmed, via });
   };
   for (const g of _grammars) {
     const m = text.match(g.re);
@@ -777,42 +821,88 @@ async function routeUtterance(ctx, rawText, opts = {}) {
 
 // Run a specific command by id (used by the bot chat AFTER the user confirms a
 // previewed match). Mirrors routeUtterance's _runCmd side-effect handling.
-function runCommandById(ctx, id, params, opts = {}) {
+function _commandConfirmationText(command, ctx, t) {
+  if (command && typeof command.confirmMessage === 'function') {
+    try { const message = command.confirmMessage(ctx || {}); if (message) return String(message); } catch (_) {}
+  }
+  if (command && command.confirmMessage) return String(command.confirmMessage);
+  return t('palette.confirm', 'Press Enter again to confirm.');
+}
+
+function _emitCommandLifecycle(ctx, command, status, narration, via, notifyUser) {
+  const detail = { commandId: command && command.id, label: command && command.label, status, narration: narration || '', via: via || 'confirm', at: Date.now() };
+  try { if (ctx && typeof ctx.onCommandState === 'function') ctx.onCommandState(detail); } catch (_) {}
+  try { if (typeof window !== 'undefined' && window.dispatchEvent && window.CustomEvent) window.dispatchEvent(new window.CustomEvent('alloflow:command-state', { detail })); } catch (_) {}
+  if (!notifyUser || !narration || status === 'pending') return detail;
+  try { if (typeof window !== 'undefined' && window.alloAnnounce) window.alloAnnounce(narration, status === 'error' ? 'assertive' : 'polite'); } catch (_) {}
+  if (status === 'error') { try { if (ctx && ctx.addToast) ctx.addToast(narration, 'error'); } catch (_) {} }
+  return detail;
+}
+
+// Run a specific command by id (used by the bot chat AFTER the user confirms a
+// previewed match). Re-resolves permissions, emits a shared async lifecycle,
+// and never invokes run + runAsync for the same execution.
+function executeCommand(ctx, commandOrId, params, opts = {}) {
   const t = _mkT(ctx && ctx.t);
+  const id = String(commandOrId && typeof commandOrId === 'object' ? commandOrId.id : (commandOrId || ''));
   const commands = buildAlloCommands(ctx);
   const cmd = commands.find((c) => c.id === id);
   if (!cmd) return null;
-  if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t('router.needs_confirm', 'That action needs confirmation — use Ctrl+K to run it.'), commandId: cmd.id, via: 'confirm' };
+  if (cmd.destructive && !opts.confirmed) return { handled: true, narration: _commandConfirmationText(cmd, ctx, t), commandId: cmd.id, via: 'confirm', confirmationRequired: true };
   const safeParams = sanitizeCommandParams(cmd, params || {});
+  const via = opts.via || 'confirm';
   if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === 'function') { try { ctx.closeOtherPanels(cmd.opensPanel); } catch (_) {} }
-  // Phase A (agentic plans): with awaitCompletion, a command that exposes
-  // runAsync is executed through it and we resolve when the underlying
-  // action FINISHES (handleGenerate is async, so the generate_* wrappers
-  // already return completion promises — run: just discards them). A
-  // timeout race keeps a hung generation from wedging a plan; the action
-  // itself continues in the background either way. Sync commands and the
-  // palette/voice/chip callers (no awaitCompletion) are untouched.
-  if (opts.awaitCompletion && typeof cmd.runAsync === 'function') {
+
+  if (typeof cmd.runAsync === 'function') {
+    let action;
+    try { action = Promise.resolve(cmd.runAsync(ctx, safeParams)); }
+    catch (error) {
+      const narration = t('router.failed', 'That did not work: ') + ((error && error.message) || 'unknown');
+      _emitCommandLifecycle(ctx, cmd, 'error', narration, via, !opts.awaitCompletion);
+      const failed = { handled: true, ok: false, narration, commandId: cmd.id, via };
+      return opts.awaitCompletion ? Promise.resolve(failed) : failed;
+    }
+    const pendingNarration = cmd.pendingNarration || t('cmd.working', 'Working...');
+    _emitCommandLifecycle(ctx, cmd, 'pending', pendingNarration, via, false);
+    const completion = action.then((message) => {
+      const narration = message || t('router.done', 'Done.');
+      _emitCommandLifecycle(ctx, cmd, 'success', narration, via, !opts.awaitCompletion);
+      return { handled: true, ok: true, narration, commandId: cmd.id, via };
+    }).catch((error) => {
+      const narration = t('router.failed', 'That did not work: ') + ((error && error.message) || 'unknown');
+      _emitCommandLifecycle(ctx, cmd, 'error', narration, via, !opts.awaitCompletion);
+      return { handled: true, ok: false, narration, commandId: cmd.id, via };
+    });
+
+    if (!opts.awaitCompletion) return { handled: true, ok: true, pending: true, narration: pendingNarration, commandId: cmd.id, via, completion };
+
     const timeoutMs = opts.timeoutMs || 180000;
-    let p;
-    try { p = Promise.resolve(cmd.runAsync(ctx, safeParams)); }
-    catch (e) { return Promise.resolve({ handled: true, ok: false, narration: t('router.failed', 'That didn’t work: ') + ((e && e.message) || 'unknown'), commandId: cmd.id, via: opts.via || 'plan' }); }
     let timerId = null;
-    const timer = new Promise((res) => { timerId = setTimeout(() => res({ __alloTimeout: true }), timeoutMs); });
+    const timer = new Promise((resolve) => { timerId = setTimeout(() => resolve({ __alloTimeout: true }), timeoutMs); });
     const clearTimer = () => { if (timerId != null) { clearTimeout(timerId); timerId = null; } };
-    return Promise.race([p, timer]).then((msg) => { clearTimer(); return (msg && msg.__alloTimeout)
-      ? { handled: true, ok: true, timedOut: true, narration: t('router.still_working', 'Still working — it will finish in the background.'), commandId: cmd.id, via: opts.via || 'plan' }
-      : { handled: true, ok: true, narration: msg || t('router.done', 'Done.'), commandId: cmd.id, via: opts.via || 'plan' }; })
-      .catch((e) => { clearTimer(); return { handled: true, ok: false, narration: t('router.failed', 'That didn’t work: ') + ((e && e.message) || 'unknown'), commandId: cmd.id, via: opts.via || 'plan' }; });
+    return Promise.race([completion, timer]).then((result) => {
+      clearTimer();
+      if (result && result.__alloTimeout) return { handled: true, ok: true, timedOut: true, narration: t('router.still_working', 'Still working - it will finish in the background.'), commandId: cmd.id, via };
+      return result;
+    });
   }
-  try { const msg = cmd.run(ctx, safeParams); return { handled: true, narration: msg || t('router.done', 'Done.'), commandId: cmd.id, via: opts.via || 'confirm' }; }
-  catch (e) { return { handled: true, ok: false, narration: t('router.failed', 'That didn’t work: ') + ((e && e.message) || 'unknown'), commandId: cmd.id, via: opts.via || 'confirm' }; }
+
+  try {
+    const message = cmd.run(ctx, safeParams);
+    return { handled: true, narration: message || t('router.done', 'Done.'), commandId: cmd.id, via };
+  } catch (error) {
+    return { handled: true, ok: false, narration: t('router.failed', 'That did not work: ') + ((error && error.message) || 'unknown'), commandId: cmd.id, via };
+  }
 }
 
 // ── Agentic plans (Phase B/C, 2026-07-07 — docs/AGENTIC_ALLOBOT_DESIGN.md) ──
 // looksMultiStep: cheap deterministic smell test so the planner's Gemini
 // call only fires on utterances that read as a SEQUENCE. Conservative on
 // purpose — a miss just means the bot chats normally.
+function runCommandById(ctx, id, params, opts = {}) {
+  return executeCommand(ctx, id, params, opts);
+}
+
 function looksMultiStep(rawText) {
   const text = String(rawText || '').trim();
   if (text.length < 12) return false;
@@ -988,10 +1078,10 @@ function createVoiceLoop(getCtx) {
           const r = await routeUtterance(cc, text, { allowAi: true, signal });
           if (!active || currentRouteSerial !== routeSerial || (signal && signal.aborted)) return;
           if (r && r.handled) announce(r.narration);
-          else announce('Didn\u2019t catch a command in \u201c' + text.slice(0, 60) + '\u201d \u2014 try \u201cbigger text\u201d or \u201copen the educator hub\u201d.');
+          else announce('Didn\u2019t catch a command in \u201c' + text.slice(0, 60) + '\u201d \u2014 try \u201cbigger text\u201d or ' + (getCommandAudience(cc) === 'student' ? '\u201cread directions\u201d.' : '\u201copen the educator hub\u201d.'));
         } catch (error) {
           if (!active || currentRouteSerial !== routeSerial || (error && error.name === 'AbortError')) return;
-          announce('Didn\u2019t catch a command in \u201c' + text.slice(0, 60) + '\u201d \u2014 try \u201cbigger text\u201d or \u201copen the educator hub\u201d.');
+          announce('Didn\u2019t catch a command in \u201c' + text.slice(0, 60) + '\u201d \u2014 try \u201cbigger text\u201d or ' + (getCommandAudience(cc) === 'student' ? '\u201cread directions\u201d.' : '\u201copen the educator hub\u201d.'));
         } finally {
           if (currentRouteSerial === routeSerial) routeController = null;
         }
@@ -1055,7 +1145,7 @@ const CMD_GROUP = {
   open_live_session_center:'live', open_live_poll:'live', open_quick_check:'live', open_pictionary_host:'live', open_group_tools:'live', open_student_signal:'live',
   open_export_menu:'navigate', open_ai_settings:'navigate', go_dashboard:'navigate', open_roster:'navigate', open_project_settings:'navigate',
   generate_quiz:'create', generate_glossary:'create', generate_simplified:'create', generate_sentence_frames:'create',
-  generate_analysis:'create', create_lesson:'create', set_grade_level:'create', set_source_tone:'create', set_source_length:'create', set_output_language:'create', submit_work:'create',
+  generate_analysis:'create', create_lesson:'create', set_grade_level:'create', set_source_tone:'create', set_source_length:'create', set_output_language:'create', submit_work:'create', open_assignment_directions:'navigate', check_assignment_progress:'navigate', save_my_work:'navigate',
   font_bigger:'accessibility', font_smaller:'accessibility', font_reset:'accessibility', set_font_size:'accessibility', open_text_settings:'accessibility',
   open_voice_settings:'accessibility', read_this_page:'accessibility', toggle_focus_mode:'accessibility', toggle_reading_ruler:'accessibility',
   toggle_help_mode:'accessibility', toggle_bot:'accessibility', toggle_line_focus:'accessibility', toggle_visual_supports:'accessibility',
@@ -1072,6 +1162,8 @@ const CMD_GROUP = {
   cycle_reading_theme:'display', set_ui_language:'display', open_sel_hub:'tools', open_submission_inbox:'navigate', toggle_cloud_sync:'navigate', generate_outline:'create', export_pack:'create',
   launch_flashcards:'create', clear_my_answers:'create', clear_workspace:'create', undo_settings:'create', open_persona_chat:'navigate',
   pipeline_fix_again:'pipeline', pipeline_stop:'pipeline', pipeline_new_doc:'pipeline',
+  edit_assignment_directions:'create', open_assessment_builder:'create', open_udl_guide:'help', create_activity_rubric:'create', share_assignment:'create', preview_assignment_as_student:'navigate', resume_latest_work:'navigate',
+  next_assignment_step:'navigate', read_assignment_directions:'accessibility', show_success_criteria:'navigate', send_teacher_signal:'live', review_teacher_feedback:'navigate',
 };
 const CMD_CONTEXT = {
   pipeline_score:['pipeline'], pipeline_issues:['pipeline'], pipeline_downloads:['pipeline'], pipeline_verification:['pipeline'], pipeline_tour:['pipeline'], translate_document:['pipeline'],
@@ -1081,7 +1173,7 @@ const CMD_CONTEXT = {
   open_notebook:['learningHub'], toggle_socratic:['learningHub'],
   open_video_studio:['educatorHub','videoStudio'], open_cinematic_studio:['educatorHub','videoStudio','cinematicStudio'], open_allo_studio:['educatorHub','alloStudio'],
   open_open_groove:['learningHub','openGroove'], open_timeline_studio:['learningHub','timelineStudio'], open_lingua_practice:['learningHub','content','linguaPractice'], open_test_prep_hub:['learningHub','testPrepHub'], open_research_hub:['learningHub','content','researchHub'], open_lit_lab:['learningHub','litLab'], open_mind_map:['learningHub','content','mindMap'], open_poet_tree:['learningHub','poetTree'],
-  set_grade_level:['sourceSetup'], set_source_tone:['sourceSetup'], set_source_length:['sourceSetup'], set_output_language:['sourceSetup'], generate_quiz:['content'], generate_glossary:['content'], generate_simplified:['content','reading'], generate_sentence_frames:['content'], generate_analysis:['content'], open_export_menu:['content'], find_reading:['content','learningHub','reading'],
+  set_grade_level:['sourceSetup'], set_source_tone:['sourceSetup'], set_source_length:['sourceSetup'], set_output_language:['sourceSetup'], open_assignment_directions:['content'], check_assignment_progress:['content'], save_my_work:['content'], generate_quiz:['content'], generate_glossary:['content'], generate_simplified:['content','reading'], generate_sentence_frames:['content'], generate_analysis:['content'], open_export_menu:['content'], find_reading:['content','learningHub','reading'],
   read_this_page:['learningHub','symbolStudio','stemLab','content','reading'],
   font_bigger:['reading'], font_smaller:['reading'], toggle_reading_ruler:['reading'], toggle_line_focus:['reading'], toggle_color_overlay:['reading'], zen_off:['reading'],
   toggle_visual_supports:['symbolStudio'], open_voice_settings:['symbolStudio'],
@@ -1089,6 +1181,8 @@ const CMD_CONTEXT = {
   stop_reading:['reading'], line_spacing_more:['reading'], line_spacing_less:['reading'], open_submission_inbox:['educatorHub'], generate_outline:['content'], export_pack:['content'],
   launch_flashcards:['content','learningHub'], clear_my_answers:['content'], clear_workspace:['content'], open_persona_chat:['content'],
   pipeline_fix_again:['pipeline'], pipeline_stop:['pipeline'], pipeline_new_doc:['pipeline'],
+  edit_assignment_directions:['content'], open_assessment_builder:['educatorHub','content'], open_udl_guide:['educatorHub','content'], create_activity_rubric:['content'], share_assignment:['content'], preview_assignment_as_student:['content'], resume_latest_work:['content'],
+  next_assignment_step:['content'], read_assignment_directions:['content','reading'], show_success_criteria:['content'], send_teacher_signal:['liveSession'], review_teacher_feedback:['content'],
 };
 const GROUP_ORDER = ['navigate','live','create','tools','accessibility','display','pipeline','help','voice'];
 const GROUP_LABEL_FALLBACK = { navigate:'Navigate', live:'Live class', create:'Create from this content', tools:'Open a tool', accessibility:'Reading & access', display:'Display & motion', pipeline:'Pipeline results', help:'Help', voice:'Voice' };
@@ -1142,10 +1236,17 @@ const AlloCommandPalette = ({ ctx }) => {
     }
     const acts = _activeContexts(ctx);
     const promotedIds = new Set();
+    if (getCommandAudience(ctx) === 'student') {
+      const studentActions = commands.filter((command) => command.roles === 'student').slice(0, 6);
+      if (studentActions.length) {
+        out.push({ kind: 'header', label: t('student.actions', 'Student actions') });
+        studentActions.forEach((command) => { promotedIds.add(command.id); out.push({ kind: 'cmd', c: command }); });
+      }
+    }
     if (acts.length) {
       const promoted = [];
       for (const c of commands) {
-        if ((CMD_CONTEXT[c.id] || []).some((x) => acts.indexOf(x) >= 0)) { promoted.push(c); promotedIds.add(c.id); if (promoted.length >= 6) break; }
+        if (!promotedIds.has(c.id) && (CMD_CONTEXT[c.id] || []).some((x) => acts.indexOf(x) >= 0)) { promoted.push(c); promotedIds.add(c.id); if (promoted.length >= 6) break; }
       }
       if (promoted.length) {
         const top = acts[0];
@@ -1179,7 +1280,7 @@ const AlloCommandPalette = ({ ctx }) => {
   const selectedCommand = rows[sel] && rows[sel].kind === 'cmd' ? rows[sel].c : null;
   const selectedCommandId = selectedCommand ? selectedCommand.id : '';
   const paletteStatus = (() => {
-    if (confirming && selectedCommand && confirming === selectedCommand.id) return 'Confirmation required for ' + selectedCommand.label + '. Press Enter again to confirm.';
+    if (confirming && selectedCommand && confirming === selectedCommand.id) return _commandConfirmationText(selectedCommand, ctx, t);
     const count = selectable.length;
     if (!count) return query.trim() ? 'No matching commands.' : 'No commands are available here.';
     const resultText = query.trim()
@@ -1304,9 +1405,9 @@ const AlloCommandPalette = ({ ctx }) => {
     } catch (_) {}
   }, [open, sel, selectedCommandId]);
 
-  const announce = useCallback((msg) => {
+  const announce = useCallback((msg, type = 'success') => {
     try { if (window.alloAnnounce) window.alloAnnounce(msg); } catch (_) {}
-    try { if (ctx && ctx.addToast) ctx.addToast(msg, 'success'); } catch (_) {}
+    try { if (ctx && ctx.addToast) ctx.addToast(msg, type); } catch (_) {}
   }, [ctx]);
   const rememberCommand = useCallback((id) => {
     if (!id) return;
@@ -1321,19 +1422,16 @@ const AlloCommandPalette = ({ ctx }) => {
     if (!cmd) return;
     if (cmd.destructive && (!confirming || confirming !== cmd.id)) { setConfirming(cmd.id); return; }
     setConfirming(null);
-    // Panel-stacking fix: a command that opens a large primary surface (tagged opensPanel)
-    // closes the other open ones first — closeOtherPanels skips cmd.opensPanel. Toggles and
-    // small over-content dialogs (AI settings, translate, wizard) are intentionally untagged.
-    if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === 'function') { try { ctx.closeOtherPanels(cmd.opensPanel); } catch (_) {} }
-    let msg = null;
-    try { msg = cmd.run(ctx); } catch (e) {
-      try { ctx.addToast((t('cmd.failed', 'That didn’t work: ')) + ((e && e.message) || 'unknown'), 'error'); } catch (_) {}
+    const result = executeCommand(ctx, cmd, {}, { confirmed: true, via: 'palette' });
+    if (!result || !result.handled || result.ok === false) {
+      const failure = (result && result.narration) || t('cmd.failed', 'That command is no longer available here.');
+      try { if (ctx && ctx.addToast) ctx.addToast(failure, 'error'); } catch (_) {}
       setOpen(false);
       return;
     }
     rememberCommand(cmd.id);
     setOpen(false);
-    if (msg) announce(msg);
+    if (result.narration) announce(result.narration, result.pending ? 'info' : 'success');
   }, [ctx, confirming, announce, rememberCommand, t]);
 
   if (!open) return null;
@@ -1352,7 +1450,7 @@ const AlloCommandPalette = ({ ctx }) => {
               else if (e.key === 'ArrowUp') { e.preventDefault(); setSel((s) => { for (let j = selectable.length - 1; j >= 0; j--) if (selectable[j] < s) return selectable[j]; return selectable.length ? selectable[0] : s; }); }
               else if (e.key === 'Enter') { e.preventDefault(); const row = rows[sel]; if (row && row.kind === 'cmd') runCmd(row.c); }
             }}
-            placeholder={t('palette.placeholder', 'Type a command — “bigger text”, “educator hub”, “read this page”…')}
+            placeholder={getCommandAudience(ctx) === 'student' ? (t('student.actions_search') || 'Try “read directions”, “check my progress”, or “save my work”…') : t('palette.placeholder', 'Type a command — “bigger text”, “educator hub”, “read this page”…')}
             aria-label={t('palette.input_aria', 'Search commands')} role="combobox" aria-expanded="true" aria-autocomplete="list" aria-controls="allo-palette-list" aria-describedby="allo-palette-status" aria-activedescendant={selectedCommandId ? ('allo-cmd-' + selectedCommandId) : undefined}
             className="flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-500" />
           <kbd className="text-[10px] text-slate-500 border border-slate-300 rounded px-1.5 py-0.5">Esc</kbd>
@@ -1376,7 +1474,7 @@ const AlloCommandPalette = ({ ctx }) => {
                   <span className="text-lg shrink-0" aria-hidden="true">{row.c.icon}</span>
                   <span className="flex-1 min-w-0">
                     <span className={`block text-sm font-bold ${i === sel ? 'text-indigo-900' : 'text-slate-800'}`}>{row.c.label}</span>
-                    <span className="block text-[11px] text-slate-600 truncate">{confirming === row.c.id ? (t('palette.confirm', '⚠ Press Enter again to confirm')) : row.c.hint}</span>
+                    <span className="block text-[11px] text-slate-600 truncate">{confirming === row.c.id ? _commandConfirmationText(row.c, ctx, t) : row.c.hint}</span>
                   </span>
                   {i === sel && <kbd className="text-[10px] text-indigo-600 border border-indigo-300 rounded px-1.5 py-0.5 shrink-0">↵</kbd>}
               </li>

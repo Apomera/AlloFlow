@@ -2012,6 +2012,34 @@
       t("humanities.save_positionality") || "Save standpoint"
     )));
   }
+  function HumanitiesSourceContextPanel(props) {
+    var source = props.source || {};
+    var onUpdate = props.onUpdate;
+    var context = source.humanitiesContext || {};
+    var updateContext = function(field, value) {
+      var nextContext = Object.assign({}, context);
+      nextContext[field] = value;
+      nextContext.updatedAt = Date.now();
+      onUpdate(Object.assign({}, source, { humanitiesContext: nextContext }));
+    };
+    var inputStyle = { width: "100%", boxSizing: "border-box", marginTop: "3px", padding: "6px 8px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "11px", fontFamily: "inherit" };
+    var labelStyle = { display: "block", fontSize: "10px", fontWeight: 800, color: "#475569" };
+    return /* @__PURE__ */ React.createElement("details", { "data-humanities-source-context": "true", style: { borderBottom: "1px solid #f3e8ff", background: "#faf5ff" } }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "9px 10px", fontSize: "11px", fontWeight: 800, color: "#6b21a8" } }, "Source context, transmission, and cultural authority"), /* @__PURE__ */ React.createElement("div", { style: { padding: "0 10px 11px", display: "grid", gap: "9px" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: "8px" } }, /* @__PURE__ */ React.createElement("label", { style: labelStyle }, "What kind of relationship does this source have to the subject?", /* @__PURE__ */ React.createElement("select", { value: context.relationshipType || "", onChange: function(e) {
+      updateContext("relationshipType", e.target.value);
+    }, style: inputStyle }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Choose one"), /* @__PURE__ */ React.createElement("option", { value: "primary_record" }, "Primary record / contemporaneous artifact"), /* @__PURE__ */ React.createElement("option", { value: "scholarship" }, "Scholarship / later analysis"), /* @__PURE__ */ React.createElement("option", { value: "testimony" }, "Testimony / lived account"), /* @__PURE__ */ React.createElement("option", { value: "creative_artifact" }, "Creative or cultural artifact"), /* @__PURE__ */ React.createElement("option", { value: "journalism" }, "Journalism / public reporting"), /* @__PURE__ */ React.createElement("option", { value: "other" }, "Other relationship"))), /* @__PURE__ */ React.createElement("label", { style: labelStyle }, "How does it relate to your current position?", /* @__PURE__ */ React.createElement("select", { value: context.inquiryRelationship || "", onChange: function(e) {
+      updateContext("inquiryRelationship", e.target.value);
+    }, style: inputStyle }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Choose one"), /* @__PURE__ */ React.createElement("option", { value: "supports" }, "Supports"), /* @__PURE__ */ React.createElement("option", { value: "complicates" }, "Complicates"), /* @__PURE__ */ React.createElement("option", { value: "challenges" }, "Challenges"), /* @__PURE__ */ React.createElement("option", { value: "background" }, "Provides background")))), /* @__PURE__ */ React.createElement("label", { style: labelStyle }, "Edition, translation, transcription, or chain of transmission", /* @__PURE__ */ React.createElement("textarea", { value: context.editionTranslation || "", rows: 2, maxLength: 900, onChange: function(e) {
+      updateContext("editionTranslation", e.target.value);
+    }, placeholder: "Which edition or translation? Who transcribed, edited, selected, digitized, or translated it? What changed along the way?", style: inputStyle })), /* @__PURE__ */ React.createElement("label", { style: labelStyle }, "Historical and material context", /* @__PURE__ */ React.createElement("textarea", { value: context.historicalContext || "", rows: 2, maxLength: 900, onChange: function(e) {
+      updateContext("historicalContext", e.target.value);
+    }, placeholder: "When, where, for whom, and under what institutions or material conditions was this made?", style: inputStyle })), /* @__PURE__ */ React.createElement("label", { style: labelStyle }, "Creator, community authority, and permission to interpret", /* @__PURE__ */ React.createElement("textarea", { value: context.culturalAuthority || "", rows: 2, maxLength: 900, onChange: function(e) {
+      updateContext("culturalAuthority", e.target.value);
+    }, placeholder: "Who has cultural or community authority here? Are there protocols, restrictions, sacred knowledge, or permissions that shape responsible use?", style: inputStyle })), /* @__PURE__ */ React.createElement("label", { style: labelStyle }, "Contested, translated, or historically shifting terms", /* @__PURE__ */ React.createElement("textarea", { value: context.contestedTerms || "", rows: 2, maxLength: 700, onChange: function(e) {
+      updateContext("contestedTerms", e.target.value);
+    }, placeholder: "Which terms changed meaning, resist translation, or carry contested labels? State whose terminology you are using.", style: inputStyle })), /* @__PURE__ */ React.createElement("label", { style: labelStyle }, "Archival silences, missing records, and preservation bias", /* @__PURE__ */ React.createElement("textarea", { value: context.archivalSilences || "", rows: 2, maxLength: 900, onChange: function(e) {
+      updateContext("archivalSilences", e.target.value);
+    }, placeholder: "What was not recorded, not preserved, inaccessible, destroyed, paywalled, untranslated, or made unsafe to disclose?", style: inputStyle })), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "10px", color: "#6b7280", lineHeight: 1.45 } }, "These fields contextualize interpretation; they do not turn testimony, scholarship, or cultural artifacts into interchangeable forms of evidence.")));
+  }
   function SIFTGateRow(props) {
     var t = props.t || function(k) {
       return k;
@@ -2142,7 +2170,7 @@
         }
       },
       "\u2715"
-    )), gateRow("stop", t("humanities.sift_stop_title") || "Stop \u2014 first reaction", stopOk, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 4px", fontSize: "10px", color: "#64748b" } }, "What is your first reaction to this source, before reading further? (\u226540 chars)"), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement(HumanitiesSourceContextPanel, { source, onUpdate }), gateRow("stop", t("humanities.sift_stop_title") || "Stop \u2014 first reaction", stopOk, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 4px", fontSize: "10px", color: "#64748b" } }, "What is your first reaction to this source, before reading further? (\u226540 chars)"), /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: stop.firstReactionText || "",
@@ -2686,6 +2714,46 @@
       t("humanities.add_absent_voice") || "Add absent voice"
     ));
   }
+  function MethodReadinessPanel(props) {
+    var journal = props.journal, setJournal = props.setJournal;
+    var packId = journal.activeMethodPack;
+    if (packId !== "community_qualitative" && packId !== "creative_cultural") return null;
+    var frame = (journal.stageNotes || {}).frame_question || {};
+    var key = packId === "community_qualitative" ? "qualitativeMethod" : "creativeMethod";
+    var method = frame[key] || {};
+    var update = function(patch) {
+      setJournal(function(prev) {
+        var next = Object.assign({}, prev);
+        next.stageNotes = Object.assign({}, prev.stageNotes || {});
+        var priorFrame = Object.assign({}, next.stageNotes.frame_question || {});
+        priorFrame[key] = Object.assign({}, priorFrame[key] || {}, patch, { updatedAt: Date.now() });
+        next.stageNotes.frame_question = priorFrame;
+        return next;
+      });
+    };
+    if (packId === "community_qualitative") {
+      return /* @__PURE__ */ React.createElement("section", { "data-qualitative-method-readiness": "true", "aria-labelledby": "qualitative-method-title", style: { padding: "13px", borderRadius: "13px", border: "1px solid #f9a8d4", background: "#fdf2f8" } }, /* @__PURE__ */ React.createElement("h4", { id: "qualitative-method-title", style: { margin: 0, fontSize: "13px", color: "#9d174d" } }, "Qualitative method readiness"), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 9px", fontSize: "10px", lineHeight: 1.5, color: "#475569" } }, "Plan how accounts are selected, protected, interpreted, coded, and challenged by meaningful exceptions. This workspace does not collect interviews."), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))", gap: "9px" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 800 } }, "Approved evidence boundary", /* @__PURE__ */ React.createElement("select", { value: method.evidenceBoundary || "", onChange: function(e) {
+        update({ evidenceBoundary: e.target.value });
+      }, style: { display: "block", width: "100%", marginTop: "4px", padding: "7px", borderRadius: "8px", border: "1px solid #94a3b8" } }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Choose one"), /* @__PURE__ */ React.createElement("option", { value: "public_accounts" }, "Public accounts"), /* @__PURE__ */ React.createElement("option", { value: "teacher_approved" }, "Teacher-approved collection"), /* @__PURE__ */ React.createElement("option", { value: "consented_project" }, "Separately consented project"))), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 800 } }, "Why these accounts, and what can they not represent?", /* @__PURE__ */ React.createElement("textarea", { value: method.selectionRationale || "", onChange: function(e) {
+        update({ selectionRationale: e.target.value.slice(0, 1600) });
+      }, rows: 3, maxLength: 1600, style: { display: "block", width: "100%", marginTop: "4px", padding: "7px", borderRadius: "8px", border: "1px solid #94a3b8" } })), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 800 } }, "Coding and memo plan", /* @__PURE__ */ React.createElement("textarea", { value: method.codingPlan || "", onChange: function(e) {
+        update({ codingPlan: e.target.value.slice(0, 1600) });
+      }, rows: 3, maxLength: 1600, placeholder: "How will you label patterns while preserving context?", style: { display: "block", width: "100%", marginTop: "4px", padding: "7px", borderRadius: "8px", border: "1px solid #94a3b8" } })), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 800 } }, "Negative or discrepant case plan", /* @__PURE__ */ React.createElement("textarea", { value: method.discrepantCasePlan || "", onChange: function(e) {
+        update({ discrepantCasePlan: e.target.value.slice(0, 1600) });
+      }, rows: 3, maxLength: 1600, placeholder: "What would challenge the pattern you expect to see?", style: { display: "block", width: "100%", marginTop: "4px", padding: "7px", borderRadius: "8px", border: "1px solid #94a3b8" } }))), /* @__PURE__ */ React.createElement("label", { style: { display: "flex", gap: "8px", alignItems: "flex-start", marginTop: "9px", fontSize: "10px", color: "#831843" } }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: method.safeguardingAcknowledged === true, onChange: function(e) {
+        update({ safeguardingAcknowledged: e.target.checked });
+      } }), "I will use only the approved evidence boundary above and will not upload identifiable interviews, recordings, or images without a separate consent and safeguarding plan."));
+    }
+    return /* @__PURE__ */ React.createElement("section", { "data-creative-method-readiness": "true", "aria-labelledby": "creative-method-title", style: { padding: "13px", borderRadius: "13px", border: "1px solid #fdba74", background: "#fff7ed" } }, /* @__PURE__ */ React.createElement("h4", { id: "creative-method-title", style: { margin: 0, fontSize: "13px", color: "#9a3412" } }, "Creative and cultural process plan"), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 9px", fontSize: "10px", lineHeight: 1.5, color: "#475569" } }, "Choose whether you are analyzing an artifact or documenting a creative-practice inquiry. Either path requires evidence, attribution, critique, and revision."), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))", gap: "9px" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 800 } }, "Inquiry mode", /* @__PURE__ */ React.createElement("select", { value: method.inquiryMode || "", onChange: function(e) {
+      update({ inquiryMode: e.target.value });
+    }, style: { display: "block", width: "100%", marginTop: "4px", padding: "7px", borderRadius: "8px", border: "1px solid #94a3b8" } }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Choose one"), /* @__PURE__ */ React.createElement("option", { value: "artifact_analysis" }, "Cultural artifact analysis"), /* @__PURE__ */ React.createElement("option", { value: "creative_practice" }, "Creative-practice inquiry"))), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 800 } }, "Medium, context, and process question", /* @__PURE__ */ React.createElement("textarea", { value: method.processQuestion || "", onChange: function(e) {
+      update({ processQuestion: e.target.value.slice(0, 1600) });
+    }, rows: 3, maxLength: 1600, style: { display: "block", width: "100%", marginTop: "4px", padding: "7px", borderRadius: "8px", border: "1px solid #94a3b8" } })), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 800 } }, "Attribution and cultural-position plan", /* @__PURE__ */ React.createElement("textarea", { value: method.attributionPlan || "", onChange: function(e) {
+      update({ attributionPlan: e.target.value.slice(0, 1600) });
+    }, rows: 3, maxLength: 1600, placeholder: "Whose work, tradition, or community must be credited and contextualized?", style: { display: "block", width: "100%", marginTop: "4px", padding: "7px", borderRadius: "8px", border: "1px solid #94a3b8" } })), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 800 } }, "Critique and revision plan", /* @__PURE__ */ React.createElement("textarea", { value: method.critiquePlan || "", onChange: function(e) {
+      update({ critiquePlan: e.target.value.slice(0, 1600) });
+    }, rows: 3, maxLength: 1600, placeholder: "Who will respond, what will be documented, and how might the work change?", style: { display: "block", width: "100%", marginTop: "4px", padding: "7px", borderRadius: "8px", border: "1px solid #94a3b8" } }))));
+  }
   function FrameQuestionStage(props) {
     var t = props.t, ctx = props.ctx;
     var journal = ctx.journal, setJournal = ctx.setJournal;
@@ -2818,7 +2886,7 @@
         return /* @__PURE__ */ React.createElement("li", { key: check }, check);
       })))),
       /* @__PURE__ */ React.createElement("div", { style: { marginTop: "9px", padding: "8px 10px", borderRadius: "10px", background: "#fffbeb", border: "1px solid #fde68a", fontSize: "10px", lineHeight: 1.5, color: "#78350f" } }, /* @__PURE__ */ React.createElement("strong", null, "Ethics and limits:"), " ", methodGuide.ethics)
-    ), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement(MethodReadinessPanel, { journal, setJournal }), /* @__PURE__ */ React.createElement(
       ExemplarGate,
       {
         t,
@@ -3210,6 +3278,15 @@
           notes: newSrc.notes.trim(),
           sift: { tier: "unvetted", stop: {}, investigate: { whoMadeItFacts: [] }, find: { independentCoverageSourceIds: [] }, trace: {}, tierHistory: [] },
           provenance: {},
+          humanitiesContext: {
+            relationshipType: "",
+            inquiryRelationship: "",
+            editionTranslation: "",
+            historicalContext: "",
+            culturalAuthority: "",
+            contestedTerms: "",
+            archivalSilences: ""
+          },
           who_made_this_and_why: "",
           what_world_produced_this: ""
         }]);

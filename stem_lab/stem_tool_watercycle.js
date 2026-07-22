@@ -868,7 +868,8 @@
       var canvasNarrate=ctx.canvasNarrate;
       return (function(){
 const d = labToolData.waterCycle || {};
-          var isDark = !!(ctx && ctx.darkMode);
+          var isContrast = !!(ctx && ctx.isContrast);
+          var isDark = !!(ctx && ctx.isDark) || isContrast;
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, waterCycle: { ...prev.waterCycle, [key]: val } }));
           const updMulti = (obj) => setLabToolData(prev => ({ ...prev, waterCycle: Object.assign({}, prev.waterCycle, obj) }));

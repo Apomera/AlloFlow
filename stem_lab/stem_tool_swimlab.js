@@ -212,12 +212,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
       }
 
       // ── Theme (deep-water palette) ──
-      var T = {
+      var isContrast = !!ctx.isContrast;
+      var isDark = !!ctx.isDark;
+      var T = isContrast ? {
+        bg: '#000000', card: '#000000', cardAlt: '#0a0a0a', border: '#fbbf24',
+        text: '#ffffff', muted: '#ffffff', dim: '#ffffff',
+        accent: '#fbbf24', accentHi: '#ffff00', ok: '#00ff66',
+        warn: '#ffff00', danger: '#ff6b6b', link: '#00ffff',
+        water: '#00ffff', ice: '#ffffff', sand: '#ffff00'
+      } : isDark ? {
         bg: '#0c2233', card: '#163a52', cardAlt: '#0a1d2e', border: '#234d6e',
         text: '#f0f9ff', muted: '#cbd5e1', dim: '#94a3b8',
-        accent: '#0ea5e9', accentHi: '#7dd3fc',
-        ok: '#22c55e', warn: '#f59e0b', danger: '#ef4444',
-        link: '#bae6fd', water: '#0284c7', ice: '#cffafe', sand: '#fde68a'
+        accent: '#0ea5e9', accentHi: '#7dd3fc', ok: '#22c55e',
+        warn: '#f59e0b', danger: '#ef4444', link: '#bae6fd',
+        water: '#0284c7', ice: '#cffafe', sand: '#fde68a'
+      } : {
+        bg: '#f0f9ff', card: '#ffffff', cardAlt: '#e0f2fe', border: '#52748c',
+        text: '#082f49', muted: '#334155', dim: '#475569',
+        accent: '#0369a1', accentHi: '#075985', ok: '#047857',
+        warn: '#b45309', danger: '#b91c1c', link: '#075985',
+        water: '#0369a1', ice: '#cffafe', sand: '#a16207'
       };
 
       function btn(extra) {

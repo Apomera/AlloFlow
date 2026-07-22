@@ -185,9 +185,9 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain("msg: 'Moved to hospital tank during outbreak response'");
     expect(source).toContain('var contagiousFishIds = Object.keys(newSickness).filter');
     expect(source).toContain('/^(ich|velvet)$/.test(illness.disease)');
-    expect(source).toContain('return _fishInstanceIds.indexOf(fishId) !== -1 && !_quarantinedFish[fishId]');
+    expect(source).toContain('return fishIndex !== -1 && isFishDiseaseHostByIndex(fishIndex)');
     expect(source).toContain('var healthyMainTankFishIds = _fishInstanceIds.filter');
-    expect(source).toContain('var transmissionChance = Math.min(0.35, contagiousFishIds.length * 0.08)');
+    expect(source).toContain('var transmissionChance = Math.max(0, Math.min(0.35, contagiousFishIds.length * 0.08) - cleanerProtection)');
     expect(source).toContain('source: sourceFishId');
     expect(source).toContain("'aria-live': \"polite\"");
     expect(source).toContain('" sick fish to the hospital tank"');
@@ -478,8 +478,8 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('if (habitatPlantBiomass > 6) environmentStressDelta -= 2');
     expect(source).toContain("msg: 'Environmental stress: ' + environmentStressReasons.join(', ')");
 
-    expect(source).toContain('var herbivoreGrazingLoad = finalTankFish.reduce');
-    expect(source).toContain('var algaeGrazed = Math.min(newAlgae, herbivoreGrazingLoad * 0.06)');
+    expect(source).toContain('var algaeGrazingRate = finalTankFish.reduce');
+    expect(source).toContain('var algaeGrazed = Math.min(newAlgae, algaeGrazingRate)');
     expect(source).toContain('newAlgae = Math.max(0, newAlgae - algaeGrazed)');
     expect(source).toContain("exchangeReasons.push('\\uD83D\\uDC1F Grazing organisms consumed '");
     expect(source).toContain('var ecosystemExchangeSnapshot = {');
@@ -563,4 +563,60 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(explanationStart).toBeGreaterThan(traceStart);
   });
 
+  it('models non-fish organisms as distinct ecosystem roles', () => {
+    expect((source.match(/id: 'nerite'/g) || []).length).toBe(2);
+    expect((source.match(/id: 'stonycoral'/g) || []).length).toBe(2);
+    expect((source.match(/id: 'copepods'/g) || []).length).toBe(2);
+    expect(source).toContain("organismType: 'Mollusk'");
+    expect(source).toContain("ecosystemRole: 'Surface algae grazer'");
+    expect(source).toContain('var algaeGrazingRate = finalTankFish.reduce');
+    expect(source).toContain("environmentStressReasons.push('shell erosion risk')");
+    expect(source).toContain('var stockDayO2Produced = 0');
+    expect(source).toContain("environmentStressReasons.push('heat-driven bleaching')");
+    expect(source).toContain('var foodWebHungerRelief = 0');
+    expect(source).toContain('/copepods|zooplankton|plankton|micro-crustaceans/i');
+    expect(source).toContain('sp1.passiveStock || sp2.passiveStock');
+    expect(source).toContain('Add Living Stock');
+    expect(source).toContain('Preview capacity, compatibility, and chemistry before stocking.');
+    expect(source).toContain('Ecology, not a cleanup shortcut:');
+    expect(source).toContain('Individual Organism Care');
+    expect(source).toContain('stocked organisms and');
+  });
+  it('models breathing, cleaning, and mutualistic organism mechanics', () => {
+    expect((source.match(/id: 'dwarffrog'/g) || []).length).toBe(1);
+    expect((source.match(/id: 'pistol'/g) || []).length).toBe(1);
+    expect((source.match(/id: 'pederson'/g) || []).length).toBe(1);
+    expect(source).toContain("organismType: 'Amphibian'");
+    expect(source).toContain("surfaceBreather: true");
+    expect(source).toContain("symbiosisWith: 'pistol'");
+    expect(source).toContain("symbiosisWith: 'goby'");
+    expect(source).toContain('if (symbiosisPartnerPresent) environmentStressDelta -= 2');
+    expect(source).toContain('function isFishDiseaseHostByIndex(index)');
+    expect(source).toContain("(diseaseSpecies.organismType || 'Fish') === 'Fish'");
+    expect(source).toContain('var cleanerProtection = cleaningClientCount > 0');
+    expect(source).toContain('environmentalDiseasePressure = Math.max(0');
+    expect(source).toContain('activeSymbiosisPairs > 0');
+    expect(source).toContain("sp.cleaningRate ? 'Reduces fish parasite pressure'");
+    expect(source).toContain('mechanicLabel && React.createElement');
+    expect(source).toContain("organismType: 'Macroalga'");
+    expect(source).toContain("organismType: 'Echinoderm'");
+    expect(source).toContain("organismType: 'Reptile'");
+  });
+  it('previews responsible stocking decisions without adding navigation clutter', () => {
+    expect(source).toContain("var stockCatalogFilter = typeof d.stockCatalogFilter === 'string'");
+    expect(source).toContain('var availableStockTypes = species.map');
+    expect(source).toContain('var filteredStockSpecies = species.filter');
+    expect(source).toContain('Filter living stock by organism type');
+    expect(source).toContain("upd('stockCatalogFilter', filterType)");
+    expect(source).toContain('var projectedLoad = Math.round((currentLoad + sp.load) * 100) / 100');
+    expect(source).toContain('var capacityExceeded = projectedLoad > maxLoad');
+    expect(source).toContain('disabled: capacityExceeded');
+    expect(source).toContain("'\\u26D4 Over capacity'");
+    expect(source).toContain("'\\u26A0 Compatibility review'");
+    expect(source).toContain('var chemistryWarnings = []');
+    expect(source).toContain("symbiosisPartnerPresent ? '\\u21C4 Partner active' : '\\u21C4 Partner absent'");
+    expect(source).toContain('(sp2.compat && sp2.compat.indexOf(sp1.id) !== -1)');
+    expect(source).toContain('compatibilityNames.length && addToast');
+    expect(source).toContain("projected bioload ' + (currentLoad + species.load)");
+  });
 });

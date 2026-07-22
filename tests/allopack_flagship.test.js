@@ -29,11 +29,11 @@ describe('envelope + loader compatibility', () => {
   });
   it('every item carries the envelope: unique id, registered type, title, timestamp, data', () => {
     const seen = new Set();
-    const REGISTERED = new Set(['simplified', 'glossary', 'concept-sort', 'quiz', 'sentence-frames', 'faq', 'directions']);
+    const REGISTERED = new Set(['simplified', 'glossary', 'concept-sort', 'quiz', 'sentence-frames', 'faq', 'directions', 'anchor-chart']);
     for (const it2 of items) {
       expect(it2.id && !seen.has(it2.id)).toBe(true);
       seen.add(it2.id);
-      expect(REGISTERED.has(it2.type)).toBe(true);
+      expect(REGISTERED.has(it2.type), 'unregistered flagship resource type: ' + it2.type).toBe(true);
       expect(typeof it2.title).toBe('string');
       expect(new Date(it2.timestamp).toString()).not.toBe('Invalid Date');
       expect(it2.data).toBeTruthy();
@@ -165,7 +165,8 @@ describe('authoring rules (the ones that bite)', () => {
   });
   it('the app history panel never renders object metas as [object Object] (source pin)', () => {
     const hp = readFileSync(resolve(process.cwd(), 'view_history_panel_source.jsx'), 'utf8');
-    expect(hp).toContain("const _m = typeof item.meta === 'string' ? item.meta : '';");
+    expect(hp).toContain("const itemMeta = typeof item.meta === 'string' ? item.meta.trim() : '';");
+    expect(hp).toContain('{itemMeta && <span>');
   });
   it('whole-pack translate repoints directions goal tethers and isolates per-item failures (source pins)', () => {
     expect(anti).toContain('_translatedIdMap[item.id] = newItem.id;');

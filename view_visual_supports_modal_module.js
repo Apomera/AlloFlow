@@ -25,6 +25,11 @@ function PausableImage(props) {
   const captureRef = React.useRef(false);
   const paused = isAnimated && (globalPaused || localPaused);
   const hiddenWhilePaused = paused && !frozenFrame;
+  React.useEffect(function() {
+    setLocalPaused(false);
+    setFrozenFrame(null);
+    captureRef.current = false;
+  }, [src]);
   const handleLoad = React.useCallback(function() {
     if (!isAnimated || captureRef.current || !imgRef.current) return;
     try {
@@ -41,7 +46,7 @@ function PausableImage(props) {
     }
   }, [isAnimated]);
   if (!isAnimated) {
-    return /* @__PURE__ */ React.createElement("img", { src, alt, style });
+    return /* @__PURE__ */ React.createElement("img", { src, alt, style, loading: "lazy", decoding: "async" });
   }
   const wrapperStyle = Object.assign(
     { position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", overflow: "hidden" },
@@ -56,6 +61,8 @@ function PausableImage(props) {
       alt,
       onLoad: handleLoad,
       crossOrigin: src && src.startsWith("data:") ? void 0 : "anonymous",
+      loading: "lazy",
+      decoding: "async",
       style: Object.assign({}, imgInlineStyle, { visibility: hiddenWhilePaused ? "hidden" : "visible" })
     }
   ), hiddenWhilePaused && /* @__PURE__ */ React.createElement(
@@ -101,6 +108,106 @@ function PausableImage(props) {
     },
     paused ? "\u25B6" : "\u23F8"
   ));
+}
+function visualSupportText(value, fallback) {
+  const text = typeof value === "string" ? value.trim() : "";
+  return text || fallback;
+}
+function readVisualSupportSnapshot() {
+  try {
+    let profiles = [];
+    try {
+      const parsedProfiles = JSON.parse(localStorage.getItem("alloStudentProfiles") || "[]");
+      profiles = Array.isArray(parsedProfiles) ? parsedProfiles : [];
+    } catch (e) {
+    }
+    let savedProfileId = null;
+    try {
+      savedProfileId = JSON.parse(localStorage.getItem("alloActiveProfileId") || "null");
+    } catch (e) {
+    }
+    const profileId = savedProfileId && profiles.some((profile) => profile && profile.id === savedProfileId) ? savedProfileId : profiles[0] && profiles[0].id ? profiles[0].id : "default";
+    const readCollection = function(base) {
+      try {
+        const scoped = localStorage.getItem(base + "__" + profileId);
+        const parsed = JSON.parse((scoped != null ? scoped : localStorage.getItem(base)) || "[]");
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    };
+    const boards = readCollection("alloSymbolBoards").map(function(board, boardIndex) {
+      const safeBoard = board && typeof board === "object" ? board : {};
+      const words = Array.isArray(safeBoard.words) ? safeBoard.words : [];
+      const colsValue = Number.parseInt(safeBoard.cols, 10);
+      return {
+        id: visualSupportText(safeBoard.id, "board-" + boardIndex),
+        title: visualSupportText(safeBoard.title, "Untitled Board"),
+        cols: Number.isFinite(colsValue) ? Math.max(1, Math.min(colsValue, 6)) : 4,
+        words: words.map(function(word, wordIndex) {
+          const safeWord = word && typeof word === "object" ? word : {};
+          return {
+            id: visualSupportText(safeWord.id, "word-" + wordIndex),
+            label: visualSupportText(safeWord.label, "Unlabeled symbol"),
+            category: ["noun", "verb", "adjective", "other"].includes(safeWord.category) ? safeWord.category : "other",
+            image: typeof safeWord.image === "string" ? safeWord.image : ""
+          };
+        })
+      };
+    });
+    const schedules = readCollection("alloSchedules").map(function(schedule, scheduleIndex) {
+      const safeSchedule = schedule && typeof schedule === "object" ? schedule : {};
+      const items = Array.isArray(safeSchedule.items) ? safeSchedule.items : [];
+      return {
+        id: visualSupportText(safeSchedule.id, "schedule-" + scheduleIndex),
+        title: visualSupportText(safeSchedule.title, "Untitled Schedule"),
+        nowId: typeof safeSchedule.nowId === "string" ? safeSchedule.nowId : "",
+        items: items.map(function(item, itemIndex) {
+          const safeItem = item && typeof item === "object" ? item : {};
+          return {
+            id: visualSupportText(safeItem.id, "step-" + itemIndex),
+            label: visualSupportText(safeItem.label, "Unlabeled step"),
+            image: typeof safeItem.image === "string" ? safeItem.image : "",
+            complete: !!safeItem.complete
+          };
+        })
+      };
+    });
+    return { profileId, boards, schedules };
+  } catch (e) {
+    return { profileId: "default", boards: [], schedules: [] };
+  }
+}
+function VisualSupportBoardCard(props) {
+  const { board, cardIndex, categoryBackgrounds, pauseAnimations, onSpeak } = props;
+  return /* @__PURE__ */ React.createElement("section", { className: "border border-slate-400 rounded-xl overflow-hidden", "aria-labelledby": "visual-support-board-" + cardIndex }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 px-4 py-2 border-b border-slate-200 flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("h3", { id: "visual-support-board-" + cardIndex, className: "font-semibold text-slate-700 text-sm" }, board.title), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-medium text-slate-600" }, board.words.length, " ", board.words.length === 1 ? "symbol" : "symbols")), board.words.length === 0 ? /* @__PURE__ */ React.createElement("p", { className: "p-4 text-sm text-slate-600", role: "status" }, "This board has no symbols yet.") : /* @__PURE__ */ React.createElement("div", { className: "p-3", role: "list", "aria-label": board.title + " symbols", style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(88px, 1fr))", gap: 8 } }, board.words.map((word, wordIndex) => /* @__PURE__ */ React.createElement("div", { key: word.id + "-" + wordIndex, role: "listitem", style: { background: categoryBackgrounds[word.category] || categoryBackgrounds.other, borderRadius: 8, padding: 8, minWidth: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 5 } }, word.image ? /* @__PURE__ */ React.createElement(PausableImage, { src: word.image, alt: word.label, globalPaused: pauseAnimations, style: { width: 64, height: 64 } }) : /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", style: { width: 64, height: 64, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, color: "#94a3b8" } }, "?"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 12, fontWeight: 700, textAlign: "center", color: "#1f2937", lineHeight: 1.25, overflowWrap: "anywhere" } }, word.label), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onSpeak(word.label, word.label), "aria-label": "Read symbol aloud: " + word.label, className: "min-h-11 min-w-11 rounded-lg text-slate-700 hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700", title: "Read symbol aloud" }, "Read")))));
+}
+function getInitialScheduleProgress(schedule) {
+  const items = schedule && Array.isArray(schedule.items) ? schedule.items : [];
+  const completed = {};
+  items.forEach(function(item, index) {
+    if (item.complete) completed[index] = true;
+  });
+  let current = items.findIndex(function(item) {
+    return item.id === schedule.nowId && !item.complete;
+  });
+  if (current < 0) current = items.findIndex(function(item) {
+    return !item.complete;
+  });
+  if (current < 0) current = 0;
+  return { current, completed };
+}
+function VisualSupportScheduleCard(props) {
+  const { schedule, cardIndex, progress, pauseAnimations, onSpeak, onSetCurrent, onToggleComplete } = props;
+  const initialProgress = getInitialScheduleProgress(schedule);
+  const safeProgress = progress || initialProgress;
+  const currentStep = Math.max(0, Math.min(Number.isInteger(safeProgress.current) ? safeProgress.current : initialProgress.current, Math.max(0, schedule.items.length - 1)));
+  const completed = safeProgress.completed || initialProgress.completed;
+  return /* @__PURE__ */ React.createElement("section", { className: "border border-slate-400 rounded-xl overflow-hidden", "aria-labelledby": "visual-support-schedule-" + cardIndex }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 px-4 py-2 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "visual-support-schedule-" + cardIndex, className: "font-semibold text-slate-700 text-sm" }, schedule.title), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, schedule.items.length === 0 ? "No steps" : "Now: step " + (currentStep + 1) + " of " + schedule.items.length)), schedule.items.length > 0 && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onSpeak(schedule.items.map((item, index) => "Step " + (index + 1) + ": " + item.label).join(". "), schedule.title), className: "min-h-11 px-3 rounded-lg border border-purple-300 bg-white text-xs font-semibold text-purple-800 hover:bg-purple-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700", "aria-label": "Read all steps in " + schedule.title }, "Read all")), schedule.items.length === 0 ? /* @__PURE__ */ React.createElement("p", { className: "p-4 text-sm text-slate-600", role: "status" }, "This schedule has no steps yet.") : /* @__PURE__ */ React.createElement("ol", { role: "list", "aria-label": schedule.title + " ordered steps", className: "p-3", style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(138px, 1fr))", gap: 10 } }, schedule.items.map((item, itemIndex) => {
+    const isCurrent = itemIndex === currentStep;
+    const isComplete = !!completed[itemIndex];
+    return /* @__PURE__ */ React.createElement("li", { key: item.id + "-" + itemIndex, "aria-current": isCurrent ? "step" : void 0, style: { border: isCurrent ? "3px solid #7c3aed" : "2px solid #cbd5e1", borderRadius: 12, padding: 8, minWidth: 0, background: isComplete ? "#f0fdf4" : isCurrent ? "#faf5ff" : "#fff", display: "flex", flexDirection: "column", alignItems: "stretch", gap: 7 } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 11, fontWeight: 800, color: isCurrent ? "#6d28d9" : "#475569" } }, "STEP ", itemIndex + 1), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 11, fontWeight: 800, color: isComplete ? "#166534" : isCurrent ? "#6d28d9" : "#64748b" } }, isComplete ? "DONE" : isCurrent ? "NOW" : "NEXT")), /* @__PURE__ */ React.createElement("div", { style: { width: "100%", height: 96, border: "1px solid #cbd5e1", borderRadius: 9, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc" } }, item.image ? /* @__PURE__ */ React.createElement(PausableImage, { src: item.image, alt: item.label, globalPaused: pauseAnimations, style: { width: "100%", height: "100%" } }) : /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: 28, color: "#94a3b8" } }, "?")), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 13, fontWeight: 700, textAlign: "center", color: "#1f2937", lineHeight: 1.25, overflowWrap: "anywhere" } }, item.label), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-1 mt-auto" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onSetCurrent(schedule, itemIndex), disabled: isCurrent, className: "min-h-11 rounded-lg border border-purple-300 bg-white px-2 text-xs font-semibold text-purple-800 disabled:bg-purple-100 disabled:text-purple-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700", "aria-label": isCurrent ? item.label + " is the current step" : "Make " + item.label + " the current step" }, isCurrent ? "Current step" : "Set as now"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onToggleComplete(schedule, itemIndex), "aria-pressed": isComplete, className: "min-h-11 rounded-lg border border-emerald-300 bg-white px-2 text-xs font-semibold text-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-700" }, isComplete ? "Mark not done" : "Mark done")));
+  })));
 }
 function VisualSupportsModal(props) {
   const { setShowVisualSupports, setVsTab, showVisualSupports, vsTab } = props;
@@ -159,28 +266,91 @@ function VisualSupportsModal(props) {
       if (previousFocus && typeof previousFocus.focus === "function") previousFocus.focus();
     };
   }, [setShowVisualSupports]);
-  const vsRead = (base) => {
-    try {
-      let profs = [];
-      try {
-        profs = JSON.parse(localStorage.getItem("alloStudentProfiles") || "[]") || [];
-      } catch (e) {
+  const [supportData, setSupportData] = React.useState(readVisualSupportSnapshot);
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [scheduleProgress, setScheduleProgress] = React.useState({});
+  const [statusMessage, setStatusMessage] = React.useState("");
+  const refreshSupports = React.useCallback(function() {
+    setSupportData(readVisualSupportSnapshot());
+  }, []);
+  React.useEffect(function() {
+    if (showVisualSupports !== false) refreshSupports();
+    const handleStorage = function(event) {
+      if (!event || !event.key || /^(alloSymbolBoards|alloSchedules|alloStudentProfiles|alloActiveProfileId)/.test(event.key)) {
+        refreshSupports();
       }
-      let saved = null;
-      try {
-        saved = JSON.parse(localStorage.getItem("alloActiveProfileId") || "null");
-      } catch (e) {
-      }
-      const pid = saved && profs.find((p) => p.id === saved) ? saved : profs[0] ? profs[0].id : "default";
-      const raw = localStorage.getItem(base + "__" + pid);
-      return JSON.parse((raw != null ? raw : localStorage.getItem(base)) || "[]");
-    } catch (e) {
-      return [];
-    }
-  };
-  const vsBoards = vsRead("alloSymbolBoards");
-  const vsSchedules = vsRead("alloSchedules");
+    };
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("allo-visual-supports-updated", refreshSupports);
+    return function() {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("allo-visual-supports-updated", refreshSupports);
+    };
+  }, [showVisualSupports, refreshSupports]);
+  const vsBoards = supportData.boards;
+  const vsSchedules = supportData.schedules;
   const CAT_BG = { noun: "#fef9c3", verb: "#dcfce7", adjective: "#dbeafe", other: "#f3f4f6" };
+  const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
+  const visibleBoards = React.useMemo(function() {
+    if (!normalizedQuery) return vsBoards;
+    return vsBoards.filter(function(board) {
+      return board.title.toLocaleLowerCase().includes(normalizedQuery) || board.words.some((word) => word.label.toLocaleLowerCase().includes(normalizedQuery));
+    });
+  }, [vsBoards, normalizedQuery]);
+  const visibleSchedules = React.useMemo(function() {
+    if (!normalizedQuery) return vsSchedules;
+    return vsSchedules.filter(function(schedule) {
+      return schedule.title.toLocaleLowerCase().includes(normalizedQuery) || schedule.items.some((item) => item.label.toLocaleLowerCase().includes(normalizedQuery));
+    });
+  }, [vsSchedules, normalizedQuery]);
+  const speakSupportText = React.useCallback(function(text, description) {
+    const cleanText = visualSupportText(text, "");
+    if (!cleanText) return;
+    setStatusMessage("Reading " + (description || cleanText));
+    try {
+      if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== "function") {
+        setStatusMessage("Read aloud is not available in this browser.");
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utterance = new window.SpeechSynthesisUtterance(cleanText);
+      utterance.onend = function() {
+        setStatusMessage("Finished reading " + (description || cleanText));
+      };
+      utterance.onerror = function() {
+        setStatusMessage("Could not read that support aloud.");
+      };
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      setStatusMessage("Could not read that support aloud.");
+    }
+  }, []);
+  const setCurrentScheduleStep = function(schedule, stepIndex) {
+    setScheduleProgress(function(previous) {
+      return Object.assign({}, previous, {
+        [schedule.id]: Object.assign({}, previous[schedule.id] || getInitialScheduleProgress(schedule), { current: stepIndex })
+      });
+    });
+    setStatusMessage((schedule.items[stepIndex] ? schedule.items[stepIndex].label : "Step " + (stepIndex + 1)) + " is now the current step.");
+  };
+  const toggleScheduleStepComplete = function(schedule, stepIndex) {
+    setScheduleProgress(function(previous) {
+      const currentProgress = previous[schedule.id] || getInitialScheduleProgress(schedule);
+      const completed = Object.assign({}, currentProgress.completed || {});
+      completed[stepIndex] = !completed[stepIndex];
+      let current = Number.isInteger(currentProgress.current) ? currentProgress.current : 0;
+      if (completed[stepIndex] && current === stepIndex) {
+        const nextIncomplete = schedule.items.findIndex(function(_, index) {
+          return index > stepIndex && !completed[index];
+        });
+        if (nextIncomplete >= 0) current = nextIncomplete;
+      }
+      return Object.assign({}, previous, {
+        [schedule.id]: { current, completed }
+      });
+    });
+    setStatusMessage((schedule.items[stepIndex] ? schedule.items[stepIndex].label : "Step " + (stepIndex + 1)) + " completion updated.");
+  };
   const [pauseAnim, setPauseAnim] = React.useState(function() {
     try {
       const stored = localStorage.getItem("alloVsPauseAnim");
@@ -208,7 +378,7 @@ function VisualSupportsModal(props) {
     },
     /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, pauseAnim ? "\u25B6" : "\u23F8"),
     /* @__PURE__ */ React.createElement("span", null, pauseAnim ? "Resume" : "Pause", " animations")
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowVisualSupports(false), "aria-label": "Close Visual Supports", className: "min-h-11 min-w-11 text-white/80 hover:text-white text-2xl font-bold flex items-center justify-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" }, "\xD7"))), /* @__PURE__ */ React.createElement("div", { className: "flex border-b border-slate-200 bg-slate-50 flex-shrink-0", role: "tablist", "aria-label": "Visual support type" }, /* @__PURE__ */ React.createElement("button", { type: "button", id: "visual-supports-tab-boards", role: "tab", "aria-selected": vsTab === "boards", "aria-controls": "visual-supports-panel-boards", tabIndex: vsTab === "boards" ? 0 : -1, onKeyDown: handleTabKeyDown, onClick: () => setVsTab("boards"), className: `flex-1 py-3 text-sm font-semibold transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-purple-700 ${vsTab === "boards" ? "text-purple-700 border-b-2 border-purple-600 bg-white" : "text-slate-600 hover:text-slate-700"}` }, "\u{1F4CB} Boards (", vsBoards.length, ")"), /* @__PURE__ */ React.createElement("button", { type: "button", id: "visual-supports-tab-schedules", role: "tab", "aria-selected": vsTab === "schedules", "aria-controls": "visual-supports-panel-schedules", tabIndex: vsTab === "schedules" ? 0 : -1, onKeyDown: handleTabKeyDown, onClick: () => setVsTab("schedules"), className: `flex-1 py-3 text-sm font-semibold transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-purple-700 ${vsTab === "schedules" ? "text-purple-700 border-b-2 border-purple-600 bg-white" : "text-slate-600 hover:text-slate-700"}` }, "\u{1F4C5} Schedules (", vsSchedules.length, ")")), /* @__PURE__ */ React.createElement("div", { id: `visual-supports-panel-${vsTab}`, role: "tabpanel", "aria-labelledby": `visual-supports-tab-${vsTab}`, tabIndex: 0, className: "flex-1 overflow-y-auto p-4 space-y-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-purple-700" }, vsTab === "boards" && (vsBoards.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-16 text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3", "aria-hidden": "true" }, "\u{1F4CB}"), /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, "No saved boards yet"), /* @__PURE__ */ React.createElement("p", { className: "text-sm mt-1" }, "Save boards in Symbol Studio to see them here")) : vsBoards.map((board) => /* @__PURE__ */ React.createElement("div", { key: board.id, className: "border border-slate-400 rounded-xl overflow-hidden" }, /* @__PURE__ */ React.createElement("h3", { className: "bg-slate-50 px-4 py-2 font-semibold text-slate-700 text-sm border-b border-slate-200" }, board.title || "Untitled Board"), /* @__PURE__ */ React.createElement("div", { className: "p-3", role: "list", "aria-label": (board.title || "Untitled Board") + " symbols", style: { display: "grid", gridTemplateColumns: `repeat(${Math.min(board.cols || 4, 6)},1fr)`, gap: 6 } }, (board.words || []).map((word, i) => /* @__PURE__ */ React.createElement("div", { key: i, role: "listitem", style: { background: CAT_BG[word.category] || "#f3f4f6", borderRadius: 8, padding: 6, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 } }, word.image ? /* @__PURE__ */ React.createElement(PausableImage, { src: word.image, alt: word.label || "Board symbol", globalPaused: pauseAnim, style: { width: 56, height: 56 } }) : /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", style: { width: 56, height: 56, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, color: "#d1d5db" } }, "?"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 11, fontWeight: 600, textAlign: "center", color: "#1f2937", lineHeight: 1.2 } }, word.label))))))), vsTab === "schedules" && (vsSchedules.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-16 text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3", "aria-hidden": "true" }, "\u{1F4C5}"), /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, "No saved schedules yet"), /* @__PURE__ */ React.createElement("p", { className: "text-sm mt-1" }, "Save schedules in Symbol Studio to see them here")) : vsSchedules.map((sched) => /* @__PURE__ */ React.createElement("div", { key: sched.id, className: "border border-slate-400 rounded-xl overflow-hidden" }, /* @__PURE__ */ React.createElement("h3", { className: "bg-slate-50 px-4 py-2 font-semibold text-slate-700 text-sm border-b border-slate-200" }, sched.title || "Untitled Schedule"), /* @__PURE__ */ React.createElement("div", { className: "p-3 overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700", tabIndex: 0, "aria-label": (sched.title || "Untitled Schedule") + " horizontally scrollable items" }, /* @__PURE__ */ React.createElement("div", { role: "list", "aria-label": (sched.title || "Untitled Schedule") + " steps", style: { display: "flex", gap: 8, minWidth: "max-content" } }, (sched.items || []).map((item, i) => /* @__PURE__ */ React.createElement("div", { key: item.id || i, role: "listitem", style: { display: "flex", flexDirection: "column", alignItems: "center", gap: 4, width: 72 } }, /* @__PURE__ */ React.createElement("div", { style: { width: 72, height: 72, border: "2px solid #e5e7eb", borderRadius: 10, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", background: "#fafafa" } }, item.image ? /* @__PURE__ */ React.createElement(PausableImage, { src: item.image, alt: item.label || "Schedule step", globalPaused: pauseAnim, style: { width: "100%", height: "100%" } }) : /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: 28, color: "#d1d5db" } }, "?")), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 10, fontWeight: 600, textAlign: "center", color: "#374151", lineHeight: 1.2 } }, item.label)))))))))));
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowVisualSupports(false), "aria-label": "Close Visual Supports", className: "min-h-11 min-w-11 text-white/80 hover:text-white text-2xl font-bold flex items-center justify-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" }, "\xD7"))), /* @__PURE__ */ React.createElement("div", { className: "flex border-b border-slate-200 bg-slate-50 flex-shrink-0", role: "tablist", "aria-label": "Visual support type" }, /* @__PURE__ */ React.createElement("button", { type: "button", id: "visual-supports-tab-boards", role: "tab", "aria-selected": vsTab === "boards", "aria-controls": "visual-supports-panel-boards", tabIndex: vsTab === "boards" ? 0 : -1, onKeyDown: handleTabKeyDown, onClick: () => setVsTab("boards"), className: `flex-1 py-3 text-sm font-semibold transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-purple-700 ${vsTab === "boards" ? "text-purple-700 border-b-2 border-purple-600 bg-white" : "text-slate-600 hover:text-slate-700"}` }, "\u{1F4CB} Boards (", vsBoards.length, ")"), /* @__PURE__ */ React.createElement("button", { type: "button", id: "visual-supports-tab-schedules", role: "tab", "aria-selected": vsTab === "schedules", "aria-controls": "visual-supports-panel-schedules", tabIndex: vsTab === "schedules" ? 0 : -1, onKeyDown: handleTabKeyDown, onClick: () => setVsTab("schedules"), className: `flex-1 py-3 text-sm font-semibold transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-purple-700 ${vsTab === "schedules" ? "text-purple-700 border-b-2 border-purple-600 bg-white" : "text-slate-600 hover:text-slate-700"}` }, "\u{1F4C5} Schedules (", vsSchedules.length, ")")), /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-200 bg-white flex-shrink-0" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "visual-supports-search", className: "sr-only" }, "Search saved visual supports"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("input", { id: "visual-supports-search", type: "search", value: searchQuery, onChange: (event) => setSearchQuery(event.target.value), placeholder: vsTab === "boards" ? "Search boards or symbols" : "Search schedules or steps", className: "w-full min-h-11 rounded-lg border border-slate-400 px-3 text-sm text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-700" }), searchQuery && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setSearchQuery(""), className: "min-h-11 px-3 rounded-lg border border-slate-400 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700", "aria-label": "Clear visual supports search" }, "Clear")), /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs text-slate-600 mt-1" }, vsTab === "boards" ? visibleBoards.length + " of " + vsBoards.length + " boards shown" : visibleSchedules.length + " of " + vsSchedules.length + " schedules shown"), /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, statusMessage)), /* @__PURE__ */ React.createElement("div", { id: `visual-supports-panel-${vsTab}`, role: "tabpanel", "aria-labelledby": `visual-supports-tab-${vsTab}`, tabIndex: 0, className: "flex-1 overflow-y-auto p-4 space-y-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-purple-700" }, vsTab === "boards" && (visibleBoards.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-16 text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3", "aria-hidden": "true" }, "\u{1F4CB}"), /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, vsBoards.length === 0 ? "No saved boards yet" : "No boards match your search"), /* @__PURE__ */ React.createElement("p", { className: "text-sm mt-1" }, vsBoards.length === 0 ? "Save boards in Symbol Studio to see them here" : "Try a board title or symbol name")) : visibleBoards.map((board, boardIndex) => /* @__PURE__ */ React.createElement(VisualSupportBoardCard, { key: board.id + "-" + boardIndex, board, cardIndex: boardIndex, categoryBackgrounds: CAT_BG, pauseAnimations: pauseAnim, onSpeak: speakSupportText }))), vsTab === "schedules" && (visibleSchedules.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-16 text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3", "aria-hidden": "true" }, "\u{1F4C5}"), /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, vsSchedules.length === 0 ? "No saved schedules yet" : "No schedules match your search"), /* @__PURE__ */ React.createElement("p", { className: "text-sm mt-1" }, vsSchedules.length === 0 ? "Save schedules in Symbol Studio to see them here" : "Try a schedule title or step name")) : visibleSchedules.map((schedule, scheduleIndex) => /* @__PURE__ */ React.createElement(VisualSupportScheduleCard, { key: schedule.id + "-" + scheduleIndex, schedule, cardIndex: scheduleIndex, progress: scheduleProgress[schedule.id], pauseAnimations: pauseAnim, onSpeak: speakSupportText, onSetCurrent: setCurrentScheduleStep, onToggleComplete: toggleScheduleStepComplete }))))));
 }
 
   window.AlloModules = window.AlloModules || {};

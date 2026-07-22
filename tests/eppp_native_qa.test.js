@@ -67,7 +67,10 @@ describe('EPPP native content QA gate', () => {
     expect(completedBacklog).toHaveLength(476);
     expect(completedBacklog.every((item) => item.choiceRationales[item.answerIndex] === item.rationale)).toBe(true);
     const bonferroni = completedBacklog.find((item) => item.id === 'eppp-b009-research-2');
-    expect(bonferroni.choiceRationales.every((entry) => entry.includes('.05 / 10 = .005'))).toBe(true);
+    expect(bonferroni.choiceRationales[bonferroni.answerIndex]).toContain('.05 / 10 = .005');
+    expect(bonferroni.choiceRationales[0]).toMatch(/multiplying \.05 by ten.*inflate/i);
+    expect(bonferroni.choiceRationales[1]).toMatch(/no Bonferroni adjustment/i);
+    expect(bonferroni.choiceRationales[3]).toMatch(/divides.*number of comparisons/i);
   });
 
   it('keeps the QA artifact reproducible and deployment-identical', () => {

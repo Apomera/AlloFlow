@@ -409,10 +409,26 @@
         <button class="quiet" id="demoScriptDraftBtn" disabled title="Send only the goal and reviewed step text to your configured AI provider.">Draft / refine narration</button>
         <span class="status" id="demoScriptDraftStatus" style="margin-top:0">No video or audio is sent.</span>
       </div>
+      <div id="demoScriptDraftReview" hidden style="border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:0 0 8px" aria-label="Narration suggestion review">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <strong>Narration suggestions</strong>
+            <span class="status" id="demoScriptDraftReviewStatus" style="display:block;margin-top:2px">Nothing changes until you apply a suggestion.</span>
+          </div>
+          <div class="row">
+            <button class="quiet" id="demoScriptApplySelectedBtn">Apply selected</button>
+            <button class="quiet" id="demoScriptApplyAllBtn">Apply all</button>
+            <button class="quiet" id="demoScriptDiscardBtn">Discard</button>
+          </div>
+        </div>
+        <div id="demoScriptDraftReviewList"></div>
+      </div>
       <div class="row" style="margin:7px 0">
         <span class="status" id="demoPlanSummary" style="margin-top:0">No plan loaded.</span>
         <button class="quiet" id="demoScriptReviewBtn" disabled aria-expanded="false" aria-controls="demoScriptReview">Review script</button>
         <button class="quiet" id="demoScriptCopyBtn" disabled>Copy script</button>
+        <button class="quiet" id="demoScriptUndoBtn" disabled data-demo-editor-base-disabled="true" style="width:36px" title="Undo the last applied narration suggestions" aria-label="Undo the last applied narration suggestions">&#8630;</button>
+        <button class="quiet" id="demoScriptRedoBtn" disabled data-demo-editor-base-disabled="true" style="width:36px" title="Redo narration suggestions" aria-label="Redo narration suggestions">&#8631;</button>
         <button class="quiet" id="demoPacingFitBtn" disabled title="Increase result holds to fit the estimated spoken narration time.">Fit pacing to narration</button>
         <button class="quiet" id="demoRepairBtn" hidden title="Ask the planner for a new safe sequence using the current AlloFlow state.">Repair plan from current state</button>
         <button class="quiet" id="demoContinueBtn" hidden title="Load only the unfinished steps and check them again before recording a separate continuation take.">Continue unfinished steps</button>
@@ -10907,6 +10923,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   var demoPlanSourceBusy = false;
   var demoScriptDraftGeneration = 0;
   var demoScriptDraftBusy = false;
+  var demoScriptDraftReviewItems = [];
+  var demoScriptHistory = [];
+  var demoScriptHistoryIndex = -1;
   function cleanDemoResultHold(value) {
     if (value == null || value === '') return 2.2;
     var seconds = Number(value);
@@ -11085,7 +11104,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return recording || !!demoPlanSourceBusy || !!demoScriptDraftBusy || !!demoStartPending || !!demoRehearsePending || !!demoManualPreflightPending;
   }
   var DEMO_PLAN_EDITOR_STATIC_IDS = ['demoGoal', 'demoAudioMode', 'demoOpeningCardChk', 'demoOpeningTitle', 'demoTransitionStyle', 'demoCursorEmphasisChk', 'demoClosingCardChk', 'demoClosingText', 'demoScriptStyle', 'demoScriptDetail', 'demoPlanResetBtn', 'demoDraftClearBtn', 'demoRepairBtn', 'demoContinueBtn', 'demoContinueEditBtn', 'demoContinuationDismissBtn', 'demoContinuationDismissEditBtn'];
-  var DEMO_PLAN_EDITOR_BASE_IDS = ['demoScriptDraftBtn', 'demoPacingFitBtn'];
+  var DEMO_PLAN_EDITOR_BASE_IDS = ['demoScriptDraftBtn', 'demoPacingFitBtn', 'demoScriptUndoBtn', 'demoScriptRedoBtn'];
   function demoPlanEditorMutationLocked() { return demoTemplateMutationLocked(); }
   function setDemoPlanEditorBaseDisabled(control, disabled) {
     if (!control) return;
@@ -11095,7 +11114,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function syncDemoPlanEditorControls() {
     var locked = demoPlanEditorMutationLocked();
     DEMO_PLAN_EDITOR_STATIC_IDS.forEach(function (id) { var control = $(id); if (control) control.disabled = locked; });
+    syncDemoScriptHistoryControls();
     var controls = Array.prototype.slice.call($('demoPlanList').querySelectorAll('input, textarea, select, button'));
+    controls = controls.concat(Array.prototype.slice.call($('demoScriptDraftReview').querySelectorAll('input, textarea, button')));
     DEMO_PLAN_EDITOR_BASE_IDS.forEach(function (id) { var control = $(id); if (control) controls.push(control); });
     controls.forEach(function (control) {
       var base = control.getAttribute('data-demo-editor-base-disabled');
@@ -11693,7 +11714,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       scriptLabel.appendChild(document.createTextNode('Narration / caption'));
       var scriptInput = document.createElement('textarea'); scriptInput.rows = 2; scriptInput.maxLength = 400; scriptInput.value = s.script || '';
       scriptInput.style.cssText = 'display:block;width:100%;box-sizing:border-box;margin-top:3px;padding:5px 7px;resize:vertical'; scriptInput.setAttribute('aria-label', 'Step ' + (i + 1) + ' narration');
-      scriptInput.addEventListener('input', function () { s.script = String(scriptInput.value || '').replace(/[\r\n]+/g, ' ').slice(0, 400); saveDemoDraft(); refreshDemoPlanSummary(); });
+      scriptInput.addEventListener('input', function () { s.script = String(scriptInput.value || '').replace(/[\r\n]+/g, ' ').slice(0, 400); saveDemoDraft(); refreshDemoPlanSummary(); syncDemoScriptHistoryControls(); });
       scriptInput.addEventListener('change', function () { if (!s.script.trim()) { s.script = defaultDemoStepScript(s); scriptInput.value = s.script; saveDemoDraft(); refreshDemoPlanSummary(); } runDemoPreflight(); });
       scriptLabel.appendChild(scriptInput);
       var holdLabel = document.createElement('label'); holdLabel.className = 'status'; holdLabel.style.cssText = 'display:block;margin:0';
@@ -11723,6 +11744,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     refreshDemoPlanSummary();
     updateDemoStepReadinessUI();
     saveDemoDraft();
+    if (demoScriptDraftReviewItems.length) renderDemoScriptDraftReview();
     if (hasApproved) runDemoPreflight();
   }
   $('demoPlanResetBtn').addEventListener('click', function () {
@@ -11745,6 +11767,199 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       if (ok) announce('Demo script copied');
     });
   });
+  function requestDemoScriptSuggestions(steps, focusIndex) {
+    var list = Array.isArray(steps) ? steps : [];
+    var payload = {
+      goal: $('demoGoal').value.trim(),
+      style: $('demoScriptStyle').value,
+      detail: $('demoScriptDetail').value,
+      steps: list.map(function (step) { return cleanDemoDraftStep(step); })
+    };
+    if (isFinite(Number(focusIndex)) && Number(focusIndex) >= 0 && Number(focusIndex) < list.length) payload.focusIndex = Math.round(Number(focusIndex));
+    return bridgeRequest('allostudio-demoscript-request', payload, 60000);
+  }
+  function demoScriptReviewItemIsCurrent(item) {
+    return !!(item && item.step && demoState.steps && demoState.steps.indexOf(item.step) >= 0);
+  }
+  async function regenerateDemoScriptReviewItem(item, button) {
+    if (!demoScriptReviewItemIsCurrent(item) || demoPlanEditorMutationLocked()) return;
+    if (!opener || opener.closed) { setStatus($('demoScriptDraftStatus'), 'Reconnect Video Studio to AlloFlow to regenerate narration.', 'warn'); return; }
+    var approved = approvedDemoSteps();
+    var focusIndex = approved.indexOf(item.step);
+    if (focusIndex < 0) { renderDemoScriptDraftReview(); return; }
+    var generation = ++demoScriptDraftGeneration;
+    demoScriptDraftBusy = true;
+    button.disabled = true; button.setAttribute('aria-busy', 'true');
+    syncDemoPlanSourceControls(); syncDemoExecutionControls();
+    setStatus($('demoScriptDraftStatus'), 'Regenerating step ' + item.stepNumber + ' in the context of the full approved script...');
+    try {
+      var response = await requestDemoScriptSuggestions(approved, focusIndex);
+      if (generation !== demoScriptDraftGeneration) return;
+      if (response && response.error) throw new Error(response.error);
+      var match = (response && Array.isArray(response.scripts) ? response.scripts : []).filter(function (candidate) { return Math.round(Number(candidate && candidate.index)) === focusIndex; })[0];
+      var line = String((match && match.text) || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 400);
+      if (!line || line === String(item.step.script || '')) throw new Error('The provider did not return a new usable line.');
+      item.original = String(item.step.script || '');
+      item.text = line; item.selected = true;
+      renderDemoScriptDraftReview();
+      setStatus($('demoScriptDraftStatus'), 'Step ' + item.stepNumber + ' has a new suggestion. Nothing changed yet.', 'ok');
+      announce('New narration suggestion ready for step ' + item.stepNumber);
+    } catch (error) {
+      if (generation !== demoScriptDraftGeneration) return;
+      setStatus($('demoScriptDraftStatus'), 'Line regeneration failed: ' + String((error && error.message) || error).slice(0, 140), 'bad');
+    } finally {
+      if (generation === demoScriptDraftGeneration) {
+        demoScriptDraftBusy = false;
+        button.removeAttribute('aria-busy');
+        syncDemoPlanSourceControls(); syncDemoExecutionControls(); syncDemoScriptDraftReviewButtons();
+      }
+    }
+  }
+  function syncDemoScriptDraftReviewButtons() {
+    var current = demoScriptDraftReviewItems.filter(function (item) { return demoScriptReviewItemIsCurrent(item) && String(item.text || '').trim(); });
+    var selected = current.filter(function (item) { return item.selected; });
+    setDemoPlanEditorBaseDisabled($('demoScriptApplySelectedBtn'), !selected.length);
+    setDemoPlanEditorBaseDisabled($('demoScriptApplyAllBtn'), !current.length);
+    setDemoPlanEditorBaseDisabled($('demoScriptDiscardBtn'), !demoScriptDraftReviewItems.length);
+  }
+  function clearDemoScriptDraftReview(showMessage) {
+    demoScriptDraftReviewItems = [];
+    $('demoScriptDraftReviewList').innerHTML = '';
+    $('demoScriptDraftReview').hidden = true;
+    syncDemoScriptDraftReviewButtons();
+    if (showMessage) setStatus($('demoScriptDraftStatus'), 'Narration suggestions discarded. The approved script was not changed.', 'ok');
+  }
+  function renderDemoScriptDraftReview() {
+    var panel = $('demoScriptDraftReview');
+    var host = $('demoScriptDraftReviewList');
+    host.innerHTML = '';
+    panel.hidden = !demoScriptDraftReviewItems.length;
+    var conflicts = 0;
+    demoScriptDraftReviewItems.forEach(function (item) {
+      var current = demoScriptReviewItemIsCurrent(item);
+      var currentText = current ? String(item.step.script || '') : '';
+      var conflict = current && currentText !== item.original;
+      if (conflict || !current) conflicts++;
+      var row = document.createElement('div');
+      row.style.cssText = 'display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;padding:9px 0;border-top:1px solid var(--line)';
+      var check = document.createElement('input');
+      check.type = 'checkbox'; check.checked = !!item.selected && current; check.disabled = !current;
+      check.setAttribute('aria-label', 'Apply narration suggestion for step ' + item.stepNumber);
+      check.setAttribute('data-demo-editor-base-disabled', current ? 'false' : 'true');
+      check.addEventListener('change', function () { item.selected = check.checked; syncDemoScriptDraftReviewButtons(); });
+      var body = document.createElement('div'); body.style.minWidth = '0';
+      var title = document.createElement('strong');
+      title.textContent = 'Step ' + item.stepNumber + ': ' + item.label;
+      var before = document.createElement('div'); before.className = 'status';
+      before.style.cssText = 'margin:3px 0 5px;white-space:pre-wrap';
+      before.textContent = current ? ('Current: ' + currentText) : 'This step is no longer in the current plan.';
+      var label = document.createElement('label'); label.className = 'status'; label.style.display = 'block';
+      label.appendChild(document.createTextNode('Suggestion'));
+      var edit = document.createElement('textarea'); edit.rows = 2; edit.maxLength = 400; edit.value = item.text;
+      edit.style.cssText = 'display:block;width:100%;box-sizing:border-box;margin-top:3px;padding:5px 7px;resize:vertical';
+      edit.setAttribute('aria-label', 'Edit narration suggestion for step ' + item.stepNumber);
+      edit.setAttribute('data-demo-editor-base-disabled', current ? 'false' : 'true');
+      edit.disabled = !current;
+      edit.addEventListener('input', function () {
+        item.text = String(edit.value || '').replace(/[\r\n]+/g, ' ').slice(0, 400);
+        item.selected = !!item.text.trim(); check.checked = item.selected;
+        syncDemoScriptDraftReviewButtons();
+      });
+      label.appendChild(edit); body.appendChild(title); body.appendChild(before); body.appendChild(label);
+      var actions = document.createElement('div'); actions.className = 'row'; actions.style.marginTop = '6px';
+      var regenerate = document.createElement('button'); regenerate.className = 'quiet'; regenerate.textContent = 'Regenerate line';
+      regenerate.setAttribute('aria-label', 'Regenerate narration suggestion for step ' + item.stepNumber);
+      regenerate.setAttribute('data-demo-editor-base-disabled', current ? 'false' : 'true'); regenerate.disabled = !current;
+      regenerate.addEventListener('click', function () { regenerateDemoScriptReviewItem(item, regenerate); });
+      actions.appendChild(regenerate); body.appendChild(actions);
+      if (conflict) {
+        var note = document.createElement('span'); note.className = 'status'; note.style.color = 'var(--warn)';
+        note.textContent = 'The current line changed after this suggestion was generated. Compare it before applying.';
+        body.appendChild(note);
+      }
+      row.appendChild(check); row.appendChild(body); host.appendChild(row);
+    });
+    $('demoScriptDraftReviewStatus').textContent = demoScriptDraftReviewItems.length + ' suggestion' + (demoScriptDraftReviewItems.length === 1 ? '' : 's') + ' ready. Nothing changes until you apply one.' + (conflicts ? ' ' + conflicts + ' need a fresh comparison.' : '');
+    syncDemoScriptDraftReviewButtons();
+    syncDemoPlanEditorControls();
+  }
+  function demoScriptHistoryEntryUsable(entry, direction) {
+    var undo = direction === 'undo';
+    return !!(entry && Array.isArray(entry.changes) && entry.changes.some(function (change) {
+      return demoScriptReviewItemIsCurrent(change) && String(change.step.script || '') === (undo ? change.afterScript : change.beforeScript);
+    }));
+  }
+  function syncDemoScriptHistoryControls() {
+    var undoEntry = demoScriptHistoryIndex >= 0 ? demoScriptHistory[demoScriptHistoryIndex] : null;
+    var redoEntry = demoScriptHistoryIndex + 1 < demoScriptHistory.length ? demoScriptHistory[demoScriptHistoryIndex + 1] : null;
+    setDemoPlanEditorBaseDisabled($('demoScriptUndoBtn'), !demoScriptHistoryEntryUsable(undoEntry, 'undo'));
+    setDemoPlanEditorBaseDisabled($('demoScriptRedoBtn'), !demoScriptHistoryEntryUsable(redoEntry, 'redo'));
+  }
+  function recordDemoScriptRevision(changes) {
+    var list = Array.isArray(changes) ? changes.filter(function (change) { return change && change.step && change.beforeScript !== change.afterScript; }) : [];
+    if (!list.length) return false;
+    demoScriptHistory = demoScriptHistory.slice(0, demoScriptHistoryIndex + 1);
+    demoScriptHistory.push({ changes: list, createdAt: Date.now() });
+    if (demoScriptHistory.length > 10) demoScriptHistory.shift();
+    demoScriptHistoryIndex = demoScriptHistory.length - 1;
+    syncDemoScriptHistoryControls();
+    return true;
+  }
+  function applyDemoScriptRevision(direction) {
+    if (demoPlanEditorMutationLocked()) return;
+    var undo = direction === 'undo';
+    var nextIndex = undo ? demoScriptHistoryIndex : demoScriptHistoryIndex + 1;
+    var entry = nextIndex >= 0 && nextIndex < demoScriptHistory.length ? demoScriptHistory[nextIndex] : null;
+    if (!entry) { syncDemoScriptHistoryControls(); return; }
+    var applied = 0, skipped = 0, preservedHolds = 0;
+    entry.changes.forEach(function (change) {
+      if (!demoScriptReviewItemIsCurrent(change)) { skipped++; return; }
+      var expectedScript = undo ? change.afterScript : change.beforeScript;
+      var targetScript = undo ? change.beforeScript : change.afterScript;
+      var expectedHold = undo ? change.afterPause : change.beforePause;
+      var targetHold = undo ? change.beforePause : change.afterPause;
+      if (String(change.step.script || '') !== expectedScript) { skipped++; return; }
+      change.step.script = targetScript;
+      if (Math.abs(cleanDemoResultHold(change.step.pauseAfter) - cleanDemoResultHold(expectedHold)) < 0.01) change.step.pauseAfter = targetHold;
+      else preservedHolds++;
+      applied++;
+    });
+    if (!applied) {
+      setStatus($('demoScriptDraftStatus'), 'Nothing was changed because the narration was edited after this revision.', 'warn');
+      syncDemoScriptHistoryControls();
+      return;
+    }
+    demoScriptHistoryIndex = undo ? nextIndex - 1 : nextIndex;
+    renderDemoPlan();
+    setStatus($('demoScriptDraftStatus'), (undo ? 'Undid ' : 'Redid ') + applied + ' narration line' + (applied === 1 ? '' : 's') + '.' + (skipped ? ' ' + skipped + ' later manual edit' + (skipped === 1 ? ' was' : 's were') + ' preserved.' : '') + (preservedHolds ? ' ' + preservedHolds + ' manually adjusted hold time' + (preservedHolds === 1 ? ' was' : 's were') + ' preserved.' : ''), skipped || preservedHolds ? 'warn' : 'ok');
+    announce((undo ? 'Narration change undone' : 'Narration change redone'));
+  }
+  function applyDemoScriptDraftReview(applyAll) {
+    if (demoPlanEditorMutationLocked()) return;
+    var changedSteps = [];
+    var revisionChanges = [];
+    demoScriptDraftReviewItems.forEach(function (item) {
+      if (!demoScriptReviewItemIsCurrent(item) || (!applyAll && !item.selected)) return;
+      var line = String(item.text || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 400);
+      if (line && item.step.script !== line) {
+        revisionChanges.push({ step: item.step, beforeScript: String(item.step.script || ''), afterScript: line, beforePause: cleanDemoResultHold(item.step.pauseAfter), afterPause: cleanDemoResultHold(item.step.pauseAfter) });
+        item.step.script = line; changedSteps.push(item.step);
+      }
+    });
+    if (!changedSteps.length) { setStatus($('demoScriptDraftStatus'), 'Select at least one current suggestion to apply.', 'warn'); return; }
+    var pacingChanged = applyDemoPacingFit(changedSteps);
+    revisionChanges.forEach(function (change) { change.afterPause = cleanDemoResultHold(change.step.pauseAfter); });
+    recordDemoScriptRevision(revisionChanges);
+    clearDemoScriptDraftReview(false);
+    renderDemoPlan();
+    setStatus($('demoScriptDraftStatus'), changedSteps.length + ' narration line' + (changedSteps.length === 1 ? '' : 's') + ' applied.' + (pacingChanged ? ' Result holds were fitted for ' + pacingChanged + ' step' + (pacingChanged === 1 ? '' : 's') + '.' : '') + ' Review the wording before recording.', 'ok');
+    announce('Selected demo narration suggestions applied');
+  }
+  $('demoScriptApplySelectedBtn').addEventListener('click', function () { applyDemoScriptDraftReview(false); });
+  $('demoScriptApplyAllBtn').addEventListener('click', function () { applyDemoScriptDraftReview(true); });
+  $('demoScriptDiscardBtn').addEventListener('click', function () { if (!demoPlanEditorMutationLocked()) clearDemoScriptDraftReview(true); });
+  $('demoScriptUndoBtn').addEventListener('click', function () { applyDemoScriptRevision('undo'); });
+  $('demoScriptRedoBtn').addEventListener('click', function () { applyDemoScriptRevision('redo'); });
   $('demoScriptDraftBtn').addEventListener('click', async function () {
     var steps = approvedDemoSteps();
     if (!steps.length || demoPlanEditorMutationLocked()) return;
@@ -11758,26 +11973,25 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     syncDemoExecutionControls();
     setStatus($('demoScriptDraftStatus'), 'Drafting narration from the goal and reviewed step text...');
     try {
-      var response = await bridgeRequest('allostudio-demoscript-request', {
-        goal: $('demoGoal').value.trim(),
-        style: $('demoScriptStyle').value,
-        detail: $('demoScriptDetail').value,
-        steps: steps.map(function (step) { return cleanDemoDraftStep(step); })
-      }, 60000);
+      var response = await requestDemoScriptSuggestions(steps, -1);
       if (generation !== demoScriptDraftGeneration) return;
       if (response && response.error) throw new Error(response.error);
       var scripts = response && Array.isArray(response.scripts) ? response.scripts : [];
-      var changed = 0;
+      var seen = {};
+      var suggestions = [];
       scripts.forEach(function (item) {
         var index = Math.round(Number(item && item.index));
         var line = String((item && item.text) || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 400);
-        if (index >= 0 && index < steps.length && line && steps[index].script !== line) { steps[index].script = line; changed++; }
+        var target = index >= 0 && index < steps.length ? steps[index] : null;
+        if (!target || !line || target.script === line || seen[index]) return;
+        seen[index] = true;
+        suggestions.push({ step: target, stepNumber: (demoState.steps || []).indexOf(target) + 1, label: String(target.label || target.commandId || 'Demo step').slice(0, 90), original: String(target.script || ''), text: line, selected: true });
       });
-      if (!changed) throw new Error('The provider did not return usable narration lines.');
-      applyDemoPacingFit(steps);
-      renderDemoPlan();
-      setStatus($('demoScriptDraftStatus'), changed + ' narration line' + (changed === 1 ? '' : 's') + ' drafted. Review the wording before recording.', 'ok');
-      announce('Demo narration draft ready for review');
+      if (!suggestions.length) throw new Error('The provider did not return any new usable narration lines.');
+      demoScriptDraftReviewItems = suggestions;
+      renderDemoScriptDraftReview();
+      setStatus($('demoScriptDraftStatus'), suggestions.length + ' narration suggestion' + (suggestions.length === 1 ? '' : 's') + ' ready for review. Nothing changed yet.', 'ok');
+      announce('Demo narration suggestions ready for review');
     } catch (e) {
       if (generation !== demoScriptDraftGeneration) return;
       setStatus($('demoScriptDraftStatus'), 'Narration draft failed: ' + String((e && e.message) || e).slice(0, 140), 'bad');

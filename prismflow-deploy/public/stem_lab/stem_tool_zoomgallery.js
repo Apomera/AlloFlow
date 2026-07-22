@@ -133,7 +133,7 @@
         if (existing && !existing.closed) { try { existing.focus(); } catch (_) {} return; }
         var lang = (ctx.lang || 'en');
         var w = null;
-        try { w = window.open(ZOOM_GALLERY_URL + '&lang=' + encodeURIComponent(lang), 'alloflow-zoom-gallery', 'width=1280,height=860'); } catch (_) { w = null; }
+        try { w = window.open(ZOOM_GALLERY_URL + '&lang=' + encodeURIComponent(lang) + '&theme=' + encodeURIComponent(ctx.theme || 'dark'), 'alloflow-zoom-gallery', 'width=1280,height=860'); } catch (_) { w = null; }
         if (!w) {
           setPopupState('blocked');
           if (announceToSR) announceToSR(t('stem.zoomGallery.popup_blocked', 'The Zoom Gallery window was blocked. Allow pop-ups for this page, then try again.'));

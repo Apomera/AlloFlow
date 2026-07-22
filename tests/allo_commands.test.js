@@ -43,6 +43,9 @@ describe('AlloCommandPalette accessibility', () => {
     expect(source).toContain("const COMMAND_RECENTS_KEY = 'allo_command_recents_v1'");
     expect(source).toContain("t('palette.group.recent', 'Recent')");
     expect(source).toContain('rememberCommand(cmd.id)');
+    expect(source).toContain("getCommandAudience(ctx) === 'student'");
+    expect(source).toContain("t('student.actions', 'Student actions')");
+    expect(source).toContain("t('student.actions_search')");
   });
 });
 
@@ -75,7 +78,7 @@ describe('command coverage drift guards', () => {
 
   it('keeps every registry command explicitly grouped for palette browsing', () => {
     const source = readRoot('allo_commands_source.jsx');
-    const registry = source.match(/const cmds = \[([\s\S]*?)\r?\n\s*\];\r?\n\s*const isStudentish/);
+    const registry = source.match(/const cmds = \[([\s\S]*?)\r?\n\s*\];\r?\n\s*\/\/ opts\.includeGated/);
     const groupBlock = source.match(/const CMD_GROUP = \{([\s\S]*?)\n\};/);
     expect(registry).toBeTruthy();
     expect(groupBlock).toBeTruthy();
@@ -154,10 +157,28 @@ describe('buildAlloCommands (role + when filtering)', () => {
     expect(got).toContain('open_educator_hub'); // roles: 'teacher'
     expect(got).toContain('open_learning_hub'); // roles: 'all'
   });
-  it('excludes teacher-only commands in independent/student mode', () => {
-    const got = ids({ isIndependentMode: true });
-    expect(got).not.toContain('open_educator_hub');
-    expect(got).toContain('open_learning_hub');
+  it('excludes teacher-only commands in every learner-facing mode', () => {
+    const contexts = [
+      { isTeacherMode: false },
+      { isStudentLinkMode: true, isTeacherMode: false },
+      { isIndependentMode: true },
+      { isParentMode: true },
+    ];
+    for (const ctx of contexts) {
+      const got = ids(ctx);
+      expect(got).not.toContain('open_educator_hub');
+      expect(got).not.toContain('open_ai_settings');
+      expect(got).toContain('open_learning_hub');
+    }
+  });
+
+  it('keeps authoring commands out of Student View but available to independent and parent modes', () => {
+    const student = ids({ isTeacherMode: false, setSetupGradeLevel: vi.fn() });
+    for (const commandId of ['open_source_input', 'open_source_url', 'open_source_generator', 'set_grade_level']) {
+      expect(student).not.toContain(commandId);
+    }
+    expect(ids({ isIndependentMode: true, setSetupGradeLevel: vi.fn() })).toEqual(expect.arrayContaining(['open_source_input', 'set_grade_level']));
+    expect(ids({ isParentMode: true, setSetupGradeLevel: vi.fn() })).toEqual(expect.arrayContaining(['open_source_input', 'set_grade_level']));
   });
   it('applies when() predicates (a gated command appears only when its condition holds)', () => {
     expect(ids({})).not.toContain('pipeline_new_doc'); // when: pipelineOpen
@@ -230,6 +251,76 @@ describe('buildAlloCommands (role + when filtering)', () => {
 
     expect(ids({ isTeacherMode: true, openLivePoll: vi.fn() })).not.toContain('open_live_poll');
   });
+
+  it('applies student project permissions to dictation and Socratic commands', () => {
+    const blocked = ids({ isTeacherMode: false, allowStudentDictation: false, allowStudentSocratic: false, studentAiFeaturesHidden: true });
+    expect(blocked).not.toContain('toggle_dictation');
+    expect(blocked).not.toContain('toggle_socratic');
+    const allowed = ids({ isTeacherMode: false, allowStudentDictation: true, allowStudentSocratic: true, studentAiFeaturesHidden: false });
+    expect(allowed).toEqual(expect.arrayContaining(['toggle_dictation', 'toggle_socratic']));
+  });
+
+  it('offers contextual assignment actions only to students with matching capabilities', () => {
+    const student = ids({
+      isTeacherMode: false,
+      hasAssignmentDirections: true,
+      openAssignmentDirections: vi.fn(),
+      getAssignmentProgress: () => ({ done: 1, total: 3 }),
+      canSaveStudentWork: true,
+      saveStudentWork: vi.fn(),
+    });
+    expect(student).toEqual(expect.arrayContaining(['open_assignment_directions', 'check_assignment_progress', 'save_my_work']));
+    const teacher = ids({
+      isTeacherMode: true,
+      hasAssignmentDirections: true,
+      openAssignmentDirections: vi.fn(),
+      getAssignmentProgress: () => ({ done: 1, total: 3 }),
+      canSaveStudentWork: true,
+      saveStudentWork: vi.fn(),
+    });
+    expect(teacher).not.toEqual(expect.arrayContaining(['open_assignment_directions', 'check_assignment_progress', 'save_my_work']));
+  });
+
+  it('surfaces the next teacher and student workflow commands only when their capabilities are ready', () => {
+    const teacher = ids({
+      canEditAssignmentDirections: true, editAssignmentDirections: vi.fn(),
+      openAssessmentBuilder: vi.fn(), openUdlGuide: vi.fn(),
+      canGenerateCurrentRubric: true, generateCurrentRubric: vi.fn(),
+      canShareAssignment: true, shareAssignment: vi.fn(),
+      canPreviewStudentAssignment: true, previewStudentAssignment: vi.fn(),
+      hasResumableWork: true, resumeLatestWork: vi.fn(),
+    });
+    expect(teacher).toEqual(expect.arrayContaining([
+      'edit_assignment_directions', 'open_assessment_builder', 'open_udl_guide',
+      'create_activity_rubric', 'share_assignment', 'preview_assignment_as_student', 'resume_latest_work',
+    ]));
+
+    const student = ids({
+      isTeacherMode: false,
+      getNextAssignmentStep: () => ({ title: 'Quiz', goalLabel: 'Finish the quiz' }),
+      openNextAssignmentStep: vi.fn(),
+      hasAssignmentDirections: true, readAssignmentDirections: vi.fn(),
+      getSuccessCriteria: () => ({ title: 'Goals', criteria: ['Explain your reasoning'] }),
+      activeSessionCode: 'ABC123', sendTeacherSignal: vi.fn(),
+      getTeacherFeedback: () => ({ title: 'Feedback', text: 'Add one example.' }),
+      hasResumableWork: true, resumeLatestWork: vi.fn(),
+    });
+    expect(student).toEqual(expect.arrayContaining([
+      'next_assignment_step', 'read_assignment_directions', 'show_success_criteria',
+      'send_teacher_signal', 'review_teacher_feedback', 'resume_latest_work',
+    ]));
+    expect(student).not.toContain('edit_assignment_directions');
+  });
+
+  it('hides data-dependent student commands when no matching data exists', () => {
+    const student = ids({
+      isTeacherMode: false,
+      getNextAssignmentStep: () => null, openNextAssignmentStep: vi.fn(),
+      getSuccessCriteria: () => null,
+      getTeacherFeedback: () => null,
+    });
+    expect(student).not.toEqual(expect.arrayContaining(['next_assignment_step', 'show_success_criteria', 'review_teacher_feedback']));
+  });
 });
 
 describe('command param contracts', () => {
@@ -246,6 +337,7 @@ describe('command param contracts', () => {
     expect(AC.sanitizeCommandParams('set_source_tone', { tone: 'narrative', hidden: 'drop me' })).toEqual({ tone: 'narrative' });
     expect(AC.sanitizeCommandParams('set_source_length', { length: 'long', hidden: 'drop me' })).toEqual({ length: 'long' });
     expect(AC.sanitizeCommandParams('set_output_language', { language: 'Spanish', hidden: 'drop me' })).toEqual({ language: 'Spanish' });
+    expect(AC.sanitizeCommandParams('send_teacher_signal', { signal: 'slow down', hidden: 'drop me' })).toEqual({ signal: 'slow down' });
     expect(AC.sanitizeCommandParams('open_learning_hub', { hidden: 'drop me' })).toEqual({});
   });
 });
@@ -254,6 +346,13 @@ describe('routeUtterance', () => {
   it('returns null for empty or over-long input', async () => {
     expect(await AC.routeUtterance({}, '')).toBeNull();
     expect(await AC.routeUtterance({}, 'x'.repeat(201))).toBeNull();
+  });
+
+  it('routes fixed-vocabulary teacher signals without sending free text', async () => {
+    const sendTeacherSignal = vi.fn(() => true);
+    const result = await AC.routeUtterance({ isTeacherMode: false, activeSessionCode: 'ABC123', sendTeacherSignal }, 'ask my teacher to slow down');
+    expect(result).toMatchObject({ handled: true, commandId: 'send_teacher_signal', via: 'grammar' });
+    expect(sendTeacherSignal).toHaveBeenCalledWith('slow');
   });
 
   it('routes a "where is X" utterance to ctx.whereIs', async () => {
@@ -608,6 +707,90 @@ describe('runCommandById (executes a confirmed, previewed command)', () => {
 
   it('returns null for an unknown id', () => {
     expect(AC.runCommandById({}, 'no_such_command')).toBeNull();
+  });
+
+  it('rechecks the current audience before executing a stale command object', () => {
+    const staleTeacherCommand = AC.buildAlloCommands({}).find((command) => command.id === 'open_educator_hub');
+    const setShowEducatorHub = vi.fn();
+    expect(AC.executeCommand({ isTeacherMode: false, setShowEducatorHub }, staleTeacherCommand, {})).toBeNull();
+    expect(setShowEducatorHub).not.toHaveBeenCalled();
+  });
+
+  it('runs student assignment actions through the shared executor', () => {
+    const openAssignmentDirections = vi.fn();
+    const saveStudentWork = vi.fn();
+    const ctx = {
+      isTeacherMode: false,
+      hasAssignmentDirections: true,
+      openAssignmentDirections,
+      getAssignmentProgress: () => ({ title: 'Week 1', done: 2, total: 4 }),
+      canSaveStudentWork: true,
+      saveStudentWork,
+    };
+    expect(AC.runCommandById(ctx, 'open_assignment_directions', {})).toMatchObject({ handled: true });
+    expect(openAssignmentDirections).toHaveBeenCalledTimes(1);
+    expect(AC.runCommandById(ctx, 'check_assignment_progress', {}).narration).toContain('2 of 4');
+    expect(AC.runCommandById(ctx, 'save_my_work', {})).toMatchObject({ handled: true });
+    expect(saveStudentWork).toHaveBeenCalledTimes(1);
+  });
+  it('executes guarded student workflow actions and fixed teacher signals', () => {
+    const openNextAssignmentStep = vi.fn(() => ({ title: 'Quiz', goalLabel: 'Finish the quiz' }));
+    const sendTeacherSignal = vi.fn(() => true);
+    const ctx = {
+      isTeacherMode: false,
+      getNextAssignmentStep: () => ({ title: 'Quiz' }),
+      openNextAssignmentStep,
+      activeSessionCode: 'ABC123',
+      sendTeacherSignal,
+    };
+    expect(AC.runCommandById(ctx, 'next_assignment_step', {}).narration).toContain('Opening Quiz');
+    expect(openNextAssignmentStep).toHaveBeenCalledTimes(1);
+    expect(AC.runCommandById(ctx, 'send_teacher_signal', { signal: 'repeat that' })).toMatchObject({ handled: true });
+    expect(sendTeacherSignal).toHaveBeenCalledWith('repeat');
+  });
+
+  it('uses assignment-specific confirmation details before sharing', async () => {
+    const shareAssignment = vi.fn(async () => 'https://student.example/assignment');
+    const onCommandState = vi.fn();
+    const ctx = {
+      canShareAssignment: true, shareAssignment, onCommandState,
+      shareResourceCount: 3, shareExpiryDays: 7, shareStudentAiPolicy: 'student-byok',
+    };
+    const confirmation = AC.runCommandById(ctx, 'share_assignment', {});
+    expect(confirmation).toMatchObject({ handled: true, via: 'confirm', confirmationRequired: true });
+    expect(confirmation.narration).toContain('3');
+    expect(confirmation.narration).toContain('7');
+    expect(confirmation.narration).toContain('AI provider');
+    expect(shareAssignment).not.toHaveBeenCalled();
+
+    const started = AC.runCommandById(ctx, 'share_assignment', {}, { confirmed: true });
+    expect(started).toMatchObject({ handled: true, pending: true, commandId: 'share_assignment' });
+    expect(shareAssignment).toHaveBeenCalledTimes(1);
+    await expect(started.completion).resolves.toMatchObject({ ok: true, commandId: 'share_assignment' });
+    expect(onCommandState.mock.calls.map(([state]) => state.status)).toEqual(['pending', 'success']);
+  });
+
+  it('emits one pending-to-success lifecycle without running an async command twice', async () => {
+    const generateCurrentRubric = vi.fn(async () => true);
+    const onCommandState = vi.fn();
+    const result = AC.runCommandById({ canGenerateCurrentRubric: true, generateCurrentRubric, onCommandState }, 'create_activity_rubric', {});
+    expect(result).toMatchObject({ handled: true, pending: true, commandId: 'create_activity_rubric' });
+    expect(generateCurrentRubric).toHaveBeenCalledTimes(1);
+    await expect(result.completion).resolves.toMatchObject({ ok: true });
+    expect(generateCurrentRubric).toHaveBeenCalledTimes(1);
+    expect(onCommandState.mock.calls.map(([state]) => state.status)).toEqual(['pending', 'success']);
+  });
+
+  it('turns asynchronous command rejection into an announced lifecycle failure', async () => {
+    const addToast = vi.fn();
+    const onCommandState = vi.fn();
+    const generateCurrentRubric = vi.fn(async () => { throw new Error('offline'); });
+    const result = AC.runCommandById({ canGenerateCurrentRubric: true, generateCurrentRubric, addToast, onCommandState }, 'create_activity_rubric', {});
+    const completed = await result.completion;
+    expect(completed).toMatchObject({ ok: false, commandId: 'create_activity_rubric' });
+    expect(completed.narration).toContain('offline');
+    expect(onCommandState.mock.calls.map(([state]) => state.status)).toEqual(['pending', 'error']);
+    expect(addToast).toHaveBeenCalledWith(expect.stringContaining('offline'), 'error');
   });
   it('opens newer studio launchers through one host handler and closes peer panels', () => {
     const closeOtherPanels = vi.fn();

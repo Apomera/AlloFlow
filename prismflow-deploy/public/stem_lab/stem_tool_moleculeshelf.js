@@ -183,7 +183,7 @@
         if (existing && !existing.closed) { try { existing.focus(); } catch (_) {} return; }
         var lang = (ctx.lang || 'en');
         var w = null;
-        try { w = window.open(MOLECULE_SHELF_URL + '&lang=' + encodeURIComponent(lang), 'alloflow-molecule-shelf', 'width=1280,height=860'); } catch (_) { w = null; }
+        try { w = window.open(MOLECULE_SHELF_URL + '&lang=' + encodeURIComponent(lang) + '&theme=' + encodeURIComponent(ctx.theme || 'dark'), 'alloflow-molecule-shelf', 'width=1280,height=860'); } catch (_) { w = null; }
         if (!w) {
           setPopupState('blocked');
           if (announceToSR) announceToSR(t('stem.moleculeShelf.popup_blocked', 'The Molecule Shelf window was blocked. Allow pop-ups for this page, then try again.'));

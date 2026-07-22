@@ -45,6 +45,17 @@
     if (id === "humanities") return "Humanities & Social Research";
     return id || "no active lane";
   }
+  function methodPackLabel(id) {
+    var labels = {
+      scientific_investigation: "Scientific Investigation",
+      engineering_design: "Engineering Design",
+      humanistic_interpretation: "Humanistic Interpretation",
+      community_qualitative: "Community & Qualitative Inquiry",
+      civic_policy: "Civic & Policy Inquiry",
+      creative_cultural: "Creative & Cultural Inquiry"
+    };
+    return labels[id] || id || "no approach selected";
+  }
   function clip(s, n) {
     if (!s || typeof s !== "string") return "";
     return s.length <= n ? s : s.slice(0, n) + "\u2026";
@@ -63,7 +74,7 @@
       alignItems: "center",
       gap: "12px",
       flexWrap: "wrap"
-    } }, /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: "220px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", opacity: 0.7, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" } }, "Inquiry Health"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "15px", fontWeight: 800, marginTop: "2px" } }, j.questionTitle ? clip(j.questionTitle, 80) : /* @__PURE__ */ React.createElement("em", { style: { opacity: 0.7 } }, "(no question authored yet)")), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", opacity: 0.8, marginTop: "4px" } }, "Lane: ", /* @__PURE__ */ React.createElement("strong", null, laneLabel(j.activeLane)), j.activeStage && /* @__PURE__ */ React.createElement("span", null, " \xB7 Stage: ", /* @__PURE__ */ React.createElement("strong", null, j.activeStage)), /* @__PURE__ */ React.createElement("span", null, " \xB7 Active: ", /* @__PURE__ */ React.createElement("strong", null, fmtDuration(elapsed))), /* @__PURE__ */ React.createElement("span", null, " \xB7 Loop-backs: ", /* @__PURE__ */ React.createElement("strong", null, (j.loopBacks || []).length)))));
+    } }, /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: "220px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", opacity: 0.7, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" } }, "Inquiry Health"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "15px", fontWeight: 800, marginTop: "2px" } }, j.questionTitle ? clip(j.questionTitle, 80) : /* @__PURE__ */ React.createElement("em", { style: { opacity: 0.7 } }, "(no question authored yet)")), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", opacity: 0.8, marginTop: "4px" } }, "Lane: ", /* @__PURE__ */ React.createElement("strong", null, laneLabel(j.activeLane)), /* @__PURE__ */ React.createElement("span", null, " \xB7 Approach: ", /* @__PURE__ */ React.createElement("strong", null, methodPackLabel(j.activeMethodPack))), j.activeStage && /* @__PURE__ */ React.createElement("span", null, " \xB7 Stage: ", /* @__PURE__ */ React.createElement("strong", null, j.activeStage)), /* @__PURE__ */ React.createElement("span", null, " \xB7 Active: ", /* @__PURE__ */ React.createElement("strong", null, fmtDuration(elapsed))), /* @__PURE__ */ React.createElement("span", null, " \xB7 Loop-backs: ", /* @__PURE__ */ React.createElement("strong", null, (j.loopBacks || []).length)))));
   }
   function GradingPrincipleBanner() {
     return /* @__PURE__ */ React.createElement("div", { style: {
@@ -221,7 +232,13 @@
     }) && !probes.every(function(p) {
       return p.allSurvivesJustification && p.allSurvivesJustification.length >= 120;
     });
-    return /* @__PURE__ */ React.createElement(Panel, { title: "Warrant trajectory", subtitle: qualifierContractionsTotal + " qualifier contraction(s), " + warrantRevisionsTotal + " warrant revision(s), " + positionalitySnapshots.length + " positionality snapshot(s)" }, /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "10px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#475569" } }, "Source tier movement:"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", display: "flex", flexWrap: "wrap", gap: "4px" } }, /* @__PURE__ */ React.createElement(Pill, { color: "#16a34a", label: tierPromotions + " promotion(s)" }), /* @__PURE__ */ React.createElement(Pill, { color: "#d97706", label: tierDowngrades + " downgrade(s) \u2014 good data" }), /* @__PURE__ */ React.createElement(Pill, { color: "#dc2626", label: failedSIFT + " failed SIFT" })), /* @__PURE__ */ React.createElement(Note, { small: true }, "Downgrades and failed-SIFT entries are the lateral reading working as intended. Never penalize them.")), links.map(function(l) {
+    return /* @__PURE__ */ React.createElement(Panel, { title: "Warrant trajectory", subtitle: qualifierContractionsTotal + " qualifier contraction(s), " + warrantRevisionsTotal + " warrant revision(s), " + positionalitySnapshots.length + " positionality snapshot(s)" }, /* @__PURE__ */ React.createElement("div", { "data-humanities-source-context-health": "true", style: { marginBottom: "9px", padding: "7px 9px", borderRadius: "8px", background: "#faf5ff", border: "1px solid #d8b4fe", fontSize: "10px", color: "#6b21a8" } }, /* @__PURE__ */ React.createElement("strong", null, "Humanistic source context:"), " ", sources.filter(function(s) {
+      var c = s.humanitiesContext || {};
+      return c.relationshipType && c.historicalContext;
+    }).length, "/", sources.length, " sources identify their relationship and historical/material context; ", sources.filter(function(s) {
+      var r = (s.humanitiesContext || {}).inquiryRelationship;
+      return r === "challenges" || r === "complicates";
+    }).length, " challenge or complicate the current position."), "        ", /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "10px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#475569" } }, "Source tier movement:"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", display: "flex", flexWrap: "wrap", gap: "4px" } }, /* @__PURE__ */ React.createElement(Pill, { color: "#16a34a", label: tierPromotions + " promotion(s)" }), /* @__PURE__ */ React.createElement(Pill, { color: "#d97706", label: tierDowngrades + " downgrade(s) \u2014 good data" }), /* @__PURE__ */ React.createElement(Pill, { color: "#dc2626", label: failedSIFT + " failed SIFT" })), /* @__PURE__ */ React.createElement(Note, { small: true }, "Downgrades and failed-SIFT entries are the lateral reading working as intended. Never penalize them.")), links.map(function(l) {
       var qLog = l.qualifierRevisionLog || [];
       var wLog = l.warrantRevisionLog || [];
       var linkProbes = probes.filter(function(p) {
@@ -391,6 +408,46 @@
   function EmptyTrajectory(title, body) {
     return /* @__PURE__ */ React.createElement(Panel, { title }, /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "11px", color: "#94a3b8", fontStyle: "italic" } }, body));
   }
+  function MethodProvenancePanel(props) {
+    var j = props.journal;
+    var episodes = j.inquiryEpisodes || [];
+    var artifacts = j.capturedArtifacts || [];
+    var frame = (j.stageNotes || {}).frame_question || {};
+    var qualitative = frame.qualitativeMethod || null;
+    var creative = frame.creativeMethod || null;
+    return /* @__PURE__ */ React.createElement(Panel, { title: "Method, episodes, and tool provenance" }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#475569", lineHeight: 1.55 } }, /* @__PURE__ */ React.createElement("strong", null, "Current approach:"), " ", methodPackLabel(j.activeMethodPack), /* @__PURE__ */ React.createElement("span", null, " \xB7 Episodes: ", /* @__PURE__ */ React.createElement("strong", null, episodes.length)), /* @__PURE__ */ React.createElement("span", null, " \xB7 Approved tool artifacts: ", /* @__PURE__ */ React.createElement("strong", null, artifacts.length))), episodes.length > 0 && /* @__PURE__ */ React.createElement("ol", { style: { margin: "9px 0 0", paddingLeft: "20px", fontSize: "10px", color: "#475569" } }, episodes.slice(-8).map(function(episode) {
+      return /* @__PURE__ */ React.createElement("li", { key: episode.id }, /* @__PURE__ */ React.createElement("strong", null, methodPackLabel(episode.methodPackId)), " \xB7 ", fmtTime(episode.startedAt), episode.questionAtStart ? " \xB7 \u201C" + clip(episode.questionAtStart, 70) + "\u201D" : "");
+    })), artifacts.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "10px", display: "grid", gap: "6px" } }, artifacts.slice(-6).map(function(artifact) {
+      return /* @__PURE__ */ React.createElement("div", { key: artifact.id, style: { padding: "8px", borderRadius: "9px", border: "1px solid #cbd5e1", background: "#f8fafc" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "10px", fontWeight: 800, color: "#1e293b" } }, artifact.title), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", color: "#64748b" } }, artifact.sourceToolName || artifact.sourceToolId, " \xB7 ", methodPackLabel(artifact.methodPackId)), artifact.learnerNote && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "10px", color: "#334155" } }, /* @__PURE__ */ React.createElement("strong", null, "Learner interpretation:"), " ", clip(artifact.learnerNote, 220)), artifact.uncertaintyNote && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "10px", color: "#92400e" } }, /* @__PURE__ */ React.createElement("strong", null, "Uncertainty:"), " ", clip(artifact.uncertaintyNote, 220)));
+    })), qualitative && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "9px", padding: "8px", borderRadius: "9px", background: "#fdf2f8", fontSize: "10px", color: "#831843" } }, /* @__PURE__ */ React.createElement("strong", null, "Qualitative plan:"), " boundary ", qualitative.evidenceBoundary || "not selected", "; safeguarding ", qualitative.safeguardingAcknowledged ? "acknowledged" : "not yet acknowledged", "; selection rationale ", qualitative.selectionRationale ? "present" : "missing", "; discrepant-case plan ", qualitative.discrepantCasePlan ? "present" : "missing", "."), creative && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "9px", padding: "8px", borderRadius: "9px", background: "#fff7ed", fontSize: "10px", color: "#9a3412" } }, /* @__PURE__ */ React.createElement("strong", null, "Creative/cultural plan:"), " mode ", creative.inquiryMode || "not selected", "; attribution plan ", creative.attributionPlan ? "present" : "missing", "; critique plan ", creative.critiquePlan ? "present" : "missing", "."), !episodes.length && !artifacts.length && !qualitative && !creative && /* @__PURE__ */ React.createElement("p", { style: { margin: "8px 0 0", fontSize: "10px", color: "#64748b", fontStyle: "italic" } }, "No method episode or cross-tool provenance has been recorded yet."));
+  }
+  function IntegrationHealthPanel(props) {
+    var artifacts = props.journal.capturedArtifacts || [];
+    var helper = window.ResearchHub && window.ResearchHub.helpers && window.ResearchHub.helpers.assessResearchArtifactIntegration;
+    if (!artifacts.length) return EmptyTrajectory("Open-source integration health", "No approved tool artifacts yet. Contract, license, citation, and reproducibility checks appear here after capture.");
+    var rows = artifacts.map(function(artifact) {
+      var health = typeof helper === "function" ? helper(artifact) : artifact.integrationHealth || { status: "needs_review", issues: [] };
+      return { artifact, health };
+    });
+    var healthy = rows.filter(function(row) {
+      return row.health.status === "healthy";
+    }).length;
+    var review = rows.filter(function(row) {
+      return row.health.status === "needs_review";
+    }).length;
+    var action = rows.filter(function(row) {
+      return row.health.status === "action_needed";
+    }).length;
+    return /* @__PURE__ */ React.createElement(Panel, { title: "Open-source integration health", subtitle: healthy + " healthy \xB7 " + review + " review \xB7 " + action + " action needed" }, /* @__PURE__ */ React.createElement("div", { "data-educator-integration-health": "true", style: { display: "grid", gap: "7px" } }, rows.slice(-10).map(function(row) {
+      var artifact = row.artifact;
+      var contract = artifact.integrationContract || {};
+      var receipt = artifact.reproducibilityReceipt || {};
+      var color = row.health.status === "healthy" ? "#16a34a" : row.health.status === "action_needed" ? "#dc2626" : "#d97706";
+      return /* @__PURE__ */ React.createElement("div", { key: artifact.id, style: { padding: "8px 10px", borderRadius: "9px", border: "1px solid " + color, background: color + "0d" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "10px", color: "#1e293b" } }, artifact.sourceToolName || artifact.sourceToolId, " \xB7 ", artifact.sourceToolVersion || "version unknown"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "9px", fontWeight: 900, color } }, row.health.status.replace("_", " "))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "9px", color: "#64748b" } }, "Contract v", contract.schemaVersion || "?", " \xB7 license: ", contract.license && (contract.license.spdx || contract.license.name) || "missing", " \xB7 citation: ", contract.citation && contract.citation.text ? "declared" : "missing", " \xB7 reproducibility: ", receipt.status || "missing"), receipt.missingFields && receipt.missingFields.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "9px", color: "#92400e" } }, /* @__PURE__ */ React.createElement("strong", null, "Receipt gaps:"), " ", receipt.missingFields.join(", ")), row.health.issues && row.health.issues.length > 0 && /* @__PURE__ */ React.createElement("ul", { style: { margin: "4px 0 0", paddingLeft: "17px", fontSize: "9px", color: "#475569" } }, row.health.issues.map(function(issue) {
+        return /* @__PURE__ */ React.createElement("li", { key: issue.code }, issue.message);
+      })));
+    })), /* @__PURE__ */ React.createElement(Note, null, "Health reflects declared metadata and portfolio completeness; it does not independently certify a tool\u2019s scientific validity or security."));
+  }
   function DashboardRoot(props) {
     var ctx = props.ctx;
     var t = ctx.t;
@@ -416,7 +473,7 @@
       },
       "\u2190 ",
       t("research_hub.educator_view_exit") || "Return to student view"
-    ), /* @__PURE__ */ React.createElement(GradingPrincipleBanner, null), lane === "scientific" && /* @__PURE__ */ React.createElement(ModelTrajectoryPanel, { journal: j }), lane === "engineering" && /* @__PURE__ */ React.createElement(BuildTestTrajectoryPanel, { journal: j }), lane === "humanities" && /* @__PURE__ */ React.createElement(WarrantTrajectoryPanel, { journal: j }), !lane && /* @__PURE__ */ React.createElement("div", { style: {
+    ), /* @__PURE__ */ React.createElement(GradingPrincipleBanner, null), /* @__PURE__ */ React.createElement(MethodProvenancePanel, { journal: j }), /* @__PURE__ */ React.createElement(IntegrationHealthPanel, { journal: j }), lane === "scientific" && /* @__PURE__ */ React.createElement(ModelTrajectoryPanel, { journal: j }), lane === "engineering" && /* @__PURE__ */ React.createElement(BuildTestTrajectoryPanel, { journal: j }), lane === "humanities" && /* @__PURE__ */ React.createElement(WarrantTrajectoryPanel, { journal: j }), !lane && /* @__PURE__ */ React.createElement("div", { style: {
       padding: "12px",
       borderRadius: "12px",
       background: "#f8fafc",

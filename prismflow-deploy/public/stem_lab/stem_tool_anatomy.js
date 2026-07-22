@@ -117,11 +117,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-structure-panel{border-radius:8px;border:1px solid rgba(15,23,42,.12);background:#fff;padding:12px;box-shadow:0 10px 22px rgba(15,23,42,.06);}',
       '.anatomy-structure-list{max-height:520px;overflow-y:auto;padding-right:4px;}',
       '.anatomy-structure-list button{border-radius:8px;}',
+      '.anatomy-atlas{border-radius:12px;border:1px solid #fecdd3;background:linear-gradient(145deg,#fff 0%,#fff7f7 100%);padding:12px;}',
+      '.anatomy-atlas-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px;}',
+      '.anatomy-atlas-header h5{font-size:13px;font-weight:950;color:#881337;margin:0;}',
+      '.anatomy-atlas-header p{font-size:10px;line-height:1.45;color:#64748b;margin:2px 0 0;max-width:500px;}',
+      '.anatomy-atlas-stage{border-radius:10px;border:1px solid #e2e8f0;background:#fff;overflow:hidden;}',
+      '.anatomy-atlas-stage svg{display:block;width:100%;height:auto;min-height:250px;}',
+      '.anatomy-atlas-route{fill:none;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;opacity:.18;transition:opacity .2s ease,stroke-width .2s ease;}',
+      '.anatomy-atlas-route.is-active{opacity:1;stroke-width:9;stroke-dasharray:12 9;animation:anatomy-atlas-flow 1.15s linear infinite;}',
+      '.anatomy-atlas.is-paused .anatomy-atlas-route.is-active{animation-play-state:paused;}',
+      '.anatomy-atlas-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:8px;}',
+      '.anatomy-atlas-steps button{min-height:44px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#334155;padding:6px;text-align:left;font-size:10px;font-weight:850;line-height:1.25;}',
+      '.anatomy-atlas-steps button[aria-pressed="true"]{border-color:#be123c;background:#fff1f2;color:#881337;box-shadow:inset 0 0 0 1px #be123c;}',
+      '.anatomy-atlas-step-detail{display:flex;align-items:flex-start;gap:8px;margin-top:8px;border-left:4px solid #be123c;background:#fff1f2;padding:8px 10px;color:#4c0519;}',
+      '.anatomy-atlas-step-detail strong{font-size:11px;white-space:nowrap;}',
+      '.anatomy-atlas-step-detail span{font-size:11px;line-height:1.45;}',
+      '@keyframes anatomy-atlas-flow{to{stroke-dashoffset:-42}}',
+      '.anatomy-atlas[data-anatomy-atlas="kidneys"]{border-color:#a7f3d0;background:linear-gradient(145deg,#fff 0%,#f0fdf4 100%);}',
+      '.anatomy-atlas[data-anatomy-atlas="kidneys"] .anatomy-atlas-header h5{color:#065f46;}',
+      '.anatomy-atlas[data-anatomy-atlas="kidneys"] .anatomy-atlas-steps button[aria-pressed="true"]{border-color:#059669;background:#ecfdf5;color:#065f46;box-shadow:inset 0 0 0 1px #059669;}',
+      '.anatomy-atlas[data-anatomy-atlas="kidneys"] .anatomy-atlas-step-detail{border-left-color:#059669;background:#ecfdf5;color:#064e3b;}',
+      '.anatomy-atlas[data-anatomy-atlas="alveoli"]{border-color:#bae6fd;background:linear-gradient(145deg,#fff 0%,#f0f9ff 100%);}',
+      '.anatomy-atlas[data-anatomy-atlas="alveoli"] .anatomy-atlas-header h5{color:#075985;}',
+      '.anatomy-atlas[data-anatomy-atlas="alveoli"] .anatomy-atlas-steps button[aria-pressed="true"]{border-color:#0284c7;background:#f0f9ff;color:#075985;box-shadow:inset 0 0 0 1px #0284c7;}',
+      '.anatomy-atlas[data-anatomy-atlas="alveoli"] .anatomy-atlas-step-detail{border-left-color:#0284c7;background:#f0f9ff;color:#0c4a6e;}',
       '.anatomy-badge-panel,.anatomy-stats-panel{border-radius:8px!important;}',
       '@media (max-width:900px){.anatomy-mission-inner{grid-template-columns:1fr}.anatomy-workspace{grid-template-columns:1fr}.anatomy-body-shell{position:relative;top:auto}.anatomy-tab-strip{position:relative}}',
       '@media (max-width:720px){.anatomy-system-rail{grid-template-columns:repeat(3,minmax(0,1fr))}.anatomy-tab-strip{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))}.anatomy-tab-strip>button{width:100%;padding-left:8px;padding-right:8px}.anatomy-tab-strip>span{grid-column:1/-1;margin-left:0!important;text-align:right}}',
       '@media (forced-colors:active){.anatomy-canvas,.anatomy-minimap,.anatomy-canvas-toolbar button,.anatomy-marker-legend-symbol{forced-color-adjust:auto;border:1px solid CanvasText!important}.anatomy-minimap-viewport{border-color:Highlight!important}.anatomy-minimap-selected{background:Highlight!important;box-shadow:0 0 0 2px Canvas!important}}',
       '@media (max-width:560px){.anatomy-mission-inner{padding:12px}.anatomy-mission-title{font-size:18px}.anatomy-metric-grid{grid-template-columns:1fr 1fr}.anatomy-mode-card p{display:none}.anatomy-system-rail{grid-template-columns:1fr 1fr}.anatomy-tab-strip{grid-template-columns:1fr 1fr}.anatomy-body-header{align-items:flex-start}.anatomy-body-badges{align-items:flex-end}.anatomy-canvas-toolbar{align-items:stretch;flex-direction:column}.anatomy-canvas-toolbar>span{white-space:normal;max-width:none}.anatomy-canvas-toolbar-group{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;gap:5px}.anatomy-canvas-toolbar button{width:100%;min-width:0;min-height:44px}.anatomy-minimap{right:6px;bottom:6px}.anatomy-tab-strip button,.anatomy-system-rail button,.anatomy-layer-bar button,.anatomy-controls-bar button,.anatomy-structure-list button{min-height:44px}}'
+      ,
+      '@media (prefers-reduced-motion:reduce){.anatomy-atlas-route.is-active{animation:none}.anatomy-atlas-route{transition:none}}',
+      '@media (max-width:560px){.anatomy-atlas-steps{grid-template-columns:1fr 1fr}.anatomy-atlas-stage svg{min-height:210px}.anatomy-atlas-step-detail{display:block}.anatomy-atlas-step-detail strong{display:block;margin-bottom:3px}}',
     ].join('');
     document.head.appendChild(st);
   })();
@@ -1050,6 +1077,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         };
 
         // ══════════════════════════════════════
+        // Regional deep-dive atlas. Additional organs can reuse this focused-diagram contract.
+        var REGIONAL_ATLASES = {
+          heart: {
+            title: t('stem.anatomy.heart_deep_dive', 'Heart deep dive'),
+            subtitle: t('stem.anatomy.trace_double_circulation', 'Trace double circulation through chambers, valves, lungs, and the body.'),
+            steps: [
+              { id: 'venous_return', label: '1. Venous return', short: 'Body to right atrium', detail: 'Oxygen-poor blood returns from the body through the superior and inferior venae cavae and enters the right atrium.', color: '#2563eb' },
+              { id: 'pulmonary_outflow', label: '2. To the lungs', short: 'Right ventricle to lungs', detail: 'Blood crosses the tricuspid valve into the right ventricle, then passes through the pulmonary valve and pulmonary arteries to the lungs.', color: '#2563eb' },
+              { id: 'pulmonary_return', label: '3. Oxygenated return', short: 'Lungs to left atrium', detail: 'After gas exchange, oxygen-rich blood returns through the pulmonary veins and enters the left atrium.', color: '#dc2626' },
+              { id: 'systemic_outflow', label: '4. To the body', short: 'Left ventricle to aorta', detail: 'Blood crosses the mitral valve into the left ventricle, then passes through the aortic valve and aorta to supply the body.', color: '#dc2626' }
+            ]
+          }
+          , kidneys: {
+            title: t('stem.anatomy.kidney_deep_dive', 'Kidney and nephron deep dive'),
+            subtitle: t('stem.anatomy.trace_nephron_processing', 'Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.'),
+            steps: [
+              { id: 'glomerular_filtration', label: '1. Filtration', short: 'Blood to Bowman capsule', detail: 'Blood pressure pushes water and small solutes across the glomerular filtration barrier into Bowman capsule. Blood cells and most proteins remain in the circulation.', color: '#7c3aed' },
+              { id: 'tubular_reabsorption', label: '2. Reabsorption', short: 'Tubule to blood', detail: 'The proximal tubule returns most filtered water and sodium, plus nearly all glucose and amino acids, to nearby peritubular capillaries.', color: '#059669' },
+              { id: 'tubular_secretion', label: '3. Secretion', short: 'Blood to tubule', detail: 'Tubule cells move selected ions, medications, and metabolic wastes from the capillary blood into the tubular fluid, helping regulate pH and composition.', color: '#d97706' },
+              { id: 'urine_concentration', label: '4. Urine formation', short: 'Collecting duct to ureter', detail: 'The loop of Henle builds a medullary concentration gradient. The distal tubule and collecting duct make final hormone-guided adjustments before urine enters the renal pelvis and ureter.', color: '#0284c7' }
+            ]
+          }
+          , alveoli: {
+            title: t('stem.anatomy.alveolus_deep_dive', 'Alveolus and gas-exchange deep dive'),
+            subtitle: t('stem.anatomy.trace_alveolar_exchange', 'Trace ventilation, diffusion across the thin air-blood barrier, and capillary transport.'),
+            steps: [
+              { id: 'alveolar_ventilation', label: '1. Ventilation', short: 'Fresh air enters alveolus', detail: 'Inhalation refreshes alveolar air. Oxygen partial pressure becomes higher in the alveolus than in the arriving pulmonary capillary blood.', color: '#0ea5e9' },
+              { id: 'oxygen_diffusion', label: '2. Oxygen diffusion', short: 'Alveolus to blood', detail: 'Oxygen diffuses down its partial-pressure gradient across the type I alveolar epithelium, thin interstitial layer, and capillary endothelium, then binds to hemoglobin.', color: '#dc2626' },
+              { id: 'carbon_dioxide_diffusion', label: '3. Carbon dioxide', short: 'Blood to alveolus', detail: 'Carbon dioxide diffuses in the opposite direction, from arriving venous blood across the air-blood barrier into the alveolar air.', color: '#2563eb' },
+              { id: 'gas_transport', label: '4. Transport onward', short: 'Blood leaves; gas exhales', detail: 'Oxygenated blood continues toward the pulmonary veins and left heart. Carbon dioxide is removed from the alveolus during exhalation; efficient exchange requires matched ventilation and perfusion.', color: '#7c3aed' }
+            ]
+          }
+        };
+
         // DERIVED STATE
         // ══════════════════════════════════════
 
@@ -1146,6 +1207,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var selectedStructureId = typeof d.selectedStructure === 'string' ? d.selectedStructure : null;
         var sel = selectedStructureId ? viewFiltered.find(function(s) { return s.id === selectedStructureId; }) : null;
 
+        var regionalAtlas = sel && REGIONAL_ATLASES[sel.id] ? REGIONAL_ATLASES[sel.id] : null;
+        var regionalAtlasOpen = !!regionalAtlas && d._regionalAtlasOpen === sel.id;
+        var rawAtlasStep = Number(d._regionalAtlasStep);
+        var regionalAtlasStep = regionalAtlas && Number.isFinite(rawAtlasStep)
+          ? Math.max(0, Math.min(Math.floor(rawAtlasStep), regionalAtlas.steps.length - 1)) : 0;
+        var regionalAtlasPlaying = d._regionalAtlasPlaying !== false;
         function findStructureContext(structureId, preferredSystemId) {
           var orderedSystems = ANATOMY_SYSTEM_IDS.slice();
           var preferredIndex = orderedSystems.indexOf(preferredSystemId);
@@ -4911,6 +4978,377 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         };
 
         // ── TTS button helper ──
+        function renderHeartAtlas() {
+          if (!regionalAtlas) return null;
+          var activeStep = regionalAtlas.steps[regionalAtlasStep];
+          function flowRoute(stepIndex, pathData, color, markerId) {
+            return h('path', {
+              d: pathData,
+              className: 'anatomy-atlas-route' + (regionalAtlasStep === stepIndex ? ' is-active' : ''),
+              stroke: color,
+              markerEnd: 'url(#' + markerId + ')',
+              'aria-hidden': 'true'
+            });
+          }
+          function svgLabel(x, y, value, options) {
+            var labelOptions = options || {};
+            return h('text', {
+              x: x, y: y,
+              textAnchor: labelOptions.anchor || 'middle',
+              fill: labelOptions.color || '#334155',
+              fontSize: labelOptions.size || 12,
+              fontWeight: labelOptions.weight || 800
+            }, value);
+          }
+          return h('section', {
+            id: 'anatomy-regional-atlas',
+            className: 'anatomy-atlas' + (regionalAtlasPlaying ? '' : ' is-paused'),
+            'aria-label': regionalAtlas.title,
+            'data-anatomy-atlas': 'heart'
+          },
+            h('div', { className: 'anatomy-atlas-header' },
+              h('div', null,
+                h('h5', null, 'Heart regional atlas'),
+                h('p', null, regionalAtlas.subtitle)
+              ),
+              h('button', {
+                type: 'button',
+                'aria-label': regionalAtlasPlaying ? 'Pause blood-flow animation' : 'Play blood-flow animation',
+                'aria-pressed': regionalAtlasPlaying,
+                onClick: function() { upd('_regionalAtlasPlaying', !regionalAtlasPlaying); },
+                className: 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-rose-300 bg-white text-rose-700 hover:bg-rose-50 active:scale-[0.97]'
+              }, regionalAtlasPlaying ? 'Pause flow' : 'Play flow')
+            ),
+            h('div', { className: 'anatomy-atlas-stage' },
+              h('svg', {
+                viewBox: '0 0 640 360',
+                role: 'img',
+                'aria-labelledby': 'anatomy-heart-atlas-title anatomy-heart-atlas-desc',
+                preserveAspectRatio: 'xMidYMid meet'
+              },
+                h('title', { id: 'anatomy-heart-atlas-title' }, 'Four-chamber heart and double-circulation diagram'),
+                h('desc', { id: 'anatomy-heart-atlas-desc' }, 'A selectable four-step diagram traces oxygen-poor blood from the body through the right heart to the lungs, then oxygen-rich blood through the left heart and aorta back to the body.'),
+                h('defs', null,
+                  h('marker', { id: 'anatomy-arrow-blue', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' },
+                    h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#2563eb' })
+                  ),
+                  h('marker', { id: 'anatomy-arrow-red', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' },
+                    h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#dc2626' })
+                  )
+                ),
+                h('rect', { x: 12, y: 12, width: 616, height: 336, rx: 22, fill: '#f8fafc' }),
+                h('ellipse', { cx: 112, cy: 145, rx: 62, ry: 92, fill: '#dbeafe', stroke: '#60a5fa', strokeWidth: 3 }),
+                h('path', { d: 'M112 58 L112 230 M112 100 C82 112 70 142 72 178 M112 100 C142 112 154 142 152 178', fill: 'none', stroke: '#93c5fd', strokeWidth: 5, strokeLinecap: 'round' }),
+                svgLabel(112, 274, 'LUNGS', { color: '#1d4ed8', size: 13 }),
+                h('rect', { x: 538, y: 82, width: 80, height: 150, rx: 38, fill: '#f1f5f9', stroke: '#94a3b8', strokeWidth: 3 }),
+                svgLabel(578, 252, 'BODY', { color: '#475569', size: 13 }),
+                h('path', { d: 'M250 70 C250 42 295 34 322 62 C350 32 404 42 420 82 C448 150 410 276 324 318 C232 270 206 154 228 96 C233 83 240 75 250 70 Z', fill: '#ffe4e6', stroke: '#be123c', strokeWidth: 4 }),
+                h('rect', { x: 250, y: 77, width: 68, height: 83, rx: 24, fill: '#bfdbfe', stroke: '#2563eb', strokeWidth: regionalAtlasStep < 2 ? 4 : 2 }),
+                h('rect', { x: 250, y: 185, width: 68, height: 96, rx: 25, fill: '#93c5fd', stroke: '#1d4ed8', strokeWidth: regionalAtlasStep === 1 ? 4 : 2 }),
+                h('rect', { x: 345, y: 77, width: 68, height: 83, rx: 24, fill: '#fecaca', stroke: '#dc2626', strokeWidth: regionalAtlasStep === 2 ? 4 : 2 }),
+                h('rect', { x: 345, y: 185, width: 68, height: 105, rx: 25, fill: '#fca5a5', stroke: '#b91c1c', strokeWidth: regionalAtlasStep === 3 ? 5 : 3 }),
+                svgLabel(284, 121, 'RIGHT', { color: '#1e3a8a', size: 10 }),
+                svgLabel(284, 137, 'ATRIUM', { color: '#1e3a8a', size: 10 }),
+                svgLabel(284, 226, 'RIGHT', { color: '#1e3a8a', size: 10 }),
+                svgLabel(284, 242, 'VENTRICLE', { color: '#1e3a8a', size: 9 }),
+                svgLabel(379, 121, 'LEFT', { color: '#7f1d1d', size: 10 }),
+                svgLabel(379, 137, 'ATRIUM', { color: '#7f1d1d', size: 10 }),
+                svgLabel(379, 226, 'LEFT', { color: '#7f1d1d', size: 10 }),
+                svgLabel(379, 242, 'VENTRICLE', { color: '#7f1d1d', size: 9 }),
+                h('line', { x1: 253, y1: 172, x2: 315, y2: 172, stroke: '#475569', strokeWidth: 4 }),
+                h('line', { x1: 348, y1: 172, x2: 410, y2: 172, stroke: '#475569', strokeWidth: 4 }),
+                svgLabel(284, 178, 'tricuspid', { color: '#334155', size: 7 }),
+                svgLabel(379, 178, 'mitral', { color: '#334155', size: 7 }),
+                flowRoute(0, 'M574 170 C505 170 504 48 360 48 C320 48 300 57 286 78', '#2563eb', 'anatomy-arrow-blue'),
+                flowRoute(1, 'M284 145 L284 205 C238 270 170 242 136 186 C123 165 121 149 120 136', '#2563eb', 'anatomy-arrow-blue'),
+                flowRoute(2, 'M120 120 C160 72 235 48 335 65 L371 82', '#dc2626', 'anatomy-arrow-red'),
+                flowRoute(3, 'M379 145 L379 207 C428 279 492 232 523 188 C541 162 554 157 577 157', '#dc2626', 'anatomy-arrow-red'),
+                h('circle', { cx: 28, cy: 322, r: 6, fill: '#2563eb' }),
+                svgLabel(40, 326, 'oxygen-poor', { anchor: 'start', color: '#334155', size: 10, weight: 700 }),
+                h('circle', { cx: 127, cy: 322, r: 6, fill: '#dc2626' }),
+                svgLabel(139, 326, 'oxygen-rich', { anchor: 'start', color: '#334155', size: 10, weight: 700 })
+              )
+            ),
+            h('div', { className: 'anatomy-atlas-steps', role: 'group', 'aria-label': 'Blood-flow steps' },
+              regionalAtlas.steps.map(function(stepItem, stepIndex) {
+                return h('button', {
+                  key: stepItem.id,
+                  type: 'button',
+                  'aria-pressed': regionalAtlasStep === stepIndex,
+                  onClick: function() {
+                    updMulti({ _regionalAtlasStep: stepIndex, _regionalAtlasPlaying: true });
+                    if (typeof announceToSR === 'function') announceToSR(stepItem.label + '. ' + stepItem.detail);
+                  }
+                },
+                  h('span', { className: 'block' }, stepItem.label),
+                  h('span', { className: 'block mt-1 font-normal' }, stepItem.short)
+                );
+              })
+            ),
+            h('div', { className: 'anatomy-atlas-step-detail', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+              h('strong', null, activeStep.label),
+              h('span', null, activeStep.detail)
+            )
+          );
+        }
+
+        function renderKidneyAtlas() {
+          if (!regionalAtlas) return null;
+          var activeStep = regionalAtlas.steps[regionalAtlasStep];
+          function kidneyRoute(stepIndex, pathData, color, markerId) {
+            return h('path', {
+              d: pathData,
+              className: 'anatomy-atlas-route' + (regionalAtlasStep === stepIndex ? ' is-active' : ''),
+              stroke: color,
+              markerEnd: 'url(#' + markerId + ')',
+              'aria-hidden': 'true'
+            });
+          }
+          function kidneyLabel(x, y, value, options) {
+            var labelOptions = options || {};
+            return h('text', {
+              x: x, y: y,
+              textAnchor: labelOptions.anchor || 'middle',
+              fill: labelOptions.color || '#334155',
+              fontSize: labelOptions.size || 11,
+              fontWeight: labelOptions.weight || 800
+            }, value);
+          }
+          return h('section', {
+            id: 'anatomy-regional-atlas',
+            className: 'anatomy-atlas' + (regionalAtlasPlaying ? '' : ' is-paused'),
+            'aria-label': regionalAtlas.title,
+            'data-anatomy-atlas': 'kidneys'
+          },
+            h('div', { className: 'anatomy-atlas-header' },
+              h('div', null,
+                h('h5', null, 'Kidney and nephron regional atlas'),
+                h('p', null, regionalAtlas.subtitle)
+              ),
+              h('button', {
+                type: 'button',
+                'aria-label': regionalAtlasPlaying ? 'Pause filtrate-flow animation' : 'Play filtrate-flow animation',
+                'aria-pressed': regionalAtlasPlaying,
+                onClick: function() { upd('_regionalAtlasPlaying', !regionalAtlasPlaying); },
+                className: 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-emerald-300 bg-white text-emerald-700 hover:bg-emerald-50 active:scale-[0.97]'
+              }, regionalAtlasPlaying ? 'Pause flow' : 'Play flow')
+            ),
+            h('div', { className: 'anatomy-atlas-stage' },
+              h('svg', {
+                viewBox: '0 0 640 360',
+                role: 'img',
+                'aria-labelledby': 'anatomy-kidney-atlas-title anatomy-kidney-atlas-desc',
+                preserveAspectRatio: 'xMidYMid meet'
+              },
+                h('title', { id: 'anatomy-kidney-atlas-title' }, 'Kidney cross-section and nephron processing diagram'),
+                h('desc', { id: 'anatomy-kidney-atlas-desc' }, 'A selectable four-step diagram traces filtration at the glomerulus, reabsorption and secretion along the tubule, and final urine concentration in the collecting duct.'),
+                h('defs', null,
+                  [
+                    { id: 'anatomy-arrow-purple', color: '#7c3aed' },
+                    { id: 'anatomy-arrow-green', color: '#059669' },
+                    { id: 'anatomy-arrow-orange', color: '#d97706' },
+                    { id: 'anatomy-arrow-cyan', color: '#0284c7' }
+                  ].map(function(marker) {
+                    return h('marker', { key: marker.id, id: marker.id, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' },
+                      h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: marker.color })
+                    );
+                  })
+                ),
+                h('rect', { x: 12, y: 12, width: 616, height: 336, rx: 22, fill: '#f8fafc' }),
+                h('path', { d: 'M149 42 C86 39 48 92 51 166 C54 254 105 310 166 289 C206 275 226 233 214 196 C205 168 180 158 177 132 C175 109 202 91 194 68 C188 50 171 42 149 42 Z', fill: '#fbcfe8', stroke: '#be185d', strokeWidth: 4 }),
+                h('path', { d: 'M145 72 C100 72 78 111 82 165 C86 220 115 264 157 257 C181 253 193 229 184 205 C176 183 150 174 148 139 C147 115 170 102 166 85 C163 76 155 72 145 72 Z', fill: '#fde68a', stroke: '#d97706', strokeWidth: 3 }),
+                h('path', { d: 'M149 120 C122 132 119 181 147 211 L181 181 C163 164 158 145 171 126 Z', fill: '#fff7ed', stroke: '#c2410c', strokeWidth: 3 }),
+                h('path', { d: 'M177 168 C209 165 224 174 245 191', fill: 'none', stroke: '#0284c7', strokeWidth: 8, strokeLinecap: 'round' }),
+                kidneyLabel(132, 326, 'KIDNEY CROSS-SECTION', { color: '#831843', size: 12 }),
+                kidneyLabel(102, 63, 'cortex', { color: '#831843', size: 9 }),
+                kidneyLabel(117, 178, 'medulla', { color: '#92400e', size: 9 }),
+                kidneyLabel(202, 154, 'renal pelvis', { anchor: 'start', color: '#334155', size: 8 }),
+                h('path', { d: 'M221 125 C245 110 255 89 270 82', fill: 'none', stroke: '#64748b', strokeWidth: 2, strokeDasharray: '5 5' }),
+                kidneyLabel(238, 111, 'one nephron', { color: '#475569', size: 9 }),
+                h('circle', { cx: 305, cy: 90, r: 38, fill: '#ede9fe', stroke: '#7c3aed', strokeWidth: 3 }),
+                h('path', { d: 'M284 82 C289 57 324 59 326 85 C327 109 292 115 283 96 C274 78 299 65 318 75 C336 84 323 104 306 102 C289 100 285 87 294 78', fill: 'none', stroke: '#dc2626', strokeWidth: 5, strokeLinecap: 'round' }),
+                h('path', { d: 'M246 77 L276 83', fill: 'none', stroke: '#dc2626', strokeWidth: 7, strokeLinecap: 'round' }),
+                h('path', { d: 'M322 66 C389 35 489 51 530 116 C548 145 541 184 519 206', fill: 'none', stroke: '#f87171', strokeWidth: 4, strokeLinecap: 'round' }),
+                h('path', { d: 'M335 104 C374 83 390 93 377 116 C365 136 397 143 420 123 C451 96 468 129 441 151 L420 166 C394 211 397 281 438 303 C482 282 489 211 470 164 C493 147 520 151 526 128 C531 110 546 108 559 122 L559 316', fill: 'none', stroke: '#94a3b8', strokeWidth: 8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                h('path', { d: 'M356 118 C382 160 376 243 424 275 C467 248 462 184 481 153 C505 116 535 146 535 183 C535 223 512 260 482 282', fill: 'none', stroke: '#fca5a5', strokeWidth: 3, strokeLinecap: 'round' }),
+                kidneyLabel(305, 40, 'glomerulus', { color: '#5b21b6', size: 10 }),
+                kidneyLabel(387, 89, 'proximal tubule', { color: '#334155', size: 9 }),
+                kidneyLabel(439, 333, 'loop of Henle', { color: '#334155', size: 9 }),
+                kidneyLabel(507, 102, 'distal tubule', { color: '#334155', size: 9 }),
+                kidneyLabel(572, 225, 'collecting duct', { anchor: 'start', color: '#334155', size: 9 }),
+                kidneyLabel(559, 337, 'to renal pelvis', { color: '#0369a1', size: 9 }),
+                kidneyRoute(0, 'M246 77 L281 84 C289 86 296 91 312 103', '#7c3aed', 'anatomy-arrow-purple'),
+                kidneyRoute(1, 'M335 104 C374 83 390 93 377 116 C365 136 397 143 420 123', '#059669', 'anatomy-arrow-green'),
+                kidneyRoute(2, 'M510 72 C502 92 492 119 478 150', '#d97706', 'anatomy-arrow-orange'),
+                kidneyRoute(3, 'M420 166 C394 211 397 281 438 303 C482 282 489 211 470 164 C500 142 526 149 559 122 L559 316', '#0284c7', 'anatomy-arrow-cyan'),
+                h('circle', { cx: 28, cy: 323, r: 6, fill: '#7c3aed' }),
+                kidneyLabel(40, 327, 'filtrate', { anchor: 'start', color: '#334155', size: 10, weight: 700 }),
+                h('line', { x1: 100, y1: 323, x2: 122, y2: 323, stroke: '#f87171', strokeWidth: 4 }),
+                kidneyLabel(130, 327, 'capillary blood', { anchor: 'start', color: '#334155', size: 10, weight: 700 })
+              )
+            ),
+            h('div', { className: 'anatomy-atlas-steps', role: 'group', 'aria-label': 'Nephron processing steps' },
+              regionalAtlas.steps.map(function(stepItem, stepIndex) {
+                return h('button', {
+                  key: stepItem.id,
+                  type: 'button',
+                  'aria-pressed': regionalAtlasStep === stepIndex,
+                  onClick: function() {
+                    updMulti({ _regionalAtlasStep: stepIndex, _regionalAtlasPlaying: true });
+                    if (typeof announceToSR === 'function') announceToSR(stepItem.label + '. ' + stepItem.detail);
+                  }
+                },
+                  h('span', { className: 'block' }, stepItem.label),
+                  h('span', { className: 'block mt-1 font-normal' }, stepItem.short)
+                );
+              })
+            ),
+            h('div', { className: 'anatomy-atlas-step-detail', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+              h('strong', null, activeStep.label),
+              h('span', null, activeStep.detail)
+            )
+          );
+        }
+
+        function renderAlveolusAtlas() {
+          if (!regionalAtlas) return null;
+          var activeStep = regionalAtlas.steps[regionalAtlasStep];
+          function gasRoute(stepIndex, pathData, color, markerId) {
+            return h('path', {
+              d: pathData,
+              className: 'anatomy-atlas-route' + (regionalAtlasStep === stepIndex ? ' is-active' : ''),
+              stroke: color,
+              markerEnd: 'url(#' + markerId + ')',
+              'aria-hidden': 'true'
+            });
+          }
+          function gasLabel(x, y, value, options) {
+            var labelOptions = options || {};
+            return h('text', {
+              x: x, y: y,
+              textAnchor: labelOptions.anchor || 'middle',
+              fill: labelOptions.color || '#334155',
+              fontSize: labelOptions.size || 11,
+              fontWeight: labelOptions.weight || 800
+            }, value);
+          }
+          return h('section', {
+            id: 'anatomy-regional-atlas',
+            className: 'anatomy-atlas' + (regionalAtlasPlaying ? '' : ' is-paused'),
+            'aria-label': regionalAtlas.title,
+            'data-anatomy-atlas': 'alveoli'
+          },
+            h('div', { className: 'anatomy-atlas-header' },
+              h('div', null,
+                h('h5', null, 'Alveolus and capillary regional atlas'),
+                h('p', null, regionalAtlas.subtitle)
+              ),
+              h('button', {
+                type: 'button',
+                'aria-label': regionalAtlasPlaying ? 'Pause gas-exchange animation' : 'Play gas-exchange animation',
+                'aria-pressed': regionalAtlasPlaying,
+                onClick: function() { upd('_regionalAtlasPlaying', !regionalAtlasPlaying); },
+                className: 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-sky-300 bg-white text-sky-700 hover:bg-sky-50 active:scale-[0.97]'
+              }, regionalAtlasPlaying ? 'Pause exchange' : 'Play exchange')
+            ),
+            h('div', { className: 'anatomy-atlas-stage' },
+              h('svg', {
+                viewBox: '0 0 640 360',
+                role: 'img',
+                'aria-labelledby': 'anatomy-alveolus-atlas-title anatomy-alveolus-atlas-desc',
+                preserveAspectRatio: 'xMidYMid meet'
+              },
+                h('title', { id: 'anatomy-alveolus-atlas-title' }, 'Alveolus, air-blood barrier, and pulmonary capillary gas-exchange diagram'),
+                h('desc', { id: 'anatomy-alveolus-atlas-desc' }, 'A selectable four-step diagram traces fresh air into an alveolus, oxygen into capillary blood, carbon dioxide into alveolar air, and the onward movement of oxygenated blood and exhaled gas.'),
+                h('defs', null,
+                  [
+                    { id: 'anatomy-arrow-air', color: '#0ea5e9' },
+                    { id: 'anatomy-arrow-oxygen', color: '#dc2626' },
+                    { id: 'anatomy-arrow-carbon', color: '#2563eb' },
+                    { id: 'anatomy-arrow-transport', color: '#7c3aed' }
+                  ].map(function(marker) {
+                    return h('marker', { key: marker.id, id: marker.id, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' },
+                      h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: marker.color })
+                    );
+                  })
+                ),
+                h('rect', { x: 12, y: 12, width: 616, height: 336, rx: 22, fill: '#f8fafc' }),
+                h('path', { d: 'M28 130 C78 130 111 127 143 137 C163 143 173 155 188 166', fill: 'none', stroke: '#94a3b8', strokeWidth: 22, strokeLinecap: 'round' }),
+                h('path', { d: 'M28 130 C78 130 111 127 143 137 C163 143 173 155 188 166', fill: 'none', stroke: '#e0f2fe', strokeWidth: 15, strokeLinecap: 'round' }),
+                h('circle', { cx: 272, cy: 153, r: 101, fill: '#e0f2fe', stroke: '#0284c7', strokeWidth: 4 }),
+                h('circle', { cx: 272, cy: 153, r: 91, fill: '#f0f9ff', stroke: '#7dd3fc', strokeWidth: 3, strokeDasharray: '7 5' }),
+                h('path', { d: 'M186 104 C152 86 139 59 159 43 C181 25 210 52 216 79 M335 76 C354 42 386 37 400 59 C414 83 383 101 358 108 M350 197 C390 201 408 228 393 248 C376 271 342 246 329 219', fill: '#e0f2fe', stroke: '#38bdf8', strokeWidth: 3 }),
+                gasLabel(272, 142, 'ALVEOLAR', { color: '#075985', size: 13 }),
+                gasLabel(272, 160, 'AIR SPACE', { color: '#075985', size: 13 }),
+                gasLabel(90, 107, 'terminal airway', { color: '#475569', size: 9 }),
+                h('path', { d: 'M133 268 C168 225 213 236 245 263 C283 296 332 298 372 265 C397 244 420 236 445 252', fill: 'none', stroke: '#93c5fd', strokeWidth: 30, strokeLinecap: 'round' }),
+                h('path', { d: 'M133 268 C168 225 213 236 245 263 C283 296 332 298 372 265 C397 244 420 236 445 252', fill: 'none', stroke: '#ef4444', strokeWidth: 7, strokeLinecap: 'round', opacity: 0.72 }),
+                [
+                  { x: 169, y: 249, rotate: -22, fill: '#bfdbfe' },
+                  { x: 235, y: 265, rotate: 18, fill: '#fecaca' },
+                  { x: 310, y: 282, rotate: 0, fill: '#fecaca' },
+                  { x: 382, y: 258, rotate: -18, fill: '#fecaca' }
+                ].map(function(cell, cellIndex) {
+                  return h('ellipse', { key: cellIndex, cx: cell.x, cy: cell.y, rx: 16, ry: 9, fill: cell.fill, stroke: '#991b1b', strokeWidth: 2, transform: 'rotate(' + cell.rotate + ' ' + cell.x + ' ' + cell.y + ')' });
+                }),
+                gasLabel(287, 329, 'PULMONARY CAPILLARY', { color: '#7f1d1d', size: 11 }),
+                h('path', { d: 'M376 123 C414 110 434 94 458 84', fill: 'none', stroke: '#64748b', strokeWidth: 2, strokeDasharray: '5 5' }),
+                h('rect', { x: 456, y: 39, width: 166, height: 224, rx: 14, fill: '#fff', stroke: '#cbd5e1', strokeWidth: 2 }),
+                gasLabel(539, 60, 'AIR-BLOOD BARRIER', { color: '#334155', size: 10 }),
+                h('rect', { x: 474, y: 74, width: 130, height: 34, rx: 8, fill: '#e0f2fe' }),
+                gasLabel(539, 95, 'alveolar air', { color: '#075985', size: 9 }),
+                h('rect', { x: 474, y: 111, width: 130, height: 8, fill: '#67e8f9' }),
+                gasLabel(608, 118, 'surfactant', { anchor: 'end', color: '#155e75', size: 7 }),
+                h('rect', { x: 474, y: 122, width: 130, height: 18, fill: '#bae6fd' }),
+                gasLabel(539, 135, 'type I alveolar cell', { color: '#075985', size: 8 }),
+                h('rect', { x: 474, y: 143, width: 130, height: 8, fill: '#e2e8f0' }),
+                gasLabel(608, 150, 'thin interstitium', { anchor: 'end', color: '#475569', size: 7 }),
+                h('rect', { x: 474, y: 154, width: 130, height: 18, fill: '#fecaca' }),
+                gasLabel(539, 167, 'capillary endothelium', { color: '#7f1d1d', size: 8 }),
+                h('rect', { x: 474, y: 175, width: 130, height: 70, rx: 8, fill: '#fee2e2' }),
+                h('ellipse', { cx: 539, cy: 211, rx: 28, ry: 14, fill: '#fca5a5', stroke: '#b91c1c', strokeWidth: 2 }),
+                gasLabel(539, 215, 'RBC', { color: '#7f1d1d', size: 9 }),
+                gasRoute(0, 'M28 130 C78 130 132 124 182 160 L218 160', '#0ea5e9', 'anatomy-arrow-air'),
+                gasRoute(1, 'M245 174 L245 243 M520 92 L520 201', '#dc2626', 'anatomy-arrow-oxygen'),
+                gasRoute(2, 'M310 267 L310 181 M562 211 L562 92', '#2563eb', 'anatomy-arrow-carbon'),
+                gasRoute(3, 'M150 270 C234 300 342 300 435 255 M218 126 C160 102 96 106 35 121', '#7c3aed', 'anatomy-arrow-transport'),
+                h('circle', { cx: 28, cy: 323, r: 6, fill: '#dc2626' }),
+                gasLabel(40, 327, 'oxygen', { anchor: 'start', color: '#334155', size: 10, weight: 700 }),
+                h('circle', { cx: 98, cy: 323, r: 6, fill: '#2563eb' }),
+                gasLabel(110, 327, 'carbon dioxide', { anchor: 'start', color: '#334155', size: 10, weight: 700 })
+              )
+            ),
+            h('div', { className: 'anatomy-atlas-steps', role: 'group', 'aria-label': 'Alveolar gas-exchange steps' },
+              regionalAtlas.steps.map(function(stepItem, stepIndex) {
+                return h('button', {
+                  key: stepItem.id,
+                  type: 'button',
+                  'aria-pressed': regionalAtlasStep === stepIndex,
+                  onClick: function() {
+                    updMulti({ _regionalAtlasStep: stepIndex, _regionalAtlasPlaying: true });
+                    if (typeof announceToSR === 'function') announceToSR(stepItem.label + '. ' + stepItem.detail);
+                  }
+                },
+                  h('span', { className: 'block' }, stepItem.label),
+                  h('span', { className: 'block mt-1 font-normal' }, stepItem.short)
+                );
+              })
+            ),
+            h('div', { className: 'anatomy-atlas-step-detail', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+              h('strong', null, activeStep.label),
+              h('span', null, activeStep.detail)
+            )
+          );
+        }
+
+        function renderRegionalAtlas() {
+          if (!sel || !regionalAtlas) return null;
+          if (sel.id === 'heart') return renderHeartAtlas();
+          if (sel.id === 'kidneys') return renderKidneyAtlas();
+          if (sel.id === 'alveoli') return renderAlveolusAtlas();
+          return null;
+        }
+
         var ttsBtn = function(text) {
           return h('button', {
             onClick: function() { speakText(text, callTTS); },
@@ -5680,6 +6118,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           (gradeBand === 'k2' || gradeBand === 'g35') && SIMPLE_DESC[sel.id] && SIMPLE_DESC[sel.id][gradeBand] ? h('p', { className: 'text-xs text-sky-700 bg-sky-50 rounded-lg px-2 py-1.5 mt-1 border border-sky-200 leading-relaxed' }, SIMPLE_DESC[sel.id][gradeBand]) : null
                         ),
                         h('div', { className: 'flex gap-1' },
+                          regionalAtlas ? h('button', {
+                            type: 'button',
+                            'aria-label': (regionalAtlasOpen ? 'Close ' : 'Open ') + regionalAtlas.title,
+                            'aria-expanded': regionalAtlasOpen,
+                            'aria-controls': 'anatomy-regional-atlas',
+                            onClick: function() {
+                              updMulti({ _regionalAtlasOpen: regionalAtlasOpen ? null : sel.id, _regionalAtlasStep: regionalAtlasOpen ? regionalAtlasStep : 0, _regionalAtlasPlaying: true });
+                              if (!regionalAtlasOpen && typeof announceToSR === 'function') announceToSR(regionalAtlas.title + ' opened.');
+                            },
+                            className: 'inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ' + (regionalAtlasOpen ? 'bg-rose-700 text-white border-rose-700' : 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100 active:scale-[0.97]')
+                          }, regionalAtlasOpen ? 'Close atlas' : 'Deep dive') : null,
                           h('button', { 'aria-label': compareStructureId === sel.id ? 'Remove ' + sel.name + ' as comparison target' : 'Use ' + sel.name + ' as comparison target',
                             'aria-pressed': compareStructureId === sel.id, onClick: function() {
                               if (compareStructureId === sel.id) { upd('_compareStructure', null); }
@@ -5724,6 +6173,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, t('stem.anatomy.detail', 'Detail')),
                           h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, sel.detail)
                         ),
+                        regionalAtlasOpen ? renderRegionalAtlas() : null,
                         confidenceControls(sel.id, sel.name),
                         // Brain Waves Section
                         sel.brainWaves && h('div', { className: 'mt-3 pt-3 border-t border-slate-200' },

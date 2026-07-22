@@ -972,3 +972,109 @@ describe('Anatomy Lab visual hierarchy and canvas legibility', () => {
     expect(unrated).toContain('Skull (Cranium) selected. Study status Unrated.');
   });
 });
+describe('Anatomy regional deep-dive atlas', () => {
+  it('offers the heart atlas from structure details without crowding the default view', () => {
+    const closed = renderAnatomy({ system: 'circulatory', complexity: 3, selectedStructure: 'heart' });
+    expect(closed).toContain('aria-label="Open Heart deep dive"');
+    expect(closed).toContain('>Deep dive</button>');
+    expect(closed).not.toContain('data-anatomy-atlas="heart"');
+
+    const open = renderAnatomy({
+      system: 'circulatory',
+      complexity: 3,
+      selectedStructure: 'heart',
+      _regionalAtlasOpen: 'heart'
+    });
+    expect(open).toContain('data-anatomy-atlas="heart"');
+    expect(open).toContain('Four-chamber heart and double-circulation diagram');
+    expect(open).toContain('aria-label="Blood-flow steps"');
+    expect(open).toContain('1. Venous return');
+    expect(open).toContain('4. To the body');
+  });
+
+  it('clamps restored atlas steps and exposes motion controls and live narration', () => {
+    const html = renderAnatomy({
+      system: 'circulatory',
+      complexity: 3,
+      selectedStructure: 'heart',
+      _regionalAtlasOpen: 'heart',
+      _regionalAtlasStep: 999,
+      _regionalAtlasPlaying: false
+    });
+    expect(html).toContain('class="anatomy-atlas is-paused"');
+    expect(html).toContain('aria-label="Play blood-flow animation"');
+    expect(html).toContain('Left ventricle');
+    expect(html).toContain('role="status" aria-live="polite" aria-atomic="true"');
+  });
+
+  it('honors reduced motion and keeps the atlas responsive on small screens', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('@media (prefers-reduced-motion:reduce)');
+    expect(source).toContain('.anatomy-atlas-steps{grid-template-columns:1fr 1fr}');
+    expect(source).toContain("aria-labelledby': 'anatomy-heart-atlas-title anatomy-heart-atlas-desc'");
+  });
+});
+describe('Anatomy kidney and nephron deep dive', () => {
+  it('opens a labeled nephron atlas from the posterior kidney structure', () => {
+    const closed = renderAnatomy({
+      system: 'organs', view: 'posterior', complexity: 3, selectedStructure: 'kidneys'
+    });
+    expect(closed).toContain('aria-label="Open Kidney and nephron deep dive"');
+    expect(closed).not.toContain('data-anatomy-atlas="kidneys"');
+
+    const open = renderAnatomy({
+      system: 'organs', view: 'posterior', complexity: 3, selectedStructure: 'kidneys',
+      _regionalAtlasOpen: 'kidneys'
+    });
+    expect(open).toContain('data-anatomy-atlas="kidneys"');
+    expect(open).toContain('Kidney cross-section and nephron processing diagram');
+    expect(open).toContain('aria-label="Nephron processing steps"');
+    expect(open).toContain('glomerulus');
+    expect(open).toContain('proximal tubule');
+    expect(open).toContain('loop of Henle');
+    expect(open).toContain('collecting duct');
+  });
+
+  it('clamps nephron steps and exposes paused flow with final urine narration', () => {
+    const html = renderAnatomy({
+      system: 'organs', view: 'posterior', complexity: 3, selectedStructure: 'kidneys',
+      _regionalAtlasOpen: 'kidneys', _regionalAtlasStep: 50, _regionalAtlasPlaying: false
+    });
+    expect(html).toContain('class="anatomy-atlas is-paused"');
+    expect(html).toContain('aria-label="Play filtrate-flow animation"');
+    expect(html).toContain('4. Urine formation');
+    expect(html).toContain('before urine enters the renal pelvis and ureter');
+  });
+});
+describe('Anatomy alveolar gas-exchange deep dive', () => {
+  it('opens a labeled alveolus, barrier, and capillary atlas', () => {
+    const closed = renderAnatomy({
+      system: 'respiratory', view: 'anterior', complexity: 3, selectedStructure: 'alveoli'
+    });
+    expect(closed).toContain('aria-label="Open Alveolus and gas-exchange deep dive"');
+    expect(closed).not.toContain('data-anatomy-atlas="alveoli"');
+
+    const open = renderAnatomy({
+      system: 'respiratory', view: 'anterior', complexity: 3, selectedStructure: 'alveoli',
+      _regionalAtlasOpen: 'alveoli'
+    });
+    expect(open).toContain('data-anatomy-atlas="alveoli"');
+    expect(open).toContain('Alveolus, air-blood barrier, and pulmonary capillary gas-exchange diagram');
+    expect(open).toContain('aria-label="Alveolar gas-exchange steps"');
+    expect(open).toContain('AIR-BLOOD BARRIER');
+    expect(open).toContain('type I alveolar cell');
+    expect(open).toContain('capillary endothelium');
+    expect(open).toContain('PULMONARY CAPILLARY');
+  });
+
+  it('clamps gas-exchange steps and exposes paused transport narration', () => {
+    const html = renderAnatomy({
+      system: 'respiratory', view: 'anterior', complexity: 3, selectedStructure: 'alveoli',
+      _regionalAtlasOpen: 'alveoli', _regionalAtlasStep: 99, _regionalAtlasPlaying: false
+    });
+    expect(html).toContain('class="anatomy-atlas is-paused"');
+    expect(html).toContain('aria-label="Play gas-exchange animation"');
+    expect(html).toContain('4. Transport onward');
+    expect(html).toContain('efficient exchange requires matched ventilation and perfusion');
+  });
+});

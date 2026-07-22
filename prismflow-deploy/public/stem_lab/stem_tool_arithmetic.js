@@ -331,15 +331,19 @@
         catch (_) { return fallback; }
       };
       var isDark = !!ctx.isDark;
-      var bg = isDark ? '#0f172a' : '#f8fafc';
-      var card = isDark ? '#1e293b' : '#ffffff';
-      var text = isDark ? '#f8fafc' : '#0f172a';
-      var muted = isDark ? '#cbd5e1' : '#475569';
-      var border = isDark ? '#475569' : '#cbd5e1';
+      var isContrast = !!ctx.isContrast;
+      var bg = isContrast ? '#000000' : (isDark ? '#0f172a' : '#f8fafc');
+      var card = isContrast ? '#000000' : (isDark ? '#1e293b' : '#ffffff');
+      var text = isContrast ? '#ffffff' : (isDark ? '#f8fafc' : '#0f172a');
+      var muted = isContrast ? '#ffffff' : (isDark ? '#cbd5e1' : '#475569');
+      var border = isContrast ? '#fbbf24' : (isDark ? '#475569' : '#cbd5e1');
       var tab = TAB_IDS.indexOf(d.tab) >= 0 ? d.tab : 'learn';
       var operation = OPERATIONS[d.operation] ? d.operation : 'add';
       var opMeta = OPERATIONS[operation];
-      var accentText = isDark ? opMeta.darkText : opMeta.color;
+      var accentText = isContrast ? '#fbbf24' : (isDark ? opMeta.darkText : opMeta.color);
+      function themeSoft(meta) { return isContrast ? '#000000' : meta.soft; }
+      function themeAccent(meta) { return isContrast ? '#fbbf24' : meta.color; }
+      function themeSoftText() { return isContrast ? '#ffffff' : '#0f172a'; }
       var level = clampInt(d.level, 1, 3, 1);
       var a = clampInt(d.a, 0, 99999, 58);
       var bMax = operation === 'subtract' ? Math.min(9999, a) : 9999;
@@ -596,14 +600,14 @@
             var meta = OPERATIONS[op], active = operation === op;
             return h('button', { key: op, onClick: function () { markOperation(op); }, 'aria-pressed': active,
               className: 'rounded-xl px-3 py-2 text-sm font-black transition focus:outline-none focus:ring-2 focus:ring-offset-2',
-              style: { background: active ? meta.color : card, color: active ? '#fff' : text, border: '2px solid ' + meta.color } }, meta.symbol + ' ' + meta.label);
+              style: { background: active ? themeAccent(meta) : card, color: active ? (isContrast ? '#000000' : '#ffffff') : text, border: '2px solid ' + themeAccent(meta) } }, meta.symbol + ' ' + meta.label);
           })
         );
       }
 
       function renderEquation(left, right, op) {
         var meta = OPERATIONS[op];
-        return h('div', { className: 'rounded-2xl p-4 text-center', style: { background: meta.soft, color: '#0f172a', border: '2px solid ' + meta.color } },
+        return h('div', { className: 'rounded-2xl p-4 text-center', style: { background: themeSoft(meta), color: themeSoftText(), border: '2px solid ' + themeAccent(meta) } },
           h('div', { className: 'text-3xl sm:text-4xl font-black font-mono', 'aria-label': left + ' ' + meta.label + ' ' + right }, left + ' ' + meta.symbol + ' ' + right),
           op === 'divide' && h('p', { className: 'mt-1 text-xs font-semibold' }, t('stem.arithmetic.think_how_many_groups_of', "Think: how many groups of ") + right + t('stem.arithmetic.fit_in', " fit in ") + left + '?')
         );
@@ -636,7 +640,7 @@
             h('p', { className: 'font-mono text-sm' }, left + ' = ' + leftParts.join(' + ')),
             h('p', { className: 'font-mono text-sm' }, right + ' = ' + rightParts.join(' + ')),
             h('div', { className: 'mt-2 flex flex-wrap gap-1' }, leftParts.concat(rightParts).map(function (part, i) {
-              return h('span', { key: i, className: 'rounded-lg px-2 py-1 text-xs font-bold', style: { background: i < leftParts.length ? opMeta.soft : '#e2e8f0', color: '#0f172a' } }, part);
+              return h('span', { key: i, className: 'rounded-lg px-2 py-1 text-xs font-bold', style: { background: i < leftParts.length ? opMeta.soft : '#e2e8f0', color: themeSoftText() } }, part);
             }))
           );
         }
@@ -644,7 +648,7 @@
           if (left === 0 || right === 0) {
             return h('div', { className: 'rounded-xl p-3', style: { background: card, border: '1px solid ' + border } },
               h('h3', { className: 'text-sm font-black mb-2', style: { color: accentText } }, t('stem.arithmetic.zero_product_model', "Zero-product model")),
-              h('div', { role: 'img', 'aria-label': left + t('stem.arithmetic.times', " times ") + right + t('stem.arithmetic.has_no_dots_because_one_factor_is_zero', " has no dots because one factor is zero; the product is zero."), className: 'rounded-lg p-4 text-center text-sm font-bold', style: { background: opMeta.soft, color: '#0f172a' } }, t('stem.arithmetic.one_factor_is_0_so_there_are_no_equal_', "One factor is 0, so there are no equal groups to draw. Product: 0."))
+              h('div', { role: 'img', 'aria-label': left + t('stem.arithmetic.times', " times ") + right + t('stem.arithmetic.has_no_dots_because_one_factor_is_zero', " has no dots because one factor is zero; the product is zero."), className: 'rounded-lg p-4 text-center text-sm font-bold', style: { background: themeSoft(opMeta), color: themeSoftText() } }, t('stem.arithmetic.one_factor_is_0_so_there_are_no_equal_', "One factor is 0, so there are no equal groups to draw. Product: 0."))
             );
           }
           var rows = Math.min(left, 12), cols = Math.min(right, 12);
@@ -652,7 +656,7 @@
             h('h3', { className: 'text-sm font-black mb-2', style: { color: accentText } }, left <= 12 && right <= 12 ? t('stem.arithmetic.array_model', "Array model") : t('stem.arithmetic.area_model_decomposition', "Area-model decomposition")),
             left <= 12 && right <= 12 ? h('div', { role: 'img', 'aria-label': rows + t('stem.arithmetic.rows_of', " rows of ") + cols + t('stem.arithmetic.dots', " dots, ") + (rows * cols) + t('stem.arithmetic.total', " total"), style: { display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', minmax(8px, 18px))', gap: 4, justifyContent: 'center' } },
               Array.from({ length: rows * cols }).map(function (_, i) { return h('span', { key: i, style: { width: 12, height: 12, borderRadius: '50%', background: opMeta.color } }); })
-            ) : h('div', { role: 'img', 'aria-label': t('stem.arithmetic.area_model_showing_partial_products_fo', "Area model showing partial products for ") + left + t('stem.arithmetic.times', " times ") + right, className: 'grid grid-cols-2 gap-1 text-center text-xs font-bold', style: { color: '#0f172a' } },
+            ) : h('div', { role: 'img', 'aria-label': t('stem.arithmetic.area_model_showing_partial_products_fo', "Area model showing partial products for ") + left + t('stem.arithmetic.times', " times ") + right, className: 'grid grid-cols-2 gap-1 text-center text-xs font-bold', style: { color: themeSoftText() } },
               h('div', { className: 'p-3', style: { background: '#ddd6fe' } }, Math.floor(left / 10) * 10 + ' \u00d7 ' + Math.floor(right / 10) * 10),
               h('div', { className: 'p-3', style: { background: '#ede9fe' } }, Math.floor(left / 10) * 10 + ' \u00d7 ' + right % 10),
               h('div', { className: 'p-3', style: { background: '#ede9fe' } }, left % 10 + ' \u00d7 ' + Math.floor(right / 10) * 10),
@@ -693,14 +697,14 @@
           operation === 'subtract' && h('p', { className: 'text-xs font-semibold', style: { color: muted } }, t('stem.arithmetic.this_whole_number_workspace_keeps_the_', "This whole-number workspace keeps the second number at or below the first. Use an integer number line when a negative result is the learning goal.")),
           renderEquation(a, b, operation),
           h('div', { className: 'flex flex-wrap gap-2' },
-            h('button', { onClick: function () { update({ showModel: !showModel }); }, 'aria-pressed': showModel, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: showModel ? opMeta.color : card, color: showModel ? '#fff' : text, border: '1px solid ' + opMeta.color } }, showModel ? t('stem.arithmetic.hide_model', "Hide model") : t('stem.arithmetic.show_model', "Show model")),
-            h('button', { onClick: function () { update({ showSteps: !showSteps }); }, 'aria-expanded': showSteps, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: showSteps ? opMeta.color : card, color: showSteps ? '#fff' : text, border: '1px solid ' + opMeta.color } }, showSteps ? t('stem.arithmetic.hide_strategy_steps', "Hide strategy steps") : t('stem.arithmetic.reveal_strategy_steps', "Reveal strategy steps")),
-            typeof ctx.callTTS === 'function' && h('button', { onClick: readCurrent, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: accentText, border: '1px solid ' + opMeta.color }, 'aria-label': t('stem.arithmetic.read_strategy_aloud', "Read strategy aloud") }, t('stem.arithmetic.read_aloud', "Read aloud"))
+            h('button', { onClick: function () { update({ showModel: !showModel }); }, 'aria-pressed': showModel, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: showModel ? themeAccent(opMeta) : card, color: showModel ? (isContrast ? '#000000' : '#ffffff') : text, border: '1px solid ' + themeAccent(opMeta) } }, showModel ? t('stem.arithmetic.hide_model', "Hide model") : t('stem.arithmetic.show_model', "Show model")),
+            h('button', { onClick: function () { update({ showSteps: !showSteps }); }, 'aria-expanded': showSteps, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: showSteps ? themeAccent(opMeta) : card, color: showSteps ? (isContrast ? '#000000' : '#ffffff') : text, border: '1px solid ' + themeAccent(opMeta) } }, showSteps ? t('stem.arithmetic.hide_strategy_steps', "Hide strategy steps") : t('stem.arithmetic.reveal_strategy_steps', "Reveal strategy steps")),
+            typeof ctx.callTTS === 'function' && h('button', { onClick: readCurrent, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: accentText, border: '1px solid ' + themeAccent(opMeta) }, 'aria-label': t('stem.arithmetic.read_strategy_aloud', "Read strategy aloud") }, t('stem.arithmetic.read_aloud', "Read aloud"))
           ),
           renderModel(operation, a, b),
-          showSteps && h('ol', { className: 'space-y-2', 'aria-label': t('stem.arithmetic.strategy_steps', "Strategy steps") }, customSteps.map(function (step, i) { return h('li', { key: i, className: 'rounded-xl p-3 text-sm flex gap-3', style: { background: card, border: '1px solid ' + border } }, h('span', { className: 'shrink-0 w-7 h-7 rounded-full flex items-center justify-center font-black text-white', style: { background: opMeta.color } }, i + 1), h('span', null, step)); })),
+          showSteps && h('ol', { className: 'space-y-2', 'aria-label': t('stem.arithmetic.strategy_steps', "Strategy steps") }, customSteps.map(function (step, i) { return h('li', { key: i, className: 'rounded-xl p-3 text-sm flex gap-3', style: { background: card, border: '1px solid ' + border } }, h('span', { className: 'shrink-0 w-7 h-7 rounded-full flex items-center justify-center font-black text-white', style: { background: themeAccent(opMeta), color: isContrast ? '#000000' : '#ffffff' } }, i + 1), h('span', null, step)); })),
           renderPlaceTable(a, b, operation),
-          h('p', { className: 'rounded-xl p-3 text-xs', style: { background: opMeta.soft, color: '#0f172a' } }, t('stem.arithmetic.reasonableness_check_use_friendly_oper', "Reasonableness check: use friendly operands "), h('strong', null, customEstimate.expression + t('stem.arithmetic.is_about', " is about ") + customEstimate.estimate), t('stem.arithmetic.the_exact_result_is', ". The exact result is "), h('strong', null, customResult.answer + (customResult.remainder ? t('stem.arithmetic.remainder', " remainder ") + customResult.remainder : '')), '.')
+          h('p', { className: 'rounded-xl p-3 text-xs', style: { background: themeSoft(opMeta), color: themeSoftText() } }, t('stem.arithmetic.reasonableness_check_use_friendly_oper', "Reasonableness check: use friendly operands "), h('strong', null, customEstimate.expression + t('stem.arithmetic.is_about', " is about ") + customEstimate.estimate), t('stem.arithmetic.the_exact_result_is', ". The exact result is "), h('strong', null, customResult.answer + (customResult.remainder ? t('stem.arithmetic.remainder', " remainder ") + customResult.remainder : '')), '.')
         );
       }
 
@@ -713,7 +717,7 @@
         return h(React.Fragment, null,
           h('div', { className: 'flex items-center justify-between gap-2' },
             h('div', null, h('h2', { className: 'text-base font-black' }, t('stem.arithmetic.estimate_solve_and_check', "Estimate, solve, and check")), h('p', { className: 'text-xs', style: { color: muted } }, t('stem.arithmetic.estimation_is_a_safety_check_not_a_rep', "Estimation is a safety check, not a replacement for exact reasoning."))),
-            h('span', { className: 'rounded-full px-3 py-1 text-xs font-bold', style: { background: opMeta.soft, color: '#0f172a' } }, countSolved(d.practiceSolved, PRACTICE_IDS) + '/' + (d.attempts || 0) + t('stem.arithmetic.correct', " correct"))
+            h('span', { className: 'rounded-full px-3 py-1 text-xs font-bold', style: { background: themeSoft(opMeta), color: themeSoftText() } }, countSolved(d.practiceSolved, PRACTICE_IDS) + '/' + (d.attempts || 0) + t('stem.arithmetic.correct', " correct"))
           ),
           h('div', { 'data-practice-problem-id': problem.id }, renderEquation(problem.a, problem.b, problem.op)),
           h('div', { className: 'grid sm:grid-cols-3 gap-2' },
@@ -722,12 +726,12 @@
             problem.op === 'divide' && h('label', { className: 'text-xs font-bold' }, t('stem.arithmetic.remainder_2', "Remainder"), h('input', { type: 'number', min: 0, max: problem.b - 1, required: true, 'aria-required': 'true', value: displayedPracticeRemainder, disabled: solved, onChange: function (e) { updatePracticeInput('remainderInput', e.target.value); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } }))
           ),
           h('div', { className: 'flex flex-wrap gap-2' },
-            h('button', { type: 'button', onClick: checkPractice, disabled: practiceAnswerInput === '' || practiceEstimateInput === '' || (problem.op === 'divide' && practiceRemainderInput === '') || solved, className: 'rounded-lg px-4 py-2 text-sm font-black text-white disabled:opacity-40', style: { background: opMeta.color } }, solved ? t('stem.arithmetic.solved', "Solved") : t('stem.arithmetic.check_answer', "Check answer")),
-            h('button', { onClick: function () { update({ showPracticeHint: !d.showPracticeHint }); }, 'aria-expanded': !!d.showPracticeHint, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: accentText, border: '1px solid ' + opMeta.color } }, d.showPracticeHint ? t('stem.arithmetic.hide_hint', "Hide hint") : t('stem.arithmetic.strategy_hint', "Strategy hint")),
+            h('button', { type: 'button', onClick: checkPractice, disabled: practiceAnswerInput === '' || practiceEstimateInput === '' || (problem.op === 'divide' && practiceRemainderInput === '') || solved, className: 'rounded-lg px-4 py-2 text-sm font-black text-white disabled:opacity-40', style: { background: themeAccent(opMeta), color: isContrast ? '#000000' : '#ffffff' } }, solved ? t('stem.arithmetic.solved', "Solved") : t('stem.arithmetic.check_answer', "Check answer")),
+            h('button', { onClick: function () { update({ showPracticeHint: !d.showPracticeHint }); }, 'aria-expanded': !!d.showPracticeHint, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: accentText, border: '1px solid ' + themeAccent(opMeta) } }, d.showPracticeHint ? t('stem.arithmetic.hide_hint', "Hide hint") : t('stem.arithmetic.strategy_hint', "Strategy hint")),
             h('button', { onClick: nextPractice, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: text, border: '1px solid ' + border } }, t('stem.arithmetic.next_problem', "Next problem")),
             h('button', { onClick: retryMissedPractice, disabled: !practiceMissedIds.length, className: 'rounded-lg px-3 py-2 text-xs font-bold disabled:opacity-40', style: { background: '#fef3c7', color: '#92400e', border: '1px solid #f59e0b' } }, t('stem.arithmetic.retry_missed', "Retry missed (") + practiceMissedIds.length + ')')
           ),
-          d.showPracticeHint && h('div', { className: 'rounded-xl p-3 text-sm', style: { background: opMeta.soft, color: '#0f172a' } }, strategySteps(problem.op, problem.a, problem.b)[0]),
+          d.showPracticeHint && h('div', { className: 'rounded-xl p-3 text-sm', style: { background: themeSoft(opMeta), color: themeSoftText() } }, strategySteps(problem.op, problem.a, problem.b)[0]),
           feedbackBox(visiblePracticeFeedback, t('stem.arithmetic.correct_your_exact_answer_and_estimate', "Correct. Your exact answer and estimate support each other."), visiblePracticeFeedback === 'estimate' ? t('stem.arithmetic.your_exact_answer_is_right_revise_the_', "Your exact answer is right. Revise the estimate so it is within a reasonable range of about ") + estimateFor(problem.op, problem.a, problem.b) + '.' : t('stem.arithmetic.not_yet_recheck_each_place_and_compare', "Not yet. Recheck each place and compare with your estimate."), visiblePracticeFeedback === 'correct' ? strategySteps(problem.op, problem.a, problem.b).join(' ') : null)
         );
       }
@@ -748,7 +752,7 @@
           })),
           feedbackBox(visibleErrorFeedback, t('stem.arithmetic.good_diagnosis', "Good diagnosis."), t('stem.arithmetic.look_again_at_what_happened_to_each_pl', "Look again at what happened to each place or partial result."), visibleErrorFeedback === 'correct' ? errorCase.explain : null),
           h('div', { className: 'flex flex-wrap gap-2' },
-            h('button', { onClick: function () { selectError((errorIndex + 1) % ERROR_CASES.length); }, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: opMeta.color, color: '#fff' } }, t('stem.arithmetic.next_mistake', "Next mistake")),
+            h('button', { onClick: function () { selectError((errorIndex + 1) % ERROR_CASES.length); }, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: themeAccent(opMeta), color: isContrast ? '#000000' : '#ffffff' } }, t('stem.arithmetic.next_mistake', "Next mistake")),
             h('button', { onClick: retryMissedError, disabled: !errorMissedIds.length, className: 'rounded-lg px-3 py-2 text-xs font-bold disabled:opacity-40', style: { background: '#fef3c7', color: '#92400e', border: '1px solid #f59e0b' } }, t('stem.arithmetic.retry_missed', "Retry missed (") + errorMissedIds.length + ')'))
         );
       }
@@ -792,7 +796,7 @@
                   'aria-pressed': selected,
                   onClick: function () { chooseWordOperation(op); },
                   className: 'rounded-lg px-3 py-2 text-xs font-black',
-                  style: { background: selected ? meta.color : card, color: selected ? '#fff' : text, border: '2px solid ' + meta.color }
+                  style: { background: selected ? themeAccent(meta) : card, color: selected ? (isContrast ? '#000000' : '#ffffff') : text, border: '2px solid ' + themeAccent(meta) }
                 }, meta.symbol + ' ' + meta.label);
               })
             )
@@ -855,7 +859,7 @@
       ];
 
       return h('section', { className: 'space-y-4 w-full max-w-6xl mx-auto p-2 sm:p-4', style: { background: bg, color: text }, 'data-arithmetic-studio': 'true' },
-        h('header', { className: 'rounded-2xl p-4 text-white', style: { background: 'linear-gradient(135deg, #172554, ' + opMeta.color + ')' } },
+        h('header', { className: 'rounded-2xl p-4 text-white', style: { background: isContrast ? '#000000' : 'linear-gradient(135deg, #172554, ' + opMeta.color + ')', border: isContrast ? '2px solid #fbbf24' : 'none' } },
           h('div', { className: 'flex items-start gap-3' },
             ctx.icons && ctx.icons.ArrowLeft && h('button', { onClick: function () { if (typeof ctx.setStemLabTool === 'function') ctx.setStemLabTool(null); }, className: 'rounded-lg p-2 bg-white/10', 'aria-label': t('stem.arithmetic.back_to_stem_tools', "Back to STEM tools") }, h(ctx.icons.ArrowLeft, { size: 18 })),
             h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-blue-100' }, t('stem.arithmetic.concrete_visual_symbolic', "Concrete → visual → symbolic")), h('h1', { className: 'text-xl sm:text-2xl font-black' }, t('stem.arithmetic.arithmetic_strategy_studio', "🧮 Arithmetic Strategy Studio")), h('p', { className: 'mt-1 text-sm text-blue-50' }, t('stem.arithmetic.build_meaning_first_compare_strategies', "Build meaning first, compare strategies, and use estimation to check every result.")))
@@ -864,11 +868,11 @@
         (tab === 'learn' || tab === 'practice') && renderOperationPicker(),
         tab === 'practice' && h('div', { className: 'flex flex-wrap items-center gap-2' },
           h('span', { className: 'text-xs font-bold', style: { color: muted } }, t('stem.arithmetic.practice_level', "PRACTICE LEVEL:")),
-          [1, 2, 3].map(function (n) { return h('button', { key: n, type: 'button', onClick: function () { update({ level: n, practiceIndex: 0, practiceProblemId: null, answerInput: '', remainderInput: '', estimateInput: '', feedback: null, showPracticeHint: false }); }, 'aria-pressed': level === n, className: 'rounded-full px-3 py-1 text-xs font-bold', style: { background: level === n ? opMeta.color : card, color: level === n ? '#fff' : text, border: '1px solid ' + opMeta.color } }, n === 1 ? t('stem.arithmetic.foundations', "Foundations") : n === 2 ? t('stem.arithmetic.multi_digit', "Multi-digit") : t('stem.arithmetic.challenge', "Challenge")); })
+          [1, 2, 3].map(function (n) { return h('button', { key: n, type: 'button', onClick: function () { update({ level: n, practiceIndex: 0, practiceProblemId: null, answerInput: '', remainderInput: '', estimateInput: '', feedback: null, showPracticeHint: false }); }, 'aria-pressed': level === n, className: 'rounded-full px-3 py-1 text-xs font-bold', style: { background: level === n ? themeAccent(opMeta) : card, color: level === n ? (isContrast ? '#000000' : '#ffffff') : text, border: '1px solid ' + themeAccent(opMeta) } }, n === 1 ? t('stem.arithmetic.foundations', "Foundations") : n === 2 ? t('stem.arithmetic.multi_digit', "Multi-digit") : t('stem.arithmetic.challenge', "Challenge")); })
         ),
         h('nav', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-1 rounded-xl p-1', role: 'tablist', 'aria-label': t('stem.arithmetic.arithmetic_studio_sections', "Arithmetic Studio sections"), style: { background: card, border: '1px solid ' + border } }, tabs.map(function (item, index) {
           var active = tab === item.id;
-          return h('button', { key: item.id, id: 'arithmetic-studio-tab-' + item.id, type: 'button', role: 'tab', 'aria-selected': active, 'aria-controls': 'arithmetic-studio-panel', tabIndex: active ? 0 : -1, onKeyDown: function (event) { moveTab(event, index); }, onClick: function () { update({ tab: item.id }); }, className: 'rounded-lg px-2 py-2 text-xs font-bold', style: { background: active ? opMeta.color : 'transparent', color: active ? '#fff' : text } }, item.label);
+          return h('button', { key: item.id, id: 'arithmetic-studio-tab-' + item.id, type: 'button', role: 'tab', 'aria-selected': active, 'aria-controls': 'arithmetic-studio-panel', tabIndex: active ? 0 : -1, onKeyDown: function (event) { moveTab(event, index); }, onClick: function () { update({ tab: item.id }); }, className: 'rounded-lg px-2 py-2 text-xs font-bold', style: { background: active ? themeAccent(opMeta) : 'transparent', color: active ? (isContrast ? '#000000' : '#ffffff') : text } }, item.label);
         })),
         h('div', { id: 'arithmetic-studio-panel', role: 'tabpanel', 'aria-labelledby': 'arithmetic-studio-tab-' + tab, tabIndex: 0, className: 'space-y-3' }, tab === 'learn' ? renderLearn() : tab === 'practice' ? renderPractice() : tab === 'errors' ? renderErrors() : renderApply()),
         h('footer', { className: 'rounded-xl p-3 text-xs', style: { background: card, color: muted, border: '1px solid ' + border } },

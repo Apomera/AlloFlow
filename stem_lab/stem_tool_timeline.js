@@ -154,7 +154,7 @@
         var existing = _win.current;
         if (existing && !existing.closed) { try { existing.focus(); } catch (_) {} sendData(); return existing; }
         var w = null;
-        try { w = window.open(TIMELINE_STUDIO_URL + '&lang=' + encodeURIComponent(ctx.lang || 'en'), 'alloflow-timeline-studio', 'width=1200,height=800'); } catch (_) { w = null; }
+        try { w = window.open(TIMELINE_STUDIO_URL + '&lang=' + encodeURIComponent(ctx.lang || 'en') + '&theme=' + encodeURIComponent(ctx.theme || 'dark'), 'alloflow-timeline-studio', 'width=1200,height=800'); } catch (_) { w = null; }
         if (!w) {
           setStatus('blocked');
           if (announceToSR) announceToSR(t('stem.timeline.popup_blocked', 'The Timeline window was blocked. Allow pop-ups for this page, then try again.'));

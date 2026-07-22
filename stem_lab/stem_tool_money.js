@@ -395,13 +395,91 @@ window.StemLab = window.StemLab || {
 
             // ── Store state ──
             var cart = d.cart || [];
-            var cartTotal = cart.reduce(function (s, item) {
-              if (item.pricePer && item.pricePer !== 'each') return s + item.price * (item.weight || 1);
-              return s + item.price * (item.qty || 1);
-            }, 0);
+            var cartLineDetails = cart.map(function (item) {
+              var weighted = item.pricePer && item.pricePer !== 'each';
+              var quantity = weighted ? (item.weight || 1) : (item.qty || 1);
+              var lineTotal = item.price * quantity;
+              var math = weighted
+                ? quantity + ' ' + item.pricePer + ' \u00D7 ' + fmt(item.price) + '/' + item.pricePer
+                : quantity + ' \u00D7 ' + fmt(item.price);
+              return { name: item.name, weighted: weighted, quantity: quantity, math: math, lineTotal: lineTotal, lineTotalLabel: fmt(lineTotal) };
+            });
+            var cartTotal = cartLineDetails.reduce(function (sum, line) { return sum + line.lineTotal; }, 0);
+            var cartItemCount = cartLineDetails.reduce(function (sum, line) { return sum + (line.weighted ? 1 : line.quantity); }, 0);
             var taxRate = gc.includeTax ? 0.08 : 0;
             var cartTax = cartTotal * taxRate;
             var cartGrand = cartTotal + cartTax;
+            var lastReceipt = d.lastReceipt || null;
+            var checkoutActive = !!d.checkoutActive;
+            var checkoutStep = d.checkoutStep || 'estimate';
+            var checkoutEstimate = d.checkoutEstimate != null ? d.checkoutEstimate : '';
+            var checkoutEstimateFb = d.checkoutEstimateFb || null;
+            var checkoutPayment = d.checkoutPayment || null;
+            var checkoutTender = typeof d.checkoutTender === 'number' ? d.checkoutTender : null;
+            var checkoutReturned = Array.isArray(d.checkoutReturned) ? d.checkoutReturned : [];
+            var checkoutChangeFb = d.checkoutChangeFb || null;
+            var checkoutSmallestCashUnits = changeDenominations.length ? Math.min.apply(null, changeDenominations.map(function (item) { return item.units; })) : 1;
+            var checkoutCashTotal = Math.round(Math.round(cartGrand * changeScale) / checkoutSmallestCashUnits) * checkoutSmallestCashUnits / changeScale;
+            var checkoutCashAdjustment = Math.round((checkoutCashTotal - cartGrand) * changeScale) / changeScale;
+            var checkoutRoundSteps = isJPY ? [100, 500, 1000, 5000, 10000] : [1, 5, 10, 20, 50, 100];
+            var checkoutTenderOptions = [checkoutCashTotal].concat(checkoutRoundSteps.map(function (step) {
+              return Math.ceil((checkoutCashTotal * changeScale) / (step * changeScale)) * step;
+            })).map(function (amount) {
+              return Math.round(amount * changeScale) / changeScale;
+            }).filter(function (amount, index, list) {
+              return amount >= checkoutCashTotal && list.indexOf(amount) === index;
+            }).slice(0, 4);
+            var checkoutChangeDue = checkoutTender == null ? 0 : Math.max(0, Math.round((checkoutTender - checkoutCashTotal) * changeScale) / changeScale);
+            var checkoutReturnedTotal = Math.round(checkoutReturned.reduce(function (sum, value) { return sum + (Number(value) || 0); }, 0) * changeScale) / changeScale;
+            var checkoutReturnGroups = checkoutReturned.reduce(function (groups, value) {
+              var denomination = changeDenominations.find(function (item) { return item.units === Math.round(Number(value) * changeScale); });
+              var label = denomination ? denomination.name : fmt(Number(value) || 0);
+              var existing = groups.find(function (group) { return group.value === Number(value); });
+              if (existing) existing.count += 1;
+              else groups.push({ value: Number(value), label: label, count: 1, isBill: denomination ? denomination.isBill : false });
+              return groups;
+            }, []).sort(function (a, b) { return b.value - a.value; });
+            var checkoutReturnDenominations = changeDenominations.filter(function (item) {
+              return item.value <= checkoutChangeDue + (1 / changeScale);
+            });
+            var checkoutEstimateDifference = checkoutEstimate === '' ? null : Math.round(Math.abs((Number(checkoutEstimate) || 0) - cartGrand) * changeScale) / changeScale;
+            var cartReceiptSnapshot = {
+              currencyCode: cur.code,
+              currencyFlag: cur.flag,
+              itemCount: cartItemCount,
+              items: cartLineDetails.map(function (line) { return { name: line.name, math: line.math, lineTotalLabel: line.lineTotalLabel }; }),
+              subtotalLabel: fmt(cartTotal),
+              taxRateLabel: Math.round(taxRate * 100) + '%',
+              taxLabel: fmt(cartTax),
+              totalLabel: fmt(cartGrand),
+              hasTax: taxRate > 0
+            };
+            var resetGroceryCheckout = function () {
+              upd('checkoutActive', false); upd('checkoutStep', 'estimate'); upd('checkoutEstimate', '');
+              upd('checkoutEstimateFb', null); upd('checkoutPayment', null); upd('checkoutTender', null);
+              upd('checkoutReturned', []); upd('checkoutChangeFb', null);
+            };
+            var finishGroceryCheckout = function (method) {
+              var paymentMethod = method || checkoutPayment || 'cash';
+              var paymentLabels = { cash: __alloT('stem.money.cash', 'Cash'), debit: __alloT('stem.money.debit_card', 'Debit card'), credit: __alloT('stem.money.credit_card', 'Credit card') };
+              var receipt = Object.assign({}, cartReceiptSnapshot, {
+                paymentMethod: paymentMethod,
+                paymentLabel: paymentLabels[paymentMethod] || paymentMethod,
+                estimateLabel: checkoutEstimate === '' ? null : fmt(Number(checkoutEstimate) || 0),
+                estimateDifferenceLabel: checkoutEstimateDifference == null ? null : fmt(checkoutEstimateDifference),
+                tenderLabel: paymentMethod === 'cash' && checkoutTender != null ? fmt(checkoutTender) : null,
+                changeLabel: paymentMethod === 'cash' ? fmt(checkoutChangeDue) : null,
+                cashTotalLabel: paymentMethod === 'cash' ? fmt(checkoutCashTotal) : null,
+                cashAdjustmentLabel: paymentMethod === 'cash' && checkoutCashAdjustment !== 0 ? (checkoutCashAdjustment > 0 ? '+' : '') + fmt(checkoutCashAdjustment) : null,
+                returnedPieces: paymentMethod === 'cash' ? checkoutReturnGroups.map(function (group) { return { label: group.label, count: group.count }; }) : []
+              });
+              if (typeof addXP === 'function') addXP(25, 'Money Math: Complete grocery checkout journey');
+              if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 20, 'complete grocery checkout');
+              if (typeof addToast === 'function') addToast('\uD83C\uDF89 Checkout complete! Total: ' + fmt(cartGrand), 'success');
+              upd('lastReceipt', receipt);
+              upd('cart', []);
+              resetGroceryCheckout();
+            };
             var storeCat = d.storeCat || 'All';
             var recipeMode = d.recipeMode || false;
             var activeRecipe = d.activeRecipe != null ? d.activeRecipe : null;
@@ -629,6 +707,15 @@ window.StemLab = window.StemLab || {
             var crStartTime = d.crStartTime || null;
             var crHistory = d.crHistory || [];
             var crBest = d.crBest || 0;
+            var crRecentHistory = crHistory.slice(-6);
+            var crHistoryCount = crHistory.length;
+            var crAverageScore = crHistoryCount ? Math.round(crHistory.reduce(function (sum, round) { return sum + (Number(round.score) || 0); }, 0) / crHistoryCount) : 0;
+            var crAverageAccuracyPct = crHistoryCount ? Math.round(Math.min(100, crHistory.reduce(function (sum, round) { return sum + (Number(round.accuracy) || 0); }, 0) / crHistoryCount / 70 * 100)) : 0;
+            var crAverageSpeedPct = crHistoryCount ? Math.round(Math.min(100, crHistory.reduce(function (sum, round) { return sum + (Number(round.speed) || 0); }, 0) / crHistoryCount / 30 * 100)) : 0;
+            var crPerfectRounds = crHistory.filter(function (round) { return round.perfect || Number(round.score) >= 100; }).length;
+            var crRecentHistoryLabel = crRecentHistory.map(function (round, roundIndex) {
+              return 'Round ' + (crHistoryCount - crRecentHistory.length + roundIndex + 1) + ': ' + (Number(round.score) || 0) + ' points';
+            }).join(', ');
             var crPatiencePct = d.crPatiencePct != null ? d.crPatiencePct : 100;
             var crIntro = d.crIntro != null ? d.crIntro : true;
             var crGameOver = d.crGameOver || false;
@@ -775,6 +862,91 @@ window.StemLab = window.StemLab || {
               c.fill();
               c.strokeStyle = '#92400e'; c.lineWidth = 1; c.stroke();
             };
+            var drawLeafyProduce = function (c, x, y, w, h, label) {
+              var n = (label || '').toLowerCase();
+              var leafColor = n.indexOf('grape') >= 0 ? '#7e22ce' : n.indexOf('lettuce') >= 0 ? '#65a30d' : '#15803d';
+              c.fillStyle = leafColor;
+              var leafPoints = [[.28,.55],[.48,.38],[.68,.55],[.4,.7],[.62,.72]];
+              leafPoints.forEach(function (point, index) {
+                c.beginPath(); c.arc(x + w * point[0], y + h * point[1], Math.max(4, Math.min(w, h) * (index === 1 ? .20 : .17)), 0, Math.PI * 2); c.fill();
+              });
+              c.strokeStyle = '#166534'; c.lineWidth = 1;
+              c.beginPath(); c.moveTo(x + w * .5, y + h * .28); c.lineTo(x + w * .5, y + h * .92); c.stroke();
+            };
+            var drawRootProduce = function (c, x, y, w, h, label) {
+              var n = (label || '').toLowerCase();
+              if (n.indexOf('carrot') >= 0) {
+                c.fillStyle = '#f97316';
+                c.beginPath(); c.moveTo(x + w * .28, y + h * .26); c.lineTo(x + w * .76, y + h * .30); c.lineTo(x + w * .46, y + h * .92); c.closePath(); c.fill();
+                c.strokeStyle = '#166534'; c.lineWidth = 2;
+                for (var carrotLeaf = 0; carrotLeaf < 3; carrotLeaf++) {
+                  c.beginPath(); c.moveTo(x + w * .5, y + h * .28); c.lineTo(x + w * (.34 + carrotLeaf * .16), y + h * .08); c.stroke();
+                }
+                return;
+              }
+              var rootColor = n.indexOf('onion') >= 0 ? '#c084fc' : n.indexOf('avocado') >= 0 ? '#65a30d' : n.indexOf('garlic') >= 0 ? '#f5f5dc' : '#a16207';
+              c.fillStyle = rootColor;
+              c.beginPath(); c.ellipse(x + w * .5, y + h * .58, w * .32, h * .34, 0, 0, Math.PI * 2); c.fill();
+              c.strokeStyle = '#713f12'; c.lineWidth = 1; c.stroke();
+              c.strokeStyle = '#166534'; c.lineWidth = 2;
+              c.beginPath(); c.moveTo(x + w * .5, y + h * .26); c.lineTo(x + w * .57, y + h * .08); c.stroke();
+              if (n.indexOf('avocado') >= 0) {
+                c.fillStyle = '#713f12'; c.beginPath(); c.arc(x + w * .5, y + h * .62, Math.max(3, w * .11), 0, Math.PI * 2); c.fill();
+              }
+            };
+            var drawMeatTray = function (c, x, y, w, h, label) {
+              var n = (label || '').toLowerCase();
+              c.fillStyle = '#f8fafc'; c.fillRect(x, y + h * .18, w, h * .68);
+              c.strokeStyle = '#94a3b8'; c.lineWidth = 1.5; c.strokeRect(x, y + h * .18, w, h * .68);
+              c.fillStyle = n.indexOf('chicken') >= 0 ? '#f1c7a5' : n.indexOf('bacon') >= 0 ? '#ef4444' : '#b91c1c';
+              c.beginPath(); c.ellipse(x + w * .5, y + h * .52, w * .34, h * .22, -.12, 0, Math.PI * 2); c.fill();
+              c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 2;
+              c.beginPath(); c.moveTo(x + w * .26, y + h * .48); c.lineTo(x + w * .72, y + h * .58); c.stroke();
+              c.strokeStyle = '#fbbf24'; c.lineWidth = 1; c.strokeRect(x + 2, y + h * .2 + 2, w - 4, h * .68 - 4);
+            };
+            var drawFish = function (c, x, y, w, h) {
+              c.fillStyle = '#fb7185';
+              c.beginPath(); c.ellipse(x + w * .48, y + h * .55, w * .30, h * .20, 0, 0, Math.PI * 2); c.fill();
+              c.beginPath(); c.moveTo(x + w * .18, y + h * .55); c.lineTo(x, y + h * .34); c.lineTo(x, y + h * .76); c.closePath(); c.fill();
+              c.fillStyle = '#f8fafc'; c.beginPath(); c.arc(x + w * .64, y + h * .49, 2, 0, Math.PI * 2); c.fill();
+              c.strokeStyle = '#be123c'; c.lineWidth = 1; c.beginPath(); c.moveTo(x + w * .35, y + h * .4); c.lineTo(x + w * .35, y + h * .7); c.stroke();
+            };
+            var drawCheese = function (c, x, y, w, h) {
+              c.fillStyle = '#facc15';
+              c.beginPath(); c.moveTo(x + w * .08, y + h * .78); c.lineTo(x + w * .82, y + h * .28); c.lineTo(x + w * .9, y + h * .78); c.closePath(); c.fill();
+              c.strokeStyle = '#a16207'; c.lineWidth = 1.2; c.stroke();
+              c.fillStyle = '#ca8a04';
+              [[.48,.58],[.68,.52],[.7,.7]].forEach(function(point){ c.beginPath(); c.arc(x + w * point[0], y + h * point[1], Math.max(2, w * .06), 0, Math.PI * 2); c.fill(); });
+            };
+            var drawCanJar = function (c, x, y, w, h, label) {
+              var n = (label || '').toLowerCase();
+              var bodyColor = n.indexOf('peanut') >= 0 ? '#c08457' : n.indexOf('sauce') >= 0 ? '#dc2626' : n.indexOf('yogurt') >= 0 ? '#f8fafc' : '#cbd5e1';
+              c.fillStyle = bodyColor; c.fillRect(x + w * .12, y + h * .18, w * .76, h * .70);
+              c.strokeStyle = '#475569'; c.lineWidth = 1.2; c.strokeRect(x + w * .12, y + h * .18, w * .76, h * .70);
+              c.fillStyle = '#64748b'; c.fillRect(x + w * .08, y + h * .12, w * .84, h * .10);
+              c.fillStyle = n.indexOf('sauce') >= 0 ? '#fef2f2' : '#fef3c7'; c.fillRect(x + w * .18, y + h * .42, w * .64, h * .22);
+              c.fillStyle = '#334155'; c.font = 'bold ' + Math.max(6, w * .14) + 'px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+              c.fillText(n.indexOf('bean') >= 0 ? 'BEANS' : n.indexOf('sauce') >= 0 ? 'SAUCE' : n.indexOf('yogurt') >= 0 ? 'YOGURT' : 'JAR', x + w * .5, y + h * .53, w * .56);
+            };
+            var drawBottle = function (c, x, y, w, h, label) {
+              var n = (label || '').toLowerCase();
+              var liquidColor = n.indexOf('oil') >= 0 ? '#a3a321' : n.indexOf('water') >= 0 ? '#7dd3fc' : n.indexOf('coffee') >= 0 ? '#78350f' : '#7c3aed';
+              c.fillStyle = '#e2e8f0'; c.fillRect(x + w * .36, y + h * .05, w * .28, h * .16);
+              c.fillStyle = liquidColor; c.fillRect(x + w * .20, y + h * .20, w * .60, h * .70);
+              c.strokeStyle = '#334155'; c.lineWidth = 1.2; c.strokeRect(x + w * .20, y + h * .20, w * .60, h * .70);
+              c.fillStyle = '#f8fafc'; c.fillRect(x + w * .26, y + h * .43, w * .48, h * .18);
+              c.fillStyle = '#334155'; c.font = 'bold ' + Math.max(6, w * .14) + 'px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+              c.fillText(n.indexOf('oil') >= 0 ? 'OIL' : n.indexOf('water') >= 0 ? 'WATER' : n.indexOf('coffee') >= 0 ? 'COFFEE' : 'DRINK', x + w * .5, y + h * .52, w * .42);
+            };
+            var drawFrozenBox = function (c, x, y, w, h, label) {
+              var n = (label || '').toLowerCase();
+              c.fillStyle = '#bae6fd'; c.fillRect(x, y + h * .1, w, h * .8);
+              c.strokeStyle = '#0369a1'; c.lineWidth = 1.2; c.strokeRect(x, y + h * .1, w, h * .8);
+              c.fillStyle = '#0ea5e9'; c.font = 'bold ' + Math.max(10, w * .26) + 'px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+              c.fillText('✦', x + w * .5, y + h * .38);
+              c.fillStyle = '#0c4a6e'; c.font = 'bold ' + Math.max(6, w * .13) + 'px sans-serif';
+              c.fillText(n.indexOf('pizza') >= 0 ? 'PIZZA' : n.indexOf('cream') >= 0 ? 'ICE CREAM' : 'FROZEN', x + w * .5, y + h * .68, w * .86);
+            };
             var drawGeneric = function (c, x, y, w, h, label) {
               c.fillStyle = '#94a3b8'; c.fillRect(x, y, w, h);
               c.strokeStyle = '#475569'; c.lineWidth = 1; c.strokeRect(x, y, w, h);
@@ -786,12 +958,20 @@ window.StemLab = window.StemLab || {
             // Pick a drawer based on the item name (which starts with an emoji)
             var pickItemDrawer = function (itemName) {
               var n = (itemName || '').toLowerCase();
+              if (n.indexOf('bean') >= 0 || n.indexOf('peanut') >= 0 || n.indexOf('sauce') >= 0 || n.indexOf('yogurt') >= 0 || n.indexOf('butter') >= 0) return drawCanJar;
+              if (n.indexOf('oil') >= 0 || n.indexOf('water') >= 0 || n.indexOf('soda') >= 0 || n.indexOf('coffee') >= 0) return drawBottle;
+              if (n.indexOf('salmon') >= 0 || n.indexOf('fish') >= 0) return drawFish;
+              if (n.indexOf('chicken') >= 0 || n.indexOf('beef') >= 0 || n.indexOf('pork') >= 0 || n.indexOf('bacon') >= 0) return drawMeatTray;
+              if (n.indexOf('cheese') >= 0) return drawCheese;
+              if (n.indexOf('frozen') >= 0 || n.indexOf('pizza') >= 0 || n.indexOf('ice cream') >= 0) return drawFrozenBox;
+              if (n.indexOf('grape') >= 0 || n.indexOf('lettuce') >= 0 || n.indexOf('broccoli') >= 0) return drawLeafyProduce;
+              if (n.indexOf('onion') >= 0 || n.indexOf('potato') >= 0 || n.indexOf('avocado') >= 0 || n.indexOf('carrot') >= 0 || n.indexOf('garlic') >= 0) return drawRootProduce;
               if (n.indexOf('milk') >= 0 || n.indexOf('cream') >= 0) return drawMilkCarton;
               if (n.indexOf('bread') >= 0 || n.indexOf('bagel') >= 0 || n.indexOf('tortilla') >= 0) return drawBread;
               if (n.indexOf('apple') >= 0 || n.indexOf('tomato') >= 0) return drawApple;
               if (n.indexOf('cereal') >= 0 || n.indexOf('granola') >= 0 || n.indexOf('rice') >= 0 || n.indexOf('pasta') >= 0 || n.indexOf('sugar') >= 0 || n.indexOf('flour') >= 0) return drawCereal;
               if (n.indexOf('egg') >= 0) return drawEggs;
-              if (n.indexOf('juice') >= 0 || n.indexOf('orange') >= 0 || n.indexOf('water') >= 0 || n.indexOf('soda') >= 0) return drawJuice;
+              if (n.indexOf('juice') >= 0 || n.indexOf('orange') >= 0) return drawJuice;
               if (n.indexOf('chip') >= 0 || n.indexOf('popcorn') >= 0) return drawChips;
               if (n.indexOf('banana') >= 0 || n.indexOf('lemon') >= 0) return drawBanana;
               return drawGeneric;
@@ -816,8 +996,34 @@ window.StemLab = window.StemLab || {
               c.fillStyle = bgGrad;
               c.fillRect(0, 0, W, H);
 
+              // Dim grocery shelves establish the checkout setting without competing with the items.
+              for (var shelfRow = 0; shelfRow < 2; shelfRow++) {
+                var shelfY = 48 + shelfRow * 46;
+                c.fillStyle = 'rgba(51,65,85,0.72)';
+                c.fillRect(12, shelfY, W * 0.48, 30);
+                c.strokeStyle = 'rgba(148,163,184,0.28)'; c.lineWidth = 1;
+                c.strokeRect(12, shelfY, W * 0.48, 30);
+                for (var shelfItem = 0; shelfItem < 9; shelfItem++) {
+                  var shelfX = 18 + shelfItem * ((W * 0.46) / 9);
+                  var shelfColors = ['#7c2d12', '#164e63', '#365314', '#713f12'];
+                  c.fillStyle = shelfColors[(shelfItem + shelfRow) % shelfColors.length];
+                  c.fillRect(shelfX, shelfY + 7 + (shelfItem % 2) * 3, Math.max(10, W * 0.026), 20 - (shelfItem % 2) * 3);
+                }
+              }
+
+              // Hanging lane marker remains readable in the power-outage scene.
+              var laneSignX = Math.min(W - 122, Math.max(W * 0.5, 160));
+              c.fillStyle = '#fbbf24';
+              c.fillRect(laneSignX, 8, 112, 34);
+              c.fillStyle = '#111827';
+              c.font = 'bold 12px sans-serif';
+              c.textAlign = 'center'; c.textBaseline = 'middle';
+              c.fillText('CHECKOUT 3', laneSignX + 56, 20);
+              c.font = 'bold 8px sans-serif';
+              c.fillText('MANUAL TOTALS', laneSignX + 56, 33);
+
               // Candle glow centered on the register (right side). Patience drives the radius.
-              var registerX = W * 0.78, registerY = H * 0.55;
+              var registerX = W < 420 ? W * 0.68 : W * 0.78, registerY = H * 0.55;
               var glowRadius = (40 + (crPatiencePct / 100) * 120);
               var glow = c.createRadialGradient(registerX, registerY, 0, registerX, registerY, glowRadius);
               glow.addColorStop(0, 'rgba(252, 211, 77, 0.55)');
@@ -841,26 +1047,68 @@ window.StemLab = window.StemLab || {
                 c.stroke();
               }
 
+              // Conveyor belt, rollers, and direction chevrons create a readable scan path.
+              var beltX = 10, beltY = H - 76, beltRight = registerX - 62, beltH = 28;
+              var beltGrad = c.createLinearGradient(0, beltY, 0, beltY + beltH);
+              beltGrad.addColorStop(0, '#64748b');
+              beltGrad.addColorStop(0.48, '#334155');
+              beltGrad.addColorStop(1, '#1e293b');
+              c.fillStyle = beltGrad;
+              c.fillRect(beltX, beltY, beltRight - beltX, beltH);
+              c.strokeStyle = '#94a3b8'; c.lineWidth = 1.5;
+              c.strokeRect(beltX, beltY, beltRight - beltX, beltH);
+              c.fillStyle = 'rgba(148,163,184,0.45)';
+              for (var rollerX = beltX + 14; rollerX < beltRight - 6; rollerX += 28) {
+                c.beginPath(); c.arc(rollerX, beltY + beltH / 2, 5, 0, Math.PI * 2); c.fill();
+              }
+              c.strokeStyle = 'rgba(251,191,36,0.6)'; c.lineWidth = 2;
+              for (var chevronX = beltX + 24; chevronX < beltRight - 16; chevronX += 54) {
+                c.beginPath();
+                c.moveTo(chevronX, beltY + 7); c.lineTo(chevronX + 10, beltY + 14); c.lineTo(chevronX, beltY + 21);
+                c.stroke();
+              }
+
               // Items on counter — line them up left-of-register
               var items = (crCustomer && crCustomer.items) || [];
-              var itemSlotW = 60;
-              var itemSpacing = Math.min(itemSlotW, (W * 0.7 - 20) / Math.max(1, items.length));
-              var startX = 20;
+              var itemSlotW = 54;
+              var itemSpacing = Math.min(itemSlotW, (beltRight - 28) / Math.max(1, items.length));
+              var startX = 18;
               items.forEach(function (it, idx) {
                 var ix = startX + idx * itemSpacing;
                 var iy = H - 50 - 56;
                 var drawer = pickItemDrawer(it.name);
-                drawer(c, ix, iy, itemSlotW * 0.82, 56, it.name);
-                // Quantity / weight badge below
-                if (it.qty > 1 || it.weight) {
-                  c.fillStyle = '#fbbf24';
-                  c.fillRect(ix, H - 50 + 2, itemSlotW * 0.82, 12);
-                  c.fillStyle = '#0f172a';
-                  c.font = 'bold 10px sans-serif';
-                  c.textAlign = 'center'; c.textBaseline = 'middle';
-                  c.fillText(it.weight ? (it.weight + ' lb') : ('x' + it.qty), ix + itemSlotW * 0.41, H - 50 + 8);
-                }
+                drawer(c, ix, iy, Math.max(18, Math.min(itemSlotW * 0.82, itemSpacing - 4)), 56, it.name);
+
+                // Numbered scan-order badge stays visible even when item shapes are similar.
+                c.fillStyle = '#fbbf24';
+                c.beginPath(); c.arc(ix + 5, iy + 5, 8, 0, Math.PI * 2); c.fill();
+                c.fillStyle = '#111827';
+                c.font = 'bold 9px sans-serif';
+                c.textAlign = 'center'; c.textBaseline = 'middle';
+                c.fillText(String(idx + 1), ix + 5, iy + 5);
+
+                // A compact price ticket exposes the multiplication students must perform.
+                var priceTag = it.weight
+                  ? it.weight + 'lb \u00D7 ' + fmt(it.price)
+                  : (it.qty || 1) + ' \u00D7 ' + fmt(it.price);
+                var priceTicketW = Math.max(18, itemSpacing - 4);
+                c.fillStyle = '#fefce8';
+                c.fillRect(ix, H - 45, priceTicketW, 16);
+                c.strokeStyle = '#ca8a04'; c.lineWidth = 1;
+                c.strokeRect(ix, H - 45, priceTicketW, 16);
+                c.fillStyle = '#713f12';
+                c.font = 'bold 8px monospace';
+                c.textAlign = 'center'; c.textBaseline = 'middle';
+                c.fillText(priceTag, ix + priceTicketW / 2, H - 37, priceTicketW - 4);
               });
+
+              // Scanner glass and red scan beam mark the handoff into the register.
+              var scannerX = registerX - 98, scannerY = H - 68;
+              c.fillStyle = '#111827'; c.fillRect(scannerX, scannerY, 38, 20);
+              c.fillStyle = '#1e3a5f'; c.fillRect(scannerX + 4, scannerY + 4, 30, 12);
+              c.strokeStyle = '#60a5fa'; c.lineWidth = 1; c.strokeRect(scannerX + 4, scannerY + 4, 30, 12);
+              c.strokeStyle = crFb && crFb.ok ? '#4ade80' : '#ef4444'; c.lineWidth = 2;
+              c.beginPath(); c.moveTo(scannerX + 8, scannerY + 10); c.lineTo(scannerX + 30, scannerY + 10); c.stroke();
 
               // Cash register
               var rW = 100, rH = 80;
@@ -910,19 +1158,41 @@ window.StemLab = window.StemLab || {
                 c.fill();
               }
 
-              // Customer silhouette on the far right (beyond register)
+              // Customer, speech bubble, and basket make the transaction feel active.
               if (crCustomer) {
-                var cuX = W - 50, cuY = H - 60;
-                c.fillStyle = '#475569';
+                var cuX = W - 48, cuY = H - 60;
+
+                // Speech bubble
+                var bubbleX = Math.min(W - 132, Math.max(registerX + 8, W - 150)), bubbleY = 54;
+                c.fillStyle = 'rgba(248,250,252,0.94)';
+                c.fillRect(bubbleX, bubbleY, 124, 34);
                 c.beginPath();
-                c.arc(cuX, cuY - 30, 12, 0, Math.PI * 2);  // head
+                c.moveTo(bubbleX + 94, bubbleY + 34); c.lineTo(bubbleX + 106, bubbleY + 44); c.lineTo(bubbleX + 108, bubbleY + 34); c.closePath(); c.fill();
+                c.fillStyle = '#334155';
+                c.font = 'bold 9px sans-serif';
+                c.textAlign = 'center'; c.textBaseline = 'middle';
+                c.fillText(crFb ? __alloT('stem.money.thank_you', 'Thank you!') : __alloT('stem.money.total_please', 'Total, please!'), bubbleX + 62, bubbleY + 17, 116);
+
+                // Customer silhouette
+                c.fillStyle = '#64748b';
+                c.beginPath();
+                c.arc(cuX, cuY - 30, 12, 0, Math.PI * 2);
                 c.fill();
-                c.fillRect(cuX - 16, cuY - 18, 32, 36);  // shoulders/torso
-                // Emoji label above
-                c.fillStyle = 'rgba(255,255,255,0.7)';
-                c.font = '11px sans-serif';
+                c.fillStyle = '#475569';
+                c.fillRect(cuX - 17, cuY - 18, 34, 38);
+                c.fillStyle = 'rgba(255,255,255,0.88)';
+                c.font = '16px sans-serif';
                 c.textAlign = 'center'; c.textBaseline = 'bottom';
-                c.fillText(crCustomer.emoji || '🙂', cuX, cuY - 45);
+                c.fillText(crCustomer.emoji || '🙂', cuX, cuY - 44);
+
+                // Small wire basket at the customer's feet
+                var basketX = W - 125, basketY = H - 42;
+                c.strokeStyle = '#94a3b8'; c.lineWidth = 1.5;
+                c.strokeRect(basketX, basketY, 42, 22);
+                c.beginPath(); c.arc(basketX + 10, basketY + 24, 3, 0, Math.PI * 2); c.arc(basketX + 34, basketY + 24, 3, 0, Math.PI * 2); c.stroke();
+                for (var basketLine = 1; basketLine < 4; basketLine++) {
+                  c.beginPath(); c.moveTo(basketX + basketLine * 10, basketY + 2); c.lineTo(basketX + basketLine * 10, basketY + 20); c.stroke();
+                }
               }
 
               // "Code Black" overlay text top-left
@@ -1280,8 +1550,81 @@ window.StemLab = window.StemLab || {
               { name: __alloT('stem.money.other', '\u2764\uFE0F Other'), pct: 5, color: 'var(--allo-stem-text-soft, #94a3b8)' }
             ];
             var budgetUsed = budgetCats.reduce(function (s, c) { return s + c.pct; }, 0);
+            var budgetAllocatedAmount = budgetIncome * budgetUsed / 100;
+            var budgetSavingsPct = budgetCats[5] ? budgetCats[5].pct : 0;
+            var budgetFlexiblePct = (budgetCats[4] ? budgetCats[4].pct : 0) + (budgetCats[6] ? budgetCats[6].pct : 0);
+            var budgetSavingsAmount = budgetIncome * budgetSavingsPct / 100;
+            var budgetFlexibleAmount = budgetIncome * budgetFlexiblePct / 100;
+            var budgetEssentialAmount = Math.max(0, budgetAllocatedAmount - budgetSavingsAmount - budgetFlexibleAmount);
+            var budgetUnallocatedAmount = budgetIncome - budgetAllocatedAmount;
+            var budgetReadiness = budgetSavingsPct >= 15
+              ? { label: __alloT('stem.money.strong_buffer', 'Strong buffer'), color: 'emerald', icon: '\uD83D\uDEE1\uFE0F' }
+              : budgetSavingsPct >= 10
+                ? { label: __alloT('stem.money.building_buffer', 'Building buffer'), color: 'amber', icon: '\uD83C\uDF31' }
+                : { label: __alloT('stem.money.thin_buffer', 'Thin buffer'), color: 'rose', icon: '\u26A0\uFE0F' };
+            var budgetEventDefinitions = [
+              { id: 'repair', icon: grade === 'elementary' ? '\uD83D\uDEB2' : '\uD83D\uDE97', label: grade === 'elementary' ? __alloT('stem.money.bike_repair', 'Bike repair') : __alloT('stem.money.car_repair', 'Car repair'), detail: __alloT('stem.money.repair_event_detail', 'Transportation needs an unexpected repair.'), pct: 0.08 },
+              { id: 'health', icon: '\uD83E\uDE79', label: __alloT('stem.money.health_expense', 'Health expense'), detail: __alloT('stem.money.health_event_detail', 'A surprise health cost arrives this month.'), pct: 0.06 },
+              { id: 'utility', icon: '\uD83D\uDCA1', label: __alloT('stem.money.utility_spike', 'Utility bill spike'), detail: __alloT('stem.money.utility_event_detail', 'The monthly utility bill is higher than planned.'), pct: 0.05 },
+              { id: 'school', icon: '\uD83C\uDF92', label: __alloT('stem.money.school_supplies_event', 'School supplies'), detail: __alloT('stem.money.school_event_detail', 'Required supplies were not in the original plan.'), pct: 0.04 },
+              { id: 'phone', icon: '\uD83D\uDCF1', label: __alloT('stem.money.broken_phone', 'Broken phone'), detail: __alloT('stem.money.phone_event_detail', 'A necessary phone repair cannot wait.'), pct: 0.07 }
+            ];
+            var budgetEventId = d.budgetEventId || null;
+            var budgetEvent = budgetEventDefinitions.find(function (event) { return event.id === budgetEventId; }) || null;
+            var budgetEventChoice = d.budgetEventChoice || null;
+            var budgetEventFb = d.budgetEventFb || null;
+            var budgetEventResolved = !!d.budgetEventResolved;
+            var budgetEventScore = Number(d.budgetEventScore) || 0;
+            var budgetEventHistory = Array.isArray(d.budgetEventHistory) ? d.budgetEventHistory : [];
+            var budgetEventCost = budgetEvent ? Math.round(budgetIncome * budgetEvent.pct * changeScale) / changeScale : 0;
+            var budgetBorrowCost = Math.round(budgetEventCost * 1.15 * changeScale) / changeScale;
+            var generateBudgetEvent = function () {
+              var choices = budgetEventDefinitions.filter(function (event) { return event.id !== budgetEventId; });
+              var nextEvent = choices[Math.floor(Math.random() * choices.length)] || budgetEventDefinitions[0];
+              upd('budgetEventId', nextEvent.id); upd('budgetEventChoice', null); upd('budgetEventFb', null); upd('budgetEventResolved', false);
+            };
+            var chooseBudgetEventResponse = function (choice) {
+              if (!budgetEvent || budgetEventResolved) return;
+              var canCover = true;
+              var points = 0;
+              var message = '';
+              var impact = '';
+              if (choice === 'savings') {
+                canCover = budgetSavingsAmount >= budgetEventCost;
+                points = canCover ? 3 : 0;
+                message = canCover
+                  ? __alloT('stem.money.savings_cover_event', '\u2705 Your emergency savings covers the expense without debt.')
+                  : __alloT('stem.money.savings_short_event', '\u26A0\uFE0F Savings alone cannot cover this expense yet.');
+                impact = canCover
+                  ? fmt(budgetSavingsAmount) + ' \u2212 ' + fmt(budgetEventCost) + ' = ' + fmt(budgetSavingsAmount - budgetEventCost)
+                  : __alloT('stem.money.short_by', 'Short by') + ' ' + fmt(budgetEventCost - budgetSavingsAmount);
+              } else if (choice === 'flexible') {
+                canCover = budgetFlexibleAmount >= budgetEventCost;
+                points = canCover ? 2 : 0;
+                message = canCover
+                  ? __alloT('stem.money.flexible_cover_event', '\u2705 Cutting flexible spending covers the expense this month.')
+                  : __alloT('stem.money.flexible_short_event', '\u26A0\uFE0F Flexible spending is not large enough to cover this expense.');
+                impact = canCover
+                  ? fmt(budgetFlexibleAmount) + ' \u2212 ' + fmt(budgetEventCost) + ' = ' + fmt(budgetFlexibleAmount - budgetEventCost)
+                  : __alloT('stem.money.short_by', 'Short by') + ' ' + fmt(budgetEventCost - budgetFlexibleAmount);
+              } else {
+                points = 1;
+                message = __alloT('stem.money.borrow_event', '\uD83C\uDFE6 Borrowing solves today\'s problem, but repayment costs more next month.');
+                impact = fmt(budgetEventCost) + ' \u00D7 1.15 = ' + fmt(budgetBorrowCost);
+              }
+              var resolved = choice === 'borrow' || canCover;
+              upd('budgetEventChoice', choice);
+              upd('budgetEventFb', { ok: resolved, message: message, impact: impact, points: points });
+              if (resolved) {
+                upd('budgetEventResolved', true);
+                upd('budgetEventScore', budgetEventScore + points);
+                upd('budgetEventHistory', budgetEventHistory.concat([{ id: budgetEvent.id, icon: budgetEvent.icon, label: budgetEvent.label, choice: choice, points: points }]).slice(-5));
+                if (typeof addXP === 'function') addXP(points * 3, 'Money Math: Budget surprise decision');
+                if (typeof awardStemXP === 'function') awardStemXP('moneyMath', points * 2, 'budget surprise decision');
+              }
+            };
 
-            // ── Fewest coins challenge ──
+            // â”€â”€ Fewest coins challenge â”€â”€
             var genFewestCoinsChallenge = function () {
               var maxC = isJPY ? 5000 : gc.maxPrice;
               var target = isJPY ? (Math.floor(Math.random() * 49 + 1) * 100 + Math.floor(Math.random() * 10) * 10) : (Math.round((Math.random() * maxC + 0.10) * 100) / 100);
@@ -1703,14 +2046,14 @@ window.StemLab = window.StemLab || {
                       className: "px-3 py-1.5 rounded-lg text-xs font-black transition-all " + (d.challengeMode ? 'bg-amber-400 text-amber-900 ring-2 ring-amber-200 shadow-lg' : 'bg-white/20 text-white border border-white/30 hover:bg-white/30')
                     }, d.challengeMode ? '\uD83C\uDFAF Challenge ON' : '\uD83C\uDFAF Challenge Mode'),
                     // Grade selector
-                    React.createElement("select", { value: grade, onChange: function (e) { upd('grade', e.target.value); upd('storeItems', null); upd('cart', []); },
+                    React.createElement("select", { value: grade, onChange: function (e) { upd('grade', e.target.value); upd('storeItems', null); upd('cart', []); resetGroceryCheckout(); },
                       'aria-label': __alloT('stem.money.grade_level', 'Grade level'),
                       className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white/20 text-white border border-white/30 backdrop-blur-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 cursor-pointer"
                     }, Object.entries(GRADE_CONFIG).map(function (entry) {
                       return React.createElement("option", { key: entry[0], value: entry[0], style: { color: '#1e293b' } }, entry[1].label);
                     })),
                     // Currency selector
-                    React.createElement("select", { value: currency, onChange: function (e) { upd('currency', e.target.value); upd('placed', []); upd('storeItems', null); upd('cart', []); },
+                    React.createElement("select", { value: currency, onChange: function (e) { upd('currency', e.target.value); upd('placed', []); upd('storeItems', null); upd('cart', []); resetGroceryCheckout(); },
                       'aria-label': __alloT('stem.money.currency', 'Currency'),
                       className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white/20 text-white border border-white/30 backdrop-blur-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 cursor-pointer"
                     }, Object.keys(CURRENCIES).map(function (code) {
@@ -2101,6 +2444,50 @@ window.StemLab = window.StemLab || {
                         crBest > 0 && React.createElement("p", { className: "text-[11px] text-emerald-400 font-bold" }, "Best Round: " + crBest)
                       )
                     ),
+
+                    // Three-customer wave queue makes progress visible at a glance.
+                    React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-700 bg-zinc-800/70 px-3 py-2' },
+                      React.createElement('div', null,
+                        React.createElement('p', { className: 'text-[10px] uppercase tracking-wide font-black text-zinc-400' }, __alloT('stem.money.wave_queue', 'Wave queue')),
+                        React.createElement('p', { className: 'text-xs font-bold text-zinc-200' }, (crServed % 3) + ' / 3 ' + __alloT('stem.money.customers_complete', 'customers complete'))
+                      ),
+                      React.createElement('div', { role: 'img', 'aria-label': (crServed % 3) + ' of 3 customers completed in this wave', className: 'flex items-center gap-2' },
+                        [0, 1, 2].map(function (queueIndex) {
+                          var queueDone = queueIndex < (crServed % 3);
+                          var queueCurrent = queueIndex === (crServed % 3);
+                          return React.createElement('div', { key: 'queue-customer-' + queueIndex, className: 'w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-colors ' + (queueDone ? 'bg-emerald-700 border-emerald-400 text-white' : queueCurrent ? 'bg-amber-400 border-amber-200 text-zinc-900' : 'bg-zinc-900 border-zinc-600 text-zinc-500') }, queueDone ? '\u2713' : queueCurrent ? (crCustomer.emoji || '\uD83D\uDE42') : '\u2022');
+                        })
+                      )
+                    ),
+
+                    crRecentHistory.length ? React.createElement('div', {
+                      role: 'img',
+                      'aria-label': __alloT('stem.money.recent_round_scores', 'Recent round scores') + ': ' + crRecentHistoryLabel,
+                      className: 'rounded-xl border border-zinc-700 bg-gradient-to-br from-zinc-800 to-zinc-900 px-3 pt-3 pb-2 shadow-inner'
+                    },
+                      React.createElement('div', { className: 'flex items-center justify-between gap-3 mb-2' },
+                        React.createElement('div', { className: 'flex items-center gap-2' },
+                          React.createElement('span', { 'aria-hidden': true, className: 'text-lg' }, '\uD83D\uDCCA'),
+                          React.createElement('div', null,
+                            React.createElement('p', { className: 'text-[10px] uppercase tracking-widest font-black text-zinc-400' }, __alloT('stem.money.recent_rounds', 'Recent rounds')),
+                            React.createElement('p', { className: 'text-xs font-bold text-zinc-200' }, __alloT('stem.money.performance_trend', 'Performance trend'))
+                          )
+                        ),
+                        React.createElement('span', { className: 'rounded-full bg-zinc-950 px-2 py-1 text-[10px] font-black text-zinc-400 border border-zinc-700' }, crRecentHistory.length + ' / 6')
+                      ),
+                      React.createElement('div', { 'aria-hidden': true, className: 'flex h-20 items-end gap-1.5 border-b border-zinc-700 px-1' },
+                        crRecentHistory.map(function (round, roundIndex) {
+                          var roundScore = Math.max(0, Math.min(100, Number(round.score) || 0));
+                          var roundNumber = crHistoryCount - crRecentHistory.length + roundIndex + 1;
+                          var roundColor = roundScore >= 100 ? 'bg-emerald-400' : roundScore >= 70 ? 'bg-amber-400' : 'bg-rose-500';
+                          return React.createElement('div', { key: 'recent-round-' + roundNumber, className: 'flex min-w-0 flex-1 flex-col items-center justify-end' },
+                            React.createElement('span', { className: 'mb-1 text-[10px] font-black ' + (roundScore >= 100 ? 'text-emerald-300' : 'text-zinc-300') }, roundScore >= 100 ? '\u2605 ' + roundScore : roundScore),
+                            React.createElement('div', { className: 'w-full max-w-8 rounded-t-sm ' + roundColor, style: { height: Math.max(6, Math.round(roundScore * 0.48)) + 'px' } }),
+                            React.createElement('span', { className: 'mt-1 text-[10px] font-bold text-zinc-500' }, '#' + roundNumber)
+                          );
+                        })
+                      )
+                    ) : null,
                     
                     // Customer Card
                     React.createElement("div", { className: "bg-zinc-800 rounded-xl p-4 shadow-lg border border-zinc-700 relative overflow-hidden" },
@@ -2140,16 +2527,36 @@ window.StemLab = window.StemLab || {
 
                       // v3: Canvas scene — checkout counter with items + register + candle
                       crCanvasOn && React.createElement("div", {
-                        className: "mb-4 rounded-lg overflow-hidden border border-zinc-700 relative z-0",
+                        className: "mb-3 rounded-lg overflow-hidden border border-zinc-700 relative z-0",
                         style: { background: 'var(--allo-stem-canvas, #0f172a)' }
                       },
                         React.createElement("canvas", {
                           ref: function (el) { drawCashierScene(el); },
                           'role': 'img',
                           tabIndex: 0,
-                          'aria-label': 'Cashier counter with ' + crCustomer.items.length + ' items: ' +
-                            crCustomer.items.map(function(it) { return it.name; }).join(', '),
+                          'aria-label': 'Power outage checkout for ' + crCustomer.name + '. ' + crCustomer.items.length + ' items on the conveyor: ' +
+                            crCustomer.items.map(function(it) { return it.name + ', ' + (it.weight ? it.weight + ' pounds at ' + fmt(it.price) + ' per pound' : (it.qty || 1) + ' at ' + fmt(it.price)); }).join('; ') + '. ' +
+                            (crCustomer.coupon ? 'Coupon ' + crCustomer.coupon.label + '. ' : 'No coupon. ') +
+                            (crCustomer.hasTax ? Math.round(taxRate * 100) + ' percent tax applies. ' : 'No tax. ') + 'Enter the transaction total.',
                           style: { width: '100%', display: 'block', height: 280 }
+                        })
+                      ),
+
+                      // Transaction flow keeps item, coupon, tax, and total order visible.
+                      React.createElement('div', { role: 'list', 'aria-label': __alloT('stem.money.transaction_steps', 'Transaction steps'), className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 relative z-0' },
+                        [
+                          { icon: '\uD83D\uDED2', label: __alloT('stem.money.scan_items', 'Scan items'), detail: crCustomer.items.length + ' ' + __alloT('stem.money.items', 'items'), tone: 'border-sky-700/60 bg-sky-950/35 text-sky-200' },
+                          { icon: '\uD83C\uDFF7\uFE0F', label: __alloT('stem.money.apply_coupon', 'Apply coupon'), detail: crCustomer.coupon ? crCustomer.coupon.label : __alloT('stem.money.none', 'None'), tone: 'border-violet-700/60 bg-violet-950/35 text-violet-200' },
+                          { icon: '\uD83E\uDDFE', label: __alloT('stem.money.add_tax', 'Add tax'), detail: crCustomer.hasTax ? Math.round(taxRate * 100) + '% ' + __alloT('stem.money.after_coupon', 'after coupon') : __alloT('stem.money.none', 'None'), tone: 'border-orange-700/60 bg-orange-950/35 text-orange-200' },
+                          { icon: '\u2328\uFE0F', label: __alloT('stem.money.enter_total', 'Enter total'), detail: crFb ? fmt(crCustomer.correctTotal) : crAnswer ? cur.symbol + crAnswer : __alloT('stem.money.your_answer_2', 'Your answer'), tone: crFb ? (crFb.ok ? 'border-emerald-600 bg-emerald-950/40 text-emerald-200' : 'border-red-600 bg-red-950/40 text-red-200') : 'border-amber-600/70 bg-amber-950/35 text-amber-200' }
+                        ].map(function (step, stepIndex) {
+                          return React.createElement('div', { key: 'transaction-step-' + stepIndex, role: 'listitem', className: 'rounded-lg border p-2 min-w-0 ' + step.tone },
+                            React.createElement('div', { className: 'flex items-center gap-1.5' },
+                              React.createElement('span', { 'aria-hidden': true, className: 'text-base' }, step.icon),
+                              React.createElement('span', { className: 'text-[10px] font-black uppercase tracking-wide truncate' }, (stepIndex + 1) + '. ' + step.label)
+                            ),
+                            React.createElement('p', { className: 'text-[10px] font-bold mt-1 truncate' }, step.detail)
+                          );
                         })
                       ),
 
@@ -2206,27 +2613,54 @@ window.StemLab = window.StemLab || {
                                 it.qty > 1 ? (it.qty + " @ " + fmt(it.price) + " ea") : ""
                               )
                             ),
-                            React.createElement("span", { className: "font-bold" }, "$" + (it.weight ? (it.price * it.weight).toFixed(2) : (it.price * it.qty).toFixed(2)))
+                            React.createElement("span", { className: "font-bold" }, fmt(it.weight ? it.price * it.weight : it.price * it.qty))
                           );
                         }),
                         
                         grade !== 'elementary' ? React.createElement("div", { className: "mt-2 pt-2 border-t border-dashed border-zinc-400 text-xs flex justify-between text-zinc-600" },
-                          React.createElement("span", null, __alloT('stem.money.subtotal', "Subtotal")), React.createElement("span", null, "$" + crCustomer.subtotal.toFixed(2))
+                          React.createElement("span", null, __alloT('stem.money.subtotal', "Subtotal")), React.createElement("span", null, fmt(crCustomer.subtotal))
                         ) : null,
                         
                         crCustomer.coupon ? React.createElement("div", { className: "flex justify-between text-red-600 font-bold text-xs mt-1" },
                           React.createElement("span", null, "COUPON: " + crCustomer.coupon.label),
-                          React.createElement("span", null, "-$" + (crCustomer.subtotal - crCustomer.afterCoupon).toFixed(2))
+                          React.createElement("span", null, "-" + fmt(crCustomer.subtotal - crCustomer.afterCoupon))
                         ) : null,
                         
                         crCustomer.hasTax ? React.createElement("div", { className: "flex justify-between text-zinc-600 text-xs mt-1" },
-                          React.createElement("span", null, "Tax (" + (taxRate*100) + "%)"), React.createElement("span", null, crFb ? ("$" + crCustomer.taxAmt.toFixed(2)) : "???")
+                          React.createElement("span", null, "Tax (" + (taxRate*100) + "%)"), React.createElement("span", null, crFb ? fmt(crCustomer.taxAmt) : "???")
                         ) : null
                       )
                     ),
 
                     // Input / Feedback Area
                     crFb ? React.createElement("div", { className: "animate-in slide-in-from-bottom flex flex-col items-center mt-2" },
+                      React.createElement('div', { role: 'region', 'aria-label': __alloT('stem.money.round_transaction_math', 'Round transaction math'), className: 'w-full rounded-xl border border-zinc-700 bg-zinc-800/90 p-3 mb-2' },
+                        React.createElement('div', { className: 'flex items-center justify-between gap-2 mb-2' },
+                          React.createElement('p', { className: 'text-xs font-black text-zinc-100' }, __alloT('stem.money.transaction_breakdown', 'Transaction breakdown')),
+                          React.createElement('span', { className: 'text-[10px] font-bold text-zinc-400' }, __alloT('stem.money.receipt_reveal', 'Receipt reveal'))
+                        ),
+                        React.createElement('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
+                          React.createElement('div', { className: 'rounded-lg border border-sky-800 bg-sky-950/35 p-2 text-center' },
+                            React.createElement('p', { className: 'text-[10px] font-bold text-sky-300' }, __alloT('stem.money.items_subtotal', 'Items subtotal')),
+                            React.createElement('p', { className: 'text-sm font-black text-sky-100' }, fmt(crCustomer.subtotal))
+                          ),
+                          crCustomer.coupon && React.createElement('div', { className: 'rounded-lg border border-violet-800 bg-violet-950/35 p-2 text-center' },
+                            React.createElement('p', { className: 'text-[10px] font-bold text-violet-300' }, __alloT('stem.money.coupon_deduction', 'Coupon deduction')),
+                            React.createElement('p', { className: 'text-sm font-black text-violet-100' }, '-' + fmt(crCustomer.subtotal - crCustomer.afterCoupon))
+                          ),
+                          crCustomer.hasTax && React.createElement('div', { className: 'rounded-lg border border-orange-800 bg-orange-950/35 p-2 text-center' },
+                            React.createElement('p', { className: 'text-[10px] font-bold text-orange-300' }, Math.round(taxRate * 100) + '% ' + __alloT('stem.money.tax', 'tax')),
+                            React.createElement('p', { className: 'text-sm font-black text-orange-100' }, '+' + fmt(crCustomer.taxAmt))
+                          ),
+                          React.createElement('div', { className: 'rounded-lg border border-emerald-700 bg-emerald-950/40 p-2 text-center' },
+                            React.createElement('p', { className: 'text-[10px] font-bold text-emerald-300' }, __alloT('stem.money.correct_total', 'Correct total')),
+                            React.createElement('p', { className: 'text-sm font-black text-emerald-100' }, fmt(crCustomer.correctTotal))
+                          )
+                        ),
+                        React.createElement('p', { className: 'mt-2 rounded-lg bg-zinc-950 px-2 py-1.5 text-center text-[10px] font-mono font-bold text-amber-300 overflow-x-auto whitespace-nowrap' },
+                          fmt(crCustomer.subtotal) + (crCustomer.coupon ? ' - ' + fmt(crCustomer.subtotal - crCustomer.afterCoupon) : '') + (crCustomer.hasTax ? ' + ' + fmt(crCustomer.taxAmt) : '') + ' = ' + fmt(crCustomer.correctTotal)
+                        )
+                      ),
                       React.createElement("div", { className: "flex gap-2 my-2 text-xs w-full justify-center" },
                         React.createElement("div", { className: "text-center bg-zinc-800 rounded-lg px-2 py-2 border border-zinc-700 shadow-inner w-20" }, React.createElement("p", { className: "text-zinc-500 text-[11px] uppercase font-bold" }, __alloT('stem.money.accuracy', "Accuracy")), React.createElement("p", { className: "text-emerald-400 font-black text-lg leading-tight" }, "+" + crFb.accuracy)),
                         React.createElement("div", { className: "text-center bg-zinc-800 rounded-lg px-2 py-2 border border-zinc-700 shadow-inner w-20" }, React.createElement("p", { className: "text-zinc-500 text-[11px] uppercase font-bold" }, __alloT('stem.money.speed', "Speed")), React.createElement("p", { className: "text-sky-400 font-black text-lg leading-tight" }, "+" + crFb.speed)),
@@ -2236,15 +2670,15 @@ window.StemLab = window.StemLab || {
                     ) :
                     React.createElement("div", { className: "flex gap-2 relative z-20 mt-2" },
                       React.createElement("div", { className: "relative flex-1" },
-                        React.createElement("span", { className: "absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-black text-xl" }, "$"),
+                        React.createElement("span", { className: "absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 font-black text-base" }, cur.symbol),
                         React.createElement("input", {
-                          type: "number", step: "0.01",
+                          type: "number", step: isJPY ? "1" : "0.01",
                           value: crAnswer,
                           onChange: function(e) { upd('crAnswer', e.target.value); },
                           onKeyDown: function(e) { if(e.key === 'Enter') submitCashierAnswer(); },
                           placeholder: "Total...", autoFocus: true,
                           'aria-label': __alloT('stem.money.cashier_register_answer', 'Cashier register answer'),
-                          className: "w-full pl-8 pr-4 py-4 bg-zinc-800 border-2 border-zinc-600 rounded-xl text-zinc-100 font-mono text-xl font-bold focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all shadow-inner"
+                          className: "w-full pl-12 pr-4 py-4 bg-zinc-800 border-2 border-zinc-600 rounded-xl text-zinc-100 font-mono text-xl font-bold focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all shadow-inner"
                         })
                       ),
                       React.createElement("button", { "aria-label": "ENTER", onClick: submitCashierAnswer, disabled: !crAnswer,
@@ -2254,22 +2688,70 @@ window.StemLab = window.StemLab || {
                   ) : null,
 
                   crGameOver ? React.createElement("div", { className: "relative z-10 text-center py-6" },
-                    React.createElement("div", { className: "text-5xl mb-4" }, "\uD83D\uDD14"),
+                    React.createElement("div", { className: "text-5xl mb-3", 'aria-hidden': true }, "\uD83D\uDD14"),
                     React.createElement("h2", { className: "text-2xl font-black text-red-500 mb-2 uppercase tracking-wide drop-shadow-md" }, __alloT('stem.money.shift_over', "Shift Over!")),
-                    React.createElement("p", { className: "text-sm text-zinc-300 mb-6 max-w-sm mx-auto" },
-                      __alloT('stem.money.you_ran_out_of_time_still_you_served', "You ran out of time! Still, you served "), React.createElement("span", { className: "text-amber-400 font-bold" }, crServed), " customers."
+                    React.createElement("p", { className: "text-sm text-zinc-300 mb-5 max-w-sm mx-auto" },
+                      __alloT('stem.money.you_ran_out_of_time_still_you_served', "You ran out of time! Still, you served "), React.createElement("span", { className: "text-amber-400 font-bold" }, crServed), crServed === 1 ? " customer." : " customers."
                     ),
-                    React.createElement("div", { className: "bg-zinc-800/80 rounded-2xl p-6 border border-zinc-600 mb-8 inline-block shadow-xl shadow-black/50" },
-                      React.createElement("p", { className: "text-[11px] text-zinc-400 font-bold uppercase mb-1 tracking-widest gap-2" }, __alloT('stem.money.final_score', "Final Score")),
-                      React.createElement("p", { className: "text-5xl font-black text-amber-500 drop-shadow-md" }, crScore),
-                      crBest > 0 && crScore >= crBest && crScore > 0 ? React.createElement("p", { className: "text-xs text-emerald-400 font-bold mt-2 animate-pulse" }, __alloT('stem.money.new_high_score', "\uD83C\uDFC6 NEW HIGH SCORE!")) : null
-                    ),
-                    React.createElement("div", { className: "flex flex-col items-center space-y-3 w-full" }, 
-                      React.createElement("button", { onClick: startCashierRush, className: "px-8 py-3 bg-amber-500 text-zinc-900 font-black text-lg rounded-xl hover:bg-amber-400 transition-all shadow-[0_0_15px_rgba(251,191,36,0.5)] w-full max-w-[280px]" }, __alloT('stem.money.play_again', "Play Again \u21BB")),
-                      React.createElement("button", { "aria-label": __alloT('stem.money.exit_emergency', "Exit Emergency"), onClick: function() { upd('crActive', false); }, className: "px-8 py-3 bg-transparent text-zinc-400 font-black text-sm rounded-xl hover:text-white hover:bg-zinc-800 transition-all w-full max-w-[280px] border border-zinc-700" }, __alloT('stem.money.exit_emergency_2', "Exit Emergency"))
+                    React.createElement("div", { className: "w-full max-w-lg mx-auto" },
+                      React.createElement("div", { className: "bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-2xl p-5 border border-amber-500/40 mb-3 shadow-xl shadow-black/50" },
+                        React.createElement("p", { className: "text-[11px] text-zinc-400 font-bold uppercase mb-1 tracking-widest" }, __alloT('stem.money.final_score', "Final Score")),
+                        React.createElement("p", { className: "text-5xl font-black text-amber-500 drop-shadow-md" }, crScore),
+                        React.createElement("p", { className: "text-xs text-zinc-400 font-bold mt-2" }, __alloT('stem.money.top_round', "Top round"), ": ", React.createElement("span", { className: "text-emerald-400" }, crBest + "/100"))
+                      ),
+                      React.createElement("div", { 'aria-label': __alloT('stem.money.shift_summary', 'Shift summary'), className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3" },
+                        React.createElement("div", { className: "rounded-xl border border-amber-500/30 bg-zinc-800 p-3" },
+                          React.createElement("p", { className: "text-[10px] uppercase tracking-wide font-black text-zinc-500" }, __alloT('stem.money.average_round', "Average round")),
+                          React.createElement("p", { className: "mt-1 text-xl font-black text-amber-400" }, crAverageScore, React.createElement("span", { className: "text-xs text-zinc-500" }, "/100"))
+                        ),
+                        React.createElement("div", { className: "rounded-xl border border-emerald-500/30 bg-zinc-800 p-3" },
+                          React.createElement("p", { className: "text-[10px] uppercase tracking-wide font-black text-zinc-500" }, __alloT('stem.money.accuracy', "Accuracy")),
+                          React.createElement("p", { className: "mt-1 text-xl font-black text-emerald-400" }, crAverageAccuracyPct + "%")
+                        ),
+                        React.createElement("div", { className: "rounded-xl border border-sky-500/30 bg-zinc-800 p-3" },
+                          React.createElement("p", { className: "text-[10px] uppercase tracking-wide font-black text-zinc-500" }, __alloT('stem.money.speed', "Speed")),
+                          React.createElement("p", { className: "mt-1 text-xl font-black text-sky-400" }, crAverageSpeedPct + "%")
+                        ),
+                        React.createElement("div", { className: "rounded-xl border border-violet-500/30 bg-zinc-800 p-3" },
+                          React.createElement("p", { className: "text-[10px] uppercase tracking-wide font-black text-zinc-500" }, __alloT('stem.money.perfect_rounds', "Perfect rounds")),
+                          React.createElement("p", { className: "mt-1 text-xl font-black text-violet-300" }, crPerfectRounds)
+                        )
+                      ),
+                      crRecentHistory.length ? React.createElement("div", {
+                        role: "img",
+                        'aria-label': __alloT('stem.money.recent_round_scores', 'Recent round scores') + ': ' + crRecentHistoryLabel,
+                        className: "rounded-2xl border border-zinc-700 bg-zinc-900/90 px-4 pt-4 pb-3 mb-6 text-left"
+                      },
+                        React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" },
+                          React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] uppercase tracking-widest font-black text-zinc-500" }, __alloT('stem.money.performance_trend', "Performance trend")),
+                            React.createElement("p", { className: "text-sm font-black text-zinc-200" }, __alloT('stem.money.last_rounds', "Last rounds"))
+                          ),
+                          React.createElement("div", { 'aria-hidden': true, className: "flex items-center gap-2 text-[10px] font-bold text-zinc-500" },
+                            React.createElement("span", null, React.createElement("i", { className: "inline-block w-2 h-2 rounded-sm bg-emerald-400 mr-1" }), "100"),
+                            React.createElement("span", null, React.createElement("i", { className: "inline-block w-2 h-2 rounded-sm bg-amber-400 mr-1" }), "70+"),
+                            React.createElement("span", null, React.createElement("i", { className: "inline-block w-2 h-2 rounded-sm bg-rose-500 mr-1" }), "<70")
+                          )
+                        ),
+                        React.createElement("div", { 'aria-hidden': true, className: "flex h-24 items-end gap-2 border-b border-zinc-700 px-1" },
+                          crRecentHistory.map(function (round, roundIndex) {
+                            var roundScore = Math.max(0, Math.min(100, Number(round.score) || 0));
+                            var roundNumber = crHistoryCount - crRecentHistory.length + roundIndex + 1;
+                            var roundColor = roundScore >= 100 ? 'bg-emerald-400' : roundScore >= 70 ? 'bg-amber-400' : 'bg-rose-500';
+                            return React.createElement("div", { key: "summary-round-" + roundNumber, className: "flex min-w-0 flex-1 flex-col items-center justify-end" },
+                              React.createElement("span", { className: "mb-1 text-[10px] font-black " + (roundScore >= 100 ? "text-emerald-300" : "text-zinc-300") }, roundScore >= 100 ? "\u2605 " + roundScore : roundScore),
+                              React.createElement("div", { className: "w-full max-w-10 rounded-t " + roundColor, style: { height: Math.max(7, Math.round(roundScore * 0.62)) + "px" } }),
+                              React.createElement("span", { className: "mt-1 text-[10px] font-bold text-zinc-500" }, "#" + roundNumber)
+                            );
+                          })
+                        )
+                      ) : null,
+                      React.createElement("div", { className: "flex flex-col items-center space-y-3 w-full" },
+                        React.createElement("button", { onClick: startCashierRush, className: "px-8 py-3 bg-amber-500 text-zinc-900 font-black text-lg rounded-xl hover:bg-amber-400 transition-all shadow-[0_0_15px_rgba(251,191,36,0.5)] w-full max-w-[280px]" }, __alloT('stem.money.play_again', "Play Again \u21BB")),
+                        React.createElement("button", { "aria-label": __alloT('stem.money.exit_emergency', "Exit Emergency"), onClick: function() { upd('crActive', false); }, className: "px-8 py-3 bg-transparent text-zinc-400 font-black text-sm rounded-xl hover:text-white hover:bg-zinc-800 transition-all w-full max-w-[280px] border border-zinc-700" }, __alloT('stem.money.exit_emergency_2', "Exit Emergency"))
+                      )
                     )
                   ) : null
-
                 ) : React.createElement(React.Fragment, null,
                   // ── Header row: Recipe Mode toggle (middle+) ──
                 grade !== 'elementary' && React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-2" },
@@ -2324,7 +2806,7 @@ window.StemLab = window.StemLab || {
                           upd('recipeFb', { ok: false, msg: '\u274C Missing ' + result.missing.length + ' item(s): ' + result.missing.join(', ') });
                         }
                       }, className: "flex-1 px-4 py-2 bg-purple-700 text-white font-bold rounded-xl hover:bg-purple-600 transition-all text-sm shadow-md" }, __alloT('stem.money.check_recipe_cart_2', "\u2714 Check Recipe Cart")),
-                      React.createElement("button", { "aria-label": __alloT('stem.money.clear_3', "Clear"), onClick: function () { upd('cart', []); upd('recipeFb', null); }, className: "transition-colors px-3 py-2 text-xs text-red-400 hover:text-red-600 font-bold" }, __alloT('stem.money.clear_4', "Clear"))
+                      React.createElement("button", { "aria-label": __alloT('stem.money.clear_3', "Clear"), onClick: function () { upd('cart', []); upd('recipeFb', null); resetGroceryCheckout(); }, className: "transition-colors px-3 py-2 text-xs text-red-400 hover:text-red-600 font-bold" }, __alloT('stem.money.clear_4', "Clear"))
                     ),
                     d.recipeFb && React.createElement("p", { className: "text-xs font-bold " + (d.recipeFb.ok ? 'text-green-600' : 'text-red-500') }, d.recipeFb.msg)
                   )
@@ -2360,6 +2842,7 @@ window.StemLab = window.StemLab || {
                               upd('storeDifficulty', sd.id);
                               // Clear cart on difficulty switch so cart prices match new tier
                               upd('cart', []);
+                              resetGroceryCheckout();
                             },
                             'aria-pressed': active,
                             title: sd.title,
@@ -2389,10 +2872,12 @@ window.StemLab = window.StemLab || {
                                 } else {
                                   upd('cart', [].concat(cart, [{ name: item.name, price: displayPrice, qty: 1, pricePer: 'each' }]));
                                 }
+                                upd('lastReceipt', null);
                                 if (typeof addToast === 'function') addToast('Added ' + item.name + ' to cart!', 'success');
                               }
                             },
-                            className: "w-full p-3 bg-white rounded-xl border text-left group transition-all " + (isAdding ? 'border-orange-400 ring-2 ring-orange-200 shadow-md' : 'border-orange-100 hover:border-orange-600 hover:shadow-md')
+                            disabled: checkoutActive,
+                            className: "w-full p-3 bg-white rounded-xl border text-left group transition-all " + (checkoutActive ? 'border-orange-100 opacity-45 cursor-not-allowed' : isAdding ? 'border-orange-400 ring-2 ring-orange-200 shadow-md' : 'border-orange-100 hover:border-orange-600 hover:shadow-md')
                           },
                             React.createElement("div", { className: "text-2xl mb-1" }, item.name.split(' ')[0]),
                             React.createElement("p", { className: "text-xs font-bold text-slate-700 truncate" }, item.name.substring(item.name.indexOf(' ') + 1)),
@@ -2415,6 +2900,7 @@ window.StemLab = window.StemLab || {
                             React.createElement("button", { "aria-label": __alloT('stem.money.add_to_cart_2', "Add to Cart"), onClick: function () {
                               var w = d.weightInput || 1;
                               upd('cart', [].concat(cart, [{ name: item.name, price: displayPrice, weight: w, pricePer: item.pricePer, qty: 1 }]));
+                              upd('lastReceipt', null);
                               upd('weightItemIdx', null);
                               if (typeof addToast === 'function') addToast('Added ' + w + ' ' + item.pricePer + ' ' + item.name + '!', 'success');
                             }, className: "w-full px-3 py-1.5 bg-orange-700 text-white text-xs font-bold rounded-lg hover:bg-orange-600 transition-all" }, __alloT('stem.money.add_to_cart_3', "\uD83D\uDED2 Add to Cart"))
@@ -2425,35 +2911,69 @@ window.StemLab = window.StemLab || {
                   ),
                   // Cart
                   React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-200" },
-                    React.createElement("h3", { className: "text-sm font-bold text-emerald-800 mb-2" }, "\uD83D\uDED2 Your Cart (" + cart.length + ")"),
+                    React.createElement("h3", { className: "text-sm font-bold text-emerald-800 mb-2" }, cart.length === 0 && lastReceipt ? "\u2705 Purchase Complete" : "\uD83D\uDED2 Your Cart (" + cartItemCount + ")"),
                     cart.length === 0
-                      ? React.createElement("p", { className: "text-xs text-slate-600 text-center py-4" }, recipeMode && selectedRecipe ? "Shop for the recipe ingredients!" : "Cart is empty. Click items to add!")
+                      ? (lastReceipt
+                        ? React.createElement('div', { role: 'region', 'aria-label': __alloT('stem.money.completed_receipt_aria', 'Completed grocery receipt'), className: 'bg-white rounded-xl border-2 border-dashed border-emerald-300 p-3 shadow-sm' },
+                            React.createElement('div', { className: 'flex items-start justify-between gap-2 pb-2 border-b border-dashed border-slate-300' },
+                              React.createElement('div', null,
+                                React.createElement('p', { className: 'text-sm font-black text-slate-800' }, __alloT('stem.money.grocery_receipt', 'Grocery receipt')),
+                                React.createElement('p', { className: 'text-[10px] text-slate-600' }, (lastReceipt.currencyFlag || '') + ' ' + (lastReceipt.currencyCode || '') + ' \u2022 ' + (lastReceipt.itemCount || 0) + ' ' + __alloT('stem.money.items_purchased', 'items purchased'))
+                              ),
+                              React.createElement('span', { 'aria-hidden': true, className: 'text-2xl' }, '\u2705')
+                            ),
+                            React.createElement('div', { className: 'divide-y divide-dashed divide-slate-200 max-h-[230px] overflow-y-auto pr-1' },
+                              (lastReceipt.items || []).map(function (line, receiptIndex) {
+                                return React.createElement('div', { key: 'receipt-line-' + receiptIndex, className: 'flex items-center justify-between gap-3 py-2' },
+                                  React.createElement('div', { className: 'min-w-0' },
+                                    React.createElement('p', { className: 'text-xs font-bold text-slate-700 truncate' }, line.name),
+                                    React.createElement('p', { className: 'text-[10px] font-mono text-slate-600' }, line.math)
+                                  ),
+                                  React.createElement('span', { className: 'text-xs font-black text-slate-800 whitespace-nowrap' }, line.lineTotalLabel)
+                                );
+                              })
+                            ),
+                            React.createElement('div', { className: 'pt-2 border-t-2 border-dashed border-slate-300 space-y-1' },
+                              React.createElement('div', { className: 'flex justify-between text-xs text-slate-600' }, React.createElement('span', null, __alloT('stem.money.subtotal_3', 'Subtotal')), React.createElement('span', { className: 'font-bold text-slate-800' }, lastReceipt.subtotalLabel)),
+                              lastReceipt.hasTax && React.createElement('div', { className: 'flex justify-between text-xs text-slate-600' }, React.createElement('span', null, lastReceipt.taxRateLabel + ' ' + __alloT('stem.money.sales_tax', 'sales tax')), React.createElement('span', { className: 'font-bold text-slate-800' }, lastReceipt.taxLabel)),
+                              React.createElement('div', { className: 'flex justify-between text-base font-black text-emerald-700 pt-1' }, React.createElement('span', null, __alloT('stem.money.total_paid', 'Total paid')), React.createElement('span', null, lastReceipt.cashTotalLabel || lastReceipt.totalLabel)),
+                              lastReceipt.cashAdjustmentLabel && React.createElement('div', { className: 'flex justify-between text-[10px] text-slate-600' }, React.createElement('span', null, __alloT('stem.money.cash_rounding', 'Cash rounding')), React.createElement('span', { className: 'font-bold text-slate-700' }, lastReceipt.totalLabel + ' \u2192 ' + lastReceipt.cashTotalLabel)),
+                              lastReceipt.paymentLabel && React.createElement('div', { className: 'flex justify-between text-xs text-slate-600 pt-1 border-t border-dashed border-slate-200' }, React.createElement('span', null, __alloT('stem.money.payment_method', 'Payment method')), React.createElement('span', { className: 'font-bold text-slate-800' }, lastReceipt.paymentLabel)),
+                              lastReceipt.tenderLabel && React.createElement('div', { className: 'flex justify-between text-xs text-slate-600' }, React.createElement('span', null, __alloT('stem.money.cash_received', 'Cash received')), React.createElement('span', { className: 'font-bold text-slate-800' }, lastReceipt.tenderLabel)),
+                              lastReceipt.changeLabel && React.createElement('div', { className: 'flex justify-between text-xs text-slate-600' }, React.createElement('span', null, __alloT('stem.money.change_returned', 'Change returned')), React.createElement('span', { className: 'font-bold text-amber-700' }, lastReceipt.changeLabel)),
+                              lastReceipt.estimateLabel && React.createElement('div', { className: 'flex justify-between text-xs text-slate-600' }, React.createElement('span', null, __alloT('stem.money.your_estimate', 'Your estimate')), React.createElement('span', { className: 'font-bold text-sky-700' }, lastReceipt.estimateLabel + ' (\u0394 ' + lastReceipt.estimateDifferenceLabel + ')')),
+                              lastReceipt.returnedPieces && lastReceipt.returnedPieces.length ? React.createElement('p', { className: 'text-[10px] text-slate-600' }, __alloT('stem.money.cash_drawer_returned', 'Cash drawer returned') + ': ' + lastReceipt.returnedPieces.map(function (piece) { return piece.count + '\u00D7 ' + piece.label; }).join(', ')) : null,
+                              React.createElement('p', { className: 'rounded-lg bg-emerald-50 border border-emerald-200 px-2 py-1.5 text-center text-[10px] font-mono font-bold text-emerald-800' }, lastReceipt.hasTax ? lastReceipt.subtotalLabel + ' + ' + lastReceipt.taxLabel + ' = ' + lastReceipt.totalLabel : lastReceipt.subtotalLabel + ' = ' + lastReceipt.totalLabel)
+                            ),
+                            React.createElement('button', { type: 'button', onClick: function () { upd('lastReceipt', null); }, className: 'w-full mt-3 px-3 py-2 rounded-lg bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-600 transition-colors' }, __alloT('stem.money.shop_again', 'Shop again'))
+                          )
+                        : React.createElement("p", { className: "text-xs text-slate-600 text-center py-4" }, recipeMode && selectedRecipe ? "Shop for the recipe ingredients!" : "Cart is empty. Click items to add!"))
                       : React.createElement("div", { className: "space-y-1.5 max-h-[320px] overflow-y-auto" },
                           cart.map(function (item, ci) {
                             var isWeighted = item.pricePer && item.pricePer !== 'each';
                             var lineTotal = isWeighted ? item.price * (item.weight || 1) : item.price * (item.qty || 1);
-                            var qtyLabel = isWeighted
-                              ? (item.weight || 1) + ' ' + item.pricePer + ' @ ' + fmt(item.price) + '/' + item.pricePer
-                              : (item.qty > 1 ? item.qty + 'x ' : '');
+                            var lineMath = isWeighted
+                              ? (item.weight || 1) + ' ' + item.pricePer + ' \u00D7 ' + fmt(item.price) + '/' + item.pricePer
+                              : (item.qty || 1) + ' \u00D7 ' + fmt(item.price);
                             return React.createElement("div", { key: ci, className: "flex items-center justify-between bg-white rounded-lg px-2 py-1.5 border border-emerald-100" },
                               React.createElement("div", { className: "flex-1 min-w-0" },
-                                React.createElement("p", { className: "text-xs font-medium text-slate-700 truncate" }, (isWeighted ? '' : qtyLabel) + item.name),
-                                isWeighted && React.createElement("p", { className: "text-[11px] text-slate-600" }, qtyLabel)
+                                React.createElement("p", { className: "text-xs font-medium text-slate-700 truncate" }, item.name),
+                                React.createElement("p", { className: "text-[10px] font-mono text-slate-600" }, lineMath)
                               ),
                               challengeMode
                                 ? React.createElement("span", { className: "text-xs font-bold text-amber-500 ml-2 whitespace-nowrap" }, isWeighted ? fmt(item.price) + '/' + item.pricePer : fmt(item.price) + '/ea')
                                 : React.createElement("span", { className: "text-xs font-bold text-emerald-600 ml-2 whitespace-nowrap" }, fmt(lineTotal)),
-                              React.createElement("button", { onClick: function () {
+                              React.createElement("button", { type: "button", disabled: checkoutActive, "aria-label": (isWeighted || (item.qty || 1) <= 1 ? "Remove " : "Decrease quantity of ") + item.name, onClick: function () {
                                   if (!isWeighted && item.qty > 1) { upd('cart', cart.map(function (c, idx) { return idx === ci ? Object.assign({}, c, { qty: c.qty - 1 }) : c; })); }
                                   else { upd('cart', cart.filter(function (_, idx) { return idx !== ci; })); }
                                   upd('cartCheckoutFb', null); upd('recipeFb', null);
-                                }, className: "transition-colors ml-1 text-red-300 hover:text-red-500 text-xs font-bold"
+                                }, className: "transition-colors ml-1 text-red-300 hover:text-red-500 text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed"
                               }, "\u2715")
                             );
                           })
                         ),
                     // ── Challenge Mode: Mental Math Checkout ──
-                    challengeMode && cart.length > 0 && React.createElement("div", { className: "mt-3 pt-3 border-t border-amber-200 space-y-2" },
+                    challengeMode && cart.length > 0 && !checkoutActive && React.createElement("div", { className: "mt-3 pt-3 border-t border-amber-200 space-y-2" },
                       React.createElement("p", { className: "text-xs font-bold text-amber-700" }, '\uD83C\uDFAF Add up the items yourself! ' + (gc.includeTax ? 'Don\u2019t forget 8% tax!' : '')),
                       React.createElement("div", { className: "space-y-1.5" },
                         React.createElement("div", { className: "flex items-center gap-2" },
@@ -2486,29 +3006,171 @@ window.StemLab = window.StemLab || {
                           if (typeof addXP === 'function') addXP(25, 'Money Math: Mental math grocery checkout');
                         }
                       }, disabled: d.cartGuessTotal == null, className: "w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-sm shadow-md disabled:opacity-40" }, __alloT('stem.money.check_my_math_2', '\uD83E\uDDE0 Check My Math')),
-                      d.cartCheckoutFb && React.createElement("p", { className: "text-xs font-bold " + (d.cartCheckoutFb.ok ? 'text-green-600' : 'text-red-500') }, d.cartCheckoutFb.msg),
-                      React.createElement("button", { "aria-label": __alloT('stem.money.clear_cart', "Clear Cart"), onClick: function () { upd('cart', []); upd('cartGuessSubtotal', null); upd('cartGuessTax', null); upd('cartGuessTotal', null); upd('cartCheckoutFb', null); }, className: "transition-colors w-full px-3 py-1.5 text-xs text-red-400 hover:text-red-600 font-bold" }, __alloT('stem.money.clear_cart_2', "Clear Cart"))
+                      d.cartCheckoutFb && React.createElement("p", { role: 'status', 'aria-live': 'polite', className: "text-xs font-bold " + (d.cartCheckoutFb.ok ? 'text-green-600' : 'text-red-500') }, d.cartCheckoutFb.msg),
+                      d.cartCheckoutFb && d.cartCheckoutFb.ok && React.createElement("button", { type: 'button', onClick: function () {
+                        upd('checkoutActive', true); upd('checkoutStep', 'payment'); upd('checkoutEstimate', d.cartGuessTotal); upd('weightItemIdx', null);
+                        upd('checkoutEstimateFb', { ok: true, msg: __alloT('stem.money.mental_math_verified', 'Mental math verified. Choose how to pay.') });
+                        upd('checkoutPayment', null); upd('checkoutTender', null); upd('checkoutReturned', []); upd('checkoutChangeFb', null);
+                      }, className: "w-full px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all text-sm shadow-md" }, __alloT('stem.money.continue_to_payment', '\uD83D\uDCB3 Continue to Payment')),
+                      React.createElement("button", { "aria-label": __alloT('stem.money.clear_cart', "Clear Cart"), onClick: function () { upd('cart', []); upd('cartGuessSubtotal', null); upd('cartGuessTax', null); upd('cartGuessTotal', null); upd('cartCheckoutFb', null); resetGroceryCheckout(); }, className: "transition-colors w-full px-3 py-1.5 text-xs text-red-400 hover:text-red-600 font-bold" }, __alloT('stem.money.clear_cart_2', "Clear Cart"))
                     ),
-                    // ── Normal Mode: Show totals ──
-                    !challengeMode && cart.length > 0 && React.createElement("div", { className: "mt-3 pt-3 border-t border-emerald-200 space-y-1" },
-                      React.createElement("div", { className: "flex justify-between text-xs" },
-                        React.createElement("span", { className: "text-slate-600" }, __alloT('stem.money.subtotal_2', "Subtotal")),
-                        React.createElement("span", { className: "font-bold" }, fmt(cartTotal))
-                      ),
-                      gc.includeTax && React.createElement("div", { className: "flex justify-between text-xs" },
-                        React.createElement("span", { className: "text-slate-600" }, __alloT('stem.money.tax_8_2', "Tax (8%)")),
-                        React.createElement("span", { className: "font-bold text-orange-500" }, fmt(cartTax))
-                      ),
-                      React.createElement("div", { className: "flex justify-between text-sm font-black" },
-                        React.createElement("span", { className: "text-slate-700" }, __alloT('stem.money.total_4', "Total")),
-                        React.createElement("span", { className: "text-emerald-600" }, fmt(cartGrand))
-                      ),
-                      React.createElement("button", { "aria-label": __alloT('stem.money.checkout', "Checkout"), onClick: function () {
-                        if (typeof addXP === 'function') addXP(20, 'Money Math: Completed a grocery purchase');
-                        if (typeof addToast === 'function') addToast('\uD83C\uDF89 Purchase complete! Total: ' + fmt(cartGrand), 'success');
-                        upd('cart', []);
-                      }, className: "w-full mt-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-green-600 transition-all text-sm shadow-md" }, __alloT('stem.money.checkout_2', "\uD83D\uDCB3 Checkout")),
-                      React.createElement("button", { "aria-label": __alloT('stem.money.clear_cart_3', "Clear Cart"), onClick: function () { upd('cart', []); }, className: "transition-colors w-full px-3 py-1.5 text-xs text-red-400 hover:text-red-600 font-bold" }, __alloT('stem.money.clear_cart_4', "Clear Cart"))
+                    // Complete Checkout Journey: estimate, choose payment, and make change.
+                    (!challengeMode || checkoutActive) && cart.length > 0 && React.createElement("div", { className: "mt-3 pt-3 border-t border-emerald-200 space-y-2" },
+                      !checkoutActive ? React.createElement(React.Fragment, null,
+                        React.createElement('div', { role: 'region', 'aria-label': __alloT('stem.money.receipt_math_preview_aria', 'Receipt math preview'), className: 'bg-white rounded-xl border-2 border-dashed border-emerald-300 p-3 shadow-sm' },
+                          React.createElement('div', { className: 'flex items-center justify-between gap-2 pb-2 mb-2 border-b border-dashed border-slate-300' },
+                            React.createElement('div', null,
+                              React.createElement('p', { className: 'text-xs font-black text-slate-800' }, __alloT('stem.money.receipt_math', 'Receipt math')),
+                              React.createElement('p', { className: 'text-[10px] text-slate-600' }, cartItemCount + ' ' + __alloT('stem.money.items_in_transaction', 'items in this transaction'))
+                            ),
+                            React.createElement('span', { className: 'px-2 py-1 rounded-full bg-emerald-100 text-[10px] font-bold text-emerald-800' }, __alloT('stem.money.preview', 'Preview'))
+                          ),
+                          React.createElement("div", { className: "flex justify-between text-xs py-1" },
+                            React.createElement("span", { className: "text-slate-600" }, __alloT('stem.money.subtotal_2', "Subtotal")),
+                            React.createElement("span", { className: "font-bold text-slate-800" }, fmt(cartTotal))
+                          ),
+                          gc.includeTax && React.createElement("div", { className: "flex justify-between gap-3 text-xs py-1" },
+                            React.createElement("span", { className: "text-slate-600" }, '8% \u00D7 ' + fmt(cartTotal) + ' ' + __alloT('stem.money.sales_tax', 'sales tax')),
+                            React.createElement("span", { className: "font-bold text-orange-600 whitespace-nowrap" }, fmt(cartTax))
+                          ),
+                          React.createElement("div", { className: "flex justify-between text-base font-black pt-2 mt-1 border-t-2 border-dashed border-slate-300" },
+                            React.createElement("span", { className: "text-slate-700" }, __alloT('stem.money.total_4', "Total")),
+                            React.createElement("span", { className: "text-emerald-700" }, fmt(cartGrand))
+                          ),
+                          React.createElement('p', { className: 'mt-2 rounded-lg bg-emerald-50 border border-emerald-200 px-2 py-1.5 text-center text-[10px] font-mono font-bold text-emerald-800' }, gc.includeTax ? fmt(cartTotal) + ' + ' + fmt(cartTax) + ' = ' + fmt(cartGrand) : fmt(cartTotal) + ' = ' + fmt(cartGrand))
+                        ),
+                        React.createElement("button", { type: 'button', onClick: function () {
+                          upd('checkoutActive', true); upd('checkoutStep', 'estimate'); upd('checkoutEstimate', ''); upd('weightItemIdx', null);
+                          upd('checkoutEstimateFb', null); upd('checkoutPayment', null); upd('checkoutTender', null);
+                          upd('checkoutReturned', []); upd('checkoutChangeFb', null);
+                        }, className: "w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all text-sm shadow-md" }, __alloT('stem.money.start_complete_checkout', '\uD83D\uDED2 Start Complete Checkout')),
+                        React.createElement("button", { "aria-label": __alloT('stem.money.clear_cart_3', "Clear Cart"), onClick: function () { upd('cart', []); resetGroceryCheckout(); }, className: "transition-colors w-full px-3 py-1.5 text-xs text-red-400 hover:text-red-600 font-bold" }, __alloT('stem.money.clear_cart_4', "Clear Cart"))
+                      ) : React.createElement('div', { className: 'rounded-2xl border-2 border-teal-300 bg-white p-3 shadow-lg space-y-3' },
+                        React.createElement('div', { className: 'flex items-center justify-between gap-2' },
+                          React.createElement('div', null,
+                            React.createElement('p', { className: 'text-sm font-black text-teal-800' }, __alloT('stem.money.complete_checkout', '\uD83E\uDDFE Complete Checkout')),
+                            React.createElement('p', { className: 'text-[10px] text-slate-600' }, __alloT('stem.money.checkout_journey_hint', 'Estimate, pay, and return the correct change.'))
+                          ),
+                          React.createElement('span', { className: 'rounded-full bg-teal-100 px-2 py-1 text-[10px] font-black text-teal-800' }, cur.flag + ' ' + cur.code)
+                        ),
+                        React.createElement('div', { role: 'list', 'aria-label': __alloT('stem.money.checkout_steps', 'Checkout steps'), className: 'grid grid-cols-3 gap-1' },
+                          [
+                            { id: 'estimate', n: 1, label: __alloT('stem.money.estimate', 'Estimate') },
+                            { id: 'payment', n: 2, label: __alloT('stem.money.payment', 'Payment') },
+                            { id: 'change', n: 3, label: __alloT('stem.money.change', 'Change') }
+                          ].map(function (step) {
+                            var stepOrder = ['estimate', 'payment', 'change'];
+                            var currentIndex = stepOrder.indexOf(checkoutStep);
+                            var stepIndex = stepOrder.indexOf(step.id);
+                            var isDone = stepIndex < currentIndex;
+                            var isCurrent = step.id === checkoutStep;
+                            return React.createElement('div', { key: step.id, role: 'listitem', 'aria-current': isCurrent ? 'step' : undefined, className: 'rounded-lg border px-1 py-2 text-center ' + (isCurrent ? 'border-teal-500 bg-teal-50' : isDone ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-slate-50') },
+                              React.createElement('span', { className: 'mx-auto flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-black ' + (isCurrent ? 'bg-teal-600 text-white' : isDone ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600') }, isDone ? '\u2713' : step.n),
+                              React.createElement('p', { className: 'mt-1 text-[10px] font-bold ' + (isCurrent ? 'text-teal-800' : 'text-slate-600') }, step.label)
+                            );
+                          })
+                        ),
+                        checkoutStep === 'estimate' ? React.createElement('div', { className: 'space-y-3' },
+                          React.createElement('div', { className: 'rounded-xl bg-gradient-to-r from-sky-50 to-cyan-50 border border-sky-200 p-3 text-center' },
+                            React.createElement('p', { className: 'text-[10px] font-black uppercase tracking-wide text-sky-700' }, __alloT('stem.money.estimate_before_reveal', 'Estimate before the register reveals the total')),
+                            React.createElement('p', { className: 'mt-1 text-xs text-slate-600' }, cartItemCount + ' ' + __alloT('stem.money.items_in_cart', 'items in cart'))
+                          ),
+                          React.createElement('label', { className: 'block text-xs font-bold text-slate-700' },
+                            __alloT('stem.money.about_how_much', 'About how much will the purchase cost?'),
+                            React.createElement('div', { className: 'relative mt-1' },
+                              React.createElement('span', { className: 'absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-black' }, cur.symbol),
+                              React.createElement('input', { type: 'number', step: isJPY ? '1' : '0.01', value: checkoutEstimate, onChange: function (e) { upd('checkoutEstimate', e.target.value); upd('checkoutEstimateFb', null); }, 'aria-label': __alloT('stem.money.checkout_estimate', 'Estimated checkout total'), className: 'w-full rounded-xl border-2 border-sky-300 py-3 pl-9 pr-3 text-lg font-black text-sky-800 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200' })
+                            )
+                          ),
+                          checkoutEstimateFb ? React.createElement('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-xl border p-3 ' + (checkoutEstimateFb.ok ? 'border-emerald-300 bg-emerald-50' : 'border-amber-300 bg-amber-50') },
+                            React.createElement('p', { className: 'text-xs font-bold ' + (checkoutEstimateFb.ok ? 'text-emerald-800' : 'text-amber-800') }, checkoutEstimateFb.msg),
+                            React.createElement('div', { className: 'mt-2 flex items-center justify-between rounded-lg bg-white px-3 py-2 text-xs' },
+                              React.createElement('span', { className: 'text-slate-600' }, __alloT('stem.money.exact_register_total', 'Exact register total')),
+                              React.createElement('span', { className: 'font-black text-emerald-700' }, fmt(cartGrand))
+                            )
+                          ) : null,
+                          !checkoutEstimateFb ? React.createElement('button', { type: 'button', disabled: checkoutEstimate === '', onClick: function () {
+                            var closeEstimate = checkoutEstimateDifference <= Math.max(isJPY ? 100 : 1, cartGrand * 0.1);
+                            upd('checkoutEstimateFb', { ok: closeEstimate, msg: closeEstimate
+                              ? __alloT('stem.money.estimate_close', '\u2705 Good estimate! You were within 10% of the total.')
+                              : __alloT('stem.money.estimate_learning', '\uD83D\uDCA1 Compare your estimate with the exact total before paying.') });
+                          }, className: 'w-full rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-black text-white hover:bg-sky-700 disabled:opacity-40' }, __alloT('stem.money.check_estimate', 'Check Estimate')) :
+                          React.createElement('button', { type: 'button', onClick: function () { upd('checkoutStep', 'payment'); }, className: 'w-full rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-black text-white hover:bg-teal-700' }, __alloT('stem.money.continue_to_payment', '\uD83D\uDCB3 Continue to Payment'))
+                        ) : null,
+                        checkoutStep === 'payment' ? React.createElement('div', { className: 'space-y-3' },
+                          React.createElement('div', { className: 'flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2' },
+                            React.createElement('span', { className: 'text-xs font-bold text-slate-600' }, __alloT('stem.money.amount_due', 'Amount due')),
+                            React.createElement('span', { className: 'text-xl font-black text-emerald-700' }, fmt(cartGrand))
+                          ),
+                          React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
+                            [
+                              { id: 'cash', icon: '\uD83D\uDCB5', label: __alloT('stem.money.cash', 'Cash') },
+                              { id: 'debit', icon: '\uD83D\uDCB3', label: __alloT('stem.money.debit', 'Debit') },
+                              { id: 'credit', icon: '\uD83C\uDFE6', label: __alloT('stem.money.credit', 'Credit') }
+                            ].map(function (method) {
+                              return React.createElement('button', { key: method.id, type: 'button', 'aria-pressed': checkoutPayment === method.id, onClick: function () { upd('checkoutPayment', method.id); upd('checkoutTender', null); upd('checkoutReturned', []); upd('checkoutChangeFb', null); }, className: 'rounded-xl border-2 px-2 py-3 text-center transition-all ' + (checkoutPayment === method.id ? 'border-teal-500 bg-teal-50 shadow-md' : 'border-slate-200 bg-white hover:border-teal-300') },
+                                React.createElement('span', { 'aria-hidden': true, className: 'text-2xl' }, method.icon),
+                                React.createElement('p', { className: 'mt-1 text-[10px] font-black text-slate-700' }, method.label)
+                              );
+                            })
+                          ),
+                          checkoutPayment === 'cash' ? React.createElement('div', { className: 'rounded-xl border border-amber-200 bg-amber-50 p-3 space-y-2' },
+                            React.createElement('p', { className: 'text-xs font-black text-amber-800' }, __alloT('stem.money.choose_cash_received', 'Choose the cash received from the customer')),
+                            checkoutCashAdjustment !== 0 && React.createElement('p', { className: 'rounded-lg bg-white px-2 py-1.5 text-[10px] font-bold text-slate-600' }, __alloT('stem.money.cash_rounding_note', 'Cash total rounds to the smallest available denomination') + ': ' + fmt(cartGrand) + ' \u2192 ' + fmt(checkoutCashTotal)),
+                            React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+                              checkoutTenderOptions.map(function (amount, amountIndex) {
+                                return React.createElement('button', { key: 'tender-' + amountIndex, type: 'button', 'aria-pressed': checkoutTender === amount, onClick: function () { upd('checkoutTender', amount); upd('checkoutReturned', []); upd('checkoutChangeFb', null); }, className: 'rounded-lg border-2 px-2 py-2 text-xs font-black ' + (checkoutTender === amount ? 'border-amber-500 bg-amber-100 text-amber-900' : 'border-amber-200 bg-white text-slate-700 hover:border-amber-400') }, amountIndex === 0 ? __alloT('stem.money.exact_cash', 'Exact cash') + ' ' + fmt(amount) : fmt(amount));
+                              })
+                            )
+                          ) : checkoutPayment ? React.createElement('p', { className: 'rounded-xl border border-sky-200 bg-sky-50 p-3 text-xs text-sky-800' }, checkoutPayment === 'debit'
+                            ? __alloT('stem.money.debit_note', 'Debit uses money already in a bank account. No cash change is returned.')
+                            : __alloT('stem.money.credit_note', 'Credit borrows money. Paying the full statement balance avoids interest.')) : null,
+                          React.createElement('button', { type: 'button', disabled: !checkoutPayment || (checkoutPayment === 'cash' && checkoutTender == null), onClick: function () {
+                            if (checkoutPayment === 'cash') upd('checkoutStep', 'change');
+                            else finishGroceryCheckout(checkoutPayment);
+                          }, className: 'w-full rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-black text-white hover:bg-teal-700 disabled:opacity-40' }, checkoutPayment === 'cash' ? __alloT('stem.money.continue_to_change', '\uD83D\uDCB5 Continue to Make Change') : __alloT('stem.money.pay_and_print', 'Pay & Print Receipt'))
+                        ) : null,
+                        checkoutStep === 'change' ? React.createElement('div', { className: 'space-y-3' },
+                          React.createElement('div', { className: 'grid grid-cols-3 gap-2 text-center' },
+                            React.createElement('div', { className: 'rounded-lg bg-slate-100 p-2' }, React.createElement('p', { className: 'text-[10px] font-bold text-slate-600' }, __alloT('stem.money.cash_total', 'Cash total')), React.createElement('p', { className: 'text-sm font-black text-slate-800' }, fmt(checkoutCashTotal))),
+                            React.createElement('div', { className: 'rounded-lg bg-amber-50 p-2' }, React.createElement('p', { className: 'text-[10px] font-bold text-amber-700' }, __alloT('stem.money.cash_received', 'Cash received')), React.createElement('p', { className: 'text-sm font-black text-amber-800' }, fmt(checkoutTender || 0))),
+                            React.createElement('div', { className: 'rounded-lg bg-emerald-50 p-2' }, React.createElement('p', { className: 'text-[10px] font-bold text-emerald-700' }, __alloT('stem.money.change_due', 'Change due')), React.createElement('p', { className: 'text-sm font-black text-emerald-800' }, fmt(checkoutChangeDue)))
+                          ),
+                          React.createElement('p', { className: 'rounded-lg border border-dashed border-slate-300 bg-slate-50 px-2 py-1.5 text-center text-[10px] font-mono font-bold text-slate-700' }, fmt(checkoutCashTotal) + ' + ' + fmt(checkoutChangeDue) + ' = ' + fmt(checkoutTender || 0)),
+                          checkoutChangeDue > 0 ? React.createElement(React.Fragment, null,
+                            React.createElement('div', { role: 'region', 'aria-label': __alloT('stem.money.cash_return_tray', 'Cash return tray'), className: 'rounded-xl border-2 border-dashed border-amber-300 bg-amber-50 p-3' },
+                              React.createElement('div', { className: 'flex items-center justify-between gap-2' },
+                                React.createElement('p', { className: 'text-xs font-black text-amber-800' }, __alloT('stem.money.your_return_tray', '\uD83D\uDCB0 Your return tray')),
+                                React.createElement('span', { className: 'text-sm font-black ' + (checkoutReturnedTotal === checkoutChangeDue ? 'text-emerald-700' : checkoutReturnedTotal > checkoutChangeDue ? 'text-red-600' : 'text-amber-800') }, fmt(checkoutReturnedTotal) + ' / ' + fmt(checkoutChangeDue))
+                              ),
+                              React.createElement('div', { className: 'mt-2 flex min-h-10 flex-wrap items-center gap-1.5 rounded-lg bg-white p-2' },
+                                checkoutReturnGroups.length ? checkoutReturnGroups.map(function (group) {
+                                  return React.createElement('span', { key: 'return-' + group.value, className: 'rounded-full border px-2 py-1 text-[10px] font-black ' + (group.isBill ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-amber-300 bg-amber-100 text-amber-900') }, group.count + '\u00D7 ' + group.label);
+                                }) : React.createElement('span', { className: 'w-full text-center text-[10px] font-bold text-slate-500' }, __alloT('stem.money.select_change_below', 'Select bills and coins below.'))
+                              ),
+                              checkoutReturned.length ? React.createElement('button', { type: 'button', onClick: function () { upd('checkoutReturned', checkoutReturned.slice(0, -1)); upd('checkoutChangeFb', null); }, className: 'mt-2 w-full text-[10px] font-bold text-slate-600 hover:text-slate-800' }, __alloT('stem.money.undo_last_piece', '\u21A9 Undo last piece')) : null
+                            ),
+                            React.createElement('div', { className: 'flex flex-wrap justify-center gap-1.5' },
+                              checkoutReturnDenominations.map(function (denomination, denominationIndex) {
+                                var wouldOvershoot = checkoutReturnedTotal + denomination.value > checkoutChangeDue + (1 / changeScale / 2);
+                                return React.createElement('button', { key: 'checkout-denom-' + denominationIndex, type: 'button', disabled: wouldOvershoot || (checkoutChangeFb && checkoutChangeFb.ok), onClick: function () { upd('checkoutReturned', checkoutReturned.concat([denomination.value])); upd('checkoutChangeFb', null); }, className: 'min-w-14 rounded-lg border-2 px-2 py-2 text-[10px] font-black transition-all disabled:opacity-35 ' + (denomination.isBill ? 'border-emerald-300 bg-emerald-50 text-emerald-800 hover:border-emerald-500' : 'border-amber-300 bg-amber-50 text-amber-900 hover:border-amber-500') }, denomination.name + ' (' + fmt(denomination.value) + ')');
+                              })
+                            ),
+                            checkoutChangeFb ? React.createElement('p', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg px-3 py-2 text-xs font-bold ' + (checkoutChangeFb.ok ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-700') }, checkoutChangeFb.msg) : null,
+                            !(checkoutChangeFb && checkoutChangeFb.ok) ? React.createElement('button', { type: 'button', disabled: !checkoutReturned.length, onClick: function () {
+                              var correctReturn = Math.round(checkoutReturnedTotal * changeScale) === Math.round(checkoutChangeDue * changeScale);
+                              upd('checkoutChangeFb', correctReturn
+                                ? { ok: true, msg: __alloT('stem.money.change_correct', '\u2705 Correct change! The drawer balances.') }
+                                : { ok: false, msg: __alloT('stem.money.change_try_again', '\u274C The return tray does not match the change due yet.') });
+                            }, className: 'w-full rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-black text-white hover:bg-amber-700 disabled:opacity-40' }, __alloT('stem.money.check_returned_change', 'Check Returned Change')) :
+                            React.createElement('button', { type: 'button', onClick: function () { finishGroceryCheckout('cash'); }, className: 'w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-black text-white hover:bg-emerald-700' }, __alloT('stem.money.complete_and_print', '\u2705 Complete & Print Receipt'))
+                          ) : React.createElement('div', { className: 'rounded-xl border border-emerald-300 bg-emerald-50 p-3 text-center' },
+                            React.createElement('p', { className: 'text-sm font-black text-emerald-800' }, __alloT('stem.money.exact_cash_no_change', '\u2705 Exact cash — no change is due.')),
+                            React.createElement('button', { type: 'button', onClick: function () { finishGroceryCheckout('cash'); }, className: 'mt-3 w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-black text-white hover:bg-emerald-700' }, __alloT('stem.money.complete_and_print', '\u2705 Complete & Print Receipt'))
+                          )
+                        ) : null,
+                        React.createElement('button', { type: 'button', onClick: resetGroceryCheckout, className: 'w-full rounded-lg px-3 py-1.5 text-[10px] font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-700' }, __alloT('stem.money.cancel_checkout', 'Cancel checkout and keep cart'))
+                      )
                     )
                   )
                 )
@@ -2732,7 +3394,7 @@ window.StemLab = window.StemLab || {
                   React.createElement("label", { className: "text-sm font-bold text-slate-600" }, __alloT('stem.money.monthly_income', "Monthly Income:")),
                   React.createElement("input", { type: "number", value: budgetIncome,
                     'aria-label': __alloT('stem.money.monthly_income_2', 'Monthly income'),
-                    onChange: function (e) { upd('budgetIncome', parseFloat(e.target.value) || 0); },
+                    onChange: function (e) { upd('budgetIncome', parseFloat(e.target.value) || 0); upd('budgetEventChoice', null); upd('budgetEventFb', null); upd('budgetEventResolved', false); },
                     className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-40 focus:ring-2 focus:ring-indigo-400 outline-none"
                   }),
                   React.createElement("span", { className: "text-xs font-bold " + (budgetUsed === 100 ? 'text-emerald-600' : budgetUsed > 100 ? 'text-red-500' : 'text-amber-500') }, budgetUsed + '% allocated' + (budgetUsed !== 100 ? ' (' + (100 - budgetUsed) + '% remaining)' : ' \u2714'))
@@ -2753,7 +3415,7 @@ window.StemLab = window.StemLab || {
                         'aria-label': cat.name + ' budget percentage',
                         onChange: function (e) {
                           var newCats = budgetCats.map(function (c, idx) { return idx === ci ? Object.assign({}, c, { pct: parseInt(e.target.value) }) : c; });
-                          upd('budgetCats', newCats);
+                          upd('budgetCats', newCats); upd('budgetEventChoice', null); upd('budgetEventFb', null); upd('budgetEventResolved', false);
                         },
                         className: "w-full h-2 rounded-full appearance-none cursor-pointer",
                         style: { accentColor: cat.color }
@@ -2778,6 +3440,118 @@ window.StemLab = window.StemLab || {
                   ),
                   budgetUsed > 100 && React.createElement("p", { className: "text-xs font-bold text-red-500 text-center mt-3" }, "\u26A0\uFE0F Over budget by " + (budgetUsed - 100) + '%! Reduce some categories.'),
                   budgetUsed === 100 && React.createElement("p", { className: "text-xs font-bold text-emerald-500 text-center mt-3" }, __alloT('stem.money.perfectly_balanced_budget', "\u2705 Perfectly balanced budget!"))
+                ),
+
+                // Visual monthly snapshot
+                React.createElement('div', { className: 'mt-4 rounded-2xl border border-indigo-200 bg-white p-4 shadow-sm' },
+                  React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-3' },
+                    React.createElement('div', null,
+                      React.createElement('p', { className: 'text-[10px] font-black uppercase tracking-widest text-indigo-500' }, __alloT('stem.money.monthly_snapshot', 'Monthly snapshot')),
+                      React.createElement('p', { className: 'text-sm font-black text-slate-800' }, __alloT('stem.money.where_income_goes', 'Where your income goes'))
+                    ),
+                    React.createElement('span', { className: 'rounded-full border px-2.5 py-1 text-[10px] font-black ' + (budgetReadiness.color === 'emerald' ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : budgetReadiness.color === 'amber' ? 'border-amber-300 bg-amber-50 text-amber-800' : 'border-rose-300 bg-rose-50 text-rose-800') }, budgetReadiness.icon + ' ' + budgetReadiness.label)
+                  ),
+                  React.createElement('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3' },
+                    [
+                      { label: __alloT('stem.money.income', 'Income'), value: budgetIncome, tone: 'text-indigo-700', bg: 'bg-indigo-50 border-indigo-200' },
+                      { label: __alloT('stem.money.essentials', 'Essentials'), value: budgetEssentialAmount, tone: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
+                      { label: __alloT('stem.money.flexible', 'Flexible'), value: budgetFlexibleAmount, tone: 'text-pink-700', bg: 'bg-pink-50 border-pink-200' },
+                      { label: __alloT('stem.money.savings_buffer', 'Savings buffer'), value: budgetSavingsAmount, tone: 'text-cyan-700', bg: 'bg-cyan-50 border-cyan-200' }
+                    ].map(function (metric) {
+                      return React.createElement('div', { key: metric.label, className: 'rounded-xl border p-2 text-center ' + metric.bg },
+                        React.createElement('p', { className: 'text-[10px] font-bold text-slate-600' }, metric.label),
+                        React.createElement('p', { className: 'text-sm font-black ' + metric.tone }, fmt(metric.value))
+                      );
+                    })
+                  ),
+                  React.createElement('div', { role: 'img', 'aria-label': __alloT('stem.money.budget_allocation_chart', 'Budget allocation chart') + ': ' + budgetCats.map(function (cat) { return cat.name + ' ' + cat.pct + '%'; }).join(', '), className: 'overflow-hidden rounded-full bg-slate-100 h-5 flex border border-slate-200' },
+                    budgetCats.map(function (cat, catIndex) {
+                      return React.createElement('div', { key: 'budget-segment-' + catIndex, title: cat.name + ' ' + cat.pct + '%', style: { width: (cat.pct / Math.max(100, budgetUsed) * 100) + '%', backgroundColor: cat.color }, className: 'h-full border-r border-white/50 last:border-r-0' });
+                    })
+                  ),
+                  React.createElement('div', { className: 'mt-2 flex flex-wrap gap-x-3 gap-y-1' },
+                    budgetCats.map(function (cat, catIndex) {
+                      return React.createElement('span', { key: 'budget-key-' + catIndex, className: 'inline-flex items-center gap-1 text-[10px] font-bold text-slate-600' },
+                        React.createElement('i', { 'aria-hidden': true, className: 'h-2 w-2 rounded-full', style: { backgroundColor: cat.color } }), cat.name.replace(/^[^\s]+\s/, '') + ' ' + cat.pct + '%'
+                      );
+                    })
+                  ),
+                  budgetUnallocatedAmount !== 0 && React.createElement('p', { className: 'mt-3 rounded-lg px-3 py-2 text-xs font-bold ' + (budgetUnallocatedAmount > 0 ? 'bg-amber-50 text-amber-800' : 'bg-rose-50 text-rose-700') }, budgetUnallocatedAmount > 0
+                    ? __alloT('stem.money.unallocated_income', 'Still unallocated') + ': ' + fmt(budgetUnallocatedAmount)
+                    : __alloT('stem.money.over_budget_amount', 'Over budget by') + ': ' + fmt(Math.abs(budgetUnallocatedAmount)))
+                ),
+
+                // Unexpected expense decision simulator
+                React.createElement('div', { className: 'mt-4 rounded-2xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-fuchsia-50 p-4 shadow-sm' },
+                  React.createElement('div', { className: 'flex flex-wrap items-start justify-between gap-2 mb-3' },
+                    React.createElement('div', null,
+                      React.createElement('p', { className: 'text-[10px] font-black uppercase tracking-widest text-violet-500' }, __alloT('stem.money.real_life_budget_lab', 'Real-life budget lab')),
+                      React.createElement('h4', { className: 'text-sm font-black text-violet-900' }, __alloT('stem.money.unexpected_expense', '\u26A1 Unexpected Expense')),
+                      React.createElement('p', { className: 'text-xs text-violet-700' }, __alloT('stem.money.choose_tradeoff', 'Choose a response and see the tradeoff.'))
+                    ),
+                    React.createElement('div', { className: 'rounded-xl border border-violet-200 bg-white px-3 py-2 text-center' },
+                      React.createElement('p', { className: 'text-[10px] font-bold text-violet-500' }, __alloT('stem.money.resilience_score', 'Resilience score')),
+                      React.createElement('p', { className: 'text-lg font-black text-violet-800' }, budgetEventScore, React.createElement('span', { className: 'text-xs text-violet-400' }, ' pts'))
+                    )
+                  ),
+                  !budgetEvent ? React.createElement('div', { className: 'rounded-xl border border-dashed border-violet-300 bg-white/80 p-5 text-center' },
+                    React.createElement('div', { 'aria-hidden': true, className: 'text-4xl mb-2' }, '\uD83C\uDFB2'),
+                    React.createElement('p', { className: 'text-sm font-black text-slate-800' }, __alloT('stem.money.test_your_budget', 'Test your monthly budget')),
+                    React.createElement('p', { className: 'mx-auto mt-1 max-w-md text-xs text-slate-600' }, budgetUsed === 100
+                      ? __alloT('stem.money.event_ready', 'Draw a surprise expense, then decide how to handle it.')
+                      : __alloT('stem.money.balance_first', 'Allocate exactly 100% of income before drawing an expense.')),
+                    React.createElement('button', { type: 'button', disabled: budgetUsed !== 100 || budgetIncome <= 0, onClick: generateBudgetEvent, className: 'mt-3 rounded-xl bg-violet-700 px-5 py-2.5 text-sm font-black text-white shadow-md hover:bg-violet-600 disabled:cursor-not-allowed disabled:opacity-40' }, __alloT('stem.money.draw_expense', '\u26A1 Draw an Expense'))
+                  ) : React.createElement('div', { className: 'space-y-3' },
+                    React.createElement('div', { className: 'relative overflow-hidden rounded-2xl border border-violet-200 bg-white p-4 shadow-sm' },
+                      React.createElement('div', { 'aria-hidden': true, className: 'absolute -right-3 -top-4 text-7xl opacity-10' }, budgetEvent.icon),
+                      React.createElement('div', { className: 'relative flex items-center gap-3' },
+                        React.createElement('div', { 'aria-hidden': true, className: 'flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-100 text-3xl' }, budgetEvent.icon),
+                        React.createElement('div', { className: 'min-w-0 flex-1' },
+                          React.createElement('p', { className: 'text-sm font-black text-slate-800' }, budgetEvent.label),
+                          React.createElement('p', { className: 'text-xs text-slate-600' }, budgetEvent.detail),
+                          React.createElement('p', { className: 'mt-1 text-2xl font-black text-violet-800' }, fmt(budgetEventCost))
+                        )
+                      )
+                    ),
+                    budgetUsed !== 100 && React.createElement('p', { className: 'rounded-lg bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700' }, __alloT('stem.money.rebalance_before_decision', 'Rebalance the plan to exactly 100% before choosing.')),
+                    React.createElement('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
+                      [
+                        { id: 'savings', icon: '\uD83D\uDEE1\uFE0F', label: __alloT('stem.money.use_savings', 'Use savings'), amount: budgetSavingsAmount, note: __alloT('stem.money.available', 'available') },
+                        { id: 'flexible', icon: '\u2702\uFE0F', label: __alloT('stem.money.cut_flexible', 'Cut flexible spending'), amount: budgetFlexibleAmount, note: __alloT('stem.money.available', 'available') },
+                        { id: 'borrow', icon: '\uD83C\uDFE6', label: __alloT('stem.money.borrow', 'Borrow'), amount: budgetBorrowCost, note: __alloT('stem.money.repay_next_month', 'repay next month') }
+                      ].map(function (option) {
+                        var selected = budgetEventChoice === option.id;
+                        return React.createElement('button', { key: option.id, type: 'button', disabled: budgetEventResolved || budgetUsed !== 100, 'aria-pressed': selected, onClick: function () { chooseBudgetEventResponse(option.id); }, className: 'rounded-xl border-2 p-3 text-left transition-all disabled:cursor-not-allowed ' + (selected ? 'border-violet-500 bg-violet-100 shadow-md' : 'border-violet-100 bg-white hover:border-violet-300') + (budgetEventResolved && !selected ? ' opacity-45' : '') },
+                          React.createElement('span', { 'aria-hidden': true, className: 'text-2xl' }, option.icon),
+                          React.createElement('p', { className: 'mt-1 text-xs font-black text-slate-800' }, option.label),
+                          React.createElement('p', { className: 'text-sm font-black ' + (option.id === 'borrow' ? 'text-rose-700' : 'text-violet-700') }, fmt(option.amount)),
+                          React.createElement('p', { className: 'text-[10px] font-bold text-slate-600' }, option.note)
+                        );
+                      })
+                    ),
+                    budgetEventFb && React.createElement('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-xl border p-3 ' + (budgetEventFb.ok ? 'border-emerald-300 bg-emerald-50' : 'border-rose-300 bg-rose-50') },
+                      React.createElement('div', { className: 'flex items-start justify-between gap-2' },
+                        React.createElement('p', { className: 'text-xs font-bold ' + (budgetEventFb.ok ? 'text-emerald-800' : 'text-rose-700') }, budgetEventFb.message),
+                        budgetEventFb.ok && React.createElement('span', { className: 'shrink-0 rounded-full bg-white px-2 py-1 text-[10px] font-black text-violet-700' }, '+' + budgetEventFb.points + ' pts')
+                      ),
+                      React.createElement('p', { className: 'mt-2 rounded-lg bg-white px-2 py-1.5 text-center text-xs font-mono font-black text-slate-700' }, budgetEventFb.impact)
+                    ),
+                    budgetEventResolved ? React.createElement('button', { type: 'button', onClick: generateBudgetEvent, className: 'w-full rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-black text-white hover:bg-violet-600' }, __alloT('stem.money.next_expense', '\u27A1 Next Expense')) : budgetEventFb && !budgetEventFb.ok ? React.createElement('p', { className: 'text-center text-xs font-bold text-rose-700' }, __alloT('stem.money.try_another_response', 'Try another response that the current budget can cover.')) : null
+                  ),
+                  budgetEventHistory.length ? React.createElement('div', { className: 'mt-3 border-t border-violet-200 pt-3' },
+                    React.createElement('div', { className: 'flex items-center justify-between gap-2 mb-2' },
+                      React.createElement('p', { className: 'text-[10px] font-black uppercase tracking-wide text-violet-600' }, __alloT('stem.money.recent_decisions', 'Recent decisions')),
+                      React.createElement('span', { className: 'text-[10px] font-bold text-violet-500' }, budgetEventHistory.length + ' / 5')
+                    ),
+                    React.createElement('div', { role: 'list', className: 'flex flex-wrap gap-2' },
+                      budgetEventHistory.map(function (entry, historyIndex) {
+                        return React.createElement('div', { key: 'budget-history-' + historyIndex, role: 'listitem', title: entry.label, className: 'flex items-center gap-1.5 rounded-full border border-violet-200 bg-white px-2 py-1' },
+                          React.createElement('span', { 'aria-hidden': true }, entry.icon),
+                          React.createElement('span', { className: 'text-[10px] font-black text-violet-800' }, '+' + entry.points)
+                        );
+                      })
+                    )
+                  ) : null
                 )
               ),
 
@@ -2923,7 +3697,7 @@ window.StemLab = window.StemLab || {
                   ),
                   d.ccPrice != null && React.createElement("div", { className: "space-y-3" },
                     React.createElement("div", { className: "bg-white rounded-lg border border-rose-100 p-4 text-center space-y-1" },
-                      React.createElement("p", { className: "text-xs text-slate-600" }, "Item costs: " + React.createElement("span", { className: "font-black text-slate-700" }, fmt(d.ccPrice)) + " | Paid: " + React.createElement("span", { className: "font-black text-slate-700" }, fmt(d.ccPaid))),
+
                       React.createElement("p", { className: "text-xs text-slate-600" }, __alloT('stem.money.item_costs_2', "Item costs:")),
                       React.createElement("p", { className: "text-lg font-black text-rose-700" }, fmt(d.ccPrice)),
                       React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, __alloT('stem.money.paid_with', "Paid with:")),
@@ -3132,7 +3906,7 @@ window.StemLab = window.StemLab || {
                 // Sub-tab navigation
                 React.createElement("div", { className: "flex flex-wrap gap-2 mb-2" },
                   [{ id: 'compound', label: __alloT('stem.money.compound_interest', '\uD83D\uDCC8 Compound Interest') }, { id: 'retire', label: __alloT('stem.money.retirement', '\uD83C\uDFD6\uFE0F Retirement') }, { id: 'loans', label: __alloT('stem.money.loans_debt', '\uD83C\uDFE6 Loans & Debt') }, { id: 'goals', label: __alloT('stem.money.savings_goals', '\uD83C\uDFAF Savings Goals') }, { id: 'quiz', label: __alloT('stem.money.fin_quiz', '\uD83E\uDDE0 Fin. Quiz') }].map(function (s) {
-                    return React.createElement("button", { "aria-label": __alloT('stem.money.compound_interest_visualizer', "Compound Interest Visualizer"), key: s.id, onClick: function () { upd('finSub', s.id); },
+                    return React.createElement("button", { "aria-label": s.label.replace(/^[^\s]+\s/, ''), key: s.id, onClick: function () { upd('finSub', s.id); },
                       className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (finSub === s.id ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-white text-slate-600 border border-slate-400 hover:bg-blue-50')
                     }, s.label);
                   })

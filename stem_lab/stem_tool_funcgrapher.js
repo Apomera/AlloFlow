@@ -138,7 +138,8 @@ window.StemLab = window.StemLab || {
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, funcGrapher: { ...prev.funcGrapher, [key]: val } }));
 
           // ── Theme + grade band (shared pattern with waterCycle) ──
-          var isDark = !!ctx.darkMode;
+          var isContrast = !!ctx.isContrast;
+          var isDark = !!ctx.isDark || isContrast;
           var GRADE_BANDS = ['K-2', '3-5', '6-8', '9-12'];
           function getGradeBand() {
             var ov = d.fgGradeOverride;

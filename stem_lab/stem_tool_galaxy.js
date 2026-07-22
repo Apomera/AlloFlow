@@ -5178,19 +5178,19 @@ if (!window._galaxyHasLoadedOnce) {
 
                     React.createElement("path", { d: msBandTop + msBandBot + 'Z', fill: "rgba(99,102,241,0.16)", stroke: "rgba(129,140,248,0.35)", strokeWidth: 0.7 }),
 
-                    React.createElement("text", { x: xOf(9500), y: yOf(6) + 4, fill: "#a5b4fc", fontSize: 9, fontWeight: 700, transform: "rotate(24 " + xOf(9500) + " " + yOf(6) + ")" }, "MAIN SEQUENCE (90% of stars)"),
+                    React.createElement("text", { x: xOf(9500), y: yOf(6) + 4, fill: "#a5b4fc", fontSize: 9, fontWeight: 700, transform: "rotate(24 " + xOf(9500) + " " + yOf(6) + ")" }, __alloT('stem.galaxy.hr_main_sequence_label', 'MAIN SEQUENCE (90% of stars)')),
 
-                    React.createElement("text", { x: xOf(4200), y: yOf(600), fill: "#fca5a5", fontSize: 9, fontWeight: 700 }, "Giants"),
+                    React.createElement("text", { x: xOf(4200), y: yOf(600), fill: "#fca5a5", fontSize: 9, fontWeight: 700 }, __alloT('stem.galaxy.hr_giants_label', 'Giants')),
 
-                    React.createElement("text", { x: xOf(11000), y: yOf(250000), fill: "#fdba74", fontSize: 9, fontWeight: 700 }, "Supergiants"),
+                    React.createElement("text", { x: xOf(11000), y: yOf(250000), fill: "#fdba74", fontSize: 9, fontWeight: 700 }, __alloT('stem.galaxy.hr_supergiants_label', 'Supergiants')),
 
-                    React.createElement("text", { x: xOf(19000), y: yOf(0.008), fill: "#cbd5e1", fontSize: 9, fontWeight: 700 }, "White Dwarfs"),
+                    React.createElement("text", { x: xOf(19000), y: yOf(0.008), fill: "#cbd5e1", fontSize: 9, fontWeight: 700 }, __alloT('stem.galaxy.hr_white_dwarfs_label', 'White Dwarfs')),
 
                     // the Sun for reference
 
                     React.createElement("circle", { cx: xOf(5778), cy: yOf(1), r: 3, fill: "#fde047", stroke: "#0f172a", strokeWidth: 0.8 }),
 
-                    React.createElement("text", { x: xOf(5778) + 6, y: yOf(1) + 3, fill: "#fde047", fontSize: 8, fontWeight: 700 }, "Sun"),
+                    React.createElement("text", { x: xOf(5778) + 6, y: yOf(1) + 3, fill: "#fde047", fontSize: 8, fontWeight: 700 }, __alloT('stem.galaxy.hr_sun_label', 'Sun')),
 
                     // evolutionary track for the chosen mass
 
@@ -5216,7 +5216,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   React.createElement("p", { className: "text-[11px] leading-relaxed mt-1 " + (cur ? "text-pink-300" : "text-amber-300") },
 
-                    cur ? "⭐ Your " + mass + " M☉ " + massNoun + " is " + cur.note + "." : (OFF_CHART[activeStage] || "Select a lifecycle stage to plot your star.")
+                    cur ? "⭐ Your " + mass + " M☉ " + massNoun + " is " + cur.note + "." : (OFF_CHART[activeStage] || __alloT('stem.galaxy.hr_select_stage_prompt', 'Select a lifecycle stage to plot your star.'))
 
                   )
 
@@ -5234,7 +5234,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   React.createElement("span", null, "\uD83C\uDF08"),
 
-                  "Harvard Spectral Classification (OBAFGKM)"
+                  __alloT('stem.galaxy.harvard_classification_title', 'Harvard Spectral Classification (OBAFGKM)')
 
                 ),
 
@@ -5285,9 +5285,9 @@ if (!window._galaxyHasLoadedOnce) {
                     return React.createElement("div", { className: "mt-3 p-3 rounded-xl border border-stone-300 bg-stone-50" },
                       React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
                         React.createElement("span", { className: "text-lg" }, "\uD83E\uDEA8"),
-                        React.createElement("span", { className: "text-xs font-bold text-stone-700" }, "Brown dwarf (substellar)")
+                        React.createElement("span", { className: "text-xs font-bold text-stone-700" }, __alloT('stem.galaxy.brown_dwarf_substellar_label', 'Brown dwarf (substellar)'))
                       ),
-                      React.createElement("p", { className: "text-[11px] text-stone-700 leading-relaxed" }, "This object is below about 0.08 solar masses, so it never settles onto the hydrogen-burning main sequence. It glows from leftover heat and slowly cools instead.")
+                      React.createElement("p", { className: "text-[11px] text-stone-700 leading-relaxed" }, __alloT('stem.galaxy.brown_dwarf_substellar_desc', 'This object is below about 0.08 solar masses, so it never settles onto the hydrogen-burning main sequence. It glows from leftover heat and slowly cools instead.'))
                     );
                   }
 

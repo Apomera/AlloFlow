@@ -37,7 +37,7 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
     const [aiLabelAnchors, setAiLabelAnchors] = React.useState(() => {
         const saved = initialAnnotations?.aiLabelAnchors || {};
         const fromAI = {};
-        if (visualPlan?.panels) {
+        if (Array.isArray(visualPlan?.panels)) {
             visualPlan.panels.forEach((p, pi) => {
                 (p.labels || []).forEach((l, li) => {
                     const key = pi + '-' + li;
@@ -74,6 +74,7 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
     const [regenFrame, setRegenFrame] = React.useState(null);
     const [regenInput, setRegenInput] = React.useState('');
     const [imageUploadErrors, setImageUploadErrors] = React.useState({});
+    const [exportStatus, setExportStatus] = React.useState('');
     // Manual-playback state for animated panels: when pausedFrames[panelIdx] is
     // a number, render that frame as a still <img> instead of the looping GIF
     // (so users can step through). null = auto-loop GIF, 0 = paused on first
@@ -89,7 +90,12 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
     const handleImageUpload = (panelIdx, e) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        if (!file.type.startsWith('image/')) return;
+        if (!file.type.startsWith('image/')) {
+            const message = t?.('alerts.image_file_required') || 'Choose an image file (PNG, JPEG, GIF, or WebP).';
+            setImageUploadErrors(prev => ({ ...prev, [panelIdx]: message }));
+            e.target.value = '';
+            return;
+        }
         if (file.size > 10 * 1024 * 1024) {
             const message = t?.('alerts.image_too_large_10mb') || 'Image too large (max 10MB). Please use a smaller image.';
             setImageUploadErrors(prev => ({ ...prev, [panelIdx]: message }));
@@ -119,12 +125,15 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
     const isStudentChallenge = !isTeacherMode && challengeMode;
     const isFillBlank = challengeType === 'fill-blank';
     const ts = (key) => t?.(key) || '';
-    if (!visualPlan || !visualPlan.panels || visualPlan.panels.length === 0) return null;
+    const hasVisualPanels = Array.isArray(visualPlan?.panels) && visualPlan.panels.length > 0;
     React.useEffect(() => {
-        if (onAnnotationsChange) {
+        if (hasVisualPanels && onAnnotationsChange) {
             onAnnotationsChange({ userLabels, drawings, captionOverrides, aiLabelPositions, aiLabelAnchors, panelOrder, challengeActive: challengeMode, challengeType, imageOverrides });
         }
-    }, [userLabels, drawings, captionOverrides, aiLabelPositions, aiLabelAnchors, panelOrder, imageOverrides]);
+        // The callback is intentionally excluded: ImageView recreates it after saving,
+        // while the annotation state below is the actual persistence trigger.
+    }, [hasVisualPanels, userLabels, drawings, captionOverrides, aiLabelPositions, aiLabelAnchors, panelOrder, challengeMode, challengeType, imageOverrides]);
+
     const handleAddStudentLabel = (panelIdx, e) => {
         if (addingLabelPanel === null || !isStudentChallenge) return;
         const rect = e.currentTarget.getBoundingClientRect();
@@ -716,7 +725,11 @@ Return ONLY valid JSON:
     const handleExportPanel = async (panelIdx) => {
         const panel = orderedPanels[panelIdx];
         const panelImgSrc = imageOverrides[panelIdx] || panel?.imageUrl;
-        if (!panelImgSrc) return;
+        if (!panelImgSrc) {
+            setExportStatus('Panel ' + (panelIdx + 1) + ' has no image to export.');
+            return;
+        }
+        setExportStatus('Exporting panel ' + (panelIdx + 1) + '...');
         try {
             const img = new Image();
             img.crossOrigin = 'anonymous';
@@ -878,8 +891,10 @@ Return ONLY valid JSON:
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            setExportStatus('Panel ' + (panelIdx + 1) + ' exported as a PNG.');
         } catch (err) {
             console.error('[Export] Failed to export panel:', err);
+            setExportStatus('Panel ' + (panelIdx + 1) + ' could not be exported. The image host may block canvas export.');
         }
     };
     const renderLeaderLines = (panel, panelIdx) => {
@@ -963,13 +978,16 @@ Return ONLY valid JSON:
         );
     };
     const orderedPanels = React.useMemo(() => {
-        if (!panelOrder) return visualPlan.panels;
-        return panelOrder.map(idx => visualPlan.panels[idx]).filter(Boolean);
-    }, [panelOrder, visualPlan.panels]);
+        const panels = Array.isArray(visualPlan?.panels) ? visualPlan.panels : [];
+        if (!panelOrder) return panels;
+        return panelOrder.map(idx => panels[idx]).filter(Boolean);
+    }, [panelOrder, visualPlan?.panels]);
+    if (!hasVisualPanels) return null;
     return (
         <div>
             <p id="visual-label-move-instructions" className="sr-only">Use arrow keys to move labels and leader-line anchors. Hold Shift for a larger step.</p>
             <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{labelMoveStatus}</div>
+            <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{exportStatus}</div>
             <div className="visual-grid-controls" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', padding: '8px 12px', background: 'linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%)', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '8px', alignItems: 'center' }}>
                 {!isStudentChallenge && (
                 <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>

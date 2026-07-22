@@ -873,7 +873,10 @@
       // nothing for a key (geology's stem.geology.* keys aren't in the lang packs
       // yet, and ctx.t returns undefined for a miss — which showed as "undefined").
       var t = function (k, fb) { var v; try { v = ctx.t ? ctx.t(k, fb) : null; } catch (e) {} return (v == null || v === '' || v === k) ? (fb != null ? fb : k) : v; };
-      var isDark = ctx.isDark;
+      var isContrast = !!ctx.isContrast;
+      // Contrast uses the dark structural branch, then the host's high-contrast
+      // overrides replace utility colors with black, white, and amber.
+      var isDark = !!ctx.isDark || isContrast;
       var d = (ctx.toolData && ctx.toolData.geologyExplorer) || {};
       var setStemLabTool = ctx.setStemLabTool;
       var addToast = ctx.addToast || function () {};
@@ -1366,7 +1369,7 @@
           ? 'Compare two more materials and look for depth, texture, or age patterns.'
           : 'Use a core, fossil, or dating tool to support an evidence-based history.';
 
-      return h('div', { className: 'space-y-3 animate-in fade-in duration-200' },
+      return h('div', { className: 'space-y-3 animate-in fade-in duration-200', 'data-geology-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'), style: isContrast ? { background: '#000000', color: '#ffffff', padding: '2px' } : null },
         // live region (SR)
         h('div', { id: 'allo-live-geology', 'aria-live': 'polite', 'aria-atomic': 'true', role: 'status', className: 'sr-only' }),
         // header

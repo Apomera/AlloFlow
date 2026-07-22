@@ -65,6 +65,7 @@
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
       var t = ctx.t;
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -218,10 +219,10 @@ const d = labToolData.rocks || {};
                 callGemini(prompt, false, false, 0.6).then(function(resp) {
                   updMulti({ aiAnswer: resp, aiLoading: false });
                 }).catch(function() {
-                  updMulti({ aiAnswer: 'Connection error. Please try again.', aiLoading: false });
+                  updMulti({ aiAnswer: __alloT('stem.rocks.ai_connection_error', 'Connection error. Please try again.'), aiLoading: false });
                 });
               } else {
-                updMulti({ aiAnswer: 'AI Petrologist is currently offline. Key not configured.', aiLoading: false });
+                updMulti({ aiAnswer: __alloT('stem.rocks.ai_offline_no_key', 'AI Petrologist is currently offline. Key not configured.'), aiLoading: false });
               }
               return;
             }
@@ -231,7 +232,7 @@ const d = labToolData.rocks || {};
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             }).then(function(r) { return r.json(); }).then(function(data) {
-              var answer = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || 'I could not generate a response. Try again!';
+              var answer = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || __alloT('stem.rocks.ai_no_response', 'I could not generate a response. Try again!');
               updMulti({ aiAnswer: answer, aiLoading: false });
             }).catch(function() {
               updMulti({ aiAnswer: 'Connection error. Please try again.', aiLoading: false });
@@ -356,363 +357,363 @@ const d = labToolData.rocks || {};
 
           const QUIZ_BANK = [
             {
-              q: 'Which rock type forms from cooled magma?',
+              q: __alloT('stem.rocks.which_rock_type_forms_from_cooled_magma', 'Which rock type forms from cooled magma?'),
               a: t('stem.rocks.igneous'),
               options: [t('stem.rocks.igneous'), t('stem.rocks.sedimentary'), t('stem.rocks.metamorphic'), 'Organic'],
               concept: 'Igneous',
               wrongFeedback: [
-                'Correct! Igneous rocks solidify from molten magma.',
-                'Incorrect. Sedimentary rocks form from compressed layers of sediment.',
-                'Incorrect. Metamorphic rocks form from existing rocks changed by heat and pressure.',
-                'Incorrect. Organic materials form coal but not directly from cooled magma.'
+                __alloT('stem.rocks.correct_igneous_rocks_solidify_from_molten_magma', 'Correct! Igneous rocks solidify from molten magma.'),
+                __alloT('stem.rocks.incorrect_sedimentary_rocks_form_from_compressed_layers_of', 'Incorrect. Sedimentary rocks form from compressed layers of sediment.'),
+                __alloT('stem.rocks.incorrect_metamorphic_rocks_form_from_existing_rocks_changed', 'Incorrect. Metamorphic rocks form from existing rocks changed by heat and pressure.'),
+                __alloT('stem.rocks.incorrect_organic_materials_form_coal_but_not_directly', 'Incorrect. Organic materials form coal but not directly from cooled magma.')
               ]
             },
             {
-              q: 'What process turns sediment into sedimentary rock?',
+              q: __alloT('stem.rocks.what_process_turns_sediment_into_sedimentary_rock', 'What process turns sediment into sedimentary rock?'),
               a: 'Compaction and cementation',
               options: ['Compaction and cementation', 'Melting', 'Cooling', 'Erosion'],
               concept: 'Lithification',
               wrongFeedback: [
-                'Correct! Compaction and cementation bind sediment into rock.',
-                'Incorrect. Melting produces magma, leading to igneous rocks.',
-                'Incorrect. Cooling solidifies magma into igneous rocks.',
-                'Incorrect. Erosion breaks rocks down rather than building them.'
+                __alloT('stem.rocks.correct_compaction_and_cementation_bind_sediment_into_rock', 'Correct! Compaction and cementation bind sediment into rock.'),
+                __alloT('stem.rocks.incorrect_melting_produces_magma_leading_to_igneous_rocks', 'Incorrect. Melting produces magma, leading to igneous rocks.'),
+                __alloT('stem.rocks.incorrect_cooling_solidifies_magma_into_igneous_rocks', 'Incorrect. Cooling solidifies magma into igneous rocks.'),
+                __alloT('stem.rocks.incorrect_erosion_breaks_rocks_down_rather_than_building', 'Incorrect. Erosion breaks rocks down rather than building them.')
               ]
             },
             {
-              q: 'Marble is a metamorphic form of which rock?',
+              q: __alloT('stem.rocks.marble_is_a_metamorphic_form_of_which_rock', 'Marble is a metamorphic form of which rock?'),
               a: t('stem.rocks.limestone'),
               options: [t('stem.rocks.limestone'), t('stem.rocks.sandstone'), t('stem.rocks.granite'), t('stem.rocks.basalt')],
               concept: 'Metamorphic',
               wrongFeedback: [
-                'Correct! Limestone transforms into marble under heat and pressure.',
-                'Incorrect. Sandstone metamorphoses into quartzite.',
-                'Incorrect. Granite is igneous and can metamorphose into gneiss.',
-                'Incorrect. Basalt is volcanic igneous and does not form marble.'
+                __alloT('stem.rocks.correct_limestone_transforms_into_marble_under_heat_and', 'Correct! Limestone transforms into marble under heat and pressure.'),
+                __alloT('stem.rocks.incorrect_sandstone_metamorphoses_into_quartzite', 'Incorrect. Sandstone metamorphoses into quartzite.'),
+                __alloT('stem.rocks.incorrect_granite_is_igneous_and_can_metamorphose_into', 'Incorrect. Granite is igneous and can metamorphose into gneiss.'),
+                __alloT('stem.rocks.incorrect_basalt_is_volcanic_igneous_and_does_not', 'Incorrect. Basalt is volcanic igneous and does not form marble.')
               ]
             },
             {
-              q: 'Which mineral is the hardest on the Mohs scale?',
+              q: __alloT('stem.rocks.which_mineral_is_the_hardest_on_the_mohs', 'Which mineral is the hardest on the Mohs scale?'),
               a: t('stem.rocks.diamond'),
               options: [t('stem.rocks.diamond'), t('stem.rocks.quartz'), t('stem.rocks.corundum'), t('stem.rocks.topaz')],
               concept: 'Hardness',
               wrongFeedback: [
-                'Correct! Diamond is rated at 10 on the Mohs hardness scale.',
-                'Incorrect. Quartz is hard (7) but not the hardest.',
-                'Incorrect. Corundum is very hard (9) but softer than diamond.',
-                'Incorrect. Topaz is hard (8) but softer than corundum and diamond.'
+                __alloT('stem.rocks.correct_diamond_is_rated_at_10_on_the', 'Correct! Diamond is rated at 10 on the Mohs hardness scale.'),
+                __alloT('stem.rocks.incorrect_quartz_is_hard_7_but_not_the', 'Incorrect. Quartz is hard (7) but not the hardest.'),
+                __alloT('stem.rocks.incorrect_corundum_is_very_hard_9_but_softer', 'Incorrect. Corundum is very hard (9) but softer than diamond.'),
+                __alloT('stem.rocks.incorrect_topaz_is_hard_8_but_softer_than', 'Incorrect. Topaz is hard (8) but softer than corundum and diamond.')
               ]
             },
             {
-              q: 'What is the softest mineral?',
+              q: __alloT('stem.rocks.what_is_the_softest_mineral', 'What is the softest mineral?'),
               a: t('stem.rocks.talc'),
               options: [t('stem.rocks.talc'), t('stem.rocks.gypsum'), t('stem.rocks.calcite'), t('stem.rocks.halite')],
               concept: 'Hardness',
               wrongFeedback: [
-                'Correct! Talc is rated at 1 on the Mohs hardness scale.',
-                'Incorrect. Gypsum is rated at 2, which is harder than talc.',
-                'Incorrect. Calcite is rated at 3, which is harder than talc and gypsum.',
-                'Incorrect. Halite is table salt, rated at 2.5, harder than talc.'
+                __alloT('stem.rocks.correct_talc_is_rated_at_1_on_the', 'Correct! Talc is rated at 1 on the Mohs hardness scale.'),
+                __alloT('stem.rocks.incorrect_gypsum_is_rated_at_2_which_is', 'Incorrect. Gypsum is rated at 2, which is harder than talc.'),
+                __alloT('stem.rocks.incorrect_calcite_is_rated_at_3_which_is', 'Incorrect. Calcite is rated at 3, which is harder than talc and gypsum.'),
+                __alloT('stem.rocks.incorrect_halite_is_table_salt_rated_at_2', 'Incorrect. Halite is table salt, rated at 2.5, harder than talc.')
               ]
             },
             {
-              q: 'Obsidian forms when lava cools...',
+              q: __alloT('stem.rocks.obsidian_forms_when_lava_cools', 'Obsidian forms when lava cools...'),
               a: 'Very quickly',
               options: ['Very quickly', 'Very slowly', 'Underground', 'Underwater'],
               concept: 'Crystallization',
               wrongFeedback: [
-                'Correct! Obsidian is volcanic glass formed by extremely rapid cooling.',
-                'Incorrect. Slow cooling underground produces large coarse grains.',
-                'Incorrect. Intrusion underground is slow, while obsidian is volcanic.',
-                'Incorrect. Underwater cooling can form pillow basalt, but rapid air/surface cooling forms obsidian.'
+                __alloT('stem.rocks.correct_obsidian_is_volcanic_glass_formed_by_extremely', 'Correct! Obsidian is volcanic glass formed by extremely rapid cooling.'),
+                __alloT('stem.rocks.incorrect_slow_cooling_underground_produces_large_coarse_grains', 'Incorrect. Slow cooling underground produces large coarse grains.'),
+                __alloT('stem.rocks.incorrect_intrusion_underground_is_slow_while_obsidian_is', 'Incorrect. Intrusion underground is slow, while obsidian is volcanic.'),
+                __alloT('stem.rocks.incorrect_underwater_cooling_can_form_pillow_basalt_but', 'Incorrect. Underwater cooling can form pillow basalt, but rapid air/surface cooling forms obsidian.')
               ]
             },
             {
-              q: 'Which rock can float on water?',
+              q: __alloT('stem.rocks.which_rock_can_float_on_water', 'Which rock can float on water?'),
               a: t('stem.rocks.pumice'),
               options: [t('stem.rocks.pumice'), t('stem.rocks.basalt'), t('stem.rocks.marble'), t('stem.rocks.granite')],
               concept: 'Igneous',
               wrongFeedback: [
-                'Correct! Pumice is filled with gas pockets (vesicles) and is less dense than water.',
-                'Incorrect. Basalt is dense and will sink.',
-                'Incorrect. Marble is dense metamorphic rock and will sink.',
-                'Incorrect. Granite is dense intrusive igneous rock and will sink.'
+                __alloT('stem.rocks.correct_pumice_is_filled_with_gas_pockets_vesicles', 'Correct! Pumice is filled with gas pockets (vesicles) and is less dense than water.'),
+                __alloT('stem.rocks.incorrect_basalt_is_dense_and_will_sink', 'Incorrect. Basalt is dense and will sink.'),
+                __alloT('stem.rocks.incorrect_marble_is_dense_metamorphic_rock_and_will', 'Incorrect. Marble is dense metamorphic rock and will sink.'),
+                __alloT('stem.rocks.incorrect_granite_is_dense_intrusive_igneous_rock_and', 'Incorrect. Granite is dense intrusive igneous rock and will sink.')
               ]
             },
             {
-              q: 'What type of rock is shale?',
+              q: __alloT('stem.rocks.what_type_of_rock_is_shale', 'What type of rock is shale?'),
               a: t('stem.rocks.sedimentary'),
               options: [t('stem.rocks.sedimentary'), t('stem.rocks.igneous'), t('stem.rocks.metamorphic'), 'Mineral'],
               concept: 'Sedimentary',
               wrongFeedback: [
-                'Correct! Shale is a fine-grained clastic sedimentary rock made of mud and clay.',
-                'Incorrect. Igneous rocks form from cooled magma, not mud deposits.',
-                'Incorrect. Metamorphic rocks form under heat and pressure.',
-                'Incorrect. Shale is a rock composed of minerals, not a single mineral.'
+                __alloT('stem.rocks.correct_shale_is_a_fine_grained_clastic_sedimentary', 'Correct! Shale is a fine-grained clastic sedimentary rock made of mud and clay.'),
+                __alloT('stem.rocks.incorrect_igneous_rocks_form_from_cooled_magma_not', 'Incorrect. Igneous rocks form from cooled magma, not mud deposits.'),
+                __alloT('stem.rocks.incorrect_metamorphic_rocks_form_under_heat_and_pressure', 'Incorrect. Metamorphic rocks form under heat and pressure.'),
+                __alloT('stem.rocks.incorrect_shale_is_a_rock_composed_of_minerals', 'Incorrect. Shale is a rock composed of minerals, not a single mineral.')
               ]
             },
             {
-              q: 'Pyrite is also known as...',
+              q: __alloT('stem.rocks.pyrite_is_also_known_as', 'Pyrite is also known as...'),
               a: "Fool's gold",
               options: ["Fool's gold", "White gold", "Rose gold", "Black gold"],
               concept: 'Luster',
               wrongFeedback: [
-                'Correct! Pyrite has a golden metallic luster that resembles gold.',
-                'Incorrect. White gold is a real gold alloy.',
-                'Incorrect. Rose gold is gold mixed with copper.',
-                'Incorrect. Black gold refers to crude oil.'
+                __alloT('stem.rocks.correct_pyrite_has_a_golden_metallic_luster_that', 'Correct! Pyrite has a golden metallic luster that resembles gold.'),
+                __alloT('stem.rocks.incorrect_white_gold_is_a_real_gold_alloy', 'Incorrect. White gold is a real gold alloy.'),
+                __alloT('stem.rocks.incorrect_rose_gold_is_gold_mixed_with_copper', 'Incorrect. Rose gold is gold mixed with copper.'),
+                __alloT('stem.rocks.incorrect_black_gold_refers_to_crude_oil', 'Incorrect. Black gold refers to crude oil.')
               ]
             },
             {
-              q: 'Which rock shows distinct banding?',
+              q: __alloT('stem.rocks.which_rock_shows_distinct_banding', 'Which rock shows distinct banding?'),
               a: t('stem.rocks.gneiss'),
               options: [t('stem.rocks.gneiss'), t('stem.rocks.granite'), t('stem.rocks.basalt'), t('stem.rocks.slate')],
               concept: 'Foliation',
               wrongFeedback: [
-                'Correct! Gneiss displays prominent mineral banding from intense metamorphic heat and pressure.',
-                'Incorrect. Granite is massive and does not show metamorphic banding.',
-                'Incorrect. Basalt is fine-grained volcanic rock without layers.',
-                'Incorrect. Slate is foliated but splits into thin sheets instead of displaying thick bands.'
+                __alloT('stem.rocks.correct_gneiss_displays_prominent_mineral_banding_from_intense', 'Correct! Gneiss displays prominent mineral banding from intense metamorphic heat and pressure.'),
+                __alloT('stem.rocks.incorrect_granite_is_massive_and_does_not_show', 'Incorrect. Granite is massive and does not show metamorphic banding.'),
+                __alloT('stem.rocks.incorrect_basalt_is_fine_grained_volcanic_rock_without', 'Incorrect. Basalt is fine-grained volcanic rock without layers.'),
+                __alloT('stem.rocks.incorrect_slate_is_foliated_but_splits_into_thin', 'Incorrect. Slate is foliated but splits into thin sheets instead of displaying thick bands.')
               ]
             },
             {
-              q: 'Limestone fizzes when you add...',
+              q: __alloT('stem.rocks.limestone_fizzes_when_you_add', 'Limestone fizzes when you add...'),
               a: 'Acid',
               options: ['Acid', t('stem.chem_balance.water'), 'Salt', 'Oil'],
               concept: 'Sedimentary',
               wrongFeedback: [
-                'Correct! Hydrochloric acid reacts with calcium carbonate in limestone to release CO2 gas.',
-                'Incorrect. Water does not react chemically to cause limestone to fizz.',
-                'Incorrect. Salt does not react with carbonates.',
-                'Incorrect. Oil does not react with carbonates.'
+                __alloT('stem.rocks.correct_hydrochloric_acid_reacts_with_calcium_carbonate_in', 'Correct! Hydrochloric acid reacts with calcium carbonate in limestone to release CO2 gas.'),
+                __alloT('stem.rocks.incorrect_water_does_not_react_chemically_to_cause', 'Incorrect. Water does not react chemically to cause limestone to fizz.'),
+                __alloT('stem.rocks.incorrect_salt_does_not_react_with_carbonates', 'Incorrect. Salt does not react with carbonates.'),
+                __alloT('stem.rocks.incorrect_oil_does_not_react_with_carbonates', 'Incorrect. Oil does not react with carbonates.')
               ]
             },
             {
-              q: 'Quartzite is metamorphosed...',
+              q: __alloT('stem.rocks.quartzite_is_metamorphosed', 'Quartzite is metamorphosed...'),
               a: t('stem.rocks.sandstone'),
               options: [t('stem.rocks.sandstone'), t('stem.rocks.limestone'), t('stem.rocks.shale'), t('stem.rocks.granite')],
               concept: 'Metamorphic',
               wrongFeedback: [
-                'Correct! Sandstone fuses under heat and pressure into quartzite.',
-                'Incorrect. Limestone metamorphoses into marble.',
-                'Incorrect. Shale metamorphoses into slate.',
-                'Incorrect. Granite is igneous and does not form quartzite.'
+                __alloT('stem.rocks.correct_sandstone_fuses_under_heat_and_pressure_into', 'Correct! Sandstone fuses under heat and pressure into quartzite.'),
+                __alloT('stem.rocks.incorrect_limestone_metamorphoses_into_marble', 'Incorrect. Limestone metamorphoses into marble.'),
+                __alloT('stem.rocks.incorrect_shale_metamorphoses_into_slate', 'Incorrect. Shale metamorphoses into slate.'),
+                __alloT('stem.rocks.incorrect_granite_is_igneous_and_does_not_form', 'Incorrect. Granite is igneous and does not form quartzite.')
               ]
             },
             {
-              q: 'Rhyolite is the extrusive equivalent of...',
+              q: __alloT('stem.rocks.rhyolite_is_the_extrusive_equivalent_of', 'Rhyolite is the extrusive equivalent of...'),
               a: t('stem.rocks.granite'),
               options: [t('stem.rocks.granite'), t('stem.rocks.basalt'), 'Gabbro', t('stem.rocks.diorite')],
               concept: 'Igneous',
               wrongFeedback: [
-                'Correct! Both granite and rhyolite are high-silica rocks; granite is intrusive, rhyolite is extrusive.',
-                'Incorrect. Basalt is extrusive and equivalent to intrusive gabbro.',
-                'Incorrect. Gabbro is intrusive and equivalent to extrusive basalt.',
-                'Incorrect. Diorite is intrusive and equivalent to extrusive andesite.'
+                __alloT('stem.rocks.correct_both_granite_and_rhyolite_are_high_silica', 'Correct! Both granite and rhyolite are high-silica rocks; granite is intrusive, rhyolite is extrusive.'),
+                __alloT('stem.rocks.incorrect_basalt_is_extrusive_and_equivalent_to_intrusive', 'Incorrect. Basalt is extrusive and equivalent to intrusive gabbro.'),
+                __alloT('stem.rocks.incorrect_gabbro_is_intrusive_and_equivalent_to_extrusive', 'Incorrect. Gabbro is intrusive and equivalent to extrusive basalt.'),
+                __alloT('stem.rocks.incorrect_diorite_is_intrusive_and_equivalent_to_extrusive', 'Incorrect. Diorite is intrusive and equivalent to extrusive andesite.')
               ]
             },
             {
-              q: 'Which mineral is naturally magnetic?',
+              q: __alloT('stem.rocks.which_mineral_is_naturally_magnetic', 'Which mineral is naturally magnetic?'),
               a: t('stem.rocks.magnetite'),
               options: [t('stem.rocks.magnetite'), t('stem.rocks.hematite'), t('stem.rocks.pyrite'), t('stem.rocks.galena')],
               concept: 'Luster',
               wrongFeedback: [
-                'Correct! Magnetite is a magnetic iron oxide mineral.',
-                'Incorrect. Hematite contains iron but is not strongly magnetic.',
-                'Incorrect. Pyrite is an iron sulfide and is not magnetic.',
-                'Incorrect. Galena is lead sulfide and is not magnetic.'
+                __alloT('stem.rocks.correct_magnetite_is_a_magnetic_iron_oxide_mineral', 'Correct! Magnetite is a magnetic iron oxide mineral.'),
+                __alloT('stem.rocks.incorrect_hematite_contains_iron_but_is_not_strongly', 'Incorrect. Hematite contains iron but is not strongly magnetic.'),
+                __alloT('stem.rocks.incorrect_pyrite_is_an_iron_sulfide_and_is', 'Incorrect. Pyrite is an iron sulfide and is not magnetic.'),
+                __alloT('stem.rocks.incorrect_galena_is_lead_sulfide_and_is_not', 'Incorrect. Galena is lead sulfide and is not magnetic.')
               ]
             },
             {
-              q: 'Ruby and sapphire are both varieties of...',
+              q: __alloT('stem.rocks.ruby_and_sapphire_are_both_varieties_of', 'Ruby and sapphire are both varieties of...'),
               a: t('stem.rocks.corundum'),
               options: [t('stem.rocks.corundum'), t('stem.rocks.quartz'), t('stem.rocks.diamond'), t('stem.rocks.topaz')],
               concept: 'Hardness',
               wrongFeedback: [
-                'Correct! Rubies and sapphires are gemstone forms of corundum (hardness 9).',
-                'Incorrect. Quartz forms amethyst and citrine, not ruby.',
-                'Incorrect. Diamond is pure carbon.',
-                'Incorrect. Topaz is silicate and has a different composition.'
+                __alloT('stem.rocks.correct_rubies_and_sapphires_are_gemstone_forms_of', 'Correct! Rubies and sapphires are gemstone forms of corundum (hardness 9).'),
+                __alloT('stem.rocks.incorrect_quartz_forms_amethyst_and_citrine_not_ruby', 'Incorrect. Quartz forms amethyst and citrine, not ruby.'),
+                __alloT('stem.rocks.incorrect_diamond_is_pure_carbon', 'Incorrect. Diamond is pure carbon.'),
+                __alloT('stem.rocks.incorrect_topaz_is_silicate_and_has_a_different', 'Incorrect. Topaz is silicate and has a different composition.')
               ]
             },
             {
-              q: 'What gives Mars its red color?',
+              q: __alloT('stem.rocks.what_gives_mars_its_red_color', 'What gives Mars its red color?'),
               a: 'Hematite (iron oxide)',
               options: ['Hematite (iron oxide)', 'Rust from water', 'Red sand', 'Volcanic dust'],
               concept: 'Streak',
               wrongFeedback: [
-                'Correct! Hematite dust covers the Martian surface, giving it a rusty red hue.',
-                'Incorrect. General rust is iron oxide, but hematite is the specific mineral phase.',
-                'Incorrect. The sand is red due to hematite coating.',
-                'Incorrect. Volcanic dust on Mars is not the primary cause of its color.'
+                __alloT('stem.rocks.correct_hematite_dust_covers_the_martian_surface_giving', 'Correct! Hematite dust covers the Martian surface, giving it a rusty red hue.'),
+                __alloT('stem.rocks.incorrect_general_rust_is_iron_oxide_but_hematite', 'Incorrect. General rust is iron oxide, but hematite is the specific mineral phase.'),
+                __alloT('stem.rocks.incorrect_the_sand_is_red_due_to_hematite', 'Incorrect. The sand is red due to hematite coating.'),
+                __alloT('stem.rocks.incorrect_volcanic_dust_on_mars_is_not_the', 'Incorrect. Volcanic dust on Mars is not the primary cause of its color.')
               ]
             },
             {
-              q: 'The word "fluorescence" comes from which mineral?',
+              q: __alloT('stem.rocks.the_word_fluorescence_comes_from_which_mineral', 'The word "fluorescence" comes from which mineral?'),
               a: t('stem.rocks.fluorite'),
               options: [t('stem.rocks.fluorite'), t('stem.rocks.quartz'), t('stem.rocks.diamond'), t('stem.rocks.calcite')],
               concept: 'Luster',
               wrongFeedback: [
-                'Correct! George Stokes named fluorescence after studying fluorite under ultraviolet light.',
-                'Incorrect. Quartz does not commonly show fluorescence.',
-                'Incorrect. Diamond can fluoresce but was not the origin of the term.',
-                'Incorrect. Calcite can fluoresce but was not the origin of the term.'
+                __alloT('stem.rocks.correct_george_stokes_named_fluorescence_after_studying_fluorite', 'Correct! George Stokes named fluorescence after studying fluorite under ultraviolet light.'),
+                __alloT('stem.rocks.incorrect_quartz_does_not_commonly_show_fluorescence', 'Incorrect. Quartz does not commonly show fluorescence.'),
+                __alloT('stem.rocks.incorrect_diamond_can_fluoresce_but_was_not_the', 'Incorrect. Diamond can fluoresce but was not the origin of the term.'),
+                __alloT('stem.rocks.incorrect_calcite_can_fluoresce_but_was_not_the', 'Incorrect. Calcite can fluoresce but was not the origin of the term.')
               ]
             },
             {
-              q: 'Chalk is made of tiny shells from...',
+              q: __alloT('stem.rocks.chalk_is_made_of_tiny_shells_from', 'Chalk is made of tiny shells from...'),
               a: 'Microscopic plankton',
               options: ['Microscopic plankton', 'Snails', 'Clams', 'Coral'],
               concept: 'Sedimentary',
               wrongFeedback: [
-                'Correct! Chalk is composed of tiny coccolith shells from microscopic marine plankton.',
-                'Incorrect. Snail shells are too large and form coquina.',
-                'Incorrect. Clam shells form coquina or fossiliferous limestone.',
-                'Incorrect. Coral reefs form reef limestone, not chalk.'
+                __alloT('stem.rocks.correct_chalk_is_composed_of_tiny_coccolith_shells', 'Correct! Chalk is composed of tiny coccolith shells from microscopic marine plankton.'),
+                __alloT('stem.rocks.incorrect_snail_shells_are_too_large_and_form', 'Incorrect. Snail shells are too large and form coquina.'),
+                __alloT('stem.rocks.incorrect_clam_shells_form_coquina_or_fossiliferous_limestone', 'Incorrect. Clam shells form coquina or fossiliferous limestone.'),
+                __alloT('stem.rocks.incorrect_coral_reefs_form_reef_limestone_not_chalk', 'Incorrect. Coral reefs form reef limestone, not chalk.')
               ]
             },
             {
-              q: 'Diorite has what distinctive appearance?',
+              q: __alloT('stem.rocks.diorite_has_what_distinctive_appearance', 'Diorite has what distinctive appearance?'),
               a: 'Salt and pepper',
               options: ['Salt and pepper', 'Solid black', 'Striped', 'Glassy'],
               concept: 'Igneous',
               wrongFeedback: [
-                'Correct! Diorite is intrusive with a speckled salt-and-pepper look from light plagioclase and dark hornblende.',
-                'Incorrect. Basalt is solid black.',
-                'Incorrect. Gneiss is striped.',
-                'Incorrect. Obsidian is glassy.'
+                __alloT('stem.rocks.correct_diorite_is_intrusive_with_a_speckled_salt', 'Correct! Diorite is intrusive with a speckled salt-and-pepper look from light plagioclase and dark hornblende.'),
+                __alloT('stem.rocks.incorrect_basalt_is_solid_black', 'Incorrect. Basalt is solid black.'),
+                __alloT('stem.rocks.incorrect_gneiss_is_striped', 'Incorrect. Gneiss is striped.'),
+                __alloT('stem.rocks.incorrect_obsidian_is_glassy', 'Incorrect. Obsidian is glassy.')
               ]
             },
             {
-              q: 'Which mineral was used in early crystal radios?',
+              q: __alloT('stem.rocks.which_mineral_was_used_in_early_crystal_radios', 'Which mineral was used in early crystal radios?'),
               a: t('stem.rocks.galena'),
               options: [t('stem.rocks.galena'), t('stem.rocks.quartz'), t('stem.rocks.diamond'), t('stem.rocks.pyrite')],
               concept: 'Streak',
               wrongFeedback: [
-                'Correct! Galena was used as a point-contact semiconductor crystal in early radios.',
-                'Incorrect. Quartz is used for oscillation, not crystal detection.',
-                'Incorrect. Diamond is not a suitable semiconductor for crystal radios.',
-                'Incorrect. Pyrite was not the standard crystal for early radios.'
+                __alloT('stem.rocks.correct_galena_was_used_as_a_point_contact', 'Correct! Galena was used as a point-contact semiconductor crystal in early radios.'),
+                __alloT('stem.rocks.incorrect_quartz_is_used_for_oscillation_not_crystal', 'Incorrect. Quartz is used for oscillation, not crystal detection.'),
+                __alloT('stem.rocks.incorrect_diamond_is_not_a_suitable_semiconductor_for', 'Incorrect. Diamond is not a suitable semiconductor for crystal radios.'),
+                __alloT('stem.rocks.incorrect_pyrite_was_not_the_standard_crystal_for', 'Incorrect. Pyrite was not the standard crystal for early radios.')
               ]
             },
             {
-              q: 'The green beaches of Hawaii are made of...',
+              q: __alloT('stem.rocks.the_green_beaches_of_hawaii_are_made_of', 'The green beaches of Hawaii are made of...'),
               a: t('stem.rocks.olivine'),
               options: [t('stem.rocks.olivine'), 'Emerald', 'Jade', 'Green glass'],
               concept: 'Igneous',
               wrongFeedback: [
-                'Correct! Olivine crystals eroded from basaltic lava create green sand beaches.',
-                'Incorrect. Emerald is a rare beryl mineral, not found in beach sand.',
-                'Incorrect. Jade is metamorphic and does not form Hawaii beaches.',
-                'Incorrect. The sand is natural olivine, not man-made green glass.'
+                __alloT('stem.rocks.correct_olivine_crystals_eroded_from_basaltic_lava_create', 'Correct! Olivine crystals eroded from basaltic lava create green sand beaches.'),
+                __alloT('stem.rocks.incorrect_emerald_is_a_rare_beryl_mineral_not', 'Incorrect. Emerald is a rare beryl mineral, not found in beach sand.'),
+                __alloT('stem.rocks.incorrect_jade_is_metamorphic_and_does_not_form', 'Incorrect. Jade is metamorphic and does not form Hawaii beaches.'),
+                __alloT('stem.rocks.incorrect_the_sand_is_natural_olivine_not_man', 'Incorrect. The sand is natural olivine, not man-made green glass.')
               ]
             },
             {
-              q: 'Which building was made from travertine?',
+              q: __alloT('stem.rocks.which_building_was_made_from_travertine', 'Which building was made from travertine?'),
               a: 'The Colosseum',
               options: ['The Colosseum', 'The Pyramids', 'Stonehenge', 'Taj Mahal'],
               concept: 'Sedimentary',
               wrongFeedback: [
-                'Correct! The Colosseum in Rome was constructed largely of travertine limestone.',
-                'Incorrect. The Pyramids are made of standard limestone and granite.',
-                'Incorrect. Stonehenge is made of sarsen stones and bluestones.',
-                'Incorrect. The Taj Mahal is made of marble.'
+                __alloT('stem.rocks.correct_the_colosseum_in_rome_was_constructed_largely', 'Correct! The Colosseum in Rome was constructed largely of travertine limestone.'),
+                __alloT('stem.rocks.incorrect_the_pyramids_are_made_of_standard_limestone', 'Incorrect. The Pyramids are made of standard limestone and granite.'),
+                __alloT('stem.rocks.incorrect_stonehenge_is_made_of_sarsen_stones_and', 'Incorrect. Stonehenge is made of sarsen stones and bluestones.'),
+                __alloT('stem.rocks.incorrect_the_taj_mahal_is_made_of_marble', 'Incorrect. The Taj Mahal is made of marble.')
               ]
             },
             {
-              q: 'Schist gets its sparkly appearance from...',
+              q: __alloT('stem.rocks.schist_gets_its_sparkly_appearance_from', 'Schist gets its sparkly appearance from...'),
               a: 'Aligned mica flakes',
               options: ['Aligned mica flakes', 'Quartz crystals', 'Gold inclusions', 'Diamond dust'],
               concept: 'Foliation',
               wrongFeedback: [
-                'Correct! Aligned muscovite and biotite mica flakes reflect light, making schist sparkle.',
-                'Incorrect. Quartz crystals are glassy but do not cause the characteristic schist sheen.',
-                'Incorrect. Schist does not contain gold inclusions as a rule.',
-                'Incorrect. Diamond dust is not present in schist.'
+                __alloT('stem.rocks.correct_aligned_muscovite_and_biotite_mica_flakes_reflect', 'Correct! Aligned muscovite and biotite mica flakes reflect light, making schist sparkle.'),
+                __alloT('stem.rocks.incorrect_quartz_crystals_are_glassy_but_do_not', 'Incorrect. Quartz crystals are glassy but do not cause the characteristic schist sheen.'),
+                __alloT('stem.rocks.incorrect_schist_does_not_contain_gold_inclusions_as', 'Incorrect. Schist does not contain gold inclusions as a rule.'),
+                __alloT('stem.rocks.incorrect_diamond_dust_is_not_present_in_schist', 'Incorrect. Diamond dust is not present in schist.')
               ]
             },
             {
-              q: 'What makes quartz watches accurate?',
+              q: __alloT('stem.rocks.what_makes_quartz_watches_accurate', 'What makes quartz watches accurate?'),
               a: 'Piezoelectric effect',
               options: ['Piezoelectric effect', 'Magnetic field', 'Battery power', 'High density'],
               concept: 'Piezoelectric',
               wrongFeedback: [
-                'Correct! Squeezing quartz generates an electric charge, causing precise vibrations.',
-                'Incorrect. Magnetic fields do not drive quartz oscillations directly.',
-                'Incorrect. The battery power is just the source, but the quartz crystal regulation provides the accuracy.',
-                'Incorrect. Density is not related to timekeeping accuracy.'
+                __alloT('stem.rocks.correct_squeezing_quartz_generates_an_electric_charge_causing', 'Correct! Squeezing quartz generates an electric charge, causing precise vibrations.'),
+                __alloT('stem.rocks.incorrect_magnetic_fields_do_not_drive_quartz_oscillations', 'Incorrect. Magnetic fields do not drive quartz oscillations directly.'),
+                __alloT('stem.rocks.incorrect_the_battery_power_is_just_the_source', 'Incorrect. The battery power is just the source, but the quartz crystal regulation provides the accuracy.'),
+                __alloT('stem.rocks.incorrect_density_is_not_related_to_timekeeping_accuracy', 'Incorrect. Density is not related to timekeeping accuracy.')
               ]
             },
             {
-              q: 'Where are the largest crystals ever found?',
+              q: __alloT('stem.rocks.where_are_the_largest_crystals_ever_found', 'Where are the largest crystals ever found?'),
               a: 'Naica Mine, Mexico',
               options: ['Naica Mine, Mexico', 'Mount Everest', 'Grand Canyon', 'Sahara Desert'],
               concept: 'Crystallization',
               wrongFeedback: [
-                'Correct! Gypsum crystals up to 12 meters long grow in the extreme heat of the Naica Mine.',
-                'Incorrect. Mount Everest does not host giant caves of giant crystals.',
-                'Incorrect. The Grand Canyon features stratified sedimentary rocks.',
-                'Incorrect. The Sahara Desert is sand-covered rather than hosting giant gypsum crystal caves.'
+                __alloT('stem.rocks.correct_gypsum_crystals_up_to_12_meters_long', 'Correct! Gypsum crystals up to 12 meters long grow in the extreme heat of the Naica Mine.'),
+                __alloT('stem.rocks.incorrect_mount_everest_does_not_host_giant_caves', 'Incorrect. Mount Everest does not host giant caves of giant crystals.'),
+                __alloT('stem.rocks.incorrect_the_grand_canyon_features_stratified_sedimentary_rocks', 'Incorrect. The Grand Canyon features stratified sedimentary rocks.'),
+                __alloT('stem.rocks.incorrect_the_sahara_desert_is_sand_covered_rather', 'Incorrect. The Sahara Desert is sand-covered rather than hosting giant gypsum crystal caves.')
               ]
             },
             {
-              q: 'The word "salary" comes from the Latin word for...',
+              q: __alloT('stem.rocks.the_word_salary_comes_from_the_latin_word', 'The word "salary" comes from the Latin word for...'),
               a: 'Salt',
               options: ['Salt', t('stem.periodic.silver'), t('stem.periodic.gold'), 'Stone'],
               concept: 'Hardness',
               wrongFeedback: [
-                'Correct! Roman soldiers were sometimes paid in salt (halite), the origin of salarium.',
-                'Incorrect. Silver was money but not the root of salary.',
-                'Incorrect. Gold was money but not the root of salary.',
-                'Incorrect. Stone was not the root of salary.'
+                __alloT('stem.rocks.correct_roman_soldiers_were_sometimes_paid_in_salt', 'Correct! Roman soldiers were sometimes paid in salt (halite), the origin of salarium.'),
+                __alloT('stem.rocks.incorrect_silver_was_money_but_not_the_root', 'Incorrect. Silver was money but not the root of salary.'),
+                __alloT('stem.rocks.incorrect_gold_was_money_but_not_the_root', 'Incorrect. Gold was money but not the root of salary.'),
+                __alloT('stem.rocks.incorrect_stone_was_not_the_root_of_salary', 'Incorrect. Stone was not the root of salary.')
               ]
             },
             {
-              q: 'Andesite is named after...',
+              q: __alloT('stem.rocks.andesite_is_named_after', 'Andesite is named after...'),
               a: 'The Andes Mountains',
               options: ['The Andes Mountains', 'Andean people', 'A scientist named Ande', 'An ancient city'],
               concept: 'Igneous',
               wrongFeedback: [
-                'Correct! Andesite is volcanic rock typical of the Andes subduction zone.',
-                'Incorrect. It was named after the location rather than the people.',
-                'Incorrect. There is no scientist named Ande.',
-                'Incorrect. It was named after the mountain range.'
+                __alloT('stem.rocks.correct_andesite_is_volcanic_rock_typical_of_the', 'Correct! Andesite is volcanic rock typical of the Andes subduction zone.'),
+                __alloT('stem.rocks.incorrect_it_was_named_after_the_location_rather', 'Incorrect. It was named after the location rather than the people.'),
+                __alloT('stem.rocks.incorrect_there_is_no_scientist_named_ande', 'Incorrect. There is no scientist named Ande.'),
+                __alloT('stem.rocks.incorrect_it_was_named_after_the_mountain_range', 'Incorrect. It was named after the mountain range.')
               ]
             },
             {
-              q: 'Tuff is made from consolidated...',
+              q: __alloT('stem.rocks.tuff_is_made_from_consolidated', 'Tuff is made from consolidated...'),
               a: 'Volcanic ash',
               options: ['Volcanic ash', 'River sand', 'Coral reef', 'Glacier ice'],
               concept: 'Igneous',
               wrongFeedback: [
-                'Correct! Tuff is igneous rock composed of compacted volcanic ash.',
-                'Incorrect. River sand forms sandstone.',
-                'Incorrect. Coral reefs form limestone.',
-                'Incorrect. Glacier ice forms glacial till.'
+                __alloT('stem.rocks.correct_tuff_is_igneous_rock_composed_of_compacted', 'Correct! Tuff is igneous rock composed of compacted volcanic ash.'),
+                __alloT('stem.rocks.incorrect_river_sand_forms_sandstone', 'Incorrect. River sand forms sandstone.'),
+                __alloT('stem.rocks.incorrect_coral_reefs_form_limestone', 'Incorrect. Coral reefs form limestone.'),
+                __alloT('stem.rocks.incorrect_glacier_ice_forms_glacial_till', 'Incorrect. Glacier ice forms glacial till.')
               ]
             },
             {
-              q: 'Which metamorphic rock comes between slate and schist?',
+              q: __alloT('stem.rocks.which_metamorphic_rock_comes_between_slate_and_schist', 'Which metamorphic rock comes between slate and schist?'),
               a: t('stem.rocks.phyllite'),
               options: [t('stem.rocks.phyllite'), t('stem.rocks.marble'), t('stem.rocks.gneiss'), t('stem.rocks.quartzite')],
               concept: 'Metamorphic',
               wrongFeedback: [
-                'Correct! Phyllite represents low-to-medium grade metamorphism, between slate and schist.',
-                'Incorrect. Marble is non-foliated and forms from limestone.',
-                'Incorrect. Gneiss is high-grade metamorphism, occurring after schist.',
-                'Incorrect. Quartzite is non-foliated metamorphosed sandstone.'
+                __alloT('stem.rocks.correct_phyllite_represents_low_to_medium_grade_metamorphism', 'Correct! Phyllite represents low-to-medium grade metamorphism, between slate and schist.'),
+                __alloT('stem.rocks.incorrect_marble_is_non_foliated_and_forms_from', 'Incorrect. Marble is non-foliated and forms from limestone.'),
+                __alloT('stem.rocks.incorrect_gneiss_is_high_grade_metamorphism_occurring_after', 'Incorrect. Gneiss is high-grade metamorphism, occurring after schist.'),
+                __alloT('stem.rocks.incorrect_quartzite_is_non_foliated_metamorphosed_sandstone', 'Incorrect. Quartzite is non-foliated metamorphosed sandstone.')
               ]
             },
             {
-              q: 'Garnet crystals commonly have how many sides?',
+              q: __alloT('stem.rocks.garnet_crystals_commonly_have_how_many_sides', 'Garnet crystals commonly have how many sides?'),
               a: '12 (dodecahedral)',
               options: ['12 (dodecahedral)', '4 (tetrahedral)', '6 (cubic)', '8 (octahedral)'],
               concept: 'Crystallization',
               wrongFeedback: [
-                'Correct! Garnet crystals typically grow into 12-sided dodecahedrons.',
-                'Incorrect. Tetrahedrons have 4 sides, not characteristic of garnet.',
-                'Incorrect. Cubic crystals (6 sides) are typical of halite or pyrite.',
-                'Incorrect. Octahedral crystals (8 sides) are typical of fluorite or diamond.'
+                __alloT('stem.rocks.correct_garnet_crystals_typically_grow_into_12_sided', 'Correct! Garnet crystals typically grow into 12-sided dodecahedrons.'),
+                __alloT('stem.rocks.incorrect_tetrahedrons_have_4_sides_not_characteristic_of', 'Incorrect. Tetrahedrons have 4 sides, not characteristic of garnet.'),
+                __alloT('stem.rocks.incorrect_cubic_crystals_6_sides_are_typical_of', 'Incorrect. Cubic crystals (6 sides) are typical of halite or pyrite.'),
+                __alloT('stem.rocks.incorrect_octahedral_crystals_8_sides_are_typical_of', 'Incorrect. Octahedral crystals (8 sides) are typical of fluorite or diamond.')
               ]
             }
           ];
@@ -1343,7 +1344,7 @@ const d = labToolData.rocks || {};
 
             canvasEl.setAttribute('role', 'application');
 
-            canvasEl.setAttribute('aria-label', 'Rock cycle landscape. Press 1 for volcano igneous rocks, 2 for river delta sedimentary rocks, 3 for mountain core metamorphic rocks.');
+            canvasEl.setAttribute('aria-label', __alloT('stem.rocks.rock_cycle_landscape_aria', 'Rock cycle landscape. Press 1 for volcano igneous rocks, 2 for river delta sedimentary rocks, 3 for mountain core metamorphic rocks.'));
 
             function onRockKey(e) {
 
@@ -1702,19 +1703,19 @@ const d = labToolData.rocks || {};
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': __alloT('stem.rocks.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83E\uDEA8 Rocks & Minerals Explorer"),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83E\uDEA8 " + __alloT('stem.rocks.rocks_minerals_explorer', "Rocks & Minerals Explorer")),
 
-              React.createElement("button", { onClick: function () { setStemLabTool('geologyExplorer'); }, title: 'Open the 3D voxel cross-section of the crust', 'aria-label': 'Open Geology Explorer \u2014 3D voxel cross-section', className: "transition-colors active:scale-[0.97] text-[11px] font-bold px-2.5 py-1 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100" }, "\u26F0\uFE0F Explore in 3D \u2192"),
+              React.createElement("button", { onClick: function () { setStemLabTool('geologyExplorer'); }, title: __alloT('stem.rocks.open_3d_voxel_cross_section', 'Open the 3D voxel cross-section of the crust'), 'aria-label': __alloT('stem.rocks.open_geology_explorer_3d', 'Open Geology Explorer \u2014 3D voxel cross-section'), className: "transition-colors active:scale-[0.97] text-[11px] font-bold px-2.5 py-1 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100" }, "\u26F0\uFE0F " + __alloT('stem.rocks.explore_in_3d', "Explore in 3D") + " \u2192"),
 
               React.createElement("div", { className: "flex gap-1 ml-auto" },
 
                 ['landscape', 'rocks', 'minerals', 'mystery', 'quiz', 'weathHunt'].map(function (m) {
 
-                  const modeLabel = m === 'landscape' ? 'Landscape' : m === 'rocks' ? 'Rocks' : m === 'minerals' ? 'Minerals' : m === 'mystery' ? 'Mystery Rock' : m === 'weathHunt' ? 'Weathering Lab' : 'Quiz';
+                  const modeLabel = m === 'landscape' ? __alloT('stem.rocks.mode_landscape', 'Landscape') : m === 'rocks' ? __alloT('stem.rocks.mode_rocks', 'Rocks') : m === 'minerals' ? __alloT('stem.rocks.mode_minerals', 'Minerals') : m === 'mystery' ? __alloT('stem.rocks.mystery_rock', 'Mystery Rock') : m === 'weathHunt' ? __alloT('stem.rocks.weathering_lab', 'Weathering Lab') : __alloT('stem.rocks.mode_quiz', 'Quiz');
 
-                  return React.createElement("button", { "aria-label": "Switch to " + modeLabel + " mode",
+                  return React.createElement("button", { "aria-label": __alloT('stem.rocks.switch_to_prefix', "Switch to ") + modeLabel + __alloT('stem.rocks.mode_suffix', " mode"),
 
                     key: m, onClick: function () {
 
@@ -1730,7 +1731,7 @@ const d = labToolData.rocks || {};
 
                   },
 
-                    m === 'landscape' ? '🗺️ Landscape' : m === 'rocks' ? '🪨 Rocks' : m === 'minerals' ? '💎 Minerals' : m === 'mystery' ? '🔍 Mystery' : m === 'weathHunt' ? '⛏️ Weathering' : '🧠 Quiz');
+                    m === 'landscape' ? '🗺️ ' + __alloT('stem.rocks.mode_landscape', 'Landscape') : m === 'rocks' ? '🪨 ' + __alloT('stem.rocks.mode_rocks', 'Rocks') : m === 'minerals' ? '💎 ' + __alloT('stem.rocks.mode_minerals', 'Minerals') : m === 'mystery' ? '🔍 ' + __alloT('stem.rocks.mystery', 'Mystery') : m === 'weathHunt' ? '⛏️ ' + __alloT('stem.rocks.weathering', 'Weathering') : '🧠 ' + __alloT('stem.rocks.mode_quiz', 'Quiz'));
 
                 })
 
@@ -1750,7 +1751,7 @@ const d = labToolData.rocks || {};
                 ),
                 React.createElement("span", {
                   className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-600"
-                }, (d.completedChallenges || []).length + "/" + ROCKS_CHALLENGES.length + " challenges")
+                }, (d.completedChallenges || []).length + "/" + ROCKS_CHALLENGES.length + " " + __alloT('stem.rocks.challenges', "challenges"))
               ),
               React.createElement("div", { className: "w-full rounded-full h-2.5 bg-orange-100/50", style: { boxShadow: "inset 0 1px 2px rgba(0,0,0,0.1)" } },
                 React.createElement("div", {
@@ -1773,11 +1774,11 @@ const d = labToolData.rocks || {};
             // ── Topic-accent hero band per mode ──
             (function() {
               var MODE_META = {
-                landscape: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '🗺️', title: 'Landscape, the geology you can SEE',           hint: 'Volcano, river delta, mountain face. Surface features tell you what\u2019s underneath. Plate tectonics + erosion + time = every landscape. The Hawaiian volcanoes are 30+ million years old; Mt. Etna is 500K.' },
-                rocks:     { accent: '#92400e', soft: 'rgba(146,64,14,0.10)',  icon: '🪨', title: 'Rocks: igneous, sedimentary, metamorphic',     hint: 'Igneous (cooled magma: granite, basalt), sedimentary (compressed layers: sandstone, limestone), metamorphic (heat + pressure: marble, slate). The rock cycle moves stones between all three over millions of years.' },
-                minerals:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '💎', title: 'Minerals, the building blocks of rocks',         hint: 'Mohs scale 1-10: talc soft, diamond hardest. Streak, luster, cleavage, hardness, color = the 5 ID tests. Quartz is 12% of Earth\u2019s crust; you carry it in every grain of sand.' },
-                mystery:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '🔍', title: 'Mystery Rock, detective ID',                  hint: 'Real geology workflow: observe (color, crystals, layers), test (hardness, streak, fizz with HCl for carbonate), classify. The fizz test alone separates limestone from a pile of look-alikes.' },
-                quiz:      { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '🧠', title: 'Quiz, graded ID + classification',              hint: 'NGSS MS-ESS2-1: rock cycle as material system. AP ES practice: matching rocks to environment of formation. Builds the visual library so you can ID a rock at the Grand Canyon by sight.' }
+                landscape: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '🗺️', title: __alloT('stem.rocks.hero_landscape_title', 'Landscape, the geology you can SEE'),           hint: __alloT('stem.rocks.hero_landscape_hint', 'Volcano, river delta, mountain face. Surface features tell you what\u2019s underneath. Plate tectonics + erosion + time = every landscape. The Hawaiian volcanoes are 30+ million years old; Mt. Etna is 500K.') },
+                rocks:     { accent: '#92400e', soft: 'rgba(146,64,14,0.10)',  icon: '🪨', title: __alloT('stem.rocks.hero_rocks_title', 'Rocks: igneous, sedimentary, metamorphic'),     hint: __alloT('stem.rocks.hero_rocks_hint', 'Igneous (cooled magma: granite, basalt), sedimentary (compressed layers: sandstone, limestone), metamorphic (heat + pressure: marble, slate). The rock cycle moves stones between all three over millions of years.') },
+                minerals:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '💎', title: __alloT('stem.rocks.hero_minerals_title', 'Minerals, the building blocks of rocks'),         hint: __alloT('stem.rocks.hero_minerals_hint', 'Mohs scale 1-10: talc soft, diamond hardest. Streak, luster, cleavage, hardness, color = the 5 ID tests. Quartz is 12% of Earth\u2019s crust; you carry it in every grain of sand.') },
+                mystery:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '🔍', title: __alloT('stem.rocks.hero_mystery_title', 'Mystery Rock, detective ID'),                  hint: __alloT('stem.rocks.hero_mystery_hint', 'Real geology workflow: observe (color, crystals, layers), test (hardness, streak, fizz with HCl for carbonate), classify. The fizz test alone separates limestone from a pile of look-alikes.') },
+                quiz:      { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '🧠', title: __alloT('stem.rocks.hero_quiz_title', 'Quiz, graded ID + classification'),              hint: __alloT('stem.rocks.hero_quiz_hint', 'NGSS MS-ESS2-1: rock cycle as material system. AP ES practice: matching rocks to environment of formation. Builds the visual library so you can ID a rock at the Grand Canyon by sight.') }
               };
               var meta = MODE_META[mode] || MODE_META.landscape;
               return React.createElement('div', {
@@ -1805,13 +1806,13 @@ const d = labToolData.rocks || {};
 
             mode === 'landscape' && React.createElement("div", null,
 
-              React.createElement("p", { className: "text-xs text-slate-600 mb-2 italic" }, "Click landscape zones to explore rock types. Hover to see labels. Keyboard: Tab to canvas, then 1=Volcano, 2=River, 3=Mountain."),
+              React.createElement("p", { className: "text-xs text-slate-600 mb-2 italic" }, __alloT('stem.rocks.landscape_click_zones_hint', "Click landscape zones to explore rock types. Hover to see labels. Keyboard: Tab to canvas, then 1=Volcano, 2=River, 3=Mountain.")),
 
               React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-200", style: { height: '520px' } },
 
                 React.createElement("canvas", {
 
-                  role: "img", tabIndex: 0, "aria-label": "Rock cycle diagram — click a rock type or process to explore how rocks transform.",
+                  role: "img", tabIndex: 0, "aria-label": __alloT('stem.rocks.rock_cycle_diagram_aria', "Rock cycle diagram — click a rock type or process to explore how rocks transform."),
                   "data-rocks-canvas": "true",
 
                   ref: function (el) {
@@ -1858,9 +1859,9 @@ const d = labToolData.rocks || {};
 
               React.createElement("div", { className: "mt-2 bg-amber-50 rounded-xl border border-amber-200 p-3 text-xs text-slate-600" },
 
-                React.createElement("p", { className: "font-bold text-amber-800 mb-1" }, "🔄 The Rock Cycle"),
+                React.createElement("p", { className: "font-bold text-amber-800 mb-1" }, "🔄 " + __alloT('stem.rocks.the_rock_cycle', "The Rock Cycle")),
 
-                React.createElement("p", null, "Rocks continuously transform: Igneous rocks weather into sediment → Sediment compacts into Sedimentary rocks → Heat & pressure create Metamorphic rocks → Melting creates magma → Cooling forms new Igneous rocks. The cycle never stops!")
+                React.createElement("p", null, __alloT('stem.rocks.rock_cycle_explanation', "Rocks continuously transform: Igneous rocks weather into sediment → Sediment compacts into Sedimentary rocks → Heat & pressure create Metamorphic rocks → Melting creates magma → Cooling forms new Igneous rocks. The cycle never stops!"))
 
               )
 
@@ -1886,7 +1887,7 @@ const d = labToolData.rocks || {};
 
                     style: (d.selectedType || null) === (t === 'all' ? null : t) ? { background: t === 'all' ? '#78716c' : ROCK_TYPES[t]?.color || '#78716c' } : {}
 
-                  }, t === 'all' ? '📋 All' : (ROCK_TYPES[t]?.icon || '') + ' ' + ROCK_TYPES[t]?.label);
+                  }, t === 'all' ? '📋 ' + __alloT('stem.rocks.filter_all', 'All') : (ROCK_TYPES[t]?.icon || '') + ' ' + ROCK_TYPES[t]?.label);
 
                 })
 
@@ -1926,7 +1927,7 @@ const d = labToolData.rocks || {};
 
                   // Texture canvas
 
-                  React.createElement("canvas", { tabIndex: 0, ref: textureRef, role: "img", "aria-label": "Rock texture close-up", style: { width: '100px', height: '100px', borderRadius: '12px', border: '2px solid #e5e7eb' } }),
+                  React.createElement("canvas", { tabIndex: 0, ref: textureRef, role: "img", "aria-label": __alloT('stem.rocks.rock_texture_close_up', "Rock texture close-up"), style: { width: '100px', height: '100px', borderRadius: '12px', border: '2px solid #e5e7eb' } }),
 
                   React.createElement("div", { className: "flex-1" },
 
@@ -1968,7 +1969,7 @@ const d = labToolData.rocks || {};
 
                 React.createElement("div", { className: "mt-3" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, "Mohs Hardness Scale"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, __alloT('stem.rocks.mohs_hardness_scale', "Mohs Hardness Scale")),
 
                   React.createElement("div", { className: "flex gap-0.5 items-end" },
 
@@ -1994,9 +1995,9 @@ const d = labToolData.rocks || {};
 
                   React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 mt-0.5" },
 
-                    React.createElement("span", null, "1 (Talc)"),
+                    React.createElement("span", null, __alloT('stem.rocks.mohs_min_talc', "1 (Talc)")),
 
-                    React.createElement("span", null, "10 (Diamond)"))
+                    React.createElement("span", null, __alloT('stem.rocks.mohs_max_diamond', "10 (Diamond)")))
 
                 ),
 
@@ -2104,26 +2105,26 @@ const d = labToolData.rocks || {};
                   };
 
                   var speeds = [
-                    { id: 'slow', label: 'Slow (Intrusive)', desc: 'Forms deep underground. Atoms have time to form large, visible crystals (e.g. granite).' },
-                    { id: 'medium', label: 'Medium', desc: 'Intermediate depth, moderate cooling and crystal sizing.' },
-                    { id: 'fast', label: 'Fast (Extrusive)', desc: 'Cools rapidly at surface. Tiny, fine-grained crystals (e.g. basalt).' },
-                    { id: 'rapid', label: 'Rapid (Glassy)', desc: 'Instant quenching. Atoms frozen in place, no crystals (e.g. obsidian).' }
+                    { id: 'slow', label: __alloT('stem.rocks.speed_slow_label', 'Slow (Intrusive)'), desc: __alloT('stem.rocks.speed_slow_desc', 'Forms deep underground. Atoms have time to form large, visible crystals (e.g. granite).') },
+                    { id: 'medium', label: __alloT('stem.rocks.speed_medium_label', 'Medium'), desc: __alloT('stem.rocks.speed_medium_desc', 'Intermediate depth, moderate cooling and crystal sizing.') },
+                    { id: 'fast', label: __alloT('stem.rocks.speed_fast_label', 'Fast (Extrusive)'), desc: __alloT('stem.rocks.speed_fast_desc', 'Cools rapidly at surface. Tiny, fine-grained crystals (e.g. basalt).') },
+                    { id: 'rapid', label: __alloT('stem.rocks.speed_rapid_label', 'Rapid (Glassy)'), desc: __alloT('stem.rocks.speed_rapid_desc', 'Instant quenching. Atoms frozen in place, no crystals (e.g. obsidian).') }
                   ];
                   var currentSpeed = speeds.find(function(s) { return s.id === coolingSpeed; });
 
                   return React.createElement("div", { className: "border-t border-slate-100 pt-3 mt-3" },
                     React.createElement("p", { className: "text-xs font-black text-amber-700 mb-2 flex items-center gap-1.5" },
                       React.createElement("span", null, "🌋"),
-                      React.createElement("span", null, "Magma Cooling & Crystallization Simulator")
+                      React.createElement("span", null, __alloT('stem.rocks.magma_cooling_simulator_title', "Magma Cooling & Crystallization Simulator"))
                     ),
                     React.createElement("div", { className: "flex flex-col md:flex-row gap-3 items-center" },
                       React.createElement("div", { className: "w-full md:w-1/3 flex flex-col items-center" },
-                        React.createElement("canvas", { ref: coolingRef, role: "img", tabIndex: 0, "aria-label": "Crystal cooling-rate diagram — slower cooling grows larger crystals.", style: { width: '130px', height: '80px', borderRadius: '8px', border: '1px solid #cbd5e1', display: 'block', background: '#1e293b' } }),
+                        React.createElement("canvas", { ref: coolingRef, role: "img", tabIndex: 0, "aria-label": __alloT('stem.rocks.crystal_cooling_diagram_aria', "Crystal cooling-rate diagram — slower cooling grows larger crystals."), style: { width: '130px', height: '80px', borderRadius: '8px', border: '1px solid #cbd5e1', display: 'block', background: '#1e293b' } }),
                         React.createElement("button", {
                           disabled: isAnimActive,
                           onClick: startCooling,
                           className: "transition-colors mt-2 px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded text-[10px] shadow-sm disabled:opacity-50 active:scale-[0.97]"
-                        }, isAnimActive ? "Cooling..." : "⚡ Run Solidification")
+                        }, isAnimActive ? __alloT('stem.rocks.cooling_ellipsis', "Cooling...") : "⚡ " + __alloT('stem.rocks.run_solidification', "Run Solidification"))
                       ),
                       React.createElement("div", { className: "flex-1 w-full" },
                         React.createElement("div", { className: "grid grid-cols-4 gap-1 mb-2" },
@@ -2146,10 +2147,10 @@ const d = labToolData.rocks || {};
                 React.createElement("div", { className: "border-t border-slate-100 pt-3 mt-3" },
                   React.createElement("p", { className: "text-xs font-black text-violet-700 mb-2 flex items-center gap-1.5" },
                     React.createElement("span", null, "🧪"),
-                    React.createElement("span", null, "Acid Fizz Test Lab")
+                    React.createElement("span", null, __alloT('stem.rocks.acid_fizz_test_lab', "Acid Fizz Test Lab"))
                   ),
                   React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" },
-                    "Apply dilute hydrochloric acid (HCl) to test for the presence of carbonate minerals. Carbonates react by fizzing vigorously."
+                    __alloT('stem.rocks.acid_fizz_intro', "Apply dilute hydrochloric acid (HCl) to test for the presence of carbonate minerals. Carbonates react by fizzing vigorously.")
                   ),
                   React.createElement("div", { className: "flex items-center gap-3" },
                     React.createElement("button", {
@@ -2177,18 +2178,18 @@ const d = labToolData.rocks || {};
 
                           var res = "";
                           if (isCarbonate) {
-                            res = "🫧 Fizz! The acid reacted with calcium carbonate in the specimen, releasing carbon dioxide gas: CaCO3 + 2HCl -> CaCl2 + CO2 (gas) + H2O.";
+                            res = "🫧 " + __alloT('stem.rocks.fizz_positive', "Fizz! The acid reacted with calcium carbonate in the specimen, releasing carbon dioxide gas:") + " CaCO3 + 2HCl -> CaCl2 + CO2 (gas) + H2O.";
                           } else {
-                            res = "No reaction. The specimen does not contain carbonate minerals, so the acid simply sits on the surface.";
+                            res = __alloT('stem.rocks.fizz_no_reaction', "No reaction. The specimen does not contain carbonate minerals, so the acid simply sits on the surface.");
                           }
                           updMulti({ fizzAnimActive: false, fizzResult: res });
                         }, 1200);
                       },
                       className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50 active:scale-[0.97]"
-                    }, d.fizzAnimActive ? "🫧 Dropping Acid..." : "🧪 Drop HCl Acid"),
+                    }, d.fizzAnimActive ? "🫧 " + __alloT('stem.rocks.dropping_acid', "Dropping Acid...") : "🧪 " + __alloT('stem.rocks.drop_hcl_acid', "Drop HCl Acid")),
                     d.fizzAnimActive && React.createElement("div", { className: "flex items-center gap-1 animate-pulse" },
                       React.createElement("span", { className: "text-lg" }, "🫧"),
-                      React.createElement("span", { className: "text-[10px] text-violet-600 font-bold" }, "Bubbling reaction active...")
+                      React.createElement("span", { className: "text-[10px] text-violet-600 font-bold" }, __alloT('stem.rocks.bubbling_reaction_active', "Bubbling reaction active..."))
                     )
                   ),
                   d.fizzResult && React.createElement("p", { className: "text-xs font-bold text-slate-700 mt-2 leading-relaxed animate-in fade-in" },
@@ -2200,15 +2201,15 @@ const d = labToolData.rocks || {};
                 React.createElement("div", { className: "border-t border-slate-100 pt-3 mt-3" },
                   React.createElement("p", { className: "text-xs font-black text-slate-700 mb-1 flex items-center gap-1.5" },
                     React.createElement("span", null, "🧠"),
-                    React.createElement("span", null, "Ask the AI Petrologist")
+                    React.createElement("span", null, __alloT('stem.rocks.ask_ai_petrologist', "Ask the AI Petrologist"))
                   ),
                   React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" },
-                    "Query the AI about " + selRock.label + "'s geologic origin, chemical properties, or tectonic significance."
+                    __alloT('stem.rocks.query_ai_about_prefix', "Query the AI about ") + selRock.label + __alloT('stem.rocks.query_ai_suffix', "'s geologic origin, chemical properties, or tectonic significance.")
                   ),
                   React.createElement("div", { className: "flex gap-2" },
                     React.createElement("input", {
                       type: "text",
-                      placeholder: "Ask a question (e.g., How does this form?)...",
+                      placeholder: __alloT('stem.rocks.ask_question_placeholder', "Ask a question (e.g., How does this form?)..."),
                       value: d.aiQuestion || '',
                       onChange: function(e) { upd("aiQuestion", e.target.value); },
                       onKeyDown: function(e) { if (e.key === 'Enter') askPetrologist(); },
@@ -2218,7 +2219,7 @@ const d = labToolData.rocks || {};
                       disabled: d.aiLoading,
                       onClick: askPetrologist,
                       className: "px-3 py-1 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all disabled:opacity-50 active:scale-[0.97]"
-                    }, d.aiLoading ? "Thinking..." : "Ask")
+                    }, d.aiLoading ? __alloT('stem.rocks.thinking_ellipsis', "Thinking...") : __alloT('stem.rocks.ask_button', "Ask"))
                   ),
                   d.aiAnswer && React.createElement("div", { className: "mt-2 p-2.5 bg-slate-50 border rounded-lg animate-in slide-in-from-top-1" },
                     React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed font-medium" }, d.aiAnswer)
@@ -2805,13 +2806,13 @@ const d = labToolData.rocks || {};
 
                 React.createElement("h4", { className: "font-bold text-base text-violet-700 mb-1" }, "\uD83D\uDC8E " + selMineral.label),
 
-                React.createElement("p", { className: "text-xs text-slate-600 font-mono mb-1" }, "Formula: " + selMineral.formula),
+                React.createElement("p", { className: "text-xs text-slate-600 font-mono mb-1" }, __alloT('stem.rocks.formula_label', "Formula: ") + selMineral.formula),
 
                 // Cross-section canvas
 
                 React.createElement("div", { className: "flex gap-3 items-start" },
 
-                  React.createElement("canvas", { tabIndex: 0, ref: mineralCrossSectionRef, role: "img", "aria-label": "Mineral cross-section", style: { width: '140px', height: '100px', borderRadius: '10px', flexShrink: 0 } }),
+                  React.createElement("canvas", { tabIndex: 0, ref: mineralCrossSectionRef, role: "img", "aria-label": __alloT('stem.rocks.mineral_cross_section_aria', "Mineral cross-section"), style: { width: '140px', height: '100px', borderRadius: '10px', flexShrink: 0 } }),
 
                   React.createElement("div", { className: "flex-1 min-w-0" },
 
@@ -2831,7 +2832,7 @@ const d = labToolData.rocks || {};
 
                     { label: t('stem.rocks.luster'), value: selMineral.luster, icon: '\u2728' },
 
-                    { label: 'Crystal System', value: selMineral.crystal, icon: '\uD83D\uDD37' }
+                    { label: __alloT('stem.rocks.crystal_system', 'Crystal System'), value: selMineral.crystal, icon: '\uD83D\uDD37' }
 
                   ].map(function (prop) {
 
@@ -2847,7 +2848,7 @@ const d = labToolData.rocks || {};
 
                 selMineral.uses && React.createElement("div", { className: "bg-blue-50 rounded-lg p-2.5" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-blue-500 uppercase mb-0.5" }, "\uD83C\uDFD7\uFE0F Uses"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-blue-500 uppercase mb-0.5" }, "\uD83C\uDFD7\uFE0F " + __alloT('stem.rocks.uses_heading', "Uses")),
 
                   React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, selMineral.uses)
 
@@ -2855,7 +2856,7 @@ const d = labToolData.rocks || {};
 
                 selMineral.funFact && React.createElement("div", { className: "bg-amber-50 rounded-lg p-2.5 border border-amber-200" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-amber-600 uppercase mb-0.5" }, "\uD83D\uDCA1 Fun Fact"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-amber-600 uppercase mb-0.5" }, "\uD83D\uDCA1 " + __alloT('stem.rocks.fun_fact_heading', "Fun Fact")),
 
                   React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed italic" }, selMineral.funFact)
 
@@ -2863,7 +2864,7 @@ const d = labToolData.rocks || {};
 
                 selMineral.occurrence && React.createElement("div", { className: "bg-emerald-50 rounded-lg p-2.5" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-emerald-600 uppercase mb-0.5" }, "\uD83C\uDF0D Where Found"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-emerald-600 uppercase mb-0.5" }, "\uD83C\uDF0D " + __alloT('stem.rocks.where_found_heading', "Where Found")),
 
                   React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, selMineral.occurrence)
 
@@ -2873,7 +2874,7 @@ const d = labToolData.rocks || {};
 
                 React.createElement("div", { className: "mt-1" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, "Mohs Position"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, __alloT('stem.rocks.mohs_position', "Mohs Position")),
 
                   React.createElement("div", { className: "flex gap-0.5 items-end" },
 
@@ -2899,9 +2900,9 @@ const d = labToolData.rocks || {};
 
                   React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 mt-0.5" },
 
-                    React.createElement("span", null, "1 (Talc)"),
+                    React.createElement("span", null, __alloT('stem.rocks.mohs_min_talc', "1 (Talc)")),
 
-                    React.createElement("span", null, "10 (Diamond)"))
+                    React.createElement("span", null, __alloT('stem.rocks.mohs_max_diamond', "10 (Diamond)")))
 
                 ),
 
@@ -2909,19 +2910,19 @@ const d = labToolData.rocks || {};
                 React.createElement("div", { className: "border-t border-violet-100 pt-3 mt-3" },
                   React.createElement("p", { className: "text-xs font-black text-violet-700 mb-2 flex items-center gap-1.5" },
                     React.createElement("span", null, "💅"),
-                    React.createElement("span", null, "Mohs Hardness Scratch Test Lab")
+                    React.createElement("span", null, __alloT('stem.rocks.mohs_scratch_test_lab', "Mohs Hardness Scratch Test Lab"))
                   ),
                   React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" },
-                    "Select a scratch tool and run the test to see if it can scratch the mineral surface. Minerals can only be scratched by tools with equal or higher hardness."
+                    __alloT('stem.rocks.mohs_scratch_intro', "Select a scratch tool and run the test to see if it can scratch the mineral surface. Minerals can only be scratched by tools with equal or higher hardness.")
                   ),
                   React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-6 gap-1.5 mb-3" },
                     [
-                      { id: 'fingernail', label: '💅 Fingernail', h: 2.5 },
-                      { id: 'penny', label: '🪙 Copper Penny', h: 3.5 },
-                      { id: 'steel_nail', label: '📌 Steel Nail', h: 5.5 },
-                      { id: 'streak_plate', label: '🍽️ Streak Plate', h: 6.5 },
-                      { id: 'drill_bit', label: '🪚 Masonry Drill', h: 8.5 },
-                      { id: 'diamond_scribe', label: '💎 Diamond Scribe', h: 10.0 }
+                      { id: 'fingernail', label: '💅 ' + __alloT('stem.rocks.tool_fingernail', 'Fingernail'), h: 2.5 },
+                      { id: 'penny', label: '🪙 ' + __alloT('stem.rocks.tool_copper_penny', 'Copper Penny'), h: 3.5 },
+                      { id: 'steel_nail', label: '📌 ' + __alloT('stem.rocks.tool_steel_nail', 'Steel Nail'), h: 5.5 },
+                      { id: 'streak_plate', label: '🍽️ ' + __alloT('stem.rocks.tool_streak_plate', 'Streak Plate'), h: 6.5 },
+                      { id: 'drill_bit', label: '🪚 ' + __alloT('stem.rocks.tool_masonry_drill', 'Masonry Drill'), h: 8.5 },
+                      { id: 'diamond_scribe', label: '💎 ' + __alloT('stem.rocks.tool_diamond_scribe', 'Diamond Scribe'), h: 10.0 }
                     ].map(function(tool) {
                       var isSelected = d.scratchTool === tool.id;
                       return React.createElement("button", {
@@ -2940,12 +2941,12 @@ const d = labToolData.rocks || {};
                   ),
                   d.scratchTool && (function() {
                     var toolData = [
-                      { id: 'fingernail', label: 'Fingernail', h: 2.5 },
-                      { id: 'penny', label: 'Copper Penny', h: 3.5 },
-                      { id: 'steel_nail', label: 'Steel Nail', h: 5.5 },
-                      { id: 'streak_plate', label: 'Streak Plate', h: 6.5 },
-                      { id: 'drill_bit', label: 'Masonry Drill', h: 8.5 },
-                      { id: 'diamond_scribe', label: 'Diamond Scribe', h: 10.0 }
+                      { id: 'fingernail', label: __alloT('stem.rocks.tool_fingernail', 'Fingernail'), h: 2.5 },
+                      { id: 'penny', label: __alloT('stem.rocks.tool_copper_penny', 'Copper Penny'), h: 3.5 },
+                      { id: 'steel_nail', label: __alloT('stem.rocks.tool_steel_nail', 'Steel Nail'), h: 5.5 },
+                      { id: 'streak_plate', label: __alloT('stem.rocks.tool_streak_plate', 'Streak Plate'), h: 6.5 },
+                      { id: 'drill_bit', label: __alloT('stem.rocks.tool_masonry_drill', 'Masonry Drill'), h: 8.5 },
+                      { id: 'diamond_scribe', label: __alloT('stem.rocks.tool_diamond_scribe', 'Diamond Scribe'), h: 10.0 }
                     ].find(function(t) { return t.id === d.scratchTool; });
 
                     var runTest = function() {
@@ -2959,10 +2960,10 @@ const d = labToolData.rocks || {};
                           var success = toolData.h >= selMineral.hardness;
                           var text = "";
                           if (success) {
-                            text = "Result: Scratch created! The " + toolData.label + " (" + toolData.h + ") successfully scratched " + selMineral.label + " (" + selMineral.hardness + ").";
+                            text = __alloT('stem.rocks.scratch_success_a', "Result: Scratch created! The ") + toolData.label + " (" + toolData.h + ") " + __alloT('stem.rocks.scratch_success_b', "successfully scratched ") + selMineral.label + " (" + selMineral.hardness + ").";
                             sfxRockCrack();
                           } else {
-                            text = "Result: No scratch! The " + toolData.label + " (" + toolData.h + ") rubbed off on " + selMineral.label + " (" + selMineral.hardness + ") without leaving a mark.";
+                            text = __alloT('stem.rocks.scratch_fail_a', "Result: No scratch! The ") + toolData.label + " (" + toolData.h + ") " + __alloT('stem.rocks.scratch_fail_b', "rubbed off on ") + selMineral.label + " (" + selMineral.hardness + ") " + __alloT('stem.rocks.scratch_fail_c', "without leaving a mark.");
                             sfxRockCool();
                           }
                           upd("scratchResult", text);
@@ -2974,11 +2975,11 @@ const d = labToolData.rocks || {};
 
                     return React.createElement("div", { className: "bg-slate-50 rounded-lg p-3 border border-slate-200" },
                       React.createElement("div", { className: "flex justify-between items-center mb-2" },
-                        React.createElement("span", { className: "text-[11px] font-bold text-slate-700" }, "Active Tool: " + toolData.label + " (Hardness " + toolData.h + ")"),
+                        React.createElement("span", { className: "text-[11px] font-bold text-slate-700" }, __alloT('stem.rocks.active_tool_label', "Active Tool: ") + toolData.label + " (" + __alloT('stem.rocks.hardness_word', "Hardness") + " " + toolData.h + ")"),
                         animProgress === 0 && React.createElement("button", {
                           onClick: runTest,
                           className: "px-3 py-1 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-[10px] font-bold transition-all shadow-sm active:scale-[0.97]"
-                        }, "⚡ Run Scratch Test")
+                        }, "⚡ " + __alloT('stem.rocks.run_scratch_test', "Run Scratch Test"))
                       ),
                       animProgress > 0 && animProgress < 100 && React.createElement("div", { className: "w-full bg-slate-200 h-2.5 rounded-full overflow-hidden mb-2" },
                         React.createElement("div", {
@@ -2997,10 +2998,10 @@ const d = labToolData.rocks || {};
                 React.createElement("div", { className: "border-t border-violet-100 pt-3 mt-3" },
                   React.createElement("p", { className: "text-xs font-black text-violet-700 mb-2 flex items-center gap-1.5" },
                     React.createElement("span", null, "🍽️"),
-                    React.createElement("span", null, "Streak Plate Test Lab")
+                    React.createElement("span", null, __alloT('stem.rocks.streak_plate_test_lab', "Streak Plate Test Lab"))
                   ),
                   React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" },
-                    "Scratch the mineral across an unglazed porcelain streak plate. The color of the powdered residue left behind is the streak color, which is often different from the mineral's external color."
+                    __alloT('stem.rocks.streak_test_intro', "Scratch the mineral across an unglazed porcelain streak plate. The color of the powdered residue left behind is the streak color, which is often different from the mineral's external color.")
                   ),
                   React.createElement("div", { className: "flex items-center gap-4" },
                     React.createElement("button", {
@@ -3010,12 +3011,12 @@ const d = labToolData.rocks || {};
                         upd("streakResult", null);
                         sfxRockCrack();
                         setTimeout(function() {
-                          var res = "Powder Streak Result: " + selMineral.streak;
+                          var res = __alloT('stem.rocks.powder_streak_result', "Powder Streak Result: ") + selMineral.streak;
                           updMulti({ streakAnimActive: false, streakResult: res });
                         }, 800);
                       },
                       className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50 active:scale-[0.97]"
-                    }, d.streakAnimActive ? "✏️ Scratching plate..." : "🍽️ Perform Streak Test"),
+                    }, d.streakAnimActive ? "✏️ " + __alloT('stem.rocks.scratching_plate', "Scratching plate...") : "🍽️ " + __alloT('stem.rocks.perform_streak_test', "Perform Streak Test")),
                     d.streakResult && (function() {
                       var streakColors = { 'White': '#f8fafc', 'Greenish-black': '#1a3a1a', 'Black': '#1e1e1e', 'Red-brown': '#8b3a2a', 'Lead-gray': '#94a3b8', 'White-yellow': '#fef9c3', 'None (too hard)': '#94a3b8' };
                       var c = streakColors[selMineral.streak] || '#e2e8f0';
@@ -3034,10 +3035,10 @@ const d = labToolData.rocks || {};
                 React.createElement("div", { className: "border-t border-violet-100 pt-3 mt-3" },
                   React.createElement("p", { className: "text-xs font-black text-violet-700 mb-2 flex items-center gap-1.5" },
                     React.createElement("span", null, "🧪"),
-                    React.createElement("span", null, "Acid Fizz Test Lab")
+                    React.createElement("span", null, __alloT('stem.rocks.acid_fizz_test_lab', "Acid Fizz Test Lab"))
                   ),
                   React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" },
-                    "Apply dilute hydrochloric acid (HCl) to test for the presence of carbonate minerals. Carbonates react by fizzing vigorously."
+                    __alloT('stem.rocks.acid_fizz_intro', "Apply dilute hydrochloric acid (HCl) to test for the presence of carbonate minerals. Carbonates react by fizzing vigorously.")
                   ),
                   React.createElement("div", { className: "flex items-center gap-3" },
                     React.createElement("button", {
@@ -3065,18 +3066,18 @@ const d = labToolData.rocks || {};
 
                           var res = "";
                           if (isCarbonate) {
-                            res = "🫧 Fizz! The acid reacted with calcium carbonate in the specimen, releasing carbon dioxide gas: CaCO3 + 2HCl -> CaCl2 + CO2 (gas) + H2O.";
+                            res = "🫧 " + __alloT('stem.rocks.fizz_positive', "Fizz! The acid reacted with calcium carbonate in the specimen, releasing carbon dioxide gas:") + " CaCO3 + 2HCl -> CaCl2 + CO2 (gas) + H2O.";
                           } else {
-                            res = "No reaction. The specimen does not contain carbonate minerals, so the acid simply sits on the surface.";
+                            res = __alloT('stem.rocks.fizz_no_reaction', "No reaction. The specimen does not contain carbonate minerals, so the acid simply sits on the surface.");
                           }
                           updMulti({ fizzAnimActive: false, fizzResult: res });
                         }, 1200);
                       },
                       className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50 active:scale-[0.97]"
-                    }, d.fizzAnimActive ? "🫧 Dropping Acid..." : "🧪 Drop HCl Acid"),
+                    }, d.fizzAnimActive ? "🫧 " + __alloT('stem.rocks.dropping_acid', "Dropping Acid...") : "🧪 " + __alloT('stem.rocks.drop_hcl_acid', "Drop HCl Acid")),
                     d.fizzAnimActive && React.createElement("div", { className: "flex items-center gap-1 animate-pulse" },
                       React.createElement("span", { className: "text-lg" }, "🫧"),
-                      React.createElement("span", { className: "text-[10px] text-violet-600 font-bold" }, "Bubbling reaction active...")
+                      React.createElement("span", { className: "text-[10px] text-violet-600 font-bold" }, __alloT('stem.rocks.bubbling_reaction_active', "Bubbling reaction active..."))
                     )
                   ),
                   d.fizzResult && React.createElement("p", { className: "text-xs font-bold text-slate-700 mt-2 leading-relaxed animate-in fade-in" },
@@ -3088,15 +3089,15 @@ const d = labToolData.rocks || {};
                 React.createElement("div", { className: "border-t border-slate-100 pt-3 mt-3" },
                   React.createElement("p", { className: "text-xs font-black text-slate-700 mb-1 flex items-center gap-1.5" },
                     React.createElement("span", null, "🧠"),
-                    React.createElement("span", null, "Ask the AI Petrologist")
+                    React.createElement("span", null, __alloT('stem.rocks.ask_ai_petrologist', "Ask the AI Petrologist"))
                   ),
                   React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" },
-                    "Query the AI about " + selMineral.label + "'s geologic origin, chemical properties, or tectonic significance."
+                    __alloT('stem.rocks.query_ai_about_prefix', "Query the AI about ") + selMineral.label + __alloT('stem.rocks.query_ai_suffix', "'s geologic origin, chemical properties, or tectonic significance.")
                   ),
                   React.createElement("div", { className: "flex gap-2" },
                     React.createElement("input", {
                       type: "text",
-                      placeholder: "Ask a question (e.g., How does this form?)...",
+                      placeholder: __alloT('stem.rocks.ask_question_placeholder', "Ask a question (e.g., How does this form?)..."),
                       value: d.aiQuestion || '',
                       onChange: function(e) { upd("aiQuestion", e.target.value); },
                       onKeyDown: function(e) { if (e.key === 'Enter') askPetrologist(); },
@@ -3106,7 +3107,7 @@ const d = labToolData.rocks || {};
                       disabled: d.aiLoading,
                       onClick: askPetrologist,
                       className: "px-3 py-1 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all disabled:opacity-50 active:scale-[0.97]"
-                    }, d.aiLoading ? "Thinking..." : "Ask")
+                    }, d.aiLoading ? __alloT('stem.rocks.thinking_ellipsis', "Thinking...") : __alloT('stem.rocks.ask_button', "Ask"))
                   ),
                   d.aiAnswer && React.createElement("div", { className: "mt-2 p-2.5 bg-slate-50 border rounded-lg animate-in slide-in-from-top-1" },
                     React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed font-medium" }, d.aiAnswer)
@@ -3139,7 +3140,7 @@ const d = labToolData.rocks || {};
 
                 if (typeof callGemini !== 'function') {
 
-                  upd("mystery", { error: 'AI tutor is not available. Check back when online.' });
+                  upd("mystery", { error: __alloT('stem.rocks.ai_tutor_unavailable', 'AI tutor is not available. Check back when online.') });
 
                   return;
 
@@ -3167,7 +3168,7 @@ const d = labToolData.rocks || {};
 
                   const parts = String(resp || '').split('|||').map(function (s) { return s.replace(/^\s*[0-9]+\.?\s*/, '').trim(); }).filter(Boolean);
 
-                  const safeClues = parts.length >= 1 ? parts.slice(0, 3) : ['The AI returned no clues. Try again.'];
+                  const safeClues = parts.length >= 1 ? parts.slice(0, 3) : [__alloT('stem.rocks.ai_no_clues', 'The AI returned no clues. Try again.')];
 
                   upd("mystery", { rockId: pick.id, clues: safeClues, cluesShown: 1, revealed: false, solved: false, loading: false, lastGuess: null, error: null });
 
@@ -3175,7 +3176,7 @@ const d = labToolData.rocks || {};
 
                 }).catch(function () {
 
-                  upd("mystery", { rockId: pick.id, clues: [], cluesShown: 0, revealed: false, solved: false, loading: false, lastGuess: null, error: 'Could not reach AI tutor. Try again in a moment.' });
+                  upd("mystery", { rockId: pick.id, clues: [], cluesShown: 0, revealed: false, solved: false, loading: false, lastGuess: null, error: __alloT('stem.rocks.could_not_reach_ai', 'Could not reach AI tutor. Try again in a moment.') });
 
                 });
 
@@ -3243,7 +3244,7 @@ const d = labToolData.rocks || {};
 
 
 
-              return React.createElement("div", { className: "mt-2", role: "region", "aria-label": "Mystery Rock challenge" },
+              return React.createElement("div", { className: "mt-2", role: "region", "aria-label": __alloT('stem.rocks.mystery_rock_challenge_aria', "Mystery Rock challenge") },
 
                 React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border-2 border-amber-300 p-4 mb-3" },
 
@@ -3251,31 +3252,31 @@ const d = labToolData.rocks || {};
 
                     React.createElement("span", { className: "text-2xl" }, "🔍"),
 
-                    React.createElement("h4", { className: "font-bold text-sm text-amber-900" }, "Mystery Rock Challenge"),
+                    React.createElement("h4", { className: "font-bold text-sm text-amber-900" }, __alloT('stem.rocks.mystery_rock_challenge_title', "Mystery Rock Challenge")),
 
-                    React.createElement("span", { className: "ml-auto text-[11px] text-amber-700 font-bold" }, "Reading level: " + (gradeLevel || '5th Grade'))
+                    React.createElement("span", { className: "ml-auto text-[11px] text-amber-700 font-bold" }, __alloT('stem.rocks.reading_level_label', "Reading level: ") + (gradeLevel || '5th Grade'))
 
                   ),
 
                   React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" },
 
-                    "The AI tutor picks a rock and gives you 3 clues. Read each clue, then click a rock from the grid below to guess. Wrong guesses reveal the next clue. Earn 15 XP for a correct ID.")
+                    __alloT('stem.rocks.mystery_intro', "The AI tutor picks a rock and gives you 3 clues. Read each clue, then click a rock from the grid below to guess. Wrong guesses reveal the next clue. Earn 15 XP for a correct ID."))
 
                 ),
 
                 !myst.rockId && !myst.loading && React.createElement("div", { className: "flex flex-col items-center gap-2 p-6 bg-white rounded-xl border-2 border-dashed border-amber-300" },
 
-                  React.createElement("p", { className: "text-xs text-slate-600" }, "Ready to test your rock knowledge?"),
+                  React.createElement("p", { className: "text-xs text-slate-600" }, __alloT('stem.rocks.ready_to_test', "Ready to test your rock knowledge?")),
 
                   React.createElement("button", {
 
                     onClick: startMystery,
 
-                    "aria-label": "Start Mystery Rock challenge",
+                    "aria-label": __alloT('stem.rocks.start_mystery_aria', "Start Mystery Rock challenge"),
 
                     className: "px-5 py-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold text-sm rounded-full shadow-md hover:shadow-lg hover:from-amber-700 hover:to-orange-700"
 
-                  }, "🎲 Start Challenge"),
+                  }, "🎲 " + __alloT('stem.rocks.start_challenge', "Start Challenge")),
 
                   myst.error && React.createElement("p", { className: "text-[11px] text-red-600 mt-1", role: "alert" }, myst.error)
 
@@ -3283,19 +3284,19 @@ const d = labToolData.rocks || {};
 
                 myst.loading && React.createElement("div", { className: "p-4 bg-white rounded-xl border border-amber-200 text-center text-xs text-slate-600", role: "status", "aria-live": "polite" },
 
-                  "🧠 AI tutor is thinking up clues..."),
+                  "🧠 " + __alloT('stem.rocks.ai_thinking_clues', "AI tutor is thinking up clues...")),
 
                 myst.rockId && !myst.loading && React.createElement("div", null,
 
                   React.createElement("div", { className: "bg-white rounded-xl border-2 border-amber-200 p-3 mb-3" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-2" }, "Clues (" + cluesShown + "/" + clues.length + ")"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-2" }, __alloT('stem.rocks.clues_label', "Clues") + " (" + cluesShown + "/" + clues.length + ")"),
 
                     clues.slice(0, cluesShown).map(function (c, i) {
 
                       return React.createElement("div", { key: i, className: "flex gap-2 mb-1.5 text-xs text-slate-700 leading-relaxed" },
 
-                        React.createElement("span", { className: "font-bold text-amber-700 shrink-0" }, "Clue " + (i + 1) + ":"),
+                        React.createElement("span", { className: "font-bold text-amber-700 shrink-0" }, __alloT('stem.rocks.clue_label', "Clue ") + (i + 1) + ":"),
 
                         React.createElement("span", null, c));
 
@@ -3305,11 +3306,11 @@ const d = labToolData.rocks || {};
 
                       onClick: revealNextClue,
 
-                      "aria-label": "Reveal next clue",
+                      "aria-label": __alloT('stem.rocks.reveal_next_clue', "Reveal next clue"),
 
                       className: "transition-colors mt-1 px-3 py-1 text-[11px] font-bold bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200 active:scale-[0.97]"
 
-                    }, "+ Reveal next clue")
+                    }, "+ " + __alloT('stem.rocks.reveal_next_clue', "Reveal next clue"))
 
                   ),
 
@@ -3323,7 +3324,7 @@ const d = labToolData.rocks || {};
 
                     React.createElement("p", { className: "text-sm font-bold " + (myst.solved ? "text-green-800" : "text-slate-800") },
 
-                      (myst.solved ? "✅ Correct! It was " : "📖 The answer was ") + ROCK_TYPES[mysteryRock.type].icon + " " + mysteryRock.label),
+                      (myst.solved ? "✅ " + __alloT('stem.rocks.correct_it_was', "Correct! It was ") : "📖 " + __alloT('stem.rocks.the_answer_was', "The answer was ")) + ROCK_TYPES[mysteryRock.type].icon + " " + mysteryRock.label),
 
                     React.createElement("p", { className: "text-[11px] text-slate-600 mt-1 leading-relaxed" }, mysteryRock.desc),
 
@@ -3331,19 +3332,19 @@ const d = labToolData.rocks || {};
 
                       onClick: startMystery,
 
-                      "aria-label": "Start a new Mystery Rock challenge",
+                      "aria-label": __alloT('stem.rocks.start_new_mystery_aria', "Start a new Mystery Rock challenge"),
 
                       className: "transition-colors mt-2 px-3 py-1 text-[11px] font-bold bg-amber-700 text-white rounded-lg hover:bg-amber-800 active:scale-[0.97]"
 
-                    }, "🎲 New Mystery")
+                    }, "🎲 " + __alloT('stem.rocks.new_mystery', "New Mystery"))
 
                   ),
 
                   !myst.solved && !myst.revealed && React.createElement("div", null,
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1.5" }, "Click the rock you think matches the clues:"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1.5" }, __alloT('stem.rocks.click_rock_matches_clues', "Click the rock you think matches the clues:")),
 
-                    React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-2", role: "group", "aria-label": "Rock guess options" },
+                    React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-2", role: "group", "aria-label": __alloT('stem.rocks.rock_guess_options_aria', "Rock guess options") },
 
                       ROCKS.map(function (rock) {
 
@@ -3357,7 +3358,7 @@ const d = labToolData.rocks || {};
 
                           onClick: function () { guess(rock.id); },
 
-                          "aria-label": "Guess " + rock.label,
+                          "aria-label": __alloT('stem.rocks.guess_label', "Guess ") + rock.label,
 
                           className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
 
@@ -3377,11 +3378,11 @@ const d = labToolData.rocks || {};
 
                       onClick: giveUp,
 
-                      "aria-label": "Give up and reveal the answer",
+                      "aria-label": __alloT('stem.rocks.give_up_aria', "Give up and reveal the answer"),
 
                       className: "transition-colors px-3 py-1 text-[11px] font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 active:scale-[0.97]"
 
-                    }, "🤷 Give up · show answer")
+                    }, "🤷 " + __alloT('stem.rocks.give_up_show_answer', "Give up · show answer"))
 
                   )
 
@@ -3397,7 +3398,7 @@ const d = labToolData.rocks || {};
 
             d.quizMode && quizQ && React.createElement("div", {
               className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in outline-none focus:ring-2 focus:ring-amber-400",
-              role: "region", "aria-label": "Rock identification quiz. Press 1 through 4 to answer, or N for next.",
+              role: "region", "aria-label": __alloT('stem.rocks.quiz_region_aria', "Rock identification quiz. Press 1 through 4 to answer, or N for next."),
               tabIndex: 0,
               ref: function (el) { if (el && !el._rkQuizFocused) { el._rkQuizFocused = true; try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); } } },
               onKeyDown: function (e) {
@@ -3408,11 +3409,11 @@ const d = labToolData.rocks || {};
                     e.preventDefault();
                     const opt = quizQ.options[idx];
                     const correct = opt === quizQ.a;
-                    const explanation = quizQ.wrongFeedback ? quizQ.wrongFeedback[idx] : (correct ? "Correct!" : "Incorrect.");
+                    const explanation = quizQ.wrongFeedback ? quizQ.wrongFeedback[idx] : (correct ? __alloT('stem.rocks.correct_exclaim', "Correct!") : __alloT('stem.rocks.incorrect', "Incorrect."));
                     upd("quizFeedback", {
                       correct: correct,
                       chosenIdx: idx,
-                      msg: correct ? "✅ Correct! +10 XP" : "❌ Incorrect.",
+                      msg: correct ? "✅ " + __alloT('stem.rocks.correct_plus_xp', "Correct! +10 XP") : "❌ " + __alloT('stem.rocks.incorrect', "Incorrect."),
                       explanation: explanation
                     });
                     if (correct) {
@@ -3433,7 +3434,7 @@ const d = labToolData.rocks || {};
               }
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("p", { className: "text-xs font-bold text-amber-700" }, "🧠 Question " + ((d.quizIdx || 0) + 1) + "/" + QUIZ_BANK.length),
+                React.createElement("p", { className: "text-xs font-bold text-amber-700" }, "🧠 " + __alloT('stem.rocks.question_label', "Question ") + ((d.quizIdx || 0) + 1) + "/" + QUIZ_BANK.length),
                 React.createElement("span", { className: "font-bold text-green-600 text-xs" }, "✔ " + (d.quizScore || 0))
               ),
               React.createElement("p", { className: "text-sm font-bold text-slate-800 mb-3" }, quizQ.q),
@@ -3441,15 +3442,15 @@ const d = labToolData.rocks || {};
                 quizQ.options.map(function (opt, i) {
                   const shortcut = (i + 1).toString();
                   const isChosen = d.quizFeedback && d.quizFeedback.chosenIdx === i;
-                  return React.createElement("button", { "aria-label": "Answer " + shortcut + ": " + opt,
+                  return React.createElement("button", { "aria-label": __alloT('stem.rocks.answer_label', "Answer ") + shortcut + ": " + opt,
                     key: opt, onClick: function () {
                       if (d.quizFeedback) return;
                       const correct = opt === quizQ.a;
-                      const explanation = quizQ.wrongFeedback ? quizQ.wrongFeedback[i] : (correct ? "Correct!" : "Incorrect.");
+                      const explanation = quizQ.wrongFeedback ? quizQ.wrongFeedback[i] : (correct ? __alloT('stem.rocks.correct_exclaim', "Correct!") : __alloT('stem.rocks.incorrect', "Incorrect."));
                       upd("quizFeedback", {
                         correct: correct,
                         chosenIdx: i,
-                        msg: correct ? "✅ Correct! +10 XP" : "❌ Incorrect.",
+                        msg: correct ? "✅ " + __alloT('stem.rocks.correct_plus_xp', "Correct! +10 XP") : "❌ " + __alloT('stem.rocks.incorrect', "Incorrect."),
                         explanation: explanation
                       });
                       if (correct) {
@@ -3479,7 +3480,7 @@ const d = labToolData.rocks || {};
                   var studied = (d.vocabLookedUp || []).indexOf(concept) !== -1;
                   return React.createElement("div", { className: "p-3 rounded-lg bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in" },
                     React.createElement("div", { className: "flex-1" },
-                      React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "🔍 Concept Focus: " + concept),
+                      React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "🔍 " + __alloT('stem.rocks.concept_focus_label', "Concept Focus: ") + concept),
                       React.createElement("p", { className: "text-[11px] text-slate-600 mt-0.5 leading-relaxed" }, definition)
                     ),
                     !studied && React.createElement("button", {
@@ -3494,16 +3495,16 @@ const d = labToolData.rocks || {};
                         setTimeout(function() { checkRocksChallenges(nextState); }, 50);
                       },
                       className: "px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]"
-                    }, "📖 Study Term (+5 RP)")
+                    }, "📖 " + __alloT('stem.rocks.study_term', "Study Term (+5 RP)"))
                   );
                 })(),
                 React.createElement("div", { className: "flex justify-end" },
-                  React.createElement("button", { "aria-label": "Next question (shortcut: N)",
+                  React.createElement("button", { "aria-label": __alloT('stem.rocks.next_question_aria', "Next question (shortcut: N)"),
                     onClick: function () {
                       const nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
                       upd("quizIdx", nextIdx); upd("quizFeedback", null);
                     }, className: "px-4 py-1.5 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all active:scale-[0.97]"
-                  }, "Next Question \u2192 (N)")
+                  }, __alloT('stem.rocks.next_question', "Next Question") + " \u2192 (N)")
                 )
               )
             ),
@@ -3522,22 +3523,22 @@ const d = labToolData.rocks || {};
               else if (total > 0.5) state = 'mixed';
               else state = 'minimal';
               var sm = {
-                chemDom: { label: '\ud83e\uddea Chemical-dominated', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Acidic rain dissolves minerals. Karst landscapes form.' },
-                physDom: { label: '\ud83d\udd28 Physical-dominated', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Freeze-thaw cycles fracture rock mechanically.' },
-                mixed:   { label: '\u2696\ufe0f Mixed weathering', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Both processes active. Typical temperate climate.' },
-                minimal: { label: '\ud83d\udfe2 Minimal weathering', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Stable conditions. Rock surfaces persist.' }
+                chemDom: { label: '\ud83e\uddea ' + __alloT('stem.rocks.weath_chem_label', 'Chemical-dominated'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: __alloT('stem.rocks.weath_chem_desc', 'Acidic rain dissolves minerals. Karst landscapes form.') },
+                physDom: { label: '\ud83d\udd28 ' + __alloT('stem.rocks.weath_phys_label', 'Physical-dominated'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.rocks.weath_phys_desc', 'Freeze-thaw cycles fracture rock mechanically.') },
+                mixed:   { label: '\u2696\ufe0f ' + __alloT('stem.rocks.weath_mixed_label', 'Mixed weathering'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.rocks.weath_mixed_desc', 'Both processes active. Typical temperate climate.') },
+                minimal: { label: '\ud83d\udfe2 ' + __alloT('stem.rocks.weath_minimal_label', 'Minimal weathering'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.rocks.weath_minimal_desc', 'Stable conditions. Rock surfaces persist.') }
               }[state];
               return h('div', { className: 'p-4 rounded-xl bg-white border border-amber-300 space-y-3' },
-                h('h3', { className: 'text-sm font-black text-amber-700' }, '\u26cf\ufe0f Rock weathering discovery'),
-                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Adjust temperature swings, rainfall, and rain pH. Widget classifies dominant weathering mode into 4 discrete categories. No score, no reveal.'),
+                h('h3', { className: 'text-sm font-black text-amber-700' }, '\u26cf\ufe0f ' + __alloT('stem.rocks.rock_weathering_discovery', 'Rock weathering discovery')),
+                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, __alloT('stem.rocks.weathering_intro', 'Adjust temperature swings, rainfall, and rain pH. Widget classifies dominant weathering mode into 4 discrete categories. No score, no reveal.')),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
                   h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
                 ),
                 h('div', { className: 'grid grid-cols-3 gap-3' },
-                  [{ k: 'tempSwing', l: 'Temp swing (\u00b0C)', mn: 0, mx: 50, st: 1 },
-                   { k: 'rainfall', l: 'Rainfall (mm/yr)', mn: 0, mx: 500, st: 10 },
-                   { k: 'pH', l: 'Rain pH', mn: 0, mx: 14, st: 0.1 }].map(function(s) {
+                  [{ k: 'tempSwing', l: __alloT('stem.rocks.weath_temp_swing', 'Temp swing (\u00b0C)'), mn: 0, mx: 50, st: 1 },
+                   { k: 'rainfall', l: __alloT('stem.rocks.weath_rainfall', 'Rainfall (mm/yr)'), mn: 0, mx: 500, st: 10 },
+                   { k: 'pH', l: __alloT('stem.rocks.weath_rain_ph', 'Rain pH'), mn: 0, mx: 14, st: 0.1 }].map(function(s) {
                     return h('div', { key: s.k },
                       h('label', { htmlFor: 'wh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-amber-700' }, iq[s.k])),
                       h('input', { id: 'wh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
@@ -3546,23 +3547,23 @@ const d = labToolData.rocks || {};
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempSwing, r: iq.rainfall, p: iq.pH, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '\ud83d\udccb Log'),
-                  h('button', { onClick: function() { setIQ({ tempSwing: 20, rainfall: 200, pH: 7, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '\u21ba Reset')
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempSwing, r: iq.rainfall, p: iq.pH, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '\ud83d\udccb ' + __alloT('stem.rocks.weath_log', 'Log')),
+                  h('button', { onClick: function() { setIQ({ tempSwing: 20, rainfall: 200, pH: 7, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '\u21ba ' + __alloT('stem.rocks.weath_reset', 'Reset'))
                 ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: What climate produces chemical vs physical dominance?',
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.rocks.weath_hypothesis_placeholder', 'Hypothesis: What climate produces chemical vs physical dominance?'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '\ud83e\udd14 Stuck \u2014 show open prompts'),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '\ud83e\udd14 ' + __alloT('stem.rocks.weath_stuck_btn', 'Stuck \u2014 show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
-                    h('li', null, 'Try pH=4 (acid rain). Does that change the mode?'),
-                    h('li', null, 'Why does temperature swing matter more in arid climates?'))),
+                    h('li', null, __alloT('stem.rocks.weath_prompt_ph', 'Try pH=4 (acid rain). Does that change the mode?')),
+                    h('li', null, __alloT('stem.rocks.weath_prompt_temp', 'Why does temperature swing matter more in arid climates?')))),
                 h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
                   h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                     h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                    'I understand \u2014 explain in own words'),
-                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how climate selects which weathering mode dominates.',
+                    __alloT('stem.rocks.weath_understand_label', 'I understand \u2014 explain in own words')),
+                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.rocks.weath_explanation_placeholder', 'Explain how climate selects which weathering mode dominates.'),
                     className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state weathering marker; no rate score; no reveal \u2014 by design.')
+                h('div', { className: 'text-[10px] italic text-slate-500' }, __alloT('stem.rocks.weath_design_note', 'Design note: discrete 4-state weathering marker; no rate score; no reveal \u2014 by design.'))
               );
             })(),
 
@@ -3571,7 +3572,7 @@ const d = labToolData.rocks || {};
 
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
 
-              React.createElement("button", { "aria-label": "Snapshot",
+              React.createElement("button", { "aria-label": __alloT('stem.rocks.snapshot', "Snapshot"),
 
                 onClick: function () {
 
@@ -3581,7 +3582,7 @@ const d = labToolData.rocks || {};
 
                 }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all"
 
-              }, "\uD83D\uDCF8 Snapshot")
+              }, "\uD83D\uDCF8 " + __alloT('stem.rocks.snapshot', "Snapshot"))
 
             )
 
@@ -3616,6 +3617,7 @@ const d = labToolData.rocks || {};
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
       var t = ctx.t;
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -4537,20 +4539,20 @@ const d = labToolData.rockCycle || {};
 
           var viewedFamilies = Object.keys(d.rcViewed || {}).length;
           var transformsRun = d.transformsRun || 0;
-          var nextMission = viewedFamilies < 3 ? { icon: '🪨', title: 'Compare all three rock families', detail: 'Select each node and look for evidence of how it formed.' }
-            : !d.selectedProcess ? { icon: '↔️', title: 'Trace a transformation', detail: 'Choose an arrow to connect process, energy, and time.' }
-            : transformsRun < 3 ? { icon: '🔄', title: 'Test the transformation machine', detail: 'Run another pathway and compare its inputs and products.' }
-            : { icon: '🧠', title: 'Explain the branching cycle', detail: 'Use evidence to show why the rock cycle has many valid paths.' };
+          var nextMission = viewedFamilies < 3 ? { icon: '🪨', title: __alloT('stem.rocks.mission_compare_title', 'Compare all three rock families'), detail: __alloT('stem.rocks.mission_compare_detail', 'Select each node and look for evidence of how it formed.') }
+            : !d.selectedProcess ? { icon: '↔️', title: __alloT('stem.rocks.mission_trace_title', 'Trace a transformation'), detail: __alloT('stem.rocks.mission_trace_detail', 'Choose an arrow to connect process, energy, and time.') }
+            : transformsRun < 3 ? { icon: '🔄', title: __alloT('stem.rocks.mission_test_title', 'Test the transformation machine'), detail: __alloT('stem.rocks.mission_test_detail', 'Run another pathway and compare its inputs and products.') }
+            : { icon: '🧠', title: __alloT('stem.rocks.mission_explain_title', 'Explain the branching cycle'), detail: __alloT('stem.rocks.mission_explain_detail', 'Use evidence to show why the rock cycle has many valid paths.') };
 
           return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" },
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { type: 'button', onClick: () => setStemLabTool(null), className: "transition-colors grid h-10 w-10 shrink-0 place-items-center border border-slate-200 hover:bg-slate-100 rounded-xl active:scale-[0.97]", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { type: 'button', onClick: () => setStemLabTool(null), className: "transition-colors grid h-10 w-10 shrink-0 place-items-center border border-slate-200 hover:bg-slate-100 rounded-xl active:scale-[0.97]", 'aria-label': __alloT('stem.rocks.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83E\uDEA8 Rock Cycle"),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83E\uDEA8 " + __alloT('stem.rocks.rock_cycle_title', "Rock Cycle")),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-orange-100 text-orange-700 text-[11px] font-bold rounded-full" }, "ANIMATED")
+              React.createElement("span", { className: "px-2 py-0.5 bg-orange-100 text-orange-700 text-[11px] font-bold rounded-full" }, __alloT('stem.rocks.animated_badge', "ANIMATED"))
 
             ),
 
@@ -4558,23 +4560,23 @@ const d = labToolData.rockCycle || {};
               React.createElement("div", { className: "absolute -right-6 -top-8 text-8xl opacity-[0.06]", "aria-hidden": true }, "🪨"),
               React.createElement("div", { className: "relative grid gap-4 lg:grid-cols-[1.15fr_.85fr]" },
                 React.createElement("div", null,
-                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-[0.15em] text-orange-700" }, "Earth systems mission"),
+                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-[0.15em] text-orange-700" }, __alloT('stem.rocks.earth_systems_mission', "Earth systems mission")),
                   React.createElement("h2", { id: "rockcycle-command-title", className: "mt-2 text-xl sm:text-2xl font-black text-slate-900" }, nextMission.icon + " " + nextMission.title),
                   React.createElement("p", { className: "mt-1 text-xs sm:text-sm text-slate-600 leading-relaxed" }, nextMission.detail),
-                  React.createElement("div", { className: "mt-4 grid grid-cols-3 gap-2", "aria-label": "Rock cycle mission progress" },
-                    [[viewedFamilies + '/3', 'Families'], [d.selectedProcess ? '1/1' : '0/1', 'Process'], [transformsRun + '/3', 'Transforms']].map(function(metric) { return React.createElement("div", { key: metric[1], className: "rounded-xl border border-orange-100 bg-white/80 p-3 text-center" }, React.createElement("div", { className: "text-lg font-black text-slate-900" }, metric[0]), React.createElement("div", { className: "text-[10px] font-bold text-slate-500" }, metric[1])); })
+                  React.createElement("div", { className: "mt-4 grid grid-cols-3 gap-2", "aria-label": __alloT('stem.rocks.mission_progress_aria', "Rock cycle mission progress") },
+                    [[viewedFamilies + '/3', __alloT('stem.rocks.metric_families', 'Families')], [d.selectedProcess ? '1/1' : '0/1', __alloT('stem.rocks.metric_process', 'Process')], [transformsRun + '/3', __alloT('stem.rocks.metric_transforms', 'Transforms')]].map(function(metric) { return React.createElement("div", { key: metric[1], className: "rounded-xl border border-orange-100 bg-white/80 p-3 text-center" }, React.createElement("div", { className: "text-lg font-black text-slate-900" }, metric[0]), React.createElement("div", { className: "text-[10px] font-bold text-slate-500" }, metric[1])); })
                   )
                 ),
-                React.createElement("aside", { className: "rounded-xl border border-sky-200 bg-sky-50/70 p-4", "aria-label": "Rock cycle evidence route" },
-                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-sky-800" }, "Evidence route"),
-                  React.createElement("ol", { className: "mt-2 space-y-2 text-[11px] text-slate-700" }, ['Observe texture and composition', 'Connect process to energy and time', 'Explain more than one valid pathway'].map(function(step, i) { return React.createElement("li", { key: step, className: "flex gap-2" }, React.createElement("span", { className: "font-black text-orange-600" }, (i + 1) + '.'), React.createElement("span", null, step)); }))
+                React.createElement("aside", { className: "rounded-xl border border-sky-200 bg-sky-50/70 p-4", "aria-label": __alloT('stem.rocks.evidence_route_aria', "Rock cycle evidence route") },
+                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-sky-800" }, __alloT('stem.rocks.evidence_route', "Evidence route")),
+                  React.createElement("ol", { className: "mt-2 space-y-2 text-[11px] text-slate-700" }, [__alloT('stem.rocks.evidence_step_observe', 'Observe texture and composition'), __alloT('stem.rocks.evidence_step_connect', 'Connect process to energy and time'), __alloT('stem.rocks.evidence_step_explain', 'Explain more than one valid pathway')].map(function(step, i) { return React.createElement("li", { key: step, className: "flex gap-2" }, React.createElement("span", { className: "font-black text-orange-600" }, (i + 1) + '.'), React.createElement("span", null, step)); }))
                 )
               )
             ),
 
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-400 shadow-lg mb-3", style: { height: "420px" } },
 
-              React.createElement("canvas", { ref: canvasRef, role: "img", tabIndex: 0, "aria-label": "Rock sample close-up" + (d.selectedRock ? " of " + d.selectedRock : "") + " — click to inspect.", "data-selected-rock": d.selectedRock || '', style: { width: "100%", height: "100%", display: "block", cursor: "pointer" } })
+              React.createElement("canvas", { ref: canvasRef, role: "img", tabIndex: 0, "aria-label": __alloT('stem.rocks.rock_sample_closeup_a', "Rock sample close-up") + (d.selectedRock ? " of " + d.selectedRock : "") + __alloT('stem.rocks.rock_sample_closeup_b', " — click to inspect."), "data-selected-rock": d.selectedRock || '', style: { width: "100%", height: "100%", display: "block", cursor: "pointer" } })
 
             ),
 
@@ -4616,7 +4618,7 @@ const d = labToolData.rockCycle || {};
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Hardness"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.rocks.hardness_word', "Hardness")),
 
                   React.createElement("p", { className: "text-xs font-bold", style: { color: sel.color } }, sel.hardness)
 
@@ -4624,7 +4626,7 @@ const d = labToolData.rockCycle || {};
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Crystals"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.rocks.crystals_label', "Crystals")),
 
                   React.createElement("p", { className: "text-xs font-bold", style: { color: sel.color } }, sel.crystals)
 
@@ -4632,7 +4634,7 @@ const d = labToolData.rockCycle || {};
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Real Uses"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.rocks.real_uses_label', "Real Uses")),
 
                   React.createElement("p", { className: "text-xs font-bold", style: { color: sel.color } }, sel.uses)
 
@@ -4650,7 +4652,7 @@ const d = labToolData.rockCycle || {};
 
             React.createElement("div", { className: "mb-3" },
 
-              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, "\u2194\uFE0F Transformation Processes"),
+              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, "\u2194\uFE0F " + __alloT('stem.rocks.transformation_processes', "Transformation Processes")),
 
               React.createElement("div", { className: "grid grid-cols-3 gap-2" },
 
@@ -4691,14 +4693,14 @@ const d = labToolData.rockCycle || {};
 
             // ── Branching-network + common-myths note ──
             React.createElement("div", { className: "mt-3 p-3 rounded-lg border border-violet-200 bg-violet-50 text-[12px] text-violet-900 leading-relaxed" },
-              React.createElement("p", { className: "font-bold mb-1" }, "🔀 A branching network, not a one-way circle"),
-              React.createElement("p", { className: "mb-2" }, "ANY rock can become ANY other rock — the diagram's 6 arrows show every path. Which one happens depends on the process (the geological agent), not on a fixed order."),
-              React.createElement("p", { className: "font-bold mb-1" }, "⚠ Common myths"),
+              React.createElement("p", { className: "font-bold mb-1" }, "🔀 " + __alloT('stem.rocks.branching_network_title', "A branching network, not a one-way circle")),
+              React.createElement("p", { className: "mb-2" }, __alloT('stem.rocks.branching_network_body', "ANY rock can become ANY other rock — the diagram's 6 arrows show every path. Which one happens depends on the process (the geological agent), not on a fixed order.")),
+              React.createElement("p", { className: "font-bold mb-1" }, "⚠ " + __alloT('stem.rocks.common_myths', "Common myths")),
               React.createElement("ul", { className: "list-disc pl-4 space-y-0.5" },
-                React.createElement("li", null, "“Rocks never change.” They change constantly — just over thousands to millions of years."),
-                React.createElement("li", null, "“The cycle only goes one way.” It can run in any direction (follow the arrows)."),
-                React.createElement("li", null, "“Soil is a rock.” Soil is weathered rock plus organic matter — not a rock itself."),
-                React.createElement("li", null, "“Lava and magma are the same.” Magma is molten rock UNDERGROUND; once it erupts it's lava.")
+                React.createElement("li", null, __alloT('stem.rocks.myth_rocks_never_change', "“Rocks never change.” They change constantly — just over thousands to millions of years.")),
+                React.createElement("li", null, __alloT('stem.rocks.myth_one_way', "“The cycle only goes one way.” It can run in any direction (follow the arrows).")),
+                React.createElement("li", null, __alloT('stem.rocks.myth_soil_is_rock', "“Soil is a rock.” Soil is weathered rock plus organic matter — not a rock itself.")),
+                React.createElement("li", null, __alloT('stem.rocks.myth_lava_magma', "“Lava and magma are the same.” Magma is molten rock UNDERGROUND; once it erupts it's lava."))
               )
             ),
 
@@ -4706,35 +4708,35 @@ const d = labToolData.rockCycle || {};
             React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3" },
               React.createElement("p", { className: "text-xs font-black text-orange-700 mb-1 flex items-center gap-1.5" },
                 React.createElement("span", null, "🔄"),
-                React.createElement("span", null, "Rock Transformation Machine")
+                React.createElement("span", null, __alloT('stem.rocks.transformation_machine_title', "Rock Transformation Machine"))
               ),
               React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" },
-                "Select a starting rock type, pick a geological agent of change, and run the machine to witness its metamorphic, igneous, or sedimentary transformation!"
+                __alloT('stem.rocks.transformation_machine_intro', "Select a starting rock type, pick a geological agent of change, and run the machine to witness its metamorphic, igneous, or sedimentary transformation!")
               ),
               React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
                 React.createElement("div", null,
-                  React.createElement("label", { className: "block text-[10px] font-bold text-slate-500 uppercase mb-1" }, "Starting Rock"),
+                  React.createElement("label", { className: "block text-[10px] font-bold text-slate-500 uppercase mb-1" }, __alloT('stem.rocks.starting_rock', "Starting Rock")),
                   React.createElement("select", {
                     value: d.startingRock || 'igneous',
                     onChange: function(e) { upd("startingRock", e.target.value); },
                     className: "w-full p-1.5 text-xs border rounded-lg bg-white font-bold"
                   },
                     [
-                      { id: 'igneous', label: 'Igneous' },
-                      { id: 'sedimentary', label: 'Sedimentary' },
-                      { id: 'metamorphic', label: 'Metamorphic' }
+                      { id: 'igneous', label: __alloT('stem.rocks.igneous', 'Igneous') },
+                      { id: 'sedimentary', label: __alloT('stem.rocks.sedimentary', 'Sedimentary') },
+                      { id: 'metamorphic', label: __alloT('stem.rocks.metamorphic', 'Metamorphic') }
                     ].map(function(r) {
                       return React.createElement("option", { key: r.id, value: r.id }, r.label);
                     })
                   )
                 ),
                 React.createElement("div", { className: "col-span-1 md:col-span-2" },
-                  React.createElement("label", { className: "block text-[10px] font-bold text-slate-500 uppercase mb-1" }, "Geological Agent"),
+                  React.createElement("label", { className: "block text-[10px] font-bold text-slate-500 uppercase mb-1" }, __alloT('stem.rocks.geological_agent', "Geological Agent")),
                   React.createElement("div", { className: "grid grid-cols-3 gap-1" },
                     [
-                      { id: 'melting_cooling', label: '🌋 Melt & Cool' },
-                      { id: 'heat_pressure', label: '🔥 Heat & Press' },
-                      { id: 'weathering_erosion', label: '🌧️ Weather & Erode' }
+                      { id: 'melting_cooling', label: '🌋 ' + __alloT('stem.rocks.agent_melt_cool', 'Melt & Cool') },
+                      { id: 'heat_pressure', label: '🔥 ' + __alloT('stem.rocks.agent_heat_press', 'Heat & Press') },
+                      { id: 'weathering_erosion', label: '🌧️ ' + __alloT('stem.rocks.agent_weather_erode', 'Weather & Erode') }
                     ].map(function(agent) {
                       var isSel = d.geologicalAgent === agent.id;
                       return React.createElement("button", {
@@ -4850,7 +4852,7 @@ const d = labToolData.rockCycle || {};
                       }, 100);
                     },
                     className: "w-full py-1.5 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded-lg text-xs transition-all disabled:opacity-50 active:scale-[0.97]"
-                  }, d.transformationAnimActive ? "Transforming..." : "⚡ Transform!")
+                  }, d.transformationAnimActive ? __alloT('stem.rocks.transforming_ellipsis', "Transforming...") : "⚡ " + __alloT('stem.rocks.transform_btn', "Transform!"))
                 )
               ),
               d.transformationAnimActive && React.createElement("div", { className: "w-full bg-slate-200 h-2.5 rounded-full overflow-hidden mb-2" },
@@ -4864,7 +4866,7 @@ const d = labToolData.rockCycle || {};
                 return React.createElement("div", { className: "p-3 bg-orange-50 border border-orange-200 rounded-lg animate-in slide-in-from-bottom" },
                   React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
                     React.createElement("span", { className: "text-2xl" }, resEmoji),
-                    React.createElement("span", { className: "text-sm font-bold text-orange-800 capitalize" }, "Transformed into: " + d.transformationResult.id + " Rock")
+                    React.createElement("span", { className: "text-sm font-bold text-orange-800 capitalize" }, __alloT('stem.rocks.transformed_into', "Transformed into: ") + d.transformationResult.id + __alloT('stem.rocks.rock_suffix', " Rock"))
                   ),
                   React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, d.transformationResult.desc)
                 );
@@ -4872,117 +4874,117 @@ const d = labToolData.rockCycle || {};
             ),
 
             React.createElement("div", { className: "border-t border-slate-200 pt-3 mt-3" },
-              React.createElement("button", { "aria-label": "Start rock cycle quiz",
+              React.createElement("button", { "aria-label": __alloT('stem.rocks.start_rock_cycle_quiz_aria', "Start rock cycle quiz"),
                 onClick: function () {
                   var RC_QS = [
                     {
-                      q: 'Which rock type forms from cooled magma/lava?',
+                      q: __alloT('stem.rocks.rc_which_rock_type_forms_from_cooled_magma_lava', 'Which rock type forms from cooled magma/lava?'),
                       a: t('stem.rocks.igneous'),
                       opts: [t('stem.rocks.igneous'), t('stem.rocks.sedimentary'), t('stem.rocks.metamorphic')],
                       concept: 'Igneous',
                       wrongFeedback: [
-                        'Correct! Igneous rocks solidify directly from cooled magma.',
-                        'Incorrect. Sedimentary rocks form from accumulated layer deposits.',
-                        'Incorrect. Metamorphic rocks form from existing rocks altered by heat and pressure.'
+                        __alloT('stem.rocks.rc_correct_igneous_rocks_solidify_directly_from_cooled_magma', 'Correct! Igneous rocks solidify directly from cooled magma.'),
+                        __alloT('stem.rocks.rc_incorrect_sedimentary_rocks_form_from_accumulated_layer_deposits', 'Incorrect. Sedimentary rocks form from accumulated layer deposits.'),
+                        __alloT('stem.rocks.rc_incorrect_metamorphic_rocks_form_from_existing_rocks_altered', 'Incorrect. Metamorphic rocks form from existing rocks altered by heat and pressure.')
                       ]
                     },
                     {
-                      q: 'Which rock type often contains fossils?',
+                      q: __alloT('stem.rocks.rc_which_rock_type_often_contains_fossils', 'Which rock type often contains fossils?'),
                       a: t('stem.rocks.sedimentary'),
                       opts: [t('stem.rocks.igneous'), t('stem.rocks.sedimentary'), t('stem.rocks.metamorphic')],
                       concept: 'Sedimentary',
                       wrongFeedback: [
-                        'Incorrect. Magma temperatures destroy fossil evidence in igneous rocks.',
-                        'Correct! Fossils are preserved in layers of sedimentary rock.',
-                        'Incorrect. Heat and pressure deform and destroy fossils in metamorphic rocks.'
+                        __alloT('stem.rocks.rc_incorrect_magma_temperatures_destroy_fossil_evidence_in_igneous', 'Incorrect. Magma temperatures destroy fossil evidence in igneous rocks.'),
+                        __alloT('stem.rocks.rc_correct_fossils_are_preserved_in_layers_of_sedimentary', 'Correct! Fossils are preserved in layers of sedimentary rock.'),
+                        __alloT('stem.rocks.rc_incorrect_heat_and_pressure_deform_and_destroy_fossils', 'Incorrect. Heat and pressure deform and destroy fossils in metamorphic rocks.')
                       ]
                     },
                     {
-                      q: 'Which rock type forms under heat and pressure?',
+                      q: __alloT('stem.rocks.rc_which_rock_type_forms_under_heat_and_pressure', 'Which rock type forms under heat and pressure?'),
                       a: t('stem.rocks.metamorphic'),
                       opts: [t('stem.rocks.igneous'), t('stem.rocks.sedimentary'), t('stem.rocks.metamorphic')],
                       concept: 'Metamorphic',
                       wrongFeedback: [
-                        'Incorrect. Igneous rocks form from cooling magma, not solid alteration.',
-                        'Incorrect. Sedimentary rocks form from compaction of loose sediment.',
-                        'Correct! Heat and pressure change pre-existing rocks into metamorphic ones.'
+                        __alloT('stem.rocks.rc_incorrect_igneous_rocks_form_from_cooling_magma_not', 'Incorrect. Igneous rocks form from cooling magma, not solid alteration.'),
+                        __alloT('stem.rocks.rc_incorrect_sedimentary_rocks_form_from_compaction_of_loose', 'Incorrect. Sedimentary rocks form from compaction of loose sediment.'),
+                        __alloT('stem.rocks.rc_correct_heat_and_pressure_change_pre_existing_rocks', 'Correct! Heat and pressure change pre-existing rocks into metamorphic ones.')
                       ]
                     },
                     {
-                      q: 'Granite is an example of which rock type?',
+                      q: __alloT('stem.rocks.rc_granite_is_an_example_of_which_rock_type', 'Granite is an example of which rock type?'),
                       a: t('stem.rocks.igneous'),
                       opts: [t('stem.rocks.igneous'), t('stem.rocks.sedimentary'), t('stem.rocks.metamorphic')],
                       concept: 'Igneous',
                       wrongFeedback: [
-                        'Correct! Granite is a coarse-grained intrusive igneous rock.',
-                        'Incorrect. Granite crystallizes from magma and is not sedimentary.',
-                        'Incorrect. Granite is igneous; its metamorphic equivalent is gneiss.'
+                        __alloT('stem.rocks.rc_correct_granite_is_a_coarse_grained_intrusive_igneous', 'Correct! Granite is a coarse-grained intrusive igneous rock.'),
+                        __alloT('stem.rocks.rc_incorrect_granite_crystallizes_from_magma_and_is_not', 'Incorrect. Granite crystallizes from magma and is not sedimentary.'),
+                        __alloT('stem.rocks.rc_incorrect_granite_is_igneous_its_metamorphic_equivalent_is', 'Incorrect. Granite is igneous; its metamorphic equivalent is gneiss.')
                       ]
                     },
                     {
-                      q: 'Marble forms from which rock?',
+                      q: __alloT('stem.rocks.rc_marble_forms_from_which_rock', 'Marble forms from which rock?'),
                       a: 'Limestone (sedimentary)',
                       opts: ['Granite (igneous)', 'Limestone (sedimentary)', 'Basalt (igneous)'],
                       concept: 'Metamorphic',
                       wrongFeedback: [
-                        'Incorrect. Granite transforms into gneiss.',
-                        'Correct! Limestone transforms into marble under metamorphism.',
-                        'Incorrect. Basalt transforms into greenstone or amphibolite.'
+                        __alloT('stem.rocks.rc_incorrect_granite_transforms_into_gneiss', 'Incorrect. Granite transforms into gneiss.'),
+                        __alloT('stem.rocks.rc_correct_limestone_transforms_into_marble_under_metamorphism', 'Correct! Limestone transforms into marble under metamorphism.'),
+                        __alloT('stem.rocks.rc_incorrect_basalt_transforms_into_greenstone_or_amphibolite', 'Incorrect. Basalt transforms into greenstone or amphibolite.')
                       ]
                     },
                     {
-                      q: 'What breaks rocks into sediment?',
+                      q: __alloT('stem.rocks.rc_what_breaks_rocks_into_sediment', 'What breaks rocks into sediment?'),
                       a: 'Weathering & erosion',
                       opts: ['Heat & pressure', 'Weathering & erosion', 'Melting'],
                       concept: 'Lithification',
                       wrongFeedback: [
-                        'Incorrect. Heat and pressure trigger metamorphic alteration.',
-                        'Correct! Wind, water, and ice weather rocks down into sediment particles.',
-                        'Incorrect. Melting creates magma, which forms igneous rocks.'
+                        __alloT('stem.rocks.rc_incorrect_heat_and_pressure_trigger_metamorphic_alteration', 'Incorrect. Heat and pressure trigger metamorphic alteration.'),
+                        __alloT('stem.rocks.rc_correct_wind_water_and_ice_weather_rocks_down', 'Correct! Wind, water, and ice weather rocks down into sediment particles.'),
+                        __alloT('stem.rocks.rc_incorrect_melting_creates_magma_which_forms_igneous_rocks', 'Incorrect. Melting creates magma, which forms igneous rocks.')
                       ]
                     },
                     {
-                      q: 'What must happen for metamorphic rock to become igneous?',
+                      q: __alloT('stem.rocks.rc_what_must_happen_for_metamorphic_rock_to_become', 'What must happen for metamorphic rock to become igneous?'),
                       a: 'It must melt, then cool',
                       opts: ['It must be weathered', 'It must be compressed', 'It must melt, then cool'],
                       concept: 'Crystallization',
                       wrongFeedback: [
-                        'Incorrect. Weathering turns metamorphic rocks into sedimentary ones.',
-                        'Incorrect. Compression leads to metamorphism, not igneous rock.',
-                        'Correct! Metamorphic rocks must melt into magma, then cool and solidify.'
+                        __alloT('stem.rocks.rc_incorrect_weathering_turns_metamorphic_rocks_into_sedimentary_ones', 'Incorrect. Weathering turns metamorphic rocks into sedimentary ones.'),
+                        __alloT('stem.rocks.rc_incorrect_compression_leads_to_metamorphism_not_igneous_rock', 'Incorrect. Compression leads to metamorphism, not igneous rock.'),
+                        __alloT('stem.rocks.rc_correct_metamorphic_rocks_must_melt_into_magma_then', 'Correct! Metamorphic rocks must melt into magma, then cool and solidify.')
                       ]
                     },
                     {
-                      q: 'What is the Mohs scale used to measure?',
+                      q: __alloT('stem.rocks.rc_what_is_the_mohs_scale_used_to_measure', 'What is the Mohs scale used to measure?'),
                       a: 'Mineral hardness',
                       opts: ['Rock age', 'Mineral hardness', 'Crystal size'],
                       concept: 'Hardness',
                       wrongFeedback: [
-                        'Incorrect. Radiometric dating measures rock age, not the Mohs scale.',
-                        'Correct! The Mohs scale rates scratch resistance from 1 to 10.',
-                        'Incorrect. Crystallization rate determines crystal size.'
+                        __alloT('stem.rocks.rc_incorrect_radiometric_dating_measures_rock_age_not_the', 'Incorrect. Radiometric dating measures rock age, not the Mohs scale.'),
+                        __alloT('stem.rocks.rc_correct_the_mohs_scale_rates_scratch_resistance_from', 'Correct! The Mohs scale rates scratch resistance from 1 to 10.'),
+                        __alloT('stem.rocks.rc_incorrect_crystallization_rate_determines_crystal_size', 'Incorrect. Crystallization rate determines crystal size.')
                       ]
                     },
                     {
-                      q: 'Which rock is used for countertops?',
+                      q: __alloT('stem.rocks.rc_which_rock_is_used_for_countertops', 'Which rock is used for countertops?'),
                       a: t('stem.rocks.granite'),
                       opts: [t('stem.rocks.sandstone'), t('stem.rocks.granite'), t('stem.rocks.slate')],
                       concept: 'Igneous',
                       wrongFeedback: [
-                        'Incorrect. Sandstone is too porous for durable countertops.',
-                        'Correct! Granite is extremely hard, heat-resistant, and durable.',
-                        'Incorrect. Slate is used for roofing and writing boards, not typically heavy kitchen countertops.'
+                        __alloT('stem.rocks.rc_incorrect_sandstone_is_too_porous_for_durable_countertops', 'Incorrect. Sandstone is too porous for durable countertops.'),
+                        __alloT('stem.rocks.rc_correct_granite_is_extremely_hard_heat_resistant_and', 'Correct! Granite is extremely hard, heat-resistant, and durable.'),
+                        __alloT('stem.rocks.rc_incorrect_slate_is_used_for_roofing_and_writing', 'Incorrect. Slate is used for roofing and writing boards, not typically heavy kitchen countertops.')
                       ]
                     },
                     {
-                      q: 'The White Cliffs of Dover are made of which sedimentary rock?',
+                      q: __alloT('stem.rocks.rc_the_white_cliffs_of_dover_are_made_of', 'The White Cliffs of Dover are made of which sedimentary rock?'),
                       a: t('stem.rocks.chalk'),
                       opts: [t('stem.rocks.sandstone'), t('stem.rocks.limestone'), t('stem.rocks.chalk')],
                       concept: 'Sedimentary',
                       wrongFeedback: [
-                        'Incorrect. Sandstone is granular and not white/chalky.',
-                        'Incorrect. Limestone is related, but the cliffs are specifically soft chalk.',
-                        'Correct! The cliffs are made of chalk, formed from marine micro-fossils.'
+                        __alloT('stem.rocks.rc_incorrect_sandstone_is_granular_and_not_white_chalky', 'Incorrect. Sandstone is granular and not white/chalky.'),
+                        __alloT('stem.rocks.rc_incorrect_limestone_is_related_but_the_cliffs_are', 'Incorrect. Limestone is related, but the cliffs are specifically soft chalk.'),
+                        __alloT('stem.rocks.rc_correct_the_cliffs_are_made_of_chalk_formed', 'Correct! The cliffs are made of chalk, formed from marine micro-fossils.')
                       ]
                     }
                   ];
@@ -4990,9 +4992,9 @@ const d = labToolData.rockCycle || {};
                   var q = RC_QS[Math.floor(Math.random() * RC_QS.length)];
                   upd('rcQuiz', { q: q.q, a: q.a, opts: q.opts, wrongFeedback: q.wrongFeedback, concept: q.concept, answered: false, score: (d.rcQuiz && d.rcQuiz.score) || 0 });
                 }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.rcQuiz ? 'bg-orange-100 text-orange-700' : 'bg-orange-700 text-white') + " transition-all"
-              }, d.rcQuiz ? "🔄 Next Question" : "🧠 Quiz Mode"),
+              }, d.rcQuiz ? "🔄 " + __alloT('stem.rocks.next_question', "Next Question") : "🧠 " + __alloT('stem.rocks.quiz_mode', "Quiz Mode")),
 
-              d.rcQuiz && d.rcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "⭐ " + d.rcQuiz.score + " correct"),
+              d.rcQuiz && d.rcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "⭐ " + d.rcQuiz.score + " " + __alloT('stem.rocks.correct_count_suffix', "correct")),
 
               d.rcQuiz && React.createElement("div", { className: "mt-2 bg-orange-50 rounded-lg p-3 border border-orange-200" },
                 React.createElement("p", { className: "text-sm font-bold text-orange-800 mb-2" }, d.rcQuiz.q),
@@ -5002,7 +5004,7 @@ const d = labToolData.rockCycle || {};
                     var wasChosen = d.rcQuiz.chosen === opt;
                     var cls = !d.rcQuiz.answered ? 'transition-colors bg-white border-slate-200 hover:border-orange-400' : isCorrect ? 'bg-emerald-100 border-emerald-600 text-emerald-800' : wasChosen ? 'bg-red-100 border-red-600 text-red-800' : 'bg-slate-50 border-slate-200 opacity-50';
 
-                    return React.createElement("button", { "aria-label": "Select answer: " + opt,
+                    return React.createElement("button", { "aria-label": __alloT('stem.rocks.select_answer_label', "Select answer: ") + opt,
                       key: opt, disabled: d.rcQuiz.answered, onClick: function () {
                         var correct = opt === d.rcQuiz.a;
                         upd('rcQuiz', Object.assign({}, d.rcQuiz, { answered: true, chosen: opt, chosenIdx: i, score: d.rcQuiz.score + (correct ? 1 : 0) }));
@@ -5020,14 +5022,14 @@ const d = labToolData.rockCycle || {};
                 ),
                 d.rcQuiz.answered && React.createElement("div", { className: "mt-3 space-y-2 animate-in slide-in-from-bottom-1" },
                   React.createElement("div", { className: "p-3 rounded-lg text-xs leading-relaxed bg-white border border-slate-200 text-slate-700" },
-                    d.rcQuiz.wrongFeedback ? d.rcQuiz.wrongFeedback[d.rcQuiz.opts.indexOf(d.rcQuiz.chosen)] : (d.rcQuiz.chosen === d.rcQuiz.a ? 'Correct!' : 'Incorrect.')
+                    d.rcQuiz.wrongFeedback ? d.rcQuiz.wrongFeedback[d.rcQuiz.opts.indexOf(d.rcQuiz.chosen)] : (d.rcQuiz.chosen === d.rcQuiz.a ? __alloT('stem.rocks.correct_exclaim', 'Correct!') : __alloT('stem.rocks.incorrect', 'Incorrect.'))
                   ),
                   d.rcQuiz.concept && ROCKS_VOCAB[d.rcQuiz.concept] && (function() {
                     var rState = labToolData.rocks || {};
                     var studied = (rState.vocabLookedUp || []).indexOf(d.rcQuiz.concept) !== -1;
                     return React.createElement("div", { className: "p-2.5 rounded-lg bg-orange-100/50 border border-orange-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3" },
                       React.createElement("div", { className: "flex-1" },
-                        React.createElement("p", { className: "text-xs font-bold text-orange-800" }, "🔍 Concept Focus: " + d.rcQuiz.concept),
+                        React.createElement("p", { className: "text-xs font-bold text-orange-800" }, "🔍 " + __alloT('stem.rocks.concept_focus_label', "Concept Focus: ") + d.rcQuiz.concept),
                         React.createElement("p", { className: "text-[10px] text-slate-600 mt-0.5 leading-relaxed" }, ROCKS_VOCAB[d.rcQuiz.concept])
                       ),
                       !studied && React.createElement("button", {
@@ -5080,14 +5082,14 @@ const d = labToolData.rockCycle || {};
                           if (typeof addToast === 'function') addToast({ type: 'success', title: 'Concept Studied!', message: 'You studied ' + d.rcQuiz.concept + ' (+5 RP)' });
                         },
                         className: "px-2 py-1 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]"
-                      }, "📖 Study Term (+5 RP)")
+                      }, "📖 " + __alloT('stem.rocks.study_term', "Study Term (+5 RP)"))
                     );
                   })()
                 )
               )
             ),
 
-            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'rc-' + Date.now(), tool: 'rockCycle', label: sel ? sel.label : t('stem.tools_menu.rock_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { "aria-label": __alloT('stem.rocks.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'rc-' + Date.now(), tool: 'rockCycle', label: sel ? sel.label : t('stem.tools_menu.rock_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.rocks.snapshot', "Snapshot"))
 
           );
       })();

@@ -1,5 +1,11 @@
 # Arc City
 
+> **Current implementation status (2026-07-22):** Arc City now ships 13 campaign
+> levels across seven function families, transformation matching, slope gates, an
+> adaptive Gauntlet, teacher summaries, versioned save migration, and **Circuit
+> Clash** (solo vs CPU or two-player hot-seat). Circuit Clash has a complete SVG
+> tactical view plus an optional lifecycle-managed Three.js peer projection. This
+
 > **Design snapshot note (2026-07-09):** This is a planning/design artifact for a proposed or staged STEM Lab tool. Verify the current `stem_lab/stem_tool_arccity.js`, pilot scope, and accessibility/gameplay implementation before treating v1 target language or section references as shipped behavior.
 
 > STEM Lab tool · `id: arccity` · file `stem_lab/stem_tool_arccity.js` · single hand-maintained module, no build step · v1 target: King Middle 2026–2027 pilot (8th grade)
@@ -737,5 +743,80 @@ On completion: fire the §7.3 multimodal success event (chime/glow/SR); award a 
 - **Solvability validator (§9.6):** §13.2.4 gives it two concrete assertions (existence + family-necessity) and §13.1 gives it the gate-slip property — turning "no straight shot can win" into a pre-commit gate, exactly as the Arc Heights worked level demonstrates.
 
 ---
+
+---
+
+## 14. Circuit Clash — implemented battle mode (2026-07-22)
+
+Circuit Clash is a friendly, turn-based function duel layered beside the campaign. It reuses Arc City's existing shot classifier and level geometry, so battle practice reinforces the same mathematical reasoning without changing campaign progression.
+
+### 14.1 Shipped match rules
+
+- A match supports solo play against a transparent deterministic CPU or two-player hotseat play.
+- Each side protects three relays. Capturing all opposing relays wins the match; there are no character hit points, elimination animations, timers, or network dependencies.
+- The three lanes reuse campaign geometries L1, L3, and L5: Direct, Arc, and Wave.
+- Players select a lane and function family, tune the native range/number controls, then fire. The authoritative result is produced by the existing `classifyShot` pipeline.
+- Every valid shot advances the turn. Captures, misses, and lane locks are announced in text, recorded in a bounded battle log, and visualized as bounded neon trails.
+- The CPU chooses a remaining lane deterministically and follows the named Practice Probe or Standard Solver strategy. This keeps behavior testable and makes the opponent's reasoning legible.
+
+### 14.2 Two-dimensional authority, optional three-dimensional presentation
+
+The SVG tactical board is the complete game surface. It provides:
+
+- keyboard-operable native controls;
+- current-turn, score, relay, and last-shot text;
+- obstacle, lane, preview, and prior-shot graphics; and
+- a live battle log that does not depend on color or animation.
+
+The optional Three.js view is a presentation peer, not a second rules engine:
+
+- it loads only after the player enables it through the shared `ensureThree` loader;
+- it never owns hit testing, input, scoring, or state;
+- it renders only on state changes and resize, with a capped pixel ratio and no idle animation loop;
+- it disposes observers, WebGL context, geometry, and materials on teardown; and
+- a loader or WebGL failure leaves the complete SVG battle playable.
+
+### 14.3 Refinement pass — challenge rules and transparent CPU
+
+The second implementation pass adds depth without introducing a second math engine:
+
+- **Aim rule:** Guided Preview shows the authored trajectory and predicted result. Predict Then Fire hides both until the shot is committed, matching the campaign's anti-slider-fishing challenge rule. CPU trajectories are always hidden during the CPU turn.
+- **CPU strategy:** Standard Solver uses the certified solution directly. Practice Probe demonstrates one deterministic default-parameter near miss on each lane before using its solution. The selected behavior is named in the UI and battle log; it is not a hidden difficulty scalar.
+- **Match statistics:** each player receives persistent-in-match shot, capture, and accuracy readouts. Normalization reconciles stale capture counts with relay state.
+- **Rematch flow:** Rematch clears the board and statistics while preserving the selected opponent, aim rule, and CPU strategy.
+- **Persistence:** Circuit Clash state is versioned independently at schema v4 and migrates legacy matches to safe defaults.
+
+### 14.4 Arena expansion and post-match learning recap
+
+The third implementation pass broadens practice and makes the end of a match instructionally useful:
+
+- **Neon Basics** retains the original Line (L1), Parabola (L3), and Sine (L5) circuits.
+- **Function Remix** adds certified V-shape (L4), Exponential Decay (L7), and Cubic Switchback (L9) circuits. Every arena solution is verified through `classifyShot`; arena selection never changes adjudication.
+- Switching arenas starts a fresh match while preserving opponent, aim rule, and CPU strategy. The arena id, drafts, and trails migrate through the battle schema.
+- The SVG and optional 3D views consume the same selected arena. Three.js remounts on arena changes and builds wall/gate markers from that arena's level data.
+- On victory, a semantic post-match analysis reclassifies up to six recent stored equations, reports accuracy and the most difficult circuit, and gives one existing Arc City action hint. It does not transmit or collect learner telemetry.
+
+### 14.5 Protected hot-seat handoff and onboarding
+
+The fourth implementation pass makes same-device multiplayer explicit and private between turns:
+
+- Every non-winning hot-seat shot creates a versioned handoff boundary before the next player can act.
+- During handoff, equation values, parameter controls, and both SVG and 3D trajectory previews are hidden; the board and live status say who should receive the device.
+- An auto-focused **Start Player N turn** button confirms the new seat, restores controls, records the confirmation in the bounded battle log, and announces the transition. The pure battle core rejects any fire call while handoff is pending.
+- A native `<details>/<summary>` How to Play guide documents the goal, turn flow, aim rules, and device-pass behavior without custom disclosure scripting.
+
+### 14.6 Optional Trail Walls ruleset
+
+The fifth implementation pass turns the existing visual trails into an opt-in, deterministic two-player mechanic:
+
+- **Visual only** remains the default and preserves all prior Circuit Clash behavior. **Trail Walls** is available only in hot-seat play; changing the rule starts a fresh match so collision semantics never change mid-game.
+- A failed opposing trail remains active only along the segment it visibly traveled. The collision helper interpolates that bounded trail in mirrored battle coordinates and stops the new shot at the first overlap within a fixed world-space tolerance.
+- Successful trails dissipate and never block. This prevents a solved path from permanently denying the opponent's corresponding relay and keeps every lane answerable.
+- Guided Preview calls the same pure collision helper as Fire. Predict Then Fire continues to hide both trajectory and outcome. Collision points receive a redundant marker, result text, screen-reader announcement, battle-log entry, and recap coaching.
+- Battle schema v5 migrates absent or invalid rules to **Visual only** and refuses Trail Walls in CPU matches, avoiding an asymmetric or opaque computer strategy.
+
+### 14.7 Deliberately deferred
+
+The current release does not include voxel destruction, additional weapon loadouts, networking, or opaque/adaptive CPU difficulty. Those features can be evaluated after the compact deterministic mode has classroom evidence and performance telemetry.
 
 *Sections 12 and 13 were added by a gap-fill pass after the dedicated CORE-MECHANICS design pass and the ACCESSIBILITY-UDL adversarial critique were dropped by two agents in the original run.*

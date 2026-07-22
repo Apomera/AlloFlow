@@ -482,6 +482,7 @@
 
   // ── Storage helpers ───────────────────────────────────────────────────────
   function store(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); return true; } catch (e) { try { console.warn('[SymbolStudio] storage write failed for ' + key + ' (' + (e && e.name) + ')'); } catch (_) {} return false; } }
+  function notifyVisualSupportsUpdated() { try { window.dispatchEvent(new Event('allo-visual-supports-updated')); } catch (e) {} }
   function load(key, def) { try { return JSON.parse(localStorage.getItem(key) || 'null') || def; } catch (e) { return def; } }
 
   // Per-profile scoping for student-specific data (gallery/boards/schedules) so a shared
@@ -829,6 +830,7 @@
     var _schedNowId = useState(null); var schedNowId = _schedNowId[0]; var setSchedNowId = _schedNowId[1];
     var _savedSchedules = useState(function () { return loadScoped(STORAGE_SCHEDULES, [], activeProfileId); });
     var savedSchedules = _savedSchedules[0]; var setSavedSchedules = _savedSchedules[1];
+    var schedGenerationEpochRef = useRef(0);
     // Reload per-profile data when the active student profile changes (skip the initial mount).
     var ssDidMountRef = useRef(false);
     useEffect(function () {
@@ -841,6 +843,12 @@
       setUsageLog(loadScoped(STORAGE_USAGE, {}, activeProfileId));
       setPrevGrowthMap(loadScoped(STORAGE_GROWTH_LOG, {}, activeProfileId));
       setFamiliarity(loadScoped(STORAGE_FAMILIARITY, {}, activeProfileId));
+      // Drafts are profile-specific too. Clear them so an unsaved support created
+      // for one student cannot accidentally be saved into another profile.
+      schedGenerationEpochRef.current += 1;
+      setSchedGenerating(false);
+      setBoardTopic(''); setBoardWords([]); setBoardPages(null); setActivePageIdx(0); setBoardTitle('');
+      setSchedItems([]); setSchedInput(''); setSchedTitle(''); setSchedNowId(null);
     }, [activeProfileId]);
     var _showSchedGallery = useState(false); var showSchedGallery = _showSchedGallery[0]; var setShowSchedGallery = _showSchedGallery[1];
 
@@ -1891,12 +1899,16 @@
       };
       // Consume the pending metadata after saving so the next save (manual or template-only)
       // doesn't accidentally inherit it.
-      pendingFctMetaRef.current = null;
       var updated = [saved].concat(savedBoards);
-      setSavedBoards(updated);
       var _saveOk = store(scopedKey(STORAGE_BOARDS), updated);
-      if (_saveOk) addToast && addToast(t('toasts.board_saved') + (finalPages && finalPages.length > 1 ? ' (' + finalPages.length + ' pages)' : ''), 'success');
-      else addToast && addToast('Could not save the board — device storage is full. Remove some saved boards or images and try again.', 'error');
+      if (!_saveOk) {
+        addToast && addToast('Could not save the board - device storage is full. Remove some saved boards or images and try again.', 'error');
+        return;
+      }
+      pendingFctMetaRef.current = null;
+      setSavedBoards(updated);
+      notifyVisualSupportsUpdated();
+      addToast && addToast(t('toasts.board_saved') + (finalPages && finalPages.length > 1 ? ' (' + finalPages.length + ' pages)' : ''), 'success');
       // Garden discovery nudge — fires once when gallery + board create cross-context vocabulary
       if (addToast && gallery.length >= 2 && !load('alloGardenNudgeSeen', false)) {
         setTimeout(function () {
@@ -2025,8 +2037,13 @@
 
     var deleteSavedBoard = useCallback(function (id) {
       var updated = savedBoards.filter(function (b) { return b.id !== id; });
-      setSavedBoards(updated); store(scopedKey(STORAGE_BOARDS), updated);
-    }, [savedBoards]);
+      if (!store(scopedKey(STORAGE_BOARDS), updated)) {
+        addToast && addToast('Could not delete the saved board because device storage is unavailable.', 'error');
+        return;
+      }
+      setSavedBoards(updated);
+      notifyVisualSupportsUpdated();
+    }, [savedBoards, addToast]);
 
     var exportBoard = useCallback(function (board) {
       var data = { version: 1, type: 'alloBoard', board: board };
@@ -2749,66 +2766,151 @@
     var generateSchedule = useCallback(async function () {
       var lines = schedInput.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
       if (!lines.length || !onCallImagen) return;
+      var generationEpoch = ++schedGenerationEpochRef.current;
       setSchedGenerating(true);
       var items = lines.map(function (l) { return { id: uid(), label: l, image: null, complete: false }; });
       setSchedItems(items);
       setSchedNowId(items[0].id);
-      var loadMap = {};
-      items.forEach(function (i) { loadMap[i.id] = true; });
       try {
         var batchOut = await batchGenerate(
           items, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, globalStyle,
           null
         );
-        setSchedItems(batchOut.results);
-        setSchedNowId(batchOut.results[0] ? batchOut.results[0].id : null);
+        if (generationEpoch !== schedGenerationEpochRef.current) return;
+        var results = Array.isArray(batchOut.results) ? batchOut.results : [];
+        setSchedItems(results);
+        setSchedNowId(results[0] ? results[0].id : null);
         addToast && addToast(t('toasts.schedule_generated'), 'success');
-        if (batchOut.failed.length > 0) {
+        if (batchOut.failed && batchOut.failed.length > 0) {
           addToast && addToast(t('toasts.failed_2') + batchOut.failed.join(', '), 'error');
         }
       } catch (e) {
-        addToast && addToast(t('toasts.schedule_generation_failed'), 'error');
-      } finally { setSchedGenerating(false); }
+        if (generationEpoch === schedGenerationEpochRef.current) addToast && addToast(t('toasts.schedule_generation_failed'), 'error');
+      } finally {
+        if (generationEpoch === schedGenerationEpochRef.current) setSchedGenerating(false);
+      }
     }, [schedInput, autoClean, avatarRef, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
 
+    var announceScheduleChange = function (message) {
+      if (!ssLiveRef.current) return;
+      ssLiveRef.current.textContent = '';
+      setTimeout(function () { if (ssLiveRef.current) ssLiveRef.current.textContent = message; }, 0);
+    };
+
+    var focusScheduleMoveControl = function (id) {
+      setTimeout(function () {
+        var controls = document.querySelectorAll('[data-schedule-move-id]');
+        for (var i = 0; i < controls.length; i++) {
+          if (controls[i].getAttribute('data-schedule-move-id') === id) { controls[i].focus(); break; }
+        }
+      }, 0);
+    };
+
     var toggleComplete = useCallback(function (id) {
-      setSchedItems(function (prev) { return prev.map(function (i) { return i.id === id ? Object.assign({}, i, { complete: !i.complete }) : i; }); });
-      // Auto-advance Now indicator
-      setSchedNowId(function (nowId) {
-        if (nowId !== id) return nowId;
-        var idx = schedItems.findIndex(function (i) { return i.id === id; });
-        var next = schedItems.find(function (i, j) { return j > idx && !i.complete; });
-        return next ? next.id : nowId;
+      var nextItems = schedItems.map(function (item) {
+        return item.id === id ? Object.assign({}, item, { complete: !item.complete }) : item;
       });
+      setSchedItems(nextItems);
+      if (schedNowId === id) {
+        var currentIndex = nextItems.findIndex(function (item) { return item.id === id; });
+        var next = nextItems.find(function (item, index) { return index > currentIndex && !item.complete; })
+          || nextItems.find(function (item) { return !item.complete; })
+          || null;
+        setSchedNowId(next ? next.id : null);
+      }
+      var changed = nextItems.find(function (item) { return item.id === id; });
+      if (changed && !changed.complete && !schedNowId) setSchedNowId(changed.id);
+      announceScheduleChange((changed ? changed.label : 'Activity') + (changed && changed.complete ? ' marked done' : ' marked not done'));
+    }, [schedItems, schedNowId]);
+
+    var moveScheduleItem = useCallback(function (id, delta) {
+      var from = schedItems.findIndex(function (item) { return item.id === id; });
+      if (from < 0) return;
+      var to = Math.max(0, Math.min(schedItems.length - 1, from + delta));
+      if (to === from) {
+        announceScheduleChange((schedItems[from].label || 'Activity') + ' is already at the schedule edge');
+        return;
+      }
+      var next = schedItems.slice();
+      var moved = next.splice(from, 1)[0];
+      next.splice(to, 0, moved);
+      setSchedItems(next);
+      announceScheduleChange((moved.label || 'Activity') + ' moved to step ' + (to + 1) + ' of ' + next.length);
+      focusScheduleMoveControl(moved.id);
     }, [schedItems]);
+
+    var removeScheduleItem = useCallback(function (id) {
+      var removed = schedItems.find(function (item) { return item.id === id; });
+      var next = schedItems.filter(function (item) { return item.id !== id; });
+      setSchedItems(next);
+      if (schedNowId === id) {
+        var nextCurrent = next.find(function (item) { return !item.complete; }) || next[0] || null;
+        setSchedNowId(nextCurrent ? nextCurrent.id : null);
+      }
+      announceScheduleChange((removed ? removed.label : 'Activity') + ' removed from the schedule');
+    }, [schedItems, schedNowId]);
 
     var saveSchedule = useCallback(function () {
       if (!schedItems.length) return;
-      var saved = { id: uid(), title: schedTitle || 'Schedule', items: schedItems, orientation: schedOrientation, createdAt: Date.now() };
+      var saved = {
+        id: uid(),
+        title: (schedTitle || 'Schedule').trim().slice(0, 120) || 'Schedule',
+        items: schedItems.map(function (item) { return Object.assign({}, item); }),
+        orientation: schedOrientation === 'vertical' ? 'vertical' : 'horizontal',
+        nowId: schedNowId || null,
+        createdAt: Date.now()
+      };
       var updated = [saved].concat(savedSchedules);
-      setSavedSchedules(updated); store(scopedKey(STORAGE_SCHEDULES), updated);
+      var saveOk = store(scopedKey(STORAGE_SCHEDULES), updated);
+      if (!saveOk) {
+        addToast && addToast('Could not save the schedule - device storage is full. Remove some saved supports or images and try again.', 'error');
+        return;
+      }
+      setSavedSchedules(updated);
+      notifyVisualSupportsUpdated();
       addToast && addToast(t('toasts.schedule_saved'), 'success');
       if (cloudSync && !isCanvasEnv) setTimeout(function () { syncToCloud(); }, 300);
-    }, [schedItems, schedTitle, schedOrientation, savedSchedules, cloudSync, syncToCloud, addToast]);
+    }, [schedItems, schedTitle, schedOrientation, schedNowId, savedSchedules, cloudSync, syncToCloud, addToast]);
 
     var resetSchedule = useCallback(function () {
       setSchedItems(function (prev) { return prev.map(function (i) { return Object.assign({}, i, { complete: false }); }); });
       setSchedNowId(schedItems.length ? schedItems[0].id : null);
+      announceScheduleChange('Schedule progress reset to the first step');
     }, [schedItems]);
 
     var loadSchedule = useCallback(function (sched) {
-      setSchedItems(sched.items.map(function (i) { return Object.assign({}, i); }));
-      setSchedTitle(sched.title || '');
-      setSchedOrientation(sched.orientation || 'horizontal');
-      setSchedNowId(sched.items.length ? sched.items[0].id : null);
+      var rawItems = sched && Array.isArray(sched.items) ? sched.items : [];
+      var safeItems = rawItems.map(function (item, index) {
+        var safe = item && typeof item === 'object' ? item : {};
+        return {
+          id: typeof safe.id === 'string' && safe.id ? safe.id : uid(),
+          label: typeof safe.label === 'string' && safe.label.trim() ? safe.label.trim() : 'Unlabeled step ' + (index + 1),
+          image: typeof safe.image === 'string' ? safe.image : null,
+          complete: !!safe.complete
+        };
+      });
+      setSchedItems(safeItems);
+      setSchedTitle(sched && typeof sched.title === 'string' ? sched.title : '');
+      setSchedOrientation(sched && sched.orientation === 'vertical' ? 'vertical' : 'horizontal');
+      var requestedNow = sched && sched.nowId;
+      var current = safeItems.find(function (item) { return item.id === requestedNow && !item.complete; })
+        || safeItems.find(function (item) { return !item.complete; })
+        || safeItems[0]
+        || null;
+      setSchedNowId(current ? current.id : null);
       setShowSchedGallery(false);
       addToast && addToast(t('toasts.schedule_loaded'), 'success');
     }, [addToast]);
 
     var deleteSavedSchedule = useCallback(function (id) {
       var updated = savedSchedules.filter(function (s) { return s.id !== id; });
-      setSavedSchedules(updated); store(scopedKey(STORAGE_SCHEDULES), updated);
-    }, [savedSchedules]);
+      if (!store(scopedKey(STORAGE_SCHEDULES), updated)) {
+        addToast && addToast('Could not delete the saved schedule because device storage is unavailable.', 'error');
+        return;
+      }
+      setSavedSchedules(updated);
+      notifyVisualSupportsUpdated();
+    }, [savedSchedules, addToast]);
 
     // ── Social Story actions ──────────────────────────────────────────────
     var generateStory = useCallback(async function () {
@@ -7704,6 +7806,7 @@
     // ── Visual Schedule tab ────────────────────────────────────────────────
     function renderScheduleTab() {
       return e('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', padding: '16px', gap: '12px' } },
+        e('p', { id: 'ss-schedule-reorder-help', style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, 'Use Earlier and Later to change activity order. Completion moves Now to the next unfinished step.'),
         // Garden hint — words that would benefit from schedule context
         (function () {
           var bank = computeWordBank();
@@ -7775,7 +7878,7 @@
         schedItems.length > 0
           ? e('div', { id: 'ss-ps', style: { flex: 1, overflowY: 'auto', overflowX: schedOrientation === 'horizontal' ? 'auto' : 'hidden' } },
               schedTitle && e('h2', { style: { fontWeight: 800, fontSize: '16px', color: '#1f2937', margin: '0 0 12px' } }, schedTitle),
-              e('div', { style: {
+              e('div', { role: 'list', 'aria-label': (schedTitle || 'Visual schedule') + ' ordered activities', style: {
                 display: 'flex',
                 flexDirection: schedOrientation === 'horizontal' ? 'row' : 'column',
                 gap: '8px',
@@ -7787,9 +7890,10 @@
                   var isDone = item.complete;
                   return e('div', {
                     key: item.id,
-                    role: 'button', tabIndex: 0, 'aria-pressed': isDone, 'aria-label': item.label + (isNow ? ', current step' : '') + (isDone ? ', done' : ''),
-                    onClick: function () { toggleComplete(item.id); },
-                    onKeyDown: function (ev) { if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
+                    role: 'listitem',
+                    'aria-labelledby': 'ss-schedule-step-' + item.id,
+                    'aria-current': isNow ? 'step' : undefined,
+                    'aria-describedby': 'ss-schedule-reorder-help',
                     style: {
                       display: 'flex',
                       flexDirection: schedOrientation === 'horizontal' ? 'column' : 'row',
@@ -7799,8 +7903,8 @@
                       borderRadius: '12px',
                       border: isNow ? '3px solid #7c3aed' : '2px solid #e5e7eb',
                       background: isDone ? '#f1f5f9' : (isNow ? LIGHT_PURPLE : '#fff'),
-                      cursor: 'pointer',
-                      opacity: isDone ? 0.5 : 1,
+                      cursor: 'default',
+                      opacity: 1,
                       transition: 'all 0.2s',
                       minWidth: schedOrientation === 'horizontal' ? '100px' : 'auto',
                       maxWidth: schedOrientation === 'horizontal' ? '110px' : 'none',
@@ -7810,15 +7914,22 @@
                   },
                     isNow && e('div', { className: 'ss-no-print', style: { position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', background: PURPLE, color: '#fff', fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '20px', whiteSpace: 'nowrap' } }, '▶ NOW'),
                     item.image
-                      ? e('img', { src: item.image, alt: item.label, style: { width: 70, height: 70, objectFit: 'contain', borderRadius: '8px', background: '#fff', border: '1px solid #f3f4f6', flexShrink: 0, filter: isDone ? 'grayscale(100%)' : 'none' } })
+                      ? e('img', { src: item.image, alt: item.label, loading: 'lazy', decoding: 'async', style: { width: 70, height: 70, objectFit: 'contain', borderRadius: '8px', background: '#fff', border: '1px solid #f3f4f6', flexShrink: 0, filter: isDone ? 'grayscale(100%)' : 'none' } })
                       : e('div', { style: { width: 70, height: 70, background: '#f9fafb', borderRadius: '8px', border: '1px dashed #d1d5db', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, schedGenerating ? spinner(24) : '⏳'),
-                    e('span', { style: { fontSize: '12px', fontWeight: isDone ? 400 : 600, color: isDone ? '#6b7280' : '#1f2937', textAlign: 'center', textDecoration: isDone ? 'line-through' : 'none', lineHeight: 1.3 } }, item.label),
-                    isDone && e('div', { style: { fontSize: '22px', flexShrink: 0 } }, '✅'),
-                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); setSchedNowId(item.id); }, 'aria-label': 'Set ' + item.label + ' as current activity', style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: isNow ? 1 : 0.4, flexShrink: 0, padding: '2px' } }, '▶')
+                    e('span', { style: { fontSize: '10px', fontWeight: 800, color: isNow ? PURPLE : '#64748b' } }, 'Step ' + (idx + 1) + ' of ' + schedItems.length),
+                    e('span', { id: 'ss-schedule-step-' + item.id, style: { fontSize: '12px', fontWeight: isDone ? 500 : 700, color: isDone ? '#475569' : '#1f2937', textAlign: 'center', textDecoration: isDone ? 'line-through' : 'none', lineHeight: 1.3 } }, item.label),
+                    isDone && e('span', { style: { fontSize: '11px', fontWeight: 800, color: '#166534' } }, 'DONE'),
+                    e('button', { type: 'button', className: 'ss-no-print', onClick: function () { toggleComplete(item.id); }, 'aria-pressed': isDone, 'aria-label': (isDone ? 'Mark ' + item.label + ' not done' : 'Mark ' + item.label + ' done'), style: { minHeight: '44px', minWidth: '44px', padding: '7px 10px', border: '1px solid #86efac', borderRadius: '8px', background: isDone ? '#dcfce7' : '#fff', color: '#166534', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, isDone ? 'Mark not done' : 'Mark done'),
+                    e('button', { type: 'button', className: 'ss-no-print', onClick: function () { setSchedNowId(item.id); announceScheduleChange(item.label + ' is now the current step'); }, disabled: isNow, 'aria-label': isNow ? item.label + ' is the current activity' : 'Set ' + item.label + ' as current activity', style: { minHeight: '44px', minWidth: '44px', padding: '7px 10px', border: '1px solid #c4b5fd', borderRadius: '8px', background: isNow ? LIGHT_PURPLE : '#fff', color: PURPLE, cursor: isNow ? 'default' : 'pointer', fontSize: '11px', fontWeight: 700 } }, isNow ? 'Current step' : 'Set as now'),
+                    e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px', justifyContent: 'center', flexWrap: 'wrap' } },
+                      e('button', { type: 'button', 'data-schedule-move-id': item.id, onClick: function () { moveScheduleItem(item.id, -1); }, disabled: idx === 0, 'aria-label': 'Move ' + item.label + ' earlier', style: { minHeight: '36px', minWidth: '44px', padding: '5px 8px', border: '1px solid #cbd5e1', borderRadius: '7px', background: '#fff', color: '#334155', cursor: idx === 0 ? 'default' : 'pointer', fontSize: '11px', fontWeight: 700 } }, 'Earlier'),
+                      e('button', { type: 'button', onClick: function () { moveScheduleItem(item.id, 1); }, disabled: idx === schedItems.length - 1, 'aria-label': 'Move ' + item.label + ' later', style: { minHeight: '36px', minWidth: '44px', padding: '5px 8px', border: '1px solid #cbd5e1', borderRadius: '7px', background: '#fff', color: '#334155', cursor: idx === schedItems.length - 1 ? 'default' : 'pointer', fontSize: '11px', fontWeight: 700 } }, 'Later')
+                    ),
+                    e('button', { type: 'button', className: 'ss-no-print', onClick: function () { removeScheduleItem(item.id); }, 'aria-label': 'Remove ' + item.label + ' from schedule', style: { minHeight: '36px', minWidth: '44px', padding: '5px 8px', border: '1px solid #fecaca', borderRadius: '7px', background: '#fff1f2', color: '#be123c', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, 'Remove')
                   );
                 })
               ),
-              e('p', { className: 'ss-no-print', style: { fontSize: '11px', color: '#6b7280', marginTop: '10px' } }, 'Tap any activity to mark complete • ▶ to set current activity')
+              e('p', { className: 'ss-no-print', style: { fontSize: '11px', color: '#6b7280', marginTop: '10px' } }, 'Use Mark done to advance the current step. Reorder with Earlier and Later; Set as now changes the active step.')
             )
           : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', flexDirection: 'column', gap: '10px' } },
               e('div', { style: { fontSize: '48px' } }, '📅'),

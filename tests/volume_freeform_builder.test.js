@@ -22,6 +22,16 @@ describe('3D Volume Explorer freeform layer builder', () => {
     });
     expect(pure.volumeLayerTextColor('#ffffff', 0)).toBe('#0f172a');
     expect(pure.volumeLayerTextColor('#111111', 0)).toBe('#ffffff');
+    expect(pure.volumeExportFaceColors('#00aa55', 1)).toMatchObject({
+      hex: '#00aa55',
+      top: expect.stringContaining('hsl(150,100%'),
+    });
+    expect(pure.cameraPresets).toMatchObject({
+      isometric: { rotation: { x: -25, y: -35 }, scale: 1 },
+      front: { rotation: { x: 0, y: 0 }, scale: 1 },
+      side: { rotation: { x: 0, y: -90 }, scale: 1 },
+      top: { rotation: { x: -90, y: 0 }, scale: 0.9 },
+    });
   });
 
   it('places, recolors, layers, and undoes blocks through the visible grid', async () => {
@@ -104,6 +114,40 @@ describe('3D Volume Explorer freeform layer builder', () => {
       await React.act(async () => undo.click());
       expect(container.querySelector('[data-volume-cube="true"][data-volume-layer="1"]')).toBeNull();
       expect(container.querySelector('[data-volume-cube="true"][data-volume-layer="0"]')).not.toBeNull();
+      await React.act(async () => {
+        setNativeValue(layerSelect, '0');
+        layerSelect.dispatchEvent(new window.Event('change', { bubbles: true }));
+      });
+
+      const duplicate = container.querySelector('button[aria-label^="Duplicate layer 1"]');
+      await React.act(async () => duplicate.click());
+      expect(container.querySelector('[data-volume-cube="true"][data-volume-layer="1"]')).not.toBeNull();
+      expect(container.querySelector('#volume-freeform-layer').value).toBe('1');
+
+      const clearLayer = container.querySelector('button[aria-label^="Clear every block from layer 2"]');
+      await React.act(async () => clearLayer.click());
+      expect(container.querySelector('[data-volume-cube="true"][data-volume-layer="1"]')).toBeNull();
+
+      await React.act(async () => {
+        container.querySelector('button[aria-label*="Undo last placement"]').click();
+      });
+      expect(container.querySelectorAll('[data-volume-cube="true"][data-volume-layer="1"]')).toHaveLength(1);
+
+      const fillLayer = container.querySelector('button[aria-label^="Fill every square on layer 2"]');
+      await React.act(async () => fillLayer.click());
+      expect(container.querySelectorAll('[data-volume-cell-layer="1"][aria-pressed="true"]')).toHaveLength(64);
+      expect(container.querySelectorAll('[data-volume-cube="true"][data-volume-layer="1"]')).toHaveLength(64);
+
+      await React.act(async () => {
+        container.querySelector('button[aria-label*="Undo last placement"]').click();
+      });
+      expect(container.querySelectorAll('[data-volume-cube="true"][data-volume-layer="1"]')).toHaveLength(1);
+
+      expect(container.querySelector('#volume-3d-viewport')).not.toBeNull();
+      expect(container.querySelector('[data-volume-fullscreen="true"]')).not.toBeNull();
+      const topView = container.querySelector('[data-volume-camera="top"]');
+      await React.act(async () => topView.click());
+      expect(container.querySelector('[data-volume-camera="top"]').getAttribute('aria-pressed')).toBe('true');
     } finally {
       await React.act(async () => root.unmount());
       container.remove();

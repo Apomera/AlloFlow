@@ -196,6 +196,13 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Current 3D camera view/);
     expect(html).toMatch(/Camera view loading/);
     expect(html).toMatch(/Pause spin/);
+    expect(html).toMatch(/Front/);
+    expect(html).toMatch(/Side/);
+    expect(html).toMatch(/Overhead/);
+    expect(html).toMatch(/Reset view/);
+    expect(html).toMatch(/Body inference 28%/);
+    expect(html).toMatch(/aria-label="Body inference opacity"/);
+    expect(html).toMatch(/aria-valuetext="28 percent"/);
     expect(html).toMatch(/dino3d-viewer-desc-tyrannosaurus/);
     expect(html).toMatch(/aria-describedby="dino3d-viewer-desc-tyrannosaurus dino3d-status-tyrannosaurus"/);
     expect(html).toMatch(/T\. rex 3D model summary/);
@@ -203,10 +210,15 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Keyboard controls: Left and Right Arrow or A and D rotate; Up and Down Arrow raise or lower the camera; Page Up and Page Down zoom; Home resets the view/);
     expect(html).toMatch(/Height guide/);
     expect(html).toMatch(/Gold vertical staff marks estimated standing height with one-meter ticks/);
+    expect(html).toMatch(/five-meter labels, and the full estimated length/);
+    expect(html).toMatch(/five-meter labels, and the full estimated height/);
     expect(html).toMatch(/Survey compass/);
     expect(html).toMatch(/Amber boundary ropes and north arrow orient the reconstruction inside its excavation grid/);
     expect(html).toMatch(/White rods, vertebrae, rib loops, pelvis, and joints show the inferred bone layout/);
     expect(html).toMatch(/Skull, spine, pelvis, and tail callouts keep the main landmarks easy to follow/);
+    expect(html).toMatch(/brow bosses, beaks/);
+    expect(html).toMatch(/thumb spikes, or feather fans/);
+    expect(html).toMatch(/thin contour mesh show estimated soft-tissue volume around the visible skeleton/);
     expect(html).toMatch(/role="status"/);
     expect(html).toMatch(/aria-atomic="true"/);
     expect(html).toMatch(/role="progressbar"/);
@@ -269,8 +281,11 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
   it('the section tabs use roving focus and Explore controls expose named groups', () => {
     const html = renderTab('explore');
     expect(html).toMatch(/role="tablist" aria-label="Dino Lab sections" aria-orientation="horizontal"/);
-    expect(html).toMatch(/id="dinotab-explore" role="tab" tabindex="0" aria-selected="true"/);
-    expect(html).toMatch(/id="dinotab-timeline" role="tab" tabindex="-1" aria-selected="false"/);
+    expect(html).toMatch(/nav aria-label="Dino Lab section navigation"/);
+    expect(html).toMatch(/class="dinolab-section-cue"/);
+    expect(html).toMatch(/data-tab-group="Discover"/);
+    expect(html).toMatch(/id="dinotab-explore" role="tab"[^>]*tabindex="0" aria-selected="true"/);
+    expect(html).toMatch(/id="dinotab-timeline" role="tab"[^>]*tabindex="-1" aria-selected="false"/);
     expect(html).toMatch(/aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End"/);
     expect(html).toMatch(/role="group" aria-label="Filter by geological period"/);
     expect(html).toMatch(/role="group" aria-label="Filter by diet"/);
@@ -283,7 +298,7 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
   it('recovers an unknown persisted tab with a valid Explore tab-panel label', () => {
     const data = baseData('unknown-stale-tab');
     const html = renderTab(data);
-    expect(html).toMatch(/id="dinotab-explore" role="tab" tabindex="0" aria-selected="true"/);
+    expect(html).toMatch(/id="dinotab-explore" role="tab"[^>]*tabindex="0" aria-selected="true"/);
     expect(html).toMatch(/id="dinopanel" role="tabpanel" aria-labelledby="dinotab-explore"/);
     expect(html).not.toMatch(/aria-labelledby="dinotab-unknown-stale-tab"/);
   });
@@ -556,9 +571,11 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     const compare = renderTab('compare');
     expect(compare).toMatch(/Length comparison value/);
     expect(compare).toMatch(/Height comparison value/);
-    expect(compare).toMatch(/Weight \(t\) comparison value/);
-    expect(compare).toMatch(/Top speed \(estimate\) comparison value/);
-    expect(compare).toMatch(/of the comparison maximum/);
+    expect(compare).toMatch(/Mass comparison value/);
+    expect(compare).toMatch(/Top speed estimate comparison value/);
+    expect(compare).toMatch(/on a logarithmic scale/);
+    expect(compare).toMatch(/of the comparison scale/);
+    expect(compare).toMatch(/Time ranges overlap around/);
   });
 
   it('the Deep Time tab places the cosmic-calendar milestones correctly', () => {

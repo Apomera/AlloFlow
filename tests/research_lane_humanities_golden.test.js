@@ -165,6 +165,27 @@ describe('Humanities · inquiry method guidance', () => {
     expect(source).toContain('Discrepant cases and absent voices');
   });
 
+  it('provides actual qualitative and creative method-readiness scaffolds', () => {
+    expect(source).toContain('data-qualitative-method-readiness="true"');
+    expect(source).toContain('Approved evidence boundary');
+    expect(source).toContain('Coding and memo plan');
+    expect(source).toContain('Negative or discrepant case plan');
+    expect(source).toContain('safeguardingAcknowledged');
+    expect(source).toContain('data-creative-method-readiness="true"');
+    expect(source).toContain('Creative-practice inquiry');
+    expect(source).toContain('Attribution and cultural-position plan');
+    expect(source).toContain('Critique and revision plan');
+    expect(source).toContain('data-humanities-source-context="true"');
+    expect(source).toContain('Edition, translation, transcription, or chain of transmission');
+    expect(source).toContain('Historical and material context');
+    expect(source).toContain('Creator, community authority, and permission to interpret');
+    expect(source).toContain('Contested, translated, or historically shifting terms');
+    expect(source).toContain('Archival silences, missing records, and preservation bias');
+    expect(source).toContain('Primary record / contemporaneous artifact');
+    expect(source).toContain('Scholarship / later analysis');
+    expect(source).toContain('Testimony / lived account');
+    expect(source).toContain('Creative or cultural artifact');
+  });
   it('places an explicit consent boundary on community inquiry', () => {
     expect(source).toContain('Do not collect or upload identifiable interviews, images, or recordings without informed consent');
     expect(source).toContain('public or teacher-approved accounts');

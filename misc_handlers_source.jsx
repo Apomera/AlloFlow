@@ -3,11 +3,30 @@
 // extracted from AlloFlowANTI.txt 2026-04-25.
 
 const handleFileUpload = async (e, deps) => {
-  const { LargeFileHandler, callGeminiVision, convertXlsxToMarkdownTables, addToast, t, warnLog, setShowLargeFileModal, setPendingLargeFile, setError, setIsExtracting, setGenerationStep, setInputText, recordSourceProvenance, setPendingPdfBase64, setPendingPdfFile, setPdfAuditResult } = deps;
+  const { LargeFileHandler, callGeminiVision, convertXlsxToMarkdownTables, addToast, t, warnLog, setShowLargeFileModal, setPendingLargeFile, setError, setIsExtracting, setGenerationStep, setInputText, recordSourceProvenance, setPendingPdfBase64, setPendingPdfFile, setPdfAuditResult, documentIntakeEpoch, isPdfDocumentIntakeCurrent } = deps;
   try { if (window._DEBUG_MISC_HANDLERS) console.log("[MiscHandlers] handleFileUpload fired"); } catch(_) {}
-    const file = e.target.files[0];
+    const input = e && (e.currentTarget || e.target);
+    const file = input && input.files && input.files[0];
+    // Browsers suppress change when the same file is selected twice unless the
+    // picker value is reset. Capture the File first because clearing the input
+    // also clears its live FileList.
+    try { if (input) input.value = ''; } catch (_) {}
     if (!file) return;
+    const intakeIsCurrent = () => typeof isPdfDocumentIntakeCurrent !== 'function'
+        || isPdfDocumentIntakeCurrent(documentIntakeEpoch);
+    const readBase64 = (reader) => {
+        const result = reader && reader.result;
+        if (typeof result !== 'string') return '';
+        const comma = result.indexOf(',');
+        return comma >= 0 ? result.slice(comma + 1) : '';
+    };
+    const failRead = (message) => {
+        if (!intakeIsCurrent()) return;
+        setError(message || t('quick_start.error_read_file'));
+        setIsExtracting(false);
+    };
     const rememberImportedSource = (text) => {
+        if (!intakeIsCurrent()) return;
         if (typeof recordSourceProvenance === 'function') recordSourceProvenance({
             title: file.name || 'Imported file',
             locator: file.name || '',
@@ -18,6 +37,7 @@ const handleFileUpload = async (e, deps) => {
     if (LargeFileHandler.needsChunking(file)) {
         const fileType = LargeFileHandler.getFileType(file);
         if (fileType === 'audio' || fileType === 'video') {
+            if (!intakeIsCurrent()) return;
             // Long recordings route to the PIPELINE triage too (2026-06-10):
             // the digestion card runs the existing LargeFileHandler chunked
             // transcription (speech mode — visual analysis needs ≤15MB).
@@ -59,11 +79,14 @@ const handleFileUpload = async (e, deps) => {
     if (/\.(xlsx|xls|xlsb|ods)$/i.test(file.name) && typeof convertXlsxToMarkdownTables === 'function') {
         setIsExtracting(true);
         const reader = new FileReader();
-        reader.onloadend = async () => {
+        reader.onload = async () => {
+            if (!intakeIsCurrent()) return;
             try {
-                const b64 = reader.result.split(',')[1];
+                const b64 = readBase64(reader);
+                if (!b64) throw new Error('The workbook could not be read.');
                 addToast(t('toasts.spreadsheet_converting') || '📊 Reading the workbook…', 'info');
                 const conv = await convertXlsxToMarkdownTables(b64);
+                if (!intakeIsCurrent()) return;
                 const text = '# ' + file.name.replace(/\.(xlsx|xls|xlsb|ods)$/i, '') + '\n\n' + conv.text
                     + (conv.truncatedRows ? ('\n\n*Note: ' + conv.truncatedRows + ' row(s) beyond the first 200 per sheet were not included.*') : '');
                 const MAGIC = 'ALLOTRANSCRIPT:v1\n';
@@ -76,17 +99,21 @@ const handleFileUpload = async (e, deps) => {
                 setIsExtracting(false);
                 addToast('✅ ' + (conv.sheets > 1 ? conv.sheets + ' sheets' : '1 sheet') + (t('toasts.spreadsheet_ready') || ' loaded as accessible tables — Make Accessible for the full treatment (tagged PDF included).'), 'success');
             } catch (err) {
+                if (!intakeIsCurrent()) return;
                 warnLog('[Spreadsheet→Pipeline] failed:', err?.message || err);
                 setError((t('toasts.spreadsheet_failed') || 'Could not read the spreadsheet: ') + (err?.message || 'unknown') + ' — export it as CSV and try again.');
                 setIsExtracting(false);
             }
         };
-        reader.readAsDataURL(file);
+        reader.onerror = () => failRead(t('quick_start.error_read_file'));
+        reader.onabort = reader.onerror;
+        try { reader.readAsDataURL(file); } catch (err) { failRead(err?.message || t('quick_start.error_read_file')); }
         return;
     }
     if (/\.(md|markdown|csv|tsv)$/i.test(file.name)) {
         const reader = new FileReader();
         reader.onload = (event) => {
+            if (!intakeIsCurrent()) return;
             let text = String(event.target.result || '');
             if (/\.(csv|tsv)$/i.test(file.name)) {
                 // Minimal CSV/TSV → markdown pipe-table (quoted commas honored).
@@ -119,9 +146,10 @@ const handleFileUpload = async (e, deps) => {
             setIsExtracting(false);
             addToast(t('toasts.textdoc_pipeline_ready') || '📄 Loaded into the accessibility pipeline — Make Accessible for the full treatment, or Skip to Text Extraction to use as source material.', 'success');
         };
-        reader.onerror = () => { setError(t('quick_start.error_read_file')); setIsExtracting(false); };
+        reader.onerror = () => failRead(t('quick_start.error_read_file'));
+        reader.onabort = reader.onerror;
         setIsExtracting(true);
-        reader.readAsText(file);
+        try { reader.readAsText(file); } catch (err) { failRead(err?.message || t('quick_start.error_read_file')); }
         return;
     }
     const isTextFile = textMimeTypes.includes(file.type) ||
@@ -129,29 +157,35 @@ const handleFileUpload = async (e, deps) => {
     if (isTextFile) {
         const reader = new FileReader();
         reader.onload = (event) => {
+            if (!intakeIsCurrent()) return;
             setInputText(event.target.result);
             rememberImportedSource(event.target.result);
             setIsExtracting(false);
         };
-        reader.onerror = () => {
-            setError(t('quick_start.error_read_file'));
-            setIsExtracting(false);
-        };
-        reader.readAsText(file);
+        reader.onerror = () => failRead(t('quick_start.error_read_file'));
+        reader.onabort = reader.onerror;
+        try { reader.readAsText(file); } catch (err) { failRead(err?.message || t('quick_start.error_read_file')); }
         return;
     }
-    const DOCUMENT_TYPES = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'];
-    const isDocx = file.name.endsWith('.docx');
-    const isPptx = file.name.endsWith('.pptx');
-    if (DOCUMENT_TYPES.includes(file.type) || isDocx || isPptx) {
+    const normalizedName = String(file.name || '').toLowerCase();
+    const normalizedType = String(file.type || '').toLowerCase();
+    const isPdf = normalizedType === 'application/pdf' || normalizedName.endsWith('.pdf');
+    const isDocx = normalizedType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || normalizedName.endsWith('.docx');
+    const isPptx = normalizedType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' || normalizedName.endsWith('.pptx');
+    if (isPdf || isDocx || isPptx) {
         const auditReader = new FileReader();
-        auditReader.onloadend = async () => {
-            const base64 = auditReader.result.split(',')[1];
+        auditReader.onload = () => {
+            if (!intakeIsCurrent()) return;
+            const base64 = readBase64(auditReader);
+            if (!base64) { failRead(t('quick_start.error_read_file')); return; }
             setPendingPdfBase64(base64);
             setPendingPdfFile(file);
             setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size });
+            setIsExtracting(false);
         };
-        auditReader.readAsDataURL(file);
+        auditReader.onerror = () => failRead(t('quick_start.error_read_file'));
+        auditReader.onabort = auditReader.onerror;
+        try { auditReader.readAsDataURL(file); } catch (err) { failRead(err?.message || t('quick_start.error_read_file')); }
         return;
     }
     // ── Audio/video → the remediation pipeline (2026-06-10) ──
@@ -170,14 +204,19 @@ const handleFileUpload = async (e, deps) => {
         // any transcription runs. The view calls transcribeMediaToPayload
         // and swaps in the ALLOTRANSCRIPT payload.
         const reader = new FileReader();
-        reader.onloadend = () => {
-            const base64String = reader.result.split(',')[1];
+        reader.onload = () => {
+            if (!intakeIsCurrent()) return;
+            const base64String = readBase64(reader);
+            if (!base64String) { failRead(t('quick_start.error_read_file')); return; }
             setPendingPdfBase64(base64String);
             setPendingPdfFile(file);
             setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size, _mediaPending: { mime: file.type || 'audio/mpeg', isVideo: file.type.startsWith('video/') } });
+            setIsExtracting(false);
             addToast(t('toasts.media_choose_digestion') || '🎙 Recording loaded — choose how to digest it (speech, visuals, both) before remediation.', 'info');
         };
-        reader.readAsDataURL(file);
+        reader.onerror = () => failRead(t('quick_start.error_read_file'));
+        reader.onabort = reader.onerror;
+        try { reader.readAsDataURL(file); } catch (err) { failRead(err?.message || t('quick_start.error_read_file')); }
         return;
     }
     if (file.type.startsWith('image/') || file.type.startsWith('video/') || file.type.startsWith('audio/')) {
@@ -221,8 +260,11 @@ const handleFileUpload = async (e, deps) => {
                 return;
             }
             const reader = new FileReader();
-            reader.onloadend = async () => {
-                const base64String = reader.result.split(',')[1];
+            reader.onload = async () => {
+                if (!intakeIsCurrent()) return;
+                try {
+                const base64String = readBase64(reader);
+                if (!base64String) throw new Error('The file could not be read.');
                 const mimeType = file.type;
                 let prompt = "";
                 if (mimeType.startsWith('image/') || mimeType === 'application/pdf') {
@@ -253,11 +295,19 @@ const handleFileUpload = async (e, deps) => {
                     `;
                 }
                 const text = await callGeminiVision(prompt, base64String, mimeType);
+                if (!intakeIsCurrent()) return;
                 setInputText(text);
                 rememberImportedSource(text);
                 setIsExtracting(false);
+                } catch (err) {
+                    if (!intakeIsCurrent()) return;
+                    warnLog('File extraction failed:', err?.message || err);
+                    failRead(t('toasts.file_process_error'));
+                }
             };
-            reader.readAsDataURL(file);
+            reader.onerror = () => failRead(t('quick_start.error_read_file'));
+            reader.onabort = reader.onerror;
+            try { reader.readAsDataURL(file); } catch (err) { failRead(err?.message || t('quick_start.error_read_file')); }
         } catch (err) {
             warnLog("Unhandled error:", err);
             setError(t('toasts.file_process_error'));
@@ -329,15 +379,17 @@ const handleLoadProject = (e, deps) => {
             const _gtp = rawData.guidedTourProgress;
             if (_gtp && typeof _gtp.guidedStep === 'number') {
                 if (_gtp.version == null || _gtp.version === 1) {
-                    if (deps.setGuidedSelectedIds) deps.setGuidedSelectedIds(Array.isArray(_gtp.selectedIds) ? _gtp.selectedIds : null);
-                    const _sel = _gtp.selectedIds;
-                    // source-input is always an active step; estimate the active-step count to clamp against.
-                    const _activeLen = Array.isArray(_sel) ? (_sel.indexOf('source-input') === -1 ? _sel.length + 1 : _sel.length) : 22;
-                    const _step = Math.max(0, Math.min(_gtp.guidedStep, Math.max(0, _activeLen - 1)));
+                    const _validIds = Array.isArray(deps.guidedStepIds) ? deps.guidedStepIds : [];
+                    const _validSet = new Set(_validIds);
+                    const _cleanIds = (value) => Array.isArray(value) ? Array.from(new Set(value.filter(id => _validSet.has(id)))) : [];
+                    const _sel = Array.isArray(_gtp.selectedIds) ? _cleanIds(_gtp.selectedIds) : null;
+                    if (deps.setGuidedSelectedIds) deps.setGuidedSelectedIds(_sel);
+                    const _activeIds = _sel ? _validIds.filter(id => id === 'source-input' || _sel.includes(id)) : _validIds;
+                    const _step = Math.max(0, Math.min(_gtp.guidedStep, Math.max(0, _activeIds.length - 1)));
                     if (deps.setGuidedStep) deps.setGuidedStep(_step);
-                    // Real per-step completions (which steps produced output) — powers the
-                    // banner's ✅ so revisiting a completed step doesn't lose its done state.
-                    if (deps.setGuidedCompletedIds) deps.setGuidedCompletedIds(Array.isArray(_gtp.completedSteps) ? _gtp.completedSteps : []);
+                    if (deps.setGuidedCompletedIds) deps.setGuidedCompletedIds(_cleanIds(_gtp.completedSteps));
+                    if (deps.setGuidedSkippedIds) deps.setGuidedSkippedIds(_cleanIds(_gtp.skippedSteps));
+                    if (deps.setGuidedCreatedHistoryIds) deps.setGuidedCreatedHistoryIds(Array.isArray(_gtp.createdHistoryIds) ? Array.from(new Set(_gtp.createdHistoryIds.filter(id => typeof id === 'string' && id))) : []);
                     if (deps.setGuidedMode) deps.setGuidedMode(true);
                     if (addToast) addToast(t('guided.resumed') || 'Resumed your guided tutorial.', 'success');
                 } else if (addToast) {
@@ -772,13 +824,17 @@ window.AlloModules.MiscHandlers = { runAutoFixLoop,
   handleLoadProject,
   detectClimaxArchetype,
 };
+// The script loader tracks this file as `MiscHandlersModule`, while legacy
+// call sites use `MiscHandlers`. Register both names to the same object so a
+// successful script execution is not misreported as a failed module load.
+window.AlloModules.MiscHandlersModule = window.AlloModules.MiscHandlers;
 
 
 // PDF auto-continue remediation loop — extracted to MiscHandlers (2026-07-20).
 // Every host binding arrives via deps; the host wrapper is contract-gated.
 async function runAutoFixLoop(maxRounds, deps) {
   const {
-    pdfAutoContinueAbortCtrlRef, pdfAutoContinueAbortRef, pdfFixResultRef, pdfHtmlRevisionRef, setPdfAutoContinueRunning, setPdfFixLoading, setPdfFixResult, setPdfFixStep, pdfFixLoading, pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, aiFixChunked, waitForGeminiCalm, runAxeAudit, runEqualAccessAudit, deriveVerificationState, createVerificationHtmlBinding, applyVerificationHtmlBinding, isLiveVerificationHtmlBound, enforceVerificationHtmlBinding, formatVerificationReason, auditOutputAccessibility, recomputeIssueResolution, recomputeContentFidelity, addToast, pdfAutoSaveProject, t, warnLog,
+    pdfAutoContinueAbortCtrlRef, pdfAutoContinueAbortRef, pdfFixResultRef, pdfHtmlRevisionRef, setPdfAutoContinueRunning, setPdfFixLoading, setPdfFixResult, setPdfFixStep, pdfFixLoading, pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, aiFixChunked, waitForGeminiCalm, runAxeAudit, runEqualAccessAudit, deriveVerificationState, createVerificationHtmlBinding, applyVerificationHtmlBinding, isLiveVerificationHtmlBound, enforceVerificationHtmlBinding, formatVerificationReason, auditOutputAccessibility, recomputeIssueResolution, recomputeContentFidelity, _docPipeline, sanitizeStyleForWCAG, attachVerificationHtmlProof, saveProjectToFile, addToast, pdfAutoSaveProject, t, warnLog,
   } = deps;
 
     // Re-entry guard (sweep 2026-06-11 [5]): a second concurrent loop's

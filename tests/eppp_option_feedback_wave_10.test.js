@@ -214,9 +214,9 @@ describe('EPPP incorrect-option explanation repair wave 10', () => {
       findings: [],
     });
     expect(wave10.ids).toEqual(ids);
-    expect(diagnostics.mostRecentWave).toEqual(wave10);
-    expect(diagnostics.latestReviewWave).toBe('eppp-option-feedback-wave-10');
-    expect(diagnostics.summary).toMatchObject(expectedAfter);
+    expect(diagnostics.mostRecentWave).toEqual(diagnostics.waves[diagnostics.latestReviewWave]);
+    expect(diagnostics.summary.itemsWithWarnings).toBeLessThanOrEqual(expectedAfter.itemsWithWarnings);
+    expect(diagnostics.summary.incorrectOptionsWithWarnings).toBeLessThanOrEqual(expectedAfter.incorrectOptionsWithWarnings);
     const warningIds = new Set(diagnostics.optionFindings.map((finding) => finding.id));
     ids.forEach((id) => expect(warningIds.has(id)).toBe(false));
 

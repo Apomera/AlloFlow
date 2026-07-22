@@ -1521,12 +1521,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       }
 
       // Theme — green/teal clean-energy palette (distinct from firstResponse red).
-      var T = {
+      var isContrast = !!ctx.isContrast;
+      var isDark = !!ctx.isDark;
+      var T = isContrast ? {
+        bg: '#000000', card: '#000000', cardAlt: '#0a0a0a', border: '#fbbf24',
+        text: '#ffffff', muted: '#ffffff', dim: '#ffffff',
+        accent: '#fbbf24', accentHi: '#ffff00', warm: '#ffff00',
+        warn: '#ffff00', danger: '#ff6b6b', link: '#00ffff'
+      } : isDark ? {
         bg: '#0f1f1c', card: '#1a302a', cardAlt: '#0d1916', border: '#2f5247',
         text: '#ecfeff', muted: '#cbe8e0', dim: '#88a89e',
-        accent: '#10b981', accentHi: '#86efac',
-        warm: '#facc15', warn: '#f97316', danger: '#ef4444',
-        link: '#7dd3fc'
+        accent: '#10b981', accentHi: '#86efac', warm: '#facc15',
+        warn: '#f97316', danger: '#ef4444', link: '#7dd3fc'
+      } : {
+        bg: '#f0fdf4', card: '#ffffff', cardAlt: '#ecfdf5', border: '#4b7669',
+        text: '#052e2b', muted: '#28594f', dim: '#3f685f',
+        accent: '#047857', accentHi: '#065f46', warm: '#a16207',
+        warn: '#c2410c', danger: '#b91c1c', link: '#0369a1'
       };
 
       function btn(extra) {

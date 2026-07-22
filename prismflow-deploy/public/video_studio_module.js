@@ -3593,8 +3593,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             return { index: index, commandId: String((s && s.commandId) || '').slice(0, 60), label: String((s && s.label) || '').slice(0, 90), why: String((s && s.why) || '').slice(0, 160), currentScript: String((s && s.script) || '').replace(/[\r\n]+/g, ' ').slice(0, 400), params: params };
           }).filter(function (s) { return s.commandId; });
           if (!dsSteps.length) { dsRespond({ error: 'no-script-steps' }); return; }
+          var dsFocus = Math.round(Number(dsReq.focusIndex));
+          if (!isFinite(dsFocus) || dsFocus < 0 || dsFocus >= dsSteps.length) dsFocus = -1;
+          var dsReturnRule = dsFocus >= 0
+            ? 'Return exactly one item for index ' + dsFocus + '; use every supplied step only as narrative context.'
+            : 'Return exactly one item for every supplied step, in order.';
           var dsPrompt = 'Write polished spoken narration for an AlloFlow product demo.\n' +
-            'Return ONLY JSON in this shape: {"scripts":[{"index":0,"text":"..."}]}. Return exactly one item for every supplied step, in order.\n' +
+            'Return ONLY JSON in this shape: {"scripts":[{"index":0,"text":"..."}]}. ' + dsReturnRule + '\n' +
             'Tone: ' + dsStyleMap[dsStyle] + '. Target length per line: ' + dsDetailMap[dsDetail] + '.\n' +
             'Describe the visible action or result accurately. Build a natural progression across lines, vary openings, preserve product and subject terms, and use plain language. Do not invent features, outcomes, people, student data, or screen details. Do not add greetings, a closing, stage directions, quotation marks, or claims not supported by the step metadata. Improve the current script rather than merely paraphrasing labels. Each text must be one line and at most 400 characters.\n' +
             'Demo goal: ' + String(dsReq.goal || '').replace(/[\r\n]+/g, ' ').slice(0, 300) + '\n' +
@@ -3610,7 +3615,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
               var index = Math.round(Number(item && item.index));
               var line = String((item && item.text) || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 400);
               return { index: index, text: line };
-            }).filter(function (item) { return item.index >= 0 && item.index < dsSteps.length && item.text; });
+            }).filter(function (item) { return item.index >= 0 && item.index < dsSteps.length && item.text && (dsFocus < 0 || item.index === dsFocus); });
             dsRespond({ scripts: scripts });
           }).catch(function (e) {
             dsRespond({ error: String((e && e.message) || e).slice(0, 200) });

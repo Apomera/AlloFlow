@@ -6952,7 +6952,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
   // DATA: MISSIONS
   // ───────────────────────────────────────────────────────────
   var MISSIONS = [
-    { id: 'mission-1', title: 'First Day on the Bagaduce',
+    { id: 'mission-1', interactive: true, title: 'First Day on the Bagaduce',
       brief: 'Cast off from the town landing in Castine. Navigate the Bagaduce River channel (red-right-returning) to your 1-acre LPA lease. Deploy 5 dropper lines pre-seeded with mussel spat. Return to dock.',
       objectives: [
         'Cast off + safety check',
@@ -6961,7 +6961,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         'Press F at the lease to drop a seeded line (5 drops total)',
         'Return to landing'
       ],
-      reward: 'Unlocks Mission 2 + first lease log entry' },
+      reward: 'Records the first completed farm mission and lease log entry.' },
     { id: 'mission-2', title: 'Water Quality Check',
       brief: 'August. Heat wave. You\'re worried about your mussels — DO depletion + warm spikes have killed crops downriver. Trip out, deploy water-quality probe at three depths, log the readings. Decide whether to act.',
       objectives: [
@@ -7083,6 +7083,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         harvests: [], // [{species, kg, date}]
         droppersDeployed: 0,
         probeReadings: [],
+        lastTopic: 'home',
+        lastContentTopic: null,
+        visitedTopics: {},
+        recentTopics: [],
+        bookmarkedTopics: [],
+        topicNotes: {},
         a11y: { staticCamera: false }
       }, s);
     } catch (_) {
@@ -7545,7 +7551,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
 
     var stateInit = loadState();
-    var tabHook = useState('home');
+    var tabHook = useState(typeof stateInit.lastTopic === 'string' ? stateInit.lastTopic : 'home');
     var tab = tabHook[0], setTab = tabHook[1];
     var navSearchHook = useState('');
     var navSearch = navSearchHook[0], setNavSearch = navSearchHook[1];
@@ -7553,6 +7559,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var libraryOpen = libraryOpenHook[0], setLibraryOpen = libraryOpenHook[1];
     var comfortableReadingHook = useState(!!stateInit.comfortableReading);
     var comfortableReading = comfortableReadingHook[0], setComfortableReading = comfortableReadingHook[1];
+    var learningProgressHook = useState({
+      visitedTopics: stateInit.visitedTopics && typeof stateInit.visitedTopics === 'object' ? stateInit.visitedTopics : {},
+      recentTopics: Array.isArray(stateInit.recentTopics) ? stateInit.recentTopics : [],
+      bookmarkedTopics: Array.isArray(stateInit.bookmarkedTopics) ? stateInit.bookmarkedTopics : [],
+      topicNotes: stateInit.topicNotes && typeof stateInit.topicNotes === 'object' ? stateInit.topicNotes : {}
+    });
+    var learningProgress = learningProgressHook[0], setLearningProgress = learningProgressHook[1];
+    var noteDraftHook = useState('');
+    var noteDraft = noteDraftHook[0], setNoteDraft = noteDraftHook[1];
     var regionHook = useState(stateInit.region);
     var region = regionHook[0], setRegion = regionHook[1];
     var simHook = useState({ active: false, threeLoaded: !!window.THREE, threeError: false, loading: false });
@@ -7567,6 +7582,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var droppersDeployed = droppersHook[0], setDroppers = droppersHook[1];
     var canvasRef = useRef(null);
     var farmRef = useRef(null);
+    var topicSearchRef = useRef(null);
+    var contentRef = useRef(null);
+    var firstContentRenderRef = useRef(true);
 
     useEffect(function() {
       var s = loadState();
@@ -7578,6 +7596,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       s.comfortableReading = comfortableReading;
       saveState(s);
     }, [comfortableReading]);
+    useEffect(function() {
+      function onLabNavigationKeyDown(event) {
+        if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+        var target = event.target;
+        var isTyping = target && target.matches && target.matches('input, textarea, select, [contenteditable="true"]');
+        if (event.key === '/' && !isTyping) {
+          event.preventDefault();
+          setLibraryOpen(true);
+          setTimeout(function() {
+            if (topicSearchRef.current && topicSearchRef.current.focus) topicSearchRef.current.focus();
+          }, 0);
+        } else if (event.key === 'Escape' && libraryOpen && !isTyping) {
+          event.preventDefault();
+          setLibraryOpen(false);
+          aqAnnounce('Topic library closed');
+        }
+      }
+      document.addEventListener('keydown', onLabNavigationKeyDown);
+      return function() { document.removeEventListener('keydown', onLabNavigationKeyDown); };
+    }, [libraryOpen]);
+    useEffect(function() {
+      if (firstContentRenderRef.current) {
+        firstContentRenderRef.current = false;
+        return;
+      }
+      var focusTimer = setTimeout(function() {
+        var content = contentRef.current;
+        if (!content) return;
+        try { content.focus({ preventScroll: true }); } catch (_) { try { content.focus(); } catch (focusError) {} }
+        var reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        try { content.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }); } catch (_) { content.scrollIntoView(); }
+      }, 0);
+      return function() { clearTimeout(focusTimer); };
+    }, [tab]);
 
     function pushStatus(ev) {
       setStatus(function(prev) { return (prev || []).concat([ev]).slice(-8); });
@@ -7817,6 +7869,125 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       ] }
     ];
 
+    var allTopicIds = [];
+    TAB_GROUPS.forEach(function(group) {
+      group.tabs.forEach(function(topic) { allTopicIds.push(topic.id); });
+    });
+
+    var LEARNING_JOURNEYS = [
+      { id: 'first-shift', title: 'First Shift', icon: '\u26F5', tone: '#5eead4', description: 'Read the river, launch the skiff, and interpret a water-quality check.', topics: ['chart', 'sim', 'water'] },
+      { id: 'healthy-stock', title: 'Keep Stock Healthy', icon: '\uD83E\uDDA0', tone: '#86efac', description: 'Connect water chemistry, stocking pressure, disease, and emergency response.', topics: ['water', 'stockHunt', 'disease', 'emergency'] },
+      { id: 'farm-plan', title: 'Plan a Farm', icon: '\uD83D\uDCCB', tone: '#fbbf24', description: 'Choose species and a site, then examine leases, gear, and economics.', topics: ['species', 'site', 'lease', 'equipment', 'econ'] },
+      { id: 'careers-classroom', title: 'Careers & Classroom', icon: '\uD83C\uDF93', tone: '#c4b5fd', description: 'Explore roles, real pathways, student activities, and lesson plans.', topics: ['careers', 'careerprofiles', 'activities', 'lessonplans'] }
+    ];
+    function isKnownTopicId(topicId) {
+      return typeof topicId === 'string' && allTopicIds.indexOf(topicId) !== -1;
+    }
+
+    function topicFromAddress() {
+      try { return new URL(window.location.href).searchParams.get('aqTopic'); } catch (_) { return null; }
+    }
+
+    function writeTopicAddress(topicId, replace) {
+      if (!window.history || !window.history.pushState) return;
+      try {
+        var url = new URL(window.location.href);
+        url.searchParams.set('aqTopic', topicId);
+        var state = Object.assign({}, window.history.state || {}, { aquacultureTopic: topicId });
+        window.history[replace ? 'replaceState' : 'pushState'](state, '', url.pathname + url.search + url.hash);
+      } catch (_) {}
+    }
+
+    function navigateToTopic(topicId, announcement, replaceHistory) {
+      if (!isKnownTopicId(topicId)) {
+        aqAnnounce('That aquaculture topic is unavailable.');
+        return;
+      }
+      setTab(topicId);
+      setNavSearch('');
+      setLibraryOpen(false);
+      if (topicFromAddress() !== topicId) writeTopicAddress(topicId, !!replaceHistory);
+      if (announcement) aqAnnounce(announcement);
+    }
+
+    function toggleTopicBookmark(topicId) {
+      if (!isKnownTopicId(topicId)) return;
+      var savedNavigation = loadState();
+      var bookmarks = Array.isArray(savedNavigation.bookmarkedTopics) ? savedNavigation.bookmarkedTopics.filter(isKnownTopicId) : [];
+      var existingIndex = bookmarks.indexOf(topicId);
+      var nowBookmarked = existingIndex === -1;
+      if (nowBookmarked) bookmarks = [topicId].concat(bookmarks).slice(0, 24);
+      else bookmarks.splice(existingIndex, 1);
+      savedNavigation.bookmarkedTopics = bookmarks;
+      saveState(savedNavigation);
+      setLearningProgress(function(previous) {
+        return Object.assign({}, previous, { bookmarkedTopics: bookmarks });
+      });
+      aqAnnounce(getTopicLocation(topicId).topic.label + (nowBookmarked ? ' saved for later.' : ' removed from saved topics.'));
+    }
+
+    function updateTopicNote(value) {
+      var nextValue = String(value || '').slice(0, 600);
+      setNoteDraft(nextValue);
+      if (tab === 'home' || !isKnownTopicId(tab)) return;
+      var savedNavigation = loadState();
+      var nextNotes = Object.assign({}, savedNavigation.topicNotes || {});
+      if (nextValue.trim()) nextNotes[tab] = nextValue;
+      else delete nextNotes[tab];
+      savedNavigation.topicNotes = nextNotes;
+      saveState(savedNavigation);
+      setLearningProgress(function(previous) {
+        return Object.assign({}, previous, { topicNotes: nextNotes });
+      });
+    }
+
+    useEffect(function() {
+      function restoreTopicFromAddress(event) {
+        var requestedTopic = topicFromAddress();
+        if (isKnownTopicId(requestedTopic)) setTab(requestedTopic);
+        else if (event && event.type === 'popstate') setTab('home');
+      }
+      restoreTopicFromAddress();
+      window.addEventListener('popstate', restoreTopicFromAddress);
+      return function() { window.removeEventListener('popstate', restoreTopicFromAddress); };
+    }, []);
+
+    useEffect(function() {
+      if (!isKnownTopicId(tab)) {
+        setTab('home');
+        return;
+      }
+      var savedNavigation = loadState();
+      var nextVisited = Object.assign({}, savedNavigation.visitedTopics || {});
+      var nextRecent = Array.isArray(savedNavigation.recentTopics) ? savedNavigation.recentTopics.filter(isKnownTopicId) : [];
+      var nextBookmarks = Array.isArray(savedNavigation.bookmarkedTopics) ? savedNavigation.bookmarkedTopics.filter(isKnownTopicId) : [];
+      var nextNotes = Object.assign({}, savedNavigation.topicNotes || {});
+      setNoteDraft(tab === 'home' ? '' : String(nextNotes[tab] || '').slice(0, 600));
+      savedNavigation.lastTopic = tab;
+      if (tab !== 'home') {
+        savedNavigation.lastContentTopic = tab;
+        nextVisited[tab] = Date.now();
+        nextRecent = [tab].concat(nextRecent.filter(function(topicId) { return topicId !== tab; })).slice(0, 8);
+      }
+      savedNavigation.visitedTopics = nextVisited;
+      savedNavigation.recentTopics = nextRecent;
+      savedNavigation.bookmarkedTopics = nextBookmarks;
+      savedNavigation.topicNotes = nextNotes;
+      saveState(savedNavigation);
+      setLearningProgress({ visitedTopics: nextVisited, recentTopics: nextRecent, bookmarkedTopics: nextBookmarks, topicNotes: nextNotes });
+    }, [tab]);
+    function getTopicLocation(topicId) {
+      var location = { group: TAB_GROUPS[0], topic: TAB_GROUPS[0].tabs[0] };
+      TAB_GROUPS.some(function(group) {
+        return group.tabs.some(function(topic) {
+          if (topic.id !== topicId) return false;
+          location = { group: group, topic: topic };
+          return true;
+        });
+      });
+      return location;
+    }
+
     function tabBar() {
       var primaryTopics = [
         { id: 'home', label: 'Home' },
@@ -7855,13 +8026,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var activeTopicIndex = topicSequence.findIndex(function(item) { return item.topic.id === tab; });
       var previousTopic = activeTopicIndex > 0 ? topicSequence[activeTopicIndex - 1] : null;
       var nextTopic = activeTopicIndex >= 0 && activeTopicIndex < topicSequence.length - 1 ? topicSequence[activeTopicIndex + 1] : null;
+      var bookmarkedTopicIds = (learningProgress.bookmarkedTopics || []).filter(isKnownTopicId).slice(0, 8);
+      var recentTopicIds = (learningProgress.recentTopics || []).filter(function(topicId) {
+        return isKnownTopicId(topicId) && topicId !== tab;
+      }).slice(0, 6);
+      var notedTopicIds = Object.keys(learningProgress.topicNotes || {}).filter(function(topicId) {
+        return isKnownTopicId(topicId) && String(learningProgress.topicNotes[topicId] || '').trim();
+      }).slice(0, 8);
 
       function moveToTopic(item) {
         if (!item) return;
-        setTab(item.topic.id);
-        setNavSearch('');
-        setLibraryOpen(false);
-        aqAnnounce(item.topic.label + ' open');
+        navigateToTopic(item.topic.id, item.topic.label + ' open');
+
       }
 
       function topicButton(topic, group, showGroup) {
@@ -7869,10 +8045,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         return h('button', { key: group.id + '-' + topic.id, type: 'button', className: 'aq-btn',
           'aria-current': selected ? 'page' : undefined,
           onClick: function() {
-            setTab(topic.id);
-            setNavSearch('');
-            setLibraryOpen(false);
-            aqAnnounce(topic.label + ' open');
+            navigateToTopic(topic.id, topic.label + ' open');
+
           },
           style: { minHeight: 44, padding: '9px 11px', textAlign: 'left', borderRadius: 8, cursor: 'pointer',
             background: selected ? group.color : '#0b2b28', color: selected ? '#031c1a' : '#f1f5f9',
@@ -7880,6 +8054,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           topic.label,
           showGroup ? h('span', { style: { display: 'block', marginTop: 3, fontSize: 10.5, fontWeight: 700,
             color: selected ? '#173f3a' : '#bfdbfe' } }, group.label) : null);
+      }
+
+      function shortcutTopicButton(topicId, collectionLabel) {
+        var location = getTopicLocation(topicId);
+        return h('button', { key: collectionLabel + '-' + topicId, type: 'button', className: 'aq-btn',
+          'aria-label': 'Open ' + location.topic.label + ' from ' + collectionLabel.toLowerCase(),
+          onClick: function() { navigateToTopic(topicId, location.topic.label + ' open'); },
+          style: { minHeight: 44, padding: '8px 10px', textAlign: 'left', borderRadius: 8, cursor: 'pointer',
+            background: '#0b2b28', color: '#f8fafc', border: '1px solid #66928d', fontSize: 12, fontWeight: 800 } },
+          location.topic.label,
+          h('span', { style: { display: 'block', marginTop: 2, color: '#bfdbfe', fontSize: 10.5, fontWeight: 700 } }, location.group.label));
       }
 
       return h('nav', { className: 'aq-topic-nav', 'aria-label': 'AquacultureLab sections', style: {
@@ -7907,7 +8092,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             var selected = tab === topic.id;
             return h('button', { key: topic.id, type: 'button', className: 'aq-btn',
               'aria-current': selected ? 'page' : undefined,
-              onClick: function() { setTab(topic.id); setNavSearch(''); setLibraryOpen(false); aqAnnounce(topic.label + ' open'); },
+              onClick: function() { navigateToTopic(topic.id, topic.label + ' open'); },
               style: { minHeight: 40, padding: '8px 13px', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 800,
                 background: selected ? '#5eead4' : '#0d302d', color: selected ? '#032522' : '#f1f5f9',
                 border: '1px solid ' + (selected ? '#99f6e4' : '#5c8580') } }, topic.label);
@@ -7936,15 +8121,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         h('details', { open: libraryOpen,
           onToggle: function(event) { setLibraryOpen(event.currentTarget.open); },
           style: { borderTop: '1px solid #527a75', paddingTop: 9 } },
-          h('summary', { style: { minHeight: 42, boxSizing: 'border-box', padding: '10px 11px', borderRadius: 8,
+          h('summary', { 'aria-keyshortcuts': '/', style: { minHeight: 42, boxSizing: 'border-box', padding: '10px 11px', borderRadius: 8,
             cursor: 'pointer', color: '#f8fafc', background: '#123a36', border: '1px solid #66928d',
             fontSize: 13, fontWeight: 850, listStylePosition: 'inside' } },
             'Browse all topics · ' + totalTopics + ' topics in ' + TAB_GROUPS.length + ' areas'),
           h('div', { style: { marginTop: 10 } },
+            (bookmarkedTopicIds.length || notedTopicIds.length || recentTopicIds.length) ? h('div', { className: 'aq-saved-topics',
+              style: { display: 'grid', gap: 10, marginBottom: 12, padding: 11, borderRadius: 10, background: '#061a18', border: '1px solid #527a75' } },
+              bookmarkedTopicIds.length ? h('section', { 'aria-labelledby': 'aq-saved-topics-heading' },
+                h('div', { id: 'aq-saved-topics-heading', style: { marginBottom: 6, color: '#fde68a', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Saved topics'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 7 } },
+                  bookmarkedTopicIds.map(function(topicId) { return shortcutTopicButton(topicId, 'Saved topics'); }))) : null,
+              notedTopicIds.length ? h('section', { 'aria-labelledby': 'aq-noted-topics-heading' },
+                h('div', { id: 'aq-noted-topics-heading', style: { marginBottom: 6, color: '#bfdbfe', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Reflections'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 7 } },
+                  notedTopicIds.map(function(topicId) { return shortcutTopicButton(topicId, 'Reflections'); }))) : null,
+              recentTopicIds.length ? h('section', { 'aria-labelledby': 'aq-recent-topics-heading' },
+                h('div', { id: 'aq-recent-topics-heading', style: { marginBottom: 6, color: '#99f6e4', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Recent topics'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 7 } },
+                  recentTopicIds.map(function(topicId) { return shortcutTopicButton(topicId, 'Recent topics'); }))) : null
+            ) : null,
             h('div', { className: 'aq-topic-search-row' },
               h('div', null,
                 h('label', { htmlFor: 'aq-topic-search', style: { display: 'block', marginBottom: 5, color: '#dbeafe', fontSize: 12, fontWeight: 800 } }, 'Find a topic'),
-                h('input', { id: 'aq-topic-search', type: 'search', value: navSearch, autoComplete: 'off',
+                h('input', { id: 'aq-topic-search', ref: topicSearchRef, type: 'search', value: navSearch, autoComplete: 'off',
                   'aria-describedby': 'aq-topic-search-help', 'aria-keyshortcuts': 'Escape',
                   onChange: function(event) { setNavSearch(event.target.value); },
                   onKeyDown: function(event) {
@@ -7958,7 +8158,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                   style: { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 11px',
                     borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 14 } }),
                 h('div', { id: 'aq-topic-search-help', style: { marginTop: 5, color: '#cbd5e1', fontSize: 11.5 } },
-                  'Searches topic names and all 12 topic areas. Press Escape to clear.')),
+                  'Searches topic names and all 12 topic areas. Press / to open search and Escape to clear or close.')),
               navSearch ? h('button', { type: 'button', className: 'aq-btn aq-topic-search-clear',
                 'aria-label': 'Clear topic search', onClick: function() { setNavSearch(''); aqAnnounce('Topic search cleared'); },
                 style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: 'pointer',
@@ -8003,8 +8203,141 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     function homeTab() {
       var st = loadState();
-      var completedCount = Object.keys(st.completedMissions || {}).length;
+      var interactiveMissions = MISSIONS.filter(function(mission) { return mission.interactive === true; });
+      var completedCount = Object.keys(st.completedMissions || {}).filter(function(missionId) {
+        return interactiveMissions.some(function(mission) { return mission.id === missionId; });
+      }).length;
+      var lastContentTopicId = isKnownTopicId(st.lastContentTopic) ? st.lastContentTopic : null;
+      var lastContentLocation = lastContentTopicId ? getTopicLocation(lastContentTopicId) : null;
+      var visitedTopicMap = learningProgress.visitedTopics || {};
+      var journeySummaries = LEARNING_JOURNEYS.map(function(journey) {
+        var completedTopics = journey.topics.filter(function(topicId) { return !!visitedTopicMap[topicId]; });
+        var nextTopic = journey.topics.find(function(topicId) { return !visitedTopicMap[topicId]; }) || journey.topics[0];
+        return {
+          journey: journey,
+          completed: completedTopics.length,
+          percent: Math.round((completedTopics.length / journey.topics.length) * 100),
+          nextTopic: nextTopic,
+          complete: completedTopics.length === journey.topics.length
+        };
+      });
+      var visitedTopicCount = Object.keys(visitedTopicMap).filter(function(topicId) {
+        return topicId !== 'home' && isKnownTopicId(topicId);
+      }).length;
+      var savedTopicCount = (learningProgress.bookmarkedTopics || []).filter(isKnownTopicId).length;
+      var noteCount = Object.keys(learningProgress.topicNotes || {}).filter(function(topicId) {
+        return isKnownTopicId(topicId) && String(learningProgress.topicNotes[topicId] || '').trim();
+      }).length;
+      var fullyVisitedJourneyCount = journeySummaries.filter(function(summary) { return summary.complete; }).length;
+      var recommendedJourney = journeySummaries.find(function(summary) { return !summary.complete; }) || journeySummaries[0];
+      var recommendedLocation = getTopicLocation(recommendedJourney.nextTopic);
+      var opsRoutes = [
+        { id: 'launch', label: 'Run the skiff mission', detail: 'Cast off, reach the lease, deploy droppers, and probe water quality.', tab: 'sim', tone: '#5eead4' },
+        { id: 'chart', label: 'Read the river first', detail: 'Preview the channel, buoy marks, lease box, and red-right-returning rule.', tab: 'chart', tone: '#60a5fa' },
+        { id: 'biology', label: 'Plan the crop', detail: 'Compare mussels, oysters, kelp, scallops, and hatchery workflows.', tab: 'species', tone: '#86efac' },
+        { id: 'permits', label: 'Build the farm case', detail: 'Review lease tiers, hearings, costs, safety, and market choices.', tab: 'lease', tone: '#fbbf24' }
+      ];
       return h('div', null,
+        lastContentLocation && h('section', { role: 'status', 'aria-label': 'Resume aquaculture learning',
+          style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: '11px 13px', marginBottom: 12, borderRadius: 12, background: '#0b2b28', border: '1px solid #5c8580' } },
+          h('div', null,
+            h('div', { style: { color: '#99f6e4', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.07em' } }, 'Continue learning'),
+            h('div', { style: { marginTop: 3, color: '#f8fafc', fontSize: 14, fontWeight: 850 } }, lastContentLocation.topic.label),
+            h('div', { style: { marginTop: 2, color: '#cbd5e1', fontSize: 12 } }, lastContentLocation.group.label)),
+          h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic(lastContentTopicId, 'Resuming ' + lastContentLocation.topic.label); },
+            style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: 'pointer', background: '#5eead4', color: '#032522', border: '1px solid #99f6e4', fontSize: 13, fontWeight: 900 } }, 'Resume topic \u2192')),
+        h('section', { 'aria-labelledby': 'aq-my-learning-heading',
+          style: { marginBottom: 12, padding: 13, borderRadius: 12, background: '#0b2b28', border: '1px solid #5c8580' } },
+          h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
+            h('div', null,
+              h('div', { style: { color: '#99f6e4', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.07em' } }, 'Your workspace'),
+              h('h2', { id: 'aq-my-learning-heading', style: { margin: '3px 0 4px', color: '#f8fafc', fontSize: 18, lineHeight: 1.2 } }, 'My learning'),
+              h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5 } },
+                'A private, device-local snapshot of topics explored and ideas saved.')),
+            h('button', { type: 'button', className: 'aq-btn',
+              onClick: function() { navigateToTopic(recommendedJourney.nextTopic, 'Recommended next: ' + recommendedLocation.topic.label); },
+              style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', textAlign: 'left',
+                background: recommendedJourney.journey.tone, color: '#032522', border: '1px solid #f8fafc', fontSize: 12, fontWeight: 900 } },
+              (recommendedJourney.complete ? 'Review: ' : 'Recommended: ') + recommendedLocation.topic.label + ' →')),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(125px, 1fr))', gap: 8, marginTop: 11 } },
+            [
+              ['Topics visited', visitedTopicCount + '/' + (allTopicIds.length - 1), '#99f6e4'],
+              ['Saved topics', savedTopicCount, '#fde68a'],
+              ['Reflections', noteCount, '#bfdbfe'],
+              ['Paths fully visited', fullyVisitedJourneyCount + '/' + LEARNING_JOURNEYS.length, '#c4b5fd']
+            ].map(function(metric) {
+              return h('div', { key: metric[0], style: { padding: '8px 9px', borderRadius: 9, background: '#061a18', border: '1px solid #416c67' } },
+                h('div', { style: { color: '#cbd5e1', fontSize: 10.5, fontWeight: 800 } }, metric[0]),
+                h('div', { style: { marginTop: 2, color: metric[2], fontSize: 17, fontWeight: 900 } }, metric[1]));
+            }))),
+        h('section', { 'aria-labelledby': 'aq-learning-journeys-heading',
+          style: { marginBottom: 12, padding: 14, borderRadius: 14, background: '#071f1d', border: '1px solid #527a75' } },
+          h('div', { style: { marginBottom: 11 } },
+            h('div', { style: { color: '#99f6e4', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.07em' } }, 'Choose a pathway'),
+            h('h2', { id: 'aq-learning-journeys-heading', style: { margin: '3px 0 4px', color: '#f8fafc', fontSize: 20, lineHeight: 1.2 } }, 'Guided learning journeys'),
+            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.55 } }, 'Four short paths connect the library into purposeful sequences. Progress tracks topics visited, not mastery. Open a lesson to add it to the path.')),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 10 } },
+            journeySummaries.map(function(summary) {
+              var journey = summary.journey;
+              var nextLocation = getTopicLocation(summary.nextTopic);
+              return h('article', { key: journey.id,
+                style: { display: 'flex', flexDirection: 'column', minHeight: 250, padding: 12, borderRadius: 12, background: '#061a18', border: '1px solid #416c67', borderTop: '4px solid ' + journey.tone } },
+                h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 } },
+                  h('h3', { style: { margin: 0, color: '#f8fafc', fontSize: 15, lineHeight: 1.3 } },
+                    h('span', { 'aria-hidden': 'true', style: { marginRight: 7 } }, journey.icon), journey.title),
+                  h('span', { style: { color: journey.tone, fontSize: 11, fontWeight: 900, whiteSpace: 'nowrap' } },
+                    summary.completed + '/' + journey.topics.length + ' visited')),
+                h('p', { style: { margin: '8px 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, journey.description),
+                h('div', { role: 'progressbar', 'aria-label': journey.title + ' topics visited', 'aria-valuemin': 0, 'aria-valuemax': journey.topics.length, 'aria-valuenow': summary.completed,
+                  'aria-valuetext': summary.completed + ' of ' + journey.topics.length + ' topics visited',
+                  style: { height: 8, marginBottom: 10, overflow: 'hidden', borderRadius: 999, background: '#173f3a', border: '1px solid #527a75' } },
+                  h('div', { style: { width: summary.percent + '%', height: '100%', background: journey.tone } })),
+                h('ol', { style: { display: 'grid', gap: 5, margin: '0 0 12px', padding: 0, listStyle: 'none' } },
+                  journey.topics.map(function(topicId, index) {
+                    var location = getTopicLocation(topicId);
+                    var visited = !!visitedTopicMap[topicId];
+                    return h('li', { key: topicId, style: { display: 'flex', gap: 7, alignItems: 'center', color: visited ? '#d1fae5' : '#dbeafe', fontSize: 11.5, fontWeight: 750 } },
+                      h('span', { 'aria-hidden': 'true', style: { color: visited ? '#86efac' : '#94a3b8', fontWeight: 900 } }, visited ? '✓' : (index + 1)),
+                      location.topic.label);
+                  })),
+                h('button', { type: 'button', className: 'aq-btn',
+                  onClick: function() { navigateToTopic(summary.nextTopic, (summary.complete ? 'Reviewing ' : 'Continuing ') + nextLocation.topic.label); },
+                  style: { minHeight: 44, marginTop: 'auto', padding: '9px 11px', borderRadius: 8, cursor: 'pointer', textAlign: 'left', background: journey.tone, color: '#032522', border: '1px solid #f8fafc', fontSize: 12, fontWeight: 900 } },
+                  summary.complete ? 'Review path →' : (summary.completed ? 'Continue: ' : 'Start: ') + nextLocation.topic.label + ' →'));
+            }))),
+        h('section', { 'data-aquaculture-command': 'true', 'aria-label': 'Aquaculture operations dashboard',
+          style: { background: 'linear-gradient(135deg, rgba(4,47,46,0.95), rgba(15,23,42,0.92))', border: '1px solid rgba(94,234,212,0.30)', borderRadius: 16, padding: 16, marginBottom: 12, boxShadow: '0 18px 38px rgba(0,0,0,0.24)' } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, alignItems: 'stretch' } },
+            h('div', { style: { padding: 14, borderRadius: 14, background: 'rgba(15,23,42,0.54)', border: '1px solid rgba(148,163,184,0.18)' } },
+              h('div', { style: { fontSize: 11, fontWeight: 900, color: '#5eead4', textTransform: 'uppercase', letterSpacing: 0, marginBottom: 6 } }, 'Farm operations'),
+              h('h2', { style: { margin: '0 0 8px', color: '#ecfeff', fontSize: 22, lineHeight: 1.15 } }, 'Choose the next job on the lease.'),
+              h('p', { style: { margin: 0, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, lineHeight: 1.55 } }, 'AquacultureLab has deep reference material, but students start best from the work loop: navigate, monitor, grow, and defend the site plan.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8, marginTop: 14 } },
+                [
+                  ['Interactive mission', completedCount + '/' + interactiveMissions.length, '#86efac'],
+                  ['Droppers', droppersDeployed + '/5', '#fbbf24'],
+                  ['Probes', (probes || []).length, '#5eead4']
+                ].map(function(item) {
+                  return h('div', { key: item[0], style: { padding: 9, borderRadius: 10, background: 'rgba(2,6,23,0.48)', border: '1px solid rgba(148,163,184,0.16)' } },
+                    h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0 } }, item[0]),
+                    h('div', { style: { marginTop: 3, color: item[2], fontSize: 16, fontWeight: 900 } }, item[1])
+                  );
+                })
+              )
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 } },
+              opsRoutes.map(function(route) {
+                return h('button', { key: route.id, className: 'aq-btn',
+                  onClick: function() { navigateToTopic(route.tab, route.label); },
+                  style: { textAlign: 'left', minHeight: 116, cursor: 'pointer', padding: 12, borderRadius: 12, border: '1px solid rgba(148,163,184,0.20)', borderTop: '4px solid ' + route.tone, background: 'rgba(15,23,42,0.58)', color: '#e2e8f0' } },
+                  h('div', { style: { fontSize: 14, fontWeight: 900, color: route.tone, marginBottom: 5 } }, route.label),
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.45, marginBottom: 10 } }, route.detail),
+                  h('div', { style: { fontSize: 11, fontWeight: 900, color: route.tone } }, 'Open workspace')
+                );
+              })
+            )
+          )
+        ),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🦪 AquacultureLab — Mussel Farm Sim'),
           h('p', { style: { fontSize: 13, lineHeight: 1.6, margin: '0 0 10px' } },
@@ -8014,7 +8347,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('div', { style: { display: 'flex', gap: 18, flexWrap: 'wrap', marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(20,184,166,0.18)' } },
             h('div', null,
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#86efac' } }, completedCount),
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Missions complete')),
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Interactive mission complete')),
             h('div', null,
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#fbbf24' } }, droppersDeployed + '/5'),
               h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Droppers deployed')),
@@ -8022,15 +8355,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#5eead4' } }, (probes || []).length),
               h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Probe readings')))),
         h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, 'Missions (v1)'),
+          h('div', { style: headerStyle }, 'Mission progression'),
+          h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } },
+            'Mission 1 is interactive now. Missions 2\u201313 are clearly marked scenario previews; their listed rewards and progression are not active yet.'),
           MISSIONS.map(function(m, i) {
-            var done = !!(loadState().completedMissions || {})[m.id];
-            return h('div', { key: m.id, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '3px solid ' + (done ? '#86efac' : '#14b8a6') } },
-              h('div', { style: { fontSize: 13, fontWeight: 900, color: done ? '#86efac' : '#5eead4', marginBottom: 4 } },
-                (done ? '✓ ' : (i + 1) + '. ') + m.title),
-              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6 } }, m.brief),
-              h('ul', { style: { margin: '4px 0 0 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
-                m.objectives.map(function(o, oi) { return h('li', { key: oi }, o); })));
+            var interactive = m.interactive === true;
+            var done = interactive && !!(st.completedMissions || {})[m.id];
+            var missionTone = done ? '#86efac' : interactive ? '#5eead4' : '#94a3b8';
+            return h('div', { key: m.id, style: { padding: 10, marginBottom: 8, background: interactive ? 'rgba(15,23,42,0.55)' : 'rgba(30,41,59,0.38)', borderRadius: 8, borderLeft: '3px solid ' + missionTone } },
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 4 } },
+                h('div', { style: { fontSize: 13, fontWeight: 900, color: missionTone } }, (done ? '\u2713 ' : (i + 1) + '. ') + m.title),
+                h('span', { style: { padding: '2px 7px', borderRadius: 999, background: interactive ? 'rgba(94,234,212,0.14)' : 'rgba(148,163,184,0.14)', color: missionTone, border: '1px solid ' + missionTone, fontSize: 10, fontWeight: 900 } }, interactive ? (done ? 'Completed' : 'Interactive now') : 'Scenario preview')),
+              h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5, marginBottom: 6 } }, m.brief),
+              !interactive && h('div', { role: 'note', style: { marginBottom: 6, color: '#dbeafe', fontSize: 11, fontWeight: 800 } }, 'Preview only \u2014 completion and rewards are not active yet.'),
+              h('ul', { style: { margin: '4px 0 0 18px', padding: 0, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                m.objectives.map(function(o, oi) { return h('li', { key: oi }, o); })),
+              interactive && h('div', { style: { marginTop: 7, color: '#a7f3d0', fontSize: 11, fontWeight: 800 } }, m.reward));
           })),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, 'How to play'),
@@ -19026,7 +19366,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     }
 
     // ─── HATCHERY DEEP DIVE tab
-    function hatcheryTab() {
+    function hatcheryDeepTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🏭 Bivalve Hatchery Operations — Deep Dive'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
@@ -19278,7 +19618,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     }
 
     // ─── KELP INDUSTRY DEEP tab
-    function kelpDeepTab() {
+    function kelpIndustryTab() {
       return h('div', null, h('div', { style: cardStyle },
         h('div', { style: headerStyle }, '🌿 Maine Kelp Industry — Deep Case Study'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
@@ -20275,22 +20615,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           'Design note: no numeric score, no reveal button, no chip-selection. DO state is shown as a discrete 3-band marker (healthy / stressed / critical), not a continuous gradient — by design, to discourage optimization-gaming behavior. The point is the inquiry, not the number.'));
     }
 
+    var currentTopicLocation = getTopicLocation(tab);
+    var currentTopicBookmarked = (learningProgress.bookmarkedTopics || []).indexOf(tab) !== -1;
+    var currentTopicHasNote = !!String((learningProgress.topicNotes || {})[tab] || '').trim();
+
     return h('div', { className: 'aq-lab-shell' + (comfortableReading ? ' aq-comfortable-reading' : ''), style: {
-      padding: 16, background: '#021816', minHeight: 400, color: '#f8fafc', colorScheme: 'dark',
+      position: 'relative', padding: 16, background: '#021816', minHeight: 400, color: '#f8fafc', colorScheme: 'dark',
       '--allo-stem-text': '#f8fafc', '--allo-stem-text-soft': '#cbd5e1'
     } },
       h('style', null,
         '.aq-lab-shell{line-height:1.5;overflow-wrap:anywhere;}' +
-        '.aq-comfortable-reading p,.aq-comfortable-reading li,.aq-comfortable-reading td,.aq-comfortable-reading th,.aq-comfortable-reading label{font-size:14px!important;line-height:1.65!important;}' +
+        '.aq-comfortable-reading p,.aq-comfortable-reading li,.aq-comfortable-reading td,.aq-comfortable-reading th,.aq-comfortable-reading label,.aq-comfortable-reading summary,.aq-comfortable-reading button{font-size:14px!important;line-height:1.65!important;}' +
+        '.aq-comfortable-reading [style*="font-size: 10px"],.aq-comfortable-reading [style*="font-size: 10.5px"],.aq-comfortable-reading [style*="font-size: 11px"],.aq-comfortable-reading [style*="font-size: 11.5px"],.aq-comfortable-reading [style*="font-size: 12px"],.aq-comfortable-reading [style*="font-size: 13px"]{font-size:14px!important;line-height:1.65!important;}' +
+        '.aq-comfortable-reading [style*="color: #94a3b8"],.aq-comfortable-reading [style*="color:#94a3b8"]{color:#cbd5e1!important;}' +
         '.aq-comfortable-reading textarea,.aq-comfortable-reading input:not([type="range"]),.aq-comfortable-reading select{font-size:16px!important;}' +
         '.aq-lab-shell button:focus-visible,.aq-lab-shell input:focus-visible,.aq-lab-shell select:focus-visible,.aq-lab-shell textarea:focus-visible,.aq-lab-shell summary:focus-visible{outline:3px solid #fbbf24!important;outline-offset:2px!important;}' +
         '.aq-lab-shell input::placeholder,.aq-lab-shell textarea::placeholder{color:#aebdca;opacity:1;}' +
         '.aq-lab-shell a{color:#7dd3fc;}' +
+        '.aq-skip-link{position:absolute;left:12px;top:8px;z-index:20;padding:9px 12px;border-radius:8px;background:#fbbf24;color:#2a1900!important;font-weight:900;transform:translateY(-180%);transition:transform .15s ease;}' +
+        '.aq-skip-link:focus{transform:translateY(0);}' +
+        '.aq-topic-content{scroll-margin-top:12px;}' +
+        '.aq-topic-content:focus{outline:3px solid #fbbf24;outline-offset:4px;}' +
         '.aq-lab-shell summary,.aq-lab-shell button{touch-action:manipulation;}' +
         '.aq-topic-search-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;}' +
         '@media(max-width:620px){.aq-lab-shell{padding:10px!important}.aq-topic-nav{padding:10px!important}.aq-primary-nav button{flex:1 1 125px}.aq-topic-search-row{grid-template-columns:1fr}.aq-topic-search-clear{width:100%}.aq-topic-pager{grid-template-columns:1fr!important}.aq-topic-pager button{text-align:left!important}.aq-reading-toggle{width:100%}}'),
+      h('a', { href: '#aq-topic-content', className: 'aq-skip-link' }, 'Skip to lesson content'),
       tabBar(),
-      tab === 'home' ? homeTab() :
+      h('main', { id: 'aq-topic-content', ref: contentRef, tabIndex: -1,
+        className: 'aq-topic-content', 'aria-labelledby': 'aq-topic-heading' },
+        h('header', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
+          margin: '0 0 12px', padding: '10px 12px', borderRadius: 10,
+          background: '#061a18', borderLeft: '4px solid ' + currentTopicLocation.group.color } },
+          h('div', null,
+            h('div', { style: { color: '#cbd5e1', fontSize: 11, fontWeight: 850, textTransform: 'uppercase', letterSpacing: '0.07em' } },
+              currentTopicLocation.group.label),
+            h('h1', { id: 'aq-topic-heading', style: { margin: '3px 0 0', color: '#f8fafc', fontSize: 22, lineHeight: 1.2 } },
+              currentTopicLocation.topic.label)),
+          tab !== 'home' ? h('button', { type: 'button', className: 'aq-btn', 'aria-pressed': currentTopicBookmarked,
+            'aria-label': (currentTopicBookmarked ? 'Remove ' : 'Save ') + currentTopicLocation.topic.label + (currentTopicBookmarked ? ' from saved topics' : ' for later'),
+            onClick: function() { toggleTopicBookmark(tab); },
+            style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer',
+              background: currentTopicBookmarked ? '#fbbf24' : '#163f3b', color: currentTopicBookmarked ? '#2a1900' : '#f8fafc',
+              border: '1px solid ' + (currentTopicBookmarked ? '#fde68a' : '#789b97'), fontSize: 12, fontWeight: 900 } },
+            currentTopicBookmarked ? '★ Saved' : '☆ Save topic') : null),
+        tab !== 'home' ? h('details', { className: 'aq-topic-reflection',
+          style: { margin: '-2px 0 12px', borderRadius: 10, background: '#071f1d', border: '1px solid #527a75', overflow: 'hidden' } },
+          h('summary', { style: { minHeight: 44, boxSizing: 'border-box', padding: '10px 12px', cursor: 'pointer',
+            color: '#f8fafc', fontSize: 12.5, fontWeight: 850, listStylePosition: 'inside' } },
+            'My reflection', currentTopicHasNote ? ' · Note saved' : ' · Add a note'),
+          h('div', { style: { padding: '0 12px 12px' } },
+            h('p', { id: 'aq-topic-note-help', style: { margin: '0 0 7px', color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5 } },
+              'Capture a question, observation, or connection. Your note saves on this device as you type.'),
+            h('label', { htmlFor: 'aq-topic-note', style: { display: 'block', marginBottom: 5, color: '#dbeafe', fontSize: 11.5, fontWeight: 800 } },
+              'Reflection for ' + currentTopicLocation.topic.label),
+            h('textarea', { id: 'aq-topic-note', value: noteDraft, maxLength: 600, rows: 4,
+              'aria-describedby': 'aq-topic-note-help aq-topic-note-status',
+              onChange: function(event) { updateTopicNote(event.target.value); },
+              placeholder: 'What surprised you? What would you investigate next?',
+              style: { boxSizing: 'border-box', width: '100%', minHeight: 96, resize: 'vertical', padding: '9px 10px',
+                borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 14, lineHeight: 1.5 } }),
+            h('div', { id: 'aq-topic-note-status',
+              style: { marginTop: 5, color: '#bfdbfe', fontSize: 10.5, fontWeight: 750 } },
+              noteDraft.length + '/600 characters · Saved on this device'))) : null,
+        tab === 'home' ? homeTab() :
       tab === 'sim' ? simTab() :
       tab === 'chart' ? chartTab() :
       tab === 'species' ? speciesTab() :
@@ -20381,7 +20768,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       tab === 'certifications' ? certificationsTab() :
       tab === 'oysterdeep' ? oysterDeepTab() :
       tab === 'musseldeep' ? musselDeepTab() :
-      tab === 'kelpdeep' ? kelpDeepTab() :
+      tab === 'kelpdeep' ? kelpIndustryTab() :
       tab === 'salmondeep' ? salmonDeepTab() :
       tab === 'rasdeep' ? rasDeepTab() :
       tab === 'techdeep' ? techDeepTab() :
@@ -20392,8 +20779,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       tab === 'coopdeep' ? coopDeepTab() :
       tab === 'studcareer' ? studCareerTab() :
       tab === 'growcycles' ? growCyclesTab() :
-      tab === 'kelpdeep' ? kelpDeepTab() :
-      tab === 'hatchery' ? hatcheryTab() :
+      tab === 'kelpdeep2' ? kelpDeepTab() :
+      tab === 'hatcherydeep' ? hatcheryDeepTab() :
       tab === 'aqtimeline' ? aqTimelineTab() :
       tab === 'aqmetrics' ? aqMetricsTab() :
       tab === 'failures' ? failuresTab() :
@@ -20430,7 +20817,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       tab === 'stockHunt' ? stockHuntTab() :
       tab === 'glossary' ? glossaryTab() :
       tab === 'quiz' ? quizTab() :
-      h('div', null, 'Unknown tab'));
+      h('div', null, 'Unknown tab')));
   }
 
 })();

@@ -21,7 +21,6 @@ var ArrowDown = _lazyIcon('ArrowDown');
 var ArrowRight = _lazyIcon('ArrowRight');
 var CheckCircle2 = _lazyIcon('CheckCircle2');
 var Gamepad2 = _lazyIcon('Gamepad2');
-var GitMerge = _lazyIcon('GitMerge');
 var Layout = _lazyIcon('Layout');
 var List = _lazyIcon('List');
 var ListOrdered = _lazyIcon('ListOrdered');
@@ -185,6 +184,570 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
   }
   return elements;
 };
+const VISUAL_ORGANIZER_SECTION_SPECS = {
+  "Venn Diagram": ["set-a", "set-b", "shared"],
+  "T-Chart": ["left", "right"],
+  "Frayer Model": ["definition", "characteristics", "examples", "non-examples"],
+  "KWL Chart": ["know", "want", "learned"],
+  "Claim-Evidence-Reasoning": ["claim", "evidence", "reasoning"],
+  "Story Map": ["exposition", "rising-action", "climax", "falling-action", "resolution"],
+  "See-Think-Wonder": ["see", "think", "wonder"]
+};
+const normalizeVisualOrganizerData = (input, typeOverride = "") => {
+  const source = input && typeof input === "object" ? input : {};
+  const structureType = typeOverride || source.structureType || "Structured Outline";
+  const rawBranches = Array.isArray(source.branches) ? source.branches : [];
+  const repairs = [];
+  const issues = [];
+  const branches = rawBranches.map((rawBranch, index) => {
+    const branch = rawBranch && typeof rawBranch === "object" ? { ...rawBranch } : {};
+    if (!branch.title) {
+      branch.title = `Step ${index + 1}`;
+      repairs.push(`branch-${index}-title`);
+    } else {
+      branch.title = String(branch.title);
+    }
+    if (!Array.isArray(branch.items)) {
+      branch.items = branch.items == null ? [] : [String(branch.items)];
+      repairs.push(`branch-${index}-items`);
+    }
+    return branch;
+  });
+  const sectionRoles = VISUAL_ORGANIZER_SECTION_SPECS[structureType];
+  if (sectionRoles) {
+    if (branches.length !== sectionRoles.length) {
+      issues.push({ code: "branch-count", expected: sectionRoles.length, actual: branches.length });
+    } else {
+      branches.forEach((branch, index) => {
+        if (!branch.sectionRole) {
+          branch.sectionRole = sectionRoles[index];
+          repairs.push(`branch-${index}-section-role`);
+        }
+      });
+    }
+  }
+  if (structureType === "Cause and Effect") {
+    branches.forEach((branch, index) => {
+      const semanticText = `${branch.title || ""} ${branch.title_en || ""}`.toLowerCase();
+      let role = String(branch.role || branch.semanticRole || "").trim().toLowerCase();
+      if (!["cause", "effect", "chain"].includes(role)) {
+        if (semanticText.includes("cause")) role = "cause";
+        else if (semanticText.includes("effect") || semanticText.includes("consequence")) role = "effect";
+        else if (semanticText.includes("chain") || semanticText.includes("sequence")) role = "chain";
+        else role = index === 0 ? "cause" : index === 1 ? "effect" : "chain";
+        repairs.push(`branch-${index}-cause-effect-role`);
+      }
+      branch.role = role;
+    });
+  }
+  if (structureType === "Flow Chart" || structureType === "Process Flow / Sequence") {
+    branches.forEach((branch, sourceIndex) => {
+      const hasConnections = Array.isArray(branch.connections);
+      const hasLegacyTargets = Array.isArray(branch.connectsTo);
+      const rawConnections = hasConnections ? branch.connections : hasLegacyTargets ? branch.connectsTo.map((target) => ({ target })) : [];
+      const seen = /* @__PURE__ */ new Set();
+      const connections = rawConnections.reduce((valid, rawConnection) => {
+        const connection = rawConnection && typeof rawConnection === "object" ? rawConnection : { target: rawConnection };
+        const target = Number(connection.target ?? connection.to ?? connection.index);
+        if (!Number.isInteger(target) || target < 0 || target >= branches.length || target === sourceIndex || seen.has(target)) {
+          repairs.push(`branch-${sourceIndex}-invalid-connection`);
+          return valid;
+        }
+        seen.add(target);
+        valid.push({ target, label: String(connection.label || connection.condition || "").trim() });
+        return valid;
+      }, []);
+      if (!hasConnections && !hasLegacyTargets && sourceIndex < branches.length - 1) {
+        connections.push({ target: sourceIndex + 1, label: "" });
+        repairs.push(`branch-${sourceIndex}-linear-connection`);
+      }
+      branch.connections = connections;
+      branch.connectsTo = connections.map((connection) => connection.target);
+    });
+  }
+  const main = source.main == null || source.main === "" ? "Main Topic" : String(source.main);
+  if (main !== source.main) repairs.push("main");
+  return {
+    ...source,
+    main,
+    branches,
+    structureType,
+    schemaValidation: {
+      valid: issues.length === 0,
+      issues,
+      repaired: repairs.length > 0,
+      repairs
+    }
+  };
+};
+const _loadOrganizerHtml2Canvas = /* @__PURE__ */ (() => {
+  let pending = null;
+  return () => {
+    if (typeof window === "undefined") return Promise.reject(new Error("no window"));
+    if (window.html2canvas) return Promise.resolve(window.html2canvas);
+    if (pending) return pending;
+    pending = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js";
+      script.async = true;
+      script.crossOrigin = "anonymous";
+      script.onload = () => window.html2canvas ? resolve(window.html2canvas) : reject(new Error("html2canvas unavailable"));
+      script.onerror = () => {
+        pending = null;
+        reject(new Error("html2canvas failed to load"));
+      };
+      document.head.appendChild(script);
+    });
+    return pending;
+  };
+})();
+const _organizerSlugify = (value) => String(value || "flow-chart").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "flow-chart";
+const _downloadOrganizerBlob = (blob, filename) => {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.setTimeout(() => URL.revokeObjectURL(url), 1e3);
+};
+const FlowTopologyBoard = ({ branches, t, isEditingOutline, handleOutlineChange, leveledTextLanguage, topicTitle }) => {
+  const viewportRef = React.useRef(null);
+  const boardRef = React.useRef(null);
+  const nodeRefs = React.useRef({});
+  const [edgeGeometry, setEdgeGeometry] = React.useState([]);
+  const [zoom, setZoom] = React.useState(1);
+  const [collapsedNodes, setCollapsedNodes] = React.useState(() => /* @__PURE__ */ new Set());
+  const [exportState, setExportState] = React.useState("idle");
+  const [toolbarMessage, setToolbarMessage] = React.useState("");
+  const markerToken = React.useId().replace(/:/g, "");
+  const connectionKey = React.useMemo(() => JSON.stringify(branches.map((branch) => ({
+    title: branch.title,
+    items: branch.items,
+    connections: branch.connections
+  }))), [branches]);
+  const topology = React.useMemo(() => {
+    const nodeCount = branches.length;
+    const indegree = Array(nodeCount).fill(0);
+    branches.forEach((branch) => {
+      (branch.connections || []).forEach((connection) => {
+        if (connection.target >= 0 && connection.target < nodeCount) indegree[connection.target] += 1;
+      });
+    });
+    let startNodes = indegree.map((count, index) => count === 0 ? index : null).filter((index) => index !== null);
+    if (startNodes.length === 0 && nodeCount > 0) startNodes = [0];
+    const ranks = Array(nodeCount).fill(null);
+    startNodes.forEach((index) => {
+      ranks[index] = 0;
+    });
+    for (let pass = 0; pass < nodeCount; pass++) {
+      branches.forEach((branch, sourceIndex) => {
+        if (ranks[sourceIndex] == null) return;
+        (branch.connections || []).forEach((connection) => {
+          if (connection.target <= sourceIndex) return;
+          const proposed = Math.min(nodeCount - 1, ranks[sourceIndex] + 1);
+          ranks[connection.target] = Math.max(ranks[connection.target] == null ? 0 : ranks[connection.target], proposed);
+        });
+      });
+    }
+    branches.forEach((branch, index) => {
+      if (ranks[index] == null) ranks[index] = index === 0 ? 0 : Math.min(nodeCount - 1, (ranks[index - 1] == null ? index - 1 : ranks[index - 1]) + 1);
+    });
+    const groups = [];
+    ranks.forEach((rank, index) => {
+      if (!groups[rank]) groups[rank] = [];
+      groups[rank].push(index);
+    });
+    const compactGroups = groups.filter(Boolean);
+    const leafNodes = branches.map((branch, index) => (branch.connections || []).length === 0 ? index : null).filter((index) => index !== null);
+    return { groups: compactGroups, startNodes, leafNodes, indegree, ranks };
+  }, [connectionKey, branches.length]);
+  const collapsedKey = Array.from(collapsedNodes).sort((a, b) => a - b).join(",");
+  const layoutKey = connectionKey + "|" + (isEditingOutline ? "edit" : "view") + "|" + zoom + "|" + collapsedKey;
+  React.useLayoutEffect(() => {
+    const board = boardRef.current;
+    if (!board || typeof window === "undefined") return void 0;
+    let frame = null;
+    const measure = () => {
+      const boardRect = board.getBoundingClientRect();
+      const getRect = (key) => {
+        const element = nodeRefs.current[key];
+        if (!element) return null;
+        const rect = element.getBoundingClientRect();
+        return {
+          left: (rect.left - boardRect.left) / zoom,
+          right: (rect.right - boardRect.left) / zoom,
+          top: (rect.top - boardRect.top) / zoom,
+          bottom: (rect.bottom - boardRect.top) / zoom,
+          width: rect.width / zoom,
+          height: rect.height / zoom
+        };
+      };
+      const logicalEdges = [];
+      topology.startNodes.forEach((target) => logicalEdges.push({ from: "start", to: target, label: "", synthetic: true }));
+      branches.forEach((branch, sourceIndex) => {
+        (branch.connections || []).forEach((connection) => logicalEdges.push({
+          from: sourceIndex,
+          to: connection.target,
+          label: connection.label || "",
+          synthetic: false
+        }));
+      });
+      topology.leafNodes.forEach((source) => logicalEdges.push({ from: source, to: "end", label: "", synthetic: true }));
+      const geometry = logicalEdges.map((edge, edgeIndex) => {
+        const sourceRect = getRect(edge.from);
+        const targetRect = getRect(edge.to);
+        if (!sourceRect || !targetRect) return null;
+        const sourceRank = edge.from === "start" ? -1 : topology.ranks[edge.from];
+        const targetRank = edge.to === "end" ? topology.groups.length : topology.ranks[edge.to];
+        const isBackEdge = targetRank <= sourceRank;
+        let path;
+        let labelX;
+        let labelY;
+        if (isBackEdge) {
+          const startX = sourceRect.right;
+          const startY = sourceRect.top + sourceRect.height / 2;
+          const endX = targetRect.right;
+          const endY = targetRect.top + targetRect.height / 2;
+          const loopX = Math.max(startX, endX) + 44 + edgeIndex % 3 * 18;
+          path = ["M", startX, startY, "C", loopX, startY, loopX, endY, endX, endY].join(" ");
+          labelX = loopX - 4;
+          labelY = (startY + endY) / 2;
+        } else {
+          const startX = sourceRect.left + sourceRect.width / 2;
+          const startY = sourceRect.bottom;
+          const endX = targetRect.left + targetRect.width / 2;
+          const endY = targetRect.top;
+          const midY = (startY + endY) / 2;
+          path = ["M", startX, startY, "C", startX, midY, endX, midY, endX, endY].join(" ");
+          labelX = (startX + endX) / 2;
+          labelY = midY;
+        }
+        return { ...edge, path, labelX, labelY, isBackEdge };
+      }).filter(Boolean);
+      setEdgeGeometry(geometry);
+    };
+    const scheduleMeasure = () => {
+      if (frame != null) window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(measure);
+    };
+    scheduleMeasure();
+    const resizeObserver = window.ResizeObserver ? new window.ResizeObserver(scheduleMeasure) : null;
+    if (resizeObserver) {
+      resizeObserver.observe(board);
+      Object.values(nodeRefs.current).forEach((element) => element && resizeObserver.observe(element));
+    }
+    window.addEventListener("resize", scheduleMeasure);
+    return () => {
+      if (frame != null) window.cancelAnimationFrame(frame);
+      if (resizeObserver) resizeObserver.disconnect();
+      window.removeEventListener("resize", scheduleMeasure);
+    };
+  }, [layoutKey, topology]);
+  const updateConnection = (sourceIndex, targetIndex, enabled) => {
+    const current = Array.isArray(branches[sourceIndex]?.connections) ? branches[sourceIndex].connections : [];
+    const next = enabled ? current.filter((connection) => connection.target !== targetIndex).concat([{ target: targetIndex, label: "" }]) : current.filter((connection) => connection.target !== targetIndex);
+    handleOutlineChange(sourceIndex, "connections", next);
+  };
+  const updateConnectionLabel = (sourceIndex, targetIndex, label) => {
+    const current = Array.isArray(branches[sourceIndex]?.connections) ? branches[sourceIndex].connections : [];
+    handleOutlineChange(sourceIndex, "connections", current.map(
+      (connection) => connection.target === targetIndex ? { ...connection, label } : connection
+    ));
+  };
+  const maxLaneCount = Math.max(1, ...topology.groups.map((group) => group.length));
+  const minBoardWidth = Math.max(700, maxLaneCount * 300 + 80);
+  const setNodeRef = (key) => (element) => {
+    if (element) nodeRefs.current[key] = element;
+    else delete nodeRefs.current[key];
+  };
+  const clampZoom = (value) => Math.min(1.6, Math.max(0.5, Math.round(value * 10) / 10));
+  const changeZoom = (delta) => {
+    setZoom((current) => {
+      const next = clampZoom(current + delta);
+      setToolbarMessage((t("outline.zoom_changed") || "Zoom") + ": " + Math.round(next * 100) + "%");
+      return next;
+    });
+  };
+  const fitToScreen = () => {
+    const viewportWidth = viewportRef.current?.clientWidth || minBoardWidth;
+    const next = clampZoom(Math.min(1, (viewportWidth - 24) / minBoardWidth));
+    setZoom(next);
+    setToolbarMessage((t("outline.fit_complete") || "Fit to screen") + ": " + Math.round(next * 100) + "%");
+  };
+  const toggleNodeCollapsed = (index) => {
+    setCollapsedNodes((current) => {
+      const next = new Set(current);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  };
+  const setAllCollapsed = (shouldCollapse) => {
+    setCollapsedNodes(shouldCollapse ? new Set(branches.map((branch, index) => index)) : /* @__PURE__ */ new Set());
+    setToolbarMessage(shouldCollapse ? t("outline.all_nodes_collapsed") || "All flow nodes collapsed" : t("outline.all_nodes_expanded") || "All flow nodes expanded");
+  };
+  const buildExportSvg = () => {
+    const board = boardRef.current;
+    if (!board || typeof window === "undefined") throw new Error("Flow chart is not ready to export");
+    const clone = board.cloneNode(true);
+    const sourceElements = [board].concat(Array.from(board.querySelectorAll("*")));
+    const clonedElements = [clone].concat(Array.from(clone.querySelectorAll("*")));
+    sourceElements.forEach((sourceElement, index) => {
+      const cloneElement = clonedElements[index];
+      if (!cloneElement || !(cloneElement instanceof Element)) return;
+      const computed = window.getComputedStyle(sourceElement);
+      const declarations = [];
+      for (let propertyIndex = 0; propertyIndex < computed.length; propertyIndex++) {
+        const property = computed[propertyIndex];
+        if (property === "zoom") continue;
+        declarations.push(property + ":" + computed.getPropertyValue(property));
+      }
+      cloneElement.setAttribute("style", declarations.join(";"));
+    });
+    Array.from(board.querySelectorAll("input")).forEach((input, index) => {
+      const cloneInput = clone.querySelectorAll("input")[index];
+      if (!cloneInput) return;
+      cloneInput.setAttribute("value", input.value || "");
+      if (input.checked) cloneInput.setAttribute("checked", "checked");
+      else cloneInput.removeAttribute("checked");
+    });
+    clone.style.zoom = "1";
+    clone.style.transform = "none";
+    const boardRect = board.getBoundingClientRect();
+    const width = Math.ceil(Math.max(board.scrollWidth, boardRect.width / zoom));
+    const height = Math.ceil(Math.max(board.scrollHeight, boardRect.height / zoom));
+    return '<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + " " + height + '"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="width:' + width + "px;height:" + height + 'px;background:#f8fafc;">' + clone.outerHTML + "</div></foreignObject></svg>";
+  };
+  const exportFilenameBase = "flow-chart-" + _organizerSlugify(topicTitle) + "-" + (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+  const handleDownloadSvg = () => {
+    try {
+      setExportState("rendering");
+      const svg = buildExportSvg();
+      _downloadOrganizerBlob(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }), exportFilenameBase + ".svg");
+      setExportState("idle");
+      setToolbarMessage(t("outline.svg_exported") || "SVG downloaded");
+    } catch (error) {
+      setExportState("error");
+      setToolbarMessage(t("outline.export_failed") || "Export failed. Please try again.");
+      window.setTimeout(() => setExportState("idle"), 2500);
+    }
+  };
+  const handleDownloadPng = async () => {
+    if (exportState === "rendering") return;
+    const board = boardRef.current;
+    if (!board) return;
+    setExportState("rendering");
+    let exportClone = null;
+    try {
+      if (document.fonts?.ready) {
+        try {
+          await document.fonts.ready;
+        } catch (_) {
+        }
+      }
+      const html2canvas = await _loadOrganizerHtml2Canvas();
+      exportClone = board.cloneNode(true);
+      exportClone.style.zoom = "1";
+      exportClone.style.position = "fixed";
+      exportClone.style.left = "-100000px";
+      exportClone.style.top = "0";
+      exportClone.style.pointerEvents = "none";
+      exportClone.style.background = "#f8fafc";
+      document.body.appendChild(exportClone);
+      const canvas = await html2canvas(exportClone, {
+        backgroundColor: "#f8fafc",
+        useCORS: true,
+        scale: 2,
+        logging: false
+      });
+      const blob = await new Promise((resolve, reject) => canvas.toBlob((value) => value ? resolve(value) : reject(new Error("PNG encoding failed")), "image/png"));
+      _downloadOrganizerBlob(blob, exportFilenameBase + ".png");
+      setExportState("idle");
+      setToolbarMessage(t("outline.png_exported") || "PNG downloaded");
+    } catch (error) {
+      setExportState("error");
+      setToolbarMessage(t("outline.png_export_failed") || "PNG export is unavailable. SVG and Print still work offline.");
+      window.setTimeout(() => setExportState("idle"), 3e3);
+    } finally {
+      if (exportClone?.parentNode) exportClone.parentNode.removeChild(exportClone);
+    }
+  };
+  const handlePrintFlow = () => {
+    try {
+      const svg = buildExportSvg().replace(/^<\?xml[^>]*>\s*/, "");
+      const printWindow = window.open("", "_blank", "width=1200,height=800");
+      if (!printWindow) throw new Error("Print window blocked");
+      const safeTitle = String(topicTitle || "Flow Chart").replace(/[&<>"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[character]);
+      printWindow.document.open();
+      printWindow.document.write(
+        '<!doctype html><html><head><meta charset="utf-8"><title>' + safeTitle + "</title><style>html,body{margin:0;background:white}body{padding:20px}svg{display:block;max-width:100%;height:auto;margin:auto}@page{size:landscape;margin:.35in}</style></head><body>" + svg + "<script>window.onload=function(){setTimeout(function(){window.print();},100);};<\/script></body></html>"
+      );
+      printWindow.document.close();
+      setToolbarMessage(t("outline.print_opened") || "Print or Save as PDF opened");
+    } catch (error) {
+      setExportState("error");
+      setToolbarMessage(t("outline.print_failed") || "Print could not be opened. Check pop-up permissions.");
+      window.setTimeout(() => setExportState("idle"), 2500);
+    }
+  };
+  return /* @__PURE__ */ React.createElement("section", { className: "rounded-3xl border border-slate-200 bg-white shadow-sm", "aria-label": t("outline.flow_topology") || "Flow chart topology" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-3 py-3" }, /* @__PURE__ */ React.createElement("div", { role: "toolbar", "aria-label": t("outline.flow_view_controls") || "Flow chart view controls", className: "flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => changeZoom(-0.1), disabled: zoom <= 0.5, className: "min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white px-3 font-black text-slate-800 hover:bg-slate-100 disabled:opacity-40", "aria-label": t("outline.zoom_out") || "Zoom out", title: t("outline.zoom_out") || "Zoom out" }, "?"), /* @__PURE__ */ React.createElement("span", { className: "min-w-14 text-center text-xs font-black tabular-nums text-slate-700", "aria-label": (t("outline.current_zoom") || "Current zoom") + " " + Math.round(zoom * 100) + "%" }, Math.round(zoom * 100), "%"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => changeZoom(0.1), disabled: zoom >= 1.6, className: "min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white px-3 font-black text-slate-800 hover:bg-slate-100 disabled:opacity-40", "aria-label": t("outline.zoom_in") || "Zoom in", title: t("outline.zoom_in") || "Zoom in" }, "+"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: fitToScreen, className: "min-h-11 rounded-lg border border-indigo-300 bg-indigo-50 px-3 text-xs font-black text-indigo-800 hover:bg-indigo-100" }, t("outline.fit_to_screen") || "Fit"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setAllCollapsed(collapsedNodes.size !== branches.length), className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-100" }, collapsedNodes.size === branches.length ? t("outline.expand_all") || "Expand all" : t("outline.collapse_all") || "Collapse all")), /* @__PURE__ */ React.createElement("div", { role: "toolbar", "aria-label": t("outline.flow_export_controls") || "Flow chart export controls", className: "flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleDownloadSvg, disabled: exportState === "rendering", className: "min-h-11 rounded-lg border border-violet-300 bg-violet-50 px-3 text-xs font-black text-violet-800 hover:bg-violet-100 disabled:opacity-50", "aria-label": t("outline.download_svg") || "Download flow chart as SVG" }, "SVG"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleDownloadPng, disabled: exportState === "rendering", className: "min-h-11 rounded-lg border border-emerald-300 bg-emerald-50 px-3 text-xs font-black text-emerald-800 hover:bg-emerald-100 disabled:opacity-50", "aria-busy": exportState === "rendering", "aria-label": t("outline.download_png") || "Download flow chart as PNG" }, exportState === "rendering" ? t("outline.rendering") || "Rendering?" : "PNG"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handlePrintFlow, className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-xs font-black text-slate-800 hover:bg-slate-100", "aria-label": t("outline.print_pdf") || "Print or save flow chart as PDF" }, t("outline.print") || "Print / PDF")), /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, toolbarMessage)), /* @__PURE__ */ React.createElement("div", { ref: viewportRef, className: "overflow-auto rounded-b-3xl bg-slate-50/70" }, /* @__PURE__ */ React.createElement("div", { ref: boardRef, className: "relative p-8 md:p-10", style: { minWidth: minBoardWidth + "px", zoom } }, /* @__PURE__ */ React.createElement("svg", { className: "absolute inset-0 z-0 h-full w-full overflow-visible pointer-events-none", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("marker", { id: "flow-arrow-" + markerToken, viewBox: "0 0 10 10", refX: "8", refY: "5", markerWidth: "7", markerHeight: "7", orient: "auto-start-reverse" }, /* @__PURE__ */ React.createElement("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "#4f46e5" })), /* @__PURE__ */ React.createElement("marker", { id: "flow-loop-arrow-" + markerToken, viewBox: "0 0 10 10", refX: "8", refY: "5", markerWidth: "7", markerHeight: "7", orient: "auto-start-reverse" }, /* @__PURE__ */ React.createElement("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "#b45309" }))), edgeGeometry.map((edge, index) => {
+    const displayLabel = edge.label.length > 28 ? edge.label.slice(0, 25) + "..." : edge.label;
+    const labelWidth = Math.max(44, Math.min(210, displayLabel.length * 7 + 18));
+    const markerId = edge.isBackEdge ? "flow-loop-arrow-" + markerToken : "flow-arrow-" + markerToken;
+    return /* @__PURE__ */ React.createElement("g", { key: [edge.from, edge.to, index].join("-") }, /* @__PURE__ */ React.createElement(
+      "path",
+      {
+        d: edge.path,
+        fill: "none",
+        stroke: edge.isBackEdge ? "#b45309" : "#4f46e5",
+        strokeWidth: edge.synthetic ? 2 : 2.5,
+        strokeDasharray: edge.isBackEdge ? "7 5" : void 0,
+        markerEnd: "url(#" + markerId + ")"
+      }
+    ), displayLabel && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("rect", { x: edge.labelX - labelWidth / 2, y: edge.labelY - 12, width: labelWidth, height: "24", rx: "12", fill: "white", stroke: edge.isBackEdge ? "#f59e0b" : "#a5b4fc" }), /* @__PURE__ */ React.createElement("text", { x: edge.labelX, y: edge.labelY + 4, textAnchor: "middle", fill: edge.isBackEdge ? "#92400e" : "#3730a3", fontSize: "11", fontWeight: "800" }, displayLabel)));
+  })), /* @__PURE__ */ React.createElement("div", { ref: setNodeRef("start"), className: "relative z-10 mx-auto mb-12 w-fit rounded-full border-2 border-indigo-300 bg-indigo-700 px-8 py-3 text-sm font-black uppercase tracking-widest text-white shadow-md" }, t("outline.labels.start") || "Start"), /* @__PURE__ */ React.createElement("div", { role: "list", className: "relative z-10 space-y-16" }, topology.groups.map((group, levelIndex) => /* @__PURE__ */ React.createElement("div", { key: levelIndex, className: "grid items-start gap-8", style: { gridTemplateColumns: "repeat(" + group.length + ", minmax(15rem, 1fr))" } }, group.map((branchIndex) => {
+    const branch = branches[branchIndex];
+    const outgoing = branch.connections || [];
+    const isDecision = outgoing.length > 1;
+    const isMerge = (topology.indegree[branchIndex] || 0) > 1;
+    const isCollapsed = collapsedNodes.has(branchIndex);
+    const badgeText = isDecision ? t("outline.decision_point") || "Decision point" : isMerge ? t("outline.paths_merge_here") || "Paths merge here" : (t("outline.step") || "Step") + " " + (branchIndex + 1);
+    return /* @__PURE__ */ React.createElement(
+      "section",
+      {
+        key: branchIndex,
+        ref: setNodeRef(branchIndex),
+        role: "listitem",
+        className: "relative rounded-2xl border-2 bg-white p-5 shadow-lg " + (isDecision ? "border-amber-400 ring-4 ring-amber-100" : isMerge ? "border-teal-400 ring-4 ring-teal-100" : "border-indigo-200")
+      },
+      /* @__PURE__ */ React.createElement("div", { className: "absolute -top-4 left-4 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white " + (isDecision ? "bg-amber-600" : isMerge ? "bg-teal-700" : "bg-indigo-600") }, badgeText),
+      /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => toggleNodeCollapsed(branchIndex),
+          "aria-expanded": !isCollapsed,
+          "aria-label": (isCollapsed ? t("outline.expand_step") || "Expand step" : t("outline.collapse_step") || "Collapse step") + " " + (branchIndex + 1),
+          className: "absolute right-3 top-3 flex min-h-11 min-w-11 items-center justify-center rounded-full border border-slate-300 bg-white text-lg font-black text-slate-700 shadow-sm hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-500"
+        },
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, isCollapsed ? "+" : "?")
+      ),
+      /* @__PURE__ */ React.createElement("div", { className: "mt-2 pr-10" }, isEditingOutline ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          "aria-label": (t("common.enter_branch") || "Enter branch") + " " + (branchIndex + 1),
+          value: branch.title,
+          onChange: (event) => handleOutlineChange(branchIndex, "title", event.target.value),
+          className: "w-full rounded-lg border border-indigo-300 px-3 py-2 font-black text-indigo-950 focus:ring-2 focus:ring-indigo-300"
+        }
+      ), (branch.title_en || leveledTextLanguage !== "English") && /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          "aria-label": t("common.common_placeholder_title_trans") || "Translated title",
+          value: branch.title_en || "",
+          onChange: (event) => handleOutlineChange(branchIndex, "title", event.target.value, null, true),
+          className: "w-full rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-700 focus:ring-2 focus:ring-indigo-200"
+        }
+      )) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h4", { className: "text-lg font-black text-indigo-950" }, branch.title), branch.title_en && /* @__PURE__ */ React.createElement("p", { className: "text-xs italic text-slate-600" }, "(", branch.title_en, ")"))),
+      /* @__PURE__ */ React.createElement("ul", { className: (isCollapsed ? "hidden " : "") + "mt-3 space-y-2" }, (branch.items || []).map((item, itemIndex) => {
+        const itemText = typeof item === "object" ? item?.text || "" : String(item || "");
+        return /* @__PURE__ */ React.createElement("li", { key: itemIndex, className: "flex items-start gap-2 text-sm text-slate-700" }, /* @__PURE__ */ React.createElement("span", { className: "mt-1.5 h-2 w-2 shrink-0 rounded-full bg-indigo-400", "aria-hidden": "true" }), isEditingOutline ? /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            "aria-label": (t("common.enter_item") || "Enter item") + " " + (itemIndex + 1),
+            value: itemText,
+            onChange: (event) => handleOutlineChange(branchIndex, "item", event.target.value, itemIndex),
+            className: "w-full rounded-md border border-slate-300 px-2 py-1 focus:ring-2 focus:ring-indigo-200"
+          }
+        ) : /* @__PURE__ */ React.createElement("span", null, itemText));
+      })),
+      !isCollapsed && outgoing.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex flex-wrap gap-1.5 border-t border-slate-100 pt-3", "aria-label": t("outline.outgoing_paths") || "Outgoing paths" }, outgoing.map((connection) => /* @__PURE__ */ React.createElement("span", { key: connection.target, className: "rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-[10px] font-bold text-indigo-800" }, (connection.label ? connection.label + ": " : "") + (t("outline.step") || "Step") + " " + (connection.target + 1)))),
+      isEditingOutline && !isCollapsed && /* @__PURE__ */ React.createElement("details", { className: "mt-4 rounded-xl border border-amber-200 bg-amber-50/70 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-black text-amber-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-600" }, t("outline.edit_paths") || "Edit paths and labels"), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-2" }, branches.map((targetBranch, targetIndex) => {
+        if (targetIndex === branchIndex) return null;
+        const connection = outgoing.find((candidate) => candidate.target === targetIndex);
+        const checkboxId = ["flow-path", markerToken, branchIndex, targetIndex].join("-");
+        return /* @__PURE__ */ React.createElement("div", { key: targetIndex, className: "rounded-lg border border-amber-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: checkboxId, className: "flex min-h-11 cursor-pointer items-center gap-2 text-xs font-bold text-slate-800" }, /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            id: checkboxId,
+            type: "checkbox",
+            checked: !!connection,
+            onChange: (event) => updateConnection(branchIndex, targetIndex, event.target.checked),
+            className: "h-5 w-5 rounded border-slate-400 text-indigo-600 focus:ring-indigo-500"
+          }
+        ), /* @__PURE__ */ React.createElement("span", null, (t("outline.connect_to") || "Connect to") + " " + (targetIndex + 1) + ": " + targetBranch.title)), connection && /* @__PURE__ */ React.createElement("label", { className: "mt-1 block text-[11px] font-bold text-slate-600" }, t("outline.path_label") || "Path label (for example: Yes or No)", /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            value: connection.label || "",
+            maxLength: 40,
+            onChange: (event) => updateConnectionLabel(branchIndex, targetIndex, event.target.value),
+            className: "mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm font-normal text-slate-800 focus:ring-2 focus:ring-indigo-200",
+            placeholder: t("outline.path_label_placeholder") || "Optional condition"
+          }
+        )));
+      })))
+    );
+  })))), /* @__PURE__ */ React.createElement("div", { ref: setNodeRef("end"), className: "relative z-10 mx-auto mt-12 w-fit rounded-full border-4 border-white bg-slate-800 px-8 py-3 text-sm font-black uppercase tracking-widest text-white shadow-lg" }, t("outline.labels.end") || "End"), /* @__PURE__ */ React.createElement("ul", { className: "sr-only" }, branches.flatMap((branch, sourceIndex) => (branch.connections || []).map((connection) => {
+    const routeText = (t("outline.step") || "Step") + " " + (sourceIndex + 1) + ", " + branch.title + ", " + (t("outline.connects_to") || "connects to") + " " + (t("outline.step") || "step") + " " + (connection.target + 1) + ", " + (branches[connection.target]?.title || "") + (connection.label ? ", " + (t("outline.path_label") || "path label") + " " + connection.label : "") + ".";
+    return /* @__PURE__ */ React.createElement("li", { key: [sourceIndex, connection.target].join("-") }, routeText);
+  }))))));
+};
+const KwlResponseBoard = ({ main, branches, t }) => {
+  const storageKey = React.useMemo(() => {
+    const seed = [main || "", ...Array.isArray(branches) ? branches.slice(0, 3).map((branch) => branch?.title || "") : []].join("|");
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) hash = (hash << 5) - hash + seed.charCodeAt(i) | 0;
+    return `alloflow_kwl_notes_${Math.abs(hash)}`;
+  }, [main, branches]);
+  const loadValues = (key) => {
+    if (typeof window === "undefined" || !window.localStorage) return ["", "", ""];
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem(key) || "null");
+      if (Array.isArray(parsed) && parsed.length === 3) return parsed.map((value) => String(value || ""));
+    } catch (_) {
+    }
+    return ["", "", ""];
+  };
+  const [entry, setEntry] = React.useState(() => ({ key: storageKey, values: loadValues(storageKey) }));
+  React.useEffect(() => {
+    if (entry.key !== storageKey) setEntry({ key: storageKey, values: loadValues(storageKey) });
+  }, [storageKey, entry.key]);
+  React.useEffect(() => {
+    if (entry.key !== storageKey) return;
+    if (typeof window === "undefined" || !window.localStorage) return;
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify(entry.values));
+    } catch (_) {
+    }
+  }, [entry, storageKey]);
+  const labels = [0, 1, 2].map((index) => branches?.[index]?.title || [
+    t("outline.kwl_know") || "Know",
+    t("outline.kwl_want") || "Want to Know",
+    t("outline.kwl_learned") || "Learned"
+  ][index]);
+  const updateValue = (index, value) => {
+    setEntry((current) => {
+      const values = [...current.values];
+      values[index] = value;
+      return { ...current, values };
+    });
+  };
+  const clearValues = () => setEntry((current) => ({ ...current, values: ["", "", ""] }));
+  return /* @__PURE__ */ React.createElement("section", { className: "mt-5 rounded-2xl border-2 border-emerald-200 bg-emerald-50/40 p-4", "aria-label": t("outline.kwl_personal_notes") || "My KWL notes" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "font-black text-emerald-900" }, t("outline.kwl_personal_notes") || "My KWL notes"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-800" }, t("outline.kwl_saved_locally") || "Your responses are saved only on this device.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearValues, className: "min-h-11 px-4 py-2 rounded-full text-xs font-bold text-emerald-900 bg-white border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, t("outline.kwl_clear_notes") || "Clear my notes")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-3" }, labels.map((label, index) => /* @__PURE__ */ React.createElement("label", { key: index, className: "block text-xs font-bold text-slate-700" }, /* @__PURE__ */ React.createElement("span", { className: "block mb-1" }, label), /* @__PURE__ */ React.createElement(
+    "textarea",
+    {
+      value: entry.values[index],
+      onChange: (event) => updateValue(index, event.target.value),
+      maxLength: 2e3,
+      rows: 5,
+      className: "w-full rounded-xl border border-slate-300 bg-white p-3 text-sm font-normal text-slate-800 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200",
+      "aria-label": `${label}: ${t("outline.kwl_personal_response") || "personal response"}`,
+      placeholder: index === 2 ? t("outline.kwl_learned_response_placeholder") || "What did you learn?" : t("outline.kwl_response_placeholder") || "Add your thinking\u2026"
+    }
+  )))));
+};
 const renderOutlineContent = (deps) => {
   const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, isInteractiveStrandChallenge, setIsInteractiveStrandChallenge, isInteractivePalaceRecall, setIsInteractivePalaceRecall, broadcastInteractiveOrganizer } = deps;
   const _broadcastInteractiveOrganizer = broadcastInteractiveOrganizer || (() => {
@@ -195,43 +758,16 @@ const renderOutlineContent = (deps) => {
     React.createElement("div", { className: "w-10 h-10 rounded-full border-[3px] border-indigo-100 border-t-indigo-500 motion-safe:animate-spin", "aria-hidden": "true" }),
     React.createElement("div", { className: "text-sm font-bold text-slate-500" }, t("common.loading") || "Loading the activity\u2026")
   );
-  const CauseEffectSortGame = window.AlloModules && window.AlloModules.CauseEffectSortGame ? (function() {
-    const _C = window.AlloModules.CauseEffectSortGame;
-    return React.memo((props) => React.createElement(_C, props));
-  })() : _GameLoadingFallback;
+  const CauseEffectSortGame = window.AlloModules && window.AlloModules.CauseEffectSortGame ? window.AlloModules.CauseEffectSortGame : _GameLoadingFallback;
   const PipelineBuilderGame = window.AlloModules && window.AlloModules.PipelineBuilderGame ? window.AlloModules.PipelineBuilderGame : _GameLoadingFallback;
-  const TChartSortGame = window.AlloModules && window.AlloModules.TChartSortGame ? (function() {
-    const _C = window.AlloModules.TChartSortGame;
-    return React.memo((props) => React.createElement(_C, props));
-  })() : _GameLoadingFallback;
-  const ConceptMapSortGame = window.AlloModules && window.AlloModules.ConceptMapSortGame ? (function() {
-    const _C = window.AlloModules.ConceptMapSortGame;
-    return React.memo((props) => React.createElement(_C, props));
-  })() : _GameLoadingFallback;
-  const OutlineSortGame = window.AlloModules && window.AlloModules.OutlineSortGame ? (function() {
-    const _C = window.AlloModules.OutlineSortGame;
-    return React.memo((props) => React.createElement(_C, props));
-  })() : _GameLoadingFallback;
-  const FishboneSortGame = window.AlloModules && window.AlloModules.FishboneSortGame ? (function() {
-    const _C = window.AlloModules.FishboneSortGame;
-    return React.memo((props) => React.createElement(_C, props));
-  })() : _GameLoadingFallback;
-  const ProblemSolutionSortGame = window.AlloModules && window.AlloModules.ProblemSolutionSortGame ? (function() {
-    const _C = window.AlloModules.ProblemSolutionSortGame;
-    return React.memo((props) => React.createElement(_C, props));
-  })() : _GameLoadingFallback;
-  const FrayerSortGame = window.AlloModules && window.AlloModules.FrayerSortGame ? (function() {
-    const _C = window.AlloModules.FrayerSortGame;
-    return React.memo((props) => React.createElement(_C, props));
-  })() : _GameLoadingFallback;
-  const SeeThinkWonderSortGame = window.AlloModules && window.AlloModules.SeeThinkWonderSortGame ? (function() {
-    const _C = window.AlloModules.SeeThinkWonderSortGame;
-    return React.memo((props) => React.createElement(_C, props));
-  })() : _GameLoadingFallback;
-  const StoryMapSortGame = window.AlloModules && window.AlloModules.StoryMapSortGame ? (function() {
-    const _C = window.AlloModules.StoryMapSortGame;
-    return React.memo((props) => React.createElement(_C, props));
-  })() : _GameLoadingFallback;
+  const TChartSortGame = window.AlloModules && window.AlloModules.TChartSortGame ? window.AlloModules.TChartSortGame : _GameLoadingFallback;
+  const ConceptMapSortGame = window.AlloModules && window.AlloModules.ConceptMapSortGame ? window.AlloModules.ConceptMapSortGame : _GameLoadingFallback;
+  const OutlineSortGame = window.AlloModules && window.AlloModules.OutlineSortGame ? window.AlloModules.OutlineSortGame : _GameLoadingFallback;
+  const FishboneSortGame = window.AlloModules && window.AlloModules.FishboneSortGame ? window.AlloModules.FishboneSortGame : _GameLoadingFallback;
+  const ProblemSolutionSortGame = window.AlloModules && window.AlloModules.ProblemSolutionSortGame ? window.AlloModules.ProblemSolutionSortGame : _GameLoadingFallback;
+  const FrayerSortGame = window.AlloModules && window.AlloModules.FrayerSortGame ? window.AlloModules.FrayerSortGame : _GameLoadingFallback;
+  const SeeThinkWonderSortGame = window.AlloModules && window.AlloModules.SeeThinkWonderSortGame ? window.AlloModules.SeeThinkWonderSortGame : _GameLoadingFallback;
+  const StoryMapSortGame = window.AlloModules && window.AlloModules.StoryMapSortGame ? window.AlloModules.StoryMapSortGame : _GameLoadingFallback;
   const handleGenerateFrayerImage = deps.handleGenerateFrayerImage;
   const handleRemoveFrayerImage = deps.handleRemoveFrayerImage;
   try {
@@ -239,8 +775,9 @@ const renderOutlineContent = (deps) => {
   } catch (_) {
   }
   if (!generatedContent || generatedContent.type !== "outline" || !generatedContent?.data) return null;
-  const { main, main_en, branches: rawBranches, structureType } = generatedContent?.data;
-  const branches = Array.isArray(rawBranches) ? rawBranches : [];
+  const requestedType = generatedContent?.data?.structureType || "Structured Outline";
+  const organizerData = normalizeVisualOrganizerData(generatedContent?.data, requestedType);
+  const { main, main_en, branches, structureType } = organizerData;
   const type = structureType || "Structured Outline";
   const MIN_GAME_ITEMS = 4;
   const totalBranchItems = branches.reduce((s, b) => s + (b.items || []).filter((it) => typeof it === "object" ? it.text : it).length, 0);
@@ -264,6 +801,7 @@ const renderOutlineContent = (deps) => {
       placeholder: t("common.placeholder_translation")
     }
   )) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, main), main_en && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 italic" }, "(", main_en, ")")));
+  const renderOrganizerFallback = (title, description, detail = "") => /* @__PURE__ */ React.createElement("div", { className: "max-w-2xl mx-auto px-4 py-8" }, /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement("div", { role: "status", className: "bg-amber-50 border-2 border-amber-200 rounded-2xl p-6 text-center" }, /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-amber-900 mb-2" }, title), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-amber-800" }, description), detail && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-700 mt-3" }, detail)));
   const BranchItem = React.memo(({ branch, bIdx, minimal = false, colorClass = "bg-white" }) => /* @__PURE__ */ React.createElement("div", { className: `${colorClass} p-5 rounded-2xl border-2 shadow-sm transition-all h-full ${bIdx % 2 === 0 ? "border-indigo-100" : "border-teal-100"} ${minimal ? "p-3" : ""} hover:shadow-md relative z-10` }, /* @__PURE__ */ React.createElement("div", { className: "mb-3 pb-2 border-b border-black/5" }, isEditingOutline ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-1" }, /* @__PURE__ */ React.createElement(
     "input",
     {
@@ -301,10 +839,11 @@ const renderOutlineContent = (deps) => {
   )) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", null, item), branch.items_en?.[iIdx] && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic" }, "(", branch.items_en[iIdx], ")"))))))));
   if (type === "Flow Chart" || type === "Process Flow / Sequence") {
     if (isPipelinePlaying || isInteractivePipeline && !isTeacherMode) {
-      const stepData = branches.map((b) => ({
-        title: b.title,
-        items: b.items || [],
-        connectsTo: Array.isArray(b.connectsTo) ? b.connectsTo : void 0
+      const stepData = branches.map((branch) => ({
+        title: branch.title,
+        items: branch.items || [],
+        connections: branch.connections || [],
+        connectsTo: (branch.connections || []).map((connection) => connection.target)
       }));
       return /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "Pipeline Builder encountered an error." }, /* @__PURE__ */ React.createElement(
         PipelineBuilderGame,
@@ -318,20 +857,7 @@ const renderOutlineContent = (deps) => {
         }
       ));
     }
-    const flowTargets = branches.map((branch, branchIndex) => {
-      const explicitTargets = Array.isArray(branch.connectsTo) ? [...new Set(branch.connectsTo.map((target) => Number(target)).filter((target) => Number.isInteger(target) && target >= 0 && target < branches.length && target !== branchIndex))] : [];
-      return explicitTargets.length > 0 ? explicitTargets : branchIndex < branches.length - 1 ? [branchIndex + 1] : [];
-    });
-    const incomingPathCounts = flowTargets.reduce((counts, targets) => {
-      targets.forEach((target) => {
-        counts[target] = (counts[target] || 0) + 1;
-      });
-      return counts;
-    }, {});
-    const hasNonLinearFlow = flowTargets.some(
-      (targets, index) => targets.length > 1 || targets.length === 1 && targets[0] !== index + 1
-    ) || Object.values(incomingPathCounts).some((count) => count > 1);
-    return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto" }, showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "mx-auto max-w-7xl" }, showGameButton && /* @__PURE__ */ React.createElement("div", { className: "mb-4 flex justify-center" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => {
@@ -339,45 +865,33 @@ const renderOutlineContent = (deps) => {
           setIsPipelinePlaying(true);
           _broadcastInteractiveOrganizer("pipeline");
         },
-        className: "flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
+        className: "flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.pipeline.title") || "Pipeline Builder"
       },
       /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
       " ",
       t("games.pipeline.play_btn") || "Build the Flow"
-    ), isInteractivePipeline && isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 ml-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full" }, "\u{1F3AF} Live for students"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      setIsInteractivePipeline(false);
-      _broadcastInteractiveOrganizer(null);
-    }, className: "text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full", "aria-label": t("a11y.stop_interactive_activity") }, "\u23F9 Stop Activity"))), /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement("style", null, `
-                        @keyframes flow-march {
-                            from { background-position-y: 0; }
-                            to { background-position-y: 16px; }
-                        }
-                        @media (prefers-reduced-motion: no-preference) {
-                            .flow-spine-marching {
-                                animation: flow-march 1.2s linear infinite;
-                            }
-                        }
-                    `), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center relative space-y-12 px-4 py-8 bg-slate-50/50 rounded-3xl border border-slate-100" }, !hasNonLinearFlow && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "absolute left-1/2 top-4 bottom-4 w-1 bg-gradient-to-b from-indigo-200 via-purple-200 to-teal-200 -translate-x-1/2 -z-10 rounded-full" }), /* @__PURE__ */ React.createElement(
-      "div",
+    ), isInteractivePipeline && isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "ml-2 flex items-center gap-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "rounded-full border border-amber-300 bg-amber-100 px-2 py-1 text-xs font-bold text-amber-800" }, "?? ", t("outline.live_for_students") || "Live for students"), /* @__PURE__ */ React.createElement(
+      "button",
       {
-        "aria-hidden": "true",
-        className: "flow-spine-marching absolute left-1/2 top-4 bottom-4 w-1 -translate-x-1/2 z-0 rounded-full opacity-60",
-        style: {
-          backgroundImage: "repeating-linear-gradient(to bottom, #6366f1 0, #6366f1 8px, transparent 8px, transparent 16px)",
-          backgroundSize: "100% 16px",
-          backgroundRepeat: "repeat-y",
-          pointerEvents: "none"
-        }
-      }
-    )), branches.map((b, i) => {
-      const targets = flowTargets[i];
-      const isBranching = targets.length > 1;
-      const isMerge = (incomingPathCounts[i] || 0) > 1;
-      const hasExplicitRoute = Array.isArray(b.connectsTo) && b.connectsTo.length > 0;
-      return /* @__PURE__ */ React.createElement("div", { key: i, className: "relative w-full flex flex-col items-center group" }, isMerge && /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-teal-800 bg-teal-100 border border-teal-300 px-3 py-1 rounded-full" }, /* @__PURE__ */ React.createElement(GitMerge, { size: 12, "aria-hidden": "true" }), " ", t("outline.paths_merge_here") || "Paths merge here"), i > 0 && flowTargets[i - 1].length === 1 && flowTargets[i - 1][0] === i && /* @__PURE__ */ React.createElement("div", { className: "absolute -top-9 z-10 text-indigo-300 bg-white rounded-full p-1 border border-indigo-100 shadow-sm" }, /* @__PURE__ */ React.createElement(ArrowDown, { size: 20, strokeWidth: 3 })), /* @__PURE__ */ React.createElement("div", { className: `w-full max-w-lg p-1 rounded-2xl bg-white shadow-lg transition-all duration-200 border-l-[6px] ${isBranching ? "border-l-amber-500 ring-2 ring-amber-100" : i % 2 === 0 ? "border-l-indigo-500" : "border-l-purple-500"} hover:shadow-xl hover:ring-2 hover:ring-indigo-100` }, /* @__PURE__ */ React.createElement("div", { className: `absolute -left-5 top-1/2 -translate-y-1/2 text-white text-sm font-black w-10 h-10 flex items-center justify-center rounded-full border-4 border-slate-50 shadow-md ${isBranching ? "bg-amber-500" : i % 2 === 0 ? "bg-indigo-500" : "bg-purple-500"}` }, i + 1), /* @__PURE__ */ React.createElement(BranchItem, { branch: b, bIdx: i, colorClass: "bg-white border-none shadow-none" }), isBranching && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 px-4 pb-2 text-[10px] font-black uppercase tracking-wider text-amber-700" }, /* @__PURE__ */ React.createElement(GitMerge, { size: 11, "aria-hidden": "true" }), " ", t("outline.decision_point") || "Decision point"), !isBranching && hasExplicitRoute && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-4 pb-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black text-indigo-700 uppercase tracking-wider flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ArrowDown, { size: 11, "aria-hidden": "true" }), " ", t("outline.continues_to") || "Continues to:"), targets.map((target) => /* @__PURE__ */ React.createElement("span", { key: target, className: "text-[10px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 px-2 py-0.5 rounded-full" }, t("outline.step_target", { number: target + 1, title: branches[target]?.title || "?" }) || "Step " + (target + 1) + ": " + (branches[target]?.title || "?"))))), isBranching && /* @__PURE__ */ React.createElement("div", { role: "group", className: "w-full max-w-2xl flex flex-col items-center", "aria-label": (t("outline.branches_to") || "Branches to") + " " + targets.map((target) => `step ${target + 1}`).join(", ") }, /* @__PURE__ */ React.createElement("div", { className: "h-5 w-0.5 bg-amber-400", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: "w-4/5 border-t-2 border-amber-400 pt-2 flex flex-wrap justify-around gap-2" }, targets.map((target) => /* @__PURE__ */ React.createElement("div", { key: target, className: "min-w-[10rem] max-w-[16rem] flex-1 text-center text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-300 px-3 py-2 rounded-xl shadow-sm" }, /* @__PURE__ */ React.createElement(ArrowDown, { size: 13, className: "inline mr-1", "aria-hidden": "true" }), t("outline.step_target", { number: target + 1, title: branches[target]?.title || "?" }) || "Step " + (target + 1) + ": " + (branches[target]?.title || "?"))))));
-    }), /* @__PURE__ */ React.createElement("div", { className: "px-8 py-3 bg-slate-800 text-white rounded-full font-black text-sm mt-4 z-10 shadow-lg border-4 border-white tracking-widest uppercase" }, t("outline.labels.end"))));
+        onClick: () => {
+          setIsInteractivePipeline(false);
+          _broadcastInteractiveOrganizer(null);
+        },
+        className: "rounded-full border border-red-300 bg-red-50 px-2 py-1 text-xs font-bold text-red-700 hover:bg-red-100",
+        "aria-label": t("a11y.stop_interactive_activity")
+      },
+      "? ",
+      t("outline.stop_activity") || "Stop Activity"
+    ))), /* @__PURE__ */ React.createElement(MainTitle, null), React.createElement(FlowTopologyBoard, {
+      branches,
+      t,
+      isEditingOutline,
+      handleOutlineChange,
+      leveledTextLanguage,
+      topicTitle: main
+    }));
   }
   if (type === "Venn Diagram") {
     if (!Array.isArray(branches) || branches.length < 3) {
@@ -586,7 +1100,7 @@ const renderOutlineContent = (deps) => {
           setIsTChartPlaying(true);
           _broadcastInteractiveOrganizer("tchart");
         },
-        className: "flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
+        className: "flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.tchart_sort.play_btn") || "Play T-Chart Sort Game"
       },
@@ -641,7 +1155,7 @@ const renderOutlineContent = (deps) => {
           setIsFishboneSortPlaying(true);
           _broadcastInteractiveOrganizer("fishbone");
         },
-        className: "flex items-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
+        className: "flex items-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.fishbone_sort.play_btn") || "Play Fishbone Sort Game"
       },
@@ -654,8 +1168,8 @@ const renderOutlineContent = (deps) => {
     }, className: "text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full", "aria-label": t("a11y.stop_interactive_activity") }, "\u23F9 Stop Activity"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-md border border-slate-200 p-4 overflow-x-auto" }, /* @__PURE__ */ React.createElement(
       "svg",
       {
-        role: "img",
-        "aria-label": `Fishbone diagram for ${main || "cause analysis"}`,
+        "aria-hidden": "true",
+        focusable: "false",
         viewBox: `0 0 ${VIEW_W} ${VIEW_H}`,
         className: "w-full h-auto min-w-[640px]",
         xmlns: "http://www.w3.org/2000/svg"
@@ -710,9 +1224,16 @@ const renderOutlineContent = (deps) => {
     })));
   }
   if (type === "Cause and Effect") {
-    const causes = branches.filter((b) => b.title.toLowerCase().includes("cause"));
-    const effects = branches.filter((b) => b.title.toLowerCase().includes("effect") || b.title.toLowerCase().includes("consequence"));
-    const chains = branches.filter((b) => b.title.toLowerCase().includes("chain") || b.title.toLowerCase().includes("sequence"));
+    const semanticText = (branch) => `${branch?.title || ""} ${branch?.title_en || ""}`.toLowerCase();
+    const semanticRole = (branch) => String(branch?.role || branch?.semanticRole || "").trim().toLowerCase();
+    let causes = branches.filter((branch) => semanticRole(branch) === "cause" || semanticRole(branch) === "causes" || semanticText(branch).includes("cause"));
+    let effects = branches.filter((branch) => ["effect", "effects", "consequence", "consequences"].includes(semanticRole(branch)) || semanticText(branch).includes("effect") || semanticText(branch).includes("consequence"));
+    let chains = branches.filter((branch) => ["chain", "sequence"].includes(semanticRole(branch)) || semanticText(branch).includes("chain") || semanticText(branch).includes("sequence"));
+    if (causes.length === 0 && effects.length === 0 && branches.length >= 2) {
+      causes = [branches[0]];
+      effects = [branches[1]];
+      chains = branches.slice(2);
+    }
     const isLegacy = causes.length === 0 && effects.length === 0 && chains.length === 0;
     if (isCESortPlaying || isInteractiveCESort && !isTeacherMode) {
       const causeItems = [];
@@ -751,7 +1272,7 @@ const renderOutlineContent = (deps) => {
             setIsCESortPlaying(true);
             _broadcastInteractiveOrganizer("cesort");
           },
-          className: "flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
+          className: "flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
           "aria-describedby": "game-btn-hint",
           "aria-label": t("games.ce_sort.title") || "Sort Causes and Effects"
         },
@@ -779,7 +1300,7 @@ const renderOutlineContent = (deps) => {
           setIsCESortPlaying(true);
           _broadcastInteractiveOrganizer("cesort");
         },
-        className: "flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
+        className: "flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.ce_sort.title") || "Sort Causes and Effects"
       },
@@ -820,7 +1341,7 @@ const renderOutlineContent = (deps) => {
           setIsProblemSolutionSortPlaying(true);
           _broadcastInteractiveOrganizer("problemsolution");
         },
-        className: "flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
+        className: "flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.problem_solution_sort.play_btn") || "Prioritize the Solutions"
       },
@@ -870,7 +1391,7 @@ const renderOutlineContent = (deps) => {
           setIsConceptMapSortPlaying(true);
           _broadcastInteractiveOrganizer("conceptmap");
         },
-        className: "flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
+        className: "flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.concept_map_sort.play_btn") || "Play Concept Map Sort Game"
       },
@@ -883,6 +1404,12 @@ const renderOutlineContent = (deps) => {
     }, className: "text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full", "aria-label": t("a11y.stop_interactive_activity") }, "\u23F9 Stop Activity"))), /* @__PURE__ */ React.createElement(KeyConceptMapView, { branches, main, main_en, BranchItem }));
   }
   if (type === "Frayer Model" && !isEditingOutline) {
+    if (branches.length !== 4) {
+      return renderOrganizerFallback(
+        t("outline.frayer_invalid_title") || "This Frayer Model is incomplete",
+        t("outline.frayer_invalid_desc") || "A Frayer Model needs Definition, Characteristics, Examples, and Non-Examples. Regenerate it or switch to edit mode to repair the sections."
+      );
+    }
     const frayerImage = generatedContent?.data?.frayerExampleImage;
     const onGenerateFrayerVisual = async () => {
       if (typeof handleGenerateFrayerImage === "function") await handleGenerateFrayerImage("");
@@ -943,7 +1470,7 @@ const renderOutlineContent = (deps) => {
           setIsFrayerSortPlaying(true);
           _broadcastInteractiveOrganizer("frayer");
         },
-        className: "flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-emerald-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
+        className: "flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-emerald-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.frayer_sort.play_btn") || "Play Frayer Sort Game"
       },
@@ -983,6 +1510,12 @@ const renderOutlineContent = (deps) => {
     )) : null, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("outline.frayer_caption") || "Frayer Model: vocabulary term in the center, definition + characteristics + examples + non-examples in the four quadrants."));
   }
   if (type === "See-Think-Wonder" && !isEditingOutline) {
+    if (branches.length !== 3) {
+      return renderOrganizerFallback(
+        t("outline.see_think_wonder_invalid_title") || "This See-Think-Wonder routine is incomplete",
+        t("outline.see_think_wonder_invalid_desc") || "This organizer needs exactly three sections: See, Think, and Wonder. Regenerate it or switch to edit mode to repair the sections."
+      );
+    }
     if (isSeeThinkWonderSortPlaying || isInteractiveSeeThinkWonderSort && !isTeacherMode) {
       return /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "See-Think-Wonder Sort encountered an error." }, /* @__PURE__ */ React.createElement(
         SeeThinkWonderSortGame,
@@ -1018,7 +1551,7 @@ const renderOutlineContent = (deps) => {
           setIsSeeThinkWonderSortPlaying(true);
           _broadcastInteractiveOrganizer("seethinkwonder");
         },
-        className: "flex items-center gap-2 bg-gradient-to-r from-sky-500 to-amber-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
+        className: "flex items-center gap-2 bg-gradient-to-r from-sky-500 to-amber-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.see_think_wonder_sort.play_btn") || "Play See-Think-Wonder Sort Game"
       },
@@ -1031,6 +1564,12 @@ const renderOutlineContent = (deps) => {
     }, className: "text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full", "aria-label": t("a11y.stop_interactive_activity") }, "\u23F9 Stop Activity"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white divide-y md:divide-y-0 md:divide-x divide-slate-200" }, renderSTWColumn(seeBranch, "sky", "What you can directly observe"), renderSTWColumn(thinkBranch, "violet", "What the observations suggest"), renderSTWColumn(wonderBranch, "amber", "Questions you want to explore")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("outline.see_think_wonder_caption") || "See, Think, Wonder (Harvard Project Zero): observation, inference, and open questioning kept distinct."));
   }
   if (type === "KWL Chart" && !isEditingOutline) {
+    if (branches.length !== 3) {
+      return renderOrganizerFallback(
+        t("outline.kwl_invalid_title") || "This KWL Chart is incomplete",
+        t("outline.kwl_invalid_desc") || "A KWL Chart needs exactly three sections: Know, Want to Know, and Learned. Regenerate it or switch to edit mode to repair the sections."
+      );
+    }
     const knowBranch = branches[0] || { title: "Know", items: [] };
     const wantBranch = branches[1] || { title: "Want to Know", items: [] };
     const learnedBranch = branches[2] || { title: "Learned", items: [] };
@@ -1045,9 +1584,43 @@ const renderOutlineContent = (deps) => {
       const c = KWL_COLORS[colorKey];
       return /* @__PURE__ */ React.createElement("div", { className: `${c.bg} flex-1 min-h-[300px]` }, /* @__PURE__ */ React.createElement("h4", { className: `${c.header} font-black text-base uppercase tracking-wide text-center py-3 px-4` }, branch.title), /* @__PURE__ */ React.createElement("ul", { className: "p-4 space-y-2" }, items.length > 0 ? items.map((text, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "flex items-start gap-2 text-sm text-slate-700 leading-snug" }, /* @__PURE__ */ React.createElement("span", { className: `${c.dot} mt-0.5 flex-shrink-0` }, "\u25CF"), /* @__PURE__ */ React.createElement("span", null, text))) : /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, placeholderWhenEmpty || "\u2014")));
     };
-    return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white divide-y md:divide-y-0 md:divide-x divide-slate-200" }, renderColumn(knowBranch, "sky", null), renderColumn(wantBranch, "violet", null), renderColumn(learnedBranch, "emerald", t("outline.kwl_learned_placeholder") || "(students fill this in after the lesson)")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("outline.kwl_caption") || "KWL Chart: prior knowledge on the left, anticipated questions in the middle, learning captured on the right after the lesson."));
+    return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white divide-y md:divide-y-0 md:divide-x divide-slate-200" }, renderColumn(knowBranch, "sky", null), renderColumn(wantBranch, "violet", null), renderColumn(learnedBranch, "emerald", t("outline.kwl_learned_placeholder") || "(students fill this in after the lesson)")), React.createElement(KwlResponseBoard, { main, branches, t }), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("outline.kwl_caption") || "KWL Chart: prior knowledge on the left, anticipated questions in the middle, learning captured on the right after the lesson."));
+  }
+  if (type === "Claim-Evidence-Reasoning" && !isEditingOutline) {
+    if (branches.length !== 3) {
+      return renderOrganizerFallback(
+        t("outline.cer_invalid_title") || "This CER organizer is incomplete",
+        t("outline.cer_invalid_desc") || "A CER organizer needs exactly three sections: Claim, Evidence, and Reasoning. Regenerate it or switch to edit mode to repair the sections."
+      );
+    }
+    const cerStages = [
+      { branch: branches[0], label: t("outline.cer_claim") || "Claim", color: "indigo", caption: t("outline.cer_claim_caption") || "The answer or position" },
+      { branch: branches[1], label: t("outline.cer_evidence") || "Evidence", color: "sky", caption: t("outline.cer_evidence_caption") || "Specific support from the source" },
+      { branch: branches[2], label: t("outline.cer_reasoning") || "Reasoning", color: "emerald", caption: t("outline.cer_reasoning_caption") || "Why the evidence supports the claim" }
+    ];
+    const cerColors = {
+      indigo: { shell: "border-indigo-300 bg-indigo-50/70", badge: "bg-indigo-600", text: "text-indigo-950", dot: "bg-indigo-500" },
+      sky: { shell: "border-sky-300 bg-sky-50/70", badge: "bg-sky-600", text: "text-sky-950", dot: "bg-sky-500" },
+      emerald: { shell: "border-emerald-300 bg-emerald-50/70", badge: "bg-emerald-600", text: "text-emerald-950", dot: "bg-emerald-500" }
+    };
+    return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement("div", { className: "mb-5 rounded-2xl border-2 border-slate-300 bg-white px-5 py-4 text-center shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-[0.18em] text-slate-600" }, t("outline.cer_question") || "Question or phenomenon"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 font-bold text-slate-900" }, main)), /* @__PURE__ */ React.createElement("div", { role: "list", "aria-label": t("outline.cer_flow_aria") || "Claim, Evidence, and Reasoning relationship", className: "flex flex-col md:flex-row items-stretch gap-3" }, cerStages.map((stage, index) => {
+      const colors = cerColors[stage.color];
+      const items = Array.isArray(stage.branch?.items) ? stage.branch.items : [];
+      return /* @__PURE__ */ React.createElement(React.Fragment, { key: stage.label }, /* @__PURE__ */ React.createElement("section", { role: "listitem", className: `flex-1 rounded-2xl border-2 p-4 shadow-sm ${colors.shell}` }, /* @__PURE__ */ React.createElement("div", { className: `inline-flex rounded-full px-3 py-1 text-xs font-black uppercase tracking-wider text-white ${colors.badge}` }, stage.label), /* @__PURE__ */ React.createElement("p", { className: `mt-2 text-xs font-semibold ${colors.text}` }, stage.caption), /* @__PURE__ */ React.createElement("h4", { className: `mt-3 font-black ${colors.text}` }, stage.branch?.title || stage.label), /* @__PURE__ */ React.createElement("ul", { className: "mt-3 space-y-2" }, items.map((item, itemIndex) => {
+        const text = typeof item === "object" ? item?.text || "" : String(item || "");
+        return text ? /* @__PURE__ */ React.createElement("li", { key: itemIndex, className: "flex items-start gap-2 rounded-lg bg-white/80 p-2 text-sm text-slate-800" }, /* @__PURE__ */ React.createElement("span", { className: `mt-1.5 h-2 w-2 shrink-0 rounded-full ${colors.dot}`, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", null, text)) : null;
+      }))), index < cerStages.length - 1 && /* @__PURE__ */ React.createElement("div", { className: "flex shrink-0 items-center justify-center text-slate-500", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 28, className: "rotate-90 md:rotate-0", strokeWidth: 2.5 })));
+    })), /* @__PURE__ */ React.createElement("p", { className: "mt-4 text-center text-xs italic text-slate-600" }, t("outline.cer_caption") || "Evidence becomes persuasive when reasoning clearly connects it to the claim."));
   }
   if (type === "Story Map" && !isEditingOutline) {
+    if (branches.length !== 5) {
+      const sourceNote = branches[0]?.items?.map((item) => typeof item === "object" ? item?.text || "" : String(item || "")).filter(Boolean).join(" ");
+      return renderOrganizerFallback(
+        t("outline.story_map_invalid_title") || "This source does not contain a complete narrative arc",
+        t("outline.story_map_invalid_desc") || "A Story Map needs Exposition, Rising Action, Climax, Falling Action, and Resolution. Try a narrative source or choose a different organizer.",
+        sourceNote || branches[0]?.title || ""
+      );
+    }
     if (isStoryMapSortPlaying || isInteractiveStoryMapSort && !isTeacherMode) {
       return /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "Story Map Sort encountered an error." }, /* @__PURE__ */ React.createElement(
         StoryMapSortGame,
@@ -1077,7 +1650,7 @@ const renderOutlineContent = (deps) => {
           setIsStoryMapSortPlaying(true);
           _broadcastInteractiveOrganizer("storymap");
         },
-        className: "flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-rose-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
+        className: "flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-rose-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.story_map_sort.play_btn") || "Play Story Map Sort Game"
       },
@@ -1168,7 +1741,7 @@ const renderOutlineContent = (deps) => {
           setIsOutlineSortPlaying(true);
           _broadcastInteractiveOrganizer("outline");
         },
-        className: "flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
+        className: "flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
         "aria-describedby": "game-btn-hint",
         "aria-label": t("games.outline_sort.play_btn") || "Play Outline Sort Game"
       },
@@ -2072,7 +2645,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     "button",
     {
       onClick: () => startChallenge(false),
-      className: "flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
+      className: "flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite]",
       title: t("concept_space.challenge_tooltip") || "Practice: every concept falls off its strand \u2014 put each one back where it belongs"
     },
     "\u{1F3AF} ",
@@ -3081,7 +3654,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     {
       onClick: () => startRecall("bank", false),
       disabled: !!furnishing || !!sculpting,
-      className: "flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100",
+      className: "flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100",
       title: t("memory_palace.recall_tooltip") || "Practice: the labels are covered \u2014 walk the palace and recall what lives at each locus"
     },
     "\u{1F9E0} ",
@@ -3774,6 +4347,7 @@ const renderInteractiveMap = (deps) => {
 };
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.ViewRenderers = {
+  normalizeVisualOrganizerData,
   renderFormattedText,
   renderOutlineContent,
   renderInteractiveMap,

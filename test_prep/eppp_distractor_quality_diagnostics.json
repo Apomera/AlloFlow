@@ -4,7 +4,7 @@
   "reportType": "warning-only-editorial-diagnostics",
   "reviewedAt": "2026-07-16",
   "sourceFile": "test_prep/eppp_native_items.json",
-  "sourceSha256": "a01b3c58e0789ab2e9383155b8935b9c164b2a4b80a83376f3bd1d85f92cfcd8",
+  "sourceSha256": "9633216c0ad097acdf62b710e519377e32faf2235cbae128c0e922edd4d950e3",
   "policy": {
     "warningMeaning": "Diagnostics identify candidates for human editorial review; they do not assert that an item is inaccurate or cause the generator to fail.",
     "hardGate": "All-of-the-above and none-of-the-above answer choices remain prohibited and cause this generator to fail.",

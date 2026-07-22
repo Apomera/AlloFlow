@@ -1300,9 +1300,11 @@ function _htmlToDaisySmil(html, uid) {
   const spec = _htmlToDocxSpec(html);
   const heads = (spec.blocks || []).filter((b) => b.type === "heading");
   const pars = heads.length ? heads.map((_, i) => '<par id="par' + (i + 1) + '"><text src="dtbook.xml#h' + (i + 1) + '"/></par>').join("\n") : '<par id="par1"><text src="dtbook.xml"/></par>';
-  return '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE smil PUBLIC "-//NISO//DTD dtbsmil 2005-2//EN" "http://www.daisy.org/z3986/2005/dtbsmil-2005-2.dtd">\n<smil xmlns="http://www.w3.org/2001/SMIL20/"><head><meta name="dtb:uid" content="' + _expXmlEsc(uid || "alloflow-daisy") + '"/><meta name="dtb:generator" content="AlloFlow"/><meta name="dtb:totalElapsedTime" content="0:00:00"/></head><body><seq id="seq1" dur="0:00:00">' + pars + "</seq></body></smil>";
+  return '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE smil PUBLIC "-//NISO//DTD dtbsmil 2005-2//EN" "http://www.daisy.org/z3986/2005/dtbsmil-2005-2.dtd">\n<smil xmlns="http://www.w3.org/2001/SMIL20/"><head><meta name="dtb:uid" content="' + _expXmlEsc(uid || "alloflow-daisy") + // seq id + dtb:generator: both flagged by ZedVal 2.1 (DTD/RNG requires
+  // seq@id; generator is a Schematron recommendation). (zedval-2026-07-17)
+  '"/><meta name="dtb:generator" content="AlloFlow"/><meta name="dtb:totalElapsedTime" content="0:00:00"/></head><body><seq id="seq1" dur="0:00:00">' + pars + "</seq></body></smil>";
 }
-const _DAISY_OPF_XML = (title, lang, uid) => '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE package PUBLIC "+//ISBN 0-9673008-1-9//DTD OEB 1.2 Package//EN" "http://openebook.org/dtds/oeb-1.2/oebpkg12.dtd">\n<package xmlns="http://openebook.org/namespaces/oeb-package/1.0/" unique-identifier="uid">\n<metadata><dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:Title>' + _expXmlEsc(title) + '</dc:Title><dc:Date>' + new Date().toISOString().slice(0, 10) + "</dc:Date><dc:Language>" + _expXmlEsc(lang || "en") + '</dc:Language><dc:Format>ANSI/NISO Z39.86-2005</dc:Format><dc:Identifier id="uid">' + _expXmlEsc(uid || "alloflow-daisy") + '</dc:Identifier><dc:Publisher>AlloFlow</dc:Publisher></dc-metadata><x-metadata><meta name="dtb:multimediaType" content="textNCX"/><meta name="dtb:multimediaContent" content="text"/><meta name="dtb:totalTime" content="0:00:00"/></x-metadata></metadata>\n<manifest><item id="opf" href="package.opf" media-type="text/xml"/><item id="dtbook" href="dtbook.xml" media-type="application/x-dtbook+xml"/><item id="ncx" href="navigation.ncx" media-type="application/x-dtbncx+xml"/><item id="smil" href="book.smil" media-type="application/smil"/></manifest>\n<spine><itemref idref="smil"/></spine>\n</package>';
+const _DAISY_OPF_XML = (title, lang, uid) => '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE package PUBLIC "+//ISBN 0-9673008-1-9//DTD OEB 1.2 Package//EN" "http://openebook.org/dtds/oeb-1.2/oebpkg12.dtd">\n<package xmlns="http://openebook.org/namespaces/oeb-package/1.0/" unique-identifier="uid">\n<metadata><dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:Title>' + _expXmlEsc(title) + "</dc:Title><dc:Date>" + (/* @__PURE__ */ new Date()).toISOString().slice(0, 10) + "</dc:Date><dc:Language>" + _expXmlEsc(lang || "en") + '</dc:Language><dc:Format>ANSI/NISO Z39.86-2005</dc:Format><dc:Identifier id="uid">' + _expXmlEsc(uid || "alloflow-daisy") + '</dc:Identifier><dc:Publisher>AlloFlow</dc:Publisher></dc-metadata><x-metadata><meta name="dtb:multimediaType" content="textNCX"/><meta name="dtb:multimediaContent" content="text"/><meta name="dtb:totalTime" content="0:00:00"/></x-metadata></metadata>\n<manifest><item id="opf" href="package.opf" media-type="text/xml"/><item id="dtbook" href="dtbook.xml" media-type="application/x-dtbook+xml"/><item id="ncx" href="navigation.ncx" media-type="application/x-dtbncx+xml"/><item id="smil" href="book.smil" media-type="application/smil"/></manifest>\n<spine><itemref idref="smil"/></spine>\n</package>';
 function _wavDurationFromBytes(u8) {
   try {
     if (!u8 || u8.length <= 44) return 0;
@@ -2707,6 +2709,8 @@ function PdfAuditView(props) {
     runAutoFixLoop,
     runAxeAudit,
     runPdfAccessibilityAudit,
+    auditReady,
+    auditDependencyState,
     remediationReady,
     remediationDependencyState,
     retryRemediationDependencies,
@@ -2768,6 +2772,8 @@ function PdfAuditView(props) {
     setShowCloseConfirm,
     showCloseConfirm,
     startNewPdfAudit,
+    capturePdfDocumentIntakeEpoch,
+    isPdfDocumentIntakeCurrent,
     startPipelineTour,
     pdfRunHistory,
     setPdfRunHistory,
@@ -2934,6 +2940,13 @@ function PdfAuditView(props) {
     const state = remediationDependencyState || { pending: [], failed: [] };
     const names = (state.failed || []).concat(state.pending || []);
     addToast("The remediation engine is still loading" + (names.length ? ": " + names.join(", ") : "") + ". Retry when the dependencies are ready.", state.failed && state.failed.length ? "error" : "info");
+    return false;
+  };
+  const _requireAuditReady = () => {
+    if (auditReady !== false) return true;
+    const state = auditDependencyState || { pending: [], failed: [] };
+    const names = (state.failed || []).concat(state.pending || []);
+    addToast("The audit engine is still loading" + (names.length ? ": " + names.join(", ") : "") + ". Retry when the dependencies are ready.", state.failed && state.failed.length ? "error" : "info");
     return false;
   };
   const _remediationDependencies = remediationDependencyState || { pending: [], failed: [] };
@@ -6233,33 +6246,16 @@ Return ONLY JSON:
         window.__pdfCustomStyle = style;
         addToast && addToast(t("toasts.custom_style_2") + name + '" saved & applied!', "success");
       }, className: "w-full py-1.5 bg-indigo-600 text-white rounded text-[11px] font-bold hover:bg-indigo-700 transition-colors" }, "Save & Apply Style"))));
-    })()))), /* @__PURE__ */ React.createElement("div", { className: `flex gap-3 justify-center ${remediationReady === false ? "opacity-50" : ""}`, "aria-disabled": remediationReady === false, onClickCapture: (event) => {
-      if (remediationReady === false) {
-        event.preventDefault();
-        event.stopPropagation();
-        _requireRemediationReady();
-      }
-    } }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_start_btn", onClick: async () => {
+    })()))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_start_btn", disabled: pdfAuditLoading || auditReady === false, onClick: async () => {
+      if (!_requireAuditReady()) return;
       if (pdfAuditResult?._mediaPending) {
         addToast(t("toasts.digest_first") || "Digest the recording first (Step 0 above).", "info");
         return;
       }
       setPdfAuditResult(null);
       addToast(t("toasts.auditing_remediating_pdf"), "info");
-      await runPdfAccessibilityAudit(pendingPdfBase64);
-      setTimeout(() => {
-        const r = pdfFixResultRef.current;
-        const needsLoop = pdfAutoContinue && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0);
-        if (pdfAutoContinue && r && !r.axeAudit && (r.afterScore || 0) < pdfTargetScore) {
-          addToast(t("toasts.auto_continue_no_axe") || "\u26A0 Auto-continue to target unavailable for this run \u2014 the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.", "warning");
-        }
-        if (needsLoop) {
-          runAutoFixLoop(8);
-        } else if (pdfAutoSaveProject) {
-          saveProjectToFile(true);
-        }
-      }, 150);
-    }, className: "px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2" }, "\u267F ", t("pdf_audit.run_audit_label") || "Run Audit (step 1 of 2)"), !_remediationMode && /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_skip_to_extract_btn", onClick: () => {
+      await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name });
+    }, className: "px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" }, "\u267F ", t("pdf_audit.run_audit_label") || "Run Audit (step 1 of 2)"), !_remediationMode && /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_skip_to_extract_btn", onClick: () => {
       if (pdfAuditResult?._mediaPending) {
         addToast(t("toasts.digest_first") || "Digest the recording first (Step 0 above).", "info");
         return;
@@ -6398,23 +6394,32 @@ Return ONLY JSON:
         return;
       }
       const _projectLoadToken = ++_projectLoadSelectionRef.current;
+      let _projectDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === "function" ? capturePdfDocumentIntakeEpoch() : null;
+      const _projectLoadIsCurrent = () => _projectLoadToken === _projectLoadSelectionRef.current && (_projectDocumentEpoch == null || typeof isPdfDocumentIntakeCurrent !== "function" || isPdfDocumentIntakeCurrent(_projectDocumentEpoch));
       const reader = new FileReader();
       reader.onload = async (ev) => {
-        if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
+        if (!_projectLoadIsCurrent()) return;
         try {
           const parsedProject = JSON.parse(ev.target.result);
           const sanitizedImport = _viewSanitizeProjectImport(parsedProject, _docPipeline);
           const project = await _viewRehydrateVerificationHtmlBinding(sanitizedImport.project, _docPipeline);
-          if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
+          if (!_projectLoadIsCurrent()) return;
           if (!project.version || !project.accessibleHtml && !project.incomplete) {
             addToast(t("toasts.valid_alloflow_project_file"), "error");
             return;
           }
+          if (typeof startNewPdfAudit === "function") _projectDocumentEpoch = startNewPdfAudit();
+          else {
+            setPendingPdfBase64(null);
+            setPdfAuditResult(null);
+            setPdfFixResult(null);
+          }
+          if (!_projectLoadIsCurrent()) return;
+          if (typeof setPendingPdfBase64 === "function") setPendingPdfBase64(project.pdfBase64 || null);
           if (typeof project.version === "number" && project.version > 2) {
             addToast(t("toasts.project_newer_version") || "This project was saved by a newer AlloFlow (v" + project.version + " format). Loading what this version understands \u2014 some saved data may be ignored.", "warning");
           }
           if (project.incomplete) {
-            if (project.pdfBase64 && typeof setPendingPdfBase64 === "function") setPendingPdfBase64(project.pdfBase64);
             setPendingPdfFile({ name: project.fileName || "resumed-project.pdf", size: typeof project.fileSize === "number" && project.fileSize > 0 ? project.fileSize : void 0 });
             try {
               if (project.extractedText) window.__resumeExtractedText = { fileName: project.fileName || "resumed-project.pdf", text: project.extractedText, docKey: project.docKey || null };
@@ -6552,8 +6557,14 @@ Return ONLY JSON:
           }
           addToast(t("toasts.loaded_2") + (project.fileName || "project") + " \u2014 continue editing!", "success");
         } catch (err) {
-          if (_projectLoadToken === _projectLoadSelectionRef.current) addToast(t("toasts.failed_load") + err.message, "error");
+          if (_projectLoadIsCurrent()) addToast(t("toasts.failed_load") + err.message, "error");
         }
+      };
+      reader.onerror = () => {
+        if (_projectLoadIsCurrent()) addToast(t("toasts.failed_load") + (reader.error?.message || "Unable to read project file"), "error");
+      };
+      reader.onabort = () => {
+        if (_projectLoadIsCurrent()) addToast(t("toasts.failed_load") + "Project file read was cancelled", "info");
       };
       reader.readAsText(file);
       e.target.value = "";
@@ -10093,14 +10104,16 @@ Return ONLY JSON:
         return;
       }
       const _projectLoadToken = ++_projectLoadSelectionRef.current;
+      let _projectDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === "function" ? capturePdfDocumentIntakeEpoch() : null;
+      const _projectLoadIsCurrent = () => _projectLoadToken === _projectLoadSelectionRef.current && (_projectDocumentEpoch == null || typeof isPdfDocumentIntakeCurrent !== "function" || isPdfDocumentIntakeCurrent(_projectDocumentEpoch));
       const reader = new FileReader();
       reader.onload = async (ev) => {
-        if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
+        if (!_projectLoadIsCurrent()) return;
         try {
           const parsedProject = JSON.parse(ev.target.result);
           const sanitizedImport = _viewSanitizeProjectImport(parsedProject, _docPipeline);
           const project = await _viewRehydrateVerificationHtmlBinding(sanitizedImport.project, _docPipeline);
-          if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
+          if (!_projectLoadIsCurrent()) return;
           if (project && project.incomplete && project.version) {
             addToast(t("toasts.incomplete_use_continue") || "This is an unfinished project. Close this and use \u201CContinue a previous session\u201D on the start screen to pick up where it stopped (no re-scanning needed).", "info");
             e.target.value = "";
@@ -10110,6 +10123,26 @@ Return ONLY JSON:
             addToast(t("toasts.invalid_project_file_2"), "error");
             return;
           }
+          if (typeof startNewPdfAudit === "function") _projectDocumentEpoch = startNewPdfAudit();
+          else {
+            setPendingPdfBase64(null);
+            setPdfAuditResult(null);
+            setPdfFixResult(null);
+          }
+          if (!_projectLoadIsCurrent()) return;
+          if (typeof setPendingPdfBase64 === "function") setPendingPdfBase64(project.pdfBase64 || null);
+          setPdfAuditResult({
+            score: project.beforeScore || 0,
+            scores: [],
+            critical: [],
+            major: [],
+            minor: [],
+            passes: [],
+            summary: "Loaded from saved project",
+            pageCount: project.pageCount,
+            hasSearchableText: true,
+            hasImages: project.imageCount > 0
+          });
           const _loadedFixResult = {
             accessibleHtml: project.accessibleHtml,
             documentDigest: project.documentDigest || null,
@@ -10205,8 +10238,14 @@ Return ONLY JSON:
             addToast(t("toasts.project_loaded_2") + (project.fileName || "document") + " \u2014 continue editing!", "success");
           }
         } catch (err) {
-          if (_projectLoadToken === _projectLoadSelectionRef.current) addToast(t("toasts.failed_load_project") + err.message, "error");
+          if (_projectLoadIsCurrent()) addToast(t("toasts.failed_load_project") + err.message, "error");
         }
+      };
+      reader.onerror = () => {
+        if (_projectLoadIsCurrent()) addToast(t("toasts.failed_load_project") + (reader.error?.message || "Unable to read project file"), "error");
+      };
+      reader.onabort = () => {
+        if (_projectLoadIsCurrent()) addToast(t("toasts.failed_load_project") + "Project file read was cancelled", "info");
       };
       reader.readAsText(file);
       e.target.value = "";

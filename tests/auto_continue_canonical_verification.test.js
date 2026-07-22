@@ -175,11 +175,14 @@ describe('auto-continue canonical verification', () => {
     );
     expect(src).toContain('const pdfProjectLoadEpochRef = useRef(0);');
     expect(projectLoader).toContain('const _projectLoadEpoch = ++pdfProjectLoadEpochRef.current;');
-    expect(projectLoader.match(/_projectLoadEpoch !== pdfProjectLoadEpochRef\.current/g)).toHaveLength(2);
+    expect(projectLoader).toContain('let _projectDocumentEpoch = capturePdfDocumentIntakeEpoch();');
+    expect(projectLoader).toContain('&& isPdfDocumentIntakeCurrent(_projectDocumentEpoch);');
+    expect(projectLoader.match(/if \(!_projectLoadIsCurrent\(\)\) return;/g)).toHaveLength(3);
     expect(projectLoader.indexOf('const project = await rehydrateVerificationHtmlBinding(_sanitizedImport.project);')).toBeLessThan(
-      projectLoader.lastIndexOf('if (_projectLoadEpoch !== pdfProjectLoadEpochRef.current) return;'),
+      projectLoader.indexOf('_projectDocumentEpoch = startNewPdfAudit();'),
     );
-    expect(projectLoader).toContain('if (_projectLoadEpoch === pdfProjectLoadEpochRef.current) addToast');
+    expect(projectLoader).toContain('setPendingPdfBase64(project.pdfBase64 || null);');
+    expect(projectLoader).toContain('if (_projectLoadIsCurrent()) addToast');
   });
 
   it('explains stale, mismatched, and unavailable bindings in readable language', () => {

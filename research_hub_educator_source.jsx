@@ -71,7 +71,17 @@
     if (id === 'humanities') return 'Humanities & Social Research';
     return id || 'no active lane';
   }
-  function clip(s, n) { if (!s || typeof s !== 'string') return ''; return s.length <= n ? s : s.slice(0, n) + '…'; }
+  function methodPackLabel(id) {
+    var labels = {
+      scientific_investigation: 'Scientific Investigation',
+      engineering_design: 'Engineering Design',
+      humanistic_interpretation: 'Humanistic Interpretation',
+      community_qualitative: 'Community & Qualitative Inquiry',
+      civic_policy: 'Civic & Policy Inquiry',
+      creative_cultural: 'Creative & Cultural Inquiry',
+    };
+    return labels[id] || id || 'no approach selected';
+  }  function clip(s, n) { if (!s || typeof s !== 'string') return ''; return s.length <= n ? s : s.slice(0, n) + '…'; }
 
   // ───────────────────────────────────────────────────────────────────────
   // Header — student / question / lane / active time / loop-back count
@@ -97,6 +107,7 @@
           </div>
           <div style={{ fontSize: '11px', opacity: 0.8, marginTop: '4px' }}>
             Lane: <strong>{laneLabel(j.activeLane)}</strong>
+            <span> · Approach: <strong>{methodPackLabel(j.activeMethodPack)}</strong></span>
             {j.activeStage && (<span> · Stage: <strong>{j.activeStage}</strong></span>)}
             <span> · Active: <strong>{fmtDuration(elapsed)}</strong></span>
             <span> · Loop-backs: <strong>{(j.loopBacks || []).length}</strong></span>
@@ -343,7 +354,9 @@
         qualifierContractionsTotal + ' qualifier contraction(s), ' +
         warrantRevisionsTotal + ' warrant revision(s), ' +
         positionalitySnapshots.length + ' positionality snapshot(s)'}>
-        {/* Source tier movement */}
+        <div data-humanities-source-context-health="true" style={{ marginBottom: '9px', padding: '7px 9px', borderRadius: '8px', background: '#faf5ff', border: '1px solid #d8b4fe', fontSize: '10px', color: '#6b21a8' }}>
+          <strong>Humanistic source context:</strong> {sources.filter(function (s) { var c = s.humanitiesContext || {}; return c.relationshipType && c.historicalContext; }).length}/{sources.length} sources identify their relationship and historical/material context; {sources.filter(function (s) { var r = (s.humanitiesContext || {}).inquiryRelationship; return r === 'challenges' || r === 'complicates'; }).length} challenge or complicate the current position.
+        </div>        {/* Source tier movement */}
         <div style={{ marginBottom: '10px' }}>
           <strong style={{ fontSize: '11px', color: '#475569' }}>Source tier movement:</strong>
           <div style={{ marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
@@ -587,6 +600,85 @@
   // ───────────────────────────────────────────────────────────────────────
   // Root — picks panels per active lane
   // ───────────────────────────────────────────────────────────────────────
+  function MethodProvenancePanel(props) {
+    var j = props.journal;
+    var episodes = j.inquiryEpisodes || [];
+    var artifacts = j.capturedArtifacts || [];
+    var frame = (j.stageNotes || {}).frame_question || {};
+    var qualitative = frame.qualitativeMethod || null;
+    var creative = frame.creativeMethod || null;
+    return (
+      <Panel title="Method, episodes, and tool provenance">
+        <div style={{ fontSize: '11px', color: '#475569', lineHeight: 1.55 }}>
+          <strong>Current approach:</strong> {methodPackLabel(j.activeMethodPack)}
+          <span> · Episodes: <strong>{episodes.length}</strong></span>
+          <span> · Approved tool artifacts: <strong>{artifacts.length}</strong></span>
+        </div>
+        {episodes.length > 0 && (
+          <ol style={{ margin: '9px 0 0', paddingLeft: '20px', fontSize: '10px', color: '#475569' }}>
+            {episodes.slice(-8).map(function (episode) {
+              return <li key={episode.id}><strong>{methodPackLabel(episode.methodPackId)}</strong> · {fmtTime(episode.startedAt)}{episode.questionAtStart ? ' · “' + clip(episode.questionAtStart, 70) + '”' : ''}</li>;
+            })}
+          </ol>
+        )}
+        {artifacts.length > 0 && (
+          <div style={{ marginTop: '10px', display: 'grid', gap: '6px' }}>
+            {artifacts.slice(-6).map(function (artifact) {
+              return (
+                <div key={artifact.id} style={{ padding: '8px', borderRadius: '9px', border: '1px solid #cbd5e1', background: '#f8fafc' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 800, color: '#1e293b' }}>{artifact.title}</div>
+                  <div style={{ fontSize: '9px', color: '#64748b' }}>{artifact.sourceToolName || artifact.sourceToolId} · {methodPackLabel(artifact.methodPackId)}</div>
+                  {artifact.learnerNote && <div style={{ marginTop: '3px', fontSize: '10px', color: '#334155' }}><strong>Learner interpretation:</strong> {clip(artifact.learnerNote, 220)}</div>}
+                  {artifact.uncertaintyNote && <div style={{ marginTop: '3px', fontSize: '10px', color: '#92400e' }}><strong>Uncertainty:</strong> {clip(artifact.uncertaintyNote, 220)}</div>}
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {qualitative && <div style={{ marginTop: '9px', padding: '8px', borderRadius: '9px', background: '#fdf2f8', fontSize: '10px', color: '#831843' }}><strong>Qualitative plan:</strong> boundary {qualitative.evidenceBoundary || 'not selected'}; safeguarding {qualitative.safeguardingAcknowledged ? 'acknowledged' : 'not yet acknowledged'}; selection rationale {qualitative.selectionRationale ? 'present' : 'missing'}; discrepant-case plan {qualitative.discrepantCasePlan ? 'present' : 'missing'}.</div>}
+        {creative && <div style={{ marginTop: '9px', padding: '8px', borderRadius: '9px', background: '#fff7ed', fontSize: '10px', color: '#9a3412' }}><strong>Creative/cultural plan:</strong> mode {creative.inquiryMode || 'not selected'}; attribution plan {creative.attributionPlan ? 'present' : 'missing'}; critique plan {creative.critiquePlan ? 'present' : 'missing'}.</div>}
+        {!episodes.length && !artifacts.length && !qualitative && !creative && <p style={{ margin: '8px 0 0', fontSize: '10px', color: '#64748b', fontStyle: 'italic' }}>No method episode or cross-tool provenance has been recorded yet.</p>}
+      </Panel>
+    );
+  }
+  function IntegrationHealthPanel(props) {
+    var artifacts = props.journal.capturedArtifacts || [];
+    var helper = window.ResearchHub && window.ResearchHub.helpers && window.ResearchHub.helpers.assessResearchArtifactIntegration;
+    if (!artifacts.length) return EmptyTrajectory('Open-source integration health', 'No approved tool artifacts yet. Contract, license, citation, and reproducibility checks appear here after capture.');
+    var rows = artifacts.map(function (artifact) {
+      var health = typeof helper === 'function' ? helper(artifact) : (artifact.integrationHealth || { status: 'needs_review', issues: [] });
+      return { artifact: artifact, health: health };
+    });
+    var healthy = rows.filter(function (row) { return row.health.status === 'healthy'; }).length;
+    var review = rows.filter(function (row) { return row.health.status === 'needs_review'; }).length;
+    var action = rows.filter(function (row) { return row.health.status === 'action_needed'; }).length;
+    return (
+      <Panel title="Open-source integration health" subtitle={healthy + ' healthy · ' + review + ' review · ' + action + ' action needed'}>
+        <div data-educator-integration-health="true" style={{ display: 'grid', gap: '7px' }}>
+          {rows.slice(-10).map(function (row) {
+            var artifact = row.artifact;
+            var contract = artifact.integrationContract || {};
+            var receipt = artifact.reproducibilityReceipt || {};
+            var color = row.health.status === 'healthy' ? '#16a34a' : row.health.status === 'action_needed' ? '#dc2626' : '#d97706';
+            return (
+              <div key={artifact.id} style={{ padding: '8px 10px', borderRadius: '9px', border: '1px solid ' + color, background: color + '0d' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                  <strong style={{ fontSize: '10px', color: '#1e293b' }}>{artifact.sourceToolName || artifact.sourceToolId} · {artifact.sourceToolVersion || 'version unknown'}</strong>
+                  <span style={{ fontSize: '9px', fontWeight: 900, color: color }}>{row.health.status.replace('_', ' ')}</span>
+                </div>
+                <div style={{ marginTop: '3px', fontSize: '9px', color: '#64748b' }}>
+                  Contract v{contract.schemaVersion || '?'} · license: {(contract.license && (contract.license.spdx || contract.license.name)) || 'missing'} · citation: {contract.citation && contract.citation.text ? 'declared' : 'missing'} · reproducibility: {receipt.status || 'missing'}
+                </div>
+                {receipt.missingFields && receipt.missingFields.length > 0 && <div style={{ marginTop: '3px', fontSize: '9px', color: '#92400e' }}><strong>Receipt gaps:</strong> {receipt.missingFields.join(', ')}</div>}
+                {row.health.issues && row.health.issues.length > 0 && <ul style={{ margin: '4px 0 0', paddingLeft: '17px', fontSize: '9px', color: '#475569' }}>{row.health.issues.map(function (issue) { return <li key={issue.code}>{issue.message}</li>; })}</ul>}
+              </div>
+            );
+          })}
+        </div>
+        <Note>Health reflects declared metadata and portfolio completeness; it does not independently certify a tool’s scientific validity or security.</Note>
+      </Panel>
+    );
+  }
   function DashboardRoot(props) {
     var ctx = props.ctx;
     var t = ctx.t;
@@ -606,6 +698,8 @@
         </button>
 
         <GradingPrincipleBanner />
+        <MethodProvenancePanel journal={j} />
+        <IntegrationHealthPanel journal={j} />
 
         {/* Lane-specific trajectory */}
         {lane === 'scientific' && <ModelTrajectoryPanel journal={j} />}

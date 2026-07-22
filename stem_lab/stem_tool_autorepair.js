@@ -3558,22 +3558,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       //   muted = slate-300 on bg = ~13:1.
       //   accent (amber-500) on bg = ~10.5:1.
       //   Focus = amber-400 3px solid outline via the [data-ar-focusable] CSS.
-      var T = {
-        bg: '#0f172a',        // slate-900
-        panel: '#1e293b',     // slate-800
-        card: '#1e293b',      // slate-800 (subtle alt)
-        cardAlt: '#172033',
-        text: '#f1f5f9',      // slate-100
-        muted: '#cbd5e1',     // slate-300
-        dim: '#94a3b8',       // slate-400
-        border: '#64748b',    // slate-500 — boundary contrast 3.69:1 vs bg (passes WCAG 1.4.11)
-        borderSoft: '#334155',// slate-700 — for purely-decorative dividers inside cards (not UI components)
-        accent: '#f59e0b',    // amber-500 (garage / hazard / wrench color)
-        accentHi: '#fbbf24',  // amber-400
-        link: '#fbbf24',
-        good: '#10b981',
-        warn: '#f59e0b',
-        bad: '#ef4444'
+      var isContrast = !!ctx.isContrast;
+      var isDark = !!ctx.isDark;
+      var T = isContrast ? {
+        bg: '#000000', panel: '#000000', card: '#000000', cardAlt: '#0a0a0a',
+        text: '#ffffff', muted: '#ffffff', dim: '#ffffff',
+        border: '#fbbf24', borderSoft: '#fbbf24', accent: '#fbbf24',
+        accentHi: '#ffff00', link: '#00ffff', good: '#00ff66',
+        warn: '#ffff00', bad: '#ff6b6b'
+      } : isDark ? {
+        bg: '#0f172a', panel: '#1e293b', card: '#1e293b', cardAlt: '#172033',
+        text: '#f1f5f9', muted: '#cbd5e1', dim: '#94a3b8',
+        border: '#64748b', borderSoft: '#334155', accent: '#f59e0b',
+        accentHi: '#fbbf24', link: '#fbbf24', good: '#10b981',
+        warn: '#f59e0b', bad: '#ef4444'
+      } : {
+        bg: '#f8fafc', panel: '#ffffff', card: '#ffffff', cardAlt: '#f1f5f9',
+        text: '#0f172a', muted: '#334155', dim: '#475569',
+        border: '#64748b', borderSoft: '#cbd5e1', accent: '#b45309',
+        accentHi: '#92400e', link: '#1d4ed8', good: '#047857',
+        warn: '#b45309', bad: '#b91c1c'
       };
 
       var view = d.view || 'menu';

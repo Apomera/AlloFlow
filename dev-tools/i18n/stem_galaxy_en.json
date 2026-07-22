@@ -524,5 +524,14 @@
   "offchart_black_dwarf": "A black dwarf is a theoretical cooled white dwarf; the universe is not old enough for true black dwarfs yet.",
   "hr_diagram_title": "H-R Diagram — the astronomer's map",
   "hr_diagram_intro": "Every star is one dot: temperature across (hot on the LEFT — astronomers' quirk), luminosity up. Stars aren't scattered randomly. Drag the mass slider and click lifecycle stages — the dashed line traces YOUR star's whole journey.",
-  "aria_hr_diagram": "Hertzsprung-Russell diagram: surface temperature decreasing left to right, luminosity increasing upward. Shows the main sequence band, giants, supergiants and white dwarf regions, the Sun, and the current star's evolutionary track with its active stage highlighted."
+  "aria_hr_diagram": "Hertzsprung-Russell diagram: surface temperature decreasing left to right, luminosity increasing upward. Shows the main sequence band, giants, supergiants and white dwarf regions, the Sun, and the current star's evolutionary track with its active stage highlighted.",
+  "hr_main_sequence_label": "MAIN SEQUENCE (90% of stars)",
+  "hr_giants_label": "Giants",
+  "hr_supergiants_label": "Supergiants",
+  "hr_white_dwarfs_label": "White Dwarfs",
+  "hr_sun_label": "Sun",
+  "hr_select_stage_prompt": "Select a lifecycle stage to plot your star.",
+  "harvard_classification_title": "Harvard Spectral Classification (OBAFGKM)",
+  "brown_dwarf_substellar_label": "Brown dwarf (substellar)",
+  "brown_dwarf_substellar_desc": "This object is below about 0.08 solar masses, so it never settles onto the hydrogen-burning main sequence. It glows from leftover heat and slowly cools instead."
 }

@@ -46,7 +46,9 @@ describe('Visual Supports motion and interaction accessibility', () => {
     expect(source).toContain('role="list"');
     expect(source).toContain('role="listitem"');
     expect(source).toContain('role="tabpanel" aria-labelledby={`visual-supports-tab-${vsTab}`} tabIndex={0}');
-    expect(source).toContain("horizontally scrollable items'}");
+    expect(source).toContain("aria-label={schedule.title + ' ordered steps'}");
+    expect(source).toContain("aria-current={isCurrent ? 'step' : undefined}");
+    expect(source).toContain('id="visual-supports-search"');
     expect(source).toContain('motion-reduce:transition-none');
   });
 
@@ -109,4 +111,82 @@ describe('Visual Supports motion and interaction accessibility', () => {
     expect(image.style.visibility).toBe('hidden');
     expect(imageControl.getAttribute('aria-pressed')).toBe('true');
   });
+  it('renders schedules as ordered progress-aware steps and advances after completion', async () => {
+    localStorage.setItem('alloSchedules__default', JSON.stringify([{
+      id: 'morning',
+      title: 'Morning routine',
+      items: [
+        { id: 'wake', label: 'Wake up' },
+        { id: 'dress', label: 'Get dressed' },
+        { id: 'breakfast', label: 'Eat breakfast' },
+      ],
+    }]));
+
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+    await act(async () => {
+      root.render(React.createElement(VisualSupportsModal, {
+        setShowVisualSupports: () => {},
+        setVsTab: () => {},
+        showVisualSupports: true,
+        vsTab: 'schedules',
+      }));
+      await Promise.resolve();
+    });
+
+    let steps = Array.from(host.querySelectorAll('ol[role="list"] > li'));
+    expect(steps).toHaveLength(3);
+    expect(steps[0].getAttribute('aria-current')).toBe('step');
+    expect(steps[0].textContent).toContain('NOW');
+    expect(steps[1].textContent).toContain('NEXT');
+
+    const setSecondAsNow = Array.from(steps[1].querySelectorAll('button')).find((button) =>
+      button.textContent.includes('Set as now'),
+    );
+    act(() => setSecondAsNow.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    steps = Array.from(host.querySelectorAll('ol[role="list"] > li'));
+    expect(steps[1].getAttribute('aria-current')).toBe('step');
+
+    const markSecondDone = Array.from(steps[1].querySelectorAll('button')).find((button) =>
+      button.textContent.includes('Mark done'),
+    );
+    act(() => markSecondDone.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    steps = Array.from(host.querySelectorAll('ol[role="list"] > li'));
+    expect(steps[1].textContent).toContain('DONE');
+    expect(steps[2].getAttribute('aria-current')).toBe('step');
+  });
+
+  it('restores saved Done and Now state from Symbol Studio', async () => {
+    localStorage.setItem('alloSchedules__default', JSON.stringify([{
+      id: 'arrival',
+      title: 'Arrival',
+      nowId: 'unpack',
+      items: [
+        { id: 'enter', label: 'Enter class', complete: true },
+        { id: 'unpack', label: 'Unpack', complete: false },
+      ],
+    }]));
+
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+    await act(async () => {
+      root.render(React.createElement(VisualSupportsModal, {
+        setShowVisualSupports: () => {},
+        setVsTab: () => {},
+        showVisualSupports: true,
+        vsTab: 'schedules',
+      }));
+      await Promise.resolve();
+    });
+
+    const steps = Array.from(host.querySelectorAll('ol[role="list"] > li'));
+    expect(steps).toHaveLength(2);
+    expect(steps[0].textContent).toContain('DONE');
+    expect(steps[0].getAttribute('aria-current')).toBeNull();
+    expect(steps[1].textContent).toContain('NOW');
+    expect(steps[1].getAttribute('aria-current')).toBe('step');
+  });
+
 });

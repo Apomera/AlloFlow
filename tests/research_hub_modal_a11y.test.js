@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 
 const source = fs.readFileSync('research_hub_source.jsx', 'utf8');
+const educatorSource = fs.readFileSync('research_hub_educator_source.jsx', 'utf8');
+const alphaFoldSource = fs.readFileSync('alphafold_explorer/alphafold_explorer.html', 'utf8');
 
 describe('Research Hub modal accessibility', () => {
   it('places named and described modal semantics on the panel', () => {
@@ -69,16 +71,78 @@ describe('Research Hub modal accessibility', () => {
     expect(source).toContain('researchQuestionReady');
   });
 
-  it('offers a transparent non-AI question-to-lane match', () => {
+  it('offers a transparent non-AI question-to-specific-method match', () => {
     expect(source).toContain('data-research-lane-match="true"');
-    expect(source).toContain('Possible lens match - based only on words in your question');
+    expect(source).toContain('Possible approach match - based only on words in your question');
     expect(source).toContain('This is not a verdict.');
-    expect(source).toContain('Try this lens');
+    expect(source).toContain('Try this approach');
     expect(source).toContain('No single lens dominates.');
-    expect(source).toContain('researchLaneMatch');
-    expect(source).toContain('Lens match');
+    expect(source).toContain('researchMethodMatch');
+    expect(source).toContain('researchMethodMatch.packId === pack.id');
+    expect(source).toContain('Approach match');
   });
 
+  it('requires learner review before a tool artifact becomes evidence', () => {
+    expect(source).toContain('data-research-capture-review="true"');
+    expect(source).toContain('data-capture-consent="true"');
+    expect(source).toContain('What do you notice or infer?');
+    expect(source).toContain('What remains uncertain or needs another source?');
+    expect(source).toContain('captureNote.trim().length < 12');
+    expect(source).toContain('Also create an evidence card linked to this tool artifact.');
+  });
+
+  it('provides recovery-safe and provenance-rich portfolio export', () => {
+    expect(source).toContain('data-research-recovery-warning="true"');
+    expect(source).toContain('Download untouched recovery copy');
+    expect(source).toContain('Download portfolio + provenance');
+    expect(source).toContain('inquiryEpisodes: journal.inquiryEpisodes || []');
+    expect(source).toContain('integrationHealth: summarizeIntegrationHealth');
+    expect(source).toContain('inquiryAudit: buildInquiryAudit(journal)');
+    expect(source).toContain('data-inquiry-evidence-audit="true"');
+    expect(source).toContain('This is a reasoning check, not an automatic grade.');
+    expect(source).toContain('data-capture-integration-contract="true"');
+    expect(source).toContain('data-capture-unregistered-warning="true"');
+    expect(source).toContain('Declared limitations:');
+    expect(source).toContain('TOOL_INTEGRATION_CONTRACT_VERSION = 1');
+  });
+
+  it('shows method and tool provenance in educator view', () => {
+    expect(educatorSource).toContain('Approach: <strong>{methodPackLabel(j.activeMethodPack)}</strong>');
+    expect(educatorSource).toContain('Method, episodes, and tool provenance');
+    expect(educatorSource).toContain('Learner interpretation:');
+    expect(educatorSource).toContain('Qualitative plan:');
+    expect(educatorSource).toContain('Open-source integration health');
+    expect(educatorSource).toContain('data-educator-integration-health="true"');
+    expect(educatorSource).toContain('does not independently certify');
+    expect(educatorSource).toContain('data-humanities-source-context-health="true"');
+  });
+
+  it('connects AlphaFold through a sequence-free learner-approved capture', () => {
+    expect(alphaFoldSource).toContain('id="sendResearchHubBtn"');
+    expect(alphaFoldSource).toContain('ResearchHub.captureArtifact');
+    expect(alphaFoldSource).toContain("sourceToolId: 'alphafold_explorer'");
+    expect(alphaFoldSource).toContain('function redactSequenceLikeText');
+    expect(alphaFoldSource).toContain('[protein sequence omitted]');
+    expect(alphaFoldSource).toContain('Sequence-like strings of 40 or more characters are redacted');
+    expect(alphaFoldSource).toContain('ALPHAFOLD_RESEARCH_CONTRACT');
+    expect(alphaFoldSource).toContain("spdx: 'AGPL-3.0-only'");
+    expect(alphaFoldSource).toContain('integrationContract: ALPHAFOLD_RESEARCH_CONTRACT');
+    expect(alphaFoldSource).toContain('reproducibility: {');
+    expect(alphaFoldSource).toContain("randomSeed: 'not applicable'");
+    expect(alphaFoldSource).toContain('Predicted structure confidence is not experimental validation.');
+    expect(alphaFoldSource).not.toContain('data: { sequence:');
+  });
+
+  it('redacts sequence-like notebook text behaviorally before capture or storage', () => {
+    const functionSource = alphaFoldSource.match(/function redactSequenceLikeText\(value\) \{[\s\S]*?\r?\n  \}/)?.[0];
+    expect(functionSource).toBeTruthy();
+    const redact = new Function(functionSource + '; return redactSequenceLikeText;')();
+    expect(redact('ACGT'.repeat(12))).toBe('[nucleic-acid sequence omitted]');
+    expect(redact('MKWVTFISLLFLFSSAYSRGVFRRDTHKSEIAHRFKDLGE')).toBe('[protein sequence omitted]');
+    expect(redact('short ACGT note')).toBe('short ACGT note');
+    expect(alphaFoldSource).toContain('entries: notebookEntryState.slice(0, 100).map');
+    expect(alphaFoldSource).toContain('name: redactSequenceLikeText');
+  });
   it('connects the inquiry question to its visible help', () => {
     expect(source).toContain('id="research-hub-question-help"');
     expect(source).toContain('aria-describedby="research-hub-question-help"');

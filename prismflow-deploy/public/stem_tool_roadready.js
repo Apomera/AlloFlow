@@ -1090,28 +1090,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     };
   }
 
-  function streamedPuddleAt(world, x, y) {
-    if (!world || typeof world.getChunk !== 'function') return false;
-    var chunkIndex = Math.floor(y / CHUNK_SIZE);
+  function streamedPuddlesForChunk(world, chunkIndex) {
+    if (!world || typeof world.getChunk !== 'function') return [];
     var chunk = world.getChunk(chunkIndex);
+    var layout = roadLayoutFor(chunk || world.profile || {});
+    var halfWidth = layout.roadHalfWidth;
     var hash = function(k) {
       var value = (chunkIndex * 2654435761 + k * 1597334677) >>> 0;
       return value / 0xffffffff;
     };
+    var puddles = [];
     for (var i = 0; i < 6; i++) {
-      var puddleY = chunkIndex * CHUNK_SIZE + hash(i * 3) * CHUNK_SIZE;
-      var side = (hash(i * 3 + 1) - 0.5) * 3.5 * 1.6;
-      var center = world.spline ? world.spline.centerAt(puddleY) : (chunk && chunk.roadCenter != null ? chunk.roadCenter : Math.floor(MAP_SIZE / 2));
+      var puddleY = chunkIndex * CHUNK_SIZE + hash(i * 7) * CHUNK_SIZE;
+      // Crowned pavement drains toward its low edges. Keep water inside the
+      // asphalt while biasing it toward gutters/wheel paths rather than centerline.
+      var sideSign = hash(i * 7 + 1) < 0.5 ? -1 : 1;
+      var side = sideSign * halfWidth * (0.52 + hash(i * 7 + 2) * 0.36);
+      if (chunk && chunk.hasIntersection &&
+          Math.abs(puddleY - (chunkIndex * CHUNK_SIZE + chunk.intersectionY)) < 3.5) continue;
+      var center = world.spline ? world.spline.centerAt(puddleY)
+        : (chunk && chunk.roadCenter != null ? chunk.roadCenter : Math.floor(MAP_SIZE / 2));
       var heading = world.spline ? world.spline.headingAt(puddleY) : 0;
-      var puddleX = center + side * Math.cos(heading);
-      var puddleWorldY = puddleY - side * Math.sin(heading);
-      var width = 0.6 + hash(i * 3 + 2) * 1.2;
-      var length = 0.4 + hash(i * 3 + 5) * 0.8;
-      var dx = x - puddleX, dy = y - puddleWorldY;
-      var across = dx * Math.cos(heading) - dy * Math.sin(heading);
-      var along = dx * Math.sin(heading) + dy * Math.cos(heading);
-      if ((across * across) / Math.pow(width * 0.5 + 0.45, 2) +
-          (along * along) / Math.pow(length * 0.5 + 0.9, 2) <= 1) return true;
+      var width = 0.6 + hash(i * 7 + 3) * 1.2;
+      var length = 0.4 + hash(i * 7 + 4) * 0.8;
+      puddles.push({ x: center + side * Math.cos(heading),
+        y: puddleY - side * Math.sin(heading), centerY: puddleY,
+        lateral: side, heading: heading, width: width, length: length });
+    }
+    return puddles;
+  }
+
+  function streamedPuddleAt(world, x, y) {
+    if (!world || typeof world.getChunk !== 'function') return false;
+    var nearbyChunks = [Math.floor(y / CHUNK_SIZE) - 1, Math.floor(y / CHUNK_SIZE), Math.floor(y / CHUNK_SIZE) + 1];
+    for (var ci = 0; ci < nearbyChunks.length; ci++) {
+      var puddles = streamedPuddlesForChunk(world, nearbyChunks[ci]);
+      for (var i = 0; i < puddles.length; i++) {
+        var puddle = puddles[i];
+        var dx = x - puddle.x, dy = y - puddle.y;
+        var across = dx * Math.cos(puddle.heading) - dy * Math.sin(puddle.heading);
+        var along = dx * Math.sin(puddle.heading) + dy * Math.cos(puddle.heading);
+        if ((across * across) / Math.pow(puddle.width * 0.5 + 0.45, 2) +
+            (along * along) / Math.pow(puddle.length * 0.5 + 0.9, 2) <= 1) return true;
+      }
     }
     return false;
   }
@@ -1315,6 +1336,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     for (var divider = 1; divider < laneCount; divider++) laneDividerOffsets.push(-layout.edgeLineOffset + laneWidth * divider);
     return { enabled: enabled, direction: Number(source.oneWayDirection) < 0 ? -1 : 1,
       laneCount: laneCount, laneWidth: laneWidth, laneCenters: laneCenters, laneDividerOffsets: laneDividerOffsets };
+  }
+
+  function roadLaneArrowSpecs(profileOrChunk) {
+    var source = profileOrChunk || {};
+    var oneWay = oneWayRoadLayoutFor(source);
+    if (oneWay.enabled) {
+      return oneWay.laneCenters.map(function(offset) {
+        return { offset: offset, direction: oneWay.direction };
+      });
+    }
+    var specs = [];
+    roadLayoutFor(source).laneCenters.forEach(function(magnitude) {
+      specs.push({ offset: -magnitude, direction: 1 });
+      specs.push({ offset: magnitude, direction: -1 });
+    });
+    return specs;
   }
 
   function isWrongWayTravel(profileOrChunk, heading) {
@@ -1553,12 +1590,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       trainProgress: trainProgress == null ? null : Math.max(0, Math.min(1, trainProgress)) };
   }
 
+  function railroadCrossingControlState(simTime, crossing) {
+    var source = crossing || {};
+    var state = railroadCrossingState(simTime, source.cycleOffset);
+    if (source.activeControl === false) {
+      state = Object.assign({}, state, { stopRequired: state.occupied, gateProgress: 0 });
+    }
+    return state;
+  }
+
+  function railroadRequiresFullStop(vehicleType, crossing) {
+    var type = String(vehicleType || '').toLowerCase();
+    return !!(crossing && crossing.activeControl === false &&
+      (type === 'school_bus' || type === 'schoolbus' || type === 'bus'));
+  }
+
+  function railroadTrainCollisionAt(vehicle, crossing, state) {
+    if (!vehicle || !crossing || !state || state.trainProgress == null) return false;
+    var heading = Number(crossing.heading) || 0;
+    var dx = vehicle.x - crossing.centerX, dy = vehicle.y - crossing.centerY;
+    var longitudinal = dx * Math.sin(heading) + dy * Math.cos(heading);
+    var lateral = dx * Math.cos(heading) - dy * Math.sin(heading);
+    var trainHead = -35 + state.trainProgress * 70;
+    var vehicleSize = vehicleFootprint(vehicle.type || 'car');
+    return Math.abs(longitudinal) <= 1.2 + vehicleSize.length * 0.5 &&
+      lateral >= trainHead - 13 - vehicleSize.width * 0.5 &&
+      lateral <= trainHead + 3 + vehicleSize.width * 0.5;
+  }
+
   function roadCrownHeight(lateralOffset, profileOrChunk, halfWidthOverride) {
     var source = profileOrChunk || {};
     var halfWidth = Number(halfWidthOverride);
     if (!(halfWidth > 0)) halfWidth = roadLayoutFor(source).roadHalfWidth;
-    var insideWidth = Math.max(0, halfWidth - Math.abs(Number(lateralOffset) || 0));
+    var lateral = Number(lateralOffset) || 0;
+    if (Math.abs(lateral) > halfWidth) return 0;
+    // One-way urban streets use a continuous curb-directed crossfall instead
+    // of the two-sided crown used by opposing traffic. Keep the centerline at
+    // terrain datum so switching profiles never creates an elevation step.
+    if (source.oneWay) return -lateral * 0.015;
+    var insideWidth = Math.max(0, halfWidth - Math.abs(lateral));
+    // Divided/high-speed pavement drains from the median toward both outside
+    // shoulders; local two-way roads drain from a conventional center crown.
     return insideWidth * (source.isHighway || source.highway ? 0.015 : 0.02);
+  }
+
+  function roadShoulderDrainageDrop(lateralBeyondEdge, profileOrChunk) {
+    var source = profileOrChunk || {};
+    var distance = Math.max(0, Number(lateralBeyondEdge) || 0);
+    // Paved highway shoulders are flatter than gravel/local shoulders but both
+    // must fall away from the travel lanes so standing water does not drain in.
+    return distance * (source.isHighway || source.highway ? 0.025 : 0.035);
   }
 
   function roadSurfacePoseAt(world, x, y) {
@@ -1568,8 +1649,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var bank = roadBankAngleAt(spline, y, world.profile || null);
     var lateralOffset = (x - spline.centerAt(y)) / Math.max(0.2, Math.cos(heading));
     var terrainHeight = spline.heightAt(y);
-    var mainHeight = terrainHeight + Math.sin(bank) * lateralOffset
-      + roadCrownHeight(lateralOffset, world.profile || null);
+    var mainProfile = world.profile || null;
+    var mainLayout = roadLayoutFor(mainProfile || {});
+    var mainHeight = terrainHeight + Math.sin(bank) * lateralOffset;
+    if (Math.abs(lateralOffset) <= mainLayout.roadHalfWidth) {
+      mainHeight += roadCrownHeight(lateralOffset, mainProfile, mainLayout.roadHalfWidth);
+    } else {
+      // Continue the bank through the shoulder, then add its explicit outward
+      // drainage fall. This is the same cross-section used by the render mesh.
+      mainHeight += roadCrownHeight(Math.sign(lateralOffset) * mainLayout.roadHalfWidth,
+        mainProfile, mainLayout.roadHalfWidth);
+      mainHeight -= roadShoulderDrainageDrop(Math.min(mainLayout.shoulderWidth,
+        Math.abs(lateralOffset) - mainLayout.roadHalfWidth), mainProfile);
+    }
     var corridor = crossStreetCorridorAt(world, x, y, 0);
     if (corridor) {
       // Away from the junction, the cross street follows terrain grade without
@@ -1578,6 +1670,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var mainHalfWidth = roadLayoutFor(world.profile || corridor.chunk).pavedHalfWidth;
       var junctionBlend = 1 - Math.max(0, Math.min(1,
         (Math.abs(corridor.local.longitudinal) - mainHalfWidth) / 2));
+      // Smoothstep removes the slope kink where the cross-street grade meets
+      // the main-road crown/bank while preserving exact endpoint elevations.
+      junctionBlend = junctionBlend * junctionBlend * (3 - 2 * junctionBlend);
       var crossHeight = terrainHeight + roadCrownHeight(corridor.local.lateral,
         corridor.chunk, corridor.pose.width * 0.5);
       return { height: crossHeight + (mainHeight - crossHeight) * junctionBlend,
@@ -7486,22 +7581,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (!crossings || !crossings.length) return;
             for (var rci = 0; rci < crossings.length; rci++) {
               var crossing = crossings[rci];
-              var rrState = railroadCrossingState(timeRef.current, crossing.cycleOffset);
-              if (!rrState.stopRequired) continue;
+              var rrState = railroadCrossingControlState(timeRef.current, crossing);
+              if (railroadTrainCollisionAt({ x: newX, y: newY, type: currentVehicle && currentVehicle.id }, crossing, rrState)) {
+                newX = car.x; newY = car.y; car.speed = 0;
+                if (crossing._lastTrainCollisionCycle !== rrState.cycle) {
+                  crossing._lastTrainCollisionCycle = rrState.cycle;
+                  statsRef.current.crashes = (statsRef.current.crashes || 0) + 1;
+                  statsRef.current.majorViolations = (statsRef.current.majorViolations || 0) + 1;
+                  statsRef.current.safetyScore = Math.max(0, statsRef.current.safetyScore - 40);
+                  addToast('TRAIN COLLISION — vehicle was on the tracks');
+                  eventToastRef.current = { msg: 'Never stop on railroad tracks. Exit immediately if a vehicle becomes trapped.', until: timeRef.current + 5 };
+                }
+                break;
+              }
               var tanX = Math.sin(crossing.heading || 0), tanY = Math.cos(crossing.heading || 0);
               var prevLong = (car.x - crossing.centerX) * tanX + (car.y - crossing.centerY) * tanY;
               var approachSign = prevLong < 0 ? -1 : 1;
               var stopFeature = { centerX: crossing.centerX + approachSign * 2.2 * tanX,
                 centerY: crossing.centerY + approachSign * 2.2 * tanY,
                 heading: crossing.heading, halfWidth: crossing.halfWidth };
+              var passiveBusStop = railroadRequiresFullStop(currentVehicle && currentVehicle.id, crossing);
+              var passiveKey = String(approachSign);
+              if (passiveBusStop) {
+                crossing._playerPassiveStops = crossing._playerPassiveStops || {};
+                var passiveRecord = crossing._playerPassiveStops[passiveKey] ||
+                  (crossing._playerPassiveStops[passiveKey] = { timer: 0, complete: false });
+                var stopDx = car.x - stopFeature.centerX, stopDy = car.y - stopFeature.centerY;
+                if (!passiveRecord.complete && Math.sqrt(stopDx * stopDx + stopDy * stopDy) < 1.25) {
+                  if (Math.abs(car.speed) < 0.15) passiveRecord.timer += dt;
+                  else passiveRecord.timer = 0;
+                  if (passiveRecord.timer >= 0.8) {
+                    passiveRecord.complete = true;
+                    statsRef.current.stops = (statsRef.current.stops || 0) + 1;
+                    addToast('SCHOOL BUS RAILROAD STOP COMPLETE');
+                    eventToastRef.current = { msg: 'Full stop complete. Open the door/look and listen, then cross only when clear.', until: timeRef.current + 3.5 };
+                  }
+                }
+                if (!passiveRecord.complete && crossedFiniteRoadFeature(car.x, car.y, newX, newY, stopFeature)) {
+                  newX = car.x; newY = car.y; car.speed = 0;
+                  if (!passiveRecord.penalized) {
+                    passiveRecord.penalized = true;
+                    statsRef.current.safetyScore = Math.max(0, statsRef.current.safetyScore - 20);
+                    statsRef.current.majorViolations = (statsRef.current.majorViolations || 0) + 1;
+                    addToast('SCHOOL BUS MUST STOP AT RAILROAD CROSSING -20 safety');
+                    eventToastRef.current = { msg: 'School buses must make a full stop at passive railroad crossings even when no train is visible.', until: timeRef.current + 4.5 };
+                  }
+                  break;
+                }
+              }
+              if (!rrState.stopRequired) continue;
               if (!crossedFiniteRoadFeature(car.x, car.y, newX, newY, stopFeature)) continue;
               newX = car.x; newY = car.y; car.speed = 0;
               if (crossing._lastPlayerViolationCycle !== rrState.cycle) {
                 crossing._lastPlayerViolationCycle = rrState.cycle;
                 statsRef.current.safetyScore = Math.max(0, statsRef.current.safetyScore - 25);
                 statsRef.current.majorViolations = (statsRef.current.majorViolations || 0) + 1;
-                addToast('RAILROAD GATE VIOLATION! -25 safety');
-                eventToastRef.current = { msg: 'Stop at the active railroad gate. Never drive around lowered gates.', until: timeRef.current + 4 };
+                addToast((crossing.activeControl === false ? 'TRAIN CROSSING VIOLATION' : 'RAILROAD GATE VIOLATION') + '! -25 safety');
+                eventToastRef.current = { msg: crossing.activeControl === false
+                  ? 'A train occupies the passive crossing. Stop before the tracks and wait until it clears.'
+                  : 'Stop at the active railroad gate. Never drive around lowered gates.', until: timeRef.current + 4 };
               }
               break;
             }
@@ -8131,6 +8269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var activeStopDist = Infinity;
             var activeControl = null;
             var activeControlDist = Infinity;
+            var activeBumpDist = Infinity;
             signals.forEach(function(s) {
               if (!t.crossStreet) {
                 // Main-road car: signal is on the main road ahead. On curves, raw `rel.lat`
@@ -8224,17 +8363,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // approach side of the track and projected through the curved-road frame.
             var rrControls = infiniteWorldRef.current && infiniteWorldRef.current._railroadCrossings;
             if (!t.crossStreet && rrControls) rrControls.forEach(function(rrControl) {
-              var rrControlState = railroadCrossingState(timeRef.current, rrControl.cycleOffset);
-              if (!rrControlState.stopRequired) return;
+              var rrControlState = railroadCrossingControlState(timeRef.current, rrControl);
               var rrTanX = Math.sin(rrControl.heading || 0), rrTanY = Math.cos(rrControl.heading || 0);
               var rrLong = (t.x - rrControl.centerX) * rrTanX + (t.y - rrControl.centerY) * rrTanY;
               var rrApproachSign = rrLong < 0 ? -1 : 1;
               var rrStopX = rrControl.centerX + rrApproachSign * 2.2 * rrTanX;
               var rrStopY = rrControl.centerY + rrApproachSign * 2.2 * rrTanY;
               var rrAhead = aheadOf(rrStopX, rrStopY).ahead;
-              if (rrAhead > 0 && rrAhead < signalDetectRange) {
+              if (!(rrAhead > 0 && rrAhead < signalDetectRange)) return;
+              var rrPassiveKey = 'rr_' + rrControl.chunkIdx + '_' + rrApproachSign;
+              var rrMandatoryStop = railroadRequiresFullStop(t.type, rrControl);
+              t._railroadStops = t._railroadStops || {};
+              var rrStopRecord = t._railroadStops[rrPassiveKey] ||
+                (t._railroadStops[rrPassiveKey] = { timer: 0, complete: false });
+              if (rrMandatoryStop && !rrStopRecord.complete) {
                 slowFor = Math.max(slowFor, 2);
-                if (rrAhead < activeControlDist) { activeControl = rrControl; activeControlDist = rrAhead; }
+                if (Math.abs(t.speed) < 0.2 && rrAhead < 1.2) {
+                  rrStopRecord.timer += dt;
+                  if (rrStopRecord.timer >= 0.8) rrStopRecord.complete = true;
+                } else if (rrAhead < 2.5) {
+                  rrStopRecord.timer = 0;
+                }
+              } else if (rrControlState.stopRequired) {
+                slowFor = Math.max(slowFor, 2);
+              } else if (rrControl.activeControl === false && rrAhead < 12) {
+                slowFor = Math.max(slowFor, 1); // slow, look, and listen at passive crossbucks
+              }
+              if (slowFor === 2 && rrAhead < activeControlDist) {
+                activeControl = rrControl; activeControlDist = rrAhead;
+              }
+            });
+            // AI anticipates the same finite, rotated speed-bump features used by
+            // player contact instead of discovering them only after impact.
+            var aiBumps = infiniteWorldRef.current && infiniteWorldRef.current._speedBumps;
+            if (!t.crossStreet && aiBumps) aiBumps.forEach(function(aiBump) {
+              var bumpTanX = Math.sin(aiBump.heading || 0), bumpTanY = Math.cos(aiBump.heading || 0);
+              var bumpPerpX = Math.cos(aiBump.heading || 0), bumpPerpY = -Math.sin(aiBump.heading || 0);
+              var bumpDx = aiBump.centerX - t.x, bumpDy = aiBump.centerY - t.y;
+              var bumpAhead = bumpDx * forwardX + bumpDy * forwardY;
+              var bumpLateral = Math.abs(bumpDx * bumpPerpX + bumpDy * bumpPerpY);
+              if (bumpAhead > 0 && bumpAhead < 18 && bumpLateral <= aiBump.halfWidth + 1) {
+                activeBumpDist = Math.min(activeBumpDist, bumpAhead);
               }
             });
             // Left-turners wait behind the stop bar for a safe opposing gap even
@@ -8730,6 +8899,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             else if (slowFor === 1) targetSpeed = speedLimitMph * 0.4 * MPH_TO_MS;
             else targetSpeed = (speedLimitMph - 3 + (idx % 5) * 1.2) * MPH_TO_MS * pers.speedBias;
+            if (activeBumpDist < Infinity) {
+              var bumpTargetMph = 5 + Math.min(7, activeBumpDist * 0.55);
+              targetSpeed = Math.min(targetSpeed, bumpTargetMph * MPH_TO_MS);
+            }
             // Cap target speed when approaching or executing a turn so the car
             // doesn't barrel through the corner. ~12 mph through the turn,
             // ramping up smoothly with distance from the signal.
@@ -10150,6 +10323,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             // Wiper swoosh — filtered noise gated by a sweep, only in rain/snow.
             // Two passes per cycle (out + back), so gain peaks twice every period.
+            // Railroad warning bell and horn use the same control state as the
+            // gates. Volume falls with distance; passive crossings have horn only.
+            var nearestRailroad = null, nearestRailroadDist = Infinity;
+            var audioCrossings = infiniteWorldRef.current && infiniteWorldRef.current._railroadCrossings;
+            if (audioCrossings) audioCrossings.forEach(function(crossing) {
+              var dist = Math.hypot(car.x - crossing.centerX, car.y - crossing.centerY);
+              if (dist < nearestRailroadDist) { nearestRailroadDist = dist; nearestRailroad = crossing; }
+            });
+            var rrAudioState = nearestRailroad ? railroadCrossingControlState(timeRef.current, nearestRailroad) : null;
+            var rrAudible = rrAudioState && rrAudioState.stopRequired && nearestRailroadDist < 90;
+            if (!a._rrBellOsc) {
+              a._rrBellOsc = a.ctx.createOscillator(); a._rrBellOsc.type = 'square'; a._rrBellOsc.frequency.value = 720;
+              a._rrBellGain = a.ctx.createGain(); a._rrBellGain.gain.value = 0;
+              a._rrBellOsc.connect(a._rrBellGain).connect(a.ctx.destination); a._rrBellOsc.start();
+            }
+            var rrBellPulse = rrAudible && nearestRailroad.activeControl
+              ? (Math.sin(timeRef.current * Math.PI * 2.2) > 0.35 ? 1 : 0) : 0;
+            var rrDistanceGain = rrAudible ? Math.max(0, 1 - nearestRailroadDist / 90) : 0;
+            a._rrBellGain.gain.setTargetAtTime(rrBellPulse * rrDistanceGain * 0.045, now, 0.025);
+            if (rrAudioState && rrAudioState.occupied && nearestRailroadDist < 140 &&
+                a._rrHornCycle !== rrAudioState.cycle) {
+              a._rrHornCycle = rrAudioState.cycle;
+              try {
+                var horn = a.ctx.createOscillator(), horn2 = a.ctx.createOscillator(), hornGain = a.ctx.createGain();
+                horn.type = 'sawtooth'; horn2.type = 'square'; horn.frequency.value = 185; horn2.frequency.value = 247;
+                hornGain.gain.value = Math.max(0.015, (1 - nearestRailroadDist / 140) * 0.055);
+                horn.connect(hornGain); horn2.connect(hornGain); hornGain.connect(a.ctx.destination);
+                horn.start(); horn2.start(); hornGain.gain.setTargetAtTime(0.0001, now + 0.75, 0.22);
+                horn.stop(now + 1.8); horn2.stop(now + 1.8);
+              } catch (rrAudioErr) {}
+            }
+            // Wiper swoosh â€” filtered noise gated by a sweep, only in rain/snow.
             var wiperOn = currentScenario.weather === 'rain' || currentScenario.weather === 'snow';
             if (wiperOn) {
               if (!a._wiperNode) {
@@ -13872,7 +14077,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             Object.keys(s3.railroadCrossingsByChunk).forEach(function(rrKey) {
               var rrVisual = s3.railroadCrossingsByChunk[rrKey];
               if (!rrVisual || !rrVisual.crossing) return;
-              var rrState = railroadCrossingState(timeRef.current, rrVisual.crossing.cycleOffset);
+              var rrState = railroadCrossingControlState(timeRef.current, rrVisual.crossing);
               rrVisual.gates.forEach(function(gate) {
                 gate.rotation.z = (1 - rrState.gateProgress) * Math.PI / 2;
               });
@@ -13968,8 +14173,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // Walk up parents: if we ever lose the scene root, mesh was removed
               var n = b.mesh; while (n.parent) n = n.parent;
               if (n !== s3.scene) return false;
-              var crossingActive = !b.crossing || railroadCrossingState(timeRef.current,
-                b.crossing.cycleOffset).stopRequired;
+              var crossingActive = !b.crossing || railroadCrossingControlState(timeRef.current, b.crossing).stopRequired;
               var lit = crossingActive && (beaconTick === b.phase);
               b.mesh.material.opacity = lit ? 1.0 : (b.crossing ? 0.16 : 0.25);
               // Per-beacon colors (amber default; railroad crossbucks push red).
@@ -14762,20 +14966,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var spPos = s3.tireSprayParticles.geometry.attributes.position;
               // Check if we're driving over a puddle (rough test: does a puddle exist
               // within 1 cell of the car's current position?). When so, burst extra spray.
-              var overPuddle = false;
-              if (infiniteWorldRef.current) {
-                var puddleChunk = Math.floor(car.y / CHUNK_SIZE);
-                // Reproduce the puddle hash from chunk render code
-                var pHashNow = function(k) { var x = (puddleChunk * 2654435761 + k * 1597334677) >>> 0; return (x / 0xffffffff); };
-                for (var pci = 0; pci < 6; pci++) {
-                  var pZLocal = pHashNow(pci * 3) * CHUNK_SIZE;
-                  var pYWorld = puddleChunk * CHUNK_SIZE + pZLocal;
-                  var pSide = (pHashNow(pci * 3 + 1) - 0.5) * 3.5 * 1.6;
-                  var rCenter = infiniteWorldRef.current.spline ? infiniteWorldRef.current.spline.centerAt(pYWorld) : Math.floor(MAP_SIZE / 2);
-                  var pxW = rCenter + pSide;
-                  if (Math.hypot(pxW - car.x, pYWorld - car.y) < 1.2) { overPuddle = true; break; }
-                }
-              }
+              var overPuddle = !!infiniteWorldRef.current &&
+                streamedPuddleAt(infiniteWorldRef.current, car.x, car.y);
               var sparkPerFrame = overPuddle ? 4 : 1;
               for (var sprk = 0; sprk < sparkPerFrame; sprk++) {
                 var spIdx = (Math.floor(timeRef.current * 60) + sprk * 41) % spPos.count;
@@ -16763,7 +16955,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     // only the cross-slope lift for this stripe.
                     cwStripe.position.set(
                       cwSplineCx + cwLateral * cwPerpX,
-                      0.016 + Math.sin(cwBank) * cwLateral,
+                      0.016 + Math.sin(cwBank) * cwLateral
+                        + roadCrownHeight(cwLateral, iw.profile || chunk, roadHalfW),
                       crosswalkZ + cwLateral * cwPerpZ
                     );
                     chunkGroup.add(cwStripe);
@@ -16795,11 +16988,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // pinned to absolute world X/Y=0 — on curved chunks it floated in
                 // the fields or sat in the middle of the road, and on rural hills
                 // it hovered/sank.
-                var spSplineCX = iw.spline ? (iw.spline.centerAt(speedZ + MAP_SIZE / 2) - MAP_SIZE / 2) : 0;
-                var spGroundY = iw.spline ? iw.spline.heightAt(speedZ + MAP_SIZE / 2) : 0;
-                var spSignX = spSplineCX + speedSide * roadsideOffsetFor(chunk, 1.2);
+                var spGridY = speedZ - chunkWorldZ + ribbonChunkBaseY;
+                var spSplineCX = iw.spline ? (iw.spline.centerAt(spGridY) - MAP_SIZE / 2) : 0;
+                var spHeading = iw.spline ? iw.spline.headingAt(spGridY) : 0;
+                var spOffset = speedSide * roadsideOffsetFor(chunk, 1.2);
+                var spSignX = spSplineCX + spOffset * Math.cos(spHeading);
+                var spSignZ = speedZ - spOffset * Math.sin(spHeading);
+                var spGroundY = iw.spline ? iw.spline.heightAt(spGridY - spOffset * Math.sin(spHeading)) : 0;
                 var spPost = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 2.4, 6), new T.MeshLambertMaterial({ color: 0xd1d5db }));
-                spPost.position.set(spSignX, spGroundY + 1.2, speedZ);
+                spPost.position.set(spSignX, spGroundY + 1.2, spSignZ);
                 chunkGroup.add(spPost);
                 try {
                   var spCan = document.createElement('canvas');
@@ -16818,8 +17015,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var spTex = new T.CanvasTexture(spCan);
                   var spMat = new T.MeshBasicMaterial({ map: spTex, transparent: true, side: T.DoubleSide });
                   var spFace = new T.Mesh(new T.PlaneGeometry(0.9, 1.15), spMat);
-                  spFace.position.set(spSignX, spGroundY + 2.3, speedZ);
-                  spFace.rotation.y = speedSide === 1 ? -Math.PI / 2 : Math.PI / 2;
+                  spFace.position.set(spSignX, spGroundY + 2.3, spSignZ);
+                  spFace.rotation.y = spHeading + (speedSide === 1 ? -Math.PI / 2 : Math.PI / 2);
                   chunkGroup.add(spFace);
                 } catch (spErr) { /* fallback: post-only */ }
               }
@@ -17489,12 +17686,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // heading h is (cos h, -sin h) in the (X, Z) plane.
                 var perpX = Math.cos(rowHd);
                 var perpZ = -Math.sin(rowHd);
-                var crownLift = roadCrownHeight(0, iw.profile || chunk, roadHalfW);
                 [-roadHalfW, 0, roadHalfW].forEach(function(ribbonOff, ribbonCol) {
                   var rv = rr * 3 + ribbonCol;
                   ribbonVerts[rv * 3 + 0] = worldCx + ribbonOff * perpX;
                   ribbonVerts[rv * 3 + 1] = rowH + 0.011 + Math.sin(bank) * ribbonOff
-                    + (ribbonCol === 1 ? crownLift : 0);
+                    + roadCrownHeight(ribbonOff, iw.profile || chunk, roadHalfW);
                   ribbonVerts[rv * 3 + 2] = worldZ + ribbonOff * perpZ;
                   ribbonUvs[rv * 2 + 0] = ribbonCol * 0.5;
                   ribbonUvs[rv * 2 + 1] = rr / ribbonRows;
@@ -17621,8 +17817,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var innerZ = sWZ + shldSide * roadHalfW * sPerpZ;
                     var outerX = sWX + shldSide * (roadHalfW + shldWidth) * sPerpX;
                     var outerZ = sWZ + shldSide * (roadHalfW + shldWidth) * sPerpZ;
-                    var innerH = sH + Math.sin(sBank) * shldSide * roadHalfW;
-                    var outerH = sH + Math.sin(sBank) * shldSide * (roadHalfW + shldWidth);
+                    var edgeCrown = roadCrownHeight(shldSide * roadHalfW, iw.profile || chunk, roadHalfW);
+                    var innerH = sH + Math.sin(sBank) * shldSide * roadHalfW + edgeCrown;
+                    var outerH = sH + Math.sin(sBank) * shldSide * (roadHalfW + shldWidth)
+                      + edgeCrown - roadShoulderDrainageDrop(shldWidth, iw.profile || chunk);
                     // Collapse the strip to a degenerate width across the
                     // intersection so the dirt shoulder doesn't paint over the
                     // perpendicular cross-street asphalt + crosswalks.
@@ -18232,7 +18430,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (!rrCrossingRecord) {
                   rrCrossingRecord = { chunkIdx: ci, centerX: rrCtr + MAP_SIZE / 2,
                     centerY: ci * CHUNK_SIZE + CHUNK_SIZE * 0.6, heading: rrHd,
-                    halfWidth: Math.max(0.5, roadHalfW - 0.3), cycleOffset: ((ci * 7) % 40 + 40) % 40 };
+                    halfWidth: Math.max(0.5, roadHalfW - 0.3), cycleOffset: ((ci * 7) % 40 + 40) % 40,
+                    activeControl: Math.abs(ci) % 3 !== 0 };
                   iw._railroadCrossings.push(rrCrossingRecord);
                 }
                 // ── Ballast bed (dark gray gravel) spanning the road + shoulders ──
@@ -18273,6 +18472,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   chunkGroup.add(tie);
                 }
                 var railMat = new T.MeshBasicMaterial({ color: 0x9aa0a8 });
+                // Continue the rail corridor beneath the train beyond both shoulders.
+                var outerTrackExtent = 42;
+                var outerTrackHalf = (outerTrackExtent - rrLateralSpan * 0.5) * 0.5;
+                [-1, 1].forEach(function(trackSide) {
+                  var outerCenterLat = trackSide * (rrLateralSpan * 0.5 + outerTrackHalf);
+                  var outerBed = new T.Mesh(new T.PlaneGeometry(outerTrackHalf * 2, 3.2), ballastMat);
+                  outerBed.rotation.x = -Math.PI / 2; outerBed.rotation.z = rrHd;
+                  outerBed.position.set(rrCtr + outerCenterLat * rrPerpX, rrHt + 0.006,
+                    rrZ + outerCenterLat * rrPerpZ); chunkGroup.add(outerBed);
+                  [-0.72, 0.72].forEach(function(outerRailFwd) {
+                    var outerRail = new T.Mesh(new T.PlaneGeometry(outerTrackHalf * 2, 0.10), railMat);
+                    outerRail.rotation.x = -Math.PI / 2; outerRail.rotation.z = rrHd;
+                    outerRail.position.set(rrCtr + outerCenterLat * rrPerpX + outerRailFwd * rrTanX,
+                      rrHt + 0.012, rrZ + outerCenterLat * rrPerpZ + outerRailFwd * rrTanZ);
+                    chunkGroup.add(outerRail);
+                  });
+                  for (var outerTieI = 0; outerTieI < Math.ceil(outerTrackHalf * 2 / 0.75); outerTieI++) {
+                    var outerTieLat = outerCenterLat - outerTrackHalf + 0.375 + outerTieI * 0.75;
+                    var outerTie = new T.Mesh(new T.PlaneGeometry(0.42, 2.7), tieMat);
+                    outerTie.rotation.x = -Math.PI / 2; outerTie.rotation.z = rrHd;
+                    outerTie.position.set(rrCtr + outerTieLat * rrPerpX, rrHt + 0.009,
+                      rrZ + outerTieLat * rrPerpZ); chunkGroup.add(outerTie);
+                  }
+                });
                 [-0.72, 0.72].forEach(function(railForwardOff) {
                   addRailroadStrip(railMat, railForwardOff, 0.10, rrLateralSpan, 0.014);
                 });
@@ -18333,6 +18556,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   rrGatePivot.rotation.order = 'ZYX';
                   rrGatePivot.rotation.y = rrHd + (cbSide > 0 ? Math.PI : 0);
                   rrGatePivot.rotation.z = Math.PI / 2;
+                  rrGatePivot.visible = rrCrossingRecord.activeControl;
                   var rrGateArm = new T.Mesh(new T.BoxGeometry(gateLength, 0.12, 0.12),
                     new T.MeshBasicMaterial({ color: 0xf8fafc }));
                   rrGateArm.position.x = gateLength * 0.5;
@@ -18376,6 +18600,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       cbGroundHt + 2.8,
                       cbWorldZ + lampOff * rrPerpZ
                     );
+                    cbLamp.visible = rrCrossingRecord.activeControl;
                     chunkGroup.add(cbLamp);
                     var rrLampEntry = { mesh: cbLamp, phase: cbIdx % 2, onColor: 0xff2020,
                       offColor: 0x3a0000, crossing: rrCrossingRecord };
@@ -18741,26 +18966,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   blending: T.AdditiveBlending,
                   depthWrite: false
                 });
-                // Simple seeded hash per-chunk for stable puddle positions.
-                var pHash = function(k) { var x = (ci * 2654435761 + k * 1597334677) >>> 0; return (x / 0xffffffff); };
-                var puddleCount = 6;
-                for (var pi = 0; pi < puddleCount; pi++) {
-                  var pZ = chunkWorldZ + pHash(pi * 3) * CHUNK_SIZE;
-                  if (pZ > skipZ1 && pZ < skipZ2) continue;
-                  var pCtr = markCenterAtZ(pZ);
-                  var pHt = iw.spline ? iw.spline.heightAt(pZ - chunkWorldZ + ribbonChunkBaseY) : 0;
-                  var pSide = (pHash(pi * 3 + 1) - 0.5) * (roadHalfW * 1.6);
-                  var pW = 0.6 + pHash(pi * 3 + 2) * 1.2;
-                  var pL = 0.4 + pHash(pi * 3 + 5) * 0.8;
-                  var pHd = iw.spline ? iw.spline.headingAt(pZ - chunkWorldZ + ribbonChunkBaseY) : 0;
-                  var pPerpX = Math.cos(pHd);
-                  var pPerpZ = -Math.sin(pHd);
-                  var puddle = new T.Mesh(new T.PlaneGeometry(pW, pL), puddleMat);
+                // Render the exact authoritative footprints used by tire physics.
+                streamedPuddlesForChunk(iw, ci).forEach(function(puddleSpec) {
+                  var pWorldX = puddleSpec.x - MAP_SIZE / 2;
+                  var pWorldZ = puddleSpec.y - MAP_SIZE / 2;
+                  var puddle = new T.Mesh(new T.PlaneGeometry(puddleSpec.width, puddleSpec.length), puddleMat);
                   puddle.rotation.x = -Math.PI / 2;
-                  puddle.rotation.z = pHd;
-                  puddle.position.set(pCtr + pSide * pPerpX, markRoadSurfaceHeightAt(pZ, pSide) + 0.013, pZ + pSide * pPerpZ);
+                  puddle.rotation.z = puddleSpec.heading;
+                  puddle.position.set(pWorldX,
+                    roadSurfacePoseAt(iw, puddleSpec.x, puddleSpec.y).height + 0.013, pWorldZ);
                   chunkGroup.add(puddle);
-                }
+                });
                 // Rain sheen: a subtle full-road overlay that makes the asphalt look wet overall.
                 var sheenMat = new T.MeshBasicMaterial({
                   color: 0xaac0d8,
@@ -18786,7 +19002,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // Centerline detail dashes: only render in pass-allowed zones — no-pass zones
                 // already have a solid double-yellow from the always-on block above, and
                 // adding dashed stripes on top would look cluttered.
-                var isNoPass = chunk.isHighway || chunk.biome === 'rural' || chunk.hasIntersection;
+                var isNoPass = chunk.oneWay || chunk.isHighway || chunk.biome === 'rural' || chunk.hasIntersection;
                 if (!isNoPass) {
                   for (var mlZ = chunkWorldZ + 1; mlZ < chunkWorldZ + CHUNK_SIZE - 1; mlZ += 2) {
                     if (mlZ > skipZ1 && mlZ < skipZ2) continue;
@@ -18831,7 +19047,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   // Bumped to match the primary lane marking visibility pass so
                   // they read as intentional painted hints rather than thin
                   // specks that disappear at distance.
-                  for (var ldZ = chunkWorldZ + 2; roadLayout.lanesPerDirection > 1 && ldZ < chunkWorldZ + CHUNK_SIZE - 2; ldZ += 5) {
+                  var detailLaneDividerOffsets = chunk.oneWay
+                    ? oneWayRoadLayoutFor(chunk).laneDividerOffsets
+                    : roadLayout.laneDividerOffsets.reduce(function(all, dividerOff) {
+                        all.push(-dividerOff, dividerOff); return all;
+                      }, []);
+                  for (var ldZ = chunkWorldZ + 2; detailLaneDividerOffsets.length && ldZ < chunkWorldZ + CHUNK_SIZE - 2; ldZ += 5) {
                     if (ldZ > skipZ1 && ldZ < skipZ2) continue;
                     var ldCtr = markCenterAtZ(ldZ);
                     var ldHt = iw.spline ? iw.spline.heightAt(ldZ - chunkWorldZ + ribbonChunkBaseY) : 0;
@@ -18840,16 +19061,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var ldBank = roadBankAngleAt(iw.spline, ldSampleY, iw.profile || chunk);
                     var ldPerpX = Math.cos(ldHd);
                     var ldPerpZ = -Math.sin(ldHd);
-                    roadLayout.laneDividerOffsets.forEach(function(dividerOff) {
-                      [-dividerOff, dividerOff].forEach(function(laneOff) {
-                        var ld = new T.Mesh(new T.PlaneGeometry(0.16, 2.2), edgeLineMat);
-                        ld.rotation.x = -Math.PI / 2;
-                        ld.rotation.z = ldHd;
-                        ld.position.set(ldCtr + laneOff * ldPerpX, ldHt + Math.sin(ldBank) * laneOff
-                          + roadCrownHeight(laneOff, iw.profile || chunk, roadHalfW) + 0.013,
-                          ldZ + laneOff * ldPerpZ);
-                        chunkGroup.add(ld);
-                      });
+                    detailLaneDividerOffsets.forEach(function(laneOff) {
+                      var ld = new T.Mesh(new T.PlaneGeometry(0.16, 2.2), edgeLineMat);
+                      ld.rotation.x = -Math.PI / 2;
+                      ld.rotation.z = ldHd;
+                      ld.position.set(ldCtr + laneOff * ldPerpX, ldHt + Math.sin(ldBank) * laneOff
+                        + roadCrownHeight(laneOff, iw.profile || chunk, roadHalfW) + 0.013,
+                        ldZ + laneOff * ldPerpZ);
+                      chunkGroup.add(ld);
                     });
                   }
                   // ── Painted straight-ahead arrows on commercial/suburban lanes ──
@@ -18870,7 +19089,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     // spline-perpendicular offset and shaft/head rotate with the
                     // road tangent so the arrows visibly point along the road on
                     // curves instead of stretching into the next lane.
-                    [-2.0, 2.0].forEach(function(arrowLaneOff) {
+                    // Place one arrow at every authored lane center. One-way
+                    // streets point every arrow in their legal direction; two-way
+                    // roads mirror directions across the centerline.
+                    roadLaneArrowSpecs(chunk).forEach(function(arrowSpec) {
+                      var arrowLaneOff = arrowSpec.offset;
                       var arrowZ = chunkWorldZ + CHUNK_SIZE * 0.5;
                       var arrowCtr = markCenterAtZ(arrowZ);
                       var arrowHt = iw.spline ? iw.spline.heightAt(arrowZ - chunkWorldZ + ribbonChunkBaseY) : 0;
@@ -18879,10 +19102,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       var arrowPerpZ = -Math.sin(arrowHd);
                       var arrowTanX = Math.sin(arrowHd);
                       var arrowTanZ = Math.cos(arrowHd);
-                      // Arrow points in direction of travel for that lane:
-                      // right lane (arrowLaneOff > 0) goes -Z (toward player at origin),
-                      // left lane (arrowLaneOff < 0) goes +Z (away).
-                      var travelForward = arrowLaneOff > 0 ? -1 : 1;
+                      var travelForward = arrowSpec.direction;
                       // Arrow shaft — thin rectangle, rotated to align with road tangent
                       var shaft = new T.Mesh(new T.PlaneGeometry(0.35, 2.4), arrowMat);
                       shaft.rotation.x = -Math.PI / 2;
@@ -19145,11 +19365,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var shPerpX = Math.cos(shHd);
                   var shPerpZ = -Math.sin(shHd);
                   [-1, 1].forEach(function(shSide) {
-                    var shTotalOff = shSide * (shOff + 0.8);
+                    var shTotalOff = shSide * (roadLayout.pavedHalfWidth + 0.8);
                     var sh = new T.Mesh(new T.PlaneGeometry(1.6, 1.5), shoulderMat);
                     sh.rotation.x = -Math.PI / 2;
                     sh.rotation.z = shHd;
-                    sh.position.set(shCtr + shTotalOff * shPerpX, shHt + 0.005, shZ + shTotalOff * shPerpZ);
+                    sh.position.set(shCtr + shTotalOff * shPerpX,
+                      markRoadSurfaceHeightAt(shZ, shSide * roadLayout.pavedHalfWidth) + 0.005,
+                      shZ + shTotalOff * shPerpZ);
                     chunkGroup.add(sh);
                   });
                 }
@@ -19171,9 +19393,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var cbPerpX = Math.cos(cbHd);
                   var cbPerpZ = -Math.sin(cbHd);
                   [-edgeOff, edgeOff].forEach(function(cbSide) {
+                    // Limited-access, rural, and work-zone roads use shoulders,
+                    // not continuous urban curbs.
+                    if (chunk.isHighway || (chunk.biome !== 'commercial' && chunk.biome !== 'suburban' && chunk.biome !== 'residential')) return;
                     var curb = new T.Mesh(new T.BoxGeometry(0.12, 0.08, 1.0), curbMat);
                     curb.rotation.y = -cbHd;
-                    curb.position.set(cbCtr + cbSide * cbPerpX, cbHt + 0.04, cbZ + cbSide * cbPerpZ);
+                    curb.position.set(cbCtr + cbSide * cbPerpX,
+                      markRoadSurfaceHeightAt(cbZ, cbSide) + 0.04,
+                      cbZ + cbSide * cbPerpZ);
                     chunkGroup.add(curb);
                   });
                 }
@@ -19223,8 +19450,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // coverage instead of a second pristine road.
                 var dustMat = new T.MeshBasicMaterial({ color: 0xf0f4f8, transparent: true, opacity: 0.45, depthWrite: false });
                 var dustRows = CHUNK_SIZE + 1;
-                var dustVerts = new Float32Array(dustRows * 2 * 3);
-                var dustIdx = new Uint16Array((dustRows - 1) * 6);
+                var dustVerts = new Float32Array(dustRows * 3 * 3);
+                var dustIdx = new Uint16Array((dustRows - 1) * 12);
                 for (var dr = 0; dr < dustRows; dr++) {
                   var dsY = ribbonChunkBaseY + dr;
                   var dsC = iw.spline ? (iw.spline.centerAt(dsY) - MAP_SIZE / 2) : 0;
@@ -19233,17 +19460,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var dsPerpX = Math.cos(dsHd), dsPerpZ = -Math.sin(dsHd);
                   var dsBank = roadBankAngleAt(iw.spline, dsY, iw.profile || chunk);
                   var dsHalf = roadHalfW * 0.92;
-                  dustVerts[(dr * 2 + 0) * 3 + 0] = dsC - dsHalf * dsPerpX;
-                  dustVerts[(dr * 2 + 0) * 3 + 1] = dsH + 0.018 - Math.sin(dsBank) * dsHalf;
-                  dustVerts[(dr * 2 + 0) * 3 + 2] = chunkWorldZ + dr - dsHalf * dsPerpZ;
-                  dustVerts[(dr * 2 + 1) * 3 + 0] = dsC + dsHalf * dsPerpX;
-                  dustVerts[(dr * 2 + 1) * 3 + 1] = dsH + 0.018 + Math.sin(dsBank) * dsHalf;
-                  dustVerts[(dr * 2 + 1) * 3 + 2] = chunkWorldZ + dr + dsHalf * dsPerpZ;
+                  [-dsHalf, 0, dsHalf].forEach(function(dsOff, dsCol) {
+                    var dsV = dr * 3 + dsCol;
+                    dustVerts[dsV * 3 + 0] = dsC + dsOff * dsPerpX;
+                    dustVerts[dsV * 3 + 1] = dsH + 0.018 + Math.sin(dsBank) * dsOff
+                      + roadCrownHeight(dsOff, iw.profile || chunk, roadHalfW);
+                    dustVerts[dsV * 3 + 2] = chunkWorldZ + dr + dsOff * dsPerpZ;
+                  });
                 }
                 for (var dj = 0; dj < dustRows - 1; dj++) {
-                  var da = dj * 2, db = dj * 2 + 1, dc = (dj + 1) * 2, dd = (dj + 1) * 2 + 1;
-                  dustIdx[dj * 6 + 0] = da; dustIdx[dj * 6 + 1] = dc; dustIdx[dj * 6 + 2] = db;
-                  dustIdx[dj * 6 + 3] = db; dustIdx[dj * 6 + 4] = dc; dustIdx[dj * 6 + 5] = dd;
+                  var da = dj * 3, db = da + 1, dc = da + 2;
+                  var dd = (dj + 1) * 3, de = dd + 1, df = dd + 2, di = dj * 12;
+                  [da,dd,db,db,dd,de,db,de,dc,dc,de,df].forEach(function(v, n) { dustIdx[di + n] = v; });
                 }
                 var dustGeo = new T.BufferGeometry();
                 dustGeo.setAttribute('position', new T.BufferAttribute(dustVerts, 3));
@@ -22026,11 +22254,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 setWebglError(true);
               }
             } else {
-              // Load Three.js on demand
-              var s = document.createElement('script');
-              s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-              s.async = true;
-              s.onload = function() {
+              // Load Three.js on demand (shared resilient loader: multi-CDN + timeout)
+              window.StemLab.ensureThree({ orbit: false }).then(function () {
                 try {
                   scn3d = initThreeScene();
                   threeRef.current = scn3d;
@@ -22045,12 +22270,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   console.error('[RoadReady] WebGL initialization failed', err);
                   setWebglError(true);
                 }
-              };
-              s.onerror = function() {
+              }).catch(function () {
                 console.error('[RoadReady] Three.js failed to load');
                 setWebglError(true);
-              };
-              document.head.appendChild(s);
+              });
             }
           } catch (err) {
             console.error('[RoadReady] WebGL initialization failed', err);
@@ -31895,7 +32118,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       playerControlApproach: playerControlApproach,
       crossStreetCorridorAt: crossStreetCorridorAt,
       crossedFiniteRoadFeature: crossedFiniteRoadFeature, railroadCrossingState: railroadCrossingState,
-      roadCrownHeight: roadCrownHeight,
+      railroadCrossingControlState: railroadCrossingControlState, railroadRequiresFullStop: railroadRequiresFullStop,
+      railroadTrainCollisionAt: railroadTrainCollisionAt,
+      roadCrownHeight: roadCrownHeight, roadShoulderDrainageDrop: roadShoulderDrainageDrop,
+      roadLaneArrowSpecs: roadLaneArrowSpecs,
       roadBankAngleAt: roadBankAngleAt,
       roadSurfacePoseAt: roadSurfacePoseAt, roadsideOffsetFor: roadsideOffsetFor,
       highwayRampPoseAt: highwayRampPoseAt,
@@ -31905,7 +32131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       flaggerStopsDirection: flaggerStopsDirection, workZoneStopLineForDirection: workZoneStopLineForDirection,
       isStaticObstacleCell: isStaticObstacleCell,
       hydroplaneThresholdMph: hydroplaneThresholdMph, computeTireDynamics: computeTireDynamics,
-      streamedPuddleAt: streamedPuddleAt,
+      streamedPuddlesForChunk: streamedPuddlesForChunk, streamedPuddleAt: streamedPuddleAt,
       // permit test machinery
       shuffleAnswers: shuffleAnswers, shuffleArray: shuffleArray,
       buildRandomTest: buildRandomTest, buildCategoryTest: buildCategoryTest,

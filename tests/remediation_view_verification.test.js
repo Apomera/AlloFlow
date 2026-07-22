@@ -307,8 +307,13 @@ describe('exact-HTML verification binding', () => {
     expect((source.match(/await _viewRehydrateVerificationHtmlBinding\(sanitizedImport\.project, _docPipeline\)/g) || []).length).toBe(2);
     expect(source).not.toMatch(/if \(file\.size > _VIEW_MAX_PROJECT_FILE_BYTES\)[\s\S]{0,180}const file = e\.target\.files/);
     expect((source.match(/const _projectLoadToken = \+\+_projectLoadSelectionRef\.current;/g) || []).length).toBe(2);
-    expect((source.match(/if \(_projectLoadToken !== _projectLoadSelectionRef\.current\) return;/g) || []).length).toBe(4);
-    expect((source.match(/if \(_projectLoadToken === _projectLoadSelectionRef\.current\) addToast/g) || []).length).toBe(2);
+    expect((source.match(/let _projectDocumentEpoch = typeof capturePdfDocumentIntakeEpoch/g) || []).length).toBe(2);
+    expect((source.match(/const _projectLoadIsCurrent = \(\) =>/g) || []).length).toBe(2);
+    expect((source.match(/if \(!_projectLoadIsCurrent\(\)\) return;/g) || []).length).toBeGreaterThanOrEqual(6);
+    expect((source.match(/if \(typeof startNewPdfAudit === 'function'\) _projectDocumentEpoch = startNewPdfAudit\(\);/g) || []).length).toBe(2);
+    expect((source.match(/setPendingPdfBase64\(project\.pdfBase64 \|\| null\)/g) || []).length).toBe(2);
+    expect((source.match(/catch\(err\) \{ if \(_projectLoadIsCurrent\(\)\) addToast/g) || []).length).toBe(2);
+    expect(source).toMatch(/setPdfAuditResult\(\{[\s\S]{0,260}?summary: 'Loaded from saved project'/);
     expect(source).toContain('verificationHtmlBinding: _jsonVerification.verificationHtmlBinding');
     expect(source).toContain('verificationResult: pdfFixResult');
     expect(source).toContain('const _currentTaggedValidation = (_viewValidationMatchesHtml(');

@@ -121,7 +121,8 @@ describe('anti-drift: all three modules ship the wiring', () => {
     expect(viewSrc).toMatch(/!project\.accessibleHtml && !project\.incomplete/);
     expect(viewSrc).toMatch(/if \(project\.incomplete\) \{/);
     expect(viewSrc).toMatch(/setInputText\(project\.extractedText\)/);
-    expect(viewSrc).toMatch(/setPendingPdfBase64\(project\.pdfBase64\)/);
+    expect(viewSrc).toMatch(/setPendingPdfBase64\(project\.pdfBase64 \|\| null\)/);
+    expect(viewSrc).toMatch(/_projectDocumentEpoch = startNewPdfAudit\(\)/);
   });
 });
 

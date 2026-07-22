@@ -11,9 +11,12 @@
 function EducatorHubModal(props) {
   const {
     handleFileUpload, openExportPreview, pdfAuditResult, pdfFixLoading, pdfFixResult,
+    addToast = (() => {}),
     setIsAccessibilityLabOpen, setIsCommunityCatalogOpen, setIsSymbolStudioOpen,
     setPdfAuditResult, setPdfBatchMode, setPendingPdfBase64, setPendingPdfFile,
     setShowBehaviorLens, setShowEducatorHub, setShowReportWriter, setShowCinematicStudio = (() => {}), showEducatorHub, t,
+    beginPdfDocumentIntake = (() => null),
+    isPdfDocumentIntakeCurrent = (() => true),
     // Video Studio launcher (2026-07-02): companion-window screen recorder/editor.
     // Optional default so legacy hosts that haven't wired the setter still render.
     setIsVideoStudioOpen = (() => {}),
@@ -24,6 +27,7 @@ function EducatorHubModal(props) {
     // never defined in host scope). The real host setter is setPdfBatchQueue,
     // matching the batch-files array shape stored in `pdfBatchQueue` state.
     setPdfBatchQueue = (() => {}),
+    setPdfBatchSummary = (() => {}),
     // Dynamic Assessment Studio entry — added May 2026. Optional so legacy
     // hosts that haven't wired the setter still render the rest of the hub.
     setIsDynamicAssessmentOpen = (() => {}),
@@ -308,39 +312,129 @@ function EducatorHubModal(props) {
                   // save it into a PDF first — scanned PDFs get the full OCR + tag treatment.)
                   input.accept = 'application/pdf,.pdf,.docx,.pptx';
                   input.multiple = true;
-                  input.onchange = (e) => {
-                      const files = [...e.target.files];
+                  input.addEventListener('cancel', () => { input.value = ''; });
+                  input.onchange = async (e) => {
+                      const target = e && e.target;
+                      const files = target && target.files ? Array.from(target.files) : [];
+                      // Capture the File objects first; clearing the picker lets the same
+                      // document trigger a later change event in every supported browser.
+                      try { if (target) target.value = ''; } catch (_) {}
                       if (files.length === 0) return;
-                      const pdfFiles = files.filter(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
-                      if (pdfFiles.length === 1 && files.length === 1) {
-                          const file = pdfFiles[0];
-                          const reader = new FileReader();
-                          reader.onloadend = () => {
-                              const base64 = reader.result.split(',')[1];
-                              setPendingPdfBase64(base64);
-                              setPendingPdfFile(file);
-                              setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size });
-                          };
-                          reader.readAsDataURL(file);
-                      } else if (pdfFiles.length > 1) {
-                          const batchFiles = [];
-                          let loaded = 0;
-                          pdfFiles.forEach(file => {
-                              const reader = new FileReader();
-                              reader.onloadend = () => {
-                                  batchFiles.push({ name: file.name, base64: reader.result.split(',')[1], size: file.size });
-                                  loaded++;
-                                  if (loaded === pdfFiles.length) {
-                                      setPdfBatchQueue(batchFiles);
-                                      setPdfBatchMode(true);
-                                      setPdfAuditResult({ _choosing: true, fileName: pdfFiles.length + ' files', fileSize: pdfFiles.reduce((s, f) => s + f.size, 0) });
-                                  }
-                              };
-                              reader.readAsDataURL(file);
-                          });
-                      } else {
-                          handleFileUpload(e);
+
+                      // Single-document intake must use the host handler. It owns the shared
+                      // selection epoch, hard reset, type validation, and initial audit launch.
+                      if (files.length === 1) {
+                          const singleTarget = { files: [files[0]], value: '' };
+                          try {
+                              await Promise.resolve(handleFileUpload({ target: singleTarget, currentTarget: singleTarget }));
+                          } catch (error) {
+                              addToast('Could not open "' + (files[0].name || 'document') + '": ' + String((error && error.message) || error || 'unknown error'), 'error');
+                          }
+                          return;
                       }
+
+                      const pdfFiles = files.filter((file) => {
+                          const mime = String(file && file.type || '').toLowerCase();
+                          return mime === 'application/pdf' || /\.pdf$/i.test(String(file && file.name || ''));
+                      });
+                      if (pdfFiles.length <= 1) {
+                          addToast('Select one DOCX or PPTX at a time, or select two or more PDFs for batch remediation.', 'warning');
+                          return;
+                      }
+
+                      let intakeToken;
+                      try {
+                          intakeToken = await Promise.resolve(beginPdfDocumentIntake({
+                              source: 'educator-hub',
+                              mode: 'batch',
+                              files: pdfFiles
+                          }));
+                      } catch (error) {
+                          addToast('Could not start the PDF batch: ' + String((error && error.message) || error || 'unknown error'), 'error');
+                          return;
+                      }
+                      const intakeIsCurrent = () => {
+                          try { return isPdfDocumentIntakeCurrent(intakeToken); }
+                          catch (_) { return false; }
+                      };
+                      if (!intakeIsCurrent()) return;
+
+                      const skippedCount = files.length - pdfFiles.length;
+                      if (skippedCount > 0) {
+                          addToast(skippedCount + ' non-PDF file' + (skippedCount === 1 ? ' was' : 's were') + ' skipped; PDF batch remediation accepts PDFs only.', 'warning');
+                      }
+
+                      // Read sequentially so selection order is deterministic and only one
+                      // large data URL is being materialized by FileReader at a time.
+                      const batchFiles = new Array(pdfFiles.length);
+                      for (let index = 0; index < pdfFiles.length; index += 1) {
+                          if (!intakeIsCurrent()) return;
+                          const file = pdfFiles[index];
+                          const outcome = await new Promise((resolve) => {
+                              if (!intakeIsCurrent()) { resolve({ stale: true }); return; }
+                              let reader;
+                              let settled = false;
+                              const finish = (value) => {
+                                  if (settled) return;
+                                  settled = true;
+                                  resolve(value);
+                              };
+                              try {
+                                  reader = new FileReader();
+                                  reader.onload = () => {
+                                      if (!intakeIsCurrent()) { finish({ stale: true }); return; }
+                                      const result = reader.result;
+                                      const comma = typeof result === 'string' ? result.indexOf(',') : -1;
+                                      const base64 = comma >= 0 ? result.slice(comma + 1) : '';
+                                      if (!base64) {
+                                          finish({ error: new Error('The file was empty or could not be decoded.') });
+                                          return;
+                                      }
+                                      finish({ entry: {
+                                          id: Date.now() + index + Math.random(),
+                                          fileName: file.name,
+                                          fileSize: file.size,
+                                          base64,
+                                          status: 'pending',
+                                          result: null
+                                      } });
+                                  };
+                                  reader.onerror = () => {
+                                      if (!intakeIsCurrent()) { finish({ stale: true }); return; }
+                                      finish({ error: reader.error || new Error('The browser could not read this file.') });
+                                  };
+                                  reader.onabort = () => {
+                                      if (!intakeIsCurrent()) { finish({ stale: true }); return; }
+                                      finish({ error: new Error('The file read was cancelled.') });
+                                  };
+                                  reader.readAsDataURL(file);
+                              } catch (error) {
+                                  if (!intakeIsCurrent()) { finish({ stale: true }); return; }
+                                  finish({ error });
+                              }
+                          });
+                          if (!intakeIsCurrent() || outcome.stale) return;
+                          if (outcome.error) {
+                              addToast('Could not read "' + (file.name || 'PDF') + '": ' + String((outcome.error && outcome.error.message) || outcome.error), 'error');
+                              continue;
+                          }
+                          batchFiles[index] = outcome.entry;
+                      }
+
+                      if (!intakeIsCurrent()) return;
+                      const readyFiles = batchFiles.filter(Boolean);
+                      if (readyFiles.length === 0) {
+                          addToast('None of the selected PDFs could be read.', 'error');
+                          return;
+                      }
+                      setPdfBatchSummary(null);
+                      setPdfBatchQueue(readyFiles);
+                      setPdfBatchMode(true);
+                      setPdfAuditResult({
+                          _choosing: true,
+                          fileName: readyFiles.length + ' files',
+                          fileSize: readyFiles.reduce((sum, file) => sum + file.fileSize, 0)
+                      });
                   };
                   input.click();
               }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
@@ -352,7 +446,7 @@ function EducatorHubModal(props) {
               </button>
               {pdfFixResult && !pdfFixLoading && !pdfAuditResult && (
                 <button type="button"
-                  onClick={() => { setPdfAuditResult({ _restored: true }); }}
+                  onClick={() => { setShowEducatorHub(false); setPdfAuditResult({ _restored: true }); }}
                   className="min-h-11 flex items-center justify-center gap-2 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 rounded-xl text-xs font-bold transition-all col-span-full md:col-span-2"
                   title={t('educator_hub.view_last_audit_tooltip') || 'Re-open the last PDF audit — view the diff, verification, and remediated HTML without re-running the pipeline'}
                 >

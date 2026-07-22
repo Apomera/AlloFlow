@@ -247,6 +247,12 @@
       }
     });
     var studentRows = Object.values(studentMap).sort(function (a, b) { return a.displayName.localeCompare(b.displayName); });
+    studentRows.forEach(function (row) {
+      var responseMap = allResponses[row.uid] || {};
+      var completion = responseMap[questions.length];
+      row.attemptStatus = completion && completion.itemType === 'assessment-complete' ? 'submitted' : row.totalAnswered > 0 ? 'in-progress' : 'not-started';
+      row.submittedAt = row.attemptStatus === 'submitted' ? completion.timestamp || completion.answer && completion.answer.submittedAt || 0 : 0;
+    });
     return {
       studentRows: studentRows,
       totalQuestions: questions.length,
@@ -532,6 +538,81 @@
     };
   }
 
+  // ─── Aggregator: privacy-safe item analysis ───────────────────────────
+  // Descriptive counts appear immediately. Interpretive flags require at
+  // least five respondents so a single learner never becomes the "signal."
+  function aggregateItemAnalysis(quizState, generatedContent, roster, aiGradedCache, teacherOverrides) {
+    var allResponses = (quizState && quizState.allResponses) || {};
+    var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
+    var rosterObj = roster && typeof roster === 'object' ? roster : {};
+    var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides);
+    var responseUids = {};
+    graded.forEach(function (entry) { responseUids[entry.uid] = true; });
+    var rosterCount = Object.keys(rosterObj).length;
+    var totalStudents = rosterCount > 0 ? rosterCount : Object.keys(responseUids).length;
+    var items = questions.map(function (question, questionIdx) {
+      var itemRows = graded.filter(function (entry) { return entry.questionIdx === questionIdx; });
+      var respondentMap = {};
+      itemRows.forEach(function (entry) { respondentMap[entry.uid] = true; });
+      var respondents = Object.keys(respondentMap).length;
+      var correctCount = 0;
+      var incorrectCount = 0;
+      var partialCount = 0;
+      var idkCount = 0;
+      var highConfidenceIncorrect = 0;
+      itemRows.forEach(function (entry) {
+        var status = entry.grade && entry.grade.status;
+        if (status === 'correct') correctCount++;
+        else if (status === 'incorrect') incorrectCount++;
+        else if (status === 'partially-correct') partialCount++;
+        else if (status === 'idk') idkCount++;
+        if ((status === 'incorrect' || status === 'partially-correct') && entry.grade && entry.grade.confidence === 'knew') highConfidenceIncorrect++;
+      });
+      var gradableCount = correctCount + incorrectCount + partialCount;
+      var correctRate = gradableCount > 0 ? Math.round((correctCount + partialCount * 0.5) / gradableCount * 100) : null;
+      var omittedCount = Math.max(0, totalStudents - respondents);
+      var smallSample = respondents < 5;
+      var type = question && question.type || 'mcq';
+      var options = [];
+      if (type === 'mcq' && question && Array.isArray(question.options)) {
+        var correctIdx = resolveCorrectIdx(question);
+        options = question.options.map(function (label, optionIdx) {
+          var count = itemRows.reduce(function (sum, entry) {
+            return sum + (entry.response && entry.response.answer && entry.response.answer.optionIdx === optionIdx ? 1 : 0);
+          }, 0);
+          return { optionIdx: optionIdx, label: label, count: count, correct: optionIdx === correctIdx };
+        });
+      }
+      var flags = [];
+      if (!smallSample) {
+        if (correctRate != null && correctRate <= 35) flags.push('Many learners found this item challenging; review wording, instruction, and the answer key.');
+        if (correctRate != null && correctRate >= 90) flags.push('This item may be too easy for the intended decision; consider a deeper follow-up.');
+        if (totalStudents > 0 && omittedCount / totalStudents >= 0.25) flags.push('At least one quarter of the class omitted this item; check clarity and placement.');
+        if (gradableCount > 0 && highConfidenceIncorrect / gradableCount >= 0.2) flags.push('Several confident responses were incorrect; review the underlying misconception.');
+        if (options.length >= 3 && respondents >= 10 && options.some(function (option) { return !option.correct && option.count === 0; })) flags.push('One or more distractors were never selected; consider strengthening them.');
+      }
+      var signalLabel = smallSample ? 'Early signal (' + respondents + '/5)' : correctRate == null ? 'Teacher review needed' : correctRate <= 35 ? 'Challenging' : correctRate >= 90 ? 'Very easy' : 'Useful range';
+      return {
+        questionIdx: questionIdx,
+        questionText: question && (question.question || question.contextSentence || question.expectedFill) || ('Question ' + (questionIdx + 1)),
+        type: type,
+        respondents: respondents,
+        omittedCount: omittedCount,
+        idkCount: idkCount,
+        correctCount: correctCount,
+        incorrectCount: incorrectCount,
+        partialCount: partialCount,
+        gradableCount: gradableCount,
+        correctRate: correctRate,
+        highConfidenceIncorrect: highConfidenceIncorrect,
+        smallSample: smallSample,
+        signalLabel: signalLabel,
+        flags: flags,
+        options: options
+      };
+    });
+    return { items: items, totalStudents: totalStudents, minimumFlagSample: 5 };
+  }
   // ─── Mode → aggregator router ─────────────────────────────────────────
   // For review mode, requires conceptMasteryByUid argument; falls back to
   // liveHeatmap if not provided.
@@ -556,6 +637,7 @@
     aggregateLiveHeatmap: aggregateLiveHeatmap,
     aggregateRetentionCurve: aggregateRetentionCurve,
     aggregateReflections: aggregateReflections,
+    aggregateItemAnalysis: aggregateItemAnalysis,
     aggregateForMode: aggregateForMode,
     gradeResponseForItem: gradeResponseForItem,
     normalizeConceptId: normalizeConceptId,

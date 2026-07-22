@@ -1776,6 +1776,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "schedule" renders i
 </div>
 <div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
 <div style="display:flex;flex-direction:column;flex:1;overflow:hidden;padding:16px;gap:12px">
+<p id="ss-schedule-reorder-help" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Use Earlier and Later to change activity order. Completion moves Now to the next unfinished step.</p>
 <div style="flex-shrink:0;display:flex;gap:6px;align-items:center;padding:6px 10px;background:#f0fdf4;border-radius:8px;border:1px solid #d1fae5;flex-wrap:wrap">
 <span style="font-size:10px;font-weight:600;color:#059669;white-space:nowrap">🌱 Could grow in a schedule:</span>
 <button aria-label="Add Take deep breaths to schedule input" title="Add to schedule activities" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Take deep breaths<span style="color:#9ca3af;margin-left:2px">+</span>

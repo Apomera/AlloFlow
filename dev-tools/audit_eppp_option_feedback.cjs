@@ -100,6 +100,24 @@ const wave10Ids = new Set([
   'eppp-b011-social-1',
   'eppp-b026-social-2',
 ]);
+const wave11Ids = new Set([
+  'eppp-v3-assessment-020',
+  'eppp-b008-assessment-2',
+  'eppp-b009-research-2',
+  'eppp-b010-research-1',
+  'eppp-v3-biological-028',
+  'eppp-v3-biological-041',
+  'eppp-v3-cognitive-affective-034',
+  'eppp-b004-cognitive-2',
+  'eppp-v3-lifespan-005',
+  'eppp-v3-lifespan-036',
+  'eppp-v3-intervention-043',
+  'eppp-v3-intervention-042',
+  'eppp-v3-professional-065',
+  'eppp-b004-professional-1',
+  'eppp-b008-social-1',
+  'eppp-b009-social-1',
+]);
 const genericTemplatePattern = /\b(?:is not best because|does not meet the defining condition or distinction|the supported response is|makes an absolute or unconditional claim|does not represent the best available answer)\b/i;
 
 function normalize(value) {
@@ -168,6 +186,7 @@ const wave07Findings = optionFindings.filter((finding) => wave07Ids.has(finding.
 const wave08Findings = optionFindings.filter((finding) => wave08Ids.has(finding.id));
 const wave09Findings = optionFindings.filter((finding) => wave09Ids.has(finding.id));
 const wave10Findings = optionFindings.filter((finding) => wave10Ids.has(finding.id));
+const wave11Findings = optionFindings.filter((finding) => wave11Ids.has(finding.id));
 const waveDefinitions = [
   ['eppp-native-quality-wave-05', wave05Ids, wave05Findings],
   ['eppp-native-quality-wave-06', wave06Ids, wave06Findings],
@@ -175,6 +194,7 @@ const waveDefinitions = [
   ['eppp-option-feedback-wave-08', wave08Ids, wave08Findings],
   ['eppp-option-feedback-wave-09', wave09Ids, wave09Findings],
   ['eppp-option-feedback-wave-10', wave10Ids, wave10Findings],
+  ['eppp-option-feedback-wave-11', wave11Ids, wave11Findings],
 ];
 const waves = Object.fromEntries(waveDefinitions.map(([reviewWave, ids, findings]) => [reviewWave, {
   reviewWave,
@@ -190,9 +210,10 @@ const wave07 = waves['eppp-option-feedback-wave-07'];
 const wave08 = waves['eppp-option-feedback-wave-08'];
 const wave09 = waves['eppp-option-feedback-wave-09'];
 const wave10 = waves['eppp-option-feedback-wave-10'];
+const wave11 = waves['eppp-option-feedback-wave-11'];
 const report = {
   schemaVersion: 1,
-  generatedAt: '2026-07-18',
+  generatedAt: '2026-07-22',
   warningOnly: true,
   criteria: {
     insufficientDetail: 'Incorrect-option feedback has at least 100 characters and 16 words, enough room to identify the misconception and teach the relevant distinction.',
@@ -222,6 +243,8 @@ const report = {
     wave09OptionsWithWarnings: wave09.optionsWithWarnings,
     wave10IncorrectOptions: wave10.incorrectOptions,
     wave10OptionsWithWarnings: wave10.optionsWithWarnings,
+    wave11IncorrectOptions: wave11.incorrectOptions,
+    wave11OptionsWithWarnings: wave11.optionsWithWarnings,
     priorityDocketItems: Math.min(100, itemFindings.length),
   },
   waves,
@@ -230,8 +253,8 @@ const report = {
   previousWave: wave06,
   latestWave: wave07,
   activeWave: wave08,
-  mostRecentWave: wave10,
-  latestReviewWave: wave10.reviewWave,
+  mostRecentWave: wave11,
+  latestReviewWave: wave11.reviewWave,
   priorityDocket: itemFindings.slice(0, 100),
   optionFindings,
 };
@@ -265,6 +288,8 @@ Generated: ${report.generatedAt}
 | Wave-07 incorrect options with warnings | ${report.summary.latestWaveOptionsWithWarnings} of ${report.summary.latestWaveIncorrectOptions} |
 | Wave-08 incorrect options with warnings | ${report.summary.activeWaveOptionsWithWarnings} of ${report.summary.activeWaveIncorrectOptions} |
 | Wave-09 incorrect options with warnings | ${report.summary.wave09OptionsWithWarnings} of ${report.summary.wave09IncorrectOptions} |
+| Wave-10 incorrect options with warnings | ${report.summary.wave10OptionsWithWarnings} of ${report.summary.wave10IncorrectOptions} |
+| Wave-11 incorrect options with warnings | ${report.summary.wave11OptionsWithWarnings} of ${report.summary.wave11IncorrectOptions} |
 
 ${waveStatusProse}
 
@@ -283,4 +308,4 @@ for (const outputRoot of outputRoots) {
   writeFileWithRetry(path.join(outputRoot, reportBasename + '.json'), JSON.stringify(report, null, 2) + '\n');
   writeFileWithRetry(path.join(outputRoot, reportBasename + '.md'), markdown);
 }
-console.log('EPPP option-feedback diagnostics: ' + report.summary.totalIncorrectOptions + ' incorrect options scanned; ' + report.summary.incorrectOptionsWithWarnings + ' with warnings; wave 10 ' + report.waves[report.latestReviewWave].status + '.');
+console.log('EPPP option-feedback diagnostics: ' + report.summary.totalIncorrectOptions + ' incorrect options scanned; ' + report.summary.incorrectOptionsWithWarnings + ' with warnings; wave 11 ' + report.waves[report.latestReviewWave].status + '.');

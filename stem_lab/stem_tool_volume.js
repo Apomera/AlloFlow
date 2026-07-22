@@ -180,6 +180,13 @@ window.StemLab = window.StemLab || {
     '#16a34a', '#0891b2', '#4f46e5', '#9333ea', '#be123c'
   ];
 
+  var VOLUME_CAMERA_PRESETS = {
+    isometric: { label: 'Isometric', rotation: { x: -25, y: -35 }, scale: 1 },
+    front: { label: 'Front', rotation: { x: 0, y: 0 }, scale: 1 },
+    side: { label: 'Side', rotation: { x: 0, y: -90 }, scale: 1 },
+    top: { label: 'Top', rotation: { x: -90, y: 0 }, scale: 0.9 }
+  };
+
   function normalizeVolumeLayerColor(value, layer) {
     var index = Math.max(0, Math.min(9, parseInt(layer, 10) || 0));
     var fallback = VOLUME_LAYER_COLORS[index % VOLUME_LAYER_COLORS.length];
@@ -222,6 +229,22 @@ window.StemLab = window.StemLab || {
     var b = parseInt(hex.slice(5, 7), 16);
     var luminance = (r * 299 + g * 587 + b * 114) / 255000;
     return luminance > 0.58 ? '#0f172a' : '#ffffff';
+  }
+
+  function volumeExportFaceColors(value, layer) {
+    var tone = volumeLayerColorToHsl(value, layer);
+    var clampLight = function(light) { return Math.max(12, Math.min(92, light)); };
+    var topLight = clampLight(tone.l + 12);
+    var leftLight = clampLight(tone.l - 10);
+    var rightLight = clampLight(tone.l);
+    var strokeLight = clampLight(tone.l - 22);
+    return {
+      hex: tone.hex,
+      stroke: 'hsl(' + tone.h + ',' + Math.max(35, tone.s - 10) + '%,' + strokeLight + '%)',
+      top: 'hsl(' + tone.h + ',' + tone.s + '%,' + topLight + '%)',
+      left: 'hsl(' + tone.h + ',' + Math.max(30, tone.s - 8) + '%,' + leftLight + '%)',
+      right: 'hsl(' + ((tone.h + 8) % 360) + ',' + Math.max(30, tone.s - 12) + '%,' + rightLight + '%)'
+    };
   }
 
   var WORD_CONTEXTS = [
@@ -393,7 +416,9 @@ window.StemLab = window.StemLab || {
     layerColors: VOLUME_LAYER_COLORS,
     normalizeVolumeLayerColor: normalizeVolumeLayerColor,
     volumeLayerColorToHsl: volumeLayerColorToHsl,
-    volumeLayerTextColor: volumeLayerTextColor
+    volumeLayerTextColor: volumeLayerTextColor,
+    volumeExportFaceColors: volumeExportFaceColors,
+    cameraPresets: VOLUME_CAMERA_PRESETS
   };
   // ── Badge definitions ──
   var BADGES = [
@@ -820,6 +845,70 @@ window.StemLab = window.StemLab || {
         if (!removing) {
           checkBadges({ bigBuilder: nextPositions.length >= 20, centurion: totalPlaced + 1 >= 100 });
         }
+      };
+      var commitFreeformLayerChange = function(nextPositions, addedCount, message, nextLayer) {
+        if (nextPositions.length === positions.length && nextPositions.every(function(pos, index) { return pos === positions[index]; })) {
+          if (nextLayer != null && nextLayer !== activeBuildLayer) upd({ activeBuildLayer: nextLayer });
+          if (message) announceToSR(message);
+          return;
+        }
+        var nextUndo = undoStack.concat([positions.slice()]);
+        if (nextUndo.length > 30) nextUndo = nextUndo.slice(nextUndo.length - 30);
+        var patch = { positions: nextPositions, undoStack: nextUndo };
+        if (addedCount > 0) patch.totalPlaced = totalPlaced + addedCount;
+        if (nextLayer != null) patch.activeBuildLayer = nextLayer;
+        upd(patch);
+        playSound(addedCount > 0 ? 'place' : 'remove');
+        if (message) announceToSR(message);
+        if (addedCount > 0) {
+          checkBadges({ bigBuilder: nextPositions.length >= 20, centurion: totalPlaced + addedCount >= 100 });
+        }
+      };
+      var fillActiveBuildLayer = function() {
+        var next = positions.slice();
+        var nextSet = new Set(next);
+        var added = 0;
+        for (var y = 0; y < 8; y++) {
+          for (var x = 0; x < 8; x++) {
+            var key = x + '-' + y + '-' + activeBuildLayer;
+            if (!nextSet.has(key)) {
+              next.push(key);
+              nextSet.add(key);
+              added++;
+            }
+          }
+        }
+        commitFreeformLayerChange(next, added, added ? 'Filled layer ' + (activeBuildLayer + 1) + ' with 64 blocks.' : 'Layer ' + (activeBuildLayer + 1) + ' is already full.');
+      };
+      var clearActiveBuildLayer = function() {
+        var next = positions.filter(function(pos) { return parseInt(pos.split('-')[2], 10) !== activeBuildLayer; });
+        var removed = positions.length - next.length;
+        commitFreeformLayerChange(next, 0, removed ? 'Cleared ' + removed + ' blocks from layer ' + (activeBuildLayer + 1) + '.' : 'Layer ' + (activeBuildLayer + 1) + ' is already empty.');
+      };
+      var duplicateActiveBuildLayer = function() {
+        if (activeBuildLayer >= 9) {
+          announceToSR('Layer 10 cannot be duplicated higher.');
+          return;
+        }
+        var source = positions.filter(function(pos) { return parseInt(pos.split('-')[2], 10) === activeBuildLayer; });
+        if (!source.length) {
+          announceToSR('Add blocks before duplicating this layer.');
+          return;
+        }
+        var targetLayer = activeBuildLayer + 1;
+        var next = positions.slice();
+        var nextSet = new Set(next);
+        var added = 0;
+        source.forEach(function(pos) {
+          var parts = pos.split('-');
+          var key = parts[0] + '-' + parts[1] + '-' + targetLayer;
+          if (!nextSet.has(key)) {
+            next.push(key);
+            nextSet.add(key);
+            added++;
+          }
+        });
+        commitFreeformLayerChange(next, added, added ? 'Duplicated ' + added + ' blocks to layer ' + (targetLayer + 1) + '.' : 'Layer ' + (targetLayer + 1) + ' already contains those blocks.', targetLayer);
       };
       var volume = isDisplacement ? (dispSubmerged ? dispTrial.measuredVolume : 0)
         : (isSlider ? dims.l * dims.w * dims.h : posSet.size);
@@ -2717,6 +2806,21 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-xs font-semibold text-indigo-800' }, 'The grid is a top-down view. The 3D preview updates immediately; click a 3D cube to remove it or an outlined top face to stack.'),
             h('div', { className: 'grid grid-cols-8 gap-1', role: 'group', 'aria-label': 'Block placement grid for layer ' + (activeBuildLayer + 1) }, placementCells),
             h('div', { className: 'flex flex-wrap justify-end gap-2' },
+              h('button', {
+                type: 'button', onClick: fillActiveBuildLayer, disabled: activeLayerCount === 64,
+                'aria-label': 'Fill every square on layer ' + (activeBuildLayer + 1),
+                className: 'px-3 py-1.5 text-xs font-bold bg-indigo-700 text-white rounded-lg hover:bg-indigo-600 disabled:opacity-40'
+              }, 'Fill layer'),
+              h('button', {
+                type: 'button', onClick: duplicateActiveBuildLayer, disabled: activeLayerCount === 0 || activeBuildLayer >= 9,
+                'aria-label': 'Duplicate layer ' + (activeBuildLayer + 1) + ' to layer ' + (activeBuildLayer + 2),
+                className: 'px-3 py-1.5 text-xs font-bold bg-violet-100 text-violet-800 rounded-lg hover:bg-violet-200 disabled:opacity-40 border border-violet-300'
+              }, 'Duplicate up'),
+              h('button', {
+                type: 'button', onClick: clearActiveBuildLayer, disabled: activeLayerCount === 0,
+                'aria-label': 'Clear every block from layer ' + (activeBuildLayer + 1),
+                className: 'px-3 py-1.5 text-xs font-bold bg-rose-50 text-rose-700 rounded-lg hover:bg-rose-100 disabled:opacity-40 border border-rose-200'
+              }, 'Clear layer'),
               h('button', { 'aria-label': __alloT('stem.volume.undo_last_placement_u', 'Undo last placement (U)'),
                 onClick: doUndo,
                 disabled: !undoStack.length,
@@ -2734,6 +2838,7 @@ window.StemLab = window.StemLab || {
         // 3D viewport — pointer events (mouse + touch + pen), pinch-to-zoom,
         // keyboard rotation. tabIndex=0 makes it focusable for keyboard users.
         !isDisplacement && h('div', {
+          id: 'volume-3d-viewport',
           className: 'relative bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl border-2 border-emerald-300/30 flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing select-none focus:outline-none focus:ring-2 focus:ring-emerald-400',
           style: { minHeight: '350px', perspective: '900px', touchAction: 'none' },
           tabIndex: 0,
@@ -2747,6 +2852,45 @@ window.StemLab = window.StemLab || {
           onWheel: function(e) { upd({ scale: Math.max(0.4, Math.min(2.5, scale + (e.deltaY > 0 ? -0.08 : 0.08))) }); }
         },
           isFreeform && h('div', { className: 'pointer-events-none absolute left-3 top-3 z-20 rounded-full border border-indigo-300/40 bg-slate-950/80 px-3 py-1 text-[11px] font-bold text-indigo-100' }, '3D preview - build with the layer grid above'),
+          h('div', {
+            className: 'absolute bottom-3 left-3 right-3 z-20 flex flex-wrap items-center justify-center gap-1.5 rounded-xl border border-white/15 bg-slate-950/85 p-2 shadow-lg',
+            role: 'group',
+            'aria-label': '3D camera and fullscreen controls',
+            onPointerDown: function(e) { e.stopPropagation(); },
+            onPointerMove: function(e) { e.stopPropagation(); },
+            onPointerUp: function(e) { e.stopPropagation(); }
+          },
+            h('span', { className: 'mr-1 text-[10px] font-black uppercase tracking-wider text-slate-300' }, 'View'),
+            Object.keys(VOLUME_CAMERA_PRESETS).map(function(presetId) {
+              var preset = VOLUME_CAMERA_PRESETS[presetId];
+              var active = Math.abs(rotation.x - preset.rotation.x) < 0.1 && Math.abs(rotation.y - preset.rotation.y) < 0.1 && Math.abs(scale - preset.scale) < 0.01;
+              return h('button', {
+                key: presetId,
+                type: 'button',
+                'data-volume-camera': presetId,
+                'aria-pressed': active,
+                onClick: function() {
+                  upd({ rotation: { x: preset.rotation.x, y: preset.rotation.y }, scale: preset.scale });
+                  announceToSR(preset.label + ' camera view selected.');
+                },
+                className: 'min-h-8 rounded-lg border px-2.5 py-1 text-[11px] font-bold transition-colors ' + (active ? 'border-indigo-300 bg-indigo-500 text-white' : 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700')
+              }, preset.label);
+            }),
+            h('button', {
+              type: 'button',
+              'data-volume-fullscreen': 'true',
+              'aria-label': 'Toggle fullscreen for the 3D volume preview',
+              onClick: function() {
+                var el = document.getElementById('volume-3d-viewport');
+                if (!el) return;
+                if (window.__alloStemFS) { window.__alloStemFS(el); return; }
+                var inFull = document.fullscreenElement === el || document.webkitFullscreenElement === el;
+                if (inFull) { var exit = document.exitFullscreen || document.webkitExitFullscreen; if (exit) exit.call(document); }
+                else { var enter = el.requestFullscreen || el.webkitRequestFullscreen; if (enter) enter.call(el); }
+              },
+              className: 'min-h-8 rounded-lg border border-emerald-400/60 bg-emerald-600 px-3 py-1 text-[11px] font-black text-white transition-colors hover:bg-emerald-500'
+            }, 'Fullscreen')
+          ),
           h('div', {
           style: {
             transformStyle: 'preserve-3d',
@@ -3212,7 +3356,7 @@ window.StemLab = window.StemLab || {
               onClick: function() {
                 // Simple SVG export: serialize the cube grid as SVG with isometric projection.
                 // Pure JS, no html2canvas dependency. Downloads as PNG via a Blob URL.
-                exportConstructionPNG(positions, dims, isFreeform, unit, volume, surfaceArea);
+                exportConstructionPNG(positions, dims, isFreeform, unit, volume, surfaceArea, layerColors);
               },
               'aria-label': __alloT('stem.volume.export_current_construction_as_png_ima', 'Export current construction as PNG image'),
               title: __alloT('stem.volume.download_a_png_snapshot_of_the_current', 'Download a PNG snapshot of the current build'),
@@ -3469,7 +3613,7 @@ window.StemLab = window.StemLab || {
   // Renders an isometric SVG of the current construction with stats overlay,
   // converts to PNG via Image+Canvas, triggers a download. Works offline.
   // ──────────────────────────────────────────────────────────────
-  function exportConstructionPNG(positions, dims, isFreeform, unit, volume, surfaceArea) {
+  function exportConstructionPNG(positions, dims, isFreeform, unit, volume, surfaceArea, layerColors) {
     var cubeSize = 36;
     var cosA = Math.cos(Math.PI / 6); // 30 degrees
     var sinA = Math.sin(Math.PI / 6);
@@ -3479,7 +3623,7 @@ window.StemLab = window.StemLab || {
     if (isFreeform) {
       positions.forEach(function(pos) {
         var p = pos.split('-').map(Number);
-        cubeList.push({ x: p[0], y: p[1], z: p[2] });
+        cubeList.push({ x: p[0], y: p[1], z: p[2], color: normalizeVolumeLayerColor((layerColors || {})[String(p[2])], p[2]) });
       });
     } else {
       for (var z = 0; z < dims.h; z++)
@@ -3518,7 +3662,18 @@ window.StemLab = window.StemLab || {
     cubeList.forEach(function(c) {
       var px = (c.x - c.y) * cubeSize * cosA + ox;
       var py = (c.x + c.y) * cubeSize * sinA - c.z * cubeSize + oy + 30;
-      var hue = 140 + c.z * 12;
+      var faceColors;
+      if (isFreeform) {
+        faceColors = volumeExportFaceColors(c.color, c.z);
+      } else {
+        var hue = 140 + c.z * 12;
+        faceColors = {
+          stroke: 'hsl(' + hue + ',60%,30%)',
+          top: 'hsl(' + hue + ',70%,65%)',
+          left: 'hsl(' + hue + ',60%,45%)',
+          right: 'hsl(' + (hue + 10) + ',55%,55%)'
+        };
+      }
       // Top face (diamond)
       var top = [
         [px, py - cubeSize],
@@ -3540,12 +3695,12 @@ window.StemLab = window.StemLab || {
         [px, py],
         [px + cubeSize * cosA, py - cubeSize + cubeSize * sinA + cubeSize - cubeSize * sinA]
       ];
-      function poly(pts, fill) {
-        return '<polygon points="' + pts.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ') + '" fill="' + fill + '" stroke="hsl(' + hue + ',60%,30%)" stroke-width="0.8"/>';
+      function poly(pts, fill, stroke) {
+        return '<polygon points="' + pts.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ') + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="0.8"/>';
       }
-      svgParts.push(poly(top,   'hsl(' + hue + ',70%,65%)'));
-      svgParts.push(poly(left,  'hsl(' + hue + ',60%,45%)'));
-      svgParts.push(poly(right, 'hsl(' + (hue + 10) + ',55%,55%)'));
+      svgParts.push(poly(top, faceColors.top, faceColors.stroke));
+      svgParts.push(poly(left, faceColors.left, faceColors.stroke));
+      svgParts.push(poly(right, faceColors.right, faceColors.stroke));
     });
 
     // Stats footer
@@ -3587,7 +3742,6 @@ window.StemLab = window.StemLab || {
       }, 'image/png');
     };
     img.onerror = function() {
-      URL.revokeObjectURL(url);
       // Fallback: download the raw SVG
       var a = document.createElement('a');
       a.href = url;
@@ -3595,6 +3749,7 @@ window.StemLab = window.StemLab || {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+      setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
     };
     img.src = url;
   }

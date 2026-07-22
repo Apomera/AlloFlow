@@ -15,7 +15,7 @@ describe('Quiz accessibility', () => {
 
   it('provides gradebook column and row header relationships', () => {
     const text = source();
-    expect(text.match(/<th scope="col"/g)).toHaveLength(5);
+    expect(text.match(/<th scope="col"/g)).toHaveLength(6);
     expect(text).toContain('<th scope="row" className="px-2 py-1.5 text-left font-medium text-slate-800">{row.displayName}</th>');
   });
 
@@ -35,10 +35,10 @@ describe('Quiz accessibility', () => {
     expect(text).toContain('<input aria-label="Concept to explain" type="text" value={explainerInput}');
   });
 
-  it('gives both modal layers complete dialog focus behavior', () => {
+  it('gives every modal layer complete dialog focus behavior', () => {
     const text = source();
-    expect(text.match(/role="dialog"/g)).toHaveLength(2);
-    expect(text.match(/aria-modal="true"/g)).toHaveLength(2);
+    expect(text.match(/role="dialog"/g)).toHaveLength(3);
+    expect(text.match(/aria-modal="true"/g)).toHaveLength(3);
     expect(text).toContain('function _quizHandleDialogKeyDown(event, dialogRef, closeDialog)');
     expect(text).toContain('aria-labelledby="quiz-concept-explainer-title"');
     expect(text).toContain('aria-labelledby="quiz-review-question-title"');

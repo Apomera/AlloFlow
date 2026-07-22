@@ -63,10 +63,23 @@ export function setupHub() {
     globalThis.__hubInternals = {
       emptyJournal: emptyJournal,
       loadJournal: loadJournal,
+      saveJournal: saveJournal,
+      matchMethodPackForQuestion: matchMethodPackForQuestion,
+      normalizeResearchCapture: normalizeResearchCapture,
+      validateToolIntegrationContract: validateToolIntegrationContract,
+      normalizeReproducibilityReceipt: normalizeReproducibilityReceipt,
+      assessResearchArtifactIntegration: assessResearchArtifactIntegration,
+      summarizeIntegrationHealth: summarizeIntegrationHealth,
+      buildInquiryAudit: buildInquiryAudit,
+      stampNewInquiryArtifacts: stampNewInquiryArtifacts,
+      applyMethodPackSelection: applyMethodPackSelection,
       stripPedagogicalFootguns: stripPedagogicalFootguns,
       enforceQuestionFormat: enforceQuestionFormat,
       FOOTGUN_KEY_PATTERNS: FOOTGUN_KEY_PATTERNS,
       STORAGE_KEY: STORAGE_KEY,
+      RECOVERY_STORAGE_KEY: RECOVERY_STORAGE_KEY,
+      CAPTURE_INBOX_KEY: CAPTURE_INBOX_KEY,
+      TOOL_INTEGRATION_CONTRACT_VERSION: TOOL_INTEGRATION_CONTRACT_VERSION,
       MAX_AI_CALLS_PER_SESSION: MAX_AI_CALLS_PER_SESSION,
       // PER_TOUCHPOINT_CAP is defined inside makeAskResearchCoach (deeper
       // closure). We re-construct an instance to capture it.

@@ -120,7 +120,7 @@ describe('Weather Systems science kernel', () => {
   it('normalizes a live weather observation for the immersive scene', () => {
     const kernel = window.WeatherSystemsKernel;
     const live = kernel.normalizeLiveWeatherResponse({
-      timezone: 'America/New_York', timezone_abbreviation: 'EDT',
+      timezone: 'America/New_York', timezone_abbreviation: 'EDT', utc_offset_seconds: -14400,
       current: {
         time: '2026-07-16T14:00', temperature_2m: 28.4, relative_humidity_2m: 74,
         precipitation: 1.2, weather_code: 95, cloud_cover: 88, surface_pressure: 1004.6,
@@ -133,8 +133,34 @@ describe('Weather Systems science kernel', () => {
     expect(live.condition).toBe('Thunderstorms');
     expect(live.cloudCover).toBe(88);
     expect(live.visibility).toBe(8400);
+    expect(live.utcOffsetSeconds).toBe(-14400);
     expect(live.source).toBe('Open-Meteo');
     expect(() => kernel.normalizeLiveWeatherResponse({}, 'Missing', 0, 0)).toThrow(/current conditions/);
+  });
+
+  it('labels observation freshness and discovers compatible 3D building layers', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const now = Date.parse('2026-07-22T12:00:00Z');
+    expect(kernel.liveObservationFreshness({ observedAt: '2026-07-22T11:30:00Z' }, now)).toEqual(expect.objectContaining({
+      code: 'current', current: true, stale: false, ageMinutes: 30, badge: 'LIVE'
+    }));
+    expect(kernel.liveObservationFreshness({ observedAt: '2026-07-22T08:00:00Z' }, now)).toEqual(expect.objectContaining({
+      code: 'recent', current: false, stale: false, ageMinutes: 240, badge: 'RECENT'
+    }));
+    expect(kernel.liveObservationFreshness({ observedAt: '2026-07-21T12:00:00Z' }, now)).toEqual(expect.objectContaining({
+      code: 'stale', current: false, stale: true, ageMinutes: 1440, badge: 'SAVED'
+    }));
+    expect(kernel.liveObservationFreshness({ observedAt: '2026-07-22T07:30', utcOffsetSeconds: -14400 }, now).ageMinutes).toBe(30);
+    expect(kernel.liveObservationFreshness({}, now).code).toBe('unknown');
+    expect(kernel.geographicBuildingLayerIds({ layers: [
+      { id: 'water', type: 'fill' },
+      { id: 'structures-3d', type: 'fill-extrusion', 'source-layer': 'building' },
+      { id: 'building-labels', type: 'symbol' }
+    ] })).toEqual(['structures-3d']);
+    expect(kernel.geographicBuildingLayerIds(null)).toEqual([]);
+    expect(kernel.geographicOrientationSummary(-18)).toEqual({ bearing: -18, northRotation: 18, label: 'North is 18\u00B0 right of screen top.' });
+    expect(kernel.geographicOrientationSummary(0).label).toBe('North is aligned with screen top.');
+    expect(kernel.geographicOrientationSummary(200)).toEqual({ bearing: -160, northRotation: 160, label: 'North is 160\u00B0 right of screen top.' });
   });
 
   it('accepts decimal and hemisphere coordinate location formats', () => {
@@ -174,6 +200,45 @@ describe('Weather Systems science kernel', () => {
     expect(kernel.immersiveFocusProfile('front').layers.wind).toBe(true);
     expect(kernel.immersiveFocusProfile('unknown').id).toBe('system');
   });
+
+  it('coordinates geographic camera and evidence layers through immutable analysis views', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const context = kernel.geographicAnalysisLens('context');
+    expect(context).toEqual(expect.objectContaining({
+      id: 'context', camera: 'region',
+      layers: { studyArea: true, wind: true, transect: false, buildings: false }
+    }));
+    expect(kernel.geographicAnalysisLens('site')).toEqual(expect.objectContaining({
+      id: 'site', camera: 'site',
+      layers: { studyArea: false, wind: true, transect: false, buildings: true }
+    }));
+    expect(kernel.geographicAnalysisLens('unknown').id).toBe('terrain');
+    context.layers.wind = false;
+    expect(kernel.geographicAnalysisLens('context').layers.wind).toBe(true);
+    const region = kernel.geographicCameraView('region');
+    expect(region).toEqual({ id: 'region', label: 'regional context', zoom: 8.3, pitch: 38, bearing: 0 });
+    region.zoom = 3;
+    expect(kernel.geographicCameraView('region').zoom).toBe(8.3);
+    expect(kernel.geographicCameraView('unknown').id).toBe('local');
+  });
+
+  it('sequences the geographic field investigation through coordinated map views', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const orient = kernel.geographicInvestigationStep();
+    expect(orient).toEqual(expect.objectContaining({
+      id: 'orient', index: 0, total: 4, nextId: 'terrain', lens: 'context'
+    }));
+    expect(orient.prompt).toContain('which direction is downwind');
+    const site = kernel.geographicInvestigationStep('site');
+    expect(site).toEqual(expect.objectContaining({
+      index: 2, nextId: 'claim', lens: 'site'
+    }));
+    expect(kernel.geographicInvestigationStep('claim').nextId).toBe('orient');
+    orient.label = 'Changed';
+    expect(kernel.geographicInvestigationStep().label).toBe('Orient the system');
+    expect(kernel.geographicInvestigationStep('unknown').id).toBe('orient');
+  });
+
 it('selects realistic immersive geography profiles for scenarios', () => {
     const kernel = window.WeatherSystemsKernel;
     expect(kernel.geographyProfile('mountain', 'coldFront').label).toBe('Mountain valley');
@@ -291,7 +356,21 @@ it('returns a sequenced immersive investigation tour step', () => {
     }));
     expect(comparison.distanceKm).toBeCloseTo(12, 1);
     expect(comparison.bearing).toBeCloseTo(45, 0);
+    const upwind = kernel.geographicTerrainWindAnalysis(comparison, 45);
+    expect(upwind).toEqual(expect.objectContaining({
+      position: 'Upwind', label: 'Upwind sample', gradePercent: 1.67,
+      slopeDegrees: 0.95, gradeLabel: 'Gentle average grade',
+      signalLabel: 'Upwind terrain barrier'
+    }));
+    expect(upwind.interpretation).toContain('force approaching air upward');
+    expect(kernel.geographicTerrainWindAnalysis(comparison, 215)).toEqual(expect.objectContaining({
+      position: 'Downwind', signalLabel: 'Downwind terrain context'
+    }));
+    expect(kernel.geographicTerrainWindAnalysis(comparison, 315)).toEqual(expect.objectContaining({
+      position: 'Crosswind', signalLabel: 'Crosswind terrain context'
+    }));
     expect(kernel.geographicPointComparison(-70.2568, 43.6591, 19, 'invalid', 43.7, 219)).toBeNull();
+    expect(kernel.geographicTerrainWindAnalysis(null, 45)).toBeNull();
   });
 
 });
@@ -305,10 +384,19 @@ describe('Weather Systems grade-banded views', () => {
     expect(html).toContain('high-fidelity atmospheric digital twin');
     expect(html).toContain('data-weather-immersive-lab');
     expect(html).toContain('data-weather-immersive-canvas');
+    expect(html).toContain('data-weather-conceptual-vignette');
     expect(html).toContain('data-weather-camera-controls');
+    expect(html).toContain('data-weather-conceptual-command-bar');
     expect(html).toContain('aria-label="3D camera views"');
+    expect(html).toContain('aria-label="Overview camera view"');
+    expect(html).toContain('aria-label="Front section camera view"');
+    expect(html).toContain('aria-label="Surface camera view"');
     expect(html).toContain('Front section');
     expect(html).toContain('data-weather-scene-hud');
+    expect(html).toContain('data-weather-scene-instruments');
+    expect(html).toContain('Temperature');
+    expect(html).toContain('Pressure');
+    expect(html).toContain('Wind');
     expect(html).toContain('Rendering quality');
     expect(html).toContain('High fidelity');
     expect(html).toContain('Full terrain detail');
@@ -428,10 +516,11 @@ it('renders the immersive guided investigation tour and evidence note', () => {
       }
     }, { gradeLevel: '10th Grade' });
     expect(html).toContain('3D engine ready');
-    expect(html).toContain('Live observation scene');
+    expect(html).toContain('Saved observation scene');
     expect(html).toContain('Portland, Maine, United States');
-    expect(html).toContain('Live observations');
-    expect(html).toContain('LIVE');
+    expect(html).toContain('Saved observation');
+    expect(html).toContain('data-weather-source-freshness="stale"');
+    expect(html).toContain('SAVED');
     expect(html).toContain('Thunderstorms | Observed 2026-07-16T14:00 EDT.');
     expect(html).toContain('8.4 km');
     expect(html).toContain('href="https://open-meteo.com/"');
@@ -444,7 +533,9 @@ it('renders the immersive guided investigation tour and evidence note', () => {
       _threeLoaded: true,
       weatherSystems: {
         tab: 'immersive', immersiveSceneMode: 'geographic', immersiveDataSource: 'live',
+        geographicMapReady: true,
         geographicTerrainExaggeration: 1.35,
+        geographicInvestigationStep: 'orient',
         geographicTerrainProfile: [
           { distanceKm: 0, elevation: 18 }, { distanceKm: 5, elevation: 22 },
           { distanceKm: 10, elevation: 40 }, { distanceKm: 15, elevation: 96 },
@@ -456,6 +547,7 @@ it('renders the immersive guided investigation tour and evidence note', () => {
           latitude: 43.71, longitude: -70.31, elevation: 219, siteElevation: 19,
           elevationDelta: 200, distanceKm: 7.4, bearing: 325.4, direction: 'NW', relation: 'Higher than site'
         },
+        geographicTerrainProbeMethod: 'Keyboard map-center sample',
         terrainEvidenceInvalidatedMessage: 'Previous terrain evidence was removed because the live location or observation changed. Sample and save the new profile before forecasting.',
         liveGeography: {
           label: 'Portland, Maine, United States', locality: 'Portland', admin1: 'Maine',
@@ -476,8 +568,17 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('aria-pressed="true"');
     expect(html).toContain('data-weather-geographic-map');
     expect(html).toContain('Interactive open geographic map and 3D terrain centered on Portland');
+    expect(html).toContain('aria-describedby="weather-geographic-map-instructions"');
+    expect(html).toContain('id="weather-geographic-map-instructions"');
+    expect(html).toContain('Use Sample map center to inspect terrain without a pointer.');
+    expect(html).toContain('data-weather-immersive-status-bar');
+    expect(html).toContain('data-weather-geographic-vignette');
     expect(html).toContain('data-weather-geographic-camera-controls');
+    expect(html).toContain('data-weather-geographic-command-bar');
     expect(html).toContain('aria-label="Geographic camera views"');
+    expect(html).toContain('aria-label="Region camera view"');
+    expect(html).toContain('aria-label="Local camera view"');
+    expect(html).toContain('aria-label="Site camera view"');
     expect(html).toContain('Region');
     expect(html).toContain('Local');
     expect(html).toContain('Site');
@@ -489,17 +590,47 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('Downwind on');
     expect(html).toContain('Transect on');
     expect(html).toContain('Terrain sample');
+    expect(html).toContain('data-weather-geographic-orientation');
+    expect(html).toContain('North is 18\u00B0 right of screen top.');
     expect(html).toContain('data-weather-geographic-telemetry');
+    expect(html).toContain('data-weather-geographic-terrain-capability="ready"');
+    expect(html).toContain('3D terrain 1.35x');
     expect(html).toContain('Zoom 10.6');
     expect(html).toContain('Tilt 58');
     expect(html).toContain('Bearing -18');
     expect(html).toContain('data-weather-geographic-hud');
-    expect(html).toContain('43.6591, -70.2568 | 19 m elevation');
+    expect(html).toContain('Observation command display');
+    expect(html).toContain('data-weather-observation-freshness="stale"');
+    expect(html).toContain('Saved observation');
+    expect(html).toContain('refresh before making a current-conditions claim');
+    expect(html).toContain('43.6591, -70.2568 | Site 19 m');
     expect(html).toContain('aria-label="Portland, Maine, United States | Thunderstorms | 28.4\u00B0C | 74% RH | SW 22.1 km/h wind | 1004.6 hPa"');
-    expect(html).toContain('Observed wind flows downwind toward NE | 4 km teaching vector');
+    expect(html).toContain('data-weather-wind-compass');
+    expect(html).toContain('Observed wind compass');
+    expect(html).toContain('Wind arrives from SW and flows toward NE at 22.1 kilometers per hour.');
+    expect(html).toContain('data-weather-observation-instruments');
+    expect(html).toContain('aria-label="Live observation instruments"');
+    expect(html).toContain('Relative humidity');
+    expect(html).toContain('FROM SW 22.1 km/h');
+    expect(html).toContain('TO NE');
     expect(html).toContain('not a forecast footprint');
     expect(html).toContain('data-weather-terrain-probe-hud');
-    expect(html).toContain('Terrain sample: 219 m | 7.40 km NW of site');
+    expect(html).toContain('Terrain sample 219 m | 7.40 km NW of site | Crosswind');
+    expect(html).toContain('data-weather-immersive-control-rail');
+    expect(html).toContain('data-weather-geographic-analysis-lenses');
+    expect(html).toContain('aria-label="Geographic analysis views"');
+    expect(html).toContain('Analysis view');
+    expect(html).toContain('Coordinate camera + evidence layers');
+    expect(html).toContain('System context');
+    expect(html).toContain('Wind + terrain');
+    expect(html).toContain('Site detail');
+    expect(html).toContain('Region camera');
+    expect(html).toContain('Local camera');
+    expect(html).toContain('Site camera');
+    expect(html).toContain('Compare observed wind with the wind-aligned elevation cross-section.');
+    expect(html).toContain('id="weather-geographic-analysis-status"');
+    expect(html).toContain('aria-describedby="weather-geographic-analysis-status"');
+    expect(html).toContain('Fine-tune layers');
     expect(html).toContain('Terrain emphasis');
     expect(html).toContain('Classroom emphasis (1.35x)');
     expect(html).toContain('Study-area radius');
@@ -511,7 +642,21 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('Wind vector');
     expect(html).toContain('Terrain profile');
     expect(html).toContain('Real 3D buildings');
-    expect(html).toContain('street-scale Site view');
+    expect(html).toContain('Checking the open map style for compatible OpenStreetMap building footprints.');
+    expect(html).toContain('data-weather-geographic-investigation');
+    expect(html).toContain('aria-labelledby="weather-geographic-investigation-title"');
+    expect(html).toContain('Guided field investigation');
+    expect(html).toContain('Orient the system');
+    expect(html).toContain('Trace wind + terrain');
+    expect(html).toContain('Inspect local exposure');
+    expect(html).toContain('Build an evidence claim');
+    expect(html).toContain('What lies inside the study area, and which direction is downwind?');
+    expect(html).toContain('aria-label="Geographic field investigation steps"');
+    expect(html).toContain('data-weather-geographic-investigation-prompt');
+    expect(html).toContain('Next mapped investigation step');
+    expect(html).toContain('Mapped evidence note');
+    expect(html).toContain('id="weather-geographic-investigation-note"');
+    expect(html).toContain('I notice ___ on the map. This matters because ___.');
     expect(html).toContain('data-weather-geographic-context');
     expect(html).toContain('Cumberland, Maine, United States');
     expect(html).toContain('highlighted true-scale ring');
@@ -526,14 +671,36 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('Higher than site');
     expect(html).toContain('Natural elevation');
     expect(html).toContain('+200 m');
+    expect(html).toContain('Average grade');
+    expect(html).toContain('+2.70%');
+    expect(html).toContain('data-weather-terrain-slope-graphic');
+    expect(html).toContain('Site-to-sample slope comparison');
+    expect(html).toContain('The observation site is 19 meters and the sampled terrain is 219 meters');
+    expect(html).toContain('weather-terrain-slope-gradient');
+    expect(html).toContain('Sample NW');
     expect(html).toContain('7.40 km NW');
     expect(html).toContain('43.71000, -70.31000 | Bearing 325.4\u00B0');
-    expect(html).toContain('Clear terrain comparison');
+    expect(html).toContain('Crosswind sample | Higher than site');
+    expect(html).toContain('data-weather-terrain-wind-analysis');
+    expect(html).toContain('Crosswind terrain context');
+    expect(html).toContain('Observed wind from SW');
+    expect(html).toContain('110.4\u00B0 from the upwind axis');
+    expect(html).toContain('Gentle average grade (+1.55\u00B0)');
+    expect(html).toContain('lateral terrain context, not direct evidence that air is being lifted');
+    expect(html).toContain('data-weather-terrain-probe-provenance');
+    expect(html).toContain('Mapterhorn raster terrain rendered by MapLibre');
+    expect(html).toContain('Selection: Keyboard map-center sample');
+    expect(html).toContain('Elevation and grade are approximate.');
+    expect(html).toContain('Sample map center');
+    expect(html).toContain('Clear comparison');
     expect(html).toContain('data-weather-terrain-profile');
     expect(html).toContain('Wind-aligned terrain profile');
     expect(html).toContain('30 km cross-section from upwind to downwind');
     expect(html).toContain('18\u201396 m');
     expect(html).toContain('Wind-aligned natural elevation profile');
+    expect(html).toContain('data-weather-terrain-profile-visual');
+    expect(html).toContain('weather-terrain-profile-gradient');
+    expect(html).toContain('preserveAspectRatio="xMidYMid meet"');
     expect(html).toContain('Upwind SW');
     expect(html).toContain('Downwind NE');
     expect(html).toContain('Natural elevation sampled from the rendered terrain');
@@ -558,9 +725,71 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('10 km study area');
     expect(html).toContain('Downwind vector');
     expect(html).toContain('3D terrain/profile');
-    expect(html).toContain('Loading open geographic layers');
+    expect(html).toContain('Geographic layers ready');
     expect(html).not.toContain('data-weather-camera-controls');
     expect(html).not.toContain('data-weather-vr-control');
+  });
+
+  it('pauses guided inquiry for a custom map and reports unavailable building data honestly', () => {
+    const html = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'immersive', immersiveSceneMode: 'geographic', immersiveDataSource: 'live',
+      geographicMapReady: true,
+      geographicAnalysisLens: 'custom', geographicInvestigationPaused: true,
+      geographicInvestigationStep: 'terrain', geographicBuildings: true, geographicBuildingsAvailable: false,
+      liveGeography: { label: 'Portland, Maine', admin1: 'Maine', country: 'United States', elevation: 19 },
+      liveWeather: {
+        label: 'Portland, Maine', latitude: 43.6591, longitude: -70.2568,
+        observedAt: '2026-07-16T14:00', timezone: 'EDT', temperature: 28, humidity: 74,
+        precipitation: 0, weatherCode: 2, condition: 'Partly cloudy', cloudCover: 60,
+        pressure: 1008, windSpeed: 18, windDir: 215, visibility: 10000
+      }
+    } }, { gradeLevel: '10th Grade' });
+    expect(html).toContain('Custom exploration');
+    expect(html).toContain('Guided investigation paused');
+    expect(html).toContain('data-weather-geographic-investigation-status="paused"');
+    expect(html).toContain('Camera or evidence layers were adjusted manually.');
+    expect(html).toContain('Resume Trace wind + terrain');
+    expect(html).toContain('disabled=""');
+    expect(html).toContain('Unavailable');
+    expect(html).toContain('does not provide a compatible 3D building layer');
+  });
+
+  it('keeps geographic evidence controls unavailable until map layers are ready', () => {
+    const html = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'immersive', immersiveSceneMode: 'geographic', immersiveDataSource: 'live',
+      geographicMapReady: false,
+      liveWeather: {
+        label: 'Portland, Maine', latitude: 43.6591, longitude: -70.2568,
+        observedAt: '2026-07-22T14:00:00-04:00', temperature: 28, humidity: 74,
+        precipitation: 0, weatherCode: 2, condition: 'Partly cloudy', cloudCover: 60,
+        pressure: 1008, windSpeed: 18, windDir: 215, visibility: 10000
+      }
+    } }, { gradeLevel: '10th Grade' });
+    expect(html).toContain('Loading geographic layers');
+    expect(html).toContain('Map controls unlock after geographic terrain and evidence layers finish loading.');
+    expect(html).toContain('disabled:cursor-not-allowed disabled:opacity-50');
+    expect(html).toContain('<span aria-hidden="true">Loading</span>');
+  });
+
+  it('keeps the open map useful when 3D terrain is unavailable', () => {
+    const html = renderTool('weatherSystems', { weatherSystems: {
+      tab: 'immersive', immersiveSceneMode: 'geographic', immersiveDataSource: 'live',
+      geographicMapReady: true, geographicTerrainAvailable: false,
+      geographicMapStatus: 'The open base map loaded, but 3D terrain is unavailable.',
+      liveWeather: {
+        label: 'Portland, Maine', latitude: 43.6591, longitude: -70.2568,
+        observedAt: '2026-07-22T14:00:00-04:00', temperature: 28, humidity: 74,
+        precipitation: 0, weatherCode: 2, condition: 'Partly cloudy', cloudCover: 60,
+        pressure: 1008, windSpeed: 18, windDir: 215, visibility: 10000
+      }
+    } }, { gradeLevel: '10th Grade' });
+    expect(html).toContain('data-weather-geographic-terrain-capability="degraded"');
+    expect(html).toContain('Base map only');
+    expect(html).toContain('data-weather-terrain-degraded-help');
+    expect(html).toContain('data-weather-terrain-degraded');
+    expect(html).toContain('Base map available; 3D terrain unavailable');
+    expect(html).toContain('open vector map, study area, and wind overlays remain available');
+    expect(html).not.toContain('data-weather-terrain-profile="true"');
   });
 
   it('carries saved 3D terrain analysis into forecast evidence with provenance', () => {
@@ -573,7 +802,8 @@ it('renders the immersive guided investigation tour and evidence note', () => {
         riseToSite: 78, changeAfterSite: -76,
         signalLabel: 'Moderate windward lifting signal',
         summary: 'Terrain rises 78 m toward the site, which may encourage crossing airflow to rise and cool.',
-        source: 'Rendered open terrain elevation'
+        investigationNote: 'The upwind profile rises toward the site, supporting a terrain-lift claim.',
+        source: 'Rendered open terrain elevation and learner field note'
       }
     } }, { gradeLevel: '10th Grade' });
     expect(html).toContain('data-weather-terrain-evidence-trail');
@@ -588,6 +818,9 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('-76 m');
     expect(html).toContain('Transect: SW upwind to NE downwind.');
     expect(html).toContain('terrain alone is not a forecast');
+    expect(html).toContain('data-weather-geographic-note-handoff');
+    expect(html).toContain('Mapped evidence note carried into reasoning');
+    expect(html).toContain('The upwind profile rises toward the site, supporting a terrain-lift claim.');
     expect(html).toContain('Review terrain evidence');
     expect(html).toContain('\u2713 Wind-aligned terrain profile');
     expect(html).toContain('pressure tendency, wind-aligned terrain profile');
@@ -1388,6 +1621,25 @@ describe('Weather Systems geographic map loader resilience', () => {
     expect(source).not.toContain("existing.addEventListener('load', ready");
     // a rejected load clears the cached promise so Retry starts fresh
     expect(source).toContain('window.__weatherMapLibrePromise = null; // allow a fresh Retry');
+  });
+
+  it('treats early resource errors as recoverable and times out a truly stalled base map', () => {
+    const source = readFileSync(resolve(process.cwd(), PATHS[0]), 'utf8');
+    expect(source).toContain('WEATHER_MAP_READY_TIMEOUT_MS = 30000');
+    expect(source).toContain('mapLoadWarning = event && event.error');
+    expect(source).toContain("geographicMapStatus: 'Geographic layers are still loading. ' + mapLoadWarning");
+    expect(source).toContain('The geographic base map did not become ready within 30 seconds.');
+    expect(source).toContain('if (mapLoadTimer) window.clearTimeout(mapLoadTimer)');
+    expect(source).toContain('geographicTerrainAvailable: terrainAvailable');
+  });
+
+  it('shares terrain sampling between pointer and keyboard map-center interactions', () => {
+    const source = readFileSync(resolve(process.cwd(), PATHS[0]), 'utf8');
+    expect(source).toContain('function sampleTerrainAtCoordinate(coordinate, methodLabel)');
+    expect(source).toContain('geographicRuntimeRef.current.sampleTerrainAtCoordinate = sampleTerrainAtCoordinate');
+    expect(source).toContain("'Keyboard map-center sample'");
+    expect(source).toContain("'Pointer map selection'");
+    expect(source).toContain('geographicTerrainProbeMethod: selectionMethod');
   });
 
   it('the error overlay offers Retry alongside the conceptual-3D fallback', () => {

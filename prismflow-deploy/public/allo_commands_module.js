@@ -344,6 +344,15 @@ const PLAN_CONTRACTS = Object.freeze({
   generate_analysis: { requires: ["source"], produces: ["analysis"] },
   generate_outline: { requires: ["source"], produces: ["outline"] },
   find_reading: { params: ["topic", "grade", "language", "source", "format", "raw"] },
+  send_teacher_signal: {
+    demoSafe: false,
+    interaction: "external",
+    params: ["signal"],
+    reason: "Sends one fixed-vocabulary signal to the teacher in an active live session."
+  },
+  create_activity_rubric: { demoSafe: false, interaction: "guided", reason: "Runs rubric generation for the current activity." },
+  share_assignment: { demoSafe: false, interaction: "external", reason: "Creates a student-facing assignment link after confirmation." },
+  preview_assignment_as_student: { demoSafe: false, interaction: "external", reason: "Opens an already-shared student assignment in a new tab." },
   launch_flashcards: { requires: ["glossary"] },
   export_pack: {
     demoSafe: false,
@@ -389,6 +398,10 @@ const DEMO_BLOCKED_COMMANDS = /* @__PURE__ */ new Set([
   "open_pictionary_host",
   "open_group_tools",
   "open_student_signal",
+  "send_teacher_signal",
+  "share_assignment",
+  "preview_assignment_as_student",
+  "review_teacher_feedback",
   "open_class_analytics",
   "open_ai_settings",
   "open_roster",
@@ -439,6 +452,20 @@ function _contractPlanParams(p, contract) {
 }
 function sanitizeCommandParams(commandOrId, params) {
   return _contractPlanParams(params, getCommandContract(commandOrId));
+}
+function getCommandAudience(ctx) {
+  const explicit = ctx && ctx.commandAudience;
+  if (["teacher", "student", "independent", "parent"].includes(explicit)) return explicit;
+  if (ctx && (ctx.isStudentLinkMode || ctx.isTeacherMode === false)) return "student";
+  if (ctx && ctx.isIndependentMode) return "independent";
+  if (ctx && ctx.isParentMode) return "parent";
+  return "teacher";
+}
+function _commandAllowsAudience(command, audience) {
+  const roles = command && command.roles;
+  if (roles === "all") return true;
+  if (Array.isArray(roles)) return roles.includes(audience) || roles.includes("all");
+  return roles === audience;
 }
 function validatePlan(ctx, rawSteps, opts = {}) {
   const list = (Array.isArray(rawSteps) ? rawSteps : []).slice(0, 8);
@@ -500,6 +527,7 @@ function validatePlan(ctx, rawSteps, opts = {}) {
 }
 function buildAlloCommands(ctx, opts = {}) {
   const t = _mkT(ctx && ctx.t);
+  const audience = getCommandAudience(ctx || {});
   const cmds = [
     // ── Navigate ──
     { id: "open_educator_hub", opensPanel: "educatorHub", icon: "\u{1F3EB}", roles: "teacher", label: t("cmd.open_educator_hub", "Open the Educator Hub"), aliases: ["educator hub", "teacher hub", "hub", "document pipeline", "remediation pipeline", "make a document accessible", "fix a pdf"], hint: t("cmd.open_educator_hub_hint", "Lesson tools + the Document Pipeline card"), run: (c) => {
@@ -510,15 +538,15 @@ function buildAlloCommands(ctx, opts = {}) {
       c.setShowLearningHub(true);
       return t("cmd.open_learning_hub_done", "Learning Hub opened.");
     } },
-    { id: "open_source_input", icon: "\u{1F4DD}", roles: "all", label: t("cmd.open_source_input", "Open source input"), aliases: ["source input", "source material", "input panel", "paste text", "write text", "add source", "new source"], hint: t("cmd.open_source_input_hint", "Paste, write, search, or generate source material"), run: (c) => {
+    { id: "open_source_input", icon: "\u{1F4DD}", roles: ["teacher", "independent", "parent"], label: t("cmd.open_source_input", "Open source input"), aliases: ["source input", "source material", "input panel", "paste text", "write text", "add source", "new source"], hint: t("cmd.open_source_input_hint", "Paste, write, search, or generate source material"), run: (c) => {
       c.openSourceInput();
       return t("cmd.open_source_input_done", "Source input opened.");
     } },
-    { id: "open_source_url", icon: "\u{1F50E}", roles: "all", label: t("cmd.open_source_url", "Find a resource online"), aliases: ["find a resource online", "resource online", "paste a link", "add a link", "url input", "import from url", "web source", "source link"], hint: t("cmd.open_source_url_hint", "Paste a URL or search for a source"), run: (c) => {
+    { id: "open_source_url", icon: "\u{1F50E}", roles: ["teacher", "independent", "parent"], label: t("cmd.open_source_url", "Find a resource online"), aliases: ["find a resource online", "resource online", "paste a link", "add a link", "url input", "import from url", "web source", "source link"], hint: t("cmd.open_source_url_hint", "Paste a URL or search for a source"), run: (c) => {
       c.openSourceUrl();
       return t("cmd.open_source_url_done", "Resource finder opened.");
     } },
-    { id: "open_source_generator", icon: "\u2728", roles: "all", label: t("cmd.open_source_generator", "Generate source from a topic"), aliases: ["generate source", "generate from a topic", "source generator", "write source text", "make source text", "generate reading passage", "ai writes it"], hint: t("cmd.open_source_generator_hint", "Open the topic-to-source generator"), run: (c) => {
+    { id: "open_source_generator", icon: "\u2728", roles: ["teacher", "independent", "parent"], label: t("cmd.open_source_generator", "Generate source from a topic"), aliases: ["generate source", "generate from a topic", "source generator", "write source text", "make source text", "generate reading passage", "ai writes it"], hint: t("cmd.open_source_generator_hint", "Open the topic-to-source generator"), run: (c) => {
       c.openSourceGenerator();
       return t("cmd.open_source_generator_done", "Source generator opened.");
     } },
@@ -566,7 +594,7 @@ function buildAlloCommands(ctx, opts = {}) {
       c.openGroupTools();
       return t("cmd.open_group_tools_done", "Group tools opened.");
     } },
-    { id: "open_student_signal", icon: "\u270B", roles: "all", when: (c) => !!c.activeSessionCode && !c.isTeacherMode && !!c.openStudentSignals, label: t("cmd.open_student_signal", "Send a teacher signal"), aliases: ["signal teacher", "help signal", "quick signal", "i need help", "i am confused", "send signal"], hint: t("cmd.open_student_signal_hint", "Tell the teacher you need help, more time, or are ready"), run: (c) => {
+    { id: "open_student_signal", icon: "\u270B", roles: "student", when: (c) => !!c.activeSessionCode && !c.isTeacherMode && !!c.openStudentSignals, label: t("cmd.open_student_signal", "Send a teacher signal"), aliases: ["signal teacher", "help signal", "quick signal", "i need help", "i am confused", "send signal"], hint: t("cmd.open_student_signal_hint", "Tell the teacher you need help, more time, or are ready"), run: (c) => {
       c.openStudentSignals();
       return t("cmd.open_student_signal_done", "Teacher signal panel opened. Pick one option to send.");
     } },
@@ -594,6 +622,47 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: "open_project_settings", icon: "\u2699\uFE0F", roles: "teacher", label: t("cmd.open_project_settings", "Open project settings"), aliases: ["project settings", "student settings", "lesson settings", "permissions", "allow ai"], hint: t("cmd.open_project_settings_hint", "Per-project AI, dictation, and Socratic gating"), run: (c) => {
       c.openProjectSettings();
       return t("cmd.open_project_settings_done", "Project settings opened.");
+    } },
+    { id: "edit_assignment_directions", icon: "\u{1F4CB}", roles: "teacher", when: (c) => !!c.canEditAssignmentDirections && !!c.editAssignmentDirections, label: t("cmd.edit_assignment_directions", "Edit assignment directions"), aliases: ["edit directions", "assignment directions editor", "write directions", "change assignment directions"], hint: t("cmd.edit_assignment_directions_hint", "Open the directions and goals composer"), run: (c) => {
+      c.editAssignmentDirections();
+      return t("cmd.edit_assignment_directions_done", "Assignment directions editor opened.");
+    } },
+    { id: "open_assessment_builder", icon: "\u{1F9ED}", roles: "teacher", when: (c) => !!c.openAssessmentBuilder, label: t("cmd.open_assessment_builder", "Open Assessment Builder"), aliases: ["assessment builder", "build assessment", "make an assessment", "assessment tools"], hint: t("cmd.open_assessment_builder_hint", "Design an assessment and supporting activities"), run: (c) => {
+      c.openAssessmentBuilder();
+      return t("cmd.open_assessment_builder_done", "Assessment Builder opened.");
+    } },
+    { id: "open_udl_guide", icon: "\u267F", roles: "teacher", when: (c) => !!c.openUdlGuide, label: t("cmd.open_udl_guide", "Open the UDL Guide"), aliases: ["udl guide", "universal design guide", "udl help", "accessibility guide"], hint: t("cmd.open_udl_guide_hint", "Review UDL supports for the current lesson"), run: (c) => {
+      c.openUdlGuide();
+      return t("cmd.open_udl_guide_done", "UDL Guide opened.");
+    } },
+    { id: "create_activity_rubric", icon: "\u{1F4D0}", roles: "teacher", when: (c) => !!c.canGenerateCurrentRubric && !!c.generateCurrentRubric, label: t("cmd.create_activity_rubric", "Create a rubric for this activity"), aliases: ["create rubric", "make a rubric", "generate rubric", "rubric for this activity"], hint: t("cmd.create_activity_rubric_hint", "Generate observable, student-friendly success criteria"), run: (c) => {
+      c.generateCurrentRubric();
+      return t("cmd.create_activity_rubric_working", "Generating an activity rubric...");
+    }, pendingNarration: t("cmd.create_activity_rubric_working", "Generating an activity rubric..."), runAsync: async (c) => {
+      const ok = await c.generateCurrentRubric();
+      if (ok === false) throw new Error(t("cmd.create_activity_rubric_failed", "The activity rubric could not be created."));
+      return t("cmd.create_activity_rubric_done", "Activity rubric created.");
+    } },
+    { id: "share_assignment", icon: "\u{1F517}", roles: "teacher", destructive: true, when: (c) => !!c.canShareAssignment && !!c.shareAssignment, label: t("cmd.share_assignment", "Share this assignment"), aliases: ["share assignment", "publish assignment", "make homework link", "create student link", "assign this"], hint: t("cmd.share_assignment_hint", "Create a student-facing homework link after confirmation"), confirmMessage: (c) => {
+      const count = Math.max(1, Number(c.shareResourceCount) || 1);
+      const days = Math.max(1, Number(c.shareExpiryDays) || 1);
+      const ai = c.shareStudentAiPolicy === "student-byok" ? t("cmd.share_assignment_confirm_ai_byok", "Students may connect their own AI provider.") : t("cmd.share_assignment_confirm_ai_off", "Student AI will stay off.");
+      return t("cmd.share_assignment_confirm", "Create a student link containing {count} resource(s), expiring in {days} day(s). {ai} Press Enter again to confirm.").replace("{count}", count).replace("{days}", days).replace("{ai}", ai);
+    }, run: (c) => {
+      c.shareAssignment();
+      return t("cmd.share_assignment_working", "Creating the student assignment link...");
+    }, pendingNarration: t("cmd.share_assignment_working", "Creating the student assignment link..."), runAsync: async (c) => {
+      const url = await c.shareAssignment();
+      if (!url) throw new Error(t("cmd.share_assignment_failed", "The student assignment link was not created."));
+      return t("cmd.share_assignment_done", "Student assignment link created.");
+    } },
+    { id: "preview_assignment_as_student", icon: "\u{1F440}", roles: "teacher", when: (c) => !!c.canPreviewStudentAssignment && !!c.previewStudentAssignment, label: t("cmd.preview_assignment_as_student", "Preview the shared assignment as a student"), aliases: ["preview as student", "student preview", "test student link", "view assignment as student"], hint: t("cmd.preview_assignment_as_student_hint", "Open the latest shared link in a separate student tab"), run: (c) => {
+      c.previewStudentAssignment();
+      return t("cmd.preview_assignment_as_student_done", "Student preview opened in a new tab.");
+    } },
+    { id: "resume_latest_work", icon: "\u21A9\uFE0F", roles: "all", when: (c) => !!c.hasResumableWork && !!c.resumeLatestWork, label: t("cmd.resume_latest_work", "Resume my latest work"), aliases: ["resume my work", "continue my work", "open latest work", "pick up where i left off"], hint: t("cmd.resume_latest_work_hint", "Open the most recent saved item directly"), run: (c) => {
+      const item = c.resumeLatestWork();
+      return item ? t("cmd.resume_latest_work_done", "Resumed ") + (item.title || item.type || "your latest work") + "." : t("cmd.resume_latest_work_none", "No saved work is available yet.");
     } },
     // ── Open a tool (added 2026-06-13) — quick-launch the workspaces that normally live behind a
     //    hub card. Each is opensPanel-tagged so launching it CLOSES any open hub / other tool (the
@@ -712,9 +781,47 @@ function buildAlloCommands(ctx, opts = {}) {
       c.generateAnalysis();
       return t("cmd.generate_analysis_done", "Analyzing this source\u2026");
     }, runAsync: (c) => Promise.resolve(c.generateAnalysis()).then(() => t("cmd.generate_analysis_ready", "Source analysis ready.")) },
-    { id: "submit_work", icon: "\u{1F4E8}", roles: "all", when: (c) => !c.isTeacherMode, label: t("cmd.submit_work", "Submit my work"), aliases: ["submit", "submit my work", "hand it in", "turn in"], hint: t("cmd.submit_work_hint", "Send your work to your teacher"), run: (c) => {
+    { id: "submit_work", icon: "\u{1F4E8}", roles: "student", when: (c) => !c.isTeacherMode, label: t("cmd.submit_work", "Submit my work"), aliases: ["submit", "submit my work", "hand it in", "turn in"], hint: t("cmd.submit_work_hint", "Send your work to your teacher"), run: (c) => {
       c.submitWork();
       return t("cmd.submit_work_done", "Opening the submit dialog\u2026");
+    } },
+    { id: "open_assignment_directions", icon: "\u{1F4CB}", roles: "student", when: (c) => !!c.hasAssignmentDirections && !!c.openAssignmentDirections, label: t("directions.title", "Open assignment directions"), aliases: ["assignment directions", "read directions", "show directions", "what do i do", "what am i supposed to do"], hint: t("directions.subtitle", "Open the directions and goals for this assignment"), run: (c) => {
+      c.openAssignmentDirections();
+      return "Assignment directions opened.";
+    } },
+    { id: "check_assignment_progress", icon: "\u{1F3AF}", roles: "student", when: (c) => !!c.getAssignmentProgress && !!c.getAssignmentProgress(), label: t("directions.your_goals", "Check assignment progress"), aliases: ["check my progress", "my progress", "how am i doing", "what is left", "goals left"], hint: t("directions.signals_note", "Hear how many assignment goals are complete"), run: (c) => {
+      const p = c.getAssignmentProgress();
+      return p ? (p.title ? p.title + ": " : "") + p.done + " of " + p.total + " goals complete." : "No assignment progress is available yet.";
+    } },
+    { id: "save_my_work", icon: "\u{1F4BE}", roles: "student", when: (c) => !!c.canSaveStudentWork && !!c.saveStudentWork, label: t("modals.save_project.title", "Save my work"), aliases: ["save my work", "download my work", "save project", "keep my work"], hint: t("modals.save_project.filename_label", "Save a student work file on this device"), run: (c) => {
+      c.saveStudentWork();
+      return "Save my work dialog opened.";
+    } },
+    { id: "next_assignment_step", icon: "\u27A1\uFE0F", roles: "student", when: (c) => !!c.getNextAssignmentStep && !!c.getNextAssignmentStep() && !!c.openNextAssignmentStep, label: t("cmd.next_assignment_step", "What should I do next?"), aliases: ["what should i do next", "next step", "where do i go next", "next activity", "continue assignment"], hint: t("cmd.next_assignment_step_hint", "Open the recommended next activity or goal"), run: (c) => {
+      const step = c.openNextAssignmentStep();
+      return step ? (step.goalLabel ? step.goalLabel + ": " : "") + "Opening " + (step.title || "your next activity") + "." : t("directions.all_done", "Every assignment goal is complete.");
+    } },
+    { id: "read_assignment_directions", icon: "\u{1F50A}", roles: "student", when: (c) => !!c.hasAssignmentDirections && !!c.readAssignmentDirections, label: t("cmd.read_assignment_directions", "Read my directions aloud"), aliases: ["read directions aloud", "read my directions", "say the directions", "listen to directions"], hint: t("cmd.read_assignment_directions_hint", "Open the directions and start read-aloud"), run: (c) => {
+      c.readAssignmentDirections();
+      return t("cmd.read_assignment_directions_done", "Assignment directions opened for read-aloud.");
+    } },
+    { id: "show_success_criteria", icon: "\u{1F3C1}", roles: "student", when: (c) => !!c.getSuccessCriteria && !!c.getSuccessCriteria(), label: t("cmd.show_success_criteria", "Show the success criteria"), aliases: ["show rubric", "what does success look like", "success criteria", "grading rubric", "how will this be graded"], hint: t("cmd.show_success_criteria_hint", "Hear the assignment goals or current rubric criteria"), run: (c) => {
+      const r = c.getSuccessCriteria();
+      return r && r.criteria && r.criteria.length ? (r.title ? r.title + ": " : "") + r.criteria.slice(0, 6).join("; ") + "." : t("cmd.show_success_criteria_none", "No success criteria are available yet.");
+    } },
+    { id: "send_teacher_signal", icon: "\u270B", roles: "student", when: (c) => !!c.activeSessionCode && !c.isTeacherMode && !!c.sendTeacherSignal, label: t("cmd.send_teacher_signal", "Ask my teacher for help"), aliases: ["tell teacher i am stuck", "ask teacher to slow down", "ask teacher to repeat", "tell teacher i am ready"], hint: t("cmd.send_teacher_signal_hint", "Send one private, fixed-choice signal in the live session"), run: (c, p) => {
+      const raw = String(p && p.signal || "").toLowerCase();
+      const signal = /slow/.test(raw) ? "slow" : /repeat|again/.test(raw) ? "repeat" : /ready|done/.test(raw) ? "ready" : /stuck|help|confus/.test(raw) ? "stuck" : "";
+      if (!signal) {
+        if (c.openStudentSignals) c.openStudentSignals();
+        return t("cmd.open_student_signal_done", "Teacher signal panel opened. Pick one option to send.");
+      }
+      const sent = c.sendTeacherSignal(signal);
+      return sent === false ? t("cmd.send_teacher_signal_failed", "The signal could not be sent. Check the live session and try again.") : t("live_signals.sent", "Signal sent to your teacher.");
+    } },
+    { id: "review_teacher_feedback", icon: "\u{1F4AC}", roles: "student", when: (c) => !!c.getTeacherFeedback && !!c.getTeacherFeedback(), label: t("cmd.review_teacher_feedback", "Review teacher feedback"), aliases: ["teacher feedback", "review feedback", "what did my teacher say", "returned feedback", "comments from teacher"], hint: t("cmd.review_teacher_feedback_hint", "Hear returned feedback when it is available"), run: (c) => {
+      const f = c.getTeacherFeedback();
+      return f ? (f.title ? f.title + ": " : "") + f.text : t("cmd.review_teacher_feedback_none", "No returned teacher feedback is available yet.");
     } },
     // ── Accessibility self-service (available in every mode) ──
     { id: "font_bigger", icon: "\u{1F50D}", roles: "all", label: t("cmd.font_bigger", "Make the text bigger"), aliases: ["bigger text", "larger text", "increase font", "increase text size", "make text bigger", "zoom in text"], hint: t("cmd.font_bigger_hint", "+2 to the reading font size"), run: (c) => {
@@ -765,11 +872,11 @@ function buildAlloCommands(ctx, opts = {}) {
       c.handleToggleVisualSupports();
       return t("cmd.toggle_visual_supports_done", "Visual supports toggled.");
     } },
-    { id: "toggle_dictation", icon: "\u{1F3A4}", roles: "all", label: t("cmd.toggle_dictation", "Toggle dictation"), aliases: ["dictation", "speech to text", "type by voice"], hint: t("cmd.toggle_dictation_hint", "Speak instead of typing"), run: (c) => {
+    { id: "toggle_dictation", icon: "\u{1F3A4}", roles: "all", when: (c) => getCommandAudience(c) !== "student" || c.allowStudentDictation !== false, label: t("cmd.toggle_dictation", "Toggle dictation"), aliases: ["dictation", "speech to text", "type by voice"], hint: t("cmd.toggle_dictation_hint", "Speak instead of typing"), run: (c) => {
       c.toggleDictation();
       return t("cmd.toggle_dictation_done", "Dictation toggled.");
     } },
-    { id: "toggle_socratic", icon: "\u{1F4AC}", roles: "all", label: t("cmd.toggle_socratic", "Toggle the Socratic chat"), aliases: ["socratic", "study chat", "thinking partner"], hint: t("cmd.toggle_socratic_hint", "A question-first study companion"), run: (c) => {
+    { id: "toggle_socratic", icon: "\u{1F4AC}", roles: "student", when: (c) => c.allowStudentSocratic !== false && !c.studentAiFeaturesHidden, label: t("cmd.toggle_socratic", "Toggle the Socratic chat"), aliases: ["socratic", "study chat", "thinking partner"], hint: t("cmd.toggle_socratic_hint", "A question-first study companion"), run: (c) => {
       c.handleToggleShowSocraticChat();
       return t("cmd.toggle_socratic_done", "Socratic chat toggled.");
     } },
@@ -828,19 +935,19 @@ function buildAlloCommands(ctx, opts = {}) {
       c.startLessonFlow(p || {});
       return p && p.topic ? t("cmd.create_lesson_done", "Starting a lesson flow about \u201C") + p.topic + "\u201D" + (p.grade ? t("cmd.create_lesson_done2", " for grade ") + p.grade : "") + t("cmd.create_lesson_done3", " \u2014 AlloBot will guide the next steps.") : t("cmd.create_lesson_done_blank", "Starting the guided lesson flow \u2014 AlloBot will ask for your topic.");
     } },
-    { id: "set_grade_level", icon: "\u{1F39A}\uFE0F", roles: "all", when: (c) => !!c.setSetupGradeLevel, label: t("cmd.set_grade_level", "Set the grade level"), aliases: ["set grade level", "grade level", "target grade", "reading level", "set target level"], hint: t("cmd.set_grade_level_hint", "e.g. set grade level to 5"), run: (c, p) => {
+    { id: "set_grade_level", icon: "\u{1F39A}\uFE0F", roles: ["teacher", "independent", "parent"], when: (c) => !!c.setSetupGradeLevel, label: t("cmd.set_grade_level", "Set the grade level"), aliases: ["set grade level", "grade level", "target grade", "reading level", "set target level"], hint: t("cmd.set_grade_level_hint", "e.g. set grade level to 5"), run: (c, p) => {
       const v = c.setSetupGradeLevel(p && p.grade);
       return v ? t("cmd.set_grade_level_done", "Grade level set to ") + v + "." : t("cmd.set_grade_level_pick", "Say a grade like grade 5.");
     } },
-    { id: "set_source_tone", icon: "\u{1F399}\uFE0F", roles: "all", when: (c) => !!c.setSetupSourceTone, label: t("cmd.set_source_tone", "Set source tone"), aliases: ["set source tone", "source tone", "change tone", "tone to", "make the tone"], hint: t("cmd.set_source_tone_hint", "Informative, narrative, dialogue, persuasive, humorous, or step-by-step"), run: (c, p) => {
+    { id: "set_source_tone", icon: "\u{1F399}\uFE0F", roles: ["teacher", "independent", "parent"], when: (c) => !!c.setSetupSourceTone, label: t("cmd.set_source_tone", "Set source tone"), aliases: ["set source tone", "source tone", "change tone", "tone to", "make the tone"], hint: t("cmd.set_source_tone_hint", "Informative, narrative, dialogue, persuasive, humorous, or step-by-step"), run: (c, p) => {
       const v = c.setSetupSourceTone(p && p.tone);
       return v ? t("cmd.set_source_tone_done", "Source tone set to ") + v + "." : t("cmd.set_source_tone_pick", "Say a tone like narrative.");
     } },
-    { id: "set_source_length", icon: "\u{1F4CF}", roles: "all", when: (c) => !!c.setSetupSourceLength, label: t("cmd.set_source_length", "Set source length"), aliases: ["set source length", "source length", "text length", "reading length", "word count"], hint: t("cmd.set_source_length_hint", "Short, medium, long, or a word count"), run: (c, p) => {
+    { id: "set_source_length", icon: "\u{1F4CF}", roles: ["teacher", "independent", "parent"], when: (c) => !!c.setSetupSourceLength, label: t("cmd.set_source_length", "Set source length"), aliases: ["set source length", "source length", "text length", "reading length", "word count"], hint: t("cmd.set_source_length_hint", "Short, medium, long, or a word count"), run: (c, p) => {
       const v = c.setSetupSourceLength(p && p.length);
       return v ? t("cmd.set_source_length_done", "Source length set to about ") + v + t("cmd.set_source_length_done2", " words.") : t("cmd.set_source_length_pick", "Say a length like 500 words.");
     } },
-    { id: "set_output_language", icon: "\u{1F310}", roles: "all", when: (c) => !!c.setSetupLanguage, label: t("cmd.set_output_language", "Set output language"), aliases: ["set output language", "output language", "text language", "reading language", "lesson language", "write in"], hint: t("cmd.set_output_language_hint", "Set the language used for generated resources"), run: (c, p) => {
+    { id: "set_output_language", icon: "\u{1F310}", roles: ["teacher", "independent", "parent"], when: (c) => !!c.setSetupLanguage, label: t("cmd.set_output_language", "Set output language"), aliases: ["set output language", "output language", "text language", "reading language", "lesson language", "write in"], hint: t("cmd.set_output_language_hint", "Set the language used for generated resources"), run: (c, p) => {
       const v = c.setSetupLanguage(p && p.language);
       return v ? t("cmd.set_output_language_done", "Output language set to ") + v + "." : t("cmd.set_output_language_pick", "Say a language like Spanish.");
     } },
@@ -860,7 +967,7 @@ function buildAlloCommands(ctx, opts = {}) {
     // ── Voice control (S2) ──
     { id: "voice_start", icon: "\u{1F399}\uFE0F", roles: "all", when: (c) => !c.voiceActive && c.voiceAvailable, label: t("cmd.voice_start", "Start voice control"), aliases: ["voice control", "start listening", "voice mode", "hands free"], hint: t("cmd.voice_start_hint", "AlloBot listens for commands until you stop it"), run: (c) => {
       c.startVoiceLoop();
-      return t("cmd.voice_start_done", "Voice control on. Say a command like \u201Cbigger text\u201D or \u201Copen the educator hub\u201D. Say \u201Cstop listening\u201D to finish.");
+      return getCommandAudience(c) === "student" ? t("student.voice_control_on", "Voice control on. Say a command like \u201Cbigger text\u201D or \u201Cread directions\u201D. Say \u201Cstop listening\u201D to finish.") || "Voice control on." : t("cmd.voice_start_done", "Voice control on. Say a command like \u201Cbigger text\u201D or \u201Copen the educator hub\u201D. Say \u201Cstop listening\u201D to finish.");
     } },
     { id: "voice_stop", icon: "\u{1F6D1}", roles: "all", when: (c) => !!c.voiceActive, label: t("cmd.voice_stop", "Stop voice control"), aliases: ["stop listening", "stop voice", "voice off"], hint: t("cmd.voice_stop_hint", "Stops the microphone"), run: (c) => {
       c.stopVoiceLoop();
@@ -950,8 +1057,7 @@ function buildAlloCommands(ctx, opts = {}) {
       return t("cmd.pipeline_new_doc_done", "Cleared \u2014 upload a new document to begin.");
     } }
   ];
-  const isStudentish = !!(ctx.isStudentLinkMode || ctx.isIndependentMode);
-  return cmds.filter((c) => (c.roles === "all" || !isStudentish) && (opts.includeGated || !c.when || (() => {
+  return cmds.filter((c) => _commandAllowsAudience(c, audience) && (opts.includeGated || !c.when || (() => {
     try {
       return !!c.when(ctx);
     } catch (_) {
@@ -986,27 +1092,16 @@ async function routeUtterance(ctx, rawText, opts = {}) {
     { id: "set_output_language", re: /^write\s+(?:this|it|the\s+text|the\s+lesson|resources)?\s*(?:in|into)\s+([^?]{2,40})\s*\??$/i, params: (m) => ({ language: m[1].trim() }) },
     { id: "set_font_size", re: /^(?:set\s+)?(?:the\s+)?(?:text|font)\s*(?:size)?\s*(?:to)?\s*(\d{1,2})\s*\.?$/i, params: (m) => ({ size: m[1] }) },
     { id: "translate_document", re: /^translate\s+(?:this|the\s+document|document|it)?\s*(?:to|into)\s+([a-z\u00C0-\u024F\s()-]{2,40})\??$/i, params: (m) => ({ language: m[1].trim() }) },
-    { id: "generate_simplified", re: /^(?:simplify|make (?:this|it) (?:easier|simpler)|lower the (?:reading )?level)(?:\s+(?:this|it))?(?:\s+(?:to|for)?\s*(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade)?)?\s*\??$/i, params: (m) => ({ grade: m[1] || null }) }
+    { id: "generate_simplified", re: /^(?:simplify|make (?:this|it) (?:easier|simpler)|lower the (?:reading )?level)(?:\s+(?:this|it))?(?:\s+(?:to|for)?\s*(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade)?)?\s*\??$/i, params: (m) => ({ grade: m[1] || null }) },
+    { id: "send_teacher_signal", re: /^(?:tell|signal|let)\s+(?:my\s+)?teacher\s+(?:that\s+)?(?:i(?:'m| am)\s+)?(stuck|confused|ready|done)\s*\??$/i, params: (m) => ({ signal: m[1] }) },
+    { id: "send_teacher_signal", re: /^(?:ask|tell)\s+(?:my\s+)?teacher\s+to\s+(slow down|repeat(?: that)?|say that again)\s*\??$/i, params: (m) => ({ signal: m[1] }) }
   ];
   let commands = buildAlloCommands(ctx);
   if (opts.preview) commands = commands.filter((c) => !c.chatSkip);
   const _runCmd = (cmd, via, params) => {
     const safeParams = sanitizeCommandParams(cmd, params || {});
-    if (opts.preview) return { handled: false, preview: true, commandId: cmd.id, label: cmd.label, params: safeParams, via, destructive: !!cmd.destructive };
-    if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t("router.needs_confirm", "That action needs confirmation \u2014 use Ctrl+K to run it."), commandId: cmd.id, via };
-    if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === "function") {
-      try {
-        ctx.closeOtherPanels(cmd.opensPanel);
-      } catch (_) {
-      }
-    }
-    let msg = null;
-    try {
-      msg = cmd.run(ctx, safeParams);
-    } catch (e) {
-      return { handled: true, narration: t("router.failed", "That didn\u2019t work: ") + (e && e.message || "unknown"), commandId: cmd.id, via };
-    }
-    return { handled: true, narration: msg || t("router.done", "Done."), commandId: cmd.id, via };
+    if (opts.preview) return { handled: false, preview: true, commandId: cmd.id, label: cmd.label, params: safeParams, via, destructive: !!cmd.destructive, confirmation: cmd.destructive ? _commandConfirmationText(cmd, ctx, t) : "" };
+    return executeCommand(ctx, cmd, safeParams, { confirmed: !!opts.confirmed, via });
   };
   for (const g of _grammars) {
     const m = text.match(g.re);
@@ -1046,30 +1141,81 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   }
   return null;
 }
-function runCommandById(ctx, id, params, opts = {}) {
+function _commandConfirmationText(command, ctx, t) {
+  if (command && typeof command.confirmMessage === "function") {
+    try {
+      const message = command.confirmMessage(ctx || {});
+      if (message) return String(message);
+    } catch (_) {
+    }
+  }
+  if (command && command.confirmMessage) return String(command.confirmMessage);
+  return t("palette.confirm", "Press Enter again to confirm.");
+}
+function _emitCommandLifecycle(ctx, command, status, narration, via, notifyUser) {
+  const detail = { commandId: command && command.id, label: command && command.label, status, narration: narration || "", via: via || "confirm", at: Date.now() };
+  try {
+    if (ctx && typeof ctx.onCommandState === "function") ctx.onCommandState(detail);
+  } catch (_) {
+  }
+  try {
+    if (typeof window !== "undefined" && window.dispatchEvent && window.CustomEvent) window.dispatchEvent(new window.CustomEvent("alloflow:command-state", { detail }));
+  } catch (_) {
+  }
+  if (!notifyUser || !narration || status === "pending") return detail;
+  try {
+    if (typeof window !== "undefined" && window.alloAnnounce) window.alloAnnounce(narration, status === "error" ? "assertive" : "polite");
+  } catch (_) {
+  }
+  if (status === "error") {
+    try {
+      if (ctx && ctx.addToast) ctx.addToast(narration, "error");
+    } catch (_) {
+    }
+  }
+  return detail;
+}
+function executeCommand(ctx, commandOrId, params, opts = {}) {
   const t = _mkT(ctx && ctx.t);
+  const id = String(commandOrId && typeof commandOrId === "object" ? commandOrId.id : commandOrId || "");
   const commands = buildAlloCommands(ctx);
   const cmd = commands.find((c) => c.id === id);
   if (!cmd) return null;
-  if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t("router.needs_confirm", "That action needs confirmation \u2014 use Ctrl+K to run it."), commandId: cmd.id, via: "confirm" };
+  if (cmd.destructive && !opts.confirmed) return { handled: true, narration: _commandConfirmationText(cmd, ctx, t), commandId: cmd.id, via: "confirm", confirmationRequired: true };
   const safeParams = sanitizeCommandParams(cmd, params || {});
+  const via = opts.via || "confirm";
   if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === "function") {
     try {
       ctx.closeOtherPanels(cmd.opensPanel);
     } catch (_) {
     }
   }
-  if (opts.awaitCompletion && typeof cmd.runAsync === "function") {
-    const timeoutMs = opts.timeoutMs || 18e4;
-    let p;
+  if (typeof cmd.runAsync === "function") {
+    let action;
     try {
-      p = Promise.resolve(cmd.runAsync(ctx, safeParams));
-    } catch (e) {
-      return Promise.resolve({ handled: true, ok: false, narration: t("router.failed", "That didn\u2019t work: ") + (e && e.message || "unknown"), commandId: cmd.id, via: opts.via || "plan" });
+      action = Promise.resolve(cmd.runAsync(ctx, safeParams));
+    } catch (error) {
+      const narration = t("router.failed", "That did not work: ") + (error && error.message || "unknown");
+      _emitCommandLifecycle(ctx, cmd, "error", narration, via, !opts.awaitCompletion);
+      const failed = { handled: true, ok: false, narration, commandId: cmd.id, via };
+      return opts.awaitCompletion ? Promise.resolve(failed) : failed;
     }
+    const pendingNarration = cmd.pendingNarration || t("cmd.working", "Working...");
+    _emitCommandLifecycle(ctx, cmd, "pending", pendingNarration, via, false);
+    const completion = action.then((message) => {
+      const narration = message || t("router.done", "Done.");
+      _emitCommandLifecycle(ctx, cmd, "success", narration, via, !opts.awaitCompletion);
+      return { handled: true, ok: true, narration, commandId: cmd.id, via };
+    }).catch((error) => {
+      const narration = t("router.failed", "That did not work: ") + (error && error.message || "unknown");
+      _emitCommandLifecycle(ctx, cmd, "error", narration, via, !opts.awaitCompletion);
+      return { handled: true, ok: false, narration, commandId: cmd.id, via };
+    });
+    if (!opts.awaitCompletion) return { handled: true, ok: true, pending: true, narration: pendingNarration, commandId: cmd.id, via, completion };
+    const timeoutMs = opts.timeoutMs || 18e4;
     let timerId = null;
-    const timer = new Promise((res) => {
-      timerId = setTimeout(() => res({ __alloTimeout: true }), timeoutMs);
+    const timer = new Promise((resolve) => {
+      timerId = setTimeout(() => resolve({ __alloTimeout: true }), timeoutMs);
     });
     const clearTimer = () => {
       if (timerId != null) {
@@ -1077,20 +1223,21 @@ function runCommandById(ctx, id, params, opts = {}) {
         timerId = null;
       }
     };
-    return Promise.race([p, timer]).then((msg) => {
+    return Promise.race([completion, timer]).then((result) => {
       clearTimer();
-      return msg && msg.__alloTimeout ? { handled: true, ok: true, timedOut: true, narration: t("router.still_working", "Still working \u2014 it will finish in the background."), commandId: cmd.id, via: opts.via || "plan" } : { handled: true, ok: true, narration: msg || t("router.done", "Done."), commandId: cmd.id, via: opts.via || "plan" };
-    }).catch((e) => {
-      clearTimer();
-      return { handled: true, ok: false, narration: t("router.failed", "That didn\u2019t work: ") + (e && e.message || "unknown"), commandId: cmd.id, via: opts.via || "plan" };
+      if (result && result.__alloTimeout) return { handled: true, ok: true, timedOut: true, narration: t("router.still_working", "Still working - it will finish in the background."), commandId: cmd.id, via };
+      return result;
     });
   }
   try {
-    const msg = cmd.run(ctx, safeParams);
-    return { handled: true, narration: msg || t("router.done", "Done."), commandId: cmd.id, via: opts.via || "confirm" };
-  } catch (e) {
-    return { handled: true, ok: false, narration: t("router.failed", "That didn\u2019t work: ") + (e && e.message || "unknown"), commandId: cmd.id, via: opts.via || "confirm" };
+    const message = cmd.run(ctx, safeParams);
+    return { handled: true, narration: message || t("router.done", "Done."), commandId: cmd.id, via };
+  } catch (error) {
+    return { handled: true, ok: false, narration: t("router.failed", "That did not work: ") + (error && error.message || "unknown"), commandId: cmd.id, via };
   }
+}
+function runCommandById(ctx, id, params, opts = {}) {
+  return executeCommand(ctx, id, params, opts);
 }
 function looksMultiStep(rawText) {
   const text = String(rawText || "").trim();
@@ -1305,10 +1452,10 @@ function createVoiceLoop(getCtx) {
           const r = await routeUtterance(cc, text, { allowAi: true, signal });
           if (!active || currentRouteSerial !== routeSerial || signal && signal.aborted) return;
           if (r && r.handled) announce(r.narration);
-          else announce("Didn\u2019t catch a command in \u201C" + text.slice(0, 60) + "\u201D \u2014 try \u201Cbigger text\u201D or \u201Copen the educator hub\u201D.");
+          else announce("Didn\u2019t catch a command in \u201C" + text.slice(0, 60) + "\u201D \u2014 try \u201Cbigger text\u201D or " + (getCommandAudience(cc) === "student" ? "\u201Cread directions\u201D." : "\u201Copen the educator hub\u201D."));
         } catch (error) {
           if (!active || currentRouteSerial !== routeSerial || error && error.name === "AbortError") return;
-          announce("Didn\u2019t catch a command in \u201C" + text.slice(0, 60) + "\u201D \u2014 try \u201Cbigger text\u201D or \u201Copen the educator hub\u201D.");
+          announce("Didn\u2019t catch a command in \u201C" + text.slice(0, 60) + "\u201D \u2014 try \u201Cbigger text\u201D or " + (getCommandAudience(cc) === "student" ? "\u201Cread directions\u201D." : "\u201Copen the educator hub\u201D."));
         } finally {
           if (currentRouteSerial === routeSerial) routeController = null;
         }
@@ -1404,6 +1551,9 @@ const CMD_GROUP = {
   set_source_length: "create",
   set_output_language: "create",
   submit_work: "create",
+  open_assignment_directions: "navigate",
+  check_assignment_progress: "navigate",
+  save_my_work: "navigate",
   font_bigger: "accessibility",
   font_smaller: "accessibility",
   font_reset: "accessibility",
@@ -1477,7 +1627,19 @@ const CMD_GROUP = {
   open_persona_chat: "navigate",
   pipeline_fix_again: "pipeline",
   pipeline_stop: "pipeline",
-  pipeline_new_doc: "pipeline"
+  pipeline_new_doc: "pipeline",
+  edit_assignment_directions: "create",
+  open_assessment_builder: "create",
+  open_udl_guide: "help",
+  create_activity_rubric: "create",
+  share_assignment: "create",
+  preview_assignment_as_student: "navigate",
+  resume_latest_work: "navigate",
+  next_assignment_step: "navigate",
+  read_assignment_directions: "accessibility",
+  show_success_criteria: "navigate",
+  send_teacher_signal: "live",
+  review_teacher_feedback: "navigate"
 };
 const CMD_CONTEXT = {
   pipeline_score: ["pipeline"],
@@ -1521,6 +1683,9 @@ const CMD_CONTEXT = {
   set_source_tone: ["sourceSetup"],
   set_source_length: ["sourceSetup"],
   set_output_language: ["sourceSetup"],
+  open_assignment_directions: ["content"],
+  check_assignment_progress: ["content"],
+  save_my_work: ["content"],
   generate_quiz: ["content"],
   generate_glossary: ["content"],
   generate_simplified: ["content", "reading"],
@@ -1551,7 +1716,19 @@ const CMD_CONTEXT = {
   open_persona_chat: ["content"],
   pipeline_fix_again: ["pipeline"],
   pipeline_stop: ["pipeline"],
-  pipeline_new_doc: ["pipeline"]
+  pipeline_new_doc: ["pipeline"],
+  edit_assignment_directions: ["content"],
+  open_assessment_builder: ["educatorHub", "content"],
+  open_udl_guide: ["educatorHub", "content"],
+  create_activity_rubric: ["content"],
+  share_assignment: ["content"],
+  preview_assignment_as_student: ["content"],
+  resume_latest_work: ["content"],
+  next_assignment_step: ["content"],
+  read_assignment_directions: ["content", "reading"],
+  show_success_criteria: ["content"],
+  send_teacher_signal: ["liveSession"],
+  review_teacher_feedback: ["content"]
 };
 const GROUP_ORDER = ["navigate", "live", "create", "tools", "accessibility", "display", "pipeline", "help", "voice"];
 const GROUP_LABEL_FALLBACK = { navigate: "Navigate", live: "Live class", create: "Create from this content", tools: "Open a tool", accessibility: "Reading & access", display: "Display & motion", pipeline: "Pipeline results", help: "Help", voice: "Voice" };
@@ -1598,10 +1775,20 @@ const AlloCommandPalette = ({ ctx }) => {
     }
     const acts = _activeContexts(ctx);
     const promotedIds = /* @__PURE__ */ new Set();
+    if (getCommandAudience(ctx) === "student") {
+      const studentActions = commands.filter((command) => command.roles === "student").slice(0, 6);
+      if (studentActions.length) {
+        out.push({ kind: "header", label: t("student.actions", "Student actions") });
+        studentActions.forEach((command) => {
+          promotedIds.add(command.id);
+          out.push({ kind: "cmd", c: command });
+        });
+      }
+    }
     if (acts.length) {
       const promoted = [];
       for (const c of commands) {
-        if ((CMD_CONTEXT[c.id] || []).some((x) => acts.indexOf(x) >= 0)) {
+        if (!promotedIds.has(c.id) && (CMD_CONTEXT[c.id] || []).some((x) => acts.indexOf(x) >= 0)) {
           promoted.push(c);
           promotedIds.add(c.id);
           if (promoted.length >= 6) break;
@@ -1644,7 +1831,7 @@ const AlloCommandPalette = ({ ctx }) => {
   const selectedCommand = rows[sel] && rows[sel].kind === "cmd" ? rows[sel].c : null;
   const selectedCommandId = selectedCommand ? selectedCommand.id : "";
   const paletteStatus = (() => {
-    if (confirming && selectedCommand && confirming === selectedCommand.id) return "Confirmation required for " + selectedCommand.label + ". Press Enter again to confirm.";
+    if (confirming && selectedCommand && confirming === selectedCommand.id) return _commandConfirmationText(selectedCommand, ctx, t);
     const count = selectable.length;
     if (!count) return query.trim() ? "No matching commands." : "No commands are available here.";
     const resultText = query.trim() ? count + " matching command" + (count === 1 ? "." : "s.") : count + " command" + (count === 1 ? " shown." : "s shown.");
@@ -1765,13 +1952,13 @@ const AlloCommandPalette = ({ ctx }) => {
     } catch (_) {
     }
   }, [open, sel, selectedCommandId]);
-  const announce = useCallback((msg) => {
+  const announce = useCallback((msg, type = "success") => {
     try {
       if (window.alloAnnounce) window.alloAnnounce(msg);
     } catch (_) {
     }
     try {
-      if (ctx && ctx.addToast) ctx.addToast(msg, "success");
+      if (ctx && ctx.addToast) ctx.addToast(msg, type);
     } catch (_) {
     }
   }, [ctx]);
@@ -1793,18 +1980,11 @@ const AlloCommandPalette = ({ ctx }) => {
       return;
     }
     setConfirming(null);
-    if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === "function") {
+    const result = executeCommand(ctx, cmd, {}, { confirmed: true, via: "palette" });
+    if (!result || !result.handled || result.ok === false) {
+      const failure = result && result.narration || t("cmd.failed", "That command is no longer available here.");
       try {
-        ctx.closeOtherPanels(cmd.opensPanel);
-      } catch (_) {
-      }
-    }
-    let msg = null;
-    try {
-      msg = cmd.run(ctx);
-    } catch (e) {
-      try {
-        ctx.addToast(t("cmd.failed", "That didn\u2019t work: ") + (e && e.message || "unknown"), "error");
+        if (ctx && ctx.addToast) ctx.addToast(failure, "error");
       } catch (_) {
       }
       setOpen(false);
@@ -1812,7 +1992,7 @@ const AlloCommandPalette = ({ ctx }) => {
     }
     rememberCommand(cmd.id);
     setOpen(false);
-    if (msg) announce(msg);
+    if (result.narration) announce(result.narration, result.pending ? "info" : "success");
   }, [ctx, confirming, announce, rememberCommand, t]);
   if (!open) return null;
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[12000] flex items-start justify-center pt-[14vh] px-4", role: "presentation", onClick: () => setOpen(false) }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-slate-900/50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
@@ -1852,7 +2032,7 @@ const AlloCommandPalette = ({ ctx }) => {
             if (row && row.kind === "cmd") runCmd(row.c);
           }
         },
-        placeholder: t("palette.placeholder", "Type a command \u2014 \u201Cbigger text\u201D, \u201Ceducator hub\u201D, \u201Cread this page\u201D\u2026"),
+        placeholder: getCommandAudience(ctx) === "student" ? t("student.actions_search") || "Try \u201Cread directions\u201D, \u201Ccheck my progress\u201D, or \u201Csave my work\u201D\u2026" : t("palette.placeholder", "Type a command \u2014 \u201Cbigger text\u201D, \u201Ceducator hub\u201D, \u201Cread this page\u201D\u2026"),
         "aria-label": t("palette.input_aria", "Search commands"),
         role: "combobox",
         "aria-expanded": "true",
@@ -1885,7 +2065,7 @@ const AlloCommandPalette = ({ ctx }) => {
         className: `min-h-11 w-full cursor-pointer px-4 py-2.5 text-left flex items-center gap-3 ${i === sel ? "bg-indigo-50" : ""}`
       },
       /* @__PURE__ */ React.createElement("span", { className: "text-lg shrink-0", "aria-hidden": "true" }, row.c.icon),
-      /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: `block text-sm font-bold ${i === sel ? "text-indigo-900" : "text-slate-800"}` }, row.c.label), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600 truncate" }, confirming === row.c.id ? t("palette.confirm", "\u26A0 Press Enter again to confirm") : row.c.hint)),
+      /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: `block text-sm font-bold ${i === sel ? "text-indigo-900" : "text-slate-800"}` }, row.c.label), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600 truncate" }, confirming === row.c.id ? _commandConfirmationText(row.c, ctx, t) : row.c.hint)),
       i === sel && /* @__PURE__ */ React.createElement("kbd", { className: "text-[10px] text-indigo-600 border border-indigo-300 rounded px-1.5 py-0.5 shrink-0" }, "\u21B5")
     ))),
     /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 border-t border-slate-200 text-[10px] text-slate-600 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("kbd", { className: "border border-slate-300 rounded px-1" }, "\u2191\u2193"), " ", t("palette.nav", "navigate")), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("kbd", { className: "border border-slate-300 rounded px-1" }, "\u21B5"), " ", t("palette.run", "run")), /* @__PURE__ */ React.createElement("span", { className: "ml-auto" }, t("palette.footer", "Every action is announced. Ctrl+K toggles.")))
@@ -1893,6 +2073,6 @@ const AlloCommandPalette = ({ ctx }) => {
 };
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, buildAlloCommands: buildAlloCommands, scoreCommand: scoreCommand, routeUtterance: routeUtterance, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan };
+  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, buildAlloCommands: buildAlloCommands, getCommandAudience: getCommandAudience, scoreCommand: scoreCommand, routeUtterance: routeUtterance, executeCommand: executeCommand, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan };
   console.log('[CDN] AlloCommands loaded');
 })();

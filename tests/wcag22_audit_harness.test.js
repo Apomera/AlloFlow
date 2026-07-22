@@ -42,7 +42,8 @@ describe('WCAG 2.2 audit harness', () => {
     expect(source).toContain("(?:alert)?dialog");
     expect(source).toContain('lineNum + 12');
     expect(source).toContain('generateReport(allFindings, outputJson, files.length)');
-    expect(source).toContain('NO AUTOMATED FINDINGS -- manual verification still required');
+    expect(source).toContain('NO HEURISTIC FINDINGS');
+    expect(source).toContain('does not determine WCAG conformance');
   });
 
 });

@@ -184,7 +184,8 @@ window.StemLab = window.StemLab || {
 
       // ── State ──
       var d = labToolData.inequality || {};
-      var isDark = !!ctx.darkMode;
+      var isContrast = !!ctx.isContrast;
+      var isDark = !!ctx.isDark || isContrast;
       var upd = function(key, val) {
         setLabToolData(function(prev) {
           return Object.assign({}, prev, {

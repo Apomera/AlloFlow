@@ -2403,7 +2403,7 @@ const d = labToolData.wave;
 
                     return pct > 90 
 
-                      ? React.createElement("span", {className: "text-[11px] font-bold text-emerald-400 bg-emerald-900/50 px-1.5 py-0.5 rounded-full ml-2 lowercase tracking-normal"}, "\u2705 " + pct + __alloT('stem.wave.pct_match', '% match')) 
+                      ? React.createElement("span", {className: "text-[11px] font-bold text-emerald-400 bg-emerald-900/50 px-1.5 py-0.5 rounded-full ml-2 lowercase tracking-normal"}, "\u2705 " + pct + __alloT('stem.wave.pct_match', '% match'))
 
                       : React.createElement("span", {className: "text-[11px] font-bold text-amber-400 bg-amber-900/50 px-1.5 py-0.5 rounded-full ml-2 lowercase tracking-normal"}, pct + __alloT('stem.wave.pct_match', '% match'));
                   })()

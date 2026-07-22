@@ -1318,13 +1318,8 @@ const COMPILE_PAIRS = [
             const trailingNewline = src.endsWith('\n') ? '' : '\n';
             return (
                 '(function(){"use strict";\n'
-                + 'if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}\n'
+                + 'if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}\n'
                 + src + trailingNewline
-                + '\n'
-                + 'window.AlloModules = window.AlloModules || {};\n'
-                + 'window.AlloModules.createDocPipeline = createDocPipeline;\n'
-                + 'window.AlloModules.DocPipelineModule = true;\n'
-                + "console.log('[DocPipelineModule] Pipeline factory registered');\n"
                 + '})();\n'
             );
         },

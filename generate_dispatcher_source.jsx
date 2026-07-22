@@ -1372,13 +1372,6 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     if (!isLast) await new Promise(r => setTimeout(r, 800));
                 }
                 addToast(`Generated ${gradesToGen.length} differentiated versions!`, "success");
-                if (guidedMode) {
-                  const currentIdx = GUIDED_STEPS.findIndex(s => s.id === 'simplified');
-                  if (currentIdx >= 0) {
-                    setTimeout(() => setGuidedStep(prev => prev === currentIdx && prev < GUIDED_STEPS.length - 1 ? prev + 1 : prev), 1200);
-                    setTimeout(() => addToast(t('guided.history_hint'), 'info'), 2000);
-                  }
-                }
             } catch (e) {
                 warnLog("Unhandled error:", e);
                 addToast(t('toasts.batch_diff_failed'), "error");
@@ -1425,17 +1418,6 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             if (type === 'glossary') flyToElement('ui-tool-glossary');
             if (type === 'outline') flyToElement('tour-tool-outline');
             if (type === 'image') flyToElement('tour-tool-visual');
-            if (guidedMode) {
-              const typeToGuidedId = { 'analysis': 'analysis', 'glossary': 'glossary', 'simplified': 'simplified', 'outline': 'outline', 'image': 'image', 'faq': 'faq', 'sentence-frames': 'sentence-frames', 'brainstorm': 'brainstorm', 'persona': 'persona', 'timeline': 'timeline', 'concept-sort': 'concept-sort', 'quiz': 'quiz', 'lesson-plan': 'lesson-plan', 'alignment-report': '_final' };
-              const matchedId = typeToGuidedId[type];
-              if (matchedId) {
-                const currentIdx = GUIDED_STEPS.findIndex(s => s.id === matchedId);
-                if (currentIdx >= 0 && currentIdx === guidedStep && guidedStep < GUIDED_STEPS.length - 1) {
-                  setTimeout(() => setGuidedStep(prev => prev + 1), 1200);
-                  setTimeout(() => addToast(t('guided.history_hint'), 'info'), 2000);
-                }
-              }
-            }
         } catch (err) {
             console.error('[GenDispatcher] Batch generation error:', err);
             warnLog("Unhandled error:", err);
@@ -2094,13 +2076,6 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
       }
       addToast(`${getDefaultTitle(type)} generated!`, "success");
       if (switchView) flyToElement('ui-tool-simplified');
-      if (guidedMode) {
-          const currentIdx = GUIDED_STEPS.findIndex(s => s.id === 'simplified');
-          if (currentIdx >= 0 && currentIdx === guidedStep && guidedStep < GUIDED_STEPS.length - 1) {
-              setTimeout(() => setGuidedStep(prev => prev + 1), 1200);
-              setTimeout(() => addToast(t('guided.history_hint'), 'info'), 2000);
-          }
-      }
       return;
       } else if (type === 'outline') {
         let promptInstructions = "";
@@ -2110,7 +2085,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 promptInstructions = "Create a hierarchical outline with main topics and sub-points.";
                 break;
             case 'Flow Chart':
-                promptInstructions = "Create a step-by-step process flow. If the process naturally has decision points, conditional paths, or branching logic (e.g., 'If X happens, go to step A; otherwise, go to step B'), include a 'connectsTo' array on each branch containing valid 0-based indices of the steps it connects to. Every target must be between 0 and the final branch index, and a step must not connect to itself. For simple linear flows where each step leads to the next, you may omit connectsTo. Example with branching: [{'title':'Check condition','items':['Evaluate X'],'connectsTo':[1,2]}, {'title':'Path A','items':['Do A'],'connectsTo':[3]}, {'title':'Path B','items':['Do B'],'connectsTo':[3]}, {'title':'Final step','items':['Done']}]. Aim for 5-8 steps total.";
+                promptInstructions = "Create a step-by-step process flow. Every branch must include a 'connections' array of edge objects with a valid 0-based 'target' index and an optional short 'label'. Use labels for meaningful route conditions such as Yes, No, Approved, or Needs revision. A step must not connect to itself. For a simple linear flow, connect each step to the next with an empty label. Example with a labeled fork and merge: [{'title':'Check condition','items':['Evaluate X'],'connections':[{'target':1,'label':'Yes'},{'target':2,'label':'No'}]}, {'title':'Path A','items':['Do A'],'connections':[{'target':3,'label':''}]}, {'title':'Path B','items':['Do B'],'connections':[{'target':3,'label':''}]}, {'title':'Final step','items':['Done'],'connections':[]}]. Aim for 5-8 steps total.";
                 break;
             case 'Key Concept Map':
                 promptInstructions = "Identify the central concept and branch out into key related attributes or sub-concepts. CRITICAL: Keep all labels extremely concise (max 4-5 words) to fit inside visual nodes.";
@@ -2129,7 +2104,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 break;
             case 'Cause and Effect':
                 promptInstructions = "Identify the central event/phenomenon. List its antecedent 'Causes' (factors leading to it) and subsequent 'Effects' (consequences resulting from it). If a sequential chain reaction exists, list it.";
-                structureHint = "CRITICAL: Return branches with specific titles: 'Causes', 'Effects', or 'Chain'. Example: [{ 'title': 'Causes', 'items': ['Cause 1', 'Cause 2'] }, { 'title': 'Effects', 'items': ['Effect 1'] }]";
+                structureHint = "CRITICAL: Return branches in this order: Causes, Effects, then optional Chain. Every branch MUST include a stable semantic role independent of display language: role='cause', role='effect', or role='chain'. Example: [{ 'role': 'cause', 'title': 'Causes', 'items': ['Cause 1', 'Cause 2'] }, { 'role': 'effect', 'title': 'Effects', 'items': ['Effect 1'] }]";
                 break;
             case 'Problem Solution':
                 promptInstructions = "Identify the core problem discussed and list the solutions or steps taken to resolve it.";
@@ -2176,31 +2151,29 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${useEmojis ? 'Include a relevant emoji at the start of every "main", "title", and "item" field to serve as a visual anchor.' : 'Do not use emojis.'}
           ${dialectInstruction}
           Return ONLY JSON matching this structure exactly (conceptually map the requested type to this hierarchy):
-          { "main": "Central Topic/Goal/Problem", ${effectiveLanguage !== 'English' ? '"main_en": "...", ' : ''}"branches": [{ "title": "Category/Step/Solution/Cause", ${effectiveLanguage !== 'English' ? '"title_en": "...", ' : ''}"items": ["Detail/Substep/Effect"], ${effectiveLanguage !== 'English' ? '"items_en": ["..."], ' : ''}"connectsTo": [1] }] }
-          Note: "connectsTo" is an optional array of 0-based branch indices. Include it only for Flow Chart type when branching exists.
+          { "main": "Central Topic/Goal/Problem", ${effectiveLanguage !== 'English' ? '"main_en": "...", ' : ''}"branches": [{ ${effectiveOutlineType === 'Cause and Effect' ? '"role": "cause|effect|chain", ' : ''}${['Venn Diagram', 'T-Chart', 'Frayer Model', 'KWL Chart', 'Claim-Evidence-Reasoning', 'Story Map', 'See-Think-Wonder'].includes(effectiveOutlineType) ? '"sectionRole": "stable English machine role", ' : ''}"title": "Category/Step/Solution/Cause", ${effectiveLanguage !== 'English' ? '"title_en": "...", ' : ''}"items": ["Detail/Substep/Effect"], ${effectiveLanguage !== 'English' ? '"items_en": ["..."], ' : ''}${effectiveOutlineType === 'Flow Chart' ? '"connections": [{ "target": 1, "label": "Yes" }]' : ''} }] }
+          Note: Flow Chart "connections" use valid 0-based target indices and optional concise route labels; legacy "connectsTo" arrays are accepted and repaired automatically. Machine roles must remain stable English identifiers even when visible text is translated.
           ${differentiationContext}
           Text: "${usesLocalTextBackend ? localExcerpt(textToProcess, 6500) : textToProcess}"
         `;
         if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, t('status_steps.analyzing_structure'));
         const result = await callGemini(prompt, true);
         if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, t('status_steps.analyzing_structure'));
+        const _normalizeGeneratedOrganizer = (value) => {
+            const sharedNormalizer = window.AlloModules?.ViewRenderers?.normalizeVisualOrganizerData;
+            if (typeof sharedNormalizer === 'function') return sharedNormalizer(value, effectiveOutlineType);
+            const fallback = value && typeof value === 'object' ? { ...value } : {};
+            fallback.main = fallback.main || 'Main Topic';
+            fallback.branches = Array.isArray(fallback.branches) ? fallback.branches.map((branch, index) => ({
+                ...(branch && typeof branch === 'object' ? branch : {}),
+                title: branch?.title || ('Step ' + (index + 1)),
+                items: Array.isArray(branch?.items) ? branch.items : [],
+            })) : [];
+            fallback.structureType = effectiveOutlineType;
+            return fallback;
+        };
         try {
-            content = usesLocalTextBackend ? parseJsonLenient(result, {}) : JSON.parse(cleanJson(result));
-            if (!content) content = {};
-            if (!content.main) content.main = "Main Topic";
-            if (!content.branches || !Array.isArray(content.branches)) {
-                if (content.items && Array.isArray(content.items)) {
-                    content.branches = [{ title: "Key Points", items: content.items }];
-                } else {
-                    content.branches = [];
-                }
-            }
-            content.branches = content.branches.map(b => ({
-                ...b,
-                title: b.title || "Untitled Section",
-                items: Array.isArray(b.items) ? b.items : []
-            }));
-            content.structureType = effectiveOutlineType;
+            content = _normalizeGeneratedOrganizer(usesLocalTextBackend ? parseJsonLenient(result, {}) : JSON.parse(cleanJson(result)));
         } catch (parseErr) {
             warnLog("Outline JSON parse failed. Attempting AI repair...", parseErr);
             const repairPrompt = `
@@ -2210,10 +2183,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             `;
             try {
                 const repairResult = await callGemini(repairPrompt, true);
-                content = JSON.parse(cleanJson(repairResult));
-                if (!content) content = {};
-                if (!content.branches || !Array.isArray(content.branches)) content.branches = [];
-                content.structureType = effectiveOutlineType;
+                content = _normalizeGeneratedOrganizer(JSON.parse(cleanJson(repairResult)));
             } catch (finalErr) {
                 warnLog("Outline Repair Failed:", finalErr);
                 throw new Error("Failed to parse Visual Organizer data. Please try regenerating.");
@@ -5195,24 +5165,6 @@ Return ONLY JSON:
       }
       const toastTitle = type === 'simplified' ? "Adapted Text" : getDefaultTitle(type);
       addToast(`${toastTitle} generated!`, "success");
-      if (guidedMode) {
-        const typeToGuidedId = { 'analysis': 'analysis', 'glossary': 'glossary', 'simplified': 'simplified', 'outline': 'outline', 'image': 'image', 'faq': 'faq', 'sentence-frames': 'sentence-frames', 'brainstorm': 'brainstorm', 'persona': 'persona', 'timeline': 'timeline', 'concept-sort': 'concept-sort', 'quiz': 'quiz', 'lesson-plan': 'lesson-plan', 'alignment-report': '_final' };
-        const matchedId = typeToGuidedId[type];
-        if (matchedId) {
-          const stepIdx = GUIDED_STEPS.findIndex(s => s.id === matchedId);
-          if (stepIdx >= 0) {
-            setTimeout(() => {
-              setGuidedStep(prev => {
-                if (prev === stepIdx && prev < GUIDED_STEPS.length - 1) {
-                  return prev + 1;
-                }
-                return prev; // don't advance if user already moved past this step
-              });
-            }, 1200);
-            setTimeout(() => addToast(t('guided.history_hint'), 'info'), 2000);
-          }
-        }
-      }
       if (switchView) {
           if (type === 'simplified') flyToElement('ui-tool-simplified');
           if (type === 'glossary') flyToElement('ui-tool-glossary');

@@ -1,6 +1,8 @@
-﻿window.StemLab = window.StemLab || { registerTool: function(){}, registerModule: function(){} };
+window.StemLab = window.StemLab || { registerTool: function(){}, registerModule: function(){} };
 (function() {
   'use strict';
+
+  var _unitConvertWordProblemRequestId = 0;
   // â”€â”€ Reduced motion CSS (WCAG 2.3.3) â€” shared across all STEM Lab tools â”€â”€
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -72,11 +74,76 @@
     energy: { J: 1, kJ: 1000, cal: 4.184, kcal: 4184, Wh: 3600, kWh: 3600000 }
   };
 
+  function validateTemperatureValue(value, unit) {
+    var numericValue = Number(value);
+    var minimums = { '°C': -273.15, '°F': -459.67, K: 0 };
+    if (!Number.isFinite(numericValue) || !Object.prototype.hasOwnProperty.call(minimums, unit)) {
+      return { valid: false, message: 'Enter a valid temperature.' };
+    }
+    if (numericValue < minimums[unit]) {
+      return { valid: false, message: 'Temperatures cannot be below absolute zero (-273.15 °C, -459.67 °F, or 0 K).' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  function formatTemperatureNumber(value) {
+    if (!Number.isFinite(value)) return '';
+    return parseFloat(value.toFixed(6)).toString();
+  }
+
+  function describeTemperatureConversion(value, from, to) {
+    var check = validateTemperatureValue(value, from);
+    if (!check.valid || !Object.prototype.hasOwnProperty.call(UNIT_FACTORS.temperature, to)) {
+      return { valid: false, result: NaN, steps: [], message: check.message || 'Choose a valid temperature scale.' };
+    }
+    var numericValue = Number(value);
+    var result = convertUnitValue(numericValue, from, to, 'temperature');
+    var inputText = formatTemperatureNumber(numericValue);
+    var resultText = formatTemperatureNumber(result);
+    var celsius;
+
+    if (from === to) {
+      return {
+        valid: true,
+        result: result,
+        steps: [inputText + ' ' + from + ' = ' + resultText + ' ' + to + ' (same scale)'],
+        message: 'The scale did not change, so neither an offset nor a scale factor is needed.'
+      };
+    }
+
+    var steps = [];
+    if (from === '°C' && to === '°F') {
+      steps.push(inputText + ' °C × 9/5 + 32 = ' + resultText + ' °F');
+    } else if (from === '°F' && to === '°C') {
+      steps.push('(' + inputText + ' °F − 32) × 5/9 = ' + resultText + ' °C');
+    } else if (from === '°C' && to === 'K') {
+      steps.push(inputText + ' °C + 273.15 = ' + resultText + ' K');
+    } else if (from === 'K' && to === '°C') {
+      steps.push(inputText + ' K − 273.15 = ' + resultText + ' °C');
+    } else if (from === '°F' && to === 'K') {
+      celsius = (numericValue - 32) * 5 / 9;
+      steps.push('(' + inputText + ' °F − 32) × 5/9 = ' + formatTemperatureNumber(celsius) + ' °C');
+      steps.push(formatTemperatureNumber(celsius) + ' °C + 273.15 = ' + resultText + ' K');
+    } else if (from === 'K' && to === '°F') {
+      celsius = numericValue - 273.15;
+      steps.push(inputText + ' K − 273.15 = ' + formatTemperatureNumber(celsius) + ' °C');
+      steps.push(formatTemperatureNumber(celsius) + ' °C × 9/5 + 32 = ' + resultText + ' °F');
+    }
+
+    return {
+      valid: true,
+      result: result,
+      steps: steps,
+      message: 'Temperature scales have different zero points, so the conversion needs an offset as well as a scale factor.'
+    };
+  }
+
   function convertUnitValue(value, from, to, category) {
     var numericValue = Number(value);
     if (!Number.isFinite(numericValue)) return NaN;
     if (category === 'temperature') {
       if (!Object.prototype.hasOwnProperty.call(UNIT_FACTORS.temperature, from) || !Object.prototype.hasOwnProperty.call(UNIT_FACTORS.temperature, to)) return NaN;
+      if (!validateTemperatureValue(numericValue, from).valid) return NaN;
       if (from === to) return numericValue;
       var celsius = from === '\u00B0C' ? numericValue : from === '\u00B0F' ? (numericValue - 32) * 5 / 9 : numericValue - 273.15;
       return to === '\u00B0C' ? celsius : to === '\u00B0F' ? celsius * 9 / 5 + 32 : celsius + 273.15;
@@ -84,6 +151,153 @@
     var units = UNIT_FACTORS[category];
     if (!units || !Object.prototype.hasOwnProperty.call(units, from) || !Object.prototype.hasOwnProperty.call(units, to)) return NaN;
     return numericValue * units[from] / units[to];
+  }
+
+  function formatUnitNumber(value, significantFigures) {
+    var numericValue = Number(value);
+    if (!Number.isFinite(numericValue)) return '—';
+    var sig = Number(significantFigures);
+    if (Number.isInteger(sig) && sig >= 2 && sig <= 6) return numericValue.toPrecision(sig);
+    if (Math.abs(numericValue) < 0.001 && numericValue !== 0) return numericValue.toExponential(4);
+    return parseFloat(numericValue.toFixed(6)).toString();
+  }
+
+  function cleanWordProblemText(value, maximumLength) {
+    var cleaned = String(value == null ? '' : value)
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/[*_#>]/g, ' ')
+      .split(String.fromCharCode(96)).join(' ')
+      .trim();
+    return cleaned.split(' ').filter(Boolean).join(' ').slice(0, maximumLength);
+  }
+
+  function buildVerifiedPracticeHints(category, from, to) {
+    if (category === 'temperature') {
+      return [
+        'Temperature scales have different zero points, so a single conversion ratio is not enough.',
+        'Identify the scale change and the zero-point offset, then apply them in the correct order.'
+      ];
+    }
+    return [
+      'Arrange a conversion factor so ' + from + ' cancels and ' + to + ' remains.',
+      'Compare each unit to the category base unit, then multiply the two conversion ratios.'
+    ];
+  }
+
+  function buildVerifiedConversionExplanation(value, from, to, category, result) {
+    if (category === 'temperature') {
+      var reasoning = describeTemperatureConversion(value, from, to);
+      return reasoning.steps.join(' Then ') + '.';
+    }
+    var factor = UNIT_FACTORS[category][from] / UNIT_FACTORS[category][to];
+    return formatUnitNumber(value, 'auto') + ' ' + from + ' × ' + formatUnitNumber(factor, 'auto') + ' = ' + formatUnitNumber(result, 'auto') + ' ' + to + '.';
+  }
+
+  function parseWordProblemResponse(rawResponse, category, allowedUnits) {
+    var units = UNIT_FACTORS[category];
+    if (!units) return null;
+    var fence = String.fromCharCode(96).repeat(3);
+    var text = String(rawResponse == null ? '' : rawResponse)
+      .split(fence).join('')
+      .slice(0, 4000);
+    var fields = {};
+    var current = '';
+    text.split(String.fromCharCode(10)).forEach(function(line) {
+      var match = line.match(/^ *(CONTEXT|INPUT_VALUE|FROM_UNIT|TO_UNIT|ANSWER_VALUE|ANSWER_UNIT) *: *(.*)$/i);
+      if (match) {
+        current = match[1].toUpperCase();
+        fields[current] = match[2] || '';
+      } else if (current && line.trim()) {
+        fields[current] += ' ' + line.trim();
+      }
+    });
+
+    var context = cleanWordProblemText(fields.CONTEXT, 320);
+    var inputValue = Number(String(fields.INPUT_VALUE || '').replace(/,/g, '').trim());
+    var fromUnit = cleanWordProblemText(fields.FROM_UNIT, 24);
+    var toUnit = cleanWordProblemText(fields.TO_UNIT, 24);
+    var reportedAnswer = Number(String(fields.ANSWER_VALUE || '').replace(/,/g, '').trim());
+    var answerUnit = cleanWordProblemText(fields.ANSWER_UNIT, 24);
+    var permitted = Array.isArray(allowedUnits) && allowedUnits.length ? allowedUnits : Object.keys(units);
+
+    if (!context || /[0-9]/.test(context) || !Number.isFinite(inputValue) || !Number.isFinite(reportedAnswer)) return null;
+    if (fromUnit === toUnit || permitted.indexOf(fromUnit) === -1 || permitted.indexOf(toUnit) === -1) return null;
+    if (!Object.prototype.hasOwnProperty.call(units, fromUnit) || !Object.prototype.hasOwnProperty.call(units, toUnit)) return null;
+    if (answerUnit !== toUnit) return null;
+
+    var verifiedAnswer = convertUnitValue(inputValue, fromUnit, toUnit, category);
+    if (!Number.isFinite(verifiedAnswer)) return null;
+    var verificationTolerance = Math.max(0.001, Math.abs(verifiedAnswer) * 0.001);
+    if (Math.abs(reportedAnswer - verifiedAnswer) > verificationTolerance) return null;
+
+    return {
+      source: 'ai',
+      verified: true,
+      context: context,
+      inputValue: inputValue,
+      fromUnit: fromUnit,
+      toUnit: toUnit,
+      problem: context + ' The measurement is ' + formatUnitNumber(inputValue, 'auto') + ' ' + fromUnit + '. What is this value in ' + toUnit + '?',
+      hints: buildVerifiedPracticeHints(category, fromUnit, toUnit),
+      answer: verifiedAnswer,
+      unit: toUnit,
+      explanation: buildVerifiedConversionExplanation(inputValue, fromUnit, toUnit, category, verifiedAnswer)
+    };
+  }
+
+  function makeOfflineWordProblem(category, from, to) {
+    var safeCategory = Object.prototype.hasOwnProperty.call(UNIT_FACTORS, category) ? category : 'length';
+    var units = Object.keys(UNIT_FACTORS[safeCategory]);
+    var safeFrom = units.indexOf(from) >= 0 ? from : units[0];
+    var safeTo = units.indexOf(to) >= 0 && to !== safeFrom ? to : (units.find(function(unit) { return unit !== safeFrom; }) || safeFrom);
+    var amounts = { length: 3, weight: 2, temperature: 20, speed: 60, volume: 2, time: 3, area: 2, pressure: 2, energy: 5 };
+    var amount = amounts[safeCategory] || 2;
+    if (safeCategory === 'temperature') {
+      if (safeFrom === '°F') amount = 68;
+      else if (safeFrom === 'K') amount = 293.15;
+    }
+    var answer = convertUnitValue(amount, safeFrom, safeTo, safeCategory);
+    var contexts = {
+      length: 'A design team is measuring material for a model.',
+      weight: 'A science class is measuring the mass of a sample.',
+      temperature: 'A weather station is comparing temperature scales.',
+      speed: 'A robotics team is checking a vehicle speed.',
+      volume: 'A kitchen lab is measuring a liquid.',
+      time: 'A space mission is planning an activity.',
+      area: 'A garden team is measuring a plot.',
+      pressure: 'An engineering team is checking a pressure reading.',
+      energy: 'A sustainability team is tracking energy use.'
+    };
+    var context = contexts[safeCategory] || contexts.length;
+    return {
+      source: 'offline',
+      verified: true,
+      context: context,
+      inputValue: amount,
+      fromUnit: safeFrom,
+      toUnit: safeTo,
+      problem: context + ' The measurement is ' + amount + ' ' + safeFrom + '. What is this value in ' + safeTo + '?',
+      hints: buildVerifiedPracticeHints(safeCategory, safeFrom, safeTo),
+      answer: answer,
+      unit: safeTo,
+      explanation: buildVerifiedConversionExplanation(amount, safeFrom, safeTo, safeCategory, answer)
+    };
+  }
+  function diagnosePracticeAnswer(answer, expected, unit) {
+    if (!Number.isFinite(answer)) return 'Enter a valid number before checking your answer.';
+    var inverse = expected === 0 ? NaN : 1 / expected;
+    if (Number.isFinite(inverse) && Math.abs(answer - inverse) <= Math.max(0.01, Math.abs(inverse) * 0.02)) {
+      return 'The conversion ratio may be reversed. Flip it so the starting unit cancels.';
+    }
+    var slip = null;
+    [10, 100, 1000, 0.1, 0.01, 0.001].forEach(function(factor) {
+      if (slip === null && expected !== 0 && Math.abs(answer / expected - factor) <= Math.abs(factor) * 0.02) slip = factor;
+    });
+    if (slip !== null) return 'Check the decimal place or metric prefix before trying again.';
+    if (unit === '°F' || unit === '°C' || unit === 'K') {
+      return 'Remember that temperature conversions use an offset as well as a scale factor.';
+    }
+    return 'Not yet. Check that the starting unit cancels and the requested unit remains.';
   }
 
   function evaluateNumericAnswer(rawAnswer, expected, absoluteTolerance) {
@@ -113,7 +327,13 @@
 
   window.__UnitConvertCore = Object.assign({}, window.__UnitConvertCore || {}, {
     factors: UNIT_FACTORS,
+    validateTemperatureValue: validateTemperatureValue,
+    describeTemperatureConversion: describeTemperatureConversion,
     convertUnitValue: convertUnitValue,
+    formatUnitNumber: formatUnitNumber,
+    parseWordProblemResponse: parseWordProblemResponse,
+    makeOfflineWordProblem: makeOfflineWordProblem,
+    diagnosePracticeAnswer: diagnosePracticeAnswer,
     evaluateNumericAnswer: evaluateNumericAnswer,
     diagnoseNumericAnswer: diagnoseNumericAnswer
   });
@@ -180,14 +400,19 @@
           return convertUnitValue(val, from, to, catKey || d.category);
         };
 
+        var significantFigures = d.significantFigures || 'auto';
         var fmt = function(n) {
-          if (typeof n !== 'number') return String(n);
-          if (Math.abs(n) < 0.001 && n !== 0) return n.toExponential(4);
-          return parseFloat(n.toFixed(6)).toString();
+          return formatUnitNumber(n, significantFigures);
         };
 
+        var temperatureCheck = d.category === 'temperature'
+          ? validateTemperatureValue(d.value, d.fromUnit)
+          : { valid: true, message: '' };
         var result = convert(d.value, d.fromUnit, d.toUnit);
-        var fmtResult = fmt(result);
+        var fmtResult = Number.isFinite(result) ? fmt(result) : '—';
+        var temperatureReasoning = d.category === 'temperature' && temperatureCheck.valid
+          ? describeTemperatureConversion(d.value, d.fromUnit, d.toUnit)
+          : null;
 
         // â”€â”€ FORMULA â”€â”€
         var getFormula = function() {
@@ -313,6 +538,7 @@
         var tempUnitsUsed = d.tempUnitsUsed || {};
         var quizTotal = d.quizTotal || 0;
         var historySaveCount = d.historySaveCount || 0;
+        var wordProblem = d.wordProblem && typeof d.wordProblem === 'object' ? d.wordProblem : null;
 
         // â”€â”€ Badge checker â”€â”€
         function checkBadges(updates) {
@@ -348,6 +574,11 @@
         // â”€â”€ AI Tutor â”€â”€
         function askTutor() {
           if (tutorLoading) return;
+          if (!temperatureCheck.valid) {
+            addToast(temperatureCheck.message, 'error');
+            if (typeof announceToSR === 'function') announceToSR(temperatureCheck.message);
+            return;
+          }
           upd({ showTutor: true, tutorLoading: true, tutorResponse: '' });
           var catLabel = cat.label.replace(/[^\w\s]/g, '').trim();
           var prompt = 'You are a friendly math tutor helping a student learn unit conversions. ';
@@ -363,6 +594,131 @@
           }).catch(function() {
             upd({ tutorResponse: 'AI tutor is unavailable right now. Try again later!', tutorLoading: false });
           });
+        }
+
+        function useOfflineWordProblem(notice, request) {
+          if (request && request.id !== _unitConvertWordProblemRequestId) return;
+          var requestCategory = request ? request.category : d.category;
+          var requestFrom = request ? request.fromUnit : d.fromUnit;
+          var requestTo = request ? request.toUnit : d.toUnit;
+          var fallback = makeOfflineWordProblem(requestCategory, requestFrom, requestTo);
+          upd({
+            wordProblem: fallback,
+            loadingWP: false,
+            wordProblemAttempt: '',
+            wordProblemFeedback: notice || '',
+            wordProblemSolved: false,
+            wordProblemRevealed: false,
+            wordProblemHintLevel: 0
+          });
+          if (notice && addToast) addToast(notice, 'info');
+          if (typeof announceToSR === 'function') announceToSR('Offline practice problem ready. Math verified locally.');
+        }
+
+        function generateWordProblem() {
+          if (d.loadingWP) return;
+          var request = {
+            id: ++_unitConvertWordProblemRequestId,
+            category: d.category,
+            fromUnit: d.fromUnit,
+            toUnit: d.toUnit,
+            unitList: Object.keys(cat.units),
+            categoryLabel: cat.label.replace(/[^A-Za-z0-9 ]/g, '').trim()
+          };
+          upd({
+            loadingWP: true,
+            wordProblem: null,
+            wordProblemAttempt: '',
+            wordProblemFeedback: '',
+            wordProblemSolved: false,
+            wordProblemRevealed: false,
+            wordProblemHintLevel: 0
+          });
+
+          if (typeof callGemini !== 'function') {
+            useOfflineWordProblem(t('stem.unitconvert.offline_problem_ready', 'AI is unavailable, so an offline practice problem is ready.'), request);
+            return;
+          }
+
+          var prompt = [
+            'Create one safe, engaging grade 5-8 real-world context for a unit-conversion practice problem.',
+            'Category: ' + request.categoryLabel + '. Allowed units: ' + request.unitList.join(', ') + '.',
+            'Choose two different allowed units and a physically valid finite input value.',
+            'CONTEXT must be one short sentence with no numbers, unit symbols, answer, or calculation instructions.',
+            'Compute the conversion carefully. ANSWER_VALUE must be a finite decimal number with at least six significant digits when needed.',
+            'ANSWER_UNIT must exactly equal TO_UNIT, and all unit fields must exactly match an allowed unit.',
+            'Return exactly these six labeled lines with no markdown or extra text:',
+            'CONTEXT: [safe scenario only]',
+            'INPUT_VALUE: [number only]',
+            'FROM_UNIT: [one allowed unit]',
+            'TO_UNIT: [a different allowed unit]',
+            'ANSWER_VALUE: [number only]',
+            'ANSWER_UNIT: [must exactly equal TO_UNIT]'
+          ].join(String.fromCharCode(10));
+
+          Promise.resolve().then(function() {
+            return callGemini(prompt, false, false, 0.7);
+          }).then(function(response) {
+            if (request.id !== _unitConvertWordProblemRequestId) return;
+            var raw = typeof response === 'string'
+              ? response
+              : ((response && (response.text || response.output || response.response)) || '');
+            var parsed = parseWordProblemResponse(raw, request.category, request.unitList);
+            if (!parsed) {
+              useOfflineWordProblem(t('stem.unitconvert.ai_problem_invalid', 'The AI problem could not be verified, so an offline practice problem is ready.'), request);
+              return;
+            }
+            upd({
+              wordProblem: parsed,
+              loadingWP: false,
+              wordProblemAttempt: '',
+              wordProblemFeedback: '',
+              wordProblemSolved: false,
+              wordProblemRevealed: false,
+              wordProblemHintLevel: 0
+            });
+            awardStemXP && awardStemXP('unitConvert', 2, 'word problem');
+            checkBadges({ wordProblem: true });
+            if (typeof announceToSR === 'function') announceToSR('New word problem ready. The answer is hidden and the math is verified locally.');
+          }).catch(function() {
+            useOfflineWordProblem(t('stem.unitconvert.offline_problem_ready', 'AI is unavailable, so an offline practice problem is ready.'), request);
+          });
+        }
+        function gradeWordProblemAttempt() {
+          if (!wordProblem || d.wordProblemSolved) return;
+          var tolerance = Math.max(0.01, Math.abs(wordProblem.answer) * 0.005);
+          var evaluation = evaluateNumericAnswer(d.wordProblemAttempt, wordProblem.answer, tolerance);
+          if (!evaluation.valid) {
+            upd('wordProblemFeedback', t('stem.unitconvert.enter_valid_attempt', 'Enter a valid number before checking your answer.'));
+            return;
+          }
+          if (evaluation.correct) {
+            var success = t('stem.unitconvert.word_problem_correct', 'Correct! Your conversion and unit match.');
+            upd({ wordProblemSolved: true, wordProblemFeedback: success });
+            stemBeep && stemBeep(784, 0.12);
+            awardStemXP && awardStemXP('unitConvert', 3, 'word problem solved');
+            if (typeof announceToSR === 'function') announceToSR(success);
+            return;
+          }
+          var feedback = diagnosePracticeAnswer(evaluation.answer, wordProblem.answer, wordProblem.unit);
+          upd('wordProblemFeedback', feedback);
+          if (typeof announceToSR === 'function') announceToSR(feedback);
+        }
+
+        function showNextWordProblemHint() {
+          if (!wordProblem) return;
+          var nextLevel = Math.min(2, (d.wordProblemHintLevel || 0) + 1);
+          upd('wordProblemHintLevel', nextLevel);
+          var hint = wordProblem.hints[nextLevel - 1];
+          if (hint && typeof announceToSR === 'function') announceToSR('Hint ' + nextLevel + ': ' + hint);
+        }
+
+        function revealWordProblemAnswer() {
+          if (!wordProblem) return;
+          upd({ wordProblemRevealed: true, wordProblemHintLevel: 2 });
+          if (typeof announceToSR === 'function') {
+            announceToSR('Answer revealed: ' + fmt(wordProblem.answer) + ' ' + wordProblem.unit + '.');
+          }
         }
 
         function startQuizQuestion() {
@@ -557,8 +913,17 @@
               return h('button', { key: k,
                 onClick: function() {
                   var units = Object.keys(v.units);
+                  _unitConvertWordProblemRequestId += 1;
                   setLabToolData(function(prev) {
-                    return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, { category: k, fromUnit: units[0], toUnit: units[1] || units[0] }) });
+                    return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, {
+                      category: k,
+                      fromUnit: units[0],
+                      toUnit: units[1] || units[0],
+                      loadingWP: false,
+                      wordProblem: null,
+                      wordProblemFeedback: '',
+                      wordProblemHintLevel: 0
+                    }) });
                   });
                   trackCategory(k);
                   checkBadges({ firstConvert: true });
@@ -620,6 +985,9 @@
                 h('div', { className: 'text-center' },
                   h('input', {
                     type: 'number', value: d.value,
+                    min: d.category === 'temperature' ? ({ '°C': -273.15, '°F': -459.67, K: 0 })[d.fromUnit] : undefined,
+                    'aria-invalid': temperatureCheck.valid ? undefined : 'true',
+                    'aria-describedby': temperatureCheck.valid ? undefined : 'unitconvert-temperature-error',
                     onChange: function(e) {
                       upd('value', parseFloat(e.target.value) || 0);
                       checkBadges({ firstConvert: true });
@@ -656,6 +1024,10 @@
                 h('div', { className: 'text-center' },
                   h('p', {
                     key: fmtResult,
+                    role: 'status',
+                    'aria-live': 'polite',
+                    'aria-atomic': 'true',
+                    'aria-label': temperatureCheck.valid ? 'Converted result: ' + fmtResult + ' ' + d.toUnit : temperatureCheck.message,
                     className: 'text-2xl font-black text-cyan-700 py-1 tracking-tight',
                     style: { animation: 'ucResultPop 0.3s ease-out' }
                   }, fmtResult),
@@ -667,11 +1039,30 @@
                 )
               ),
 
-              // Formula row
-              h('div', { className: 'mt-3 bg-slate-50 rounded-lg p-2 text-center' },
-                h('span', { className: 'text-[11px] font-mono text-slate-600' }, '\uD83D\uDCCA ' + getFormula())
-              ),
+              !temperatureCheck.valid && h('div', {
+                id: 'unitconvert-temperature-error',
+                role: 'alert',
+                className: 'mt-3 rounded-lg border border-red-300 bg-red-50 p-3 text-center text-sm font-bold text-red-800'
+              }, '⚠️ ' + temperatureCheck.message),
 
+              // Formula + display precision
+              h('div', { className: 'mt-3 flex flex-wrap items-center justify-center gap-3 rounded-lg bg-slate-50 p-2' },
+                h('span', { className: 'text-[11px] font-mono text-slate-600' }, '📊 ' + getFormula()),
+                h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-slate-600' },
+                  t('stem.unitconvert.display_precision', 'Display:'),
+                  h('select', {
+                    value: significantFigures,
+                    onChange: function(event) { upd('significantFigures', event.target.value); },
+                    'aria-label': t('stem.unitconvert.significant_figures', 'Significant figures'),
+                    className: 'rounded border border-slate-300 bg-white px-2 py-1 text-[11px] font-bold text-slate-700'
+                  },
+                    h('option', { value: 'auto' }, t('stem.unitconvert.precision_auto', 'Auto')),
+                    [2, 3, 4, 5, 6].map(function(figureCount) {
+                      return h('option', { key: figureCount, value: String(figureCount) }, figureCount + ' sig figs');
+                    })
+                  )
+                )
+              ),
               // \u2500\u2500 Dimensional-analysis cancellation card \u2500\u2500
               // Shows the canonical chem/physics technique: multiply by (1 toUnit / N fromUnit)
               // and watch the fromUnit cancel. Skipped for temperature (additive offset).
@@ -721,10 +1112,30 @@
                 );
               })(),
 
+              temperatureReasoning && h('section', {
+                className: 'mt-2 rounded-lg border border-amber-300 bg-amber-50 p-3',
+                role: 'region',
+                'aria-labelledby': 'unitconvert-temperature-reasoning-title'
+              },
+                h('p', {
+                  id: 'unitconvert-temperature-reasoning-title',
+                  className: 'text-[10px] font-bold uppercase tracking-wider text-amber-800 text-center'
+                }, '🌡️ Why temperature is different'),
+                h('p', { className: 'mt-1 text-xs text-amber-900 text-center' }, temperatureReasoning.message),
+                h('ol', {
+                  className: 'mt-2 space-y-1 rounded-md bg-white/70 p-2 font-mono text-xs text-slate-800',
+                  'aria-label': 'Temperature conversion steps'
+                }, temperatureReasoning.steps.map(function(step, index) {
+                  return h('li', { key: 'temperature-step-' + index }, (index + 1) + '. ' + step);
+                }))
+              ),
+
               // Save / Pin / AI buttons
               h('div', { className: 'flex justify-center gap-2 mt-3' },
                 h('button', { 'aria-label': t('stem.unitconvert.save', 'Save'),
+                  disabled: !temperatureCheck.valid,
                   onClick: function() {
+                    if (!temperatureCheck.valid) return;
                     var entry = { from: d.value + ' ' + d.fromUnit, to: fmtResult + ' ' + d.toUnit, ts: Date.now() };
                     var newSaveCount = historySaveCount + 1;
                     setLabToolData(function(prev) {
@@ -784,7 +1195,7 @@
             ),
 
             // Temperature thermometer visual
-            d.category === 'temperature' && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-4 flex items-center justify-center gap-10' },
+            d.category === 'temperature' && temperatureCheck.valid && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-4 flex items-center justify-center gap-10' },
               (function() {
                 var fromVal = d.value;
                 var toVal = parseFloat(fmtResult);
@@ -837,8 +1248,17 @@
                     onClick: function() {
                       var c2 = CATEGORIES[p.category];
                       if (!c2) return;
+                      _unitConvertWordProblemRequestId += 1;
                       setLabToolData(function(prev) {
-                        return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, { category: p.category, fromUnit: p.from, toUnit: p.to }) });
+                        return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, {
+                          category: p.category,
+                          fromUnit: p.from,
+                          toUnit: p.to,
+                          loadingWP: false,
+                          wordProblem: null,
+                          wordProblemFeedback: '',
+                          wordProblemHintLevel: 0
+                        }) });
                       });
                     },
                     className: 'transition-colors flex items-center gap-1 px-2 py-1 bg-white border border-amber-600 rounded-full text-xs font-bold text-amber-700 hover:bg-amber-50 active:scale-[0.97]'
@@ -894,6 +1314,9 @@
                 h('div', { className: 'flex items-center gap-2' },
                   h('input', {
                     type: 'number', value: d.value,
+                    min: d.category === 'temperature' ? ({ '°C': -273.15, '°F': -459.67, K: 0 })[d.fromUnit] : undefined,
+                    'aria-invalid': temperatureCheck.valid ? undefined : 'true',
+                    'aria-describedby': temperatureCheck.valid ? undefined : 'unitconvert-temperature-error',
                     onChange: function(e) { upd('value', parseFloat(e.target.value) || 0); },
                     className: 'w-24 text-right text-sm font-bold border border-slate-400 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-cyan-500',
                     step: '0.01'
@@ -905,7 +1328,12 @@
                   }, t('stem.unitconvert.change_2', 'Change \u2192'))
                 )
               ),
-              h('table', { className: 'w-full text-sm' },
+              !temperatureCheck.valid && h('div', {
+                id: 'unitconvert-temperature-error',
+                role: 'alert',
+                className: 'm-3 rounded-lg border border-red-300 bg-red-50 p-3 text-center text-sm font-bold text-red-800'
+              }, '⚠️ ' + temperatureCheck.message),
+              temperatureCheck.valid && h('table', { className: 'w-full text-sm' },
                 h('caption', { className: 'sr-only' }, t('stem.unitconvert.change_3', 'Change \u2192')), h('thead', null,
                   h('tr', { className: 'bg-cyan-50' },
                     h('th', { scope: 'col', className: 'text-left px-4 py-2 text-xs font-bold text-cyan-700' }, t('stem.unitconvert.unit', 'Unit')),
@@ -1018,87 +1446,176 @@
           // â•â•â• TAB: WORD PROBLEM â•â•â•
           tab === 'wordproblem' && h('div', { key: 'wp' },
 
-            h('div', { className: 'flex items-center justify-between mb-3' },
-              h('p', { className: 'text-sm text-slate-600' }, 'AI generates a real-world word problem for ' + (cat.label.replace(/[^\w\s]/g, '').trim()) + '.'),
-              h('button', { disabled: !!d.loadingWP,
-                onClick: function() {
-                  if (d.loadingWP) return;
-                  upd('loadingWP', true);
-                  upd('wordProblem', null);
-                  var catLabel = cat.label.replace(/[^\w\s]/g, '').trim();
-                  var unitList = Object.keys(cat.units).join(', ');
-                  var prompt = 'Create a short, engaging, grade 5-8 math word problem about ' + catLabel + ' unit conversion. ' +
-                    'Use a fun real-world context (sports, cooking, travel, science, nature). ' +
-                    'The student must convert between two of these units: ' + unitList + '. ' +
-                    'Provide step-by-step solution. Format exactly:\nPROBLEM: [problem text]\nSOLUTION:\n[step 1]\n[step 2]\nANSWER: [final answer with unit]';
-                  callGemini(prompt, { temperature: 0.8, maxTokens: 300 }).then(function(resp) {
-                    upd('wordProblem', resp);
-                    upd('loadingWP', false);
-                    awardStemXP && awardStemXP('unitConvert', 2, 'word problem');
-                    checkBadges({ wordProblem: true });
-                  }).catch(function() {
-                    upd('loadingWP', false);
-                    addToast('Could not generate problem. Try again.', 'error');
-                  });
-                },
-                className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (d.loadingWP ? 'bg-slate-200 text-slate-600 cursor-not-allowed' : 'transition-colors bg-cyan-700 text-white hover:bg-cyan-700 active:scale-[0.97]')
-              }, d.loadingWP ? '\u23F3 Generating...' : '\u2728 Generate')
+            h('div', { className: 'flex items-center justify-between gap-3 mb-3' },
+              h('div', null,
+                h('p', { className: 'text-sm font-bold text-slate-700' },
+                  t('stem.unitconvert.practice_before_reveal', 'Practice first, then reveal')),
+                h('p', { className: 'text-xs text-slate-600 mt-0.5' },
+                  t('stem.unitconvert.word_problem_flow_description', 'Try the conversion, request up to two hints, and reveal the worked answer only when you choose.'))
+              ),
+              h('button', {
+                type: 'button',
+                disabled: !!d.loadingWP,
+                onClick: generateWordProblem,
+                'aria-label': wordProblem ? t('stem.unitconvert.new_problem', 'New Problem') : t('stem.unitconvert.generate_problem', 'Generate practice problem'),
+                className: 'shrink-0 px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (d.loadingWP ? 'bg-slate-200 text-slate-600 cursor-not-allowed' : 'bg-cyan-700 text-white hover:bg-cyan-600 active:scale-[0.97]')
+              }, d.loadingWP
+                ? t('stem.unitconvert.generating_problem', '⏳ Generating...')
+                : wordProblem
+                  ? t('stem.unitconvert.new_problem_2', '🔄 New Problem')
+                  : t('stem.unitconvert.generate_problem_2', '✨ Generate Problem'))
             ),
 
-            d.loadingWP && h('div', { className: 'text-center py-12' },
-              h('div', { className: 'inline-block w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full', style: { animation: 'spin 1s linear infinite' } }),
-              h('p', { className: 'text-sm text-slate-600 mt-3' }, t('stem.unitconvert.crafting_your_word_problem', 'Crafting your word problem...'))
-            ),
-
-            !d.wordProblem && !d.loadingWP && h('div', { className: 'text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200' },
-              h('p', { className: 'text-4xl mb-3' }, '\uD83D\uDCDD'),
-              h('p', { className: 'text-sm font-bold text-slate-600' }, t('stem.unitconvert.click_generate_for_an_ai_crafted_word_', 'Click Generate for an AI-crafted word problem')),
-              h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Category: ' + cat.label)
-            ),
-
-            d.wordProblem && h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-5 shadow-sm animate-in fade-in duration-300' },
-              d.wordProblem.split('\n').filter(function(line) { return line.trim(); }).map(function(line, i) {
-                var bold = line.startsWith('PROBLEM:') || line.startsWith('SOLUTION') || line.startsWith('ANSWER:');
-                return h('p', { key: i, className: 'mb-2 text-sm ' + (bold ? 'font-bold text-cyan-800' : 'text-slate-700') }, line);
+            d.loadingWP && h('div', {
+              className: 'text-center py-12',
+              role: 'status',
+              'aria-live': 'polite'
+            },
+              h('div', {
+                className: 'inline-block w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full',
+                style: { animation: 'spin 1s linear infinite' },
+                'aria-hidden': 'true'
               }),
-              h('div', { className: 'mt-4 flex gap-2' },
-                h('button', { 'aria-label': t('stem.unitconvert.new_problem', 'New Problem'),
-                  disabled: !!d.loadingWP,
-                  onClick: function() {
-                    if (d.loadingWP) return;
-                    upd('loadingWP', true);
-                    upd('wordProblem', null);
-                    var catLabel = cat.label.replace(/[^\w\s]/g, '').trim();
-                    var unitList = Object.keys(cat.units).join(', ');
-                    var prompt = 'Create a short, engaging, grade 5-8 math word problem about ' + catLabel + ' unit conversion. ' +
-                      'Use a fun real-world context (sports, cooking, travel, science, nature). ' +
-                      'The student must convert between two of these units: ' + unitList + '. ' +
-                      'Provide step-by-step solution. Format exactly:\nPROBLEM: [problem text]\nSOLUTION:\n[step 1]\n[step 2]\nANSWER: [final answer with unit]';
-                    callGemini(prompt, { temperature: 0.8, maxTokens: 300 }).then(function(resp) {
-                      upd('wordProblem', resp);
-                      upd('loadingWP', false);
-                      awardStemXP && awardStemXP('unitConvert', 2, 'word problem');
-                    }).catch(function() {
-                      upd('loadingWP', false);
-                      addToast('Could not generate. Try again.', 'error');
-                    });
-                  },
-                  className: 'px-4 py-2 bg-cyan-50 text-cyan-600 rounded-lg text-xs font-bold hover:bg-cyan-100 transition-all active:scale-[0.97]'
-                }, t('stem.unitconvert.new_problem_2', '\uD83D\uDD04 New Problem')),
-                h('button', { 'aria-label': t('stem.unitconvert.save_3', 'Save'),
+              h('p', { className: 'text-sm text-slate-600 mt-3' },
+                t('stem.unitconvert.crafting_your_word_problem', 'Crafting your word problem...'))
+            ),
+
+            !wordProblem && !d.loadingWP && h('div', {
+              className: 'text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-300'
+            },
+              h('p', { className: 'text-4xl mb-3', 'aria-hidden': 'true' }, '📝'),
+              h('p', { className: 'text-sm font-bold text-slate-700' },
+                t('stem.unitconvert.generate_or_use_offline_problem', 'Generate a practice problem. If AI is unavailable, an offline problem appears automatically.')),
+              h('p', { className: 'text-xs text-slate-600 mt-1' },
+                t('stem.unitconvert.current_category', 'Current category: ') + cat.label)
+            ),
+
+            wordProblem && !d.loadingWP && h('article', {
+              className: 'bg-white rounded-xl border-2 border-cyan-200 p-5 shadow-sm animate-in fade-in duration-300',
+              'aria-labelledby': 'unitconvert-word-problem-title'
+            },
+              h('div', { className: 'flex items-center justify-between gap-2 mb-3' },
+                h('h3', {
+                  id: 'unitconvert-word-problem-title',
+                  className: 'text-sm font-black text-cyan-800'
+                }, t('stem.unitconvert.practice_problem', '📝 Practice Problem')),
+                h('div', { className: 'flex flex-wrap justify-end gap-1.5' },
+                  h('span', {
+                    className: 'rounded-full px-2 py-1 text-[10px] font-bold ' + (wordProblem.source === 'offline' ? 'bg-amber-100 text-amber-800' : 'bg-violet-100 text-violet-700')
+                  }, wordProblem.source === 'offline'
+                    ? t('stem.unitconvert.offline_practice', 'Offline practice')
+                    : t('stem.unitconvert.ai_practice', 'AI practice')),
+                  wordProblem.verified && h('span', {
+                    className: 'rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-bold text-emerald-800',
+                    'aria-label': t('stem.unitconvert.math_verified_detail', 'Math verified locally. The app independently calculated the answer, hints, and explanation.')
+                  }, t('stem.unitconvert.math_verified', '✓ Math verified locally'))
+                )
+              ),
+
+              h('p', { className: 'rounded-lg bg-cyan-50 p-4 text-base font-bold leading-relaxed text-slate-800' }, wordProblem.problem),
+
+              !d.wordProblemSolved && h('div', { className: 'mt-4' },
+                h('label', {
+                  htmlFor: 'unitconvert-word-problem-attempt',
+                  className: 'block text-xs font-bold text-slate-700 mb-1'
+                }, t('stem.unitconvert.your_conversion_answer', 'Your conversion answer')),
+                h('div', { className: 'flex flex-wrap items-center gap-2' },
+                  h('input', {
+                    id: 'unitconvert-word-problem-attempt',
+                    type: 'number',
+                    step: 'any',
+                    value: d.wordProblemAttempt == null ? '' : d.wordProblemAttempt,
+                    onChange: function(event) {
+                      upd({ wordProblemAttempt: event.target.value, wordProblemFeedback: '' });
+                    },
+                    onKeyDown: function(event) {
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        gradeWordProblemAttempt();
+                      }
+                    },
+                    'aria-label': t('stem.unitconvert.word_problem_numeric_answer', 'Numeric answer for the word problem'),
+                    className: 'min-w-0 flex-1 rounded-lg border-2 border-cyan-300 px-3 py-2 font-mono text-sm outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-300'
+                  }),
+                  h('span', { className: 'text-sm font-bold text-slate-700' }, wordProblem.unit),
+                  h('button', {
+                    type: 'button',
+                    onClick: gradeWordProblemAttempt,
+                    className: 'rounded-lg bg-cyan-700 px-4 py-2 text-xs font-black text-white hover:bg-cyan-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1'
+                  }, t('stem.unitconvert.check_attempt', 'Check attempt'))
+                )
+              ),
+
+              d.wordProblemFeedback && h('p', {
+                role: 'status',
+                'aria-live': 'polite',
+                'aria-atomic': 'true',
+                className: 'mt-3 rounded-lg border p-3 text-sm font-bold ' + (d.wordProblemSolved ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-amber-300 bg-amber-50 text-amber-900')
+              }, d.wordProblemFeedback),
+
+              (d.wordProblemHintLevel || 0) > 0 && h('div', {
+                className: 'mt-3 space-y-2',
+                'aria-label': t('stem.unitconvert.revealed_hints', 'Revealed hints')
+              }, wordProblem.hints.slice(0, d.wordProblemHintLevel || 0).map(function(hint, index) {
+                return h('div', {
+                  key: 'word-problem-hint-' + index,
+                  className: 'rounded-lg border border-violet-200 bg-violet-50 p-3 text-sm text-violet-900'
+                },
+                  h('span', { className: 'font-black' }, t('stem.unitconvert.hint', 'Hint') + ' ' + (index + 1) + ': '),
+                  hint
+                );
+              })),
+
+              (d.wordProblemSolved || d.wordProblemRevealed) && h('section', {
+                className: 'mt-4 rounded-lg border border-emerald-300 bg-emerald-50 p-4',
+                'aria-labelledby': 'unitconvert-worked-answer-title'
+              },
+                h('h4', {
+                  id: 'unitconvert-worked-answer-title',
+                  className: 'text-xs font-black uppercase tracking-wider text-emerald-800'
+                }, t('stem.unitconvert.worked_answer', 'Worked answer')),
+                h('p', { className: 'mt-1 text-lg font-black text-emerald-900' },
+                  fmt(wordProblem.answer) + ' ' + wordProblem.unit),
+                h('p', { className: 'mt-2 text-sm leading-relaxed text-slate-700' }, wordProblem.explanation)
+              ),
+
+              h('div', { className: 'mt-4 flex flex-wrap gap-2' },
+                !d.wordProblemSolved && (d.wordProblemHintLevel || 0) < 2 && h('button', {
+                  type: 'button',
+                  onClick: showNextWordProblemHint,
+                  className: 'rounded-lg bg-violet-100 px-3 py-2 text-xs font-bold text-violet-700 hover:bg-violet-200'
+                }, t('stem.unitconvert.show_hint', '💡 Show Hint ') + ((d.wordProblemHintLevel || 0) + 1)),
+                !d.wordProblemSolved && !d.wordProblemRevealed && h('button', {
+                  type: 'button',
+                  onClick: revealWordProblemAnswer,
+                  className: 'rounded-lg bg-amber-100 px-3 py-2 text-xs font-bold text-amber-800 hover:bg-amber-200'
+                }, t('stem.unitconvert.reveal_answer', '👀 Reveal Answer')),
+                h('button', {
+                  type: 'button',
+                  'aria-label': t('stem.unitconvert.save_3', 'Save'),
                   onClick: function() {
                     setToolSnapshots(function(prev) {
-                      return prev.concat([{ id: 'ucwp-' + Date.now(), tool: 'unitConvert', label: 'Word Problem: ' + cat.label, data: { wordProblem: d.wordProblem }, timestamp: Date.now() }]);
+                      return prev.concat([{
+                        id: 'ucwp-' + Date.now(),
+                        tool: 'unitConvert',
+                        label: 'Word Problem: ' + cat.label,
+                        data: {
+                          wordProblem: wordProblem,
+                          solved: !!d.wordProblemSolved,
+                          revealed: !!d.wordProblemRevealed,
+                          hintLevel: d.wordProblemHintLevel || 0
+                        },
+                        timestamp: Date.now()
+                      }]);
                     });
-                    addToast('\uD83D\uDCF8 Problem saved!', 'success');
+                    addToast(t('stem.unitconvert.problem_saved', '📸 Problem saved!'), 'success');
                   },
-                  className: 'px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-all active:scale-[0.97]'
-                }, t('stem.unitconvert.save_4', '\uD83D\uDCBE Save'))
+                  className: 'rounded-lg bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100'
+                }, t('stem.unitconvert.save_4', '💾 Save'))
               )
             )
 
           ),
-
           tab === 'magHunt' && (function() {
             var iq = d.magHunt || { sourceExp: 0, targetExp: 3, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
             function setIQ(patch) { upd('magHunt', Object.assign({}, iq, patch)); }

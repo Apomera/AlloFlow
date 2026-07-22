@@ -103,7 +103,7 @@ function HeaderBar(props) {
     sessionUnsubscribeRef, setActiveSessionCode, setHistory,
     setIsGateOpen, setJoinAppIdInput, setJoinCodeInput,
     setPendingRole, setRunTour, setGuidedMode, setGuidedStep, setGuidedSelectedIds,
-    guidedStep, guidedMode, resetGuidedProgress,
+    guidedStep, guidedMode, guidedSelectedIds, guidedCompletedIds, resetGuidedProgress,
     setSelectedVoice, setSessionData, setShowAIBackendModal,
     setBridgeSendOpen, setShowClassAnalytics, setShowEducatorHub, setShowExportMenu, setShowLearningHub, setShowNotebook, setShowReadThisPage,
     setShowSessionModal, setShowTextSettings, setShowVoiceSettings, setShowWizard,
@@ -130,7 +130,7 @@ function HeaderBar(props) {
   // Header entry used to silently reset the tour to step 0 while the LaunchPad/coach
   // entries resumed the preserved step. Now: resume when there's progress, with an
   // explicit "Start over" secondary action; fresh start otherwise.
-  const _guidedHasProgress = typeof guidedStep === 'number' && guidedStep > 0;
+  const _guidedHasProgress = (typeof guidedStep === 'number' && guidedStep > 0) || Array.isArray(guidedSelectedIds) || (Array.isArray(guidedCompletedIds) && guidedCompletedIds.length > 0);
   const restartGuidedModeFromHeader = () => {
     if (typeof resetGuidedProgress === 'function') resetGuidedProgress();
     else {
@@ -634,6 +634,17 @@ function HeaderBar(props) {
                                 >
                                   <Layout size={20} />
                                 </button>
+                                {!isTeacherMode && (
+                                    <button type="button"
+                                        onClick={() => { try { window.dispatchEvent(new window.CustomEvent('alloflow:open-command-palette')); } catch (_) {} }}
+                                        data-help-key="header_student_actions"
+                                        className="p-2 rounded-xl transition-all flex items-center gap-2 bg-teal-700 hover:bg-teal-800 text-white shadow-lg shadow-teal-900/20"
+                                        title={t('student.actions') || 'Student actions'}
+                                        aria-label={t('student.actions') || 'Open student actions'}
+                                    >
+                                        <Sparkles size={20} aria-hidden="true" />
+                                    </button>
+                                )}
                                 {latestLessonPlan && (
                                     <button type="button"
                                         onClick={() => handleRestoreView(latestLessonPlan)}

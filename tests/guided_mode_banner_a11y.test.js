@@ -35,8 +35,63 @@ describe('Guided Mode banner accessibility', () => {
     expect(component).toContain('transition-duration:.01ms !important');
   });
 
-  it('keeps the decorative step ring below modal layers', () => {
-    expect(component).toContain("borderRadius: '18px', pointerEvents: 'none', zIndex: 1");
-    expect(component).not.toMatch(/allo-guided-ring[\s\S]{0,500}zIndex:\s*9000/);
+  it('styles the real target instead of rendering a detached fixed overlay', () => {
+    expect(component).toContain('.allo-guided-target{outline:3px solid');
+    expect(component).toContain('.allo-guided-target{animation:none !important}');
+    expect(component).not.toContain('className="allo-guided-ring"');
+    expect(component).not.toContain("position: 'fixed', top: guidedRect.top");
+  });
+
+  it('reports one-based progress and distinguishes skipped steps', () => {
+    expect(component).toContain('aria-valuenow={Math.min(guidedStep + 1, GUIDED_STEPS.length)}');
+    expect(component).toContain('aria-valuemin={1}');
+    expect(component).toContain('guidedSkippedIds.includes(s.id)');
+    expect(component).toContain("repeating-linear-gradient(135deg");
+  });
+
+  it('allows the action controls to wrap in narrow or translated layouts', () => {
+    expect(component).toContain("display: 'flex', gap: '8px', flexWrap: 'wrap'");
+  });
+});
+
+describe('Guided Mode banner follow-up safeguards', () => {
+  it('declares localization keys for every Guided step and localizes non-English success state', () => {
+    expect(component).toContain('const GUIDED_STEP_I18N_KEYS = {');
+    expect(component).toContain("'_final': ['tour.fullpack_title', 'tour.fullpack_text']");
+    expect(component).toContain("return localizeStep(sourceStep, 'label') + ' ✓'");
+  });
+
+  it('provides a named completion summary and a progress-preserving Resume later action', () => {
+    expect(component).toContain('role="list" aria-label={t(\'guided.summary_label\')');
+    expect(component).toContain('completedCount');
+    expect(component).toContain('skippedCount');
+    expect(component).toContain("t('guided.resume_later') || 'Resume later'");
+  });
+});
+describe('Guided Mode resilience and responsive safeguards', () => {
+  it('suspends its target highlight behind modal surfaces and supports forced colors', () => {
+    expect(component).toContain('body:has([aria-modal="true"]) .allo-guided-target');
+    expect(component).toContain('animation-play-state:paused!important');
+    expect(component).toContain('@media (forced-colors:active)');
+    expect(component).toContain('outline:3px solid Highlight!important');
+  });
+
+  it('exposes a persistent compact disclosure and step estimates', () => {
+    expect(component).toContain('aria-expanded={!isCollapsed} aria-controls="guided-banner-details"');
+    expect(component).toContain('id="guided-banner-details"');
+    expect(component).toContain('allo_guided_ui_state');
+    expect(component).toContain("aria-label={t('guided.estimate_label') || 'Step estimate'}");
+  });
+
+  it('provides direct step navigation and comfortable touch targets', () => {
+    expect(component).toContain('id="guided-step-jump"');
+    expect(component).toContain('.allo-guided-banner button,.allo-guided-banner select{min-height:40px}');
+    expect(component).toContain('disabled={guidedBusy}');
+  });
+  it('announces recoverable errors and source changes', () => {
+    expect(component).toContain('{guidedStepError && (');
+    expect(component).toContain('<div role="alert"');
+    expect(component).toContain('onClick={retryGuidedStep}');
+    expect(component).toContain('{sourceStale && (');
   });
 });

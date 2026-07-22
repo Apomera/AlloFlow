@@ -166,6 +166,8 @@ function HeaderBar(props) {
     setGuidedSelectedIds,
     guidedStep,
     guidedMode,
+    guidedSelectedIds,
+    guidedCompletedIds,
     resetGuidedProgress,
     setSelectedVoice,
     setSessionData,
@@ -215,7 +217,7 @@ function HeaderBar(props) {
     setShowSetupPathMenu(false);
     setShowWizard(true);
   };
-  const _guidedHasProgress = typeof guidedStep === "number" && guidedStep > 0;
+  const _guidedHasProgress = typeof guidedStep === "number" && guidedStep > 0 || Array.isArray(guidedSelectedIds) || Array.isArray(guidedCompletedIds) && guidedCompletedIds.length > 0;
   const restartGuidedModeFromHeader = () => {
     if (typeof resetGuidedProgress === "function") resetGuidedProgress();
     else {
@@ -574,6 +576,22 @@ function HeaderBar(props) {
       "aria-label": t("dashboard.title")
     },
     /* @__PURE__ */ React.createElement(Layout, { size: 20 })
+  ), !isTeacherMode && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => {
+        try {
+          window.dispatchEvent(new window.CustomEvent("alloflow:open-command-palette"));
+        } catch (_) {
+        }
+      },
+      "data-help-key": "header_student_actions",
+      className: "p-2 rounded-xl transition-all flex items-center gap-2 bg-teal-700 hover:bg-teal-800 text-white shadow-lg shadow-teal-900/20",
+      title: t("student.actions") || "Student actions",
+      "aria-label": t("student.actions") || "Open student actions"
+    },
+    /* @__PURE__ */ React.createElement(Sparkles, { size: 20, "aria-hidden": "true" })
   ), latestLessonPlan && /* @__PURE__ */ React.createElement(
     "button",
     {

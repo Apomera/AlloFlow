@@ -384,6 +384,13 @@
     "credibility": "dictionary.apa.org is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
     "metadataSource": "page-metadata"
   },
+  "https://dictionary.apa.org/musturbation": {
+    "title": "APA Dictionary of Psychology Entry: Musturbation",
+    "organization": "American Psychological Association",
+    "summary": "The entry defines Albert Ellis’s term for rigid and unrealistic must or should demands and links the construct directly to rational emotive behavior therapy.",
+    "credibility": "The American Psychological Association publishes and editorially maintains this professional psychology dictionary; the entry directly defines the named term and attributes it to the theorist in the keyed therapy.",
+    "metadataSource": "pack-authored"
+  },
   "https://dictionary.apa.org/narrative-therapy": {
     "title": "APA Dictionary of Psychology",
     "organization": "dictionary.apa.org",
@@ -640,10 +647,10 @@
     "doi": "10.1007/BF01044839"
   },
   "https://doi.org/10.1007/BF02310555": {
-    "title": "Cronbach, L. J. (1951). Coefficient alpha and the internal structure of tests. Psychometrika, 16(3), 297–334",
-    "organization": "",
-    "summary": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.",
-    "credibility": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.",
+    "title": "Coefficient Alpha and the Internal Structure of Tests",
+    "organization": "Psychometrika, The Psychometric Society",
+    "summary": "Cronbach derives coefficient alpha from item covariances, relates it to split-half equivalence, and discusses its interpretation for multi-item scores.",
+    "credibility": "This DOI identifies Cronbach's foundational peer-reviewed article in Psychometrika, the Psychometric Society's methods journal. It is the primary source for the coefficient and its original interpretation.",
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1007/s11336-008-9101-0": {
@@ -654,10 +661,10 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1016/0001-6918(67)90011-X": {
-    "title": "Horn, J. L., & Cattell, R. B. (1967). Age differences in fluid and crystallized intelligence. Acta Psychologica, 26, 107-129.",
-    "organization": "",
-    "summary": "This peer-reviewed primary study directly examined adult age differences in fluid and crystallized intelligence.",
-    "credibility": "This peer-reviewed primary study directly examined adult age differences in fluid and crystallized intelligence.",
+    "title": "Age Differences in Fluid and Crystallized Intelligence",
+    "organization": "Acta Psychologica, Elsevier",
+    "summary": "Horn and Cattell used factor scores across adult age groups to examine distinct age patterns for fluid and crystallized abilities.",
+    "credibility": "This peer-reviewed primary study by central fluid-and-crystallized-intelligence theorists supports the empirical distinction between the ability families, although its age-comparison focus is less direct for a single task example.",
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1016/0005-7967(91": {
@@ -1398,10 +1405,10 @@
     "doi": "10.1037/1040-3590.12.1.19"
   },
   "https://doi.org/10.1037/1040-3590.15.4.446": {
-    "title": "Hunsley, J., & Meyer, G. J. (2003). The incremental validity of psychological testing and assessment: Conceptual, methodological, and statistical issues. Psychological Assessment, 15(4), 446–455",
-    "organization": "",
-    "summary": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.",
-    "credibility": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.",
+    "title": "The Incremental Validity of Psychological Testing and Assessment: Conceptual, Methodological, and Statistical Issues",
+    "organization": "Psychological Assessment, American Psychological Association",
+    "summary": "Hunsley and Meyer examine research designs and statistical issues for determining whether tests, test-informed inferences, or new measures add prediction beyond information already available.",
+    "credibility": "This DOI identifies a peer-reviewed methodological article in the American Psychological Association's assessment journal. The article directly addresses the comparison-set and criterion distinctions tested by this item.",
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1037/1040-3590.7.3.238": {
@@ -1738,10 +1745,10 @@
     "doi": "10.1037/h0074524"
   },
   "https://doi.org/10.1037/h0076284": {
-    "title": "Cialdini, R. B., Vincent, J. E., Lewis, S. K., Catalan, J., Wheeler, D., & Darby, B. L. (1975). Reciprocal concessions procedure for inducing compliance: The door-in-the-face technique. Journal of Personality and Social Psychology, 31(2), 206–215",
-    "organization": "",
-    "summary": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.",
-    "credibility": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.",
+    "title": "Reciprocal Concessions Procedure for Inducing Compliance: The Door-in-the-Face Technique",
+    "organization": "Journal of Personality and Social Psychology, American Psychological Association",
+    "summary": "Cialdini and colleagues report three experiments comparing an extreme-request-then-smaller-request sequence with a smaller-request-only procedure and additional control conditions designed to evaluate reciprocal concessions.",
+    "credibility": "This valid DOI identifies the original peer-reviewed experiments that introduced the named technique and tested the authors' mechanism account. It supports the historical finding and design distinction, not a guarantee of compliance in every setting or ethical approval of manipulation.",
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1037/h0076486": {
@@ -1834,10 +1841,10 @@
     "doi": "10.1038/nrn1406"
   },
   "https://doi.org/10.1038/nrn1723": {
-    "title": "Forty-five years of split-brain research and still going strong - scholarly source",
-    "organization": "",
-    "summary": "The DOI is a persistent identifier for the cited scholarly publication and preserves item-level provenance. The question was checked against the cited definition or finding; the study design and publication context still determine evidentiary strength.",
-    "credibility": "The DOI is a persistent identifier for the cited scholarly publication and preserves item-level provenance. The question was checked against the cited definition or finding; the study design and publication context still determine evidentiary strength.",
+    "title": "Forty-Five Years of Split-Brain Research and Still Going Strong",
+    "organization": "Nature Reviews Neuroscience, Springer Nature",
+    "summary": "Gazzaniga reviews the experimental evidence on hemispheric specialization, restricted interhemispheric transfer, and the integrative functions of the corpus callosum.",
+    "credibility": "This peer-reviewed review was written by a principal investigator in the original program and synthesizes decades of converging work. It is authoritative for the historical paradigm while also emphasizing regional specificity and qualifications that a single early experiment cannot establish.",
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1038/nrn2107": {
@@ -1907,10 +1914,10 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1073/pnas.98.2.676": {
-    "title": "Raichle, M. E., MacLeod, A. M., Snyder, A. Z., Powers, W. J., Gusnard, D. A., & Shulman, G. L. (2001). A default mode of brain function. Proceedings of the National Academy of Sciences, 98(2), 676–682",
-    "organization": "",
-    "summary": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.",
-    "credibility": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.",
+    "title": "A Default Mode of Brain Function",
+    "organization": "Proceedings of the National Academy of Sciences of the United States of America",
+    "summary": "Raichle and colleagues integrated functional-imaging evidence for a network with high baseline activity that commonly decreases during externally demanding tasks, establishing the default-mode framework.",
+    "credibility": "This peer-reviewed foundational article introduced the default-mode account using convergent imaging observations. It supports the network concept and task-deactivation contrast but does not imply that every active task suppresses the network.",
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1080/00031305.2016.1154108": {
@@ -2229,10 +2236,10 @@
     "doi": "10.1126/science.1127488"
   },
   "https://doi.org/10.1126/science.149.3681.269": {
-    "title": "Zajonc, R. B. (1965). Social facilitation. Science, 149(3681), 269–274",
-    "organization": "",
-    "summary": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.",
-    "credibility": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.",
+    "title": "Social Facilitation - Science (1965)",
+    "organization": "Science",
+    "summary": "Zajonc's foundational theoretical article explains how the presence of others increases dominant responding, producing facilitation or impairment depending on task mastery.",
+    "credibility": "This DOI identifies the foundational peer-reviewed formulation in Science and directly supports the dominant-response account tested by the question.",
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1126/science.150.3699.971": {
@@ -2571,9 +2578,9 @@
   },
   "https://doi.org/10.17763/haer.47.4.g6167429416hg5l0": {
     "title": "In a Different Voice: Women's Conceptions of Self and of Morality",
-    "organization": "Harvard Educational Review",
-    "summary": "Gilligan's foundational article describes a contextual moral voice organized around relationships, responsibility, and responsiveness rather than a rights-only hierarchy.",
-    "credibility": "This is Gilligan's primary peer-reviewed scholarly account, published in the Harvard Educational Review with a stable DOI and direct relevance to the construct tested.",
+    "organization": "Harvard Educational Review, Harvard Education Publishing Group",
+    "summary": "Gilligan examines limits in prevailing developmental theories and describes moral reasoning organized around relationship, responsibility, and care that can be obscured by a justice-centered framework.",
+    "credibility": "This peer-reviewed 1977 article is Gilligan's original scholarly presentation of the critique, making it the appropriate primary source for its historical content. It should not be read as final evidence about the population size or universality of sex differences.",
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1901/jaba.1973.6-1": {
@@ -2586,11 +2593,10 @@
   },
   "https://doi.org/10.2307/1127100": {
     "title": "Egocentrism in Adolescence",
-    "organization": "Child Development",
-    "summary": "This scholarly work focuses on “Egocentrism in Adolescence.” Open the source to review its methods, scope, findings, and limitations in context.",
-    "credibility": "The DOI provides a persistent link to the publisher metadata for this scholarly work. Evidentiary strength still depends on the publication type, methods, sample, analysis, and fit to the claim.",
-    "metadataSource": "Crossref",
-    "doi": "10.2307/1127100"
+    "organization": "Child Development, Society for Research in Child Development",
+    "summary": "David Elkind’s foundational article extends Piagetian egocentrism to adolescence and introduces the imaginary audience and personal fable as characteristic theoretical constructions.",
+    "credibility": "This is the original peer-reviewed Child Development article by the theorist named in the question, identified by a persistent DOI and therefore the primary historical source for the tested terminology.",
+    "metadataSource": "pack-authored"
   },
   "https://doi.org/10.2307/2786541": {
     "title": "Influence of a Consistent Minority on the Responses of a Majority in a Color Perception Task",
@@ -3419,6 +3425,13 @@
     "credibility": "pmc.ncbi.nlm.nih.gov is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
     "metadataSource": "page-metadata"
   },
+  "https://pmc.ncbi.nlm.nih.gov/articles/PMC2686982/": {
+    "title": "The Challenge of Understanding Process in Clinical Behavior Analysis: The Case of Functional Analytic Psychotherapy",
+    "organization": "PubMed Central, U.S. National Library of Medicine",
+    "summary": "This peer-reviewed article explains FAP’s behavior-analytic use of the therapeutic relationship and describes clinically relevant in-session problem behaviors and improvements as treatment targets.",
+    "credibility": "PubMed Central provides the complete peer-reviewed journal article through the U.S. National Library of Medicine; the article directly explains FAP mechanisms and clinically relevant behaviors.",
+    "metadataSource": "pack-authored"
+  },
   "https://pmc.ncbi.nlm.nih.gov/articles/PMC2708328/": {
     "title": "Checking your browser - reCAPTCHA",
     "organization": "pmc.ncbi.nlm.nih.gov",
@@ -3740,6 +3753,13 @@
     "summary": "Mental health problems during adolescence constitute a major public health concern today for both families and stakeholders. Accordingly, different family-based interventions have emerged as an effective treatment for adolescents with certain ...",
     "credibility": "pmc.ncbi.nlm.nih.gov is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
     "metadataSource": "page-metadata"
+  },
+  "https://pmc.ncbi.nlm.nih.gov/articles/PMC6601918/": {
+    "title": "Extracting Object Identity: Ventral or Dorsal Visual Stream?",
+    "organization": "PubMed Central, U.S. National Library of Medicine",
+    "summary": "This peer-reviewed neuroscience article reviews the two-stream account in which ventral temporal processing emphasizes object identity and dorsal parietal processing emphasizes spatial relations and action.",
+    "credibility": "PubMed Central provides the complete peer-reviewed journal article through the U.S. National Library of Medicine; the paper directly analyzes the ventral-versus-dorsal object-identity distinction tested here.",
+    "metadataSource": "pack-authored"
   },
   "https://pmc.ncbi.nlm.nih.gov/articles/PMC6628641/": {
     "title": "Checking your browser - reCAPTCHA",
@@ -4273,6 +4293,13 @@
     "credibility": "PubMed is maintained by the National Center for Biotechnology Information at the U.S. National Library of Medicine. Its indexed citation and abstract support traceability to the scholarly publication; inclusion in PubMed is not by itself a guarantee of study quality.",
     "metadataSource": "pack-authored"
   },
+  "https://pubmed.ncbi.nlm.nih.gov/16717171/": {
+    "title": "A Brief Measure for Assessing Generalized Anxiety Disorder: The GAD-7",
+    "organization": "PubMed, U.S. National Library of Medicine",
+    "summary": "The original validation study describes development of the seven-item GAD-7 and evaluates its reliability, validity, and usefulness for identifying generalized anxiety disorder and grading anxiety severity.",
+    "credibility": "PubMed is maintained by the U.S. National Library of Medicine, and this record identifies the original peer-reviewed validation study by the instrument developers in Archives of Internal Medicine.",
+    "metadataSource": "pack-authored"
+  },
   "https://pubmed.ncbi.nlm.nih.gov/16719673/": {
     "title": "Evidence-based practice in psychology - PubMed",
     "organization": "PubMed, U.S. National Library of Medicine",
@@ -4310,9 +4337,9 @@
   },
   "https://pubmed.ncbi.nlm.nih.gov/19247829/": {
     "title": "Linking Informant Discrepancies to Observed Variations in Young Children's Disruptive Behavior",
-    "organization": "PubMed, U.S. National Library of Medicine",
+    "organization": "Journal of Abnormal Child Psychology; National Library of Medicine PubMed record",
     "summary": "In a study of 327 preschoolers, behavior observed in different interaction contexts related uniquely to parent- and teacher-identified behavior, supporting the interpretation that informant discrepancies can reflect cross-context behavioral variation and distinct informant perspectives.",
-    "credibility": "PubMed is maintained by the National Center for Biotechnology Information at the U.S. National Library of Medicine. Its indexed citation and abstract support traceability to the scholarly publication; inclusion in PubMed is not by itself a guarantee of study quality.",
+    "credibility": "This peer-reviewed empirical study is indexed by the U.S. National Library of Medicine and was supported by NIH- and CDC-linked grants. Its observational design directly tests whether informant discrepancies correspond to behavior that varies across contexts.",
     "metadataSource": "pack-authored"
   },
   "https://pubmed.ncbi.nlm.nih.gov/1941512/": {
@@ -5058,11 +5085,11 @@
     "metadataSource": "pack-authored"
   },
   "https://www.apa.org/ethics/code": {
-    "title": "Apa.Org Resource",
-    "organization": "apa.org",
-    "summary": "This apa.org resource addresses Apa.Org Resource. Open the source to review its complete scope, definitions, recommendations, examples, publication date, and stated limitations.",
-    "credibility": "apa.org is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
-    "metadataSource": "url-derived-reviewed-fallback"
+    "title": "Ethical Principles of Psychologists and Code of Conduct",
+    "organization": "American Psychological Association",
+    "summary": "The published APA Ethics Code contains Standard 2.06, which addresses personal problems that may interfere with adequate work and the measures psychologists consider in response.",
+    "credibility": "The American Psychological Association is the issuing body for this professional code, making its official code page the primary source for APA-governed ethical standards; the code is not a substitute for jurisdiction-specific statutes or licensing rules.",
+    "metadataSource": "pack-authored"
   },
   "https://www.apa.org/ethics/code/committee": {
     "title": "Apa.Org Resource",
@@ -6225,6 +6252,13 @@
     "summary": "Group therapy is a form of psychotherapy in which 1 or 2 therapists work with multiple clients simultaneously. The American Psychological Association recently identified group psychotherapy as a unique specialty.[1] In this setting, the group collaborates to improve each member",
     "credibility": "ncbi.nlm.nih.gov is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
     "metadataSource": "page-metadata"
+  },
+  "https://www.ncbi.nlm.nih.gov/books/NBK549835/": {
+    "title": "Neuroanatomy, Reticular Activating System",
+    "organization": "NCBI Bookshelf, U.S. National Library of Medicine",
+    "summary": "This clinical neuroanatomy review describes the brainstem reticular activating system and its roles in arousal, attention, focus, muscle tone, wakefulness, and sleep-wake regulation.",
+    "credibility": "NCBI Bookshelf is maintained by the U.S. National Library of Medicine; the cited StatPearls chapter is medically edited, author-attributed, referenced, and directly addresses the tested neural system.",
+    "metadataSource": "pack-authored"
   },
   "https://www.ncbi.nlm.nih.gov/books/NBK553189/": {
     "title": "Neuroanatomy, Visual Pathway",

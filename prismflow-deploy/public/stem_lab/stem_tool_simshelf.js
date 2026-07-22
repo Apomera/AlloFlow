@@ -131,7 +131,7 @@
         if (existing && !existing.closed) { try { existing.focus(); } catch (_) {} return; }
         var lang = (ctx.lang || 'en');
         var w = null;
-        try { w = window.open(SIM_SHELF_URL + '&lang=' + encodeURIComponent(lang), 'alloflow-sim-shelf', 'width=1280,height=840'); } catch (_) { w = null; }
+        try { w = window.open(SIM_SHELF_URL + '&lang=' + encodeURIComponent(lang) + '&theme=' + encodeURIComponent(ctx.theme || 'dark'), 'alloflow-sim-shelf', 'width=1280,height=840'); } catch (_) { w = null; }
         if (!w) {
           setPopupState('blocked');
           if (announceToSR) announceToSR(t('stem.simShelf.popup_blocked', 'The Sim Shelf window was blocked. Allow pop-ups for this page, then try again.'));

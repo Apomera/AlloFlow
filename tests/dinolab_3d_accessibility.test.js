@@ -34,7 +34,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('try { canvas.focus(); }');
     expect(source).toContain("outline: canvasFocused ? '3px solid #5eead4' : 'none'");
     expect(source).toContain('Reconstruction returned to its starting view.');
-    expect(source).toContain("ref: statusRef, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'");
+    expect(source).toContain("ref: statusRef, className: 'dinolab-3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'");
     expect(source).toContain("'aria-describedby': viewerDescId + ' ' + statusId");
     expect(source).toContain("var viewerSummary = props.species.common + ' 3D model summary.");
     expect(source).toContain("Visible layers: ' + layerSummary");
@@ -63,6 +63,26 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('yawRef.current.zoom = zoom;');
     expect(source).toContain('function updateCameraView()');
     expect(source).toContain('var cameraReadoutRef = React.useRef(null);');
+    expect(source).toContain('var sceneRef = React.useRef(null);');
+    expect(source).toContain('var cameraRef = React.useRef(null);');
+    expect(source).toContain('var rendererRef = React.useRef(null);');
+    expect(source).toContain('var cameraControlRef = React.useRef(null);');
+    expect(source).toContain('var visualMaterialsRef = React.useRef(null);');
+    expect(source).toContain('var bodyOpacityRef = React.useRef(28);');
+    expect(source).toContain('activeCameraControl = function (nextYaw, nextPitch, nextZoom, message)');
+    expect(source).toContain('cameraControlRef.current(view.yaw, view.pitch, view.zoom, view.message);');
+    expect(source).toContain('materials.body.opacity = alpha;');
+    expect(source).toContain("'aria-label': 'Body inference opacity'");
+    expect(source).toContain("className: 'dinolab-3d-view-controls'");
+    expect(source).toContain('var previousSceneChildren = scene.children.slice();');
+    expect(source).toContain('renderer = rendererRef.current;');
+    expect(source).toContain('rendererRef.current = renderer;');
+    expect(source).toContain('var mountedScene = sceneRef.current;');
+    expect(source).toContain('var measurementIntervalLabels = [];');
+    expect(source).toContain('label.visible = w >= 560');
+    expect(source).toContain("className: 'dinolab-3d-canvas'");
+    expect(source).toContain('function reconstructionProfileFor(dn)');
+    expect(source).toContain("profile.coverage = 'limited'");
     expect(source).toContain('function updateCameraReadout()');
     expect(source).toContain("'aria-label': 'Current 3D camera view'");
     expect(source).toContain('new THREE.CanvasTexture(skyCanvas)');
@@ -75,6 +95,16 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('function addAnatomyCallout(label, anchor, offset)');
     expect(source).toContain("addAnatomyCallout('Skull', head");
     expect(source).toContain("addAnatomyCallout('Tail', tailCalloutPoint");
+    expect(source).toContain('function addSoftTissueCylinder(a, b, startRadius, endRadius)');
+    expect(source).toContain('function addBodyContour(mesh)');
+    expect(source).toContain('wireframe: true, depthWrite: false');
+    expect(source).toContain('var neckShell = addSoftTissueCylinder(shoulder, head');
+    expect(source).toContain('addSoftTissueCylinder(armStartL, armEndL');
+    expect(source).toContain('function addTextLabel(text, pos, color, scaleFactor, parent)');
+    expect(source).toContain('(parent || model).add(sprite);');
+    expect(source).toContain("addTextLabel(rt + ' m'");
+    expect(source).toContain('addTextLabel(fmtLength(dn.lengthM)');
+    expect(source).toContain('addTextLabel(fmtLength(dn.heightM)');
     expect(source).toContain('3D evidence view updated. Camera view preserved.');
     expect(source).toContain("touchAction: 'none'");
     expect(source).toContain("'Species anatomy cues'");
@@ -100,6 +130,13 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("else if (/Pachycephalosaur/i.test(cladeName))");
     expect(source).toContain("else if (/Therizinosaur/i.test(cladeName))");
     expect(source).toContain("else if (/Dromaeosaur|Troodont/i.test(cladeName))");
+    expect(source).toContain("else if (/Tyrannosaur/i.test(cladeName))");
+    expect(source).toContain("else if (/Abelisaur/i.test(cladeName))");
+    expect(source).toContain("else if (/Oviraptor/i.test(cladeName))");
+    expect(source).toContain("else if (/Iguanodont/i.test(cladeName))");
+    expect(source).toContain('var tyrantSnout = new THREE.Vector3().copy(head).lerp(snout, 0.60);');
+    expect(source).toContain('var oviraptorCrest = addAccentCone');
+    expect(source).toContain('var thumbBase = vec(');
     expect(source).toContain('var ribCount = 6;');
     expect(source).toContain('var pelvisHalf = Math.max(');
     expect(source).toContain('var tailJointIndex = 1; tailJointIndex < 7;');
@@ -128,6 +165,10 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("role: 'img', 'aria-label': deepTimeSummary");
     expect(source).toContain("'aria-label': label + ' comparison value'");
     expect(source).toContain("'aria-valuetext': valueText");
+    expect(source).toContain("if (scale === 'log') ratio = max > 0 ? Math.log10");
+    expect(source).toContain('Time ranges overlap around');
+    expect(source).toContain("className: 'dinolab-world-map', role: 'group'");
+    expect(source).toContain('Counts describe this curated catalog, not global abundance or biodiversity.');
   });
   it('provides roving keyboard tabs, visible focus, and labeled filter groups', () => {
     const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_dinolab.js'), 'utf8');
@@ -147,6 +188,11 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("'aria-label': 'Filter by location'");
     expect(source).toContain("'aria-label': 'Sort dinosaurs'");
     expect(source).toContain("className: 'dinolab-explore-layout'");
+    expect(source).toContain('function tabGroupFor(id)');
+    expect(source).toContain("'data-tab-group': tabGroupFor(tb.id)");
+    expect(source).toContain("'aria-label': 'Dino Lab section navigation'");
+    expect(source).toContain("className: 'dinolab-section-cue'");
+    expect(source).toContain('overflow-x:auto!important');
   });
   it('keeps Quiz and Classify completed choices keyboard-reviewable', () => {
     const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_dinolab.js'), 'utf8');
@@ -222,6 +268,26 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     await api.React.act(async () => { render(); });
     expect(host.querySelector('canvas[aria-roledescription="Interactive 3D dinosaur reconstruction"]')).toBe(firstCanvas);
 
+    const opacity = host.querySelector('input[aria-label="Body inference opacity"]');
+    expect(opacity).not.toBeNull();
+    const nativeValueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+    await api.React.act(async () => {
+      nativeValueSetter?.call(opacity, '52');
+      opacity.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    expect(host.querySelector('input[aria-label="Body inference opacity"]')?.value).toBe('52');
+    expect(host.querySelector('canvas[aria-roledescription="Interactive 3D dinosaur reconstruction"]')).toBe(firstCanvas);
+
+    const sideViewButton = [...host.querySelectorAll('.dinolab-3d-view-controls button')].find(button => button.textContent === 'Side');
+    expect(sideViewButton).not.toBeNull();
+    await api.React.act(async () => { sideViewButton.click(); });
+    expect(host.querySelector('canvas[aria-roledescription="Interactive 3D dinosaur reconstruction"]')).toBe(firstCanvas);
+
+    data = { ...data, field3dShowBody: false, field3dScanTargetIdx: 2, field3dScanLogged: { skull: true }, field3dAssemblyPlaced: { skull: true } };
+    await api.React.act(async () => { render(); });
+    expect(host.querySelector('canvas[aria-roledescription="Interactive 3D dinosaur reconstruction"]')).toBe(firstCanvas);
+    expect(host.querySelector('input[aria-label="Body inference opacity"]')?.disabled).toBe(true);
+
     await api.React.act(async () => { root.unmount(); });
     host.remove();
   });
@@ -247,9 +313,9 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     });
     expect(results.violations).toEqual([]);
   }, AXE_AUDIT_TIMEOUT_MS);
-  it('renders Quiz and Classify without automated structural WCAG A/AA axe violations', async () => {
+  it('renders Quiz, Classify, Map, and Compare without automated structural WCAG A/AA axe violations', async () => {
     setupDinoLab();
-    for (const tab of ['quiz', 'classify']) {
+    for (const tab of ['quiz', 'classify', 'map', 'compare']) {
       document.body.innerHTML = renderTab(tab);
       const panel = document.getElementById('dinopanel') || document.body;
       const results = await axe.run(panel, {

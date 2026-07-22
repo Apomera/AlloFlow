@@ -58,4 +58,11 @@ describe('header control accessibility', () => {
     expect(source).toContain('{window.__alloStudentAiConfigured ? personalAIReadyLabel : personalAIConnectLabel}');
     expect(source).toContain("<span className='hidden xl:inline'>{personalAIDisconnectLabel}</span>");
   });
+
+  it('provides a touch-friendly Student Actions launcher backed by the shared palette', () => {
+    expect(source).toContain('data-help-key="header_student_actions"');
+    expect(source).toContain("window.CustomEvent('alloflow:open-command-palette')");
+    expect(source).toContain("aria-label={t('student.actions') || 'Open student actions'}");
+    expect(source).toContain('{!isTeacherMode && (');
+  });
 });

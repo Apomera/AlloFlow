@@ -131,6 +131,18 @@ describe('physical road layouts', () => {
     expect(RR.roadsideOffsetFor(RR.CONTINUOUS_SCENARIO_PROFILES.residential, 1.2)).toBeCloseTo(5.3);
   });
 
+  it('derives lane arrows from authored two-way and one-way lane geometry', () => {
+    const twoWay = RR.roadLaneArrowSpecs({ roadHalfWidth: 6.5, lanesPerDirection: 2 });
+    expect(twoWay).toHaveLength(4);
+    expect(twoWay.filter((arrow) => arrow.offset < 0).every((arrow) => arrow.direction === 1)).toBe(true);
+    expect(twoWay.filter((arrow) => arrow.offset > 0).every((arrow) => arrow.direction === -1)).toBe(true);
+    const oneWay = RR.roadLaneArrowSpecs({ roadHalfWidth: 4.5, oneWay: true, oneWayDirection: -1, oneWayLanes: 2 });
+    expect(oneWay).toHaveLength(2);
+    expect(oneWay[0].offset).toBeCloseTo(-2.1, 8);
+    expect(oneWay[1].offset).toBeCloseTo(2.1, 8);
+    expect(oneWay.every((arrow) => arrow.direction === -1)).toBe(true);
+  });
+
   it('keeps curved cross-street coordinates reversible and aligned with travel headings', () => {
     const pose = RR.crossStreetPose(48, 64, 0.35, 6.5, RR.MAP_SIZE);
     const worldPoint = RR.crossStreetWorldPoint(pose, 18, 1.5);
@@ -174,6 +186,22 @@ describe('physical road layouts', () => {
     expect(RR.railroadCrossingState(14, 7)).toEqual(RR.railroadCrossingState(21, 0));
   });
 
+  it('models passive railroad controls, school-bus stops, and train occupancy separately', () => {
+    const passive = { centerX: 0, centerY: 0, heading: 0, cycleOffset: 0, activeControl: false };
+    expect(RR.railroadCrossingControlState(21.5, passive)).toMatchObject({
+      occupied: false, stopRequired: false, gateProgress: 0
+    });
+    const occupied = RR.railroadCrossingControlState(25, passive);
+    expect(occupied).toMatchObject({ occupied: true, stopRequired: true, gateProgress: 0 });
+    expect(RR.railroadRequiresFullStop('school_bus', passive)).toBe(true);
+    expect(RR.railroadRequiresFullStop('schoolbus', passive)).toBe(true);
+    expect(RR.railroadRequiresFullStop('car', passive)).toBe(false);
+    expect(RR.railroadRequiresFullStop('school_bus', { activeControl: true })).toBe(false);
+    expect(RR.railroadTrainCollisionAt({ x: -14, y: 0, type: 'car' }, passive, occupied)).toBe(true);
+    expect(RR.railroadTrainCollisionAt({ x: 20, y: 0, type: 'car' }, passive, occupied)).toBe(false);
+    expect(RR.railroadTrainCollisionAt({ x: 0, y: 5, type: 'car' }, passive, occupied)).toBe(false);
+  });
+
   it('detects finite transverse road features on straight and curved headings', () => {
     const straight = { centerX: 10, centerY: 20, heading: 0, halfWidth: 3 };
     const hit = RR.crossedFiniteRoadFeature(12, 18, 12, 22, straight);
@@ -203,6 +231,10 @@ describe('physical road layouts', () => {
     expect(RR.roadCrownHeight(3.5, { roadHalfWidth: 3.5 })).toBe(0);
     expect(RR.roadCrownHeight(5, { roadHalfWidth: 3.5 })).toBe(0);
     expect(RR.roadCrownHeight(0, { roadHalfWidth: 8, isHighway: true })).toBeCloseTo(0.12, 8);
+    expect(RR.roadCrownHeight(-4, { roadHalfWidth: 4.5, oneWay: true })).toBeCloseTo(0.06, 8);
+    expect(RR.roadCrownHeight(4, { roadHalfWidth: 4.5, oneWay: true })).toBeCloseTo(-0.06, 8);
+    expect(RR.roadShoulderDrainageDrop(2.4, { highway: true })).toBeCloseTo(0.06, 8);
+    expect(RR.roadShoulderDrainageDrop(0.6, {})).toBeCloseTo(0.021, 8);
     const flatWorld = {
       profile: { roadHalfWidth: 3.5 },
       spline: { centerAt: () => 48, heightAt: () => 2, headingAt: () => 0 }
@@ -292,7 +324,10 @@ describe('physical road layouts', () => {
     expect(Math.abs(RR.roadBankAngleAt(gentleCurve, 10, {}))).toBeGreaterThan(0);
     expect(Math.abs(RR.roadBankAngleAt(sharpCurve, 10, {}))).toBeLessThanOrEqual(0.06);
     const flatWorld = { profile: {}, spline: { centerAt: () => 48, heightAt: () => 2, headingAt: () => 0.5 } };
-    expect(RR.roadSurfacePoseAt(flatWorld, 52, 10).height).toBe(2);
+    const flatShoulder = RR.roadSurfacePoseAt(flatWorld, 52, 10);
+    expect(flatShoulder.height).toBeLessThan(2);
+    expect(flatShoulder.height).toBeCloseTo(2 - RR.roadShoulderDrainageDrop(
+      Math.min(0.6, flatShoulder.lateralOffset - 3.5), {}), 8);
     const bankedWorld = { profile: {}, spline: { centerAt: () => 48, heightAt: () => 2, headingAt: (y) => y * 0.02 } };
     const pose = RR.roadSurfacePoseAt(bankedWorld, 52, 10);
     expect(pose.height).not.toBe(2);
@@ -449,6 +484,36 @@ describe('tire, ABS, and standing-water dynamics', () => {
     expect(found).not.toBeNull();
     expect(RR.streamedPuddleAt(world, found.x, found.y)).toBe(true);
     expect(RR.streamedPuddleAt(world, world.spline.centerAt(found.y) + 12, found.y)).toBe(false);
+  });
+
+  it('uses one deterministic puddle footprint set for rendering and tire contact', () => {
+    const world = RR.createInfiniteWorld(12345);
+    const first = RR.streamedPuddlesForChunk(world, 0);
+    expect(first).toEqual(RR.streamedPuddlesForChunk(world, 0));
+    expect(first.length).toBeGreaterThan(0);
+    for (const puddle of first) {
+      expect(RR.streamedPuddleAt(world, puddle.x, puddle.y)).toBe(true);
+      expect(Math.abs(puddle.lateral)).toBeLessThanOrEqual(world.getChunk(0).roadHalfWidth);
+      if (world.getChunk(0).hasIntersection) {
+        expect(Math.abs(puddle.centerY - world.getChunk(0).intersectionY)).toBeGreaterThanOrEqual(3.5);
+      }
+    }
+  });
+
+  it('scales and rotates streamed puddles using the actual road geometry', () => {
+    const heading = 0.5;
+    const wideWorld = {
+      profile: { roadHalfWidth: 8 },
+      getChunk: () => ({ roadHalfWidth: 8, hasIntersection: false }),
+      spline: { centerAt: () => 48, headingAt: () => heading }
+    };
+    const puddles = RR.streamedPuddlesForChunk(wideWorld, 0);
+    expect(puddles.some((p) => Math.abs(p.lateral) > 3.5)).toBe(true);
+    for (const puddle of puddles) {
+      expect(puddle.x - 48).toBeCloseTo(puddle.lateral * Math.cos(heading), 8);
+      expect(puddle.y - puddle.centerY).toBeCloseTo(-puddle.lateral * Math.sin(heading), 8);
+      expect(RR.streamedPuddleAt(wideWorld, puddle.x, puddle.y)).toBe(true);
+    }
   });
 });
 

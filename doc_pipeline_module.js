@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -11925,8 +11925,8 @@ var createDocPipeline = function(deps) {
         if (_auditUiCurrent()) {
           addToast && addToast('♿ Audit loaded from cache (identical document seen recently)', 'info');
           setPdfAuditResult(cached);
-          setPdfAuditLoading(false);
         }
+        _finishAuditUi();
         return _auditCancelled() ? null : cached;
       }
     }
@@ -12094,9 +12094,9 @@ var createDocPipeline = function(deps) {
         if (_cacheKey) { try { _writeAuditCache(_cacheKey, result); } catch (_) {} }
         if (_auditUiCurrent()) {
           setPdfAuditResult(result);
-          setPdfAuditLoading(false);
           addToast && addToast(`📝 ${_officeKind.toUpperCase()} audited deterministically (axe-core on extracted text)${_mediaAll.length ? ` — ${_mediaAll.filter(m => !m.skipped).length} embedded image(s) preserved${_mediaAll.some(m => m.skipped) ? ` (${_mediaAll.filter(m => m.skipped).length} kept as descriptions only)` : ''}` : ''} — full AI verification runs during Fix & Verify.`, 'info');
         }
+        _finishAuditUi();
         return _auditCancelled() ? null : result;
       } catch (officeErr) {
         const failureResult = { score: -1, summary: `Office audit failed: ${officeErr?.message || 'Unknown error'}. You can still proceed to Fix & Verify.`, critical: [], serious: [], moderate: [], minor: [], passes: [], _officeInput: _officeKind };
@@ -35394,11 +35394,6 @@ window.AlloModules.createDocPipeline.routeViolationsToChunks = _routeViolationsT
 window.AlloModules.createDocPipeline.applyToAxeTargetDoc = _applyToAxeTargetDoc; // static: P5 shared-doc applier (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // static: string-path applier (P5 equivalence tests)
 window.AlloModules.createDocPipeline.serializeDomEdit = _serializeDomEdit; // static: shape-matched serializer (P5 head-hoist pin)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

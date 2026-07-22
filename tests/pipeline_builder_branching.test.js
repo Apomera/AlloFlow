@@ -14,7 +14,7 @@ describe('Pipeline Builder state and branching contract', () => {
   });
 
   it('passes generated branch destinations into the interactive game', () => {
-    expect(rendererSource).toContain('connectsTo: Array.isArray(b.connectsTo) ? b.connectsTo : undefined');
+    expect(rendererSource).toContain('connectsTo: (branch.connections || []).map(connection => connection.target)');
     expect(gamesSource).toContain('connectsTo: getStepTargets(i)');
     expect(gamesSource).toContain('items: Array.isArray(s.items) ? s.items : []');
   });
@@ -26,19 +26,17 @@ describe('Pipeline Builder state and branching contract', () => {
   });
 
   it('teaches the generator a valid zero-based fork and merge example', () => {
-    expect(generatorSource).toContain("'connectsTo':[1,2]");
-    expect(generatorSource).toContain("'Path A','items':['Do A'],'connectsTo':[3]");
-    expect(generatorSource).not.toContain("'connectsTo':[2,3]");
-    expect(generatorSource).not.toContain("'connectsTo':[4]");
+    expect(generatorSource).toContain("'connections':[{'target':1,'label':'Yes'},{'target':2,'label':'No'}]");
+    expect(generatorSource).toContain("'Path A','items':['Do A'],'connections':[{'target':3,'label':''}]");
+    expect(generatorSource).toContain("'Path B','items':['Do B'],'connections':[{'target':3,'label':''}]");
   });
 
   it('marks decision and merge paths in the static organizer', () => {
-    expect(rendererSource).toContain('const incomingPathCounts');
+    expect(rendererSource).toContain('const FlowTopologyBoard');
     expect(rendererSource).toContain("t('outline.paths_merge_here')");
-    expect(rendererSource).toContain("t('outline.branches_to')");
-    expect(rendererSource).toContain('!hasNonLinearFlow');
     expect(rendererSource).toContain("t('outline.decision_point')");
-    expect(rendererSource).toContain('border-t-2 border-amber-400');
+    expect(rendererSource).toContain('const ranks = Array(nodeCount).fill(null)');
+    expect(rendererSource).toContain('markerEnd={\'url(#\' + markerId + \')\'}');
   });
 
   it('keeps a branch source active until all outgoing paths are selected', () => {

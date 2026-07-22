@@ -65,7 +65,7 @@ export function setupDinoLab() {
   }
 
   const captured = {};
-  window.StemLab = { registerTool: (id, cfg) => { captured.id = id; captured.cfg = cfg; } };
+  window.StemLab = { ensureThree: () => new Promise(() => {}), registerTool: (id, cfg) => { captured.id = id; captured.cfg = cfg; } };
   globalThis.StemLab = window.StemLab;
   // eslint-disable-next-line no-new-func
   new Function(src)();

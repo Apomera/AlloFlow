@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-07-19T19:29:26.986Z",
+  "generatedAt": "2026-07-22T18:10:29.524Z",
   "source": {
-    "stemToolFileCount": 126,
-    "registeredToolCount": 129,
+    "stemToolFileCount": 128,
+    "registeredToolCount": 131,
     "monitoredMarkerCount": 74
   },
   "summary": {
     "loadErrorCount": 0,
     "markerPassCount": 74,
     "markerFailCount": 0,
-    "monitoredIssueCount": 17,
+    "monitoredIssueCount": 0,
     "monitoredErrorCount": 0,
-    "monitoredWarningCount": 6,
-    "monitoredNoticeCount": 11,
-    "syncDriftCount": 3,
-    "sourcePublicDriftCount": 0,
-    "monitoredSyncDriftCount": 0
+    "monitoredWarningCount": 0,
+    "monitoredNoticeCount": 0,
+    "syncDriftCount": 22,
+    "sourcePublicDriftCount": 19,
+    "monitoredSyncDriftCount": 9
   },
   "loadErrors": [],
   "markerResults": [
@@ -26,20 +26,7 @@
       "label": "Optics focus panel",
       "ok": true,
       "htmlBytes": 21421,
-      "issues": [
-        {
-          "toolId": "opticsLab",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
-          "count": 1,
-          "examples": [
-            {
-              "selector": "div > div.opticslab-tool-shell"
-            }
-          ]
-        }
-      ],
+      "issues": [],
       "metrics": {
         "buttons": 34,
         "fields": 0,
@@ -182,33 +169,14 @@
       "marker": "data-cellularlab-focus-panel",
       "label": "Cellular focus panel",
       "ok": true,
-      "htmlBytes": 26481,
-      "issues": [
-        {
-          "toolId": "cellularLab",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        },
-        {
-          "toolId": "cellularLab",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
-          "count": 1,
-          "examples": [
-            {
-              "selector": "div#cell-panel > div > div:nth-of-type(1) > span"
-            }
-          ]
-        }
-      ],
+      "htmlBytes": 26486,
+      "issues": [],
       "metrics": {
         "buttons": 52,
         "fields": 3,
         "canvases": 0,
-        "headings": 0,
-        "htmlBytes": 26481
+        "headings": 2,
+        "htmlBytes": 26486
       }
     },
     {
@@ -329,14 +297,14 @@
       "marker": "data-fireecology-mission",
       "label": "Fire Ecology stewardship mission",
       "ok": true,
-      "htmlBytes": 25727,
+      "htmlBytes": 25802,
       "issues": [],
       "metrics": {
         "buttons": 29,
         "fields": 1,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 25727
+        "htmlBytes": 25802
       }
     },
     {
@@ -441,36 +409,14 @@
       "marker": "data-dinolab-command",
       "label": "Dino Lab mission deck",
       "ok": true,
-      "htmlBytes": 427167,
-      "issues": [
-        {
-          "toolId": "dinoLab",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
-          "count": 747,
-          "examples": [
-            {
-              "selector": "div.dinolab-explore-layout > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)"
-            },
-            {
-              "selector": "div.dinolab-explore-layout > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)"
-            },
-            {
-              "selector": "div.dinolab-explore-layout > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3)"
-            },
-            {
-              "selector": "div.dinolab-explore-layout > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(4)"
-            }
-          ]
-        }
-      ],
+      "htmlBytes": 430038,
+      "issues": [],
       "metrics": {
         "buttons": 408,
         "fields": 1,
         "canvases": 0,
         "headings": 1,
-        "htmlBytes": 427167
+        "htmlBytes": 430038
       }
     },
     {
@@ -479,14 +425,14 @@
       "marker": "data-aquaculture-command",
       "label": "Aquaculture operations dashboard",
       "ok": true,
-      "htmlBytes": 62059,
+      "htmlBytes": 77936,
       "issues": [],
       "metrics": {
-        "buttons": 152,
+        "buttons": 156,
         "fields": 1,
         "canvases": 0,
-        "headings": 1,
-        "htmlBytes": 62059
+        "headings": 7,
+        "htmlBytes": 77936
       }
     },
     {
@@ -528,20 +474,7 @@
       "label": "PrintingPress shop dashboard",
       "ok": true,
       "htmlBytes": 45088,
-      "issues": [
-        {
-          "toolId": "printingPress",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
-          "count": 1,
-          "examples": [
-            {
-              "selector": "div > div > div:nth-of-type(2)"
-            }
-          ]
-        }
-      ],
+      "issues": [],
       "metrics": {
         "buttons": 25,
         "fields": 0,
@@ -572,14 +505,14 @@
       "marker": "data-raptorhunt-command",
       "label": "Raptor Hunt flight briefing",
       "ok": true,
-      "htmlBytes": 25511,
+      "htmlBytes": 25550,
       "issues": [],
       "metrics": {
         "buttons": 48,
         "fields": 1,
         "canvases": 0,
         "headings": 1,
-        "htmlBytes": 25511
+        "htmlBytes": 25550
       }
     },
     {
@@ -636,31 +569,14 @@
       "marker": "data-brainatlas-mission",
       "label": "Brain Atlas mission panel",
       "ok": true,
-      "htmlBytes": 33395,
-      "issues": [
-        {
-          "toolId": "brainAtlas",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
-          "count": 2,
-          "examples": [
-            {
-              "selector": "div#brainatlas-canvas-fullscreen > div.brainatlas-canvas-stage:nth-of-type(3) > div.brainatlas-canvas-zoom-frame"
-            },
-            {
-              "selector": "div#brainatlas-canvas-fullscreen > div.brainatlas-canvas-stage:nth-of-type(3) > div.brainatlas-canvas-zoom-frame > canvas.brainatlas-canvas.border-2",
-              "width": "840"
-            }
-          ]
-        }
-      ],
+      "htmlBytes": 33418,
+      "issues": [],
       "metrics": {
         "buttons": 54,
         "fields": 1,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 33395
+        "htmlBytes": 33418
       }
     },
     {
@@ -685,32 +601,14 @@
       "marker": "data-birdlab-field-station",
       "label": "Bird Lab field station",
       "ok": true,
-      "htmlBytes": 146827,
-      "issues": [
-        {
-          "toolId": "birdLab",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
-          "count": 2,
-          "examples": [
-            {
-              "selector": "div > div.birdlab-shell.p-6 > div.mb-6.rounded-3xl:nth-of-type(1) > svg > rect:nth-of-type(1)",
-              "width": "800"
-            },
-            {
-              "selector": "div > div.birdlab-shell.p-6 > div.mb-6.rounded-3xl:nth-of-type(1) > svg > rect:nth-of-type(2)",
-              "width": "800"
-            }
-          ]
-        }
-      ],
+      "htmlBytes": 146674,
+      "issues": [],
       "metrics": {
         "buttons": 127,
         "fields": 1,
         "canvases": 0,
         "headings": 127,
-        "htmlBytes": 146827
+        "htmlBytes": 146674
       }
     },
     {
@@ -735,36 +633,14 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17747,
-      "issues": [
-        {
-          "toolId": "playlab",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
-          "count": 29,
-          "examples": [
-            {
-              "selector": "div > div.playlab-root"
-            },
-            {
-              "selector": "div > div.playlab-root > div:nth-of-type(2) > button:nth-of-type(1)"
-            },
-            {
-              "selector": "div > div.playlab-root > div:nth-of-type(2) > button:nth-of-type(2)"
-            },
-            {
-              "selector": "div > div.playlab-root > div:nth-of-type(5) > button:nth-of-type(1)"
-            }
-          ]
-        }
-      ],
+      "htmlBytes": 17715,
+      "issues": [],
       "metrics": {
         "buttons": 31,
         "fields": 5,
         "canvases": 1,
         "headings": 7,
-        "htmlBytes": 17747
+        "htmlBytes": 17715
       }
     },
     {
@@ -773,14 +649,14 @@
       "marker": "data-pt-sim-focus",
       "label": "Plate Tectonics sim focus",
       "ok": true,
-      "htmlBytes": 27288,
+      "htmlBytes": 27304,
       "issues": [],
       "metrics": {
         "buttons": 25,
         "fields": 5,
         "canvases": 6,
         "headings": 6,
-        "htmlBytes": 27288
+        "htmlBytes": 27304
       }
     },
     {
@@ -789,14 +665,14 @@
       "marker": "data-astronomy-command",
       "label": "Astronomy observation command",
       "ok": true,
-      "htmlBytes": 14039,
+      "htmlBytes": 14053,
       "issues": [],
       "metrics": {
         "buttons": 18,
         "fields": 1,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 14039
+        "htmlBytes": 14053
       }
     },
     {
@@ -805,14 +681,14 @@
       "marker": "data-geology-command",
       "label": "Geology field investigation command",
       "ok": true,
-      "htmlBytes": 15087,
+      "htmlBytes": 15116,
       "issues": [],
       "metrics": {
         "buttons": 23,
         "fields": 1,
         "canvases": 0,
         "headings": 1,
-        "htmlBytes": 15087
+        "htmlBytes": 15116
       }
     },
     {
@@ -837,14 +713,14 @@
       "marker": "data-aquarium-focus-panel",
       "label": "Aquarium mission panel",
       "ok": true,
-      "htmlBytes": 29084,
+      "htmlBytes": 29089,
       "issues": [],
       "metrics": {
         "buttons": 23,
         "fields": 0,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 29084
+        "htmlBytes": 29089
       }
     },
     {
@@ -853,14 +729,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13349,
+      "htmlBytes": 13385,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13349
+        "htmlBytes": 13385
       }
     },
     {
@@ -885,42 +761,14 @@
       "marker": "data-bikelab-ride-focus",
       "label": "BikeLab ride focus",
       "ok": true,
-      "htmlBytes": 13572,
-      "issues": [
-        {
-          "toolId": "bikeLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div#bikelab-sandbox-fs > canvas.w-full.block"
-        },
-        {
-          "toolId": "bikeLab",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        },
-        {
-          "toolId": "bikeLab",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
-          "count": 1,
-          "examples": [
-            {
-              "selector": "div#bikelab-sandbox-fs > canvas.w-full.block",
-              "width": "900"
-            }
-          ]
-        }
-      ],
+      "htmlBytes": 14091,
+      "issues": [],
       "metrics": {
         "buttons": 21,
         "fields": 4,
         "canvases": 1,
-        "headings": 0,
-        "htmlBytes": 13572
+        "headings": 1,
+        "htmlBytes": 14091
       }
     },
     {
@@ -929,14 +777,14 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 47636,
+      "htmlBytes": 47681,
       "issues": [],
       "metrics": {
         "buttons": 53,
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 47636
+        "htmlBytes": 47681
       }
     },
     {
@@ -946,27 +794,7 @@
       "label": "Echolocation run focus",
       "ok": true,
       "htmlBytes": 22026,
-      "issues": [
-        {
-          "toolId": "echolocation",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
-          "count": 3,
-          "examples": [
-            {
-              "selector": "div#echo-sonar-fs-wrap > canvas",
-              "width": "800"
-            },
-            {
-              "selector": "div#echo-sonar-fs-wrap > div > div:nth-of-type(1)"
-            },
-            {
-              "selector": "div#echo-sonar-fs-wrap > div > div:nth-of-type(2)"
-            }
-          ]
-        }
-      ],
+      "issues": [],
       "metrics": {
         "buttons": 16,
         "fields": 0,
@@ -981,23 +809,14 @@
       "marker": "data-skatelab-run-focus",
       "label": "SkateLab run focus",
       "ok": true,
-      "htmlBytes": 70485,
-      "issues": [
-        {
-          "toolId": "skatelab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div#sk-mode-panel > canvas"
-        }
-      ],
+      "htmlBytes": 70509,
+      "issues": [],
       "metrics": {
         "buttons": 57,
         "fields": 10,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 70485
+        "htmlBytes": 70509
       }
     },
     {
@@ -1023,20 +842,7 @@
       "label": "Statistics research-analysis command",
       "ok": true,
       "htmlBytes": 16903,
-      "issues": [
-        {
-          "toolId": "statsLab",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
-          "count": 1,
-          "examples": [
-            {
-              "selector": "div > div"
-            }
-          ]
-        }
-      ],
+      "issues": [],
       "metrics": {
         "buttons": 21,
         "fields": 0,
@@ -1051,31 +857,14 @@
       "marker": "data-funcgrapher-command",
       "label": "Function Grapher exploration console",
       "ok": true,
-      "htmlBytes": 24183,
-      "issues": [
-        {
-          "toolId": "funcGrapher",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div.max-w-5xl.mx-auto > div.mt-5.rounded-2xl:nth-of-type(12) > div.rounded-xl.overflow-hidden:nth-of-type(2) > canvas"
-        },
-        {
-          "toolId": "funcGrapher",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.max-w-5xl.mx-auto > div.mt-5.rounded-2xl:nth-of-type(12) > div.rounded-xl.overflow-hidden:nth-of-type(2) > canvas"
-        }
-      ],
+      "htmlBytes": 24624,
+      "issues": [],
       "metrics": {
         "buttons": 47,
         "fields": 9,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 24183
+        "htmlBytes": 24624
       }
     },
     {
@@ -1084,14 +873,14 @@
       "marker": "data-calculus-command",
       "label": "Calculus concept studio",
       "ok": true,
-      "htmlBytes": 24544,
+      "htmlBytes": 24547,
       "issues": [],
       "metrics": {
         "buttons": 29,
         "fields": 9,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 24544
+        "htmlBytes": 24547
       }
     },
     {
@@ -1116,14 +905,14 @@
       "marker": "data-unitconvert-command",
       "label": "Unit Converter measurement workbench",
       "ok": true,
-      "htmlBytes": 15005,
+      "htmlBytes": 15604,
       "issues": [],
       "metrics": {
         "buttons": 22,
-        "fields": 3,
+        "fields": 4,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 15005
+        "htmlBytes": 15604
       }
     },
     {
@@ -1212,14 +1001,14 @@
       "marker": "data-coordinate-command",
       "label": "Coordinate spatial reasoning studio",
       "ok": true,
-      "htmlBytes": 13161,
+      "htmlBytes": 13164,
       "issues": [],
       "metrics": {
         "buttons": 14,
         "fields": 1,
         "canvases": 0,
         "headings": 1,
-        "htmlBytes": 13161
+        "htmlBytes": 13164
       }
     },
     {
@@ -1228,14 +1017,14 @@
       "marker": "data-protractor-command",
       "label": "Angle investigation studio",
       "ok": true,
-      "htmlBytes": 31533,
+      "htmlBytes": 31536,
       "issues": [],
       "metrics": {
         "buttons": 69,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 31533
+        "htmlBytes": 31536
       }
     },
     {
@@ -1244,27 +1033,14 @@
       "marker": "data-volume-command",
       "label": "Volume design brief",
       "ok": true,
-      "htmlBytes": 36567,
-      "issues": [
-        {
-          "toolId": "volume",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
-          "count": 1,
-          "examples": [
-            {
-              "selector": "div > div.space-y-4.max-w-5xl > div.relative.bg-gradient-to-b:nth-of-type(4)"
-            }
-          ]
-        }
-      ],
+      "htmlBytes": 36570,
+      "issues": [],
       "metrics": {
         "buttons": 28,
         "fields": 11,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 36567
+        "htmlBytes": 36570
       }
     },
     {
@@ -1273,14 +1049,14 @@
       "marker": "data-manipulatives-command",
       "label": "Math representation studio",
       "ok": true,
-      "htmlBytes": 19623,
+      "htmlBytes": 19626,
       "issues": [],
       "metrics": {
         "buttons": 51,
         "fields": 1,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 19623
+        "htmlBytes": 19626
       }
     },
     {
@@ -1289,14 +1065,14 @@
       "marker": "data-multtable-command",
       "label": "Multiplication fact strategy studio",
       "ok": true,
-      "htmlBytes": 32340,
+      "htmlBytes": 32343,
       "issues": [],
       "metrics": {
         "buttons": 22,
         "fields": 5,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 32340
+        "htmlBytes": 32343
       }
     },
     {
@@ -1305,14 +1081,14 @@
       "marker": "data-inequality-command",
       "label": "Inequality solution-set studio",
       "ok": true,
-      "htmlBytes": 18563,
+      "htmlBytes": 18566,
       "issues": [],
       "metrics": {
         "buttons": 30,
         "fields": 8,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 18563
+        "htmlBytes": 18566
       }
     },
     {
@@ -1431,6 +1207,159 @@
   "sync": {
     "drift": [
       {
+        "file": "stem_tool_alphafold.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "BB269B7F4D8B",
+          "public": "CF268E977EBB",
+          "build": "CF268E977EBB"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_aquaculture.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "4FCA9BA96334",
+          "public": "4FCA9BA96334",
+          "build": "B0FCF9633042"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_arccity.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "9B333D1AE193",
+          "public": "55D5F5A53336",
+          "build": "55D5F5A53336"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_areamodel.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "6FE281D009F1",
+          "public": "08B781A61B53",
+          "build": "08B781A61B53"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_areaperimeter.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "D774CEC3A8EC",
+          "public": "DCA7FE06B971",
+          "build": "DCA7FE06B971"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_arithmetic.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "D48D9EC91022",
+          "public": "25B8C557EA38",
+          "build": "25B8C557EA38"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_autorepair.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "1E5C12306353",
+          "public": "A89D08050594",
+          "build": "A89D08050594"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_circuitshelf.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "212A763511CE",
+          "public": "CC6967CFD3AD",
+          "build": "CC6967CFD3AD"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_coasterlab.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "A05403EF68E5",
+          "public": "C4E098EC31B8",
+          "build": "A05403EF68E5"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": true,
+        "status": "source-public-drift"
+      },
+      {
         "file": "stem_tool_datalab.js",
         "monitored": false,
         "exists": {
@@ -1439,16 +1368,16 @@
           "build": true
         },
         "hashes": {
-          "source": "58676EC708A6",
-          "public": "58676EC708A6",
-          "build": "D49FBB865EEB"
+          "source": "E58E42BDC61D",
+          "public": "45BAE6914DC6",
+          "build": "45BAE6914DC6"
         },
-        "sourcePublicMatch": true,
+        "sourcePublicMatch": false,
         "sourceBuildMatch": false,
-        "status": "build-drift"
+        "status": "source-public-drift"
       },
       {
-        "file": "stem_tool_learning_lab.js",
+        "file": "stem_tool_dissection.js",
         "monitored": false,
         "exists": {
           "source": true,
@@ -1456,16 +1385,50 @@
           "build": true
         },
         "hashes": {
-          "source": "6D4D1061E339",
-          "public": "6D4D1061E339",
-          "build": "41CA463A6BD2"
+          "source": "70DCAF3D1B6E",
+          "public": "759ADC4593D6",
+          "build": "DC324B7BF1D0"
         },
-        "sourcePublicMatch": true,
+        "sourcePublicMatch": false,
         "sourceBuildMatch": false,
-        "status": "build-drift"
+        "status": "source-public-drift"
       },
       {
-        "file": "stem_tool_roadready.js",
+        "file": "stem_tool_geologyexplorer.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "0442E5290918",
+          "public": "1DC348D9D684",
+          "build": "1DC348D9D684"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_inequality.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "C41BDE6E7C51",
+          "public": "DDC3A0BCE5C0",
+          "build": "DDC3A0BCE5C0"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_magnetism.js",
         "monitored": false,
         "exists": {
           "source": true,
@@ -1473,67 +1436,631 @@
           "build": true
         },
         "hashes": {
-          "source": "82DAE6AEDDBC",
-          "public": "82DAE6AEDDBC",
-          "build": "60AF6FEBAC9C"
+          "source": "726EEE8604C7",
+          "public": "726EEE8604C7",
+          "build": "549D2897A34E"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_moleculeshelf.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "3A5D9F049357",
+          "public": "995AE27D9449",
+          "build": "995AE27D9449"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_renewables.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "B7EF54219A54",
+          "public": "CFE3394733CE",
+          "build": "CFE3394733CE"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_simshelf.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "FAF137F33790",
+          "public": "61AF60713C56",
+          "build": "61AF60713C56"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_swimlab.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "6D36BDD30543",
+          "public": "F32FAE2724CD",
+          "build": "F32FAE2724CD"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_timeline.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "DBDAF6A63F42",
+          "public": "423A44F83BD1",
+          "build": "423A44F83BD1"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_unitconvert.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "ACD2C3C41550",
+          "public": "ACD2C3C41550",
+          "build": "E6D41AC16D4F"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_watercycle.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "B3B3B8BD9FA6",
+          "public": "A8724AE2E016",
+          "build": "A8724AE2E016"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_zoomgallery.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "E774416501D7",
+          "public": "9A86BE58EB4B",
+          "build": "9A86BE58EB4B"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
       }
     ],
-    "sourcePublicDrift": [],
-    "monitoredDrift": []
+    "sourcePublicDrift": [
+      {
+        "file": "stem_tool_alphafold.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "BB269B7F4D8B",
+          "public": "CF268E977EBB",
+          "build": "CF268E977EBB"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_arccity.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "9B333D1AE193",
+          "public": "55D5F5A53336",
+          "build": "55D5F5A53336"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_areamodel.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "6FE281D009F1",
+          "public": "08B781A61B53",
+          "build": "08B781A61B53"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_areaperimeter.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "D774CEC3A8EC",
+          "public": "DCA7FE06B971",
+          "build": "DCA7FE06B971"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_arithmetic.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "D48D9EC91022",
+          "public": "25B8C557EA38",
+          "build": "25B8C557EA38"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_autorepair.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "1E5C12306353",
+          "public": "A89D08050594",
+          "build": "A89D08050594"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_circuitshelf.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "212A763511CE",
+          "public": "CC6967CFD3AD",
+          "build": "CC6967CFD3AD"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_coasterlab.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "A05403EF68E5",
+          "public": "C4E098EC31B8",
+          "build": "A05403EF68E5"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": true,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_datalab.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "E58E42BDC61D",
+          "public": "45BAE6914DC6",
+          "build": "45BAE6914DC6"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_dissection.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "70DCAF3D1B6E",
+          "public": "759ADC4593D6",
+          "build": "DC324B7BF1D0"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_geologyexplorer.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "0442E5290918",
+          "public": "1DC348D9D684",
+          "build": "1DC348D9D684"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_inequality.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "C41BDE6E7C51",
+          "public": "DDC3A0BCE5C0",
+          "build": "DDC3A0BCE5C0"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_moleculeshelf.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "3A5D9F049357",
+          "public": "995AE27D9449",
+          "build": "995AE27D9449"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_renewables.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "B7EF54219A54",
+          "public": "CFE3394733CE",
+          "build": "CFE3394733CE"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_simshelf.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "FAF137F33790",
+          "public": "61AF60713C56",
+          "build": "61AF60713C56"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_swimlab.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "6D36BDD30543",
+          "public": "F32FAE2724CD",
+          "build": "F32FAE2724CD"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_timeline.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "DBDAF6A63F42",
+          "public": "423A44F83BD1",
+          "build": "423A44F83BD1"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_watercycle.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "B3B3B8BD9FA6",
+          "public": "A8724AE2E016",
+          "build": "A8724AE2E016"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_zoomgallery.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "E774416501D7",
+          "public": "9A86BE58EB4B",
+          "build": "9A86BE58EB4B"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      }
+    ],
+    "monitoredDrift": [
+      {
+        "file": "stem_tool_alphafold.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "BB269B7F4D8B",
+          "public": "CF268E977EBB",
+          "build": "CF268E977EBB"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_aquaculture.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "4FCA9BA96334",
+          "public": "4FCA9BA96334",
+          "build": "B0FCF9633042"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_areamodel.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "6FE281D009F1",
+          "public": "08B781A61B53",
+          "build": "08B781A61B53"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_geologyexplorer.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "0442E5290918",
+          "public": "1DC348D9D684",
+          "build": "1DC348D9D684"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_inequality.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "C41BDE6E7C51",
+          "public": "DDC3A0BCE5C0",
+          "build": "DDC3A0BCE5C0"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_renewables.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "B7EF54219A54",
+          "public": "CFE3394733CE",
+          "build": "CFE3394733CE"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_swimlab.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "6D36BDD30543",
+          "public": "F32FAE2724CD",
+          "build": "F32FAE2724CD"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_unitconvert.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "ACD2C3C41550",
+          "public": "ACD2C3C41550",
+          "build": "E6D41AC16D4F"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_watercycle.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "B3B3B8BD9FA6",
+          "public": "A8724AE2E016",
+          "build": "A8724AE2E016"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      }
+    ]
   },
-  "topFindings": [
-    {
-      "code": "canvas-focus",
-      "severity": "warning",
-      "count": 3,
-      "toolCount": 3,
-      "exampleTools": [
-        "bikeLab",
-        "skatelab",
-        "funcGrapher"
-      ]
-    },
-    {
-      "code": "heading",
-      "severity": "warning",
-      "count": 2,
-      "toolCount": 2,
-      "exampleTools": [
-        "cellularLab",
-        "bikeLab"
-      ]
-    },
-    {
-      "code": "canvas-name",
-      "severity": "warning",
-      "count": 1,
-      "toolCount": 1,
-      "exampleTools": [
-        "funcGrapher"
-      ]
-    },
-    {
-      "code": "horizontal-overflow-risk",
-      "severity": "notice",
-      "count": 11,
-      "toolCount": 11,
-      "exampleTools": [
-        "opticsLab",
-        "cellularLab",
-        "dinoLab",
-        "printingPress",
-        "brainAtlas",
-        "birdLab",
-        "playlab",
-        "bikeLab",
-        "echolocation",
-        "statsLab",
-        "volume"
-      ]
-    }
-  ]
+  "topFindings": []
 }

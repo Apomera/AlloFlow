@@ -354,7 +354,7 @@
         if (existing && !existing.closed) { try { existing.focus(); } catch (_) {} return; }
         var lang = (ctx.lang || 'en');
         var w = null;
-        try { w = window.open(ALPHAFOLD_URL + '&lang=' + encodeURIComponent(lang), 'alloflow-alphafold-explorer', 'width=1360,height=900'); } catch (_) { w = null; }
+        try { w = window.open(ALPHAFOLD_URL + '&lang=' + encodeURIComponent(lang) + '&theme=' + encodeURIComponent(ctx.theme || 'dark'), 'alloflow-alphafold-explorer', 'width=1360,height=900'); } catch (_) { w = null; }
         if (!w) {
           setPopupState('blocked');
           if (announceToSR) announceToSR(t('stem.alphaFold.popup_blocked', 'The AlphaFold Explorer window was blocked. Allow pop-ups for this page, then try again.'));

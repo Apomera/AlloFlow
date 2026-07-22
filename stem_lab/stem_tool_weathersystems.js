@@ -544,6 +544,42 @@
     return { id: id, layers: Object.assign({}, IMMERSIVE_FOCUS_PROFILES[id]) };
   }
 
+  var GEOGRAPHIC_CAMERA_VIEWS = {
+    region: { id: 'region', label: 'regional context', zoom: 8.3, pitch: 38, bearing: 0 },
+    local: { id: 'local', label: 'local terrain', zoom: 10.6, pitch: 58, bearing: -18 },
+    site: { id: 'site', label: 'street-scale site', zoom: 15.2, pitch: 68, bearing: 22 }
+  };
+
+  function geographicCameraView(preset) {
+    var id = GEOGRAPHIC_CAMERA_VIEWS[preset] ? preset : 'local';
+    return Object.assign({}, GEOGRAPHIC_CAMERA_VIEWS[id]);
+  }
+
+  var GEOGRAPHIC_ANALYSIS_LENSES = [
+    { id: 'context', label: 'System context', icon: '\u25CE', camera: 'region', detail: 'See the study area and observed downwind flow in regional context.', layers: { studyArea: true, wind: true, transect: false, buildings: false } },
+    { id: 'terrain', label: 'Wind + terrain', icon: '\u223F', camera: 'local', detail: 'Compare observed wind with the wind-aligned elevation cross-section.', layers: { studyArea: true, wind: true, transect: true, buildings: false } },
+    { id: 'site', label: 'Site detail', icon: '\u2316', camera: 'site', detail: 'Inspect the observation site and available OpenStreetMap buildings.', layers: { studyArea: false, wind: true, transect: false, buildings: true } }
+  ];
+
+  function geographicAnalysisLens(lensId) {
+    var lens = GEOGRAPHIC_ANALYSIS_LENSES.filter(function (item) { return item.id === lensId; })[0] || GEOGRAPHIC_ANALYSIS_LENSES[1];
+    return Object.assign({}, lens, { layers: Object.assign({}, lens.layers) });
+  }
+
+  var GEOGRAPHIC_INVESTIGATION_STEPS = [
+    { id: 'orient', label: 'Orient the system', lens: 'context', prompt: 'What lies inside the study area, and which direction is downwind?', evidence: 'Use the true-scale ring, observation site, regional labels, and wind vector.' },
+    { id: 'terrain', label: 'Trace wind + terrain', lens: 'terrain', prompt: 'Does terrain rise toward the site from upwind or fall away?', evidence: 'Compare the observed wind direction with the elevation cross-section and relief.' },
+    { id: 'site', label: 'Inspect local exposure', lens: 'site', prompt: 'What site-scale terrain or buildings could influence this observation?', evidence: 'Separate local exposure clues from the larger regional weather system.' },
+    { id: 'claim', label: 'Build an evidence claim', lens: 'terrain', prompt: 'Which mapped evidence most strengthens or weakens your weather explanation?', evidence: 'Cite the observation time, wind vector, terrain profile, and one limitation.' }
+  ];
+
+  function geographicInvestigationStep(stepId) {
+    var index = GEOGRAPHIC_INVESTIGATION_STEPS.findIndex(function (step) { return step.id === stepId; });
+    if (index === -1) index = 0;
+    var step = GEOGRAPHIC_INVESTIGATION_STEPS[index];
+    return Object.assign({ index: index, total: GEOGRAPHIC_INVESTIGATION_STEPS.length, nextId: GEOGRAPHIC_INVESTIGATION_STEPS[(index + 1) % GEOGRAPHIC_INVESTIGATION_STEPS.length].id }, step);
+  }
+
 var IMMERSIVE_TOUR_STEPS = [
     { id: 'scan', label: 'Scan the system', camera: 'overview', focus: 'system', prompt: 'What is the first weather pattern you notice?', evidence: 'Name one visible clue from the whole scene.' },
     { id: 'front', label: 'Inspect the front', camera: 'front', focus: 'front', prompt: 'Where is air being lifted or separated?', evidence: 'Use the sloped boundary, air masses, and wind arrows.' },
@@ -658,6 +694,49 @@ var GEOGRAPHY_PROFILES = {
       siteElevation: hasSiteElevation ? Math.round(numericSiteElevation) : null,
       elevationDelta: elevationDelta,
       relation: relation
+    };
+  }
+
+  function geographicTerrainWindAnalysis(comparison, windDirection) {
+    var sample = comparison || {};
+    var bearing = Number(sample.bearing);
+    var windFrom = ((Number(windDirection) % 360) + 360) % 360;
+    var distanceKm = Number(sample.distanceKm);
+    var elevationDelta = Number(sample.elevationDelta);
+    if (![bearing, windFrom, distanceKm, elevationDelta].every(isFinite) || distanceKm <= 0) return null;
+    var angularDifference = Math.abs(((bearing - windFrom + 540) % 360) - 180);
+    var position = angularDifference <= 45 ? 'Upwind' : angularDifference >= 135 ? 'Downwind' : 'Crosswind';
+    var gradePercent = round(elevationDelta / (distanceKm * 1000) * 100, 2);
+    var slopeDegrees = round(Math.atan(elevationDelta / (distanceKm * 1000)) * 180 / Math.PI, 2);
+    var absoluteGrade = Math.abs(gradePercent);
+    var gradeLabel = absoluteGrade < 1 ? 'Nearly level average grade' : absoluteGrade < 5 ? 'Gentle average grade' : absoluteGrade < 12 ? 'Moderate average grade' : 'Steep average grade';
+    var signalLabel;
+    var interpretation;
+    if (position === 'Upwind' && elevationDelta >= 50) {
+      signalLabel = 'Upwind terrain barrier';
+      interpretation = 'The sampled terrain is ' + Math.abs(Math.round(elevationDelta)) + ' m higher in the direction the observed wind comes from. It may force approaching air upward, but moisture and stability evidence are still needed.';
+    } else if (position === 'Upwind' && elevationDelta <= -50) {
+      signalLabel = 'Lower upwind approach';
+      interpretation = 'The observed wind approaches from terrain ' + Math.abs(Math.round(elevationDelta)) + ' m lower than the site. The site may be exposed above the approaching flow rather than sheltered behind an upstream rise.';
+    } else if (position === 'Downwind') {
+      signalLabel = 'Downwind terrain context';
+      interpretation = 'This sample lies mainly downstream of the observed wind. Use it to investigate descending flow, sheltering, or rain-shadow patterns after air crosses the site.';
+    } else if (position === 'Crosswind') {
+      signalLabel = 'Crosswind terrain context';
+      interpretation = 'This sample sits across the observed wind path. Its elevation contrast describes lateral terrain context, not direct evidence that air is being lifted toward the site.';
+    } else {
+      signalLabel = 'Limited upwind relief';
+      interpretation = 'This upwind sample is close to the site elevation, so it provides limited evidence of terrain-forced lifting along the observed wind direction.';
+    }
+    return {
+      position: position,
+      label: position + ' sample',
+      angularDifference: round(angularDifference, 1),
+      gradePercent: gradePercent,
+      slopeDegrees: slopeDegrees,
+      gradeLabel: gradeLabel,
+      signalLabel: signalLabel,
+      interpretation: interpretation
     };
   }
 
@@ -788,6 +867,42 @@ var GEOGRAPHY_PROFILES = {
     return { current: true, code: 'current', label: 'Current location and observation', detail: 'Terrain, wind direction, location, and observation provenance match the active live site.' };
   }
 
+  function liveObservationFreshness(liveWeather, nowMs) {
+    var live = liveWeather || {};
+    var observedAt = String(live.observedAt || '').trim();
+    if (!observedAt) return { code: 'unknown', current: false, stale: true, ageMinutes: null, badge: 'SAVED', label: 'Saved observation', detail: 'Observation time is unavailable.' };
+    var timestamp;
+    if (!/(?:Z|[+-]\d{2}:?\d{2})$/i.test(observedAt) && isFinite(Number(live.utcOffsetSeconds))) {
+      timestamp = Date.parse(observedAt + 'Z') - Number(live.utcOffsetSeconds) * 1000;
+    } else {
+      timestamp = Date.parse(observedAt);
+    }
+    if (!isFinite(timestamp)) return { code: 'unknown', current: false, stale: true, ageMinutes: null, badge: 'SAVED', label: 'Saved observation', detail: 'Observation time could not be interpreted.' };
+    var reference = isFinite(Number(nowMs)) ? Number(nowMs) : Date.now();
+    var ageMinutes = Math.max(0, Math.round((reference - timestamp) / 60000));
+    var ageLabel = ageMinutes < 60 ? ageMinutes + ' min ago' : ageMinutes < 1440 ? Math.round(ageMinutes / 60) + ' h ago' : Math.round(ageMinutes / 1440) + ' d ago';
+    if (ageMinutes <= 90) return { code: 'current', current: true, stale: false, ageMinutes: ageMinutes, badge: 'LIVE', label: 'Current observation', detail: 'Observed ' + ageLabel + '.' };
+    if (ageMinutes <= 360) return { code: 'recent', current: false, stale: false, ageMinutes: ageMinutes, badge: 'RECENT', label: 'Recent observation', detail: 'Observed ' + ageLabel + '; verify conditions before treating this as current.' };
+    return { code: 'stale', current: false, stale: true, ageMinutes: ageMinutes, badge: 'SAVED', label: 'Saved observation', detail: 'Observed ' + ageLabel + '; refresh before making a current-conditions claim.' };
+  }
+
+  function geographicBuildingLayerIds(style) {
+    var layers = style && Array.isArray(style.layers) ? style.layers : [];
+    return layers.filter(function (layer) {
+      if (!layer || layer.type !== 'fill-extrusion') return false;
+      return /build/i.test(String(layer.id || '')) || /build/i.test(String(layer['source-layer'] || ''));
+    }).map(function (layer) { return layer.id; }).filter(Boolean);
+  }
+
+  function geographicOrientationSummary(bearing) {
+    var raw = isFinite(Number(bearing)) ? Number(bearing) : 0;
+    var normalized = ((raw + 180) % 360 + 360) % 360 - 180;
+    var northOffset = -normalized;
+    var roundedOffset = Math.round(Math.abs(northOffset));
+    var detail = roundedOffset <= 1 ? 'North is aligned with screen top.' : 'North is ' + roundedOffset + '\u00B0 ' + (northOffset > 0 ? 'right' : 'left') + ' of screen top.';
+    return { bearing: round(normalized, 1), northRotation: round(northOffset, 1), label: detail };
+  }
+
   function geographicObservationSummary(liveWeather) {
     var live = liveWeather || {};
     var parts = [live.label || 'Selected observation'];
@@ -808,6 +923,7 @@ var GEOGRAPHY_PROFILES = {
     { script: 'https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.js', css: 'https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.css' }
   ];
   var WEATHER_MAPLIBRE_TIMEOUT_MS = 20000;
+  var WEATHER_MAP_READY_TIMEOUT_MS = 30000;
 
   function ensureWeatherMapLibre() {
     if (window.maplibregl && window.maplibregl.Map) return Promise.resolve(window.maplibregl);
@@ -969,6 +1085,7 @@ var GEOGRAPHY_PROFILES = {
       longitude: Math.round(Number(longitude) * 10000) / 10000,
       observedAt: current.time || '',
       timezone: payload.timezone_abbreviation || payload.timezone || '',
+      utcOffsetSeconds: isFinite(Number(payload.utc_offset_seconds)) ? Number(payload.utc_offset_seconds) : null,
       temperature: Number(current.temperature_2m),
       humidity: Number(current.relative_humidity_2m),
       precipitation: Number(current.precipitation || 0),
@@ -1002,15 +1119,22 @@ var GEOGRAPHY_PROFILES = {
     scoreForecast: scoreForecast,
     immersiveFocusProfile: immersiveFocusProfile,
     immersiveTourStep: immersiveTourStep,
+    geographicCameraView: geographicCameraView,
+    geographicAnalysisLens: geographicAnalysisLens,
+    geographicInvestigationStep: geographicInvestigationStep,
     geographyProfile: geographyProfile,
     geographicMetadata: geographicMetadata,
     geographicViewState: geographicViewState,
     geographicDestination: geographicDestination,
     geographicPointComparison: geographicPointComparison,
+    geographicTerrainWindAnalysis: geographicTerrainWindAnalysis,
     geographicOverlayData: geographicOverlayData,
     geographicWindTransect: geographicWindTransect,
     analyzeGeographicTerrainProfile: analyzeGeographicTerrainProfile,
     geographicTerrainEvidenceStatus: geographicTerrainEvidenceStatus,
+    liveObservationFreshness: liveObservationFreshness,
+    geographicBuildingLayerIds: geographicBuildingLayerIds,
+    geographicOrientationSummary: geographicOrientationSummary,
     geographicObservationSummary: geographicObservationSummary,
     geographicMapSources: Object.assign({}, GEOGRAPHIC_MAP_SOURCES),
     cleanLocationPart: cleanLocationPart,
@@ -1378,7 +1502,8 @@ var GEOGRAPHY_PROFILES = {
       var setStemLabTool = ctx.setStemLabTool;
       var addToast = ctx.addToast;
       var announce = ctx.announceToSR;
-      var dark = ctx.darkMode !== false;
+      var contrast = !!ctx.isContrast;
+      var dark = !!ctx.isDark || contrast;
       var band = gradeBand(ctx.gradeLevel);
       var canvasRef = React.useRef(null);
       var immersiveCanvasRef = React.useRef(null);
@@ -1581,23 +1706,72 @@ var GEOGRAPHY_PROFILES = {
           if (addToast) addToast('The geographic map is still initializing.', 'info');
           return;
         }
-        var views = {
-          region: { label: 'regional context', zoom: 8.3, pitch: 38, bearing: 0 },
-          local: { label: 'local terrain', zoom: 10.6, pitch: 58, bearing: -18 },
-          site: { label: 'street-scale site', zoom: 15.2, pitch: 68, bearing: 22 }
-        };
-        var view = views[preset] || views.local;
+        var view = geographicCameraView(preset);
         var reduceMotion = false;
         try { reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduceMotion = false; }
         runtime.map.easeTo({ center: [geographic.longitude, geographic.latitude], zoom: view.zoom, pitch: view.pitch, bearing: view.bearing, duration: reduceMotion ? 0 : 850, essential: false });
-        update({ geographicCameraPreset: preset, geographicViewport: { zoom: view.zoom, pitch: view.pitch, bearing: view.bearing } });
-        if (announce) announce('Geographic camera moved to ' + view.label + '.');
+        update({ geographicCameraPreset: view.id, geographicAnalysisLens: 'custom', geographicInvestigationPaused: true, geographicViewport: { zoom: view.zoom, pitch: view.pitch, bearing: view.bearing } });
+        if (announce) announce('Geographic camera moved to ' + view.label + '. Analysis view is now custom.');
+      }
+
+      function applyGeographicAnalysisLens(lensId, extraPatch, announcement) {
+        var runtime = geographicRuntimeRef.current;
+        var geographic = geographicViewState(d);
+        if (!runtime || !runtime.map || !geographic.available || !d.geographicMapReady) {
+          if (addToast) addToast('The geographic map is still initializing.', 'info');
+          return;
+        }
+        var lens = geographicAnalysisLens(lensId);
+        var view = geographicCameraView(lens.camera);
+        var layerGroups = {
+          studyArea: ['weather-study-area-fill', 'weather-study-area-outline'],
+          wind: ['weather-wind-flow', 'weather-wind-arrow', 'weather-wind-endpoint'],
+          transect: ['weather-terrain-transect-line']
+        };
+        Object.keys(layerGroups).forEach(function (kind) {
+          layerGroups[kind].forEach(function (layerId) {
+            if (runtime.map.getLayer(layerId)) runtime.map.setLayoutProperty(layerId, 'visibility', lens.layers[kind] ? 'visible' : 'none');
+          });
+        });
+        var buildingLayerIds = runtime.buildingLayerIds || geographicBuildingLayerIds(runtime.map.getStyle && runtime.map.getStyle());
+        runtime.buildingLayerIds = buildingLayerIds;
+        var buildingsAvailable = buildingLayerIds.length > 0;
+        var buildingsVisible = lens.layers.buildings && buildingsAvailable;
+        buildingLayerIds.forEach(function (layerId) {
+          if (runtime.map.getLayer(layerId)) runtime.map.setLayoutProperty(layerId, 'visibility', buildingsVisible ? 'visible' : 'none');
+        });
+        var reduceMotion = false;
+        try { reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduceMotion = false; }
+        runtime.map.easeTo({ center: [geographic.longitude, geographic.latitude], zoom: view.zoom, pitch: view.pitch, bearing: view.bearing, duration: reduceMotion ? 0 : 850, essential: false });
+        var patch = {
+          geographicAnalysisLens: lens.id,
+          geographicCameraPreset: view.id,
+          geographicViewport: { zoom: view.zoom, pitch: view.pitch, bearing: view.bearing },
+          geographicStudyAreaVisible: lens.layers.studyArea,
+          geographicWindVisible: lens.layers.wind,
+          geographicTransectVisible: lens.layers.transect,
+          geographicBuildings: buildingsVisible,
+          geographicBuildingsAvailable: buildingsAvailable,
+          geographicInvestigationPaused: false
+        };
+        if (extraPatch) Object.assign(patch, extraPatch);
+        update(patch);
+        if (announce) announce(announcement || (lens.label + ' analysis view applied. ' + lens.detail));
+      }
+
+      function openGeographicInvestigationStep(stepId) {
+        var step = geographicInvestigationStep(stepId);
+        applyGeographicAnalysisLens(step.lens, { geographicInvestigationStep: step.id }, 'Geographic field investigation step ' + (step.index + 1) + ' of ' + step.total + ': ' + step.label + '. ' + step.prompt);
       }
 
       function setGeographicStudyRadius(radius) {
         var nextRadius = clamp(Number(radius), 2, 50);
         var runtime = geographicRuntimeRef.current;
-        if (runtime && runtime.map && d.liveWeather) {
+        if (!runtime || !runtime.map || !d.geographicMapReady) {
+          if (addToast) addToast('The geographic map is still initializing.', 'info');
+          return;
+        }
+        if (d.liveWeather) {
           var source = runtime.map.getSource('weather-study-area-source');
           if (source && source.setData) source.setData(geographicOverlayData(d.liveWeather, nextRadius).studyArea);
         }
@@ -1608,7 +1782,16 @@ var GEOGRAPHY_PROFILES = {
       function setGeographicTerrainExaggeration(exaggeration) {
         var nextExaggeration = clamp(Number(exaggeration), 1, 2);
         var runtime = geographicRuntimeRef.current;
-        if (runtime && runtime.map && runtime.map.getSource('weather-terrain')) runtime.map.setTerrain({ source: 'weather-terrain', exaggeration: nextExaggeration });
+        if (!runtime || !runtime.map || !d.geographicMapReady) {
+          if (addToast) addToast('The geographic map is still initializing.', 'info');
+          return;
+        }
+        if (d.geographicTerrainAvailable === false || !runtime.map.getSource('weather-terrain')) {
+          if (addToast) addToast('3D terrain is unavailable, but the open base map remains usable.', 'info');
+          if (announce) announce('Terrain emphasis is unavailable because the terrain layer did not load.');
+          return;
+        }
+        runtime.map.setTerrain({ source: 'weather-terrain', exaggeration: nextExaggeration });
         update({ geographicTerrainExaggeration: nextExaggeration });
         if (announce) announce('Terrain emphasis changed to ' + nextExaggeration + ' times elevation.');
       }
@@ -1616,15 +1799,19 @@ var GEOGRAPHY_PROFILES = {
       function setGeographicOverlayVisibility(kind, visible) {
         var nextVisible = !!visible;
         var runtime = geographicRuntimeRef.current;
+        if (!runtime || !runtime.map || !d.geographicMapReady) {
+          if (addToast) addToast('The geographic map is still initializing.', 'info');
+          return;
+        }
         var layerIds = kind === 'studyArea'
           ? ['weather-study-area-fill', 'weather-study-area-outline']
           : kind === 'transect'
             ? ['weather-terrain-transect-line']
             : ['weather-wind-flow', 'weather-wind-arrow', 'weather-wind-endpoint'];
-        if (runtime && runtime.map) layerIds.forEach(function (layerId) {
+        layerIds.forEach(function (layerId) {
           if (runtime.map.getLayer(layerId)) runtime.map.setLayoutProperty(layerId, 'visibility', nextVisible ? 'visible' : 'none');
         });
-        var patch = {};
+        var patch = { geographicAnalysisLens: 'custom', geographicInvestigationPaused: true };
         if (kind === 'studyArea') patch.geographicStudyAreaVisible = nextVisible;
         else if (kind === 'transect') patch.geographicTransectVisible = nextVisible;
         else patch.geographicWindVisible = nextVisible;
@@ -1642,14 +1829,18 @@ var GEOGRAPHY_PROFILES = {
         }
         var evidence = (d.evidence || []).slice();
         var selected = evidence.indexOf(TERRAIN_EVIDENCE.id) !== -1;
+        var investigationNote = String(d.geographicInvestigationNote || '').trim().slice(0, 2000);
         if (selected && d.geographicTerrainEvidence && geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, d.liveWeather).current) {
-          update({ tab: 'forecast' });
-          if (announce) announce('Forecast Mission opened with terrain evidence selected.');
+          var existingNote = String(d.geographicTerrainEvidence.investigationNote || investigationNote).trim();
+          var forecastPatch = { tab: 'forecast' };
+          if (existingNote && !String(d.reasoning || '').trim()) forecastPatch.reasoning = existingNote;
+          update(forecastPatch);
+          if (announce) announce('Forecast Mission opened with terrain evidence and the mapped evidence note carried forward.');
           return;
         }
         if (!selected) evidence.push(TERRAIN_EVIDENCE.id);
         var geographic = geographicViewState(d);
-        update({
+        var evidencePatch = {
           evidence: evidence,
           forecastResult: null,
           terrainEvidenceInvalidatedMessage: '',
@@ -1667,9 +1858,12 @@ var GEOGRAPHY_PROFILES = {
             changeAfterSite: analysis.changeAfterSite,
             signalLabel: analysis.signalLabel,
             summary: analysis.interpretation,
-            source: 'Rendered open terrain elevation'
+            investigationNote: investigationNote,
+            source: 'Rendered open terrain elevation and learner field note'
           }
-        });
+        };
+        if (investigationNote && !String(d.reasoning || '').trim()) evidencePatch.reasoning = investigationNote;
+        update(evidencePatch);
         if (addToast) addToast('Terrain profile added to forecast evidence.', 'success');
         if (announce) announce('Wind-aligned terrain profile added to forecast evidence.');
       }
@@ -1677,9 +1871,35 @@ var GEOGRAPHY_PROFILES = {
       function setGeographicBuildings(visible) {
         var nextVisible = !!visible;
         var runtime = geographicRuntimeRef.current;
-        if (runtime && runtime.map && runtime.map.getLayer('building-3d')) runtime.map.setLayoutProperty('building-3d', 'visibility', nextVisible ? 'visible' : 'none');
-        update({ geographicBuildings: nextVisible });
-        if (announce) announce('Real 3D buildings ' + (nextVisible ? 'shown where available.' : 'hidden.'));
+        if (!runtime || !runtime.map || !d.geographicMapReady) {
+          if (addToast) addToast('The geographic map is still initializing.', 'info');
+          return;
+        }
+        var buildingLayerIds = runtime.buildingLayerIds || geographicBuildingLayerIds(runtime.map.getStyle && runtime.map.getStyle());
+        if (!buildingLayerIds.length) {
+          update({ geographicBuildings: false, geographicBuildingsAvailable: false });
+          if (addToast) addToast('This map style does not provide a compatible 3D building layer.', 'info');
+          if (announce) announce('Real 3D buildings are unavailable in the current map style.');
+          return;
+        }
+        runtime.buildingLayerIds = buildingLayerIds;
+        buildingLayerIds.forEach(function (layerId) {
+          if (runtime.map.getLayer(layerId)) runtime.map.setLayoutProperty(layerId, 'visibility', nextVisible ? 'visible' : 'none');
+        });
+        update({ geographicBuildings: nextVisible, geographicBuildingsAvailable: true, geographicAnalysisLens: 'custom', geographicInvestigationPaused: true });
+        if (announce) announce('Real 3D buildings ' + (nextVisible ? 'shown.' : 'hidden.') + ' Analysis view is now custom and the guided investigation is paused.');
+      }
+
+      function sampleGeographicMapCenter() {
+        var runtime = geographicRuntimeRef.current;
+        if (!runtime || !runtime.map || !runtime.sampleTerrainAtCoordinate || !d.geographicMapReady || d.geographicTerrainAvailable === false) {
+          if (addToast) addToast('Terrain sampling becomes available after the 3D terrain layer loads.', 'info');
+          return;
+        }
+        var center = runtime.map.getCenter && runtime.map.getCenter();
+        if (!center || !runtime.sampleTerrainAtCoordinate([Number(center.lng), Number(center.lat)], 'Keyboard map-center sample')) {
+          if (addToast) addToast('Terrain elevation is not available at the map center yet.', 'info');
+        }
       }
 
       function clearGeographicTerrainProbe() {
@@ -2237,14 +2457,17 @@ var geographyGroup = new THREE.Group();
         if (!container) return undefined;
         var cancelled = false;
         var map = null;
+        var mapReady = false;
+        var mapLoadTimer = null;
+        var mapLoadWarning = '';
         var resizeObserver = null;
         var terrainExaggeration = clamp(d.geographicTerrainExaggeration != null ? Number(d.geographicTerrainExaggeration) : 1.35, 1, 2);
         var studyRadius = clamp(d.geographicStudyRadius != null ? Number(d.geographicStudyRadius) : 10, 2, 50);
         var showStudyArea = d.geographicStudyAreaVisible !== false;
         var showWind = d.geographicWindVisible !== false;
         var showTransect = d.geographicTransectVisible !== false;
-        var showBuildings = d.geographicBuildings !== false;
-        update({ geographicMapLoading: true, geographicMapReady: false, geographicMapError: '', geographicMapStatus: 'Loading open geographic layers...', geographicTerrainProfile: [], geographicTerrainProfileStatus: 'Sampling natural terrain elevation after map tiles load...', geographicTerrainProbe: null });
+        var showBuildings = d.geographicBuildings === true;
+        update({ geographicMapLoading: true, geographicMapReady: false, geographicMapError: '', geographicMapStatus: 'Loading open geographic layers...', geographicBuildingsAvailable: null, geographicTerrainAvailable: null, geographicTerrainProfile: [], geographicTerrainProfileStatus: 'Sampling natural terrain elevation after map tiles load...', geographicTerrainProbe: null });
 
         ensureWeatherMapLibre().then(function (maplibregl) {
           if (cancelled || !geographicMapRef.current) return;
@@ -2265,36 +2488,60 @@ var geographyGroup = new THREE.Group();
             canvasContextAttributes: { antialias: true }
           });
           geographicRuntimeRef.current = { map: map, maplibregl: maplibregl };
+          mapLoadTimer = window.setTimeout(function () {
+            if (cancelled || mapReady) return;
+            var timeoutMessage = 'The geographic base map did not become ready within 30 seconds.' + (mapLoadWarning ? ' Last map message: ' + mapLoadWarning : ' School network filters may be blocking map tiles.');
+            update({ geographicMapLoading: false, geographicMapReady: false, geographicMapError: timeoutMessage, geographicMapStatus: '' });
+            if (announce) announce(timeoutMessage);
+          }, WEATHER_MAP_READY_TIMEOUT_MS);
           map.addControl(new maplibregl.NavigationControl({ visualizePitch: true, showCompass: true, showZoom: true }), 'top-right');
           if (maplibregl.FullscreenControl) map.addControl(new maplibregl.FullscreenControl({ container: container.parentElement || container }), 'top-right');
           if (maplibregl.ScaleControl) map.addControl(new maplibregl.ScaleControl({ maxWidth: 120, unit: 'metric' }), 'bottom-right');
-          map.on('moveend', function () {
+          map.on('moveend', function (event) {
             if (cancelled || !map) return;
-            update({ geographicViewport: { zoom: round(map.getZoom(), 1), pitch: Math.round(map.getPitch()), bearing: Math.round(map.getBearing()) } });
+            var viewportPatch = { geographicViewport: { zoom: round(map.getZoom(), 1), pitch: Math.round(map.getPitch()), bearing: Math.round(map.getBearing()) } };
+            if (event && event.originalEvent) {
+              viewportPatch.geographicCameraPreset = 'custom';
+              viewportPatch.geographicAnalysisLens = 'custom';
+              viewportPatch.geographicInvestigationPaused = true;
+            }
+            update(viewportPatch);
           });
 
-          var mapReady = false;
           map.on('load', function () {
             if (cancelled) return;
+            mapReady = true;
+            if (mapLoadTimer) { window.clearTimeout(mapLoadTimer); mapLoadTimer = null; }
             try {
-              if (!map.getSource('weather-terrain')) map.addSource('weather-terrain', { type: 'raster-dem', url: GEOGRAPHIC_MAP_SOURCES.terrain, tileSize: 256 });
               var styleLayers = (map.getStyle() && map.getStyle().layers) || [];
               var firstLabel = styleLayers.filter(function (layer) { return layer.type === 'symbol' && layer.layout && layer.layout['text-field']; })[0];
-              if (!map.getLayer('weather-hillshade')) {
-                map.addLayer({
-                  id: 'weather-hillshade',
-                  type: 'hillshade',
-                  source: 'weather-terrain',
-                  paint: {
-                    'hillshade-shadow-color': '#102a43',
-                    'hillshade-highlight-color': '#f8fafc',
-                    'hillshade-accent-color': '#0f766e',
-                    'hillshade-exaggeration': 0.38
-                  }
-                }, firstLabel ? firstLabel.id : undefined);
+              var terrainAvailable = true;
+              var terrainMessage = '';
+              try {
+                if (!map.getSource('weather-terrain')) map.addSource('weather-terrain', { type: 'raster-dem', url: GEOGRAPHIC_MAP_SOURCES.terrain, tileSize: 256 });
+                if (!map.getLayer('weather-hillshade')) {
+                  map.addLayer({
+                    id: 'weather-hillshade',
+                    type: 'hillshade',
+                    source: 'weather-terrain',
+                    paint: {
+                      'hillshade-shadow-color': '#102a43',
+                      'hillshade-highlight-color': '#f8fafc',
+                      'hillshade-accent-color': '#0f766e',
+                      'hillshade-exaggeration': 0.38
+                    }
+                  }, firstLabel ? firstLabel.id : undefined);
+                }
+                map.setTerrain({ source: 'weather-terrain', exaggeration: terrainExaggeration });
+              } catch (terrainError) {
+                terrainAvailable = false;
+                terrainMessage = terrainError && terrainError.message ? terrainError.message : 'Terrain tiles could not be initialized.';
               }
-              map.setTerrain({ source: 'weather-terrain', exaggeration: terrainExaggeration });
-              if (map.getLayer('building-3d')) map.setLayoutProperty('building-3d', 'visibility', showBuildings ? 'visible' : 'none');
+              var buildingLayerIds = geographicBuildingLayerIds({ layers: styleLayers });
+              geographicRuntimeRef.current.buildingLayerIds = buildingLayerIds;
+              buildingLayerIds.forEach(function (layerId) {
+                if (map.getLayer(layerId)) map.setLayoutProperty(layerId, 'visibility', showBuildings ? 'visible' : 'none');
+              });
               var overlays = geographicOverlayData(d.liveWeather, studyRadius);
               var terrainTransect = geographicWindTransect(d.liveWeather, 30, 25);
               var locationData = {
@@ -2363,6 +2610,17 @@ var geographyGroup = new THREE.Group();
               }, firstLabel ? firstLabel.id : undefined);
               map.addSource('weather-selected-location', { type: 'geojson', data: locationData });
               map.addLayer({
+                id: 'weather-selected-site-halo',
+                type: 'circle',
+                source: 'weather-selected-location',
+                paint: {
+                  'circle-radius': 15,
+                  'circle-color': markerColor,
+                  'circle-opacity': 0.2,
+                  'circle-blur': 0.45
+                }
+              });
+              map.addLayer({
                 id: 'weather-selected-site',
                 type: 'circle',
                 source: 'weather-selected-location',
@@ -2371,7 +2629,7 @@ var geographyGroup = new THREE.Group();
                   'circle-color': markerColor,
                   'circle-stroke-color': '#ffffff',
                   'circle-stroke-width': 3,
-                  'circle-blur': 0.08
+                  'circle-blur': 0.04
                 }
               });
               map.addSource('weather-terrain-probe', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
@@ -2395,9 +2653,29 @@ var geographyGroup = new THREE.Group();
                   'circle-stroke-width': 2
                 }
               });
+              map.addLayer({
+                id: 'weather-terrain-probe-label',
+                type: 'symbol',
+                source: 'weather-terrain-probe',
+                filter: ['==', ['geometry-type'], 'Point'],
+                layout: {
+                  'text-field': ['concat', ['to-string', ['get', 'elevation']], ' m'],
+                  'text-size': 12,
+                  'text-font': ['Noto Sans Bold'],
+                  'text-offset': [0, 1.45],
+                  'text-anchor': 'top',
+                  'text-allow-overlap': true,
+                  'text-ignore-placement': true
+                },
+                paint: {
+                  'text-color': '#fff1f2',
+                  'text-halo-color': '#881337',
+                  'text-halo-width': 1.5
+                }
+              });
               var terrainProfileSampled = false;
               map.on('idle', function () {
-                if (cancelled || terrainProfileSampled || !map.queryTerrainElevation) return;
+                if (cancelled || terrainProfileSampled || !terrainAvailable || !map.queryTerrainElevation) return;
                 var terrainSettings = map.getTerrain ? map.getTerrain() : null;
                 var activeExaggeration = terrainSettings && isFinite(Number(terrainSettings.exaggeration)) && Number(terrainSettings.exaggeration) > 0 ? Number(terrainSettings.exaggeration) : 1;
                 var coordinates = terrainTransect.geometry.coordinates;
@@ -2428,23 +2706,20 @@ var geographyGroup = new THREE.Group();
                   if (runtime) runtime.popup = popup;
                 });
               }
-              map.on('click', function (event) {
-                if (cancelled || !map.queryTerrainElevation || !event || !event.lngLat) return;
-                var siteFeatures = map.queryRenderedFeatures(event.point, { layers: ['weather-selected-site'] });
-                if (siteFeatures && siteFeatures.length) return;
-                var coordinate = [Number(event.lngLat.lng), Number(event.lngLat.lat)];
+              function sampleTerrainAtCoordinate(coordinate, methodLabel) {
+                if (cancelled || !terrainAvailable || !map.queryTerrainElevation || !coordinate || coordinate.length < 2) return false;
                 var terrainSettings = map.getTerrain ? map.getTerrain() : null;
                 var activeExaggeration = terrainSettings && isFinite(Number(terrainSettings.exaggeration)) && Number(terrainSettings.exaggeration) > 0 ? Number(terrainSettings.exaggeration) : 1;
                 var renderedElevation = map.queryTerrainElevation(coordinate);
                 if (renderedElevation == null || !isFinite(Number(renderedElevation))) {
                   if (announce) announce('Terrain elevation is not available at that map point yet.');
-                  return;
+                  return false;
                 }
                 var renderedSiteElevation = map.queryTerrainElevation([geographic.longitude, geographic.latitude]);
                 var naturalElevation = Number(renderedElevation) / activeExaggeration;
                 var naturalSiteElevation = renderedSiteElevation != null && isFinite(Number(renderedSiteElevation)) ? Number(renderedSiteElevation) / activeExaggeration : geographic.elevation;
-                var comparison = geographicPointComparison(geographic.longitude, geographic.latitude, naturalSiteElevation, coordinate[0], coordinate[1], naturalElevation);
-                if (!comparison) return;
+                var comparison = geographicPointComparison(geographic.longitude, geographic.latitude, naturalSiteElevation, Number(coordinate[0]), Number(coordinate[1]), naturalElevation);
+                if (!comparison) return false;
                 var probeSource = map.getSource('weather-terrain-probe');
                 if (probeSource && probeSource.setData) probeSource.setData({
                   type: 'FeatureCollection',
@@ -2453,27 +2728,40 @@ var geographyGroup = new THREE.Group();
                     { type: 'Feature', properties: { kind: 'sample', elevation: comparison.elevation }, geometry: { type: 'Point', coordinates: coordinate } }
                   ]
                 });
-                update({ geographicTerrainProbe: comparison });
-                if (announce) announce('Terrain point sampled ' + comparison.distanceKm + ' kilometers ' + comparison.direction + ' of the observation site at ' + comparison.elevation + ' meters elevation.');
+                var selectionMethod = methodLabel || 'Pointer map selection';
+                update({ geographicTerrainProbe: comparison, geographicTerrainProbeMethod: selectionMethod });
+                var windAnalysis = geographicTerrainWindAnalysis(comparison, d.liveWeather && d.liveWeather.windDir);
+                if (announce) announce('Terrain point sampled ' + comparison.distanceKm + ' kilometers ' + comparison.direction + ' of the observation site at ' + comparison.elevation + ' meters elevation using ' + selectionMethod.toLowerCase() + '.' + (windAnalysis ? ' This is a ' + windAnalysis.position.toLowerCase() + ' sample with an average grade of ' + windAnalysis.gradePercent + ' percent.' : ''));
+                return true;
+              }
+              if (geographicRuntimeRef.current) geographicRuntimeRef.current.sampleTerrainAtCoordinate = sampleTerrainAtCoordinate;
+              map.on('click', function (event) {
+                if (cancelled || !event || !event.lngLat) return;
+                var siteFeatures = map.queryRenderedFeatures(event.point, { layers: ['weather-selected-site'] });
+                if (siteFeatures && siteFeatures.length) return;
+                sampleTerrainAtCoordinate([Number(event.lngLat.lng), Number(event.lngLat.lat)], 'Pointer map selection');
               });
-              mapReady = true;
-              update({ geographicMapLoading: false, geographicMapReady: true, geographicMapError: '', geographicMapStatus: 'Open map, administrative labels, 3D terrain, a true-scale ' + studyRadius + ' km study area, the live downwind vector, a wind-aligned terrain transect, and point elevation inspection loaded for ' + geographic.label + '. Select the site marker for the live observation or another map point to compare terrain.' });
-              if (announce) announce('Geographic 3D terrain loaded for ' + geographic.label + '.');
+              var capabilityStatus = terrainAvailable
+                ? 'Open map, administrative labels, 3D terrain, a true-scale ' + studyRadius + ' km study area, the live downwind vector, a wind-aligned terrain transect, and point elevation inspection loaded for ' + geographic.label + '. Select the site marker for the live observation or another map point to compare terrain.'
+                : 'The open base map, administrative labels, study area, and wind overlays loaded for ' + geographic.label + '. 3D terrain is unavailable: ' + terrainMessage;
+              update({ geographicMapLoading: false, geographicMapReady: true, geographicMapError: '', geographicTerrainAvailable: terrainAvailable, geographicBuildingsAvailable: buildingLayerIds.length > 0, geographicBuildings: showBuildings && buildingLayerIds.length > 0, geographicTerrainProfileStatus: terrainAvailable ? 'Sampling natural terrain elevation after map tiles load...' : 'Terrain sampling is unavailable because the terrain layer did not load.', geographicMapStatus: capabilityStatus });
+              if (announce) announce(terrainAvailable ? 'Geographic 3D terrain loaded for ' + geographic.label + '.' : 'The geographic base map loaded, but 3D terrain is unavailable.');
             } catch (error) {
               var layerMessage = error && error.message ? error.message : 'Terrain layers could not be initialized.';
-              update({ geographicMapLoading: false, geographicMapReady: true, geographicMapError: '', geographicMapStatus: 'The open base map loaded. 3D terrain is unavailable: ' + layerMessage });
+              update({ geographicMapLoading: false, geographicMapReady: true, geographicMapError: '', geographicTerrainAvailable: false, geographicBuildingsAvailable: false, geographicTerrainProfileStatus: 'Terrain sampling is unavailable because geographic evidence layers did not initialize.', geographicMapStatus: 'The open base map loaded, but geographic evidence layers are unavailable: ' + layerMessage });
             }
           });
           map.on('error', function (event) {
             if (cancelled || mapReady) return;
-            var mapMessage = event && event.error && event.error.message ? event.error.message : 'Open geographic layers could not be loaded.';
-            update({ geographicMapLoading: false, geographicMapReady: false, geographicMapError: mapMessage, geographicMapStatus: '' });
+            mapLoadWarning = event && event.error && event.error.message ? event.error.message : 'A geographic resource reported a loading error.';
+            update({ geographicMapStatus: 'Geographic layers are still loading. ' + mapLoadWarning });
           });
           if (window.ResizeObserver) {
             resizeObserver = new window.ResizeObserver(function () { if (map && map.resize) map.resize(); });
             resizeObserver.observe(geographicMapRef.current);
           }
         }).catch(function (error) {
+          if (mapLoadTimer) { window.clearTimeout(mapLoadTimer); mapLoadTimer = null; }
           if (cancelled) return;
           var message = error && error.message ? error.message : 'The open geographic map could not be loaded.';
           update({ geographicMapLoading: false, geographicMapReady: false, geographicMapError: message, geographicMapStatus: '' });
@@ -2482,6 +2770,7 @@ var geographyGroup = new THREE.Group();
 
         return function () {
           cancelled = true;
+          if (mapLoadTimer) window.clearTimeout(mapLoadTimer);
           if (resizeObserver) resizeObserver.disconnect();
           if (map && map.remove) map.remove();
           geographicRuntimeRef.current = null;
@@ -3735,6 +4024,10 @@ var geographyGroup = new THREE.Group();
             !provenanceStatus.current && h('p', { className: 'mt-3 rounded-lg border border-amber-300/30 bg-amber-300/10 p-3 text-xs font-bold ' + (dark ? 'text-amber-100' : 'text-amber-900'), role: 'alert', 'data-weather-terrain-evidence-warning': true }, provenanceStatus.detail + ' It will not count toward forecast readiness or verification.'),
             provenanceStatus.current && h('p', { className: 'mt-3 text-[11px] font-bold ' + (dark ? 'text-emerald-200' : 'text-emerald-800'), 'data-weather-terrain-evidence-current': true }, provenanceStatus.detail),
             h('p', { className: 'mt-3 text-xs leading-relaxed ' + mutedClass }, terrainEvidence.summary),
+            terrainEvidence.investigationNote && h('div', { className: 'mt-3 rounded-lg border p-3 ' + (dark ? 'border-cyan-300/25 bg-cyan-300/10' : 'border-cyan-200 bg-cyan-50'), 'data-weather-geographic-note-handoff': true },
+              h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + cyanAccentClass }, 'Mapped evidence note carried into reasoning'),
+              h('p', { className: 'mt-1 text-xs leading-relaxed ' + (dark ? 'text-slate-100' : 'text-slate-800') }, terrainEvidence.investigationNote)
+            ),
             h('p', { className: 'mt-2 text-[11px] ' + mutedClass }, 'Transect: ' + terrainEvidence.upwindDirection + ' upwind to ' + terrainEvidence.downwindDirection + ' downwind. Use with moisture, stability, and pressure evidence; terrain alone is not a forecast.'),
             h('button', { type: 'button', onClick: function () { update({ tab: 'immersive', immersiveSceneMode: 'geographic' }); if (announce) announce('Geographic 3D terrain evidence reopened.'); }, className: buttonClass + ' mt-3' }, 'Review terrain evidence')
           );
@@ -4593,6 +4886,8 @@ var geographyGroup = new THREE.Group();
       function immersiveWeatherLab() {
         var live = d.liveWeather || null;
         var useLive = d.immersiveDataSource === 'live' && !!live;
+        var observationFreshness = live ? liveObservationFreshness(live) : null;
+        var observationFreshnessClass = observationFreshness && observationFreshness.current ? 'border-emerald-300/40 bg-emerald-300/15 text-emerald-100' : observationFreshness && !observationFreshness.stale ? 'border-amber-300/40 bg-amber-300/15 text-amber-100' : 'border-rose-300/40 bg-rose-300/15 text-rose-100';
         var model = projectConditions(state, state.simHour);
         var windDir = useLive ? live.windDir : model.windDir;
         var windSpeed = useLive ? live.windSpeed : model.windSpeed;
@@ -4628,9 +4923,18 @@ var geographyGroup = new THREE.Group();
         var geographicStudyAreaVisible = d.geographicStudyAreaVisible !== false;
         var geographicWindVisible = d.geographicWindVisible !== false;
         var geographicTransectVisible = d.geographicTransectVisible !== false;
-        var geographicBuildings = d.geographicBuildings !== false;
+        var geographicBuildingsAvailable = d.geographicBuildingsAvailable;
+        var geographicBuildings = d.geographicBuildings === true && geographicBuildingsAvailable !== false;
+        var geographicTerrainAvailable = d.geographicTerrainAvailable;
+        var geographicTerrainCapability = !d.geographicMapReady ? { code: 'loading', label: 'Terrain pending' } : geographicTerrainAvailable === false ? { code: 'degraded', label: 'Base map only' } : { code: 'ready', label: '3D terrain ' + terrainExaggeration + 'x' };
+        var geographicAnalysisLensId = d.geographicAnalysisLens === 'custom' ? 'custom' : geographicAnalysisLens(d.geographicAnalysisLens).id;
+        var geographicInvestigationPaused = d.geographicInvestigationPaused === true || geographicAnalysisLensId === 'custom';
+        var geographicAnalysisLensDetail = geographicAnalysisLensId === 'custom'
+          ? { id: 'custom', label: 'Custom view', detail: 'Camera or layers were adjusted manually. The guided investigation is paused until a coordinated view or numbered step is selected.' }
+          : geographicAnalysisLens(geographicAnalysisLensId);
         var geographicOverlays = live ? geographicOverlayData(live, geographicStudyRadius) : null;
         var geographicTerrainProbe = d.geographicTerrainProbe && isFinite(Number(d.geographicTerrainProbe.latitude)) && isFinite(Number(d.geographicTerrainProbe.longitude)) && isFinite(Number(d.geographicTerrainProbe.elevation)) ? d.geographicTerrainProbe : null;
+        var geographicTerrainWind = geographicTerrainProbe && live ? geographicTerrainWindAnalysis(geographicTerrainProbe, live.windDir) : null;
         var geographicTerrainProfile = Array.isArray(d.geographicTerrainProfile) ? d.geographicTerrainProfile.filter(function (point) { return point && isFinite(Number(point.distanceKm)) && isFinite(Number(point.elevation)); }).map(function (point) { return { distanceKm: Number(point.distanceKm), elevation: Number(point.elevation) }; }) : [];
         var terrainProfileAnalysis = analyzeGeographicTerrainProfile(geographicTerrainProfile);
         var terrainProfileChart = null;
@@ -4647,43 +4951,75 @@ var geographyGroup = new THREE.Group();
           var terrainSitePoint = geographicTerrainProfile.reduce(function (nearest, point) { return Math.abs(point.distanceKm - terrainDistanceMax / 2) < Math.abs(nearest.distanceKm - terrainDistanceMax / 2) ? point : nearest; }, geographicTerrainProfile[0]);
           terrainProfileChart = { width: terrainChartWidth, height: terrainChartHeight, left: terrainChartLeft, right: terrainChartRight, top: terrainChartTop, bottom: terrainChartBottom, min: terrainMin, max: terrainMax, distanceMax: terrainDistanceMax, linePath: terrainLinePath, areaPath: terrainAreaPath, siteX: terrainX(terrainSitePoint.distanceKm), siteY: terrainY(terrainSitePoint.elevation) };
         }
+        var terrainProbeGraphic = null;
+        if (geographicTerrainProbe) {
+          var probeSiteElevation = isFinite(Number(geographicTerrainProbe.siteElevation)) ? Number(geographicTerrainProbe.siteElevation) : geographic.elevation;
+          var probeElevation = Number(geographicTerrainProbe.elevation);
+          if (isFinite(probeSiteElevation) && isFinite(probeElevation)) {
+            var probeGraphicMin = Math.min(probeSiteElevation, probeElevation);
+            var probeGraphicMax = Math.max(probeSiteElevation, probeElevation);
+            var probeGraphicSpan = Math.max(20, probeGraphicMax - probeGraphicMin);
+            var probeGraphicY = function (elevation) { return 18 + 54 * (1 - (elevation - (probeGraphicMin - probeGraphicSpan * 0.16)) / (probeGraphicSpan * 1.32)); };
+            terrainProbeGraphic = {
+              width: 320,
+              height: 104,
+              siteX: 42,
+              sampleX: 278,
+              siteY: round(probeGraphicY(probeSiteElevation), 1),
+              sampleY: round(probeGraphicY(probeElevation), 1),
+              siteElevation: Math.round(probeSiteElevation),
+              sampleElevation: Math.round(probeElevation)
+            };
+          }
+        }
         var rawGeographicViewport = d.geographicViewport || {};
         var geographicViewport = {
           zoom: isFinite(Number(rawGeographicViewport.zoom)) ? Number(rawGeographicViewport.zoom) : 10.6,
           pitch: isFinite(Number(rawGeographicViewport.pitch)) ? Number(rawGeographicViewport.pitch) : 58,
           bearing: isFinite(Number(rawGeographicViewport.bearing)) ? Number(rawGeographicViewport.bearing) : -18
         };
+        var geographicOrientation = geographicOrientationSummary(geographicViewport.bearing);
         if (geographicMode && values[5]) values[5] = ['Coordinates', geographic.latitude.toFixed(3) + ', ' + geographic.longitude.toFixed(3)];
         var tourStep = immersiveTourStep(d.immersiveTourStep);
+        var defaultGeographicFieldStep = geographicAnalysisLensId === 'context' ? 'orient' : geographicAnalysisLensId === 'site' ? 'site' : 'terrain';
+        var geographicFieldStep = geographicInvestigationStep(d.geographicInvestigationStep || defaultGeographicFieldStep);
         var tourSource = useLive ? 'live observation' : 'teaching model';
-        return h('div', { className: 'mx-auto max-w-[1600px] space-y-4 p-4', 'data-weather-immersive-lab': true },
-          h('section', { className: 'overflow-hidden rounded-2xl border border-indigo-400/30 bg-gradient-to-br from-slate-950 via-indigo-950 to-cyan-950 text-white shadow-2xl' },
-            h('div', { className: 'flex flex-wrap items-start justify-between gap-4 border-b border-white/10 p-5' },
+        return h('div', { className: 'mx-auto max-w-[1680px] space-y-4 p-3 sm:p-4', 'data-weather-immersive-lab': true },
+          h('section', { className: 'overflow-hidden rounded-3xl border border-cyan-300/20 bg-gradient-to-br from-slate-950 via-indigo-950/90 to-cyan-950 text-white shadow-2xl' },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-4 border-b border-white/10 p-4 sm:p-5' },
               h('div', { className: 'max-w-2xl' },
                 h('p', { className: 'text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300' }, 'Atmospheric analysis workspace'),
                 h('h3', { className: 'mt-1 text-2xl font-black' }, 'Immersive 3D Weather Space'),
                 h('p', { className: 'mt-2 text-sm leading-relaxed text-slate-300' }, geographicMode ? 'Explore the selected location with an open vector map, published administrative labels, hillshade, and 3D elevation. The highlighted site connects the geographic context to the live observation.' : 'A high-fidelity atmospheric digital twin for inspecting air masses, frontal structure, terrain, cloud layers, precipitation, wind vectors, and observation stations. Live observations can drive the scene while the Canvas map remains the evidence-analysis view.')
               ),
-              h('div', { className: 'flex flex-wrap gap-2' },
+              h('div', { className: 'flex flex-wrap items-center gap-2', 'data-weather-immersive-status-bar': true, role: 'status', 'aria-label': geographicMode ? 'Geographic 3D status' : 'Conceptual 3D status' },
                 h('span', { className: 'rounded-full bg-cyan-300 px-3 py-1.5 text-[11px] font-black text-cyan-950' }, geographicMode ? (d.geographicMapReady ? '\u25CF Geographic layers ready' : '\u25CB Loading geographic layers') : (engineReady ? '\u25CF 3D engine ready' : '\u25CB Loading 3D engine')),
                 h('span', { className: 'rounded-full px-3 py-1.5 text-[11px] font-black ' + (geographicMode ? 'bg-emerald-300 text-emerald-950' : (xrAvailable ? 'bg-violet-300 text-violet-950' : 'bg-white/10 text-slate-300')) }, geographicMode ? 'Open geographic data' : (xrAvailable ? 'WebXR detected' : 'Desktop 3D available')),
-                h('span', { className: 'rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-black text-slate-200' }, geographicMode ? '3D terrain ' + terrainExaggeration + 'x' : (immersiveQuality === 'high' ? 'High fidelity' : immersiveQuality === 'balanced' ? 'Balanced quality' : 'Performance mode'))
+                h('span', { className: 'rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-black text-slate-200', 'data-weather-geographic-terrain-capability': geographicMode ? geographicTerrainCapability.code : undefined }, geographicMode ? geographicTerrainCapability.label : (immersiveQuality === 'high' ? 'High fidelity' : immersiveQuality === 'balanced' ? 'Balanced quality' : 'Performance mode'))
               )
             ),
-            h('div', { className: 'grid gap-4 p-5 lg:grid-cols-[minmax(0,1fr)_360px]' },
-              h('div', { className: 'relative min-h-[440px] overflow-hidden rounded-2xl border border-white/10 bg-slate-950 shadow-[inset_0_0_0_1px_rgba(125,211,252,0.06)] md:min-h-[520px]' },
-                h('canvas', { ref: immersiveCanvasRef, hidden: geographicMode, className: 'block h-[min(74vh,720px)] min-h-[440px] w-full md:min-h-[520px]', 'data-weather-immersive-canvas': true, role: 'img', 'aria-label': 'Interactive three-dimensional weather scene for ' + sceneLabel + '. ' + sceneCondition + '. Use pointer or touch to orbit and zoom.' }),
-                geographicMode && h('div', { ref: geographicMapRef, className: 'absolute inset-0 min-h-[440px] w-full md:min-h-[520px]', 'data-weather-geographic-map': true, role: 'region', 'aria-label': 'Interactive open geographic map and 3D terrain centered on ' + geographic.label + '. Use map controls, drag, or keyboard navigation to explore.' }),
-                geographicMode && h('div', { className: 'pointer-events-none absolute left-3 top-3 z-20', 'data-weather-geographic-camera-controls': true },
-                  h('div', { className: 'pointer-events-auto flex flex-wrap gap-1 rounded-xl border border-white/15 bg-slate-950/85 p-1.5 shadow-xl backdrop-blur-md', role: 'group', 'aria-label': 'Geographic camera views' },
-                    [['region', 'Region'], ['local', 'Local'], ['site', 'Site']].map(function (view) {
-                      var active = geographicCameraPreset === view[0];
+            h('div', { className: 'grid gap-4 p-3 sm:p-5 xl:grid-cols-[minmax(0,1fr)_380px]' },
+              h('div', { className: 'relative min-h-[500px] overflow-hidden rounded-2xl border border-white/10 bg-slate-950 shadow-[inset_0_0_0_1px_rgba(125,211,252,0.08)] md:min-h-[600px] xl:min-h-[680px]' },
+                h('canvas', { ref: immersiveCanvasRef, hidden: geographicMode, className: 'block h-[min(78vh,780px)] min-h-[500px] w-full md:min-h-[600px] xl:min-h-[680px]', 'data-weather-immersive-canvas': true, role: 'img', 'aria-label': 'Interactive three-dimensional weather scene for ' + sceneLabel + '. ' + sceneCondition + '. Use pointer or touch to orbit and zoom.' }),
+                !geographicMode && h('div', { className: 'pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-cyan-950/10 via-transparent to-slate-950/50', 'data-weather-conceptual-vignette': true, 'aria-hidden': true }),
+                geographicMode && h('div', { ref: geographicMapRef, className: 'absolute inset-0 min-h-[500px] w-full md:min-h-[600px] xl:min-h-[680px]', 'data-weather-geographic-map': true, role: 'region', 'aria-label': 'Interactive open geographic map and 3D terrain centered on ' + geographic.label + '. Use map controls, drag, or keyboard navigation to explore.', 'aria-describedby': 'weather-geographic-map-instructions' }),
+                geographicMode && h('div', { className: 'pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-slate-950/20 via-transparent to-slate-950/45', 'data-weather-geographic-vignette': true, 'aria-hidden': true }),
+                geographicMode && h('div', { className: 'pointer-events-none absolute left-3 right-14 top-3 z-20 sm:right-auto', 'data-weather-geographic-camera-controls': true },
+                  h('div', { className: 'pointer-events-auto flex flex-wrap items-center gap-1 rounded-xl border border-white/15 bg-slate-950/88 p-1.5 shadow-2xl backdrop-blur-md', role: 'group', 'aria-label': 'Geographic camera views', 'data-weather-geographic-command-bar': true },
+                    h('span', { className: 'px-2 text-[10px] font-black uppercase tracking-widest text-slate-400', 'aria-hidden': true }, 'View'),
+                    [
+                      { id: 'region', icon: '\u25A7', label: 'Region' },
+                      { id: 'local', icon: '\u2316', label: 'Local' },
+                      { id: 'site', icon: '\u25CE', label: 'Site' }
+                    ].map(function (view) {
+                      var active = geographicCameraPreset === view.id;
                       return h('button', {
-                        key: view[0], type: 'button', disabled: !d.geographicMapReady,
-                        onClick: function () { setGeographicCameraPreset(view[0]); },
+                        key: view.id, type: 'button', disabled: !d.geographicMapReady,
+                        onClick: function () { setGeographicCameraPreset(view.id); },
+                        'aria-label': view.label + ' camera view',
                         'aria-pressed': active,
-                        className: 'min-h-11 rounded-lg border px-3 py-2 text-[11px] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:opacity-40 ' + (active ? 'border-emerald-300 bg-emerald-300 text-emerald-950' : 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10')
-                      }, view[1]);
+                        className: 'flex min-h-11 items-center gap-1.5 rounded-lg border px-3 py-2 text-[11px] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:opacity-40 ' + (active ? 'border-emerald-300 bg-emerald-300 text-emerald-950 shadow-lg' : 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10')
+                      }, h('span', { className: 'text-sm', 'aria-hidden': true }, view.icon), h('span', null, view.label));
                     })
                   )
                 ),
@@ -4696,44 +5032,64 @@ var geographyGroup = new THREE.Group();
                     h('div', { className: 'flex items-center gap-2 ' + (geographicTransectVisible ? '' : 'opacity-45') }, h('span', { className: 'w-4 border-t-2 border-dashed border-violet-300', 'aria-hidden': true }), h('span', null, 'Transect ' + (geographicTransectVisible ? 'on' : 'off'))),
                     geographicTerrainProbe && h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'h-2.5 w-2.5 rounded-full border-2 border-white bg-rose-400', 'aria-hidden': true }), h('span', null, 'Terrain sample'))
                   ),
-                  h('p', { className: 'mt-2 border-t border-white/10 pt-1.5 text-[10px] font-bold text-slate-300', 'data-weather-geographic-telemetry': true }, 'Zoom ' + geographicViewport.zoom.toFixed(1) + ' | Tilt ' + Math.round(geographicViewport.pitch) + '\u00B0 | Bearing ' + Math.round(geographicViewport.bearing) + '\u00B0')
+                  h('div', { className: 'mt-2 flex items-center gap-2 border-t border-white/10 pt-1.5', 'data-weather-geographic-orientation': true, role: 'img', 'aria-label': geographicOrientation.label },
+                    h('span', { className: 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/15 bg-black/20 text-[11px] font-black text-slate-100', style: { transform: 'rotate(' + geographicOrientation.northRotation + 'deg)' }, 'aria-hidden': true }, '\u2191'),
+                    h('span', { className: 'text-[10px] font-bold text-slate-300' }, 'N | ' + geographicOrientation.label)
+                  ),
+                  h('p', { className: 'mt-1 text-[10px] font-bold text-slate-300', 'data-weather-geographic-telemetry': true }, 'Zoom ' + geographicViewport.zoom.toFixed(1) + ' | Tilt ' + Math.round(geographicViewport.pitch) + '\u00B0 | Bearing ' + Math.round(geographicViewport.bearing) + '\u00B0'),
+                  h('p', { id: 'weather-geographic-map-instructions', className: 'mt-2 max-w-[220px] border-t border-white/10 pt-1.5 text-[11px] leading-relaxed text-slate-300' }, 'Keyboard: focus the map, use arrow keys to pan and plus or minus to zoom. Use Sample map center to inspect terrain without a pointer.')
                 ),
                 !geographicMode && h('div', { className: 'pointer-events-none absolute left-3 right-3 top-3 z-10 flex flex-wrap items-start justify-between gap-2' },
-                  h('div', { className: 'pointer-events-auto flex flex-wrap gap-1 rounded-xl border border-white/15 bg-slate-950/80 p-1.5 shadow-xl backdrop-blur-md', role: 'group', 'aria-label': '3D camera views', 'data-weather-camera-controls': true },
-                    [['overview', 'Overview'], ['front', 'Front section'], ['surface', 'Surface']].map(function (view) {
-                      var active = immersiveCameraPreset === view[0];
+                  h('div', { className: 'pointer-events-auto flex flex-wrap items-center gap-1 rounded-xl border border-white/15 bg-slate-950/85 p-1.5 shadow-2xl backdrop-blur-md', role: 'group', 'aria-label': '3D camera views', 'data-weather-camera-controls': true, 'data-weather-conceptual-command-bar': true },
+                    h('span', { className: 'px-2 text-[10px] font-black uppercase tracking-widest text-slate-400', 'aria-hidden': true }, 'View'),
+                    [
+                      { id: 'overview', icon: '\u25A7', label: 'Overview' },
+                      { id: 'front', icon: '\u25B3', label: 'Front section' },
+                      { id: 'surface', icon: '\u25CE', label: 'Surface' }
+                    ].map(function (view) {
+                      var active = immersiveCameraPreset === view.id;
                       return h('button', {
-                        key: view[0],
+                        key: view.id,
                         type: 'button',
                         disabled: !engineReady || !!engineError,
-                        onClick: function () { setImmersiveCameraPreset(view[0]); },
+                        onClick: function () { setImmersiveCameraPreset(view.id); },
+                        'aria-label': view.label + ' camera view',
                         'aria-pressed': active,
-                        className: 'min-h-11 rounded-lg border px-3 py-2 text-[11px] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 disabled:opacity-40 ' + (active ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10')
-                      }, view[1]);
+                        className: 'flex min-h-11 items-center gap-1.5 rounded-lg border px-3 py-2 text-[11px] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 disabled:opacity-40 ' + (active ? 'border-cyan-300 bg-cyan-300 text-cyan-950 shadow-lg' : 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10')
+                      }, h('span', { className: 'text-sm', 'aria-hidden': true }, view.icon), h('span', null, view.label));
                     })
                   ),
                   h('div', {
-                    className: 'pointer-events-none flex items-center gap-3 rounded-xl border border-white/15 bg-slate-950/80 px-3 py-2 shadow-xl backdrop-blur-md',
+                    className: 'pointer-events-none grid grid-cols-2 gap-x-4 gap-y-2 rounded-xl border border-white/15 bg-slate-950/85 px-4 py-3 shadow-2xl backdrop-blur-md sm:grid-cols-4',
                     'data-weather-scene-hud': true,
-                    'aria-label': (useLive ? 'Live observation' : 'Teaching model hour ' + state.simHour) + '. Pressure ' + (useLive ? live.pressure : model.pressure) + ' hectopascals. Wind ' + cardinal(windDir) + ' ' + windSpeed + ' kilometers per hour.'
+                    'data-weather-scene-instruments': true,
+                    role: 'group',
+                    'aria-label': (useLive ? 'Live observation' : 'Teaching model hour ' + state.simHour) + '. Temperature ' + (useLive ? live.temperature : model.temperature) + ' degrees Celsius. Pressure ' + (useLive ? live.pressure : model.pressure) + ' hectopascals. Wind ' + cardinal(windDir) + ' ' + windSpeed + ' kilometers per hour.'
                   },
-                    h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, useLive ? 'Observed' : 'Model hour'), h('p', { className: 'text-xs font-black text-white' }, useLive ? (live.observedAt || 'Latest') : 'T+' + state.simHour + ' h')),
-                    h('div', { className: 'h-8 w-px bg-white/15', 'aria-hidden': true }),
-                    h('div', null, h('p', { className: 'text-[11px] text-slate-300' }, 'Pressure'), h('p', { className: 'text-xs font-black text-white' }, (useLive ? live.pressure : model.pressure) + ' hPa')),
-                    h('div', { className: 'flex items-center gap-2' },
-                      h('span', { className: 'flex h-9 w-9 items-center justify-center rounded-full border border-cyan-300/40 bg-cyan-300/10 text-lg text-cyan-200', style: { transform: 'rotate(' + windDir + 'deg)' }, 'aria-hidden': true }, '\u2191'),
-                      h('div', null, h('p', { className: 'text-[11px] text-slate-300' }, 'Wind'), h('p', { className: 'text-xs font-black text-white' }, cardinal(windDir) + ' ' + windSpeed))
-                    )
+                    [
+                      [useLive ? 'Observed' : 'Model hour', useLive ? (live.observedAt || 'Latest') : 'T+' + state.simHour + ' h'],
+                      ['Temperature', (useLive ? live.temperature : model.temperature) + '\u00B0C'],
+                      ['Pressure', (useLive ? live.pressure : model.pressure) + ' hPa'],
+                      ['Wind', cardinal(windDir) + ' ' + windSpeed + ' km/h']
+                    ].map(function (metric, index) {
+                      return h('div', { key: metric[0], className: index === 3 ? 'flex items-center gap-2' : '' },
+                        index === 3 && h('span', { className: 'flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-cyan-300/40 bg-cyan-300/10 text-base text-cyan-200', style: { transform: 'rotate(' + windDir + 'deg)' }, 'aria-hidden': true }, '\u2191'),
+                        h('div', { className: 'min-w-0' },
+                          h('p', { className: 'truncate text-[11px] font-bold uppercase tracking-wide text-slate-400' }, metric[0]),
+                          h('p', { className: 'mt-0.5 truncate text-xs font-black text-white' }, metric[1])
+                        )
+                      );
+                    })
                   )
                 ),
-                !geographicMode && !engineReady && !engineError && h('div', { className: 'absolute inset-0 flex items-center justify-center bg-slate-950/90 text-center' }, h('div', { className: 'max-w-sm p-6' }, h('div', { className: 'mx-auto h-10 w-10 animate-spin rounded-full border-4 border-cyan-300/20 border-t-cyan-300', 'aria-hidden': true }), h('p', { className: 'mt-4 text-sm font-black' }, 'Loading the 3D atmosphere engine...'), h('p', { className: 'mt-1 text-xs text-slate-400' }, 'The Canvas 2D map remains available if WebGL cannot load.'))),
-                !geographicMode && engineError && h('div', { className: 'absolute inset-0 flex items-center justify-center bg-slate-950/95 p-6 text-center', role: 'alert' }, h('div', { className: 'max-w-md' }, h('p', { className: 'text-base font-black' }, '3D view unavailable'), h('p', { className: 'mt-2 text-sm text-slate-300' }, engineError), h('button', { type: 'button', onClick: function () { update({ tab: 'map' }); }, className: 'mt-4 rounded-lg bg-sky-600 px-4 py-2 text-sm font-black text-white' }, 'Return to 2D Canvas map'))),
+                !geographicMode && !engineReady && !engineError && h('div', { className: 'absolute inset-0 z-20 flex items-center justify-center bg-slate-950/90 text-center' }, h('div', { className: 'max-w-sm p-6' }, h('div', { className: 'mx-auto h-10 w-10 animate-spin rounded-full border-4 border-cyan-300/20 border-t-cyan-300', 'aria-hidden': true }), h('p', { className: 'mt-4 text-sm font-black' }, 'Loading the 3D atmosphere engine...'), h('p', { className: 'mt-1 text-xs text-slate-400' }, 'The Canvas 2D map remains available if WebGL cannot load.'))),
+                !geographicMode && engineError && h('div', { className: 'absolute inset-0 z-20 flex items-center justify-center bg-slate-950/95 p-6 text-center', role: 'alert' }, h('div', { className: 'max-w-md' }, h('p', { className: 'text-base font-black' }, '3D view unavailable'), h('p', { className: 'mt-2 text-sm text-slate-300' }, engineError), h('button', { type: 'button', onClick: function () { update({ tab: 'map' }); }, className: 'mt-4 rounded-lg bg-sky-600 px-4 py-2 text-sm font-black text-white' }, 'Return to 2D Canvas map'))),
                 geographicMode && (d.geographicMapLoading || (!d.geographicMapReady && !d.geographicMapError)) && h('div', { className: 'absolute inset-0 z-10 flex items-center justify-center bg-slate-950/90 text-center', role: 'status', 'aria-live': 'polite' }, h('div', { className: 'max-w-sm p-6' }, h('div', { className: 'mx-auto h-10 w-10 animate-spin rounded-full border-4 border-emerald-300/20 border-t-emerald-300', 'aria-hidden': true }), h('p', { className: 'mt-4 text-sm font-black' }, 'Loading open geographic layers...'), h('p', { className: 'mt-1 text-xs text-slate-400' }, 'OpenFreeMap, OpenStreetMap labels, and 3D terrain load only in this opt-in mode.'))),
                 geographicMode && d.geographicMapError && h('div', { className: 'absolute inset-0 z-10 flex items-center justify-center bg-slate-950/95 p-6 text-center', role: 'alert' }, h('div', { className: 'max-w-md' }, h('p', { className: 'text-base font-black' }, 'Geographic view unavailable'), h('p', { className: 'mt-2 text-sm text-slate-300' }, d.geographicMapError), h('div', { className: 'mt-4 flex flex-wrap items-center justify-center gap-2' },
                   h('button', { type: 'button', onClick: function () { update({ geographicMapError: '', geographicMapAttempt: (d.geographicMapAttempt || 0) + 1 }); }, className: 'min-h-11 rounded-lg bg-emerald-300 px-4 py-2 text-sm font-black text-emerald-950' }, 'Retry loading'),
                   h('button', { type: 'button', onClick: function () { update({ immersiveSceneMode: 'conceptual', geographicMapError: '' }); }, className: 'min-h-11 rounded-lg bg-cyan-300 px-4 py-2 text-sm font-black text-cyan-950' }, 'Use conceptual 3D instead')))),
-                !geographicMode && h('div', { className: 'pointer-events-none absolute bottom-3 left-3 right-3 flex flex-wrap items-end justify-between gap-2' },
-                  h('div', { className: 'rounded-xl bg-slate-950/75 px-3 py-2 backdrop-blur-sm' }, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, useLive ? 'Live observation scene' : 'Teaching model scene'), h('p', { className: 'text-xs font-black' }, sceneLabel)),
+                !geographicMode && h('div', { className: 'pointer-events-none absolute bottom-3 left-3 right-3 z-10 flex flex-wrap items-end justify-between gap-2' },
+                  h('div', { className: 'rounded-xl bg-slate-950/75 px-3 py-2 backdrop-blur-sm' }, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, useLive ? observationFreshness.label + ' scene' : 'Teaching model scene'), h('p', { className: 'text-xs font-black' }, sceneLabel)),
                   h('div', { className: 'rounded-xl bg-slate-950/75 px-3 py-2 text-right text-[11px] text-slate-300 backdrop-blur-sm' }, 'Drag to orbit | Scroll or pinch to zoom'),
 h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4 py-3 text-left shadow-2xl backdrop-blur-md', 'data-weather-tour-overlay': true },
                     h('p', { className: 'text-[11px] font-black uppercase tracking-[0.18em] text-cyan-300' }, '3D investigation step ' + (tourStep.index + 1) + ' of ' + tourStep.total),
@@ -4741,29 +5097,74 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                     h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-300' }, tourStep.prompt)
                   )
                 ),
-                geographicMode && h('div', { className: 'pointer-events-none absolute bottom-8 left-3 z-10 max-w-[min(78%,520px)] rounded-xl border border-white/15 bg-slate-950/85 px-4 py-3 shadow-xl backdrop-blur-md', 'data-weather-geographic-hud': true, 'aria-label': geographicObservationSummary(live) },
-                  h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-emerald-300' }, 'Selected live observation site'),
-                  h('p', { className: 'mt-1 text-sm font-black text-white' }, geographic.label),
-                  h('p', { className: 'mt-1 text-[11px] text-slate-300' }, geographic.latitude.toFixed(4) + ', ' + geographic.longitude.toFixed(4) + (geographic.elevation != null ? ' | ' + geographic.elevation + ' m elevation' : '')),
-                  geographicOverlays && h('p', { className: 'mt-2 text-[11px] font-bold text-sky-200' }, 'Observed wind flows downwind toward ' + cardinal(geographicOverlays.downwindBearing) + ' | ' + geographicOverlays.windDistanceKm + ' km teaching vector'),
-                  geographicOverlays && h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-400' }, 'Vector length is scaled from observed speed; it is not a forecast footprint.'),
-                  geographicTerrainProbe && h('p', { className: 'mt-2 text-[11px] font-bold text-rose-200', 'data-weather-terrain-probe-hud': true }, 'Terrain sample: ' + Number(geographicTerrainProbe.elevation).toFixed(0) + ' m | ' + Number(geographicTerrainProbe.distanceKm).toFixed(2) + ' km ' + geographicTerrainProbe.direction + ' of site')
+                geographicMode && h('div', { className: 'pointer-events-none absolute bottom-8 left-3 right-3 z-10 rounded-2xl border border-white/15 bg-slate-950/88 px-4 py-3 shadow-2xl backdrop-blur-md sm:right-auto sm:max-w-[560px]', 'data-weather-geographic-hud': true, role: 'group', 'aria-label': geographicObservationSummary(live) },
+                  h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+                    h('div', { className: 'min-w-0' },
+                      h('p', { className: 'text-[11px] font-black uppercase tracking-[0.18em] text-emerald-300' }, 'Observation command display'),
+                      h('p', { className: 'mt-0.5 truncate text-sm font-black text-white' }, geographic.label),
+                      h('p', { className: 'mt-0.5 text-[11px] text-slate-400' }, geographic.latitude.toFixed(4) + ', ' + geographic.longitude.toFixed(4) + (geographic.elevation != null ? ' | Site ' + geographic.elevation + ' m' : ''))
+                    ),
+                    h('div', { className: 'flex flex-wrap justify-end gap-1.5' },
+                      h('span', { className: 'rounded-full border px-2.5 py-1 text-[11px] font-black ' + observationFreshnessClass, 'data-weather-observation-freshness': observationFreshness.code, 'aria-label': observationFreshness.label + '. ' + observationFreshness.detail }, observationFreshness.badge),
+                      h('span', { className: 'rounded-full border border-white/10 bg-white/10 px-2.5 py-1 text-[11px] font-black text-slate-100' }, live.condition)
+                    )
+                  ),
+                  h('div', { className: 'mt-3 flex items-center gap-3' },
+                    geographicOverlays && h('svg', { viewBox: '0 0 96 96', className: 'h-20 w-20 shrink-0 overflow-visible', role: 'img', 'aria-labelledby': 'weather-wind-compass-title weather-wind-compass-desc', 'data-weather-wind-compass': true },
+                      h('title', { id: 'weather-wind-compass-title' }, 'Observed wind compass'),
+                      h('desc', { id: 'weather-wind-compass-desc' }, 'Wind arrives from ' + cardinal(live.windDir) + ' and flows toward ' + cardinal(geographicOverlays.downwindBearing) + ' at ' + live.windSpeed + ' kilometers per hour.'),
+                      h('circle', { cx: 48, cy: 48, r: 37, fill: '#020617', fillOpacity: 0.72, stroke: '#64748b', strokeWidth: 1 }),
+                      h('circle', { cx: 48, cy: 48, r: 28, fill: 'none', stroke: '#334155', strokeWidth: 1, strokeDasharray: '2 3' }),
+                      h('line', { x1: 48, y1: 15, x2: 48, y2: 81, stroke: '#334155', strokeWidth: 1 }),
+                      h('line', { x1: 15, y1: 48, x2: 81, y2: 48, stroke: '#334155', strokeWidth: 1 }),
+                      h('text', { x: 48, y: 8, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 8, fontWeight: 500 }, 'N'),
+                      h('text', { x: 89, y: 51, textAnchor: 'middle', fill: '#94a3b8', fontSize: 8 }, 'E'),
+                      h('text', { x: 48, y: 94, textAnchor: 'middle', fill: '#94a3b8', fontSize: 8 }, 'S'),
+                      h('text', { x: 7, y: 51, textAnchor: 'middle', fill: '#94a3b8', fontSize: 8 }, 'W'),
+                      h('g', { transform: 'rotate(' + geographicOverlays.downwindBearing + ' 48 48)' },
+                        h('line', { x1: 48, y1: 63, x2: 48, y2: 20, stroke: '#38bdf8', strokeWidth: 4, strokeLinecap: 'round' }),
+                        h('path', { d: 'M48 12 L41 24 L55 24 Z', fill: '#7dd3fc', stroke: '#e0f2fe', strokeWidth: 1 })
+                      ),
+                      h('circle', { cx: 48, cy: 48, r: 5, fill: '#0ea5e9', stroke: '#e0f2fe', strokeWidth: 2 })
+                    ),
+                    h('div', { className: 'grid min-w-0 flex-1 grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4', 'data-weather-observation-instruments': true, role: 'group', 'aria-label': 'Live observation instruments' },
+                      [
+                        ['Temperature', live.temperature + '\u00B0C'],
+                        ['Relative humidity', live.humidity + '%'],
+                        ['Pressure', live.pressure + ' hPa'],
+                        ['Visibility', live.visibility != null ? Math.round(live.visibility / 100) / 10 + ' km' : 'Not reported']
+                      ].map(function (metric) {
+                        return h('div', { key: metric[0], className: 'min-w-0' },
+                          h('p', { className: 'truncate text-[11px] font-bold uppercase tracking-wide text-slate-400' }, metric[0]),
+                          h('p', { className: 'mt-0.5 text-xs font-black text-white' }, metric[1])
+                        );
+                      })
+                    )
+                  ),
+                  geographicOverlays && h('div', { className: 'mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-white/10 pt-2 text-[11px]' },
+                    h('span', { className: 'font-black text-sky-200' }, 'FROM ' + cardinal(live.windDir) + ' ' + live.windSpeed + ' km/h'),
+                    h('span', { className: 'font-black text-cyan-100' }, 'TO ' + cardinal(geographicOverlays.downwindBearing)),
+                    h('span', { className: 'text-slate-400' }, 'Observed ' + (live.observedAt || 'latest') + (live.timezone ? ' ' + live.timezone : '')),
+                    h('span', { className: observationFreshness.current ? 'text-emerald-200' : observationFreshness.stale ? 'text-rose-200' : 'text-amber-200' }, observationFreshness.detail)
+                  ),
+                  geographicOverlays && h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-400' }, geographicOverlays.windDistanceKm + ' km teaching vector scaled from observed speed; not a forecast footprint.'),
+                  geographicTerrainProbe && h('p', { className: 'mt-2 border-l-2 border-rose-300/60 pl-2 text-[11px] font-bold text-rose-200', 'data-weather-terrain-probe-hud': true }, 'Terrain sample ' + Number(geographicTerrainProbe.elevation).toFixed(0) + ' m | ' + Number(geographicTerrainProbe.distanceKm).toFixed(2) + ' km ' + geographicTerrainProbe.direction + ' of site' + (geographicTerrainWind ? ' | ' + geographicTerrainWind.position : ''))
                 )
               ),
-              h('aside', { className: 'space-y-3' },
+              h('aside', { className: 'min-w-0 space-y-3', 'data-weather-immersive-control-rail': true },
                 h('section', { className: 'rounded-xl border border-emerald-300/25 bg-emerald-950/20 p-4', 'data-weather-scene-mode': true },
                   h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-emerald-300' }, 'Immersive scene mode'),
                   h('div', { className: 'mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Immersive scene mode' },
-                    h('button', { type: 'button', onClick: function () { update({ immersiveSceneMode: 'conceptual', geographicMapError: '' }); }, 'aria-pressed': !geographicMode, className: 'min-h-11 rounded-lg border px-3 py-2 text-xs font-black ' + (!geographicMode ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5 text-white') }, 'Conceptual 3D'),
-                    h('button', { type: 'button', disabled: !geographic.available, onClick: function () { update({ immersiveSceneMode: 'geographic', immersiveDataSource: 'live', geographicMapError: '' }); }, 'aria-pressed': geographicMode, 'aria-describedby': 'weather-geographic-mode-help', className: 'min-h-11 rounded-lg border px-3 py-2 text-xs font-black disabled:cursor-not-allowed disabled:opacity-40 ' + (geographicMode ? 'border-emerald-300 bg-emerald-300 text-emerald-950' : 'border-white/10 bg-white/5 text-white') }, 'Geographic terrain')
+                    h('button', { type: 'button', onClick: function () { update({ immersiveSceneMode: 'conceptual', geographicMapError: '' }); }, 'aria-pressed': !geographicMode, className: 'flex min-h-12 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-black ' + (!geographicMode ? 'border-cyan-300 bg-cyan-300 text-cyan-950 shadow-lg' : 'border-white/10 bg-white/5 text-white') }, h('span', { className: 'text-base', 'aria-hidden': true }, '\u25C8'), h('span', null, 'Conceptual 3D')),
+                    h('button', { type: 'button', disabled: !geographic.available, onClick: function () { update({ immersiveSceneMode: 'geographic', immersiveDataSource: 'live', geographicMapError: '' }); }, 'aria-pressed': geographicMode, 'aria-describedby': 'weather-geographic-mode-help', className: 'flex min-h-12 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-black disabled:cursor-not-allowed disabled:opacity-40 ' + (geographicMode ? 'border-emerald-300 bg-emerald-300 text-emerald-950 shadow-lg' : 'border-white/10 bg-white/5 text-white') }, h('span', { className: 'text-base', 'aria-hidden': true }, '\u231E'), h('span', null, 'Geographic terrain'))
                   ),
                   h('p', { id: 'weather-geographic-mode-help', className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, geographic.available ? 'Opt-in live map centered on ' + geographic.label + '. Switching modes contacts the approved map and terrain providers.' : 'Load a live location below to enable the open geographic map. Nothing loads automatically.')
                 ),
                 h('section', { className: 'rounded-xl border border-white/10 bg-white/5 p-4', 'data-weather-immersive-source': true },
-                  h('div', { className: 'flex items-start justify-between gap-2' }, h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, geographicMode ? 'Mapped observation' : 'Scene data'), h('h4', { className: 'text-sm font-black' }, geographicMode ? geographic.label : (useLive ? 'Live observations' : 'Teaching model'))), h('span', { className: 'rounded-full bg-white/10 px-2 py-1 text-[11px] font-black' }, geographicMode ? 'MAP' : (useLive ? 'LIVE' : 'MODEL'))),
+                  h('div', { className: 'flex items-start justify-between gap-2' }, h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, geographicMode ? 'Mapped observation' : 'Scene data'), h('h4', { className: 'text-sm font-black' }, geographicMode ? geographic.label : (useLive ? observationFreshness.label : 'Teaching model'))), h('span', { className: 'rounded-full border px-2 py-1 text-[11px] font-black ' + (useLive ? observationFreshnessClass : 'border-white/10 bg-white/10 text-slate-200'), 'data-weather-source-freshness': useLive ? observationFreshness.code : 'model' }, geographicMode ? 'MAP \u2022 ' + observationFreshness.badge : (useLive ? observationFreshness.badge : 'MODEL'))),
                   !geographicMode && h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Immersive weather data source' },
                     h('button', { type: 'button', onClick: function () { update({ immersiveDataSource: 'model' }); }, 'aria-pressed': !useLive, className: 'min-h-11 rounded-lg border px-3 py-2 text-[11px] font-black ' + (!useLive ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5') }, 'Teaching model'),
-                    h('button', { type: 'button', disabled: !live, onClick: function () { update({ immersiveDataSource: 'live' }); }, 'aria-pressed': useLive, className: 'min-h-11 rounded-lg border px-3 py-2 text-[11px] font-black disabled:opacity-40 ' + (useLive ? 'border-emerald-300 bg-emerald-300 text-emerald-950' : 'border-white/10 bg-white/5') }, live ? 'Use live weather' : 'Load live weather')
+                    h('button', { type: 'button', disabled: !live, onClick: function () { update({ immersiveDataSource: 'live' }); }, 'aria-pressed': useLive, className: 'min-h-11 rounded-lg border px-3 py-2 text-[11px] font-black disabled:opacity-40 ' + (useLive ? 'border-emerald-300 bg-emerald-300 text-emerald-950' : 'border-white/10 bg-white/5') }, live ? (observationFreshness.current ? 'Use live weather' : 'Use saved observation') : 'Load live weather')
                   ),
 !geographicMode && h('label', { htmlFor: 'weather-immersive-geography', className: 'mt-3 block text-[11px] font-black text-cyan-200' }, 'Conceptual terrain base',
                     h('select', {
@@ -4803,31 +5204,83 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                     )
                   ),
                   !geographicMode && h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-300', role: 'status', 'aria-live': 'polite', 'data-weather-focus-status': true }, focusDetail.detail),
+                  geographicMode && h('div', { className: 'mt-3 rounded-xl border border-emerald-300/20 bg-slate-950/45 p-3', 'data-weather-geographic-analysis-lenses': true },
+                    h('div', { className: 'flex items-center justify-between gap-3' },
+                      h('div', null,
+                        h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-emerald-300' }, 'Analysis view'),
+                        h('p', { className: 'mt-0.5 text-[11px] text-slate-400' }, 'Coordinate camera + evidence layers')
+                      ),
+                      h('span', { className: 'rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-black text-slate-200' }, geographicAnalysisLensDetail.label)
+                    ),
+                    h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3', role: 'group', 'aria-label': 'Geographic analysis views' },
+                      GEOGRAPHIC_ANALYSIS_LENSES.map(function (lens) {
+                        var active = geographicAnalysisLensId === lens.id;
+                        var lensView = geographicCameraView(lens.camera);
+                        return h('button', {
+                          key: lens.id,
+                          type: 'button',
+                          disabled: !d.geographicMapReady,
+                          onClick: function () { applyGeographicAnalysisLens(lens.id, { geographicInvestigationStep: lens.id === 'context' ? 'orient' : lens.id === 'site' ? 'site' : 'terrain' }); },
+                          'aria-pressed': active,
+                          'aria-describedby': 'weather-geographic-analysis-status',
+                          className: 'group flex min-h-16 items-center gap-3 rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-col sm:justify-center sm:text-center xl:flex-row xl:justify-start xl:text-left 2xl:flex-col 2xl:justify-center 2xl:text-center ' + (active ? 'border-emerald-300 bg-emerald-300 text-emerald-950 shadow-lg shadow-emerald-950/30' : 'border-white/15 bg-white/5 text-slate-100 hover:border-emerald-300/40 hover:bg-white/10')
+                        },
+                          h('span', { className: 'text-xl leading-none', 'aria-hidden': true }, lens.icon),
+                          h('span', { className: 'min-w-0' },
+                            h('span', { className: 'block text-[11px] font-black leading-tight' }, lens.label),
+                            h('span', { className: 'mt-0.5 block text-[11px] leading-tight opacity-75' }, lensView.id.charAt(0).toUpperCase() + lensView.id.slice(1) + ' camera')
+                          )
+                        );
+                      })
+                    ),
+                    h('p', { id: 'weather-geographic-analysis-status', className: 'mt-3 border-l-2 border-emerald-300/50 pl-2 text-[11px] leading-relaxed text-slate-300', role: 'status', 'aria-live': 'polite' }, geographicAnalysisLensDetail.detail)
+                  ),
+                  geographicMode && h('div', { className: 'mt-4 flex items-center gap-2 border-t border-white/10 pt-3' },
+                    h('span', { className: 'h-px flex-1 bg-white/10', 'aria-hidden': true }),
+                    h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-slate-400' }, 'Fine-tune layers'),
+                    h('span', { className: 'h-px flex-1 bg-white/10', 'aria-hidden': true })
+                  ),
                   geographicMode && h('label', { htmlFor: 'weather-geographic-exaggeration', className: 'mt-3 block text-[11px] font-black text-emerald-200' }, 'Terrain emphasis',
-                    h('select', { id: 'weather-geographic-exaggeration', value: String(terrainExaggeration), onChange: function (event) { setGeographicTerrainExaggeration(event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-bold text-white focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-300/40' },
+                    h('select', { id: 'weather-geographic-exaggeration', value: String(terrainExaggeration), disabled: !d.geographicMapReady || geographicTerrainAvailable === false, onChange: function (event) { setGeographicTerrainExaggeration(event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-bold text-white focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-300/40 disabled:cursor-not-allowed disabled:opacity-50' },
                       h('option', { value: '1' }, 'Natural elevation (1x)'),
                       h('option', { value: '1.35' }, 'Classroom emphasis (1.35x)'),
                       h('option', { value: '2' }, 'Strong emphasis (2x)')
-                    )
+                    ),
+                    geographicTerrainAvailable === false && h('span', { className: 'mt-1 block text-[11px] font-normal leading-relaxed text-amber-200', 'data-weather-terrain-degraded-help': true }, 'Terrain tiles did not load. The open vector map, study area, and wind overlays remain available.')
                   ),
                   geographicMode && h('label', { htmlFor: 'weather-geographic-radius', className: 'mt-3 block text-[11px] font-black text-emerald-200' }, 'Study-area radius',
-                    h('select', { id: 'weather-geographic-radius', value: String(geographicStudyRadius), onChange: function (event) { setGeographicStudyRadius(event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-bold text-white focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-300/40' },
+                    h('select', { id: 'weather-geographic-radius', value: String(geographicStudyRadius), disabled: !d.geographicMapReady, onChange: function (event) { setGeographicStudyRadius(event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-bold text-white focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-300/40 disabled:cursor-not-allowed disabled:opacity-50' },
                       [5, 10, 25, 50].map(function (radius) { return h('option', { key: radius, value: String(radius) }, radius + ' km radius'); })
                     )
                   ),
                   geographicMode && h('div', { className: 'mt-3 grid grid-cols-3 gap-2', role: 'group', 'aria-label': 'Geographic overlay visibility', 'data-weather-geographic-layer-controls': true },
-                    h('button', { type: 'button', onClick: function () { setGeographicOverlayVisibility('studyArea', !geographicStudyAreaVisible); }, 'aria-pressed': geographicStudyAreaVisible, className: 'min-h-11 rounded-lg border px-2 py-2 text-[11px] font-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 ' + (geographicStudyAreaVisible ? 'border-amber-300/60 bg-amber-300/15 text-amber-100' : 'border-white/15 bg-white/5 text-slate-200') }, 'Study area'),
-                    h('button', { type: 'button', onClick: function () { setGeographicOverlayVisibility('wind', !geographicWindVisible); }, 'aria-pressed': geographicWindVisible, className: 'min-h-11 rounded-lg border px-2 py-2 text-[11px] font-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200 ' + (geographicWindVisible ? 'border-sky-300/60 bg-sky-300/15 text-sky-100' : 'border-white/15 bg-white/5 text-slate-200') }, 'Wind vector'),
-                    h('button', { type: 'button', onClick: function () { setGeographicOverlayVisibility('transect', !geographicTransectVisible); }, 'aria-pressed': geographicTransectVisible, className: 'min-h-11 rounded-lg border px-2 py-2 text-[11px] font-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200 ' + (geographicTransectVisible ? 'border-violet-300/60 bg-violet-300/15 text-violet-100' : 'border-white/15 bg-white/5 text-slate-200') }, 'Terrain profile')
+                    [
+                      { id: 'studyArea', icon: '\u25EF', label: 'Study area', visible: geographicStudyAreaVisible, activeClass: 'border-amber-300/60 bg-amber-300/15 text-amber-100' },
+                      { id: 'wind', icon: '\u2197', label: 'Wind vector', visible: geographicWindVisible, activeClass: 'border-sky-300/60 bg-sky-300/15 text-sky-100' },
+                      { id: 'transect', icon: '\u223F', label: 'Terrain profile', visible: geographicTransectVisible, activeClass: 'border-violet-300/60 bg-violet-300/15 text-violet-100' }
+                    ].map(function (layer) {
+                      return h('button', {
+                        key: layer.id,
+                        type: 'button',
+                        disabled: !d.geographicMapReady,
+                        onClick: function () { setGeographicOverlayVisibility(layer.id, !layer.visible); },
+                        'aria-pressed': layer.visible,
+                        className: 'flex min-h-16 flex-col items-center justify-center rounded-lg border px-2 py-2 text-center text-[11px] font-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:cursor-not-allowed disabled:opacity-50 ' + (layer.visible ? layer.activeClass : 'border-white/15 bg-white/5 text-slate-300')
+                      },
+                        h('span', { className: 'text-base leading-none', 'aria-hidden': true }, layer.icon),
+                        h('span', { className: 'mt-1 leading-tight' }, layer.label),
+                        h('span', { className: 'mt-0.5 text-[11px] uppercase tracking-wide opacity-70', 'aria-hidden': true }, layer.visible ? 'On' : 'Off')
+                      );
+                    })
                   ),
                   geographicMode && h('button', {
-                    type: 'button', onClick: function () { setGeographicBuildings(!geographicBuildings); },
+                    type: 'button', disabled: !d.geographicMapReady || geographicBuildingsAvailable === false, onClick: function () { setGeographicBuildings(!geographicBuildings); },
                     'aria-pressed': geographicBuildings, 'aria-describedby': 'weather-geographic-buildings-help',
-                    className: 'mt-3 flex min-h-11 w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-xs font-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 ' + (geographicBuildings ? 'border-emerald-300/60 bg-emerald-300/15 text-emerald-100' : 'border-white/15 bg-white/5 text-slate-200')
-                  }, h('span', null, 'Real 3D buildings'), h('span', { 'aria-hidden': true }, geographicBuildings ? 'On' : 'Off')),
-                  geographicMode && h('p', { id: 'weather-geographic-buildings-help', className: 'mt-1 text-[11px] leading-relaxed text-slate-300' }, 'OpenStreetMap building footprints appear in the street-scale Site view where data is available.'),
-                  h('div', { className: 'mt-3 grid grid-cols-2 gap-2' }, values.map(function (metric) { return h('div', { key: metric[0], className: 'rounded-lg bg-black/20 p-2' }, h('p', { className: 'text-[11px] text-slate-300' }, metric[0]), h('p', { className: 'mt-0.5 text-xs font-black' }, metric[1])); })),
-                  h('p', { className: 'mt-3 text-[11px] leading-relaxed text-slate-300' }, sceneCondition + (useLive && live.observedAt ? ' | Observed ' + live.observedAt + (live.timezone ? ' ' + live.timezone : '') + '.' : '.'))
+                    className: 'mt-3 flex min-h-11 w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-xs font-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:cursor-not-allowed disabled:opacity-50 ' + (geographicBuildings ? 'border-emerald-300/60 bg-emerald-300/15 text-emerald-100' : 'border-white/15 bg-white/5 text-slate-200')
+                  }, h('span', null, 'Real 3D buildings'), h('span', { 'aria-hidden': true }, !d.geographicMapReady ? 'Loading' : geographicBuildingsAvailable === false ? 'Unavailable' : geographicBuildings ? 'On' : 'Off')),
+                  geographicMode && h('p', { id: 'weather-geographic-buildings-help', className: 'mt-1 text-[11px] leading-relaxed text-slate-300' }, !d.geographicMapReady ? 'Map controls unlock after geographic terrain and evidence layers finish loading.' : geographicBuildingsAvailable === false ? 'The current open map style does not provide a compatible 3D building layer. Terrain and other evidence layers remain available.' : geographicBuildingsAvailable == null ? 'Checking the open map style for compatible OpenStreetMap building footprints.' : 'Compatible OpenStreetMap building footprints appear in the street-scale Site view.'),
+                  !geographicMode && h('div', { className: 'mt-3 grid grid-cols-2 gap-2' }, values.map(function (metric) { return h('div', { key: metric[0], className: 'rounded-lg bg-black/20 p-2' }, h('p', { className: 'text-[11px] text-slate-300' }, metric[0]), h('p', { className: 'mt-0.5 text-xs font-black' }, metric[1])); })),
+                  h('p', { className: 'mt-3 border-t border-white/10 pt-3 text-[11px] leading-relaxed text-slate-300' }, sceneCondition + (useLive && live.observedAt ? ' | Observed ' + live.observedAt + (live.timezone ? ' ' + live.timezone : '') + '.' : '.'))
                 ),
 !geographicMode && h('section', { className: 'rounded-xl border border-cyan-300/25 bg-cyan-950/20 p-4', 'data-weather-immersive-tour': true },
                   h('div', { className: 'flex items-start justify-between gap-3' },
@@ -4850,6 +5303,46 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                     h('textarea', { id: 'weather-immersive-reflection', value: d.immersiveReflection || '', onChange: function (event) { update({ immersiveReflection: event.target.value }); }, rows: 3, placeholder: 'I think the ' + tourSource + ' suggests ___ because I observed ___.', className: 'mt-1 min-h-[92px] w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-normal text-white placeholder:text-slate-400 focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/40' })
                   )
                 ),
+                geographicMode && h('section', { className: 'rounded-xl border border-emerald-300/25 bg-gradient-to-br from-emerald-950/35 to-sky-950/25 p-4', 'data-weather-geographic-investigation': true, 'aria-labelledby': 'weather-geographic-investigation-title' },
+                  h('div', { className: 'flex items-start justify-between gap-3' },
+                    h('div', null,
+                      h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-emerald-300' }, 'Guided field investigation'),
+                      h('h4', { id: 'weather-geographic-investigation-title', className: 'mt-1 text-sm font-black' }, geographicInvestigationPaused ? 'Custom exploration' : geographicFieldStep.label)
+                    ),
+                    h('span', { className: 'rounded-full px-2 py-1 text-[11px] font-black ' + (geographicInvestigationPaused ? 'bg-amber-300 text-amber-950' : 'bg-emerald-300 text-emerald-950'), 'aria-label': geographicInvestigationPaused ? 'Guided investigation paused' : 'Step ' + (geographicFieldStep.index + 1) + ' of ' + geographicFieldStep.total }, geographicInvestigationPaused ? 'Paused' : (geographicFieldStep.index + 1) + '/' + geographicFieldStep.total)
+                  ),
+                  h('p', { id: 'weather-geographic-investigation-prompt', className: 'mt-3 text-xs font-bold leading-relaxed text-white', 'data-weather-geographic-investigation-prompt': true }, geographicInvestigationPaused ? 'Camera or evidence layers were adjusted manually.' : geographicFieldStep.prompt),
+                  h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + (geographicInvestigationPaused ? 'text-amber-100' : 'text-emerald-100'), 'data-weather-geographic-investigation-status': geographicInvestigationPaused ? 'paused' : 'active' }, geographicInvestigationPaused ? 'Choose a numbered step or resume the previous step to restore its coordinated camera and layers.' : geographicFieldStep.evidence),
+                  h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Geographic field investigation steps' },
+                    GEOGRAPHIC_INVESTIGATION_STEPS.map(function (step, index) {
+                      var active = !geographicInvestigationPaused && step.id === geographicFieldStep.id;
+                      return h('button', {
+                        key: step.id,
+                        type: 'button',
+                        disabled: !d.geographicMapReady,
+                        onClick: function () { openGeographicInvestigationStep(step.id); },
+                        'aria-pressed': active,
+                        'aria-describedby': active ? 'weather-geographic-investigation-prompt' : undefined,
+                        className: 'min-h-12 rounded-lg border px-3 py-2 text-left text-[11px] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:cursor-not-allowed disabled:opacity-50 ' + (active ? 'border-emerald-300 bg-emerald-300 text-emerald-950 shadow-lg' : 'border-white/10 bg-white/5 text-slate-100 hover:border-emerald-300/40 hover:bg-white/10')
+                      },
+                        h('span', { className: 'mr-1 opacity-70', 'aria-hidden': true }, (index + 1) + '.'),
+                        step.label
+                      );
+                    })
+                  ),
+                  h('button', { type: 'button', disabled: !d.geographicMapReady, onClick: function () { openGeographicInvestigationStep(geographicInvestigationPaused ? geographicFieldStep.id : geographicFieldStep.nextId); }, className: 'mt-3 min-h-11 w-full rounded-lg bg-emerald-300 px-3 py-2 text-xs font-black text-emerald-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-50' }, geographicInvestigationPaused ? 'Resume ' + geographicFieldStep.label : geographicFieldStep.id === 'claim' ? 'Review investigation from the start' : 'Next mapped investigation step'),
+                  h('label', { htmlFor: 'weather-geographic-investigation-note', className: 'mt-3 block text-[11px] font-black text-emerald-200' }, 'Mapped evidence note',
+                    h('textarea', {
+                      id: 'weather-geographic-investigation-note',
+                      value: d.geographicInvestigationNote || '',
+                      onChange: function (event) { update({ geographicInvestigationNote: event.target.value }); },
+                      rows: 3,
+                      'aria-describedby': 'weather-geographic-investigation-prompt',
+                      placeholder: geographicFieldStep.id === 'claim' ? 'My claim is ___ because the mapped evidence shows ___. A limitation is ___.' : 'I notice ___ on the map. This matters because ___.',
+                      className: 'mt-1 min-h-[92px] w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-normal text-white placeholder:text-slate-400 focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-300/40'
+                    })
+                  )
+                ),
                 geographicMode && h('section', { className: 'rounded-xl border border-emerald-300/25 bg-emerald-950/20 p-4', 'data-weather-geographic-context': true },
                   h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-emerald-300' }, 'Geographic evidence'),
                   h('h4', { className: 'mt-1 text-sm font-black' }, geographic.context || geographic.label),
@@ -4863,33 +5356,74 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                         h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-rose-300' }, 'Interactive terrain inspector'),
                         h('h5', { id: 'weather-terrain-inspector-title', className: 'mt-1 text-xs font-black text-white' }, geographicTerrainProbe ? 'Selected ground comparison' : 'Select a ground point')
                       ),
-                      geographicTerrainProbe && h('span', { className: 'rounded-full bg-rose-300/15 px-2 py-1 text-[10px] font-black text-rose-100' }, geographicTerrainProbe.relation)
+                      geographicTerrainProbe && h('span', { className: 'rounded-full bg-rose-300/15 px-2 py-1 text-[10px] font-black text-rose-100' }, geographicTerrainWind ? geographicTerrainWind.label + ' | ' + geographicTerrainProbe.relation : geographicTerrainProbe.relation)
                     ),
-                    !geographicTerrainProbe && h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, 'Click or tap any map point away from the observation marker. The inspector will sample natural terrain elevation, distance, and direction from the site.'),
+                    !geographicTerrainProbe && h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, 'Click or tap any map point away from the observation marker, or position the map and sample its center. The inspector will compare natural elevation, average slope, and position relative to the observed wind.'),
                     geographicTerrainProbe && h('div', { className: 'mt-3 grid grid-cols-3 gap-2' },
                       [
                         ['Natural elevation', Number(geographicTerrainProbe.elevation).toFixed(0) + ' m'],
                         ['Difference from site', (Number(geographicTerrainProbe.elevationDelta) > 0 ? '+' : '') + Number(geographicTerrainProbe.elevationDelta).toFixed(0) + ' m'],
-                        ['Site offset', Number(geographicTerrainProbe.distanceKm).toFixed(2) + ' km ' + geographicTerrainProbe.direction]
+                        ['Average grade', geographicTerrainWind ? (geographicTerrainWind.gradePercent > 0 ? '+' : '') + geographicTerrainWind.gradePercent.toFixed(2) + '%' : 'Not available']
                       ].map(function (metric) { return h('div', { key: metric[0], className: 'rounded-lg bg-black/20 p-2' }, h('p', { className: 'text-[10px] text-slate-400' }, metric[0]), h('p', { className: 'mt-1 text-xs font-black text-white' }, metric[1])); })
                     ),
-                    geographicTerrainProbe && h('p', { className: 'mt-2 text-[10px] leading-relaxed text-slate-400', 'data-weather-terrain-probe-coordinates': true }, Number(geographicTerrainProbe.latitude).toFixed(5) + ', ' + Number(geographicTerrainProbe.longitude).toFixed(5) + ' | Bearing ' + Number(geographicTerrainProbe.bearing).toFixed(1) + '\u00B0 from the observation site'),
-                    geographicTerrainProbe && h('button', { type: 'button', onClick: clearGeographicTerrainProbe, className: 'mt-3 min-h-11 w-full rounded-lg border border-rose-300/40 bg-rose-300/10 px-3 py-2 text-xs font-black text-rose-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-200' }, 'Clear terrain comparison')
+                    terrainProbeGraphic && h('svg', { viewBox: '0 0 ' + terrainProbeGraphic.width + ' ' + terrainProbeGraphic.height, className: 'mt-3 h-auto w-full overflow-visible', role: 'img', 'aria-labelledby': 'weather-terrain-slope-title weather-terrain-slope-desc', 'data-weather-terrain-slope-graphic': true },
+                      h('title', { id: 'weather-terrain-slope-title' }, 'Site-to-sample slope comparison'),
+                      h('desc', { id: 'weather-terrain-slope-desc' }, 'The observation site is ' + terrainProbeGraphic.siteElevation + ' meters and the sampled terrain is ' + terrainProbeGraphic.sampleElevation + ' meters, ' + Number(geographicTerrainProbe.distanceKm).toFixed(2) + ' kilometers ' + geographicTerrainProbe.direction + ' of the site.'),
+                      h('defs', null,
+                        h('linearGradient', { id: 'weather-terrain-slope-gradient', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                          h('stop', { offset: '0%', stopColor: '#fbbf24', stopOpacity: 0.08 }),
+                          h('stop', { offset: '100%', stopColor: '#fb7185', stopOpacity: 0.24 })
+                        )
+                      ),
+                      h('line', { x1: 24, y1: 80, x2: 296, y2: 80, stroke: '#475569', strokeWidth: 1 }),
+                      h('line', { x1: terrainProbeGraphic.siteX, y1: terrainProbeGraphic.siteY, x2: terrainProbeGraphic.sampleX, y2: terrainProbeGraphic.siteY, stroke: '#64748b', strokeWidth: 1, strokeDasharray: '3 4' }),
+                      h('path', { d: 'M' + terrainProbeGraphic.siteX + ' ' + terrainProbeGraphic.siteY + ' L' + terrainProbeGraphic.sampleX + ' ' + terrainProbeGraphic.sampleY + ' L' + terrainProbeGraphic.sampleX + ' 80 L' + terrainProbeGraphic.siteX + ' 80 Z', fill: 'url(#weather-terrain-slope-gradient)' }),
+                      h('line', { x1: terrainProbeGraphic.siteX, y1: terrainProbeGraphic.siteY, x2: terrainProbeGraphic.sampleX, y2: terrainProbeGraphic.sampleY, stroke: '#fda4af', strokeWidth: 3, strokeLinecap: 'round' }),
+                      h('circle', { cx: terrainProbeGraphic.siteX, cy: terrainProbeGraphic.siteY, r: 5, fill: '#fbbf24', stroke: '#ffffff', strokeWidth: 2 }),
+                      h('circle', { cx: terrainProbeGraphic.sampleX, cy: terrainProbeGraphic.sampleY, r: 5, fill: '#fb7185', stroke: '#ffffff', strokeWidth: 2 }),
+                      h('text', { x: terrainProbeGraphic.siteX, y: Math.max(10, terrainProbeGraphic.siteY - 9), textAnchor: 'middle', fill: '#fde68a', fontSize: 10, fontWeight: 500 }, terrainProbeGraphic.siteElevation + ' m'),
+                      h('text', { x: terrainProbeGraphic.sampleX, y: Math.max(10, terrainProbeGraphic.sampleY - 9), textAnchor: 'middle', fill: '#fecdd3', fontSize: 10, fontWeight: 500 }, terrainProbeGraphic.sampleElevation + ' m'),
+                      h('text', { x: terrainProbeGraphic.siteX, y: 96, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Site'),
+                      h('text', { x: terrainProbeGraphic.sampleX, y: 96, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Sample ' + geographicTerrainProbe.direction),
+                      geographicTerrainWind && h('text', { x: 160, y: 94, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, (geographicTerrainWind.gradePercent > 0 ? '+' : '') + geographicTerrainWind.gradePercent.toFixed(2) + '% average grade')
+                    ),
+                    geographicTerrainProbe && h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-400', 'data-weather-terrain-probe-coordinates': true }, Number(geographicTerrainProbe.distanceKm).toFixed(2) + ' km ' + geographicTerrainProbe.direction + ' of site | ' + Number(geographicTerrainProbe.latitude).toFixed(5) + ', ' + Number(geographicTerrainProbe.longitude).toFixed(5) + ' | Bearing ' + Number(geographicTerrainProbe.bearing).toFixed(1) + '\u00B0'),
+                    geographicTerrainProbe && h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-400', 'data-weather-terrain-probe-provenance': true }, 'Source: Mapterhorn raster terrain rendered by MapLibre | Selection: ' + (d.geographicTerrainProbeMethod || 'Saved map point') + ' | Elevation and grade are approximate.'),
+                    geographicTerrainWind && h('div', { className: 'mt-3 border-l-2 border-rose-300/60 pl-3', 'data-weather-terrain-wind-analysis': true, role: 'status', 'aria-live': 'polite' },
+                      h('p', { className: 'text-[11px] font-black text-rose-200' }, geographicTerrainWind.signalLabel),
+                      h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-400' }, 'Observed wind from ' + cardinal(live.windDir) + ' | ' + geographicTerrainWind.angularDifference.toFixed(1) + '\u00B0 from the upwind axis | ' + geographicTerrainWind.gradeLabel + ' (' + (geographicTerrainWind.slopeDegrees > 0 ? '+' : '') + geographicTerrainWind.slopeDegrees.toFixed(2) + '\u00B0)'),
+                      h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-300' }, geographicTerrainWind.interpretation)
+                    ),
+                    h('div', { className: 'mt-3 grid gap-2 ' + (geographicTerrainProbe ? 'grid-cols-2' : 'grid-cols-1') },
+                      h('button', { type: 'button', disabled: !d.geographicMapReady || geographicTerrainAvailable === false, onClick: sampleGeographicMapCenter, className: 'min-h-11 rounded-lg border border-emerald-300/40 bg-emerald-300/10 px-3 py-2 text-xs font-black text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:cursor-not-allowed disabled:opacity-50' }, 'Sample map center'),
+                      geographicTerrainProbe && h('button', { type: 'button', onClick: clearGeographicTerrainProbe, className: 'min-h-11 rounded-lg border border-rose-300/40 bg-rose-300/10 px-3 py-2 text-xs font-black text-rose-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-200' }, 'Clear comparison')
+                    )
                   ),
-                  geographicTransectVisible && h('div', { className: 'mt-4 border-t border-white/10 pt-3', 'data-weather-terrain-profile': true },
+                  geographicTransectVisible && geographicTerrainAvailable !== false && h('div', { className: 'mt-4 border-t border-white/10 pt-3', 'data-weather-terrain-profile': true },
                     h('div', { className: 'flex items-start justify-between gap-3' },
                       h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-violet-300' }, 'Wind-aligned terrain profile'), h('p', { className: 'mt-1 text-[11px] text-slate-300' }, '30 km cross-section from upwind to downwind')),
                       terrainProfileChart && h('span', { className: 'rounded-full bg-violet-300/15 px-2 py-1 text-[10px] font-black text-violet-100' }, Math.round(terrainProfileChart.min) + '\u2013' + Math.round(terrainProfileChart.max) + ' m')
                     ),
-                    terrainProfileChart ? h('svg', { viewBox: '0 0 ' + terrainProfileChart.width + ' ' + terrainProfileChart.height, className: 'mt-2 h-auto w-full overflow-visible', role: 'img', 'aria-labelledby': 'weather-terrain-profile-title weather-terrain-profile-desc' },
+                    terrainProfileChart ? h('svg', { viewBox: '0 0 ' + terrainProfileChart.width + ' ' + terrainProfileChart.height, preserveAspectRatio: 'xMidYMid meet', className: 'mt-2 h-auto w-full overflow-visible', role: 'img', 'aria-labelledby': 'weather-terrain-profile-title weather-terrain-profile-desc', 'data-weather-terrain-profile-visual': true },
                       h('title', { id: 'weather-terrain-profile-title' }, 'Wind-aligned natural elevation profile'),
                       h('desc', { id: 'weather-terrain-profile-desc' }, 'Terrain elevation from ' + cardinal(live.windDir) + ' upwind through the selected site toward ' + cardinal(geographicOverlays.downwindBearing) + ' downwind. Elevation ranges from ' + Math.round(terrainProfileChart.min) + ' to ' + Math.round(terrainProfileChart.max) + ' meters.'),
-                      h('line', { x1: terrainProfileChart.left, y1: terrainProfileChart.height - terrainProfileChart.bottom, x2: terrainProfileChart.width - terrainProfileChart.right, y2: terrainProfileChart.height - terrainProfileChart.bottom, stroke: '#64748b', strokeWidth: 1 }),
-                      h('path', { d: terrainProfileChart.areaPath, fill: '#8b5cf6', fillOpacity: 0.16 }),
-                      h('path', { d: terrainProfileChart.linePath, fill: 'none', stroke: '#c4b5fd', strokeWidth: 2.5, strokeLinejoin: 'round', strokeLinecap: 'round' }),
+                      h('defs', null,
+                        h('linearGradient', { id: 'weather-terrain-profile-gradient', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                          h('stop', { offset: '0%', stopColor: '#c4b5fd', stopOpacity: 0.36 }),
+                          h('stop', { offset: '100%', stopColor: '#6d28d9', stopOpacity: 0.04 })
+                        )
+                      ),
+                      [terrainProfileChart.top, (terrainProfileChart.top + terrainProfileChart.height - terrainProfileChart.bottom) / 2, terrainProfileChart.height - terrainProfileChart.bottom].map(function (gridY, index) {
+                        return h('line', { key: 'terrain-grid-' + index, x1: terrainProfileChart.left, y1: gridY, x2: terrainProfileChart.width - terrainProfileChart.right, y2: gridY, stroke: '#475569', strokeWidth: 1, strokeDasharray: index === 2 ? undefined : '2 4', strokeOpacity: index === 2 ? 0.9 : 0.55 });
+                      }),
+                      h('path', { d: terrainProfileChart.areaPath, fill: 'url(#weather-terrain-profile-gradient)' }),
+                      h('path', { d: terrainProfileChart.linePath, fill: 'none', stroke: '#c4b5fd', strokeWidth: 2.75, strokeLinejoin: 'round', strokeLinecap: 'round' }),
                       h('line', { x1: terrainProfileChart.siteX, y1: terrainProfileChart.top, x2: terrainProfileChart.siteX, y2: terrainProfileChart.height - terrainProfileChart.bottom, stroke: '#fbbf24', strokeWidth: 1.5, strokeDasharray: '4 3' }),
-                      h('circle', { cx: terrainProfileChart.siteX, cy: terrainProfileChart.siteY, r: 3.5, fill: '#fbbf24', stroke: '#ffffff', strokeWidth: 1.5 }),
+                      h('circle', { cx: terrainProfileChart.siteX, cy: terrainProfileChart.siteY, r: 4, fill: '#fbbf24', stroke: '#ffffff', strokeWidth: 1.5 }),
+                      h('circle', { cx: terrainProfileChart.left, cy: terrainY(geographicTerrainProfile[0].elevation), r: 2.75, fill: '#a78bfa', stroke: '#ffffff', strokeWidth: 1 }),
+                      h('circle', { cx: terrainProfileChart.width - terrainProfileChart.right, cy: terrainY(geographicTerrainProfile[geographicTerrainProfile.length - 1].elevation), r: 2.75, fill: '#a78bfa', stroke: '#ffffff', strokeWidth: 1 }),
                       h('text', { x: terrainProfileChart.left, y: 11, fill: '#cbd5e1', fontSize: 9 }, Math.round(terrainProfileChart.max) + ' m'),
+                      h('text', { x: terrainProfileChart.left, y: ((terrainProfileChart.top + terrainProfileChart.height - terrainProfileChart.bottom) / 2) - 3, fill: '#94a3b8', fontSize: 8 }, Math.round((terrainProfileChart.min + terrainProfileChart.max) / 2) + ' m'),
                       h('text', { x: terrainProfileChart.left, y: terrainProfileChart.height - terrainProfileChart.bottom - 3, fill: '#cbd5e1', fontSize: 9 }, Math.round(terrainProfileChart.min) + ' m'),
                       h('text', { x: terrainProfileChart.left, y: terrainProfileChart.height - 8, fill: '#cbd5e1', fontSize: 9 }, 'Upwind ' + cardinal(live.windDir)),
                       h('text', { x: terrainProfileChart.siteX, y: terrainProfileChart.height - 8, fill: '#fcd34d', fontSize: 9, textAnchor: 'middle' }, 'Site'),
@@ -4903,6 +5437,10 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                     terrainProfileAnalysis && h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-300' }, terrainProfileAnalysis.interpretation),
                     terrainProfileAnalysis && d.geographicTerrainEvidence && h('p', { className: 'mt-3 text-[10px] leading-relaxed text-emerald-200', 'data-weather-terrain-evidence-identity': true }, geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, live).detail),
                     terrainProfileAnalysis && h('button', { type: 'button', onClick: useGeographicTerrainEvidence, 'aria-pressed': (d.evidence || []).indexOf(TERRAIN_EVIDENCE.id) !== -1, className: 'mt-3 min-h-11 w-full rounded-lg border border-violet-300/50 bg-violet-300/15 px-3 py-2 text-xs font-black text-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, (d.evidence || []).indexOf(TERRAIN_EVIDENCE.id) !== -1 && d.geographicTerrainEvidence && geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, live).current ? 'Open forecast with terrain evidence' : (d.geographicTerrainEvidence ? 'Refresh terrain forecast evidence' : 'Use as forecast evidence'))
+                  ),
+                  geographicTerrainAvailable === false && h('div', { className: 'mt-4 border-l-2 border-amber-300/70 bg-amber-300/10 p-3', role: 'status', 'data-weather-terrain-degraded': true },
+                    h('p', { className: 'text-xs font-black text-amber-100' }, 'Base map available; 3D terrain unavailable'),
+                    h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-300' }, 'Continue with published map labels, the true-scale study area, and the observed wind vector. Terrain sampling and terrain forecast evidence require a successful terrain-tile load.')
                   ),
                   h('p', { className: 'mt-2 text-[11px] text-slate-300', role: 'status', 'aria-live': 'polite', 'data-weather-geographic-status': true }, d.geographicMapStatus || 'Geographic layers are preparing.'),
                   h('p', { className: 'mt-3 text-[11px] leading-relaxed text-slate-300', 'data-weather-map-attribution': true }, 'Map: ', h('a', { href: 'https://openfreemap.org/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'OpenFreeMap'), ' with ', h('a', { href: 'https://www.openstreetmap.org/copyright', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'OpenStreetMap data'), '. 3D terrain: ', h('a', { href: 'https://tiles.mapterhorn.com/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'Mapterhorn'), '. Renderer: ', h('a', { href: 'https://maplibre.org/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'MapLibre'), '.')

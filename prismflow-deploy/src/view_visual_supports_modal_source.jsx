@@ -33,6 +33,12 @@ function PausableImage(props) {
   const paused = isAnimated && (globalPaused || localPaused);
   const hiddenWhilePaused = paused && !frozenFrame;
 
+  React.useEffect(function () {
+    setLocalPaused(false);
+    setFrozenFrame(null);
+    captureRef.current = false;
+  }, [src]);
+
   // On image load, capture first frame to a canvas so we can pause later.
   // Wrapped in try/catch — canvas drawImage on cross-origin images without
   // CORS headers throws SecurityError; if that happens we silently fall
@@ -53,7 +59,7 @@ function PausableImage(props) {
 
   // Non-GIF: plain <img>, zero overhead, zero overlay.
   if (!isAnimated) {
-    return <img src={src} alt={alt} style={style} />;
+    return <img src={src} alt={alt} style={style} loading="lazy" decoding="async" />;
   }
 
   const wrapperStyle = Object.assign(
@@ -70,6 +76,8 @@ function PausableImage(props) {
         alt={alt}
         onLoad={handleLoad}
         crossOrigin={src && src.startsWith('data:') ? undefined : 'anonymous'}
+        loading="lazy"
+        decoding="async"
         style={Object.assign({}, imgInlineStyle, { visibility: hiddenWhilePaused ? 'hidden' : 'visible' })}
       />
       {hiddenWhilePaused && (
@@ -100,6 +108,157 @@ function PausableImage(props) {
         >{paused ? '▶' : '⏸'}</button>
       )}
     </div>
+  );
+}
+
+
+function visualSupportText(value, fallback) {
+  const text = typeof value === 'string' ? value.trim() : '';
+  return text || fallback;
+}
+
+function readVisualSupportSnapshot() {
+  try {
+    let profiles = [];
+    try {
+      const parsedProfiles = JSON.parse(localStorage.getItem('alloStudentProfiles') || '[]');
+      profiles = Array.isArray(parsedProfiles) ? parsedProfiles : [];
+    } catch (e) {}
+    let savedProfileId = null;
+    try { savedProfileId = JSON.parse(localStorage.getItem('alloActiveProfileId') || 'null'); } catch (e) {}
+    const profileId = (savedProfileId && profiles.some((profile) => profile && profile.id === savedProfileId))
+      ? savedProfileId
+      : (profiles[0] && profiles[0].id ? profiles[0].id : 'default');
+    const readCollection = function (base) {
+      try {
+        const scoped = localStorage.getItem(base + '__' + profileId);
+        const parsed = JSON.parse((scoped != null ? scoped : localStorage.getItem(base)) || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) { return []; }
+    };
+    const boards = readCollection('alloSymbolBoards').map(function (board, boardIndex) {
+      const safeBoard = board && typeof board === 'object' ? board : {};
+      const words = Array.isArray(safeBoard.words) ? safeBoard.words : [];
+      const colsValue = Number.parseInt(safeBoard.cols, 10);
+      return {
+        id: visualSupportText(safeBoard.id, 'board-' + boardIndex),
+        title: visualSupportText(safeBoard.title, 'Untitled Board'),
+        cols: Number.isFinite(colsValue) ? Math.max(1, Math.min(colsValue, 6)) : 4,
+        words: words.map(function (word, wordIndex) {
+          const safeWord = word && typeof word === 'object' ? word : {};
+          return {
+            id: visualSupportText(safeWord.id, 'word-' + wordIndex),
+            label: visualSupportText(safeWord.label, 'Unlabeled symbol'),
+            category: ['noun', 'verb', 'adjective', 'other'].includes(safeWord.category) ? safeWord.category : 'other',
+            image: typeof safeWord.image === 'string' ? safeWord.image : '',
+          };
+        }),
+      };
+    });
+    const schedules = readCollection('alloSchedules').map(function (schedule, scheduleIndex) {
+      const safeSchedule = schedule && typeof schedule === 'object' ? schedule : {};
+      const items = Array.isArray(safeSchedule.items) ? safeSchedule.items : [];
+      return {
+        id: visualSupportText(safeSchedule.id, 'schedule-' + scheduleIndex),
+        title: visualSupportText(safeSchedule.title, 'Untitled Schedule'),
+        nowId: typeof safeSchedule.nowId === 'string' ? safeSchedule.nowId : '',
+        items: items.map(function (item, itemIndex) {
+          const safeItem = item && typeof item === 'object' ? item : {};
+          return {
+            id: visualSupportText(safeItem.id, 'step-' + itemIndex),
+            label: visualSupportText(safeItem.label, 'Unlabeled step'),
+            image: typeof safeItem.image === 'string' ? safeItem.image : '',
+            complete: !!safeItem.complete,
+          };
+        }),
+      };
+    });
+    return { profileId, boards, schedules };
+  } catch (e) {
+    return { profileId: 'default', boards: [], schedules: [] };
+  }
+}
+
+
+function VisualSupportBoardCard(props) {
+  const { board, cardIndex, categoryBackgrounds, pauseAnimations, onSpeak } = props;
+  return (
+    <section className="border border-slate-400 rounded-xl overflow-hidden" aria-labelledby={'visual-support-board-' + cardIndex}>
+      <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 flex items-center justify-between gap-3">
+        <h3 id={'visual-support-board-' + cardIndex} className="font-semibold text-slate-700 text-sm">{board.title}</h3>
+        <span className="text-xs font-medium text-slate-600">{board.words.length} {board.words.length === 1 ? 'symbol' : 'symbols'}</span>
+      </div>
+      {board.words.length === 0
+        ? <p className="p-4 text-sm text-slate-600" role="status">This board has no symbols yet.</p>
+        : <div className="p-3" role="list" aria-label={board.title + ' symbols'} style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(88px, 1fr))', gap:8}}>
+            {board.words.map((word, wordIndex) => (
+              <div key={word.id + '-' + wordIndex} role="listitem" style={{background: categoryBackgrounds[word.category] || categoryBackgrounds.other, borderRadius:8, padding:8, minWidth:0, display:'flex', flexDirection:'column', alignItems:'center', gap:5}}>
+                {word.image
+                  ? <PausableImage src={word.image} alt={word.label} globalPaused={pauseAnimations} style={{width:64,height:64}}/>
+                  : <div aria-hidden="true" style={{width:64,height:64,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,color:'#94a3b8'}}>?</div>}
+                <span style={{fontSize:12,fontWeight:700,textAlign:'center',color:'#1f2937',lineHeight:1.25,overflowWrap:'anywhere'}}>{word.label}</span>
+                <button type="button" onClick={() => onSpeak(word.label, word.label)} aria-label={'Read symbol aloud: ' + word.label} className="min-h-11 min-w-11 rounded-lg text-slate-700 hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700" title="Read symbol aloud">Read</button>
+              </div>
+            ))}
+          </div>}
+    </section>
+  );
+}
+
+function getInitialScheduleProgress(schedule) {
+  const items = schedule && Array.isArray(schedule.items) ? schedule.items : [];
+  const completed = {};
+  items.forEach(function (item, index) { if (item.complete) completed[index] = true; });
+  let current = items.findIndex(function (item) { return item.id === schedule.nowId && !item.complete; });
+  if (current < 0) current = items.findIndex(function (item) { return !item.complete; });
+  if (current < 0) current = 0;
+  return { current, completed };
+}
+
+function VisualSupportScheduleCard(props) {
+  const { schedule, cardIndex, progress, pauseAnimations, onSpeak, onSetCurrent, onToggleComplete } = props;
+  const initialProgress = getInitialScheduleProgress(schedule);
+  const safeProgress = progress || initialProgress;
+  const currentStep = Math.max(0, Math.min(Number.isInteger(safeProgress.current) ? safeProgress.current : initialProgress.current, Math.max(0, schedule.items.length - 1)));
+  const completed = safeProgress.completed || initialProgress.completed;
+  return (
+    <section className="border border-slate-400 rounded-xl overflow-hidden" aria-labelledby={'visual-support-schedule-' + cardIndex}>
+      <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h3 id={'visual-support-schedule-' + cardIndex} className="font-semibold text-slate-700 text-sm">{schedule.title}</h3>
+          <p className="text-xs text-slate-600 mt-0.5">{schedule.items.length === 0 ? 'No steps' : 'Now: step ' + (currentStep + 1) + ' of ' + schedule.items.length}</p>
+        </div>
+        {schedule.items.length > 0 && (
+          <button type="button" onClick={() => onSpeak(schedule.items.map((item, index) => 'Step ' + (index + 1) + ': ' + item.label).join('. '), schedule.title)} className="min-h-11 px-3 rounded-lg border border-purple-300 bg-white text-xs font-semibold text-purple-800 hover:bg-purple-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700" aria-label={'Read all steps in ' + schedule.title}>Read all</button>
+        )}
+      </div>
+      {schedule.items.length === 0
+        ? <p className="p-4 text-sm text-slate-600" role="status">This schedule has no steps yet.</p>
+        : <ol role="list" aria-label={schedule.title + ' ordered steps'} className="p-3" style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(138px, 1fr))', gap:10}}>
+            {schedule.items.map((item, itemIndex) => {
+              const isCurrent = itemIndex === currentStep;
+              const isComplete = !!completed[itemIndex];
+              return (
+                <li key={item.id + '-' + itemIndex} aria-current={isCurrent ? 'step' : undefined} style={{border:isCurrent ? '3px solid #7c3aed' : '2px solid #cbd5e1', borderRadius:12, padding:8, minWidth:0, background:isComplete ? '#f0fdf4' : (isCurrent ? '#faf5ff' : '#fff'), display:'flex', flexDirection:'column', alignItems:'stretch', gap:7}}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span style={{fontSize:11,fontWeight:800,color:isCurrent ? '#6d28d9' : '#475569'}}>STEP {itemIndex + 1}</span>
+                    <span style={{fontSize:11,fontWeight:800,color:isComplete ? '#166534' : (isCurrent ? '#6d28d9' : '#64748b')}}>{isComplete ? 'DONE' : (isCurrent ? 'NOW' : 'NEXT')}</span>
+                  </div>
+                  <div style={{width:'100%',height:96,border:'1px solid #cbd5e1',borderRadius:9,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',background:'#f8fafc'}}>
+                    {item.image
+                      ? <PausableImage src={item.image} alt={item.label} globalPaused={pauseAnimations} style={{width:'100%',height:'100%'}}/>
+                      : <span aria-hidden="true" style={{fontSize:28,color:'#94a3b8'}}>?</span>}
+                  </div>
+                  <span style={{fontSize:13,fontWeight:700,textAlign:'center',color:'#1f2937',lineHeight:1.25,overflowWrap:'anywhere'}}>{item.label}</span>
+                  <div className="flex flex-col gap-1 mt-auto">
+                    <button type="button" onClick={() => onSetCurrent(schedule, itemIndex)} disabled={isCurrent} className="min-h-11 rounded-lg border border-purple-300 bg-white px-2 text-xs font-semibold text-purple-800 disabled:bg-purple-100 disabled:text-purple-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700" aria-label={isCurrent ? item.label + ' is the current step' : 'Make ' + item.label + ' the current step'}>{isCurrent ? 'Current step' : 'Set as now'}</button>
+                    <button type="button" onClick={() => onToggleComplete(schedule, itemIndex)} aria-pressed={isComplete} className="min-h-11 rounded-lg border border-emerald-300 bg-white px-2 text-xs font-semibold text-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-700">{isComplete ? 'Mark not done' : 'Mark done'}</button>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>}
+    </section>
   );
 }
 
@@ -156,23 +315,92 @@ function VisualSupportsModal(props) {
     };
   }, [setShowVisualSupports]);
 
-  // Read the ACTIVE profile's per-profile-scoped data. Symbol Studio migrated boards/schedules
-  // onto namespaced keys (base + '__' + pid) and DELETED the bare keys, so reading bare here
-  // showed an empty viewer post-migration. Resolve pid the same way Symbol Studio does (saved
-  // active id if still valid, else first profile, else 'default'); fall back to the bare key
-  // for any legacy / un-migrated data.
-  const vsRead = (base) => {
-    try {
-      let profs = []; try { profs = JSON.parse(localStorage.getItem('alloStudentProfiles') || '[]') || []; } catch (e) {}
-      let saved = null; try { saved = JSON.parse(localStorage.getItem('alloActiveProfileId') || 'null'); } catch (e) {}
-      const pid = (saved && profs.find(p => p.id === saved)) ? saved : (profs[0] ? profs[0].id : 'default');
-      const raw = localStorage.getItem(base + '__' + pid);
-      return JSON.parse((raw != null ? raw : localStorage.getItem(base)) || '[]');
-    } catch (e) { return []; }
-  };
-  const vsBoards = vsRead('alloSymbolBoards');
-  const vsSchedules = vsRead('alloSchedules');
+  // Keep storage reads out of render. Re-read when the viewer opens, when
+  // another tab changes storage, or when Symbol Studio emits its local update event.
+  const [supportData, setSupportData] = React.useState(readVisualSupportSnapshot);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [scheduleProgress, setScheduleProgress] = React.useState({});
+  const [statusMessage, setStatusMessage] = React.useState('');
+  const refreshSupports = React.useCallback(function () {
+    setSupportData(readVisualSupportSnapshot());
+  }, []);
+  React.useEffect(function () {
+    if (showVisualSupports !== false) refreshSupports();
+    const handleStorage = function (event) {
+      if (!event || !event.key || /^(alloSymbolBoards|alloSchedules|alloStudentProfiles|alloActiveProfileId)/.test(event.key)) {
+        refreshSupports();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('allo-visual-supports-updated', refreshSupports);
+    return function () {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('allo-visual-supports-updated', refreshSupports);
+    };
+  }, [showVisualSupports, refreshSupports]);
+
+  const vsBoards = supportData.boards;
+  const vsSchedules = supportData.schedules;
   const CAT_BG = { noun: '#fef9c3', verb: '#dcfce7', adjective: '#dbeafe', other: '#f3f4f6' };
+  const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
+  const visibleBoards = React.useMemo(function () {
+    if (!normalizedQuery) return vsBoards;
+    return vsBoards.filter(function (board) {
+      return board.title.toLocaleLowerCase().includes(normalizedQuery)
+        || board.words.some((word) => word.label.toLocaleLowerCase().includes(normalizedQuery));
+    });
+  }, [vsBoards, normalizedQuery]);
+  const visibleSchedules = React.useMemo(function () {
+    if (!normalizedQuery) return vsSchedules;
+    return vsSchedules.filter(function (schedule) {
+      return schedule.title.toLocaleLowerCase().includes(normalizedQuery)
+        || schedule.items.some((item) => item.label.toLocaleLowerCase().includes(normalizedQuery));
+    });
+  }, [vsSchedules, normalizedQuery]);
+
+  const speakSupportText = React.useCallback(function (text, description) {
+    const cleanText = visualSupportText(text, '');
+    if (!cleanText) return;
+    setStatusMessage('Reading ' + (description || cleanText));
+    try {
+      if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') {
+        setStatusMessage('Read aloud is not available in this browser.');
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utterance = new window.SpeechSynthesisUtterance(cleanText);
+      utterance.onend = function () { setStatusMessage('Finished reading ' + (description || cleanText)); };
+      utterance.onerror = function () { setStatusMessage('Could not read that support aloud.'); };
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      setStatusMessage('Could not read that support aloud.');
+    }
+  }, []);
+
+  const setCurrentScheduleStep = function (schedule, stepIndex) {
+    setScheduleProgress(function (previous) {
+      return Object.assign({}, previous, {
+        [schedule.id]: Object.assign({}, previous[schedule.id] || getInitialScheduleProgress(schedule), { current: stepIndex }),
+      });
+    });
+    setStatusMessage((schedule.items[stepIndex] ? schedule.items[stepIndex].label : 'Step ' + (stepIndex + 1)) + ' is now the current step.');
+  };
+  const toggleScheduleStepComplete = function (schedule, stepIndex) {
+    setScheduleProgress(function (previous) {
+      const currentProgress = previous[schedule.id] || getInitialScheduleProgress(schedule);
+      const completed = Object.assign({}, currentProgress.completed || {});
+      completed[stepIndex] = !completed[stepIndex];
+      let current = Number.isInteger(currentProgress.current) ? currentProgress.current : 0;
+      if (completed[stepIndex] && current === stepIndex) {
+        const nextIncomplete = schedule.items.findIndex(function (_, index) { return index > stepIndex && !completed[index]; });
+        if (nextIncomplete >= 0) current = nextIncomplete;
+      }
+      return Object.assign({}, previous, {
+        [schedule.id]: { current, completed },
+      });
+    });
+    setStatusMessage((schedule.items[stepIndex] ? schedule.items[stepIndex].label : 'Step ' + (stepIndex + 1)) + ' completion updated.');
+  };
 
   // WCAG 2.2.2: default to paused if the OS reports reduced-motion preference,
   // otherwise honor whatever the user picked last time. Persisted across sessions.
@@ -219,45 +447,26 @@ function VisualSupportsModal(props) {
                   📅 Schedules ({vsSchedules.length})
                 </button>
               </div>
+              <div className="p-3 border-b border-slate-200 bg-white flex-shrink-0">
+                <label htmlFor="visual-supports-search" className="sr-only">Search saved visual supports</label>
+                <div className="flex items-center gap-2">
+                  <input id="visual-supports-search" type="search" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder={vsTab === 'boards' ? 'Search boards or symbols' : 'Search schedules or steps'} className="w-full min-h-11 rounded-lg border border-slate-400 px-3 text-sm text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-700" />
+                  {searchQuery && <button type="button" onClick={() => setSearchQuery('')} className="min-h-11 px-3 rounded-lg border border-slate-400 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700" aria-label="Clear visual supports search">Clear</button>}
+                </div>
+                <p role="status" className="text-xs text-slate-600 mt-1">{vsTab === 'boards' ? visibleBoards.length + ' of ' + vsBoards.length + ' boards shown' : visibleSchedules.length + ' of ' + vsSchedules.length + ' schedules shown'}</p>
+                <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{statusMessage}</div>
+              </div>
               <div id={`visual-supports-panel-${vsTab}`} role="tabpanel" aria-labelledby={`visual-supports-tab-${vsTab}`} tabIndex={0} className="flex-1 overflow-y-auto p-4 space-y-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-purple-700">
-                {vsTab === 'boards' && (vsBoards.length === 0
-                  ? <div className="text-center py-16 text-slate-600"><div className="text-5xl mb-3" aria-hidden="true">📋</div><p className="font-semibold">No saved boards yet</p><p className="text-sm mt-1">Save boards in Symbol Studio to see them here</p></div>
-                  : vsBoards.map(board => (
-                    <div key={board.id} className="border border-slate-400 rounded-xl overflow-hidden">
-                      <h3 className="bg-slate-50 px-4 py-2 font-semibold text-slate-700 text-sm border-b border-slate-200">{board.title || 'Untitled Board'}</h3>
-                      <div className="p-3" role="list" aria-label={(board.title || 'Untitled Board') + ' symbols'} style={{display:'grid', gridTemplateColumns:`repeat(${Math.min(board.cols||4,6)},1fr)`, gap:6}}>
-                        {(board.words||[]).map((word,i) => (
-                          <div key={i} role="listitem" style={{background: CAT_BG[word.category]||'#f3f4f6', borderRadius:8, padding:6, display:'flex', flexDirection:'column', alignItems:'center', gap:4}}>
-                            {word.image
-                              ? <PausableImage src={word.image} alt={word.label || 'Board symbol'} globalPaused={pauseAnim} style={{width:56,height:56}}/>
-                              : <div aria-hidden="true" style={{width:56,height:56,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,color:'#d1d5db'}}>?</div>}
-                            <span style={{fontSize:11,fontWeight:600,textAlign:'center',color:'#1f2937',lineHeight:1.2}}>{word.label}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                {vsTab === 'boards' && (visibleBoards.length === 0
+                  ? <div className="text-center py-16 text-slate-600"><div className="text-5xl mb-3" aria-hidden="true">📋</div><p className="font-semibold">{vsBoards.length === 0 ? 'No saved boards yet' : 'No boards match your search'}</p><p className="text-sm mt-1">{vsBoards.length === 0 ? 'Save boards in Symbol Studio to see them here' : 'Try a board title or symbol name'}</p></div>
+                  : visibleBoards.map((board, boardIndex) => (
+                    <VisualSupportBoardCard key={board.id + '-' + boardIndex} board={board} cardIndex={boardIndex} categoryBackgrounds={CAT_BG} pauseAnimations={pauseAnim} onSpeak={speakSupportText} />
                   ))
                 )}
-                {vsTab === 'schedules' && (vsSchedules.length === 0
-                  ? <div className="text-center py-16 text-slate-600"><div className="text-5xl mb-3" aria-hidden="true">📅</div><p className="font-semibold">No saved schedules yet</p><p className="text-sm mt-1">Save schedules in Symbol Studio to see them here</p></div>
-                  : vsSchedules.map(sched => (
-                    <div key={sched.id} className="border border-slate-400 rounded-xl overflow-hidden">
-                      <h3 className="bg-slate-50 px-4 py-2 font-semibold text-slate-700 text-sm border-b border-slate-200">{sched.title || 'Untitled Schedule'}</h3>
-                      <div className="p-3 overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700" tabIndex={0} aria-label={(sched.title || 'Untitled Schedule') + ' horizontally scrollable items'}>
-                        <div role="list" aria-label={(sched.title || 'Untitled Schedule') + ' steps'} style={{display:'flex',gap:8,minWidth:'max-content'}}>
-                          {(sched.items||[]).map((item,i) => (
-                            <div key={item.id||i} role="listitem" style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4,width:72}}>
-                              <div style={{width:72,height:72,border:'2px solid #e5e7eb',borderRadius:10,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',background:'#fafafa'}}>
-                                {item.image
-                                  ? <PausableImage src={item.image} alt={item.label || 'Schedule step'} globalPaused={pauseAnim} style={{width:'100%',height:'100%'}}/>
-                                  : <span aria-hidden="true" style={{fontSize:28,color:'#d1d5db'}}>?</span>}
-                              </div>
-                              <span style={{fontSize:10,fontWeight:600,textAlign:'center',color:'#374151',lineHeight:1.2}}>{item.label}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+                {vsTab === 'schedules' && (visibleSchedules.length === 0
+                  ? <div className="text-center py-16 text-slate-600"><div className="text-5xl mb-3" aria-hidden="true">📅</div><p className="font-semibold">{vsSchedules.length === 0 ? 'No saved schedules yet' : 'No schedules match your search'}</p><p className="text-sm mt-1">{vsSchedules.length === 0 ? 'Save schedules in Symbol Studio to see them here' : 'Try a schedule title or step name'}</p></div>
+                  : visibleSchedules.map((schedule, scheduleIndex) => (
+                    <VisualSupportScheduleCard key={schedule.id + '-' + scheduleIndex} schedule={schedule} cardIndex={scheduleIndex} progress={scheduleProgress[schedule.id]} pauseAnimations={pauseAnim} onSpeak={speakSupportText} onSetCurrent={setCurrentScheduleStep} onToggleComplete={toggleScheduleStepComplete} />
                   ))
                 )}
               </div>

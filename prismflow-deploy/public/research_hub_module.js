@@ -15,9 +15,343 @@
   var useCallback = React.useCallback;
   var useMemo = React.useMemo;
   var STORAGE_KEY = "alloflow_research_hub_v1";
+  var RECOVERY_STORAGE_KEY = "alloflow_research_hub_recovery_v1";
+  var CAPTURE_INBOX_KEY = "alloflow_research_capture_inbox_v1";
+  var MAX_CAPTURE_BYTES = 6e4;
+  var MAX_CAPTURE_INBOX_ITEMS = 20;
+  var TOOL_INTEGRATION_CONTRACT_VERSION = 1;
+  var TOOL_INTEGRATION_METHOD_PACKS = [
+    "scientific_investigation",
+    "engineering_design",
+    "humanistic_interpretation",
+    "community_qualitative",
+    "civic_policy",
+    "creative_cultural"
+  ];
+  var registeredToolIntegrations = {};
+  function isPlainRecord(value) {
+    return !!value && typeof value === "object" && !Array.isArray(value);
+  }
+  function safeJsonClone(value) {
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch (_) {
+      return null;
+    }
+  }
+  function validateToolIntegrationContract(input) {
+    var issues = [];
+    if (!isPlainRecord(input)) return { ok: false, issues: ["contract must be an object"], contract: null };
+    if (input.schemaVersion !== TOOL_INTEGRATION_CONTRACT_VERSION) issues.push("schemaVersion must be " + TOOL_INTEGRATION_CONTRACT_VERSION);
+    var id = String(input.id || "").trim();
+    if (!/^[a-z0-9][a-z0-9_-]{1,79}$/.test(id)) issues.push("id must be a stable lowercase tool identifier");
+    if (!String(input.name || "").trim()) issues.push("name is required");
+    if (!String(input.version || "").trim()) issues.push("version is required");
+    if (!isPlainRecord(input.license) || !String(input.license.name || input.license.spdx || "").trim()) issues.push("license name or SPDX identifier is required");
+    if (!isPlainRecord(input.citation) || !String(input.citation.text || "").trim()) issues.push("citation text is required");
+    if (!Array.isArray(input.supportedMethodPacks) || !input.supportedMethodPacks.length) issues.push("supportedMethodPacks must name at least one inquiry approach");
+    else input.supportedMethodPacks.forEach(function(packId) {
+      if (TOOL_INTEGRATION_METHOD_PACKS.indexOf(packId) === -1) issues.push("unsupported method pack: " + String(packId));
+    });
+    if (!isPlainRecord(input.capabilities) || input.capabilities.captureArtifact !== true) issues.push("capabilities.captureArtifact must be true");
+    if (!isPlainRecord(input.privacy) || input.privacy.learnerApprovalRequired !== true) issues.push("privacy.learnerApprovalRequired must be true");
+    if (!isPlainRecord(input.reproducibility) || !Array.isArray(input.reproducibility.requiredFields) || !input.reproducibility.requiredFields.length) issues.push("reproducibility.requiredFields is required");
+    else {
+      var allowedReceiptFields = ["softwareVersion", "sourceRecordId", "parameters", "randomSeed", "limitations", "datasetVersion", "transformations"];
+      input.reproducibility.requiredFields.forEach(function(field) {
+        if (allowedReceiptFields.indexOf(field) === -1) issues.push("unknown reproducibility field: " + String(field));
+      });
+      ["softwareVersion", "limitations"].forEach(function(minimumField) {
+        if (input.reproducibility.requiredFields.indexOf(minimumField) === -1) issues.push("reproducibility.requiredFields must include " + minimumField);
+      });
+    }
+    var clone = safeJsonClone(input);
+    if (!clone) issues.push("contract must be JSON-serializable");
+    else if (JSON.stringify(clone).length > 2e4) issues.push("contract exceeds the 20,000-character metadata limit");
+    return { ok: issues.length === 0, issues, contract: clone };
+  }
+  function registerToolIntegration(input) {
+    var checked = validateToolIntegrationContract(input);
+    if (!checked.ok) return checked;
+    registeredToolIntegrations[checked.contract.id] = checked.contract;
+    return { ok: true, issues: [], contract: checked.contract };
+  }
+  function normalizeReproducibilityReceipt(input, capture, contract) {
+    var src = isPlainRecord(input) ? input : {};
+    var required = contract && contract.reproducibility && Array.isArray(contract.reproducibility.requiredFields) ? contract.reproducibility.requiredFields.slice() : ["softwareVersion", "sourceRecordId", "parameters", "randomSeed", "limitations"];
+    var receipt = {
+      schemaVersion: 1,
+      software: {
+        name: String(src.softwareName || capture.sourceToolName || capture.sourceToolId || "").slice(0, 120),
+        version: String(src.softwareVersion || capture.sourceToolVersion || "").slice(0, 80)
+      },
+      sourceRecordId: String(src.sourceRecordId || capture.sourceRecordId || "").slice(0, 180),
+      sourceDatabase: String(src.sourceDatabase || "").slice(0, 160),
+      datasetVersion: String(src.datasetVersion || "").slice(0, 120),
+      parameters: isPlainRecord(src.parameters) ? safeJsonClone(src.parameters) : {},
+      randomSeed: src.randomSeed === void 0 || src.randomSeed === null ? "" : String(src.randomSeed).slice(0, 120),
+      transformations: Array.isArray(src.transformations) ? src.transformations.map(function(x) {
+        return String(x).slice(0, 300);
+      }).slice(0, 30) : [],
+      limitations: Array.isArray(src.limitations) ? src.limitations.map(function(x) {
+        return String(x).slice(0, 500);
+      }).slice(0, 20) : [],
+      recordedAt: String(src.recordedAt || capture.generatedAt || (/* @__PURE__ */ new Date()).toISOString()).slice(0, 80),
+      requiredFields: required
+    };
+    var missing = [];
+    required.forEach(function(field) {
+      if (field === "softwareVersion" && !receipt.software.version) missing.push(field);
+      else if (field === "sourceRecordId" && !receipt.sourceRecordId) missing.push(field);
+      else if (field === "parameters" && !Object.prototype.hasOwnProperty.call(src, "parameters")) missing.push(field);
+      else if (field === "randomSeed" && !Object.prototype.hasOwnProperty.call(src, "randomSeed")) missing.push(field);
+      else if (field === "limitations" && !receipt.limitations.length) missing.push(field);
+      else if (field === "datasetVersion" && !receipt.datasetVersion) missing.push(field);
+      else if (field === "transformations" && !receipt.transformations.length) missing.push(field);
+    });
+    receipt.missingFields = missing;
+    receipt.status = missing.length ? "partial" : "complete";
+    return receipt;
+  }
+  function assessResearchArtifactIntegration(artifact) {
+    var issues = [];
+    var contract = artifact && artifact.integrationContract;
+    if (!contract) issues.push({ severity: "review", code: "unregistered_tool", message: "No versioned AlloFlow integration contract is attached." });
+    else {
+      var checked = validateToolIntegrationContract(contract);
+      if (!checked.ok) issues.push({ severity: "action", code: "invalid_contract", message: checked.issues.join("; ") });
+      if (!contract.license || !String(contract.license.name || contract.license.spdx || "").trim()) issues.push({ severity: "action", code: "missing_license", message: "Tool license metadata is missing." });
+      if (!contract.citation || !String(contract.citation.text || "").trim()) issues.push({ severity: "action", code: "missing_citation", message: "Tool citation guidance is missing." });
+    }
+    var receipt = artifact && artifact.reproducibilityReceipt;
+    if (!receipt) issues.push({ severity: "review", code: "missing_reproducibility_receipt", message: "No reproducibility receipt is attached." });
+    else if (receipt.status !== "complete") issues.push({ severity: "review", code: "partial_reproducibility_receipt", message: "Missing reproducibility fields: " + (receipt.missingFields || []).join(", ") });
+    if (artifact && artifact.acceptedAt && !String(artifact.learnerNote || "").trim()) issues.push({ severity: "action", code: "missing_learner_interpretation", message: "The learner has not explained what this output means." });
+    if (artifact && artifact.acceptedAt && !String(artifact.uncertaintyNote || "").trim()) issues.push({ severity: "review", code: "missing_uncertainty_note", message: "No uncertainty or limitation note was recorded." });
+    return { status: issues.some(function(x) {
+      return x.severity === "action";
+    }) ? "action_needed" : issues.length ? "needs_review" : "healthy", issues };
+  }
+  function summarizeIntegrationHealth(artifacts) {
+    var rows = (Array.isArray(artifacts) ? artifacts : []).map(function(artifact) {
+      return { artifact, health: assessResearchArtifactIntegration(artifact) };
+    });
+    return {
+      total: rows.length,
+      healthy: rows.filter(function(row) {
+        return row.health.status === "healthy";
+      }).length,
+      needsReview: rows.filter(function(row) {
+        return row.health.status === "needs_review";
+      }).length,
+      actionNeeded: rows.filter(function(row) {
+        return row.health.status === "action_needed";
+      }).length,
+      rows
+    };
+  }
+  function buildInquiryAudit(journal) {
+    var j = journal || {};
+    var issues = [];
+    var add = function(severity, code, message, count) {
+      issues.push({ severity, code, message, count: count || 1 });
+    };
+    var claims = j.claims || [];
+    var links = j.claimEvidenceLinks || [];
+    var unsupported = claims.filter(function(claim) {
+      return !links.some(function(link) {
+        return link.claimId === claim.id || link.claim === claim.id || link.claim && link.claim.id === claim.id || claim.text && link.claim === claim.text;
+      });
+    });
+    if (unsupported.length) add("action", "unsupported_claims", unsupported.length + " claim(s) do not have an explicit evidence-and-warrant link.", unsupported.length);
+    if (j.humanitiesPosition && !links.length) add("action", "position_without_warrant", "The humanities position has no explicit evidence-and-warrant link.");
+    var unsupportedDesignClaims = (j.designClaims || []).filter(function(claim) {
+      return !(claim.claimEvidenceRunIds || []).length && !(claim.constraintRefs || []).length;
+    });
+    if (unsupportedDesignClaims.length) add("action", "unsupported_design_claims", unsupportedDesignClaims.length + " design claim(s) lack test-run evidence or constraint references.", unsupportedDesignClaims.length);
+    var sources = j.sources || [];
+    var referencedIds = [];
+    links.forEach(function(link) {
+      (link.evidenceIds || []).forEach(function(id) {
+        if (referencedIds.indexOf(id) === -1) referencedIds.push(id);
+      });
+    });
+    var failedReferenced = sources.filter(function(source) {
+      return referencedIds.indexOf(source.id) !== -1 && source.sift && (source.sift.tier === "failed_SIFT" || source.sift.tier === "unvetted");
+    });
+    if (failedReferenced.length) add("action", "unvetted_linked_sources", failedReferenced.length + " linked source(s) are unvetted or failed SIFT.", failedReferenced.length);
+    var humanitiesMethod = ["humanistic_interpretation", "community_qualitative", "civic_policy", "creative_cultural"].indexOf(j.activeMethodPack) !== -1;
+    var humanitiesWork = j.activeLane === "humanities" || humanitiesMethod || j.humanitiesPosition || (j.compositions || []).length || (j.framings || []).length;
+    if (humanitiesWork && sources.length) {
+      var contextMissing = sources.filter(function(source) {
+        var context = source.humanitiesContext || {};
+        return !context.relationshipType || !String(context.historicalContext || "").trim();
+      });
+      if (contextMissing.length) add("review", "source_context_gaps", contextMissing.length + " source(s) lack a relationship type or historical/context note.", contextMissing.length);
+      var counterSources = sources.filter(function(source) {
+        var relationship = (source.humanitiesContext || {}).inquiryRelationship;
+        return relationship === "challenges" || relationship === "complicates";
+      });
+      if ((claims.length || j.humanitiesPosition) && sources.length > 1 && !counterSources.length) add("review", "no_counterevidence_relationship", "No source is marked as challenging or complicating the current position.");
+      if ((j.framings || []).length < 2 && (claims.length || j.humanitiesPosition)) add("review", "missing_counterinterpretation", "The position has not yet been tested against at least two framings.");
+    }
+    var artifacts = j.capturedArtifacts || [];
+    var uninterpreted = artifacts.filter(function(artifact) {
+      return !String(artifact.learnerNote || "").trim();
+    });
+    if (uninterpreted.length) add("action", "uninterpreted_tool_outputs", uninterpreted.length + " tool artifact(s) lack learner interpretation.", uninterpreted.length);
+    var partialReceipts = artifacts.filter(function(artifact) {
+      return !artifact.reproducibilityReceipt || artifact.reproducibilityReceipt.status !== "complete";
+    });
+    if (partialReceipts.length) add("review", "partial_reproducibility", partialReceipts.length + " tool artifact(s) have incomplete reproducibility receipts.", partialReceipts.length);
+    var counts = {
+      action: issues.filter(function(x) {
+        return x.severity === "action";
+      }).length,
+      review: issues.filter(function(x) {
+        return x.severity === "review";
+      }).length,
+      note: issues.filter(function(x) {
+        return x.severity === "note";
+      }).length
+    };
+    return { status: counts.action ? "action_needed" : counts.review ? "review_recommended" : "ready", counts, issues, generatedAt: Date.now() };
+  }
+  function researchId(prefix) {
+    return String(prefix || "rh") + Date.now() + "_" + Math.floor(Math.random() * 1e6);
+  }
+  function readCaptureInbox() {
+    try {
+      var parsed = JSON.parse(safeLocal(CAPTURE_INBOX_KEY) || "[]");
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (_) {
+      return [];
+    }
+  }
+  function writeCaptureInbox(items) {
+    safeLocal(CAPTURE_INBOX_KEY, JSON.stringify((items || []).slice(-MAX_CAPTURE_INBOX_ITEMS)));
+  }
+  function removeCaptureInboxItem(id) {
+    writeCaptureInbox(readCaptureInbox().filter(function(item) {
+      return item && item.id !== id;
+    }));
+  }
+  function normalizeResearchCapture(input) {
+    if (!input || typeof input !== "object") return { ok: false, reason: "Capture must be an object." };
+    var sourceToolId = String(input.sourceToolId || "").trim().slice(0, 80);
+    var title = String(input.title || "").trim().slice(0, 180);
+    var summary = String(input.summary || "").trim().slice(0, 4e3);
+    if (!sourceToolId || !title || !summary) return { ok: false, reason: "sourceToolId, title, and summary are required." };
+    var safeData = input.data && typeof input.data === "object" ? input.data : {};
+    var serialized = "";
+    try {
+      serialized = JSON.stringify(safeData);
+    } catch (_) {
+      return { ok: false, reason: "Artifact data must be serializable." };
+    }
+    if (serialized.length > MAX_CAPTURE_BYTES) return { ok: false, reason: "Artifact is too large. Capture a summary instead of raw files or sequences." };
+    safeData = JSON.parse(serialized);
+    var contract = input.integrationContract || registeredToolIntegrations[sourceToolId] || null;
+    var checkedContract = contract ? validateToolIntegrationContract(contract) : { ok: true, issues: [], contract: null };
+    if (!checkedContract.ok) return { ok: false, reason: "Integration contract is invalid: " + checkedContract.issues.join("; ") };
+    if (checkedContract.contract && checkedContract.contract.id !== sourceToolId) return { ok: false, reason: "Integration contract id must match sourceToolId." };
+    if (checkedContract.contract) registeredToolIntegrations[sourceToolId] = checkedContract.contract;
+    var captureMeta = {
+      sourceToolId,
+      sourceToolName: String(input.sourceToolName || sourceToolId).trim().slice(0, 120),
+      sourceToolVersion: String(input.sourceToolVersion || "unknown").trim().slice(0, 40),
+      sourceRecordId: String(input.sourceRecordId || "").trim().slice(0, 180),
+      generatedAt: String(input.generatedAt || (/* @__PURE__ */ new Date()).toISOString()).slice(0, 80)
+    };
+    var artifact = {
+      id: researchId("capture_"),
+      sourceToolId: captureMeta.sourceToolId,
+      sourceToolName: captureMeta.sourceToolName,
+      sourceToolVersion: captureMeta.sourceToolVersion,
+      artifactKind: String(input.artifactKind || "tool_observation").trim().slice(0, 80),
+      title,
+      summary,
+      data: safeData,
+      provenance: {
+        sourceRecordId: captureMeta.sourceRecordId,
+        sourceUrl: String(input.sourceUrl || "").trim().slice(0, 500),
+        generatedAt: captureMeta.generatedAt,
+        privacy: String(input.privacy || "No raw files or direct identifiers included.").slice(0, 500)
+      },
+      integrationContract: checkedContract.contract,
+      integrationContractStatus: checkedContract.contract ? "validated" : "unregistered",
+      reproducibilityReceipt: normalizeReproducibilityReceipt(input.reproducibility, captureMeta, checkedContract.contract),
+      queuedAt: Date.now()
+    };
+    artifact.integrationHealth = assessResearchArtifactIntegration(artifact);
+    return { ok: true, artifact };
+  }
+  function queueResearchCapture(input) {
+    var normalized = normalizeResearchCapture(input);
+    if (!normalized.ok) return normalized;
+    var inbox = readCaptureInbox();
+    inbox.push(normalized.artifact);
+    writeCaptureInbox(inbox);
+    try {
+      window.dispatchEvent(new CustomEvent("alloflow:research-capture", { detail: normalized.artifact }));
+    } catch (_) {
+    }
+    return { ok: true, queued: true, captureId: normalized.artifact.id };
+  }
   var MAX_AI_CALLS_PER_SESSION = 8;
   var VOICE_NOTE_MAX_SECONDS = 60;
   var INPUT_HARD_CAP = 1500;
+  var PROVENANCE_ARRAY_FIELDS = [
+    "wonderings",
+    "modelSnapshots",
+    "sources",
+    "evidenceCards",
+    "claims",
+    "claimEvidenceLinks",
+    "tradeOffLedger",
+    "constraintMatrix",
+    "criteria",
+    "candidateConcepts",
+    "decisionMatrix",
+    "testProtocol",
+    "buildLog",
+    "testRun",
+    "stakeholderFeedback",
+    "failureLog",
+    "designClaims",
+    "framings",
+    "framingProbes",
+    "positionalitySnapshots",
+    "absentVoices",
+    "questionStakeholders",
+    "humanitiesPlausibleAnswers",
+    "compositions",
+    "capturedArtifacts"
+  ];
+  function stampNewInquiryArtifacts(prev, next) {
+    if (!next || typeof next !== "object") return prev;
+    var methodPackId = next.activeMethodPack || prev.activeMethodPack || null;
+    var episodeId = next.activeInquiryEpisodeId || prev.activeInquiryEpisodeId || null;
+    if (!methodPackId && !episodeId) return next;
+    PROVENANCE_ARRAY_FIELDS.forEach(function(field) {
+      var before = Array.isArray(prev[field]) ? prev[field] : [];
+      var after = Array.isArray(next[field]) ? next[field] : [];
+      if (!after.length || after === before) return;
+      var oldIds = new Set(before.map(function(item) {
+        return item && item.id;
+      }).filter(Boolean));
+      next[field] = after.map(function(item, index) {
+        if (!item || typeof item !== "object") return item;
+        var isNew = item.id ? !oldIds.has(item.id) : index >= before.length;
+        if (!isNew || item.methodPackId && item.inquiryEpisodeId) return item;
+        return Object.assign({}, item, {
+          methodPackId: item.methodPackId || methodPackId,
+          inquiryEpisodeId: item.inquiryEpisodeId || episodeId
+        });
+      });
+    });
+    return next;
+  }
   var ANSWER_HARD_CAP = 800;
   var COOLDOWN_MS = 1500;
   var DEV_LEVELS = [
@@ -53,10 +387,28 @@
     } catch (_) {
     }
   }
+  function downloadJsonFile(filename, value) {
+    try {
+      var blob = new Blob([JSON.stringify(value, null, 2)], { type: "application/json" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.setTimeout(function() {
+        URL.revokeObjectURL(url);
+      }, 1e3);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
   function emptyJournal() {
     return {
-      v: 5,
-      // Inquiry-method substrate revision; older shapes migrate lazily
+      v: 6,
+      // Inquiry-episode + cross-tool provenance revision
       createdAt: Date.now(),
       updatedAt: Date.now(),
       devLevel: "6_8",
@@ -65,7 +417,12 @@
       activeMethodPack: null,
       // specific inquiry approach; several packs can share a lane
       methodPackHistory: [],
-      // append-only: [{ id, laneId, selectedAt }]
+      // append-only: [{ id, laneId, episodeId, selectedAt }]
+      inquiryEpisodes: [],
+      // append-only method episodes
+      activeInquiryEpisodeId: null,
+      capturedArtifacts: [],
+      // approved cross-tool artifacts with provenance
       activeStage: null,
       // lane-specific stage key
       // Cross-lane substrate fields:
@@ -177,7 +534,22 @@
       var parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== "object") return emptyJournal();
       var v = parsed.v;
-      if (v !== 1 && v !== 2 && v !== 3 && v !== 4 && v !== 5) return emptyJournal();
+      if (v !== 1 && v !== 2 && v !== 3 && v !== 4 && v !== 5 && v !== 6) {
+        var future = emptyJournal();
+        Object.keys(future).forEach(function(k) {
+          if (k !== "v" && parsed[k] !== void 0) future[k] = parsed[k];
+        });
+        future.loadWarning = "This portfolio was created by a newer AlloFlow version (v" + String(v) + "). It is open read-only so the original is not overwritten.";
+        future.originalSchemaVersion = v;
+        return future;
+      }
+      if (v < 6 && !safeLocal(RECOVERY_STORAGE_KEY)) {
+        safeLocal(RECOVERY_STORAGE_KEY, JSON.stringify({
+          sourceVersion: v,
+          backedUpAt: Date.now(),
+          raw
+        }));
+      }
       var fresh = emptyJournal();
       Object.keys(fresh).forEach(function(k) {
         if (parsed[k] === void 0) parsed[k] = fresh[k];
@@ -217,7 +589,32 @@
           }];
         }
       }
-      parsed.v = 5;
+      if (v <= 5 && parsed.activeMethodPack && Array.isArray(parsed.inquiryEpisodes) && parsed.inquiryEpisodes.length === 0) {
+        var migratedPack = methodPackById(parsed.activeMethodPack);
+        if (migratedPack) {
+          var migratedEpisodeId = researchId("episode_migrated_");
+          var migratedAt = parsed.updatedAt || parsed.createdAt || Date.now();
+          parsed.inquiryEpisodes = [{
+            id: migratedEpisodeId,
+            methodPackId: migratedPack.id,
+            laneId: migratedPack.laneId,
+            startedAt: migratedAt,
+            questionAtStart: String(parsed.questionTitle || "").slice(0, 240),
+            migratedFromSchema: v
+          }];
+          parsed.activeInquiryEpisodeId = migratedEpisodeId;
+          var linkedHistory = false;
+          parsed.methodPackHistory = (parsed.methodPackHistory || []).map(function(entry) {
+            if (!linkedHistory && entry && entry.id === migratedPack.id && !entry.episodeId) {
+              linkedHistory = true;
+              return Object.assign({}, entry, { episodeId: migratedEpisodeId });
+            }
+            return entry;
+          });
+          if (!linkedHistory) parsed.methodPackHistory.push({ id: migratedPack.id, laneId: migratedPack.laneId, episodeId: migratedEpisodeId, selectedAt: migratedAt });
+        }
+      }
+      parsed.v = 6;
       parsed.aiCallCount = 0;
       parsed.sessionStartedAt = Date.now();
       return parsed;
@@ -226,12 +623,15 @@
     }
   }
   function saveJournal(journal) {
-    if (!journal) return;
+    if (!journal || journal.loadWarning) return false;
     try {
       var snapshot = Object.assign({}, journal);
+      delete snapshot.originalSchemaVersion;
       snapshot.updatedAt = Date.now();
       safeLocal(STORAGE_KEY, JSON.stringify(snapshot));
+      return true;
     } catch (_) {
+      return false;
     }
   }
   var SHARED_STOP_WORDS = /* @__PURE__ */ new Set([
@@ -422,6 +822,17 @@
       __tier: 1
     };
   }
+  window.ResearchHub.captureArtifact = queueResearchCapture;
+  window.ResearchHub.getCaptureInboxCount = function() {
+    return readCaptureInbox().length;
+  };
+  window.ResearchHub.registerToolIntegration = registerToolIntegration;
+  window.ResearchHub.getToolIntegrations = function() {
+    return safeJsonClone(registeredToolIntegrations) || {};
+  };
+  window.ResearchHub.getIntegrationHealth = function(artifacts) {
+    return summarizeIntegrationHealth(artifacts);
+  };
   var PLACEHOLDER_LANES = [
     {
       id: "scientific",
@@ -558,6 +969,65 @@
     return METHOD_PACKS.filter(function(pack) {
       return pack.laneId === laneId;
     })[0] || null;
+  }
+  var METHOD_MATCH_RULES = [
+    { id: "civic_policy", reason: "Your question centers public choices, institutions, power, stakeholders, or policy consequences.", terms: [[/\b(policy|policies|law|regulation|government|council|policymaker|public decision)\b/i, 4], [/\b(who benefits|who bears|power|justice|rights|public|institution)\b/i, 3]] },
+    { id: "community_qualitative", reason: "Your question centers lived experience, community accounts, voices, or differently situated perspectives.", terms: [[/\b(interview|lived experience|community account|testimony|participant|voices?)\b/i, 4], [/\b(community|experience|perspective|people describe|accounts?)\b/i, 2]] },
+    { id: "creative_cultural", reason: "Your question centers form, medium, audience, art, media, or a cultural artifact.", terms: [[/\b(art|artwork|film|music|poem|image|media|artifact|medium|creative work)\b/i, 4], [/\b(form|audience|aesthetic|visual|performance)\b/i, 2]] },
+    { id: "humanistic_interpretation", reason: "Your question centers meaning, history, culture, memory, texts, or competing interpretations.", terms: [[/\b(interpret|meaning|history|historical|archive|memory|narrative|text)\b/i, 3], [/\b(culture|cultural|whose perspective|foreground|obscure)\b/i, 2]] },
+    { id: "engineering_design", reason: "Your question centers designing, building, testing, or improving a solution under constraints.", terms: [[/\b(design|build|prototype|constraint|criteria|solution)\b/i, 4], [/\b(improve|solve|how might)\b/i, 1]] },
+    { id: "scientific_investigation", reason: "Your question centers measurable patterns, variables, experiments, causes, or explanations of a phenomenon.", terms: [[/\b(experiment|variable|measure|data|phenomenon|observation)\b/i, 4], [/\b(pattern|cause|effect|predict|compare|why)\b/i, 2]] }
+  ];
+  function matchMethodPackForQuestion(question) {
+    var text = String(question || "").trim();
+    if (!text) return null;
+    var ranked = METHOD_MATCH_RULES.map(function(rule, order) {
+      var score = rule.terms.reduce(function(sum, pair) {
+        return sum + (pair[0].test(text) ? pair[1] : 0);
+      }, 0);
+      return { rule, score, order };
+    }).filter(function(row) {
+      return row.score > 0;
+    });
+    ranked.sort(function(a, b) {
+      return b.score - a.score || a.order - b.order;
+    });
+    if (!ranked.length || ranked[0].score < 2) return null;
+    var pack = methodPackById(ranked[0].rule.id);
+    if (!pack) return null;
+    return {
+      packId: pack.id,
+      laneId: pack.laneId,
+      icon: pack.icon,
+      label: pack.label,
+      reason: ranked[0].rule.reason,
+      score: ranked[0].score
+    };
+  }
+  function applyMethodPackSelection(prev, packId, nowValue, makeId) {
+    var pack = methodPackById(packId);
+    if (!pack) return prev;
+    var now = nowValue || Date.now();
+    var idFactory = makeId || function() {
+      return researchId("episode_");
+    };
+    var next = Object.assign({}, prev);
+    var history = Array.isArray(prev.methodPackHistory) ? prev.methodPackHistory.slice() : [];
+    var episodes = Array.isArray(prev.inquiryEpisodes) ? prev.inquiryEpisodes.slice() : [];
+    var sameEpisode = prev.activeMethodPack === pack.id && prev.activeInquiryEpisodeId;
+    var episodeId = sameEpisode ? prev.activeInquiryEpisodeId : idFactory();
+    if (!sameEpisode) {
+      episodes.push({ id: episodeId, methodPackId: pack.id, laneId: pack.laneId, startedAt: now, questionAtStart: String(prev.questionTitle || "").slice(0, 240) });
+      history.push({ id: pack.id, laneId: pack.laneId, episodeId, selectedAt: now });
+    }
+    next.activeMethodPack = pack.id;
+    next.activeInquiryEpisodeId = episodeId;
+    next.inquiryEpisodes = episodes;
+    next.methodPackHistory = history;
+    next.activeLane = pack.laneId;
+    next.activeStage = null;
+    next.updatedAt = now;
+    return next;
   }
   function resolveLanes() {
     var registered = window.ResearchHub && window.ResearchHub.getLanes ? window.ResearchHub.getLanes() : [];
@@ -1588,6 +2058,18 @@
     var _exitHint = useState(false);
     var showExitHint = _exitHint[0];
     var setShowExitHint = _exitHint[1];
+    var _pendingCapture = useState(null);
+    var pendingCapture = _pendingCapture[0];
+    var setPendingCapture = _pendingCapture[1];
+    var _captureNote = useState("");
+    var captureNote = _captureNote[0];
+    var setCaptureNote = _captureNote[1];
+    var _captureUncertainty = useState("");
+    var captureUncertainty = _captureUncertainty[0];
+    var setCaptureUncertainty = _captureUncertainty[1];
+    var _captureEvidence = useState(true);
+    var captureAsEvidence = _captureEvidence[0];
+    var setCaptureAsEvidence = _captureEvidence[1];
     var closeHandlerRef = useRef(onClose);
     closeHandlerRef.current = onClose;
     useEffect(function() {
@@ -1636,7 +2118,31 @@
     }, [isOpen]);
     var _journal = useState(loadJournal);
     var journal = _journal[0];
-    var setJournal = _journal[1];
+    var setJournalState = _journal[1];
+    var setJournal = useCallback(function(updater) {
+      setJournalState(function(prev) {
+        var next = typeof updater === "function" ? updater(prev) : updater;
+        return stampNewInquiryArtifacts(prev, next);
+      });
+    }, []);
+    useEffect(function() {
+      var offerCapture = function(event) {
+        var item = event && event.detail;
+        if (item) setPendingCapture(function(current) {
+          return current || item;
+        });
+      };
+      if (isOpen) {
+        var queued = readCaptureInbox();
+        if (queued.length) setPendingCapture(function(current) {
+          return current || queued[0];
+        });
+      }
+      window.addEventListener("alloflow:research-capture", offerCapture);
+      return function() {
+        window.removeEventListener("alloflow:research-capture", offerCapture);
+      };
+    }, [isOpen]);
     var _saveStatus = useState("saved");
     var saveStatus = _saveStatus[0];
     var setSaveStatus = _saveStatus[1];
@@ -1645,8 +2151,8 @@
     useEffect(function() {
       setSaveStatus("saving");
       var id = setTimeout(function() {
-        saveJournal(journal);
-        setSaveStatus("saved");
+        var saved = saveJournal(journal);
+        setSaveStatus(saved ? "saved" : journal.loadWarning ? "read-only" : "save unavailable");
       }, 120);
       return function() {
         clearTimeout(id);
@@ -1693,7 +2199,7 @@
     var educatorView = window.ResearchHub && window.ResearchHub.getEducatorView ? window.ResearchHub.getEducatorView() : null;
     var researchMilestones = [
       { label: "Frame a question", complete: !!(journal.questionTitle || "").trim() },
-      { label: "Gather evidence", complete: (journal.evidenceCards || []).length > 0 || (journal.sources || []).length > 0 },
+      { label: "Gather evidence", complete: (journal.evidenceCards || []).length > 0 || (journal.sources || []).length > 0 || (journal.capturedArtifacts || []).length > 0 },
       { label: "Develop ideas", complete: (journal.modelSnapshots || []).length > 0 || (journal.candidateConcepts || []).length > 0 || (journal.framings || []).length > 0 },
       { label: "Build a position", complete: (journal.claims || []).length > 0 || (journal.designClaims || []).length > 0 || (journal.compositions || []).length > 0 },
       { label: "Revise and loop", complete: (journal.loopBacks || []).length > 0 }
@@ -1701,6 +2207,12 @@
     var researchProgress = Math.round(researchMilestones.filter(function(step) {
       return step.complete;
     }).length / researchMilestones.length * 100);
+    var inquiryAudit = useMemo(function() {
+      return buildInquiryAudit(journal);
+    }, [journal]);
+    var integrationHealth = useMemo(function() {
+      return summarizeIntegrationHealth(journal.capturedArtifacts || []);
+    }, [journal.capturedArtifacts]);
     var researchNextMove = !researchMilestones[0].complete ? "Write a question worth investigating" : !activeLane ? "Choose an inquiry approach that fits what you want to do" : !researchMilestones[1].complete ? "Collect or log your first piece of evidence" : !researchMilestones[2].complete ? "Develop a model, framing, or candidate idea" : !researchMilestones[3].complete ? "Connect evidence to a claim or design decision" : "Revisit an earlier stage and strengthen your reasoning";
     var researchQuestionText = (journal.questionTitle || "").trim();
     var researchQuestionWords = researchQuestionText ? researchQuestionText.split(/\s+/).filter(Boolean).length : 0;
@@ -1713,10 +2225,7 @@
     var researchQuestionReady = researchQuestionSignals.filter(function(signal) {
       return signal.met;
     }).length;
-    var researchLaneMatch = null;
-    if (/\b(how might|design|build|improve|solve|constraint|prototype)\b/i.test(researchQuestionText)) researchLaneMatch = { id: "engineering", icon: "\u{1F6E0}\uFE0F", label: "Engineering Design", reason: "Your question points toward creating or improving a solution under constraints." };
-    else if (/\b(whose|perspective|history|historical|community|policy|meaning|culture|justice|impact on people)\b/i.test(researchQuestionText)) researchLaneMatch = { id: "humanities", icon: "\u{1F4DA}", label: "Humanities & Social Research", reason: "Your question asks about people, perspectives, meaning, systems, or public consequences." };
-    else if (/\b(why|pattern|measure|observe|experiment|cause|effect|phenomenon|data)\b/i.test(researchQuestionText)) researchLaneMatch = { id: "scientific", icon: "\u{1F52C}", label: "Scientific Inquiry", reason: "Your question points toward observing patterns, testing explanations, or gathering measurable evidence." };
+    var researchMethodMatch = matchMethodPackForQuestion(researchQuestionText);
     var setActiveLane = useCallback(function(laneId) {
       setJournal(function(prev) {
         var next = Object.assign({}, prev);
@@ -1727,21 +2236,8 @@
       });
     }, []);
     var selectMethodPack = useCallback(function(packId) {
-      var pack = methodPackById(packId);
-      if (!pack) return;
       setJournal(function(prev) {
-        var next = Object.assign({}, prev);
-        var history = Array.isArray(prev.methodPackHistory) ? prev.methodPackHistory.slice() : [];
-        var last = history.length ? history[history.length - 1] : null;
-        if (!last || last.id !== pack.id) {
-          history.push({ id: pack.id, laneId: pack.laneId, selectedAt: Date.now() });
-        }
-        next.activeMethodPack = pack.id;
-        next.methodPackHistory = history;
-        next.activeLane = pack.laneId;
-        next.activeStage = null;
-        next.updatedAt = Date.now();
-        return next;
+        return applyMethodPackSelection(prev, packId);
       });
     }, []);
     var setDevLevel = useCallback(function(lvl) {
@@ -1758,6 +2254,89 @@
         return next;
       });
     }, []);
+    var advanceCaptureQueue = function(handledId) {
+      removeCaptureInboxItem(handledId);
+      var remaining = readCaptureInbox();
+      setPendingCapture(remaining.length ? remaining[0] : null);
+      setCaptureNote("");
+      setCaptureUncertainty("");
+      setCaptureAsEvidence(true);
+    };
+    var dismissPendingCapture = function() {
+      if (pendingCapture) advanceCaptureQueue(pendingCapture.id);
+    };
+    var acceptPendingCapture = function() {
+      if (!pendingCapture) return;
+      var accepted = pendingCapture;
+      setJournal(function(prev) {
+        var now = Date.now();
+        var next = Object.assign({}, prev);
+        var pack = methodPackById(prev.activeMethodPack) || methodPackById("scientific_investigation");
+        var episodeId = prev.activeInquiryEpisodeId;
+        var episodes = Array.isArray(prev.inquiryEpisodes) ? prev.inquiryEpisodes.slice() : [];
+        var history = Array.isArray(prev.methodPackHistory) ? prev.methodPackHistory.slice() : [];
+        if (!episodeId) {
+          episodeId = researchId("episode_");
+          episodes.push({ id: episodeId, methodPackId: pack.id, laneId: pack.laneId, startedAt: now, questionAtStart: String(prev.questionTitle || "").slice(0, 240) });
+          history.push({ id: pack.id, laneId: pack.laneId, episodeId, selectedAt: now });
+        }
+        var artifact = Object.assign({}, accepted, {
+          acceptedAt: now,
+          learnerNote: String(captureNote || "").trim().slice(0, 2e3),
+          uncertaintyNote: String(captureUncertainty || "").trim().slice(0, 2e3),
+          methodPackId: pack.id,
+          inquiryEpisodeId: episodeId
+        });
+        artifact.integrationHealth = assessResearchArtifactIntegration(artifact);
+        next.activeMethodPack = prev.activeMethodPack || pack.id;
+        next.activeLane = prev.activeLane || pack.laneId;
+        next.activeInquiryEpisodeId = episodeId;
+        next.inquiryEpisodes = episodes;
+        next.methodPackHistory = history;
+        next.capturedArtifacts = (prev.capturedArtifacts || []).concat([artifact]);
+        if (captureAsEvidence) {
+          next.evidenceCards = (prev.evidenceCards || []).concat([{
+            id: researchId("ev_tool_"),
+            ts: now,
+            kind: "text",
+            tag: "tool evidence",
+            text: artifact.summary + (artifact.learnerNote ? " Learner note: " + artifact.learnerNote : ""),
+            toolArtifactId: artifact.id,
+            sourceToolId: artifact.sourceToolId,
+            methodPackId: pack.id,
+            inquiryEpisodeId: episodeId
+          }]);
+        }
+        next.updatedAt = now;
+        return next;
+      });
+      addToast("Saved " + accepted.title + " to the Inquiry Portfolio for learner review.", "success");
+      advanceCaptureQueue(accepted.id);
+    };
+    var downloadInquiryPortfolio = function() {
+      var payload = {
+        format: "alloflow-inquiry-portfolio",
+        schemaVersion: journal.v,
+        exportedAt: (/* @__PURE__ */ new Date()).toISOString(),
+        activeMethodPack: journal.activeMethodPack,
+        activeInquiryEpisodeId: journal.activeInquiryEpisodeId,
+        inquiryEpisodes: journal.inquiryEpisodes || [],
+        integrationHealth: summarizeIntegrationHealth(journal.capturedArtifacts || []),
+        inquiryAudit: buildInquiryAudit(journal),
+        journal
+      };
+      if (!downloadJsonFile("alloflow-inquiry-portfolio.json", payload)) addToast("Portfolio download is unavailable in this browser.", "error");
+    };
+    var downloadRecoveryCopy = function() {
+      var raw = safeLocal(STORAGE_KEY);
+      var parsed = null;
+      try {
+        parsed = JSON.parse(raw || "null");
+      } catch (_) {
+        parsed = { raw };
+      }
+      downloadJsonFile("alloflow-inquiry-portfolio-recovery.json", { exportedAt: (/* @__PURE__ */ new Date()).toISOString(), original: parsed });
+    };
     var requestClearJournal = useCallback(function(event) {
       resetTriggerRef.current = event.currentTarget;
       setShowResetConfirm(true);
@@ -1887,7 +2466,13 @@
           flex: 1
         } }, /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", style: { position: "absolute", width: "1px", height: "1px", padding: 0, margin: "-1px", overflow: "hidden", clip: "rect(0,0,0,0)", border: 0 } }, educatorViewOn ? t("research_hub.educator_view_on") || "Educator view" : activeLane ? activeLane.label : t("research_hub.method_selector_title") || "Choose an inquiry approach"), showExitHint && /* @__PURE__ */ React.createElement("div", { "data-research-exit-hint": "true", role: "status", "aria-live": "polite", style: { display: "flex", alignItems: "center", gap: "10px", padding: "9px 12px", borderRadius: "12px", border: "1px solid #bfdbfe", background: "#eff6ff", color: "#1e3a8a" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "16px" } }, "\u{1F4BE}"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, fontSize: "11px", lineHeight: 1.5 } }, /* @__PURE__ */ React.createElement("strong", null, "Your Research Hub stayed open."), " Clicking outside no longer closes it, so downloads, resource packs, and saved files are less likely to interrupt your work. Use Close or press Escape when you are finished."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: function() {
           setShowExitHint(false);
-        }, "aria-label": "Dismiss saved-work reminder", style: { border: "1px solid #bfdbfe", borderRadius: "8px", background: "#fff", color: "#1e40af", padding: "5px 8px", fontSize: "10px", fontWeight: 800, cursor: "pointer" } }, "Got it")), /* @__PURE__ */ React.createElement(
+        }, "aria-label": "Dismiss saved-work reminder", style: { border: "1px solid #bfdbfe", borderRadius: "8px", background: "#fff", color: "#1e40af", padding: "5px 8px", fontSize: "10px", fontWeight: 800, cursor: "pointer" } }, "Got it")), journal.loadWarning && /* @__PURE__ */ React.createElement("div", { role: "alert", "data-research-recovery-warning": "true", style: { padding: "12px 14px", borderRadius: "12px", border: "1px solid #f59e0b", background: "#fffbeb", color: "#78350f" } }, /* @__PURE__ */ React.createElement("strong", null, "Read-only recovery mode"), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 8px", fontSize: "11px", lineHeight: 1.5 } }, journal.loadWarning), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: downloadRecoveryCopy, style: { minHeight: "44px", padding: "7px 11px", borderRadius: "9px", border: "1px solid #d97706", background: "#fff", color: "#92400e", fontWeight: 800, cursor: "pointer" } }, "Download untouched recovery copy")), pendingCapture && /* @__PURE__ */ React.createElement("section", { "data-research-capture-review": "true", "aria-labelledby": "research-capture-review-title", style: { padding: "14px", borderRadius: "15px", border: "2px solid #0d9488", background: "linear-gradient(135deg,#f0fdfa,#ffffff)" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", gap: "10px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.6px", color: "#0f766e" } }, "Tool artifact awaiting your approval"), /* @__PURE__ */ React.createElement("h3", { id: "research-capture-review-title", style: { margin: "3px 0 0", fontSize: "15px", color: "#134e4a" } }, pendingCapture.title), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "10px", color: "#475569" } }, pendingCapture.sourceToolName + " \xB7 " + pendingCapture.artifactKind)), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "9px", fontWeight: 900, color: "#0f766e" } }, readCaptureInbox().length + " queued")), /* @__PURE__ */ React.createElement("p", { style: { margin: "9px 0 0", fontSize: "11px", lineHeight: 1.55, color: "#334155" } }, pendingCapture.summary), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "8px", padding: "8px 10px", borderRadius: "9px", background: "#ecfeff", fontSize: "10px", color: "#155e75" } }, /* @__PURE__ */ React.createElement("strong", null, "Privacy/provenance:"), " ", pendingCapture.provenance && pendingCapture.provenance.privacy || "No raw files or direct identifiers included."), pendingCapture.integrationContract ? /* @__PURE__ */ React.createElement("details", { "data-capture-integration-contract": "true", style: { marginTop: "8px", padding: "7px 9px", borderRadius: "9px", border: "1px solid #99f6e4", background: "#f0fdfa", fontSize: "10px", color: "#134e4a" } }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", fontWeight: 900 } }, "Tool contract & reproducibility receipt \xB7 ", pendingCapture.reproducibilityReceipt && pendingCapture.reproducibilityReceipt.status || "missing"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "6px", display: "grid", gap: "3px" } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Declared version:"), " ", pendingCapture.integrationContract.version || pendingCapture.sourceToolVersion || "unknown"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "License:"), " ", pendingCapture.integrationContract.license && (pendingCapture.integrationContract.license.spdx || pendingCapture.integrationContract.license.name) || "not declared"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Citation guidance:"), " ", pendingCapture.integrationContract.citation && pendingCapture.integrationContract.citation.text || "not declared"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Supported approaches:"), " ", (pendingCapture.integrationContract.supportedMethodPacks || []).join(", ") || "not declared"), pendingCapture.reproducibilityReceipt && pendingCapture.reproducibilityReceipt.missingFields && pendingCapture.reproducibilityReceipt.missingFields.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { color: "#92400e" } }, /* @__PURE__ */ React.createElement("strong", null, "Receipt gaps:"), " ", pendingCapture.reproducibilityReceipt.missingFields.join(", ")), pendingCapture.reproducibilityReceipt && pendingCapture.reproducibilityReceipt.limitations && pendingCapture.reproducibilityReceipt.limitations.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Declared limitations:"), " ", pendingCapture.reproducibilityReceipt.limitations.join(" \xB7 ")))) : /* @__PURE__ */ React.createElement("div", { "data-capture-unregistered-warning": "true", style: { marginTop: "8px", padding: "7px 9px", borderRadius: "9px", border: "1px solid #fcd34d", background: "#fffbeb", fontSize: "10px", color: "#92400e" } }, /* @__PURE__ */ React.createElement("strong", null, "Unregistered integration:"), " no versioned contract, license, citation, or tool-specific receipt requirements were provided. Review carefully before approval."), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "10px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))", gap: "10px" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 800, color: "#334155" } }, "What do you notice or infer? ", /* @__PURE__ */ React.createElement("span", { style: { color: "#b91c1c" } }, "(required)"), /* @__PURE__ */ React.createElement("textarea", { value: captureNote, onChange: function(e) {
+          setCaptureNote(e.target.value.slice(0, 2e3));
+        }, rows: 3, maxLength: 2e3, style: { display: "block", width: "100%", marginTop: "4px", border: "1px solid #94a3b8", borderRadius: "8px", padding: "8px", font: "inherit", fontSize: "11px" } })), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 800, color: "#334155" } }, "What remains uncertain or needs another source?", /* @__PURE__ */ React.createElement("textarea", { value: captureUncertainty, onChange: function(e) {
+          setCaptureUncertainty(e.target.value.slice(0, 2e3));
+        }, rows: 3, maxLength: 2e3, style: { display: "block", width: "100%", marginTop: "4px", border: "1px solid #94a3b8", borderRadius: "8px", padding: "8px", font: "inherit", fontSize: "11px" } }))), /* @__PURE__ */ React.createElement("label", { style: { marginTop: "9px", display: "flex", alignItems: "flex-start", gap: "8px", fontSize: "10px", color: "#334155" } }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: captureAsEvidence, onChange: function(e) {
+          setCaptureAsEvidence(e.target.checked);
+        } }), "Also create an evidence card linked to this tool artifact."), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "11px", display: "flex", justifyContent: "flex-end", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: dismissPendingCapture, style: { minHeight: "44px", padding: "7px 12px", borderRadius: "9px", border: "1px solid #94a3b8", background: "#fff", color: "#334155", fontWeight: 800, cursor: "pointer" } }, "Dismiss artifact"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-capture-consent": "true", disabled: captureNote.trim().length < 12, onClick: acceptPendingCapture, style: { minHeight: "44px", padding: "7px 12px", borderRadius: "9px", border: 0, background: captureNote.trim().length >= 12 ? "#0f766e" : "#cbd5e1", color: "#fff", fontWeight: 900, cursor: captureNote.trim().length >= 12 ? "pointer" : "not-allowed" } }, "Approve and save to portfolio"))), "            ", /* @__PURE__ */ React.createElement(
           "section",
           {
             "data-research-command": "true",
@@ -1995,10 +2580,10 @@
           }
         ) : (
           /* Lane selector OR active-lane workspace */
-          !activeLane ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h3", { style: { margin: "4px 0 0", fontSize: "14px", fontWeight: 800, color: "#1e293b" } }, t("research_hub.method_selector_title") || "Choose an inquiry approach (switch any time)"), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "12px", color: "#475569", lineHeight: 1.55 } }, t("research_hub.lane_selector_help") || "Six approaches open three connected workspaces. Your question, sources, evidence, voice notes, models, framings, and revision history stay together in one Inquiry Portfolio."), researchLaneMatch ? /* @__PURE__ */ React.createElement("div", { "data-research-lane-match": "true", style: { display: "flex", alignItems: "flex-start", gap: "10px", padding: "12px 14px", borderRadius: "14px", border: "1px solid #c7d2fe", background: "linear-gradient(90deg,#eef2ff,#f8fafc)", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "24px" } }, researchLaneMatch.icon), /* @__PURE__ */ React.createElement("div", { style: { flex: "1 1 260px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "10px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.8px", color: "#4f46e5" } }, "Possible lens match - based only on words in your question"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "2px", fontSize: "13px", fontWeight: 900, color: "#1e293b" } }, researchLaneMatch.label), /* @__PURE__ */ React.createElement("p", { style: { margin: "3px 0 0", fontSize: "11px", lineHeight: 1.5, color: "#475569" } }, researchLaneMatch.reason), /* @__PURE__ */ React.createElement("p", { style: { margin: "3px 0 0", fontSize: "10px", color: "#64748b" } }, "This is not a verdict. Try another lane whenever a different lens reveals something useful.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: function() {
-            var pack = defaultMethodPackForLane(researchLaneMatch.id);
+          !activeLane ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h3", { style: { margin: "4px 0 0", fontSize: "14px", fontWeight: 800, color: "#1e293b" } }, t("research_hub.method_selector_title") || "Choose an inquiry approach (switch any time)"), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "12px", color: "#475569", lineHeight: 1.55 } }, t("research_hub.lane_selector_help") || "Six approaches open three connected workspaces. Your question, sources, evidence, voice notes, models, framings, and revision history stay together in one Inquiry Portfolio."), researchMethodMatch ? /* @__PURE__ */ React.createElement("div", { "data-research-lane-match": "true", style: { display: "flex", alignItems: "flex-start", gap: "10px", padding: "12px 14px", borderRadius: "14px", border: "1px solid #c7d2fe", background: "linear-gradient(90deg,#eef2ff,#f8fafc)", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "24px" } }, researchMethodMatch.icon), /* @__PURE__ */ React.createElement("div", { style: { flex: "1 1 260px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "10px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.8px", color: "#4f46e5" } }, "Possible approach match - based only on words in your question"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "2px", fontSize: "13px", fontWeight: 900, color: "#1e293b" } }, researchMethodMatch.label), /* @__PURE__ */ React.createElement("p", { style: { margin: "3px 0 0", fontSize: "11px", lineHeight: 1.5, color: "#475569" } }, researchMethodMatch.reason), /* @__PURE__ */ React.createElement("p", { style: { margin: "3px 0 0", fontSize: "10px", color: "#64748b" } }, "This is not a verdict. Try another approach whenever a different method reveals something useful.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: function() {
+            var pack = methodPackById(researchMethodMatch.packId);
             if (pack) selectMethodPack(pack.id);
-          }, style: { flexShrink: 0, border: 0, borderRadius: "9px", background: "#4f46e5", color: "#fff", padding: "7px 10px", fontSize: "10px", fontWeight: 900, cursor: "pointer" } }, "Try this lens")) : researchQuestionText ? /* @__PURE__ */ React.createElement("div", { "data-research-lane-match": "true", style: { padding: "10px 12px", borderRadius: "12px", border: "1px solid #e2e8f0", background: "#f8fafc", fontSize: "11px", color: "#475569" } }, /* @__PURE__ */ React.createElement("strong", null, "No single lens dominates."), " Choose the approach that matches what you want to do first; your Inquiry Portfolio will travel with you.") : null, /* @__PURE__ */ React.createElement("div", { style: {
+          }, style: { flexShrink: 0, border: 0, borderRadius: "9px", background: "#4f46e5", color: "#fff", padding: "7px 10px", fontSize: "10px", fontWeight: 900, cursor: "pointer" } }, "Try this approach")) : researchQuestionText ? /* @__PURE__ */ React.createElement("div", { "data-research-lane-match": "true", style: { padding: "10px 12px", borderRadius: "12px", border: "1px solid #e2e8f0", background: "#f8fafc", fontSize: "11px", color: "#475569" } }, /* @__PURE__ */ React.createElement("strong", null, "No single lens dominates."), " Choose the approach that matches what you want to do first; your Inquiry Portfolio will travel with you.") : null, /* @__PURE__ */ React.createElement("div", { style: {
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
             gap: "12px"
@@ -2040,7 +2625,7 @@
                   e.currentTarget.style.boxShadow = "none";
                 }
               },
-              /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "10px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "30px" } }, pack.icon), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: 0, fontSize: "14px", fontWeight: 800, color: "#1e293b" } }, pack.label), researchLaneMatch && researchLaneMatch.id === pack.laneId && /* @__PURE__ */ React.createElement("span", { style: { borderRadius: "999px", padding: "2px 6px", background: "#4f46e5", color: "#fff", fontSize: "8px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.4px" } }, "Lens match"), selectedBefore && /* @__PURE__ */ React.createElement("span", { style: { borderRadius: "999px", padding: "2px 6px", background: "#dcfce7", color: "#166534", fontSize: "8px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.4px" } }, "Current approach")), /* @__PURE__ */ React.createElement("p", { style: { margin: "2px 0 0", fontSize: "10px", fontWeight: 800, color: pack.color } }, pack.family))),
+              /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "10px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "30px" } }, pack.icon), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: 0, fontSize: "14px", fontWeight: 800, color: "#1e293b" } }, pack.label), researchMethodMatch && researchMethodMatch.packId === pack.id && /* @__PURE__ */ React.createElement("span", { style: { borderRadius: "999px", padding: "2px 6px", background: "#4f46e5", color: "#fff", fontSize: "8px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.4px" } }, "Approach match"), selectedBefore && /* @__PURE__ */ React.createElement("span", { style: { borderRadius: "999px", padding: "2px 6px", background: "#dcfce7", color: "#166534", fontSize: "8px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.4px" } }, "Current approach")), /* @__PURE__ */ React.createElement("p", { style: { margin: "2px 0 0", fontSize: "10px", fontWeight: 800, color: pack.color } }, pack.family))),
               /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "12px", color: "#475569", lineHeight: 1.5 } }, pack.blurb),
               /* @__PURE__ */ React.createElement("div", { style: { padding: "8px 9px", borderRadius: "9px", background: "rgba(255,255,255,0.78)", border: "1px solid " + pack.border } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.45px", color: pack.color } }, "What rigor looks like"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "2px", fontSize: "10px", lineHeight: 1.45, color: "#475569" } }, pack.rigor)),
               /* @__PURE__ */ React.createElement("div", { style: { marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", fontWeight: 800, color: "#64748b" } }, pack.bestFor), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", fontWeight: 900, color: pack.color } }, "Open approach ", "\u2192")),
@@ -2100,8 +2685,10 @@
           border: "1px solid #cbd5e1",
           background: "#ffffff",
           boxShadow: "0 4px 14px rgba(15,23,42,0.05)"
-        } }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "12px 14px", listStylePosition: "inside", background: "linear-gradient(90deg,#f8fafc,#eef2ff)" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "16px" } }, "\u{1F392} "), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "12px", fontWeight: 900, color: "#1e293b" } }, t("research_hub.journal_state_summary") || "Inquiry Portfolio"), /* @__PURE__ */ React.createElement("span", { "data-research-save-status": "true", role: "status", "aria-live": "polite", style: { marginLeft: "8px", borderRadius: "999px", padding: "3px 7px", background: saveStatus === "saved" ? "#d1fae5" : "#dbeafe", color: saveStatus === "saved" ? "#047857" : "#1d4ed8", fontSize: "9px", fontWeight: 900 } }, saveStatus === "saved" ? "Saved on this device" : "Saving latest changes..."), /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "8px", fontSize: "10px", color: "#64748b" } }, researchProgress + "% inquiry progress")), /* @__PURE__ */ React.createElement("div", { style: { padding: "14px", borderTop: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: "8px" } }, [
+        } }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "12px 14px", listStylePosition: "inside", background: "linear-gradient(90deg,#f8fafc,#eef2ff)" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "16px" } }, "\u{1F392} "), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "12px", fontWeight: 900, color: "#1e293b" } }, t("research_hub.journal_state_summary") || "Inquiry Portfolio"), /* @__PURE__ */ React.createElement("span", { "data-research-save-status": "true", role: "status", "aria-live": "polite", style: { marginLeft: "8px", borderRadius: "999px", padding: "3px 7px", background: saveStatus === "saved" ? "#d1fae5" : saveStatus === "read-only" ? "#fef3c7" : "#dbeafe", color: saveStatus === "saved" ? "#047857" : saveStatus === "read-only" ? "#92400e" : "#1d4ed8", fontSize: "9px", fontWeight: 900 } }, saveStatus === "saved" ? "Saved on this device" : saveStatus === "read-only" ? "Read-only recovery" : saveStatus === "save unavailable" ? "Save unavailable" : "Saving latest changes..."), /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "8px", fontSize: "10px", color: "#64748b" } }, researchProgress + "% inquiry progress")), /* @__PURE__ */ React.createElement("div", { style: { padding: "14px", borderTop: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: "8px" } }, [
           { icon: "\u{1F4CC}", label: "Evidence", value: (journal.evidenceCards || []).length, detail: "observations and records" },
+          { icon: "\u{1F9F0}", label: "Tool artifacts", value: (journal.capturedArtifacts || []).length, detail: "approved provenance captures" },
+          { icon: "\u{1F9ED}", label: "Episodes", value: (journal.inquiryEpisodes || []).length, detail: "documented method shifts" },
           { icon: "\u{1F517}", label: "Sources", value: (journal.sources || []).length, detail: "sources logged" },
           { icon: "\u{1F4A1}", label: "Ideas", value: (journal.modelSnapshots || []).length + (journal.candidateConcepts || []).length + (journal.framings || []).length, detail: "models, concepts, framings" },
           { icon: "\u{1F4AC}", label: "Positions", value: (journal.claims || []).length + (journal.designClaims || []).length + (journal.compositions || []).length, detail: "claims and compositions" },
@@ -2110,7 +2697,9 @@
           return /* @__PURE__ */ React.createElement("div", { key: item.label, style: { borderRadius: "12px", border: "1px solid #e2e8f0", background: "#f8fafc", padding: "10px" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "17px" } }, item.icon), /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "18px", color: "#1e293b" } }, item.value)), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "10px", fontWeight: 900, color: "#334155" } }, item.label), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "1px", fontSize: "9px", color: "#64748b" } }, item.detail));
         })), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "10px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: "8px" } }, /* @__PURE__ */ React.createElement("div", { style: { borderRadius: "12px", border: "1px solid #e0e7ff", background: "#eef2ff", padding: "10px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", fontWeight: 900, textTransform: "uppercase", color: "#4f46e5" } }, "Current context"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", fontSize: "11px", color: "#334155" } }, (DEV_LEVELS.filter(function(l) {
           return l.key === journal.devLevel;
-        })[0] || { long: journal.devLevel }).long + " reading level - " + (activeMethodPack ? activeMethodPack.label + " / " : "") + (activeLane ? activeLane.label : "No workspace selected"))), /* @__PURE__ */ React.createElement("div", { style: { borderRadius: "12px", border: "1px solid #ccfbf1", background: "#f0fdfa", padding: "10px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", fontWeight: 900, textTransform: "uppercase", color: "#0f766e" } }, "Portfolio continuity"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", fontSize: "11px", color: "#334155" } }, "Everything here travels with you when you switch inquiry approaches or workspaces.")), /* @__PURE__ */ React.createElement("div", { style: { borderRadius: "12px", border: "1px solid #fde68a", background: "#fffbeb", padding: "10px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", fontWeight: 900, textTransform: "uppercase", color: "#b45309" } }, "AI questions"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", fontSize: "11px", color: "#334155" } }, (journal.aiCallCount || 0) + " of " + MAX_AI_CALLS_PER_SESSION + " used this session - your authored work is not counted."))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "12px", display: "flex", justifyContent: "flex-end" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: requestClearJournal, style: { minHeight: "44px", padding: "7px 12px", borderRadius: "10px", background: "#fff", border: "1px solid #fca5a5", color: "#b91c1c", fontWeight: 800, fontSize: "10px", cursor: "pointer" } }, t("research_hub.journal_reset") || "Reset this inquiry"))))),
+        })[0] || { long: journal.devLevel }).long + " reading level - " + (activeMethodPack ? activeMethodPack.label + " / " : "") + (activeLane ? activeLane.label : "No workspace selected"))), /* @__PURE__ */ React.createElement("div", { style: { borderRadius: "12px", border: "1px solid #ccfbf1", background: "#f0fdfa", padding: "10px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", fontWeight: 900, textTransform: "uppercase", color: "#0f766e" } }, "Portfolio continuity"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", fontSize: "11px", color: "#334155" } }, "Everything here travels with you when you switch inquiry approaches or workspaces.")), /* @__PURE__ */ React.createElement("div", { style: { borderRadius: "12px", border: "1px solid #fde68a", background: "#fffbeb", padding: "10px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", fontWeight: 900, textTransform: "uppercase", color: "#b45309" } }, "AI questions"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", fontSize: "11px", color: "#334155" } }, (journal.aiCallCount || 0) + " of " + MAX_AI_CALLS_PER_SESSION + " used this session - your authored work is not counted."))), /* @__PURE__ */ React.createElement("details", { "data-inquiry-evidence-audit": "true", open: inquiryAudit.status === "action_needed", style: { marginTop: "12px", borderRadius: "12px", border: "1px solid " + (inquiryAudit.status === "ready" ? "#86efac" : inquiryAudit.status === "action_needed" ? "#fca5a5" : "#fcd34d"), background: inquiryAudit.status === "ready" ? "#f0fdf4" : inquiryAudit.status === "action_needed" ? "#fef2f2" : "#fffbeb" } }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "10px 12px", fontSize: "11px", fontWeight: 900, color: "#334155" } }, "Argument & evidence audit: ", inquiryAudit.status === "ready" ? "ready" : inquiryAudit.counts.action + " action / " + inquiryAudit.counts.review + " review"), /* @__PURE__ */ React.createElement("div", { style: { padding: "0 12px 12px", fontSize: "10px", color: "#475569" } }, inquiryAudit.issues.length ? /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, paddingLeft: "18px", display: "grid", gap: "4px" } }, inquiryAudit.issues.map(function(issue) {
+          return /* @__PURE__ */ React.createElement("li", { key: issue.code }, /* @__PURE__ */ React.createElement("strong", null, issue.severity === "action" ? "Address:" : "Review:"), " ", issue.message);
+        })) : /* @__PURE__ */ React.createElement("span", null, "No unsupported claims, unvetted linked sources, missing counterinterpretations, uninterpreted tool outputs, or incomplete reproducibility receipts were detected."), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "7px", fontStyle: "italic" } }, "This is a reasoning check, not an automatic grade. The portfolio export includes the audit and integration-health receipt."))), integrationHealth.total > 0 && /* @__PURE__ */ React.createElement("div", { "data-integration-health-summary": "true", style: { marginTop: "8px", padding: "8px 10px", borderRadius: "10px", background: "#f8fafc", border: "1px solid #cbd5e1", fontSize: "10px", color: "#475569" } }, /* @__PURE__ */ React.createElement("strong", null, "Tool integration health:"), " ", integrationHealth.healthy, " healthy \xB7 ", integrationHealth.needsReview, " review \xB7 ", integrationHealth.actionNeeded, " action needed."), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "12px", display: "flex", justifyContent: "flex-end", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: downloadInquiryPortfolio, style: { minHeight: "44px", padding: "7px 12px", borderRadius: "10px", background: "#fff", border: "1px solid #818cf8", color: "#4338ca", fontWeight: 800, fontSize: "10px", cursor: "pointer" } }, "Download portfolio + provenance"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: requestClearJournal, style: { minHeight: "44px", padding: "7px 12px", borderRadius: "10px", background: "#fff", border: "1px solid #fca5a5", color: "#b91c1c", fontWeight: 800, fontSize: "10px", cursor: "pointer" } }, t("research_hub.journal_reset") || "Reset this inquiry"))))),
         /* @__PURE__ */ React.createElement("div", { style: {
           padding: "12px 22px",
           borderTop: "1px solid #e2e8f0",
@@ -2158,7 +2747,7 @@
             style: { width: "100%", maxWidth: "440px", background: "#fff", borderRadius: "16px", padding: "24px", boxShadow: "0 25px 60px rgba(0,0,0,0.35)" }
           },
           /* @__PURE__ */ React.createElement("h3", { id: "research-hub-reset-title", style: { margin: 0, color: "#7f1d1d", fontSize: "18px" } }, t("research_hub.reset_title") || "Reset this inquiry?"),
-          /* @__PURE__ */ React.createElement("p", { id: "research-hub-reset-description", style: { margin: "12px 0 0", color: "#334155", lineHeight: 1.55 } }, t("research_hub.confirm_reset") || "Voice notes, model snapshots, and AI history will be cleared. This cannot be undone."),
+          /* @__PURE__ */ React.createElement("p", { id: "research-hub-reset-description", style: { margin: "12px 0 0", color: "#334155", lineHeight: 1.55 } }, t("research_hub.confirm_reset") || "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone."),
           /* @__PURE__ */ React.createElement("div", { style: { marginTop: "24px", display: "flex", justifyContent: "flex-end", gap: "12px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-safe-default": "true", onClick: closeResetDialog, style: { minHeight: "44px", padding: "8px 16px", borderRadius: "8px", border: "1px solid #94a3b8", background: "#fff", color: "#334155", fontWeight: 700 } }, t("common.cancel") || "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: confirmClearJournal, style: { minHeight: "44px", padding: "8px 16px", borderRadius: "8px", border: 0, background: "#b91c1c", color: "#fff", fontWeight: 700 } }, t("research_hub.journal_reset") || "Reset this inquiry"))
         ))
       )
@@ -2265,6 +2854,9 @@
     };
     window.ResearchHub.constants = {
       STORAGE_KEY,
+      RECOVERY_STORAGE_KEY,
+      CAPTURE_INBOX_KEY,
+      TOOL_INTEGRATION_CONTRACT_VERSION,
       MAX_AI_CALLS_PER_SESSION,
       VOICE_NOTE_MAX_SECONDS,
       DEV_LEVELS
@@ -2275,7 +2867,16 @@
       tokenJaccard,
       MECHANISM_VERBS,
       PERSPECTIVE_MARKERS_RE,
-      SHARED_STOP_WORDS
+      SHARED_STOP_WORDS,
+      matchMethodPackForQuestion,
+      normalizeResearchCapture,
+      validateToolIntegrationContract,
+      normalizeReproducibilityReceipt,
+      assessResearchArtifactIntegration,
+      summarizeIntegrationHealth,
+      buildInquiryAudit,
+      stampNewInquiryArtifacts,
+      applyMethodPackSelection
     };
   }
   console.log("[CDN] ResearchHub loaded (Tier 4)");

@@ -1,12 +1,12 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-19T19:29:26.421Z
+Generated: 2026-07-22T04:46:27.631Z
 
 ## Scope
 
-- Registered STEM tools audited: 129
-- Plugin files loaded: 126
-- Shared shell coverage: 129/129 tools
+- Registered STEM tools audited: 130
+- Plugin files loaded: 128
+- Shared shell coverage: 130/130 tools
 - Light-background opt-outs: 0
 
 ## Summary
@@ -19,7 +19,11 @@ Generated: 2026-07-19T19:29:26.421Z
 | Review notices | 24 |
 | Tools with any finding | 35 |
 | Tools with high-confidence errors | 0 |
-| Tools with canvas surfaces | 37 |
+| Tools with canvas surfaces | 36 |
+
+## Load/Render Errors
+
+- Load: `stem_tool_galaxy.js` - missing ) after argument list
 
 ## Top Findings
 
@@ -57,7 +61,7 @@ Generated: 2026-07-19T19:29:26.421Z
 | `archStudio` Architecture Studio | explore | standard | 83 | 2 | 0 | 0 | 0 | 1 | metadata x1 |
 | `areaPerimeter` Area & Perimeter Lab | math | standard | 8 | 2 | 0 | 0 | 0 | 1 | horizontal-overflow-risk x1 |
 | `areamodel` Area Model | math | standard | 18 | 3 | 0 | 0 | 0 | 0 |  |
-| `arithmeticStudio` Arithmetic Strategy Studio | math | standard | 14 | 2 | 0 | 0 | 0 | 0 |  |
+| `arithmeticStudio` Arithmetic Strategy Studio | math | standard | 11 | 2 | 0 | 0 | 0 | 0 |  |
 | `artStudio` Art & Design Studio | creative | standard | 24 | 3 | 1 | 0 | 0 | 0 |  |
 | `assessmentLiteracy` Assessment Literacy Lab | Literacy | standard | 10 | 0 | 0 | 0 | 0 | 0 |  |
 | `astronomy` Night Sky & Astronomy | science | standard | 0 | 0 | 0 | 0 | 0 | 0 |  |
@@ -79,6 +83,7 @@ Generated: 2026-07-19T19:29:26.421Z
 | `circuit` Circuit Builder | science | standard | 44 | 1 | 0 | 0 | 0 | 0 |  |
 | `circuitShelf` Circuit Shelf | general | standard | 2 | 0 | 0 | 0 | 0 | 1 | metadata x1 |
 | `climateExplorer` Climate Explorer | science | standard | 39 | 0 | 2 | 0 | 0 | 0 |  |
+| `coasterLab` Coaster Lab | science | standard | 0 | 0 | 0 | 0 | 0 | 0 |  |
 | `codingPlayground` codingPlayground | creative | standard | 57 | 2 | 1 | 0 | 0 | 1 | metadata x1 |
 | `companionPlanting` Companion Planting Lab | science | standard | 20 | 0 | 1 | 0 | 0 | 0 |  |
 | `coordinate` Coordinate Grid | math | standard | 14 | 1 | 0 | 0 | 1 | 0 | tiny-text x1 |
@@ -105,7 +110,6 @@ Generated: 2026-07-19T19:29:26.421Z
 | `fractions` Fraction Lab | math | standard | 41 | 2 | 1 | 0 | 0 | 0 |  |
 | `freeForms` Free Forms | creative | standard | 14 | 0 | 0 | 0 | 0 | 0 |  |
 | `funcGrapher` Function Grapher | math | standard | 0 | 0 | 0 | 0 | 0 | 0 |  |
-| `galaxy` Galaxy Explorer | science | standard | 52 | 3 | 1 | 0 | 0 | 0 |  |
 | `gameStudio` Game Design Studio | creativity | standard | 34 | 3 | 0 | 0 | 0 | 0 |  |
 | `geoQuiz` Geography Explorer | geo | standard | 12 | 2 | 0 | 0 | 0 | 0 |  |
 | `geoSandbox` Geometry Sandbox | math | standard | 0 | 0 | 0 | 0 | 0 | 0 |  |
@@ -120,6 +124,7 @@ Generated: 2026-07-19T19:29:26.421Z
 | `llmLiteracy` AI Literacy Lab | technology | standard | 12 | 0 | 0 | 0 | 0 | 0 |  |
 | `logicLab` Logic Lab | math | standard | 41 | 1 | 0 | 0 | 0 | 0 |  |
 | `lumen` Lumen | data | standard | 2 | 0 | 0 | 0 | 0 | 0 |  |
+| `magnetism` Magnetism Lab | science | standard | 0 | 0 | 0 | 0 | 0 | 0 |  |
 | `microbiology` Microbiology Lab | science | standard | 14 | 0 | 0 | 0 | 0 | 0 |  |
 | `migration` Migration & Wind Lab | science | standard | 10 | 6 | 1 | 0 | 0 | 0 |  |
 | `molecule` Molecule Lab | science | standard | 104 | 1 | 0 | 0 | 0 | 0 |  |
@@ -132,7 +137,7 @@ Generated: 2026-07-19T19:29:26.421Z
 | `nutritionLab` NutritionLab — Nutrition Science | general | standard | 19 | 0 | 0 | 0 | 0 | 1 | metadata x1 |
 | `opticsLab` Optics Lab | science | standard | 34 | 0 | 0 | 0 | 0 | 0 |  |
 | `oratory` Oratory Lab | science | standard | 16 | 0 | 4 | 0 | 0 | 0 |  |
-| `particleLab3d` Particle Lab 3D | science | standard | 40 | 9 | 1 | 0 | 2 | 0 | canvas-focus x1, tiny-text x1 |
+| `particleLab3d` Particle Lab 3D | science | standard | 42 | 9 | 1 | 0 | 2 | 0 | canvas-focus x1, tiny-text x1 |
 | `petsLab` Science of Pets Lab | life-earth-science | standard | 35 | 7 | 0 | 0 | 0 | 0 |  |
 | `physics` Physics Simulator | science | standard | 0 | 0 | 0 | 0 | 0 | 0 |  |
 | `plateTectonics` Plate Tectonics | science | standard | 25 | 5 | 6 | 0 | 1 | 1 | horizontal-overflow-risk x1, tiny-text x1 |

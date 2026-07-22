@@ -216,8 +216,14 @@
       var announce = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : function() {};
       var awardXP = typeof ctx.awardXP === 'function' ? ctx.awardXP : function() {};
       var isDark = !!ctx.isDark;
+      var isContrast = !!ctx.isContrast;
 
-      var COLORS = isDark ? {
+      var COLORS = isContrast ? {
+        page: '#000000', panel: '#000000', panelAlt: '#0a0a0a', text: '#ffffff',
+        muted: '#ffffff', border: '#fbbf24', soft: '#111111', teal: '#ffff00',
+        tealDark: '#ffff00', blue: '#00ffff', amber: '#ffff00', red: '#ff6b6b',
+        green: '#00ff66', tile: '#ffff00', tileSoft: '#000000', onTeal: '#000000'
+      } : isDark ? {
         page: '#0f172a', panel: '#172033', panelAlt: '#111827', text: '#f8fafc',
         muted: '#cbd5e1', border: '#475569', soft: '#1e293b', teal: '#2dd4bf',
         tealDark: '#99f6e4', blue: '#60a5fa', amber: '#fbbf24', red: '#f87171',
@@ -461,7 +467,7 @@
                 width: cell,
                 height: cell,
                 fill: shown ? COLORS.tile : COLORS.tileSoft,
-                stroke: isDark ? '#94a3b8' : '#64748b',
+                stroke: isContrast ? '#ffffff' : (isDark ? '#94a3b8' : '#64748b'),
                 strokeWidth: shown ? 1.6 : 1,
                 role: 'button',
                 tabIndex: focusedTile === key ? 0 : -1,
@@ -534,7 +540,7 @@
           h('rect', { key: 'a', x: 165 - firstW / 2, y: y1, width: firstW, height: firstH, rx: 3, fill: COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4 }),
           h('text', { key: 'ad', x: 165, y: 250, textAnchor: 'middle', fill: COLORS.text, fontSize: 15 }, width + ' \u00D7 ' + height),
           h('text', { key: 'lb', x: 475, y: 37, textAnchor: 'middle', fill: COLORS.text, fontSize: 18, fontWeight: 800 }, t('stem.areaperimeter.rectangle_b', "Rectangle B")),
-          h('rect', { key: 'b', x: 475 - secondW / 2, y: y2, width: secondW, height: secondH, rx: 3, fill: isDark ? '#1e3a5f' : '#dbeafe', stroke: COLORS.blue, strokeWidth: 4 }),
+          h('rect', { key: 'b', x: 475 - secondW / 2, y: y2, width: secondW, height: secondH, rx: 3, fill: isContrast ? '#000000' : (isDark ? '#1e3a5f' : '#dbeafe'), stroke: COLORS.blue, strokeWidth: 4 }),
           h('text', { key: 'bd', x: 475, y: 250, textAnchor: 'middle', fill: COLORS.text, fontSize: 15 }, compareWidth + ' \u00D7 ' + compareHeight),
           h('line', { key: 'divider', x1: 320, y1: 30, x2: 320, y2: 270, stroke: COLORS.border, strokeDasharray: '7 7' }),
           h('text', { key: 'summary', x: 320, y: 295, textAnchor: 'middle', fill: COLORS.muted, fontSize: 14 }, 'Drawn with the same unit scale')
@@ -560,8 +566,8 @@
                 key: column + '-' + row,
                 x: x + column * scale, y: y + row * scale,
                 width: scale, height: scale,
-                fill: (column + row) % 2 ? COLORS.tileSoft : (isDark ? '#115e59' : '#99f6e4'),
-                stroke: isDark ? '#64748b' : '#94a3b8', strokeWidth: 0.8
+                fill: (column + row) % 2 ? COLORS.tileSoft : (isContrast ? '#111111' : (isDark ? '#115e59' : '#99f6e4')),
+                stroke: isContrast ? '#fbbf24' : (isDark ? '#64748b' : '#94a3b8'), strokeWidth: 0.8
               }));
             }
           }
@@ -606,7 +612,7 @@
           var y = 28 + index * rowHeight + (56 - hgt) / 2;
           shapes.push(h('g', { key: pair.w + 'x' + pair.h }, [
             h('text', { key: 'name', x: 18, y: 28 + index * rowHeight + 32, fill: COLORS.text, fontSize: 16, fontWeight: 800 }, pair.w + ' \u00D7 ' + pair.h),
-            h('rect', { key: 'rect', x: 120, y: y, width: w, height: hgt, 'data-factor-pair': pair.w + 'x' + pair.h, 'data-square-unit': unit, fill: pair.p === minP ? (isDark ? '#14532d' : '#dcfce7') : COLORS.tileSoft, stroke: pair.p === minP ? COLORS.green : COLORS.teal, strokeWidth: 3 }),
+            h('rect', { key: 'rect', x: 120, y: y, width: w, height: hgt, 'data-factor-pair': pair.w + 'x' + pair.h, 'data-square-unit': unit, fill: pair.p === minP ? (isContrast ? '#000000' : (isDark ? '#14532d' : '#dcfce7')) : COLORS.tileSoft, stroke: pair.p === minP ? COLORS.green : COLORS.teal, strokeWidth: 3 }),
             h('text', { key: 'p', x: 500, y: 28 + index * rowHeight + 32, fill: pair.p === minP ? COLORS.green : COLORS.muted, fontSize: 15, fontWeight: 700 }, t('stem.areaperimeter.p', "P = ") + pair.p + (pair.p === minP ? t('stem.areaperimeter.least', " (least)") : ''))
           ]));
         });
@@ -638,7 +644,7 @@
           elements.push(h('text', { key: 'whole', x: 320, y: 255, textAnchor: 'middle', fill: COLORS.text, fontSize: 17 }, challenge.outerW + ' \u00D7 ' + challenge.outerH + t('stem.areaperimeter.minus', " minus ") + challenge.cutW + ' \u00D7 ' + challenge.cutH));
         } else if (challenge.kind === 'compare') {
           elements.push(h('rect', { key: 'a', x: 85, y: 55, width: challenge.w * 20, height: challenge.h * 20, fill: COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4 }));
-          elements.push(h('rect', { key: 'b', x: 390, y: 75, width: challenge.w2 * 20, height: challenge.h2 * 20, fill: isDark ? '#1e3a5f' : '#dbeafe', stroke: COLORS.blue, strokeWidth: 4 }));
+          elements.push(h('rect', { key: 'b', x: 390, y: 75, width: challenge.w2 * 20, height: challenge.h2 * 20, fill: isContrast ? '#000000' : (isDark ? '#1e3a5f' : '#dbeafe'), stroke: COLORS.blue, strokeWidth: 4 }));
           elements.push(h('text', { key: 'al', x: 165, y: 245, textAnchor: 'middle', fill: COLORS.text, fontSize: 17 }, challenge.w + ' \u00D7 ' + challenge.h));
           elements.push(h('text', { key: 'bl', x: 455, y: 245, textAnchor: 'middle', fill: COLORS.text, fontSize: 17 }, challenge.w2 + ' \u00D7 ' + challenge.h2));
         } else {
@@ -954,10 +960,10 @@
               actionButton(challengeSolved ? t('stem.areaperimeter.solved_2', "Solved") : t('stem.areaperimeter.check_answer', "Check answer"), null, { type: 'submit', primary: true, disabled: challengeSolved }),
               actionButton(showHint ? t('stem.areaperimeter.hide_hint', "Hide hint") : t('stem.areaperimeter.show_hint', "Show hint"), function() { patch({ challengeId: challenge.id, challengeIndex: challengeIndex, showHint: !showHint }); }, { expanded: showHint, controls: 'ap-challenge-hint' })
             ]),
-            showHint ? h('p', { key: 'hint', id: 'ap-challenge-hint', style: { padding: '12px', borderRadius: '10px', background: isDark ? '#422006' : '#fffbeb', color: isDark ? '#fde68a' : '#92400e', border: '1px solid ' + (isDark ? '#a16207' : '#fcd34d') } }, challenge.kind === 'composite' ? t('stem.areaperimeter.find_the_whole_rectangle_then_subtract', "Find the whole rectangle, then subtract the missing corner.") : challenge.answerType === 'perimeter' ? t('stem.areaperimeter.trace_the_entire_outside_boundary_and_', "Trace the entire outside boundary and add every side.") : challenge.kind === 'missing' ? t('stem.areaperimeter.work_backward_from_the_area_or_perimet', "Work backward from the area or perimeter formula.") : t('stem.areaperimeter.area_counts_square_units_inside_perime', "Area counts square units inside; perimeter counts unit lengths around.")) : null,
+            showHint ? h('p', { key: 'hint', id: 'ap-challenge-hint', style: { padding: '12px', borderRadius: '10px', background: isContrast ? '#000000' : (isDark ? '#422006' : '#fffbeb'), color: isContrast ? '#ffffff' : (isDark ? '#fde68a' : '#92400e'), border: '1px solid ' + (isContrast ? '#fbbf24' : (isDark ? '#a16207' : '#fcd34d')) } }, challenge.kind === 'composite' ? t('stem.areaperimeter.find_the_whole_rectangle_then_subtract', "Find the whole rectangle, then subtract the missing corner.") : challenge.answerType === 'perimeter' ? t('stem.areaperimeter.trace_the_entire_outside_boundary_and_', "Trace the entire outside boundary and add every side.") : challenge.kind === 'missing' ? t('stem.areaperimeter.work_backward_from_the_area_or_perimet', "Work backward from the area or perimeter formula.") : t('stem.areaperimeter.area_counts_square_units_inside_perime', "Area counts square units inside; perimeter counts unit lengths around.")) : null,
             feedback ? h('div', {
               key: 'feedback', id: 'ap-feedback', role: 'status', 'aria-live': 'polite',
-              style: { marginTop: '12px', padding: '13px', borderRadius: '11px', border: '1px solid ' + (feedback.correct ? COLORS.green : COLORS.red), background: feedback.correct ? (isDark ? '#052e16' : '#f0fdf4') : (isDark ? '#450a0a' : '#fef2f2'), color: feedback.correct ? (isDark ? '#bbf7d0' : '#166534') : (isDark ? '#fecaca' : '#991b1b'), fontWeight: 700 }
+              style: { marginTop: '12px', padding: '13px', borderRadius: '11px', border: '1px solid ' + (feedback.correct ? COLORS.green : COLORS.red), background: isContrast ? '#000000' : (feedback.correct ? (isDark ? '#052e16' : '#f0fdf4') : (isDark ? '#450a0a' : '#fef2f2')), color: isContrast ? '#ffffff' : (feedback.correct ? (isDark ? '#bbf7d0' : '#166534') : (isDark ? '#fecaca' : '#991b1b')), fontWeight: 700 }
             }, feedback.text) : null,
             h('div', { key: 'nav', style: { display: 'flex', justifyContent: 'space-between', gap: '9px', flexWrap: 'wrap', marginTop: '16px' } }, [
               actionButton(t('stem.areaperimeter.previous', "← Previous"), function() { moveChallenge(-1); }, { compact: true }),

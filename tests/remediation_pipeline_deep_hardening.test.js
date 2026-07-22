@@ -146,12 +146,21 @@ describe('remediation deep-dive hardening', () => {
     expect(toasts.some((args) => args[1] === 'success')).toBe(true);
   });
 
-  it('blocks remediation until the pipeline, verification policy, and renderer are ready', () => {
-    expect(host).toContain("const remediationModuleNames = ['DocPipelineModule', 'VerificationPolicy', 'DocBuilderRenderer'];");
-    expect(host).toContain('remediationReady, remediationDependencyState, retryRemediationDependencies');
+  it('keeps audit readiness separate while blocking buttons that actually remediate', () => {
+    expect(host).toContain("const auditModuleNames = ['DocPipelineModule', 'GeminiAPI'];");
+    expect(host).toContain("const remediationModuleNames = [...auditModuleNames, 'VerificationPolicy', 'DocBuilderRenderer', 'MiscHandlersModule'];");
+    expect(host).toContain('auditReady, auditDependencyState, remediationReady, remediationDependencyState, retryRemediationDependencies');
     expect(view).toContain('Remediation engine not ready');
-    expect(view).toContain('disabled={remediationReady === false}');
-    expect(view).toContain('disabled={pdfFixLoading || remediationReady === false}');
+    const makeAccessible = view.slice(
+      view.indexOf('data-help-key="pdf_audit_view_make_accessible_btn"'),
+      view.indexOf('</button>', view.indexOf('data-help-key="pdf_audit_view_make_accessible_btn"')),
+    );
+    const fixVerify = view.slice(
+      view.indexOf("console.warn('[Fix&Verify btn] clicked"),
+      view.indexOf('</button>', view.indexOf("console.warn('[Fix&Verify btn] clicked")),
+    );
+    expect(makeAccessible).toContain('disabled={_oneClickOperationBusy || remediationReady === false}');
+    expect(fixVerify).toContain('disabled={pdfFixLoading || remediationReady === false}');
     expect(view).toContain('module unavailable|modules? finish loading');
   });
 
@@ -633,4 +642,3 @@ describe('remediation deep-dive hardening', () => {
     expect(sanitizeImportedCss('.a { content: "broken; color: red; }')).toBe('');
   });
 });
-

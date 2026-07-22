@@ -149,6 +149,66 @@
       window.StemLab = {
         _registry: {},
         _order: [],
+        // Resilient external-script loader shared by 3D tools. One CDN is a
+        // single point of failure on filtered school networks, and a request
+        // those filters black-hole fires neither load nor error — so: try each
+        // URL in order, time out each attempt, remove failed tags (their
+        // events never re-fire, so re-listening would hang forever), and clear
+        // the cached promise on total failure so a Retry starts fresh.
+        loadScriptResilient: function (urls, opts) {
+          opts = opts || {};
+          var timeoutMs = opts.timeoutMs || 20000;
+          var check = typeof opts.check === 'function' ? opts.check : null;
+          var cacheKey = opts.cacheKey;
+          var cache = window.__stemScriptPromises = window.__stemScriptPromises || {};
+          if (check && check()) return Promise.resolve(true);
+          if (cacheKey && cache[cacheKey]) return cache[cacheKey];
+          function attempt(index) {
+            return new Promise(function (resolve, reject) {
+              if (index >= urls.length) { reject(new Error(opts.failMessage || 'The library could not be loaded from any source. School network filters sometimes block CDNs — retry, or check the connection.')); return; }
+              var script = document.createElement('script');
+              var settled = false;
+              var timer = window.setTimeout(function () { finish(false); }, timeoutMs);
+              function finish(ok) {
+                if (settled) return;
+                settled = true;
+                window.clearTimeout(timer);
+                if (ok && (!check || check())) { resolve(true); return; }
+                if (script.parentNode) script.parentNode.removeChild(script);
+                resolve(attempt(index + 1));
+              }
+              script.src = urls[index];
+              script.async = true;
+              script.crossOrigin = 'anonymous';
+              script.addEventListener('load', function () { finish(true); }, { once: true });
+              script.addEventListener('error', function () { finish(false); }, { once: true });
+              document.head.appendChild(script);
+            });
+          }
+          var promise = attempt(0).catch(function (error) { if (cacheKey) cache[cacheKey] = null; throw error; });
+          if (cacheKey) cache[cacheKey] = promise;
+          return promise;
+        },
+        // One canonical way to get Three.js r128 (+ optionally OrbitControls):
+        // resilient multi-CDN load, shared promise cache across every 3D tool.
+        // Resolves with window.THREE; rejects only when no CDN could deliver
+        // the core (orbit failures are non-fatal unless orbitRequired).
+        ensureThree: function (opts) {
+          opts = opts || {};
+          var self = this;
+          var wantOrbit = opts.orbit === true;
+          if (window.THREE && (!wantOrbit || window.THREE.OrbitControls)) return Promise.resolve(window.THREE);
+          var core = window.THREE ? Promise.resolve(true) : self.loadScriptResilient(
+            ['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js'],
+            { cacheKey: 'three-core', check: function () { return !!window.THREE; }, failMessage: opts.failMessage || 'The 3D engine could not load. School network filters sometimes block CDNs — retry, or check the connection.' });
+          return core.then(function () {
+            if (!wantOrbit || window.THREE.OrbitControls) return true;
+            var orbit = self.loadScriptResilient(
+              ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js', 'https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js'],
+              { cacheKey: 'three-orbit', check: function () { return !!(window.THREE && window.THREE.OrbitControls); } });
+            return opts.orbitRequired ? orbit : orbit.catch(function () { console.warn('[StemLab] OrbitControls failed to load, proceeding without orbit controls'); return true; });
+          }).then(function () { return window.THREE; });
+        },
         registerTool: function(id, config) {
           config.id = id;
           config.ready = config.ready !== false;
@@ -1786,43 +1846,25 @@
         // 3D tool opened after the first got _threeLoaded with controls=null → the
         // camera was never aimed (scene stuck in a corner, no orbit). If it's
         // missing, load it first, THEN mark ready.
-        if (window.THREE) {
-          if (window.THREE.OrbitControls) { setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); }); return; }
-          var scOC = document.createElement('script');
-          scOC.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js';
-          scOC.async = true;
-          scOC.onload = function () { setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); }); };
-          scOC.onerror = function () { console.warn('[StemLab] OrbitControls failed to load, proceeding without orbit controls'); setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); }); };
-          document.head.appendChild(scOC);
-          return;
-        }
-        var s = document.createElement('script');
-        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-        s.async = true;
-        s.onload = function () {
-          // Load OrbitControls after Three.js is ready
-          var s2 = document.createElement('script');
-          s2.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js';
-          s2.async = true;
-          s2.onload = function () {
-            if (typeof addToast === 'function') addToast('\uD83D\uDD37 3D engine loaded', 'info');
-            setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); });
-          };
-          s2.onerror = function () {
-            console.warn('[StemLab] OrbitControls failed to load, proceeding without orbit controls');
-            setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); });
-          };
-          document.head.appendChild(s2);
-        };
-        s.onerror = function () {
+        if (window.THREE && window.THREE.OrbitControls) { setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); }); return; }
+        // Resilient path via the shared ensureThree (cdnjs \u2192 jsDelivr core,
+        // jsDelivr \u2192 unpkg OrbitControls, per-attempt timeouts). The promise
+        // cache doubles as an in-flight guard, so this effect re-running
+        // mid-load no longer appends duplicate script tags; a total failure
+        // clears the cache so re-entering the tool (or _threeAttempt bumps)
+        // retries fresh.
+        var hadThree = !!window.THREE;
+        window.StemLab.ensureThree({ orbit: true, failMessage: 'The 3D engine could not load. School network filters sometimes block CDNs. The accessible 2D view remains available.' }).then(function () {
+          if (!hadThree && typeof addToast === 'function') addToast('\uD83D\uDD37 3D engine loaded', 'info');
+          setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true, _threeLoadError: undefined }); });
+        }).catch(function (error) {
           console.error('[StemLab] Three.js failed to load');
           setLabToolData(function (p) {
-            return Object.assign({}, p, { _threeLoadError: 'The 3D engine could not load. The accessible 2D view remains available.' });
+            return Object.assign({}, p, { _threeLoadError: (error && error.message) || 'The 3D engine could not load. The accessible 2D view remains available.' });
           });
           if (typeof addToast === 'function') addToast('\u274c 3D engine failed to load', 'error');
-        };
-        document.head.appendChild(s);
-      }, [stemLabTab, stemLabTool, labToolData.waterCycle && labToolData.waterCycle.journeyView, labToolData.weatherSystems && labToolData.weatherSystems.tab]);
+        });
+      }, [stemLabTab, stemLabTool, labToolData._threeAttempt, labToolData.waterCycle && labToolData.waterCycle.journeyView, labToolData.weatherSystems && labToolData.weatherSystems.tab]);
       // ── Geometry Sandbox: Scene init, render loop, shape updates (MUST be at top level) ──
       React.useEffect(function () {
         if (stemLabTab !== 'explore' || stemLabTool !== 'geoSandbox') return;
@@ -3976,7 +4018,7 @@
               },
 
               { id: '_cat_Strategy', icon: '', label: '⚔️ Strategy Games', desc: '', color: 'slate', category: true },
-              { id: 'arccity', icon: '🌆', label: 'Arc City', desc: 'Author linear & quadratic functions to fire light-beams, clear walls, and re-light a neon city.', color: 'fuchsia', ready: true },
+              { id: 'arccity', icon: '🌆', label: 'Arc City', desc: 'Author functions, re-light a neon city, and battle across two function-powered Circuit Clash arenas.', color: 'fuchsia', ready: true },
               { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true },
               { id: 'spaceExplorer', label: 'Space Explorer', icon: '\uD83C\uDF0C', desc: 'Roguelike missions across the solar system. AI-generated challenges teach real science through strategic decisions.', color: 'purple', ready: true },
               { id: 'alloBotSage', label: 'AlloBot: Starbound Sage', icon: '\uD83E\uDDD9\u200D\u2642\uFE0F', desc: 'Cozy sci-fi roguelite. AlloBot\u2019s spells unlock as you master other STEM Lab tools \u2014 and every cast is a retrieval-practice micro-challenge. Spaced practice, in-game.', color: 'violet', ready: true },

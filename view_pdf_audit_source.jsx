@@ -2670,7 +2670,7 @@ function PdfAuditView(props) {
     pdfPreviewTheme, pdfTargetScore, pdfWebMode, pendingPdfBase64,
     pendingPdfFile, proceedWithPdfTransform, processExpertCommand, refixChunk,
     remediateSurgicallyThenAI, runAutoFixLoop, runAxeAudit, runPdfAccessibilityAudit,
-    remediationReady, remediationDependencyState, retryRemediationDependencies,
+    auditReady, auditDependencyState, remediationReady, remediationDependencyState, retryRemediationDependencies,
     runPdfBatchRemediation, runTier2SurgicalFixes, runTier2_5SectionScopedFixes, safeCloneAudit,
     safeCloseAudit, safeDownloadBlob, sanitizeStyleForWCAG, saveProjectToFile,
     selectedPreviewImgRef, selectedVoice, setAgentActivityLog, setAgentLogFullView,
@@ -2684,7 +2684,7 @@ function PdfAuditView(props) {
     setPdfFixResult, setPdfFixStep, setPdfMultiSession, setPdfPageRange,
     setPdfPolishPasses, setPdfPreviewA11yInspect, setPdfPreviewFontSize, setPdfPreviewOpen,
     setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, pdfOcrLanguage, setPdfOcrLanguage, setPendingPdfBase64,
-    setPendingPdfFile, setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, startPipelineTour,
+    setPendingPdfFile, setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, capturePdfDocumentIntakeEpoch, isPdfDocumentIntakeCurrent, startPipelineTour,
     pdfRunHistory, setPdfRunHistory, _remediationMode
   } = props;
   const [remediationProgress, setRemediationProgress] = useState(null);
@@ -2843,6 +2843,13 @@ function PdfAuditView(props) {
     const state = remediationDependencyState || { pending: [], failed: [] };
     const names = (state.failed || []).concat(state.pending || []);
     addToast('The remediation engine is still loading' + (names.length ? ': ' + names.join(', ') : '') + '. Retry when the dependencies are ready.', state.failed && state.failed.length ? 'error' : 'info');
+    return false;
+  };
+  const _requireAuditReady = () => {
+    if (auditReady !== false) return true;
+    const state = auditDependencyState || { pending: [], failed: [] };
+    const names = (state.failed || []).concat(state.pending || []);
+    addToast('The audit engine is still loading' + (names.length ? ': ' + names.join(', ') : '') + '. Retry when the dependencies are ready.', state.failed && state.failed.length ? 'error' : 'info');
     return false;
   };
   const _remediationDependencies = remediationDependencyState || { pending: [], failed: [] };
@@ -6096,8 +6103,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     </div>
                   </div>
                 </details>
-                <div className={`flex gap-3 justify-center ${remediationReady === false ? 'opacity-50' : ''}`} aria-disabled={remediationReady === false} onClickCapture={(event) => { if (remediationReady === false) { event.preventDefault(); event.stopPropagation(); _requireRemediationReady(); } }}>
-                  <button data-help-key="pdf_audit_view_start_btn" onClick={async () => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); addToast(t('toasts.auditing_remediating_pdf'), 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); setTimeout(() => { const r = pdfFixResultRef.current; const needsLoop = pdfAutoContinue && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0); if (pdfAutoContinue && r && !r.axeAudit && (r.afterScore || 0) < pdfTargetScore) { addToast(t('toasts.auto_continue_no_axe') || '⚠ Auto-continue to target unavailable for this run — the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.', 'warning'); } if (needsLoop) { runAutoFixLoop(8); } else if (pdfAutoSaveProject) { saveProjectToFile(true); } }, 150); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
+                <div className="flex gap-3 justify-center">
+                  <button data-help-key="pdf_audit_view_start_btn" disabled={pdfAuditLoading || auditReady === false} onClick={async () => { if (!_requireAuditReady()) return; if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); addToast(t('toasts.auditing_remediating_pdf'), 'info'); await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name }); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                     ♿ {t('pdf_audit.run_audit_label') || 'Run Audit (step 1 of 2)'}
                   </button>
                   {!_remediationMode && <button data-help-key="pdf_audit_view_skip_to_extract_btn" onClick={() => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400">
@@ -6317,15 +6324,26 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       const file = e.target.files?.[0]; if (!file) return;
                       if (file.size > _VIEW_MAX_PROJECT_FILE_BYTES) { addToast('This project file is larger than the 320 MB safety limit.', 'error'); e.target.value = ''; return; }
                       const _projectLoadToken = ++_projectLoadSelectionRef.current;
+                      let _projectDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null;
+                      const _projectLoadIsCurrent = () => _projectLoadToken === _projectLoadSelectionRef.current
+                        && (_projectDocumentEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(_projectDocumentEpoch));
                       const reader = new FileReader();
                       reader.onload = async (ev) => {
-                        if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
+                        if (!_projectLoadIsCurrent()) return;
                         try {
                           const parsedProject = JSON.parse(ev.target.result);
                           const sanitizedImport = _viewSanitizeProjectImport(parsedProject, _docPipeline);
                           const project = await _viewRehydrateVerificationHtmlBinding(sanitizedImport.project, _docPipeline);
-                          if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
+                          if (!_projectLoadIsCurrent()) return;
                           if (!project.version || (!project.accessibleHtml && !project.incomplete)) { addToast(t('toasts.valid_alloflow_project_file'), 'error'); return; }
+                          if (typeof startNewPdfAudit === 'function') _projectDocumentEpoch = startNewPdfAudit();
+                          else {
+                            setPendingPdfBase64(null);
+                            setPdfAuditResult(null);
+                            setPdfFixResult(null);
+                          }
+                          if (!_projectLoadIsCurrent()) return;
+                          if (typeof setPendingPdfBase64 === 'function') setPendingPdfBase64(project.pdfBase64 || null);
                           // Forward-version guard (deep dive 2026-07-02 H12): a v3+ file half-loading
                           // silently would drop whatever fields the newer format carries. Warn, keep going.
                           if (typeof project.version === 'number' && project.version > 2) { addToast(t('toasts.project_newer_version') || ('This project was saved by a newer AlloFlow (v' + project.version + ' format). Loading what this version understands — some saved data may be ignored.'), 'warning'); }
@@ -6333,7 +6351,6 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           // incomplete project has the banked extraction + source bytes but no finished
                           // HTML. Restore enough to re-run from "Make Accessible" without re-scanning.
                           if (project.incomplete) {
-                            if (project.pdfBase64 && typeof setPendingPdfBase64 === 'function') setPendingPdfBase64(project.pdfBase64);
                             // H2 (deep dive 2026-07-02): restore fileSize — the stub used to carry NO size,
                             // so every size-keyed store (multi-session ranges, chunk progress, score trend)
                             // computed its key with size=0 and all resumed docs sharing the fallback name
@@ -6471,8 +6488,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             if (_pp.builderFont) { try { localStorage.setItem('allo_selected_font', _pp.builderFont); } catch (_) {} }
                           } catch (_) {}
                           addToast(t('toasts.loaded_2') + (project.fileName || 'project') + ' — continue editing!', 'success');
-                        } catch(err) { if (_projectLoadToken === _projectLoadSelectionRef.current) addToast(t('toasts.failed_load') + err.message, 'error'); }
+                        } catch(err) { if (_projectLoadIsCurrent()) addToast(t('toasts.failed_load') + err.message, 'error'); }
                       };
+                      reader.onerror = () => { if (_projectLoadIsCurrent()) addToast(t('toasts.failed_load') + (reader.error?.message || 'Unable to read project file'), 'error'); };
+                      reader.onabort = () => { if (_projectLoadIsCurrent()) addToast(t('toasts.failed_load') + 'Project file read was cancelled', 'info'); };
                       reader.readAsText(file);
                       e.target.value = '';
                     }} />
@@ -12230,14 +12249,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             const file = e.target.files?.[0]; if (!file) return;
                             if (file.size > _VIEW_MAX_PROJECT_FILE_BYTES) { addToast('This project file is larger than the 320 MB safety limit.', 'error'); e.target.value = ''; return; }
                             const _projectLoadToken = ++_projectLoadSelectionRef.current;
+                            let _projectDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null;
+                            const _projectLoadIsCurrent = () => _projectLoadToken === _projectLoadSelectionRef.current
+                              && (_projectDocumentEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(_projectDocumentEpoch));
                             const reader = new FileReader();
                             reader.onload = async (ev) => {
-                              if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
+                              if (!_projectLoadIsCurrent()) return;
                               try {
                                 const parsedProject = JSON.parse(ev.target.result);
                                 const sanitizedImport = _viewSanitizeProjectImport(parsedProject, _docPipeline);
                                 const project = await _viewRehydrateVerificationHtmlBinding(sanitizedImport.project, _docPipeline);
-                                if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
+                                if (!_projectLoadIsCurrent()) return;
                                 if (project && project.incomplete && project.version) {
                                   // Unfinished run: this results-screen loader only swaps in COMPLETED
                                   // projects. Point the teacher at the start-screen entry that resumes.
@@ -12246,6 +12268,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   return;
                                 }
                                 if (!project.accessibleHtml || !project.version) { addToast(t('toasts.invalid_project_file_2'), 'error'); return; }
+                                if (typeof startNewPdfAudit === 'function') _projectDocumentEpoch = startNewPdfAudit();
+                                else {
+                                  setPendingPdfBase64(null);
+                                  setPdfAuditResult(null);
+                                  setPdfFixResult(null);
+                                }
+                                if (!_projectLoadIsCurrent()) return;
+                                if (typeof setPendingPdfBase64 === 'function') setPendingPdfBase64(project.pdfBase64 || null);
+                                setPdfAuditResult({
+                                  score: project.beforeScore || 0, scores: [], critical: [], major: [], minor: [],
+                                  passes: [], summary: 'Loaded from saved project', pageCount: project.pageCount,
+                                  hasSearchableText: true, hasImages: project.imageCount > 0,
+                                });
                                 const _loadedFixResult = {
                                   accessibleHtml: project.accessibleHtml,
                                   documentDigest: project.documentDigest || null,
@@ -12346,8 +12381,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   setPdfPageRange(null);
                                   addToast(t('toasts.project_loaded_2') + (project.fileName || 'document') + ' — continue editing!', 'success');
                                 }
-                              } catch(err) { if (_projectLoadToken === _projectLoadSelectionRef.current) addToast(t('toasts.failed_load_project') + err.message, 'error'); }
+                              } catch(err) { if (_projectLoadIsCurrent()) addToast(t('toasts.failed_load_project') + err.message, 'error'); }
                             };
+                            reader.onerror = () => { if (_projectLoadIsCurrent()) addToast(t('toasts.failed_load_project') + (reader.error?.message || 'Unable to read project file'), 'error'); };
+                            reader.onabort = () => { if (_projectLoadIsCurrent()) addToast(t('toasts.failed_load_project') + 'Project file read was cancelled', 'info'); };
                             reader.readAsText(file);
                             e.target.value = '';
                           }} />

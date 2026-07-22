@@ -112,7 +112,10 @@ function _quizShuffleCopy(arr) {
   return copy;
 }
 var _QUIZ_DRAFT_STORAGE_PREFIX = 'alloflow_assess_draft_v1:';
+var _QUIZ_ATTEMPT_STORAGE_PREFIX = 'alloflow_assess_attempt_v1:';
 var _QUIZ_DRAFT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+var _quizDraftMemory = {};
+var _quizClosedDrafts = {};
 function _quizDraftNamespace(data, sessionCode) {
   var questions = data && Array.isArray(data.questions) ? data.questions : [];
   var reflections = data && Array.isArray(data.reflections) ? data.reflections : data && data.reflection ? [data.reflection] : [];
@@ -174,6 +177,7 @@ function _quizReadDraftField(namespace, itemKey, field) {
   };
 }
 function _quizWriteDraftField(namespace, itemKey, field, value) {
+  if (_quizClosedDrafts[namespace]) return false;
   var storage = _quizLocalStorage();
   if (!namespace || !storage) return false;
   try {
@@ -206,6 +210,155 @@ function _quizWriteDraftField(namespace, itemKey, field, value) {
     return false;
   }
 }
+function _quizStageDraftField(namespace, itemKey, field, value) {
+  if (!namespace || _quizClosedDrafts[namespace]) return;
+  var staged = _quizDraftMemory[namespace] || {
+    items: {}
+  };
+  staged.items[itemKey] = Object.assign({}, staged.items[itemKey] || {});
+  staged.items[itemKey][field] = value;
+  staged.updatedAt = Date.now();
+  _quizDraftMemory[namespace] = staged;
+  try {
+    window.dispatchEvent(new CustomEvent('alloflow:assessment-draft-changed', {
+      detail: {
+        namespace: namespace
+      }
+    }));
+  } catch (e) {}
+}
+function _quizReadWorkingDraft(namespace) {
+  var persisted = _quizReadDraft(namespace) || {
+    version: 1,
+    createdAt: Date.now(),
+    items: {}
+  };
+  var working = {
+    version: 1,
+    createdAt: persisted.createdAt || Date.now(),
+    updatedAt: Date.now(),
+    items: Object.assign({}, persisted.items || {})
+  };
+  var staged = _quizDraftMemory[namespace];
+  if (staged && staged.items) {
+    Object.keys(staged.items).forEach(function (itemKey) {
+      working.items[itemKey] = Object.assign({}, working.items[itemKey] || {}, staged.items[itemKey]);
+    });
+  }
+  return working;
+}
+function _quizQuestionAnswered(question, questionIdx, draft) {
+  var items = draft && draft.items || {};
+  var root = items.root || {};
+  var item = items['q-' + questionIdx] || {};
+  var type = question && question.type || 'mcq';
+  if (type === 'mcq') {
+    return !!(root.mcqAnswers && Object.prototype.hasOwnProperty.call(root.mcqAnswers, questionIdx) && typeof root.mcqAnswers[questionIdx] === 'number');
+  }
+  if (type === 'multi-select') return Array.isArray(item.selected) && item.selected.length > 0;
+  if (type === 'answer-evidence') return typeof item.answerIdx === 'number' && typeof item.evidenceIdx === 'number';
+  if (type === 'numeric-response' || type === 'fill-blank' || type === 'short-answer' || type === 'self-explanation') return !!String(item.response || '').trim();
+  if (type === 'sequence-sense') return !!item.grade || item.verifyAnswer != null && !!String(item.principleAnswer || '').trim();
+  if (type === 'relation-mismatch') return !!item.grade || typeof item.clickedPairIdx === 'number' && !!String(item.partnerAnswer || '').trim();
+  return !!String(item.response || '').trim();
+}
+function _quizBuildAttemptProgress(data, draft) {
+  var questions = data && Array.isArray(data.questions) ? data.questions : [];
+  var root = draft && draft.items && draft.items.root || {};
+  var flags = root.flaggedQuestions || {};
+  var items = questions.map(function (question, questionIdx) {
+    return {
+      questionIdx: questionIdx,
+      type: question && question.type || 'mcq',
+      label: question && (question.question || question.contextSentence) || 'Question ' + (questionIdx + 1),
+      answered: _quizQuestionAnswered(question, questionIdx, draft),
+      flagged: !!flags[questionIdx]
+    };
+  });
+  var reflections = data && Array.isArray(data.reflections) ? data.reflections : data && data.reflection ? [data.reflection] : [];
+  var reflectionAnswers = root.reflectionAnswers || {};
+  var reflectionAnswered = reflections.reduce(function (count, reflection, idx) {
+    var entry = reflectionAnswers[idx] || {};
+    return count + (entry.submitted || String(entry.draft || '').trim() ? 1 : 0);
+  }, 0);
+  var answered = items.filter(function (item) {
+    return item.answered;
+  }).length;
+  return {
+    total: items.length,
+    answered: answered,
+    unanswered: items.length - answered,
+    flagged: items.filter(function (item) {
+      return item.flagged;
+    }).length,
+    items: items,
+    reflectionTotal: reflections.length,
+    reflectionAnswered: reflectionAnswered
+  };
+}
+function _quizAttemptStorageKey(namespace) {
+  if (!namespace) return '';
+  return namespace.indexOf(_QUIZ_DRAFT_STORAGE_PREFIX) === 0 ? _QUIZ_ATTEMPT_STORAGE_PREFIX + namespace.slice(_QUIZ_DRAFT_STORAGE_PREFIX.length) : _QUIZ_ATTEMPT_STORAGE_PREFIX + namespace;
+}
+function _quizReadAttemptReceipt(namespace) {
+  var storage = _quizLocalStorage();
+  var key = _quizAttemptStorageKey(namespace);
+  if (!storage || !key) return null;
+  try {
+    var raw = storage.getItem(key);
+    var receipt = raw ? JSON.parse(raw) : null;
+    return receipt && receipt.version === 1 && receipt.submittedAt ? receipt : null;
+  } catch (e) {
+    return null;
+  }
+}
+function _quizFinalizeAttempt(namespace, payload) {
+  var storage = _quizLocalStorage();
+  var key = _quizAttemptStorageKey(namespace);
+  if (!storage || !namespace || !key) return null;
+  try {
+    var receipt = Object.assign({
+      version: 1,
+      submittedAt: Date.now()
+    }, payload || {});
+    storage.setItem(key, JSON.stringify(receipt));
+    _quizClosedDrafts[namespace] = true;
+    storage.removeItem(namespace);
+    delete _quizDraftMemory[namespace];
+    return receipt;
+  } catch (e) {
+    return null;
+  }
+}
+function _quizClearAttemptReceipt(namespace) {
+  var storage = _quizLocalStorage();
+  var key = _quizAttemptStorageKey(namespace);
+  if (!storage || !key) return false;
+  try {
+    storage.removeItem(key);
+    storage.removeItem(namespace);
+    delete _quizDraftMemory[namespace];
+    delete _quizClosedDrafts[namespace];
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+function _quizNormalizeDeliverySettings(raw) {
+  var source = raw && typeof raw === 'object' ? raw : {};
+  var minutes = Math.max(0, Math.min(240, Number(source.timeLimitMinutes) || 0));
+  var extension = Math.max(1, Math.min(60, Number(source.extensionMinutes) || 5));
+  var warning = Math.max(1, Math.min(15, Number(source.warningMinutes) || 2));
+  return {
+    profile: source.profile || 'flexible',
+    pacing: source.pacing === 'one-at-a-time' ? 'one-at-a-time' : 'all-at-once',
+    timeLimitMinutes: minutes,
+    extensionMinutes: extension,
+    warningMinutes: warning,
+    allowFlagging: source.allowFlagging !== false,
+    showProgress: source.showProgress !== false
+  };
+}
 function _quizUseDraftField(namespace, itemKey, field, initialValue) {
   var restoredRef = React.useRef(false);
   var mountedRef = React.useRef(false);
@@ -230,7 +383,14 @@ function _quizUseDraftField(namespace, itemKey, field, initialValue) {
       window.clearTimeout(timer);
     };
   }, [namespace, itemKey, field, state[0]]);
-  return [state[0], state[1], restoredRef.current];
+  function setDraftState(value) {
+    state[1](function (previous) {
+      var next = typeof value === 'function' ? value(previous) : value;
+      _quizStageDraftField(namespace, itemKey, field, next);
+      return next;
+    });
+  }
+  return [state[0], setDraftState, restoredRef.current];
 }
 function AssessmentDraftStatus(p) {
   var initial = _quizReadDraft(p.namespace);
@@ -277,6 +437,367 @@ function AssessmentDraftStatus(p) {
   }, status.state === 'error' ? '⚠' : status.state === 'restored' ? '↻' : '✓'), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("strong", null, message), /*#__PURE__*/React.createElement("span", {
     className: "ml-1 text-slate-500"
   }, "Drafts expire after 7 days.")));
+}
+function AssessmentDeliveryPanel(p) {
+  var settings = _quizNormalizeDeliverySettings(p.settings);
+  var expandedState = React.useState(false);
+  var expanded = expandedState[0];
+  var setExpanded = expandedState[1];
+  var presets = [{
+    id: 'flexible',
+    label: 'Flexible access',
+    description: 'Untimed, all questions visible',
+    values: {
+      profile: 'flexible',
+      pacing: 'all-at-once',
+      timeLimitMinutes: 0,
+      extensionMinutes: 5,
+      warningMinutes: 2,
+      allowFlagging: true,
+      showProgress: true
+    }
+  }, {
+    id: 'focused',
+    label: 'Focused steps',
+    description: 'Untimed, one question at a time',
+    values: {
+      profile: 'focused',
+      pacing: 'one-at-a-time',
+      timeLimitMinutes: 0,
+      extensionMinutes: 5,
+      warningMinutes: 2,
+      allowFlagging: true,
+      showProgress: true
+    }
+  }, {
+    id: 'timed-practice',
+    label: 'Timed practice',
+    description: '20 minutes with pause, warning, and extensions',
+    values: {
+      profile: 'timed-practice',
+      pacing: 'one-at-a-time',
+      timeLimitMinutes: 20,
+      extensionMinutes: 5,
+      warningMinutes: 2,
+      allowFlagging: true,
+      showProgress: true
+    }
+  }];
+  function apply(next) {
+    if (typeof p.onChange === 'function') p.onChange(_quizNormalizeDeliverySettings(next));
+  }
+  function patch(field, value) {
+    var next = Object.assign({}, settings);
+    next[field] = value;
+    next.profile = 'custom';
+    apply(next);
+  }
+  return /*#__PURE__*/React.createElement("section", {
+    className: "rounded-xl border-2 border-violet-200 bg-violet-50 p-4",
+    "aria-labelledby": "assessment-delivery-heading"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start justify-between gap-3"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    id: "assessment-delivery-heading",
+    className: "font-black text-violet-950"
+  }, "Access & delivery"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-violet-900 mt-1"
+  }, "Choose a neutral class-wide starting point, then customize it. No diagnosis or accommodation reason is recorded.")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      setExpanded(!expanded);
+    },
+    "aria-expanded": expanded,
+    className: "text-xs font-bold px-3 py-1.5 rounded-lg bg-white border border-violet-300 text-violet-900"
+  }, expanded ? 'Hide settings' : 'Customize')), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3"
+  }, presets.map(function (preset) {
+    var active = settings.profile === preset.id;
+    return /*#__PURE__*/React.createElement("button", {
+      key: preset.id,
+      type: "button",
+      onClick: function () {
+        apply(preset.values);
+      },
+      "aria-pressed": active,
+      className: 'text-left rounded-lg border p-3 transition-colors motion-reduce:transition-none ' + (active ? 'bg-violet-700 border-violet-800 text-white' : 'bg-white border-violet-200 text-violet-950 hover:border-violet-400')
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "block text-xs font-black"
+    }, preset.label), /*#__PURE__*/React.createElement("span", {
+      className: 'block text-[11px] mt-1 ' + (active ? 'text-violet-100' : 'text-violet-800')
+    }, preset.description));
+  })), expanded && /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4 p-3 rounded-lg bg-white border border-violet-200"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "text-xs font-bold text-slate-700"
+  }, "Pacing", /*#__PURE__*/React.createElement("select", {
+    value: settings.pacing,
+    onChange: function (e) {
+      patch('pacing', e.target.value);
+    },
+    className: "mt-1 block w-full rounded border border-slate-300 px-2 py-1.5 text-sm font-normal"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "all-at-once"
+  }, "All questions visible"), /*#__PURE__*/React.createElement("option", {
+    value: "one-at-a-time"
+  }, "One at a time"))), /*#__PURE__*/React.createElement("label", {
+    className: "text-xs font-bold text-slate-700"
+  }, "Time limit (minutes)", /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    min: "0",
+    max: "240",
+    value: settings.timeLimitMinutes,
+    onChange: function (e) {
+      patch('timeLimitMinutes', Number(e.target.value));
+    },
+    className: "mt-1 block w-full rounded border border-slate-300 px-2 py-1.5 text-sm font-normal"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "block text-[10px] font-normal text-slate-500 mt-1"
+  }, "0 means untimed")), /*#__PURE__*/React.createElement("label", {
+    className: "text-xs font-bold text-slate-700"
+  }, "Extension step", /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    min: "1",
+    max: "60",
+    value: settings.extensionMinutes,
+    onChange: function (e) {
+      patch('extensionMinutes', Number(e.target.value));
+    },
+    className: "mt-1 block w-full rounded border border-slate-300 px-2 py-1.5 text-sm font-normal"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "block text-[10px] font-normal text-slate-500 mt-1"
+  }, "Learners can add this privately")), /*#__PURE__*/React.createElement("label", {
+    className: "text-xs font-bold text-slate-700"
+  }, "Warning (minutes)", /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    min: "1",
+    max: "15",
+    value: settings.warningMinutes,
+    onChange: function (e) {
+      patch('warningMinutes', Number(e.target.value));
+    },
+    className: "mt-1 block w-full rounded border border-slate-300 px-2 py-1.5 text-sm font-normal"
+  })), /*#__PURE__*/React.createElement("label", {
+    className: "sm:col-span-2 inline-flex items-center gap-2 text-xs font-semibold text-slate-700"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: settings.allowFlagging,
+    onChange: function (e) {
+      patch('allowFlagging', e.target.checked);
+    }
+  }), "Allow learners to flag questions for review"), /*#__PURE__*/React.createElement("label", {
+    className: "sm:col-span-2 inline-flex items-center gap-2 text-xs font-semibold text-slate-700"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: settings.showProgress,
+    onChange: function (e) {
+      patch('showProgress', e.target.checked);
+    }
+  }), "Show question progress"), /*#__PURE__*/React.createElement("p", {
+    className: "sm:col-span-2 lg:col-span-4 text-[11px] text-slate-600"
+  }, "Timed assessments always support pause and extensions. Reaching zero opens the review screen; it never submits or deletes work automatically.")));
+}
+function AssessmentQuestionFlagButton(p) {
+  return /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: p.onToggle,
+    "aria-pressed": !!p.flagged,
+    className: 'text-xs font-bold px-2.5 py-1 rounded-lg border ' + (p.flagged ? 'bg-amber-100 border-amber-400 text-amber-900' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50')
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, p.flagged ? '⚑ ' : '⚐ '), p.flagged ? 'Flagged for review' : 'Flag for review');
+}
+function AssessmentTimerBar(p) {
+  if (!p.enabled) return null;
+  var seconds = Math.max(0, Number(p.remainingSeconds) || 0);
+  var minutesPart = Math.floor(seconds / 60);
+  var secondsPart = String(seconds % 60).padStart(2, '0');
+  var warning = seconds <= (Number(p.warningMinutes) || 2) * 60;
+  return /*#__PURE__*/React.createElement("div", {
+    className: 'rounded-xl border-2 p-3 flex items-center gap-3 flex-wrap ' + (p.expired ? 'bg-rose-50 border-rose-300' : warning ? 'bg-amber-50 border-amber-300' : 'bg-white border-slate-300'),
+    role: "region",
+    "aria-label": "Assessment timer"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "text-[10px] uppercase font-black tracking-wider text-slate-600"
+  }, "Time remaining"), /*#__PURE__*/React.createElement("div", {
+    role: "timer",
+    "aria-live": warning ? 'polite' : 'off',
+    className: 'text-xl font-black tabular-nums ' + (p.expired ? 'text-rose-800' : warning ? 'text-amber-900' : 'text-slate-800')
+  }, minutesPart + ':' + secondsPart)), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 ml-auto flex-wrap"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: p.onTogglePause,
+    disabled: p.expired,
+    className: "text-xs font-bold px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 disabled:opacity-50"
+  }, p.running ? 'Pause timer' : 'Resume timer'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: p.onExtend,
+    className: "text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+  }, '+' + p.extensionMinutes + ' minutes'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: p.onReview,
+    className: "text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 text-white"
+  }, "Review & submit")), p.expired && /*#__PURE__*/React.createElement("p", {
+    className: "basis-full text-xs font-semibold text-rose-900"
+  }, "The planned time has ended. Your work is safe—review it, add time, or submit when ready."));
+}
+function AssessmentReviewDialog(p) {
+  var dialogRef = React.useRef(null);
+  var closeRef = React.useRef(null);
+  var previousFocusRef = React.useRef(null);
+  var confirmState = React.useState(false);
+  var confirmIncomplete = confirmState[0];
+  var setConfirmIncomplete = confirmState[1];
+  React.useEffect(function () {
+    if (!p.open) return;
+    try {
+      previousFocusRef.current = document.activeElement;
+    } catch (e) {}
+    var timer = setTimeout(function () {
+      try {
+        if (closeRef.current) closeRef.current.focus();
+      } catch (e) {}
+    }, 0);
+    return function () {
+      clearTimeout(timer);
+      var previous = previousFocusRef.current;
+      previousFocusRef.current = null;
+      try {
+        if (previous && typeof previous.focus === 'function') previous.focus();
+      } catch (e) {}
+    };
+  }, [p.open]);
+  React.useEffect(function () {
+    if (!p.open) setConfirmIncomplete(false);
+  }, [p.open]);
+  if (!p.open) return null;
+  var progress = p.progress || {
+    total: 0,
+    answered: 0,
+    unanswered: 0,
+    flagged: 0,
+    items: []
+  };
+  function requestSubmit() {
+    if (progress.unanswered > 0 && !confirmIncomplete) {
+      setConfirmIncomplete(true);
+      return;
+    }
+    if (typeof p.onSubmit === 'function') p.onSubmit();
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/60",
+    onMouseDown: function (e) {
+      if (e.target === e.currentTarget) p.onClose();
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    ref: dialogRef,
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-labelledby": "assessment-review-title",
+    tabIndex: -1,
+    onKeyDown: function (e) {
+      _quizHandleDialogKeyDown(e, dialogRef, p.onClose);
+    },
+    className: "w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white border-2 border-indigo-300 shadow-2xl p-5"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start justify-between gap-4"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    id: "assessment-review-title",
+    className: "text-xl font-black text-slate-900"
+  }, "Review your assessment"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-600 mt-1"
+  }, "Nothing is final until you choose Submit assessment.")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    ref: closeRef,
+    onClick: p.onClose,
+    "aria-label": "Close review",
+    className: "w-9 h-9 rounded-full border border-slate-300 text-slate-700"
+  }, "×")), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-3 gap-2 my-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-xl font-black text-emerald-800"
+  }, progress.answered), /*#__PURE__*/React.createElement("div", {
+    className: "text-[10px] font-bold uppercase text-emerald-700"
+  }, "Answered")), /*#__PURE__*/React.createElement("div", {
+    className: "rounded-lg bg-amber-50 border border-amber-200 p-3 text-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-xl font-black text-amber-900"
+  }, progress.unanswered), /*#__PURE__*/React.createElement("div", {
+    className: "text-[10px] font-bold uppercase text-amber-800"
+  }, "Unanswered")), /*#__PURE__*/React.createElement("div", {
+    className: "rounded-lg bg-slate-50 border border-slate-200 p-3 text-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-xl font-black text-slate-800"
+  }, progress.flagged), /*#__PURE__*/React.createElement("div", {
+    className: "text-[10px] font-bold uppercase text-slate-600"
+  }, "Flagged"))), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-2"
+  }, progress.items.map(function (item) {
+    return /*#__PURE__*/React.createElement("button", {
+      key: item.questionIdx,
+      type: "button",
+      onClick: function () {
+        p.onGo(item.questionIdx);
+      },
+      className: "w-full flex items-center gap-3 text-left rounded-lg border border-slate-200 p-3 hover:border-indigo-400 hover:bg-indigo-50"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: 'w-7 h-7 rounded-full flex items-center justify-center text-xs font-black ' + (item.answered ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900')
+    }, item.answered ? '✓' : '—'), /*#__PURE__*/React.createElement("span", {
+      className: "flex-grow min-w-0"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "block text-[10px] uppercase font-bold text-slate-500"
+    }, 'Question ' + (item.questionIdx + 1) + ' · ' + item.type), /*#__PURE__*/React.createElement("span", {
+      className: "block text-sm text-slate-800 truncate"
+    }, item.label)), item.flagged && /*#__PURE__*/React.createElement("span", {
+      className: "text-amber-700 font-black",
+      "aria-label": "Flagged"
+    }, "⚑"));
+  })), progress.reflectionTotal > 0 && /*#__PURE__*/React.createElement("p", {
+    className: "mt-3 text-xs text-slate-600"
+  }, 'Reflections completed: ' + progress.reflectionAnswered + ' / ' + progress.reflectionTotal), confirmIncomplete && /*#__PURE__*/React.createElement("div", {
+    className: "mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950",
+    role: "alert"
+  }, progress.unanswered + ' question' + (progress.unanswered === 1 ? ' is' : 's are') + ' still unanswered. Submit anyway, or return to finish them.'), /*#__PURE__*/React.createElement("div", {
+    className: "mt-5 flex items-center justify-end gap-2 flex-wrap"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: p.onClose,
+    className: "px-4 py-2 rounded-lg border border-slate-300 text-slate-700 text-sm font-bold"
+  }, "Keep working"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: requestSubmit,
+    className: 'px-4 py-2 rounded-lg text-white text-sm font-black ' + (confirmIncomplete ? 'bg-amber-700 hover:bg-amber-800' : 'bg-indigo-600 hover:bg-indigo-700')
+  }, confirmIncomplete ? 'Submit with unanswered items' : 'Submit assessment'))));
+}
+function AssessmentSubmittedPanel(p) {
+  var receipt = p.receipt || {};
+  var summary = receipt.summary || {};
+  var submittedLabel = receipt.submittedAt ? new Date(receipt.submittedAt).toLocaleString() : 'just now';
+  return /*#__PURE__*/React.createElement("div", {
+    className: "rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-6 shadow-sm",
+    role: "status"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-3xl mb-2",
+    "aria-hidden": "true"
+  }, "✓"), /*#__PURE__*/React.createElement("h2", {
+    className: "text-2xl font-black text-emerald-950"
+  }, "Assessment submitted"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-emerald-900 mt-2"
+  }, "Your completed attempt is saved on this device. The in-progress draft was cleared only after that receipt was written."), /*#__PURE__*/React.createElement("div", {
+    className: "mt-4 flex gap-2 flex-wrap text-xs"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "rounded-full bg-white border border-emerald-200 px-3 py-1 font-bold text-emerald-900"
+  }, (summary.answered || 0) + ' / ' + (summary.total || 0) + ' answered'), /*#__PURE__*/React.createElement("span", {
+    className: "rounded-full bg-white border border-emerald-200 px-3 py-1 font-bold text-emerald-900"
+  }, 'Submitted ' + submittedLabel)), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: p.onStartAnother,
+    className: "mt-5 px-4 py-2 rounded-lg bg-white border border-emerald-400 text-emerald-900 text-sm font-bold"
+  }, "Start another attempt"));
 }
 function SequenceSenseCard(p) {
   var q = p.q;
@@ -982,6 +1503,133 @@ function McqEnhancements(p) {
     }, labels[lvl]);
   })));
 }
+function AssessmentItemAnalysisPanel(p) {
+  var analysis = p.analysis || {};
+  var items = Array.isArray(analysis.items) ? analysis.items : [];
+  var openState = React.useState(false);
+  var open = openState[0];
+  var setOpen = openState[1];
+  if (items.length === 0 || !items.some(function (item) {
+    return item.respondents > 0;
+  })) return null;
+  function downloadCsv() {
+    var rows = [['Question', 'Type', 'Responses', 'Gradable', 'Correct %', 'Omitted', 'IDK', 'Signal', 'Flags']];
+    items.forEach(function (item) {
+      rows.push([item.questionIdx + 1, item.type, item.respondents, item.gradableCount, item.correctRate == null ? '' : item.correctRate, item.omittedCount, item.idkCount, item.signalLabel, (item.flags || []).join('; ')]);
+    });
+    var csv = rows.map(function (row) {
+      return row.map(function (cell) {
+        var s = String(cell == null ? '' : cell);
+        return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      }).join(',');
+    }).join('\n');
+    try {
+      var blob = new Blob([csv], {
+        type: 'text/csv;charset=utf-8'
+      });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'assessment-item-analysis-' + new Date().toISOString().slice(0, 10) + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {}
+  }
+  return /*#__PURE__*/React.createElement("section", {
+    className: "mt-5 rounded-xl border-2 border-cyan-200 bg-cyan-50 p-4",
+    "aria-labelledby": "item-analysis-heading"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start justify-between gap-3 flex-wrap"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
+    id: "item-analysis-heading",
+    className: "font-black text-cyan-950"
+  }, "Item analysis"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-cyan-900 mt-1"
+  }, "Difficulty, omissions, confidence mismatches, and MCQ choice patterns. Flags wait for at least 5 responses.")), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: downloadCsv,
+    className: "text-xs font-bold px-3 py-1.5 rounded-lg bg-white border border-cyan-300 text-cyan-900"
+  }, "Export CSV"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      setOpen(!open);
+    },
+    "aria-expanded": open,
+    className: "text-xs font-bold px-3 py-1.5 rounded-lg bg-cyan-800 text-white"
+  }, open ? 'Hide details' : 'Review items'))), open && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3 mt-4"
+  }, items.map(function (item) {
+    if (item.respondents === 0) return /*#__PURE__*/React.createElement("div", {
+      key: item.questionIdx,
+      className: "rounded-lg border border-slate-200 bg-white p-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-xs font-black text-slate-700"
+    }, 'Q' + (item.questionIdx + 1) + ' · No responses yet'), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-slate-600 mt-1"
+    }, item.questionText));
+    var rateColor = item.correctRate == null ? 'slate' : item.correctRate < 40 ? 'rose' : item.correctRate > 85 ? 'emerald' : 'indigo';
+    return /*#__PURE__*/React.createElement("article", {
+      key: item.questionIdx,
+      className: "rounded-lg border border-cyan-200 bg-white p-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-start gap-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex-grow min-w-0"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-[10px] uppercase font-black tracking-wider text-slate-500"
+    }, 'Q' + (item.questionIdx + 1) + ' · ' + item.type), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm font-semibold text-slate-800 mt-1"
+    }, item.questionText)), /*#__PURE__*/React.createElement("div", {
+      className: 'rounded-lg px-3 py-2 text-center bg-' + rateColor + '-50 text-' + rateColor + '-900 border border-' + rateColor + '-200'
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-lg font-black"
+    }, item.correctRate == null ? '—' : item.correctRate + '%'), /*#__PURE__*/React.createElement("div", {
+      className: "text-[9px] uppercase font-bold"
+    }, "correct"))), /*#__PURE__*/React.createElement("div", {
+      className: "flex gap-2 flex-wrap mt-3 text-[11px]"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "rounded-full bg-slate-100 text-slate-700 px-2 py-1 font-bold"
+    }, item.respondents + ' responses'), /*#__PURE__*/React.createElement("span", {
+      className: "rounded-full bg-slate-100 text-slate-700 px-2 py-1 font-bold"
+    }, item.omittedCount + ' omitted'), item.idkCount > 0 && /*#__PURE__*/React.createElement("span", {
+      className: "rounded-full bg-sky-100 text-sky-800 px-2 py-1 font-bold"
+    }, item.idkCount + ' IDK'), /*#__PURE__*/React.createElement("span", {
+      className: 'rounded-full px-2 py-1 font-bold ' + (item.smallSample ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-800')
+    }, item.signalLabel)), Array.isArray(item.options) && item.options.length > 0 && /*#__PURE__*/React.createElement("div", {
+      className: "space-y-1.5 mt-3"
+    }, item.options.map(function (option) {
+      var width = item.respondents > 0 ? Math.round(option.count / item.respondents * 100) : 0;
+      return /*#__PURE__*/React.createElement("div", {
+        key: option.optionIdx,
+        className: "grid grid-cols-[1.5rem_1fr_auto] items-center gap-2 text-xs"
+      }, /*#__PURE__*/React.createElement("span", {
+        className: 'font-black ' + (option.correct ? 'text-emerald-700' : 'text-slate-600')
+      }, String.fromCharCode(65 + option.optionIdx)), /*#__PURE__*/React.createElement("div", {
+        className: "h-2 rounded-full bg-slate-100 overflow-hidden"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: option.correct ? 'h-full bg-emerald-500' : 'h-full bg-cyan-500',
+        style: {
+          width: width + '%'
+        }
+      })), /*#__PURE__*/React.createElement("span", {
+        className: "text-slate-600 tabular-nums"
+      }, option.count + ' · ' + width + '%'));
+    })), item.flags && item.flags.length > 0 && /*#__PURE__*/React.createElement("ul", {
+      className: "mt-3 space-y-1"
+    }, item.flags.map(function (flag, idx) {
+      return /*#__PURE__*/React.createElement("li", {
+        key: idx,
+        className: "text-xs rounded bg-amber-50 border border-amber-200 text-amber-900 px-2 py-1"
+      }, '⚑ ' + flag);
+    })), item.smallSample && /*#__PURE__*/React.createElement("p", {
+      className: "text-[10px] text-slate-500 mt-2"
+    }, "Early signal only—no quality flag is assigned until 5 learners respond."));
+  })));
+}
 function LiveResultsDashboard(p) {
   var aggsMod = window.AlloModules && window.AlloModules.QuizLiveAggregators;
   if (!aggsMod) return null;
@@ -1375,6 +2023,14 @@ function LiveResultsDashboard(p) {
   if (!aggResult || !aggResult.data) return null;
   var data = aggResult.data;
   var variant = aggResult.variant;
+  var itemAnalysis = {
+    items: []
+  };
+  try {
+    if (typeof aggsMod.aggregateItemAnalysis === 'function') itemAnalysis = aggsMod.aggregateItemAnalysis(quizState, generatedContent, roster, aiGradedCache, teacherOverrides);
+  } catch (e) {
+    console.warn('[LiveResultsDashboard] item analysis failed:', e);
+  }
   // Share an anonymous per-question aggregate to every connected student
   // over the P2P quiz channel (shell hook; nothing stored, no names).
   var canShareResults = typeof window !== 'undefined' && typeof window.__alloQuizShareResults === 'function' && variant === 'liveHeatmap' && Array.isArray(data.bars) && data.bars.some(function (b) {
@@ -1458,14 +2114,14 @@ function LiveResultsDashboard(p) {
     };
     var buildGradebookCsv = function () {
       var questions = generatedContent && generatedContent.data && generatedContent.data.questions || [];
-      var header = ['Student', 'Answered', 'Correct', 'IDK', 'Score %'];
+      var header = ['Student', 'Attempt status', 'Answered', 'Correct', 'IDK', 'Score %'];
       questions.forEach(function (_, idx) {
         header.push('Q' + (idx + 1) + ' Status', 'Q' + (idx + 1) + ' Answer', 'Q' + (idx + 1) + ' Confidence', 'Q' + (idx + 1) + ' AI Feedback');
       });
       var lines = [header.map(csvEscape).join(',')];
       data.studentRows.forEach(function (row) {
         var pct = row.totalAnswered > 0 ? Math.round(row.totalCorrect / row.totalAnswered * 100) : 0;
-        var line = [row.displayName, row.totalAnswered, row.totalCorrect, row.totalIdk, pct + '%'];
+        var line = [row.displayName, row.attemptStatus || 'not-started', row.totalAnswered, row.totalCorrect, row.totalIdk, pct + '%'];
         for (var i = 0; i < questions.length; i++) {
           var cell = row.byQuestion[i];
           if (!cell) {
@@ -1551,6 +2207,9 @@ function LiveResultsDashboard(p) {
     }, "Student"), /*#__PURE__*/React.createElement("th", {
       scope: "col",
       className: "text-center px-2 py-1.5 font-bold text-slate-700"
+    }, "Attempt"), /*#__PURE__*/React.createElement("th", {
+      scope: "col",
+      className: "text-center px-2 py-1.5 font-bold text-slate-700"
     }, "Answered"), /*#__PURE__*/React.createElement("th", {
       scope: "col",
       className: "text-center px-2 py-1.5 font-bold text-slate-700"
@@ -1586,6 +2245,10 @@ function LiveResultsDashboard(p) {
       }, row.displayName), /*#__PURE__*/React.createElement("td", {
         className: "text-center px-2 py-1.5"
       }, /*#__PURE__*/React.createElement("span", {
+        className: 'text-[10px] font-black uppercase px-2 py-0.5 rounded ' + (row.attemptStatus === 'submitted' ? 'bg-emerald-100 text-emerald-800' : row.attemptStatus === 'in-progress' ? 'bg-amber-100 text-amber-900' : 'bg-slate-100 text-slate-600')
+      }, row.attemptStatus === 'submitted' ? 'Submitted' : row.attemptStatus === 'in-progress' ? 'In progress' : 'Not started')), /*#__PURE__*/React.createElement("td", {
+        className: "text-center px-2 py-1.5"
+      }, /*#__PURE__*/React.createElement("span", {
         className: "text-xs font-mono text-slate-600"
       }, row.totalAnswered + ' / ' + data.totalQuestions)), /*#__PURE__*/React.createElement("td", {
         className: "text-center px-2 py-1.5"
@@ -1605,7 +2268,7 @@ function LiveResultsDashboard(p) {
         key: row.uid + ':detail',
         className: "border-t border-slate-100 bg-indigo-50/30"
       }, /*#__PURE__*/React.createElement("td", {
-        colSpan: 5,
+        colSpan: 6,
         className: "px-3 py-3"
       }, /*#__PURE__*/React.createElement("div", {
         className: "space-y-2"
@@ -2040,7 +2703,9 @@ function LiveResultsDashboard(p) {
     className: "p-5 rounded-xl border-2 border-indigo-300 bg-white mb-4 shadow-sm",
     role: "region",
     "aria-label": t("a11y.live_results_dashboard")
-  }, header, body, reflectionsEl, explainerModalEl);
+  }, header, body, /*#__PURE__*/React.createElement(AssessmentItemAnalysisPanel, {
+    analysis: itemAnalysis
+  }), reflectionsEl, explainerModalEl);
 }
 function _quizEmitDeterministicAnswer(p, itemType, answer, confidence) {
   if (typeof p.onSubmitLiveAnswer !== 'function' || typeof p.questionIdx !== 'number') return;
@@ -3741,6 +4406,7 @@ function FreeformItemsBlock(p) {
       idx: idx
     };
   }).filter(function (entry) {
+    if (typeof p.visibleQuestionIdx === 'number' && entry.idx !== p.visibleQuestionIdx) return false;
     return entry.q && (entry.q.type === 'multi-select' || entry.q.type === 'fill-blank' || entry.q.type === 'short-answer' || entry.q.type === 'self-explanation' || entry.q.type === 'sequence-sense' || entry.q.type === 'relation-mismatch' || entry.q.type === 'answer-evidence' || entry.q.type === 'numeric-response');
   });
   if (freeform.length === 0) return null;
@@ -3753,9 +4419,9 @@ function FreeformItemsBlock(p) {
   }, "＋"), " Additional Assessment Items"), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mb-2"
   }, p.isEditingQuiz ? 'Edit the prompt, answer key, rubric, and format-specific settings below.' : p.scoringPolicy && p.scoringPolicy.writtenResponseMode === 'teacher-review' ? 'Interactive formats are graded instantly. Written responses are submitted for teacher review.' : 'Interactive formats are graded instantly. Written responses receive provisional AI feedback.'), freeform.map(function (entry) {
+    var card = null;
     if (p.isEditingQuiz) {
-      return /*#__PURE__*/React.createElement(AssessmentItemEditor, {
-        key: entry.idx,
+      card = /*#__PURE__*/React.createElement(AssessmentItemEditor, {
         q: entry.q,
         itemNumber: entry.idx + 1,
         questionIdx: entry.idx,
@@ -3764,10 +4430,8 @@ function FreeformItemsBlock(p) {
         onRegenerate: p.onRegenerateQuestion,
         regenerating: !!(p.regeneratingQuestions && p.regeneratingQuestions[entry.idx])
       });
-    }
-    if (entry.q.type === 'multi-select') {
-      return /*#__PURE__*/React.createElement(MultiSelectCard, {
-        key: entry.idx,
+    } else if (entry.q.type === 'multi-select') {
+      card = /*#__PURE__*/React.createElement(MultiSelectCard, {
         q: entry.q,
         itemNumber: entry.idx + 1,
         questionIdx: entry.idx,
@@ -3776,10 +4440,8 @@ function FreeformItemsBlock(p) {
         modeStrategy: p.modeStrategy,
         scoringPolicy: p.scoringPolicy
       });
-    }
-    if (entry.q.type === 'answer-evidence') {
-      return /*#__PURE__*/React.createElement(AnswerEvidenceCard, {
-        key: entry.idx,
+    } else if (entry.q.type === 'answer-evidence') {
+      card = /*#__PURE__*/React.createElement(AnswerEvidenceCard, {
         q: entry.q,
         itemNumber: entry.idx + 1,
         questionIdx: entry.idx,
@@ -3788,10 +4450,8 @@ function FreeformItemsBlock(p) {
         modeStrategy: p.modeStrategy,
         scoringPolicy: p.scoringPolicy
       });
-    }
-    if (entry.q.type === 'numeric-response') {
-      return /*#__PURE__*/React.createElement(NumericResponseCard, {
-        key: entry.idx,
+    } else if (entry.q.type === 'numeric-response') {
+      card = /*#__PURE__*/React.createElement(NumericResponseCard, {
         q: entry.q,
         itemNumber: entry.idx + 1,
         questionIdx: entry.idx,
@@ -3801,10 +4461,8 @@ function FreeformItemsBlock(p) {
         scoringPolicy: p.scoringPolicy,
         allowDictation: p.allowDictation
       });
-    }
-    if (entry.q.type === 'sequence-sense') {
-      return /*#__PURE__*/React.createElement(SequenceSenseCard, {
-        key: entry.idx,
+    } else if (entry.q.type === 'sequence-sense') {
+      card = /*#__PURE__*/React.createElement(SequenceSenseCard, {
         q: entry.q,
         itemNumber: entry.idx + 1,
         questionIdx: entry.idx,
@@ -3816,10 +4474,8 @@ function FreeformItemsBlock(p) {
         callTTS: p.callTTS,
         gradeLevel: p.gradeLevel
       });
-    }
-    if (entry.q.type === 'relation-mismatch') {
-      return /*#__PURE__*/React.createElement(RelationMismatchCard, {
-        key: entry.idx,
+    } else if (entry.q.type === 'relation-mismatch') {
+      card = /*#__PURE__*/React.createElement(RelationMismatchCard, {
         q: entry.q,
         itemNumber: entry.idx + 1,
         questionIdx: entry.idx,
@@ -3831,22 +4487,34 @@ function FreeformItemsBlock(p) {
         callTTS: p.callTTS,
         gradeLevel: p.gradeLevel
       });
+    } else {
+      card = /*#__PURE__*/React.createElement(FreeformItemCard, {
+        q: entry.q,
+        itemNumber: entry.idx + 1,
+        questionIdx: entry.idx,
+        draftNamespace: p.draftNamespace,
+        callGemini: p.callGemini,
+        callTTS: p.callTTS,
+        gradeLevel: p.gradeLevel,
+        QuizAIHelpers: p.QuizAIHelpers,
+        modeStrategy: p.modeStrategy,
+        scoringPolicy: p.scoringPolicy,
+        onSubmitLiveAnswer: p.onSubmitLiveAnswer,
+        allowDictation: p.allowDictation
+      });
     }
-    return /*#__PURE__*/React.createElement(FreeformItemCard, {
+    return /*#__PURE__*/React.createElement("div", {
       key: entry.idx,
-      q: entry.q,
-      itemNumber: entry.idx + 1,
-      questionIdx: entry.idx,
-      draftNamespace: p.draftNamespace,
-      callGemini: p.callGemini,
-      callTTS: p.callTTS,
-      gradeLevel: p.gradeLevel,
-      QuizAIHelpers: p.QuizAIHelpers,
-      modeStrategy: p.modeStrategy,
-      scoringPolicy: p.scoringPolicy,
-      onSubmitLiveAnswer: p.onSubmitLiveAnswer,
-      allowDictation: p.allowDictation
-    });
+      id: 'assessment-question-' + entry.idx,
+      className: "space-y-2 scroll-mt-24"
+    }, !p.isEditingQuiz && p.allowFlagging && /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-end"
+    }, /*#__PURE__*/React.createElement(AssessmentQuestionFlagButton, {
+      flagged: !!(p.flaggedQuestions && p.flaggedQuestions[entry.idx]),
+      onToggle: function () {
+        p.onToggleFlag(entry.idx);
+      }
+    })), card);
   }));
 }
 function FreeformItemCard(p) {
@@ -4343,9 +5011,16 @@ function QuizView(props) {
     partialCredit: true,
     writtenResponseMode: 'ai-provisional'
   }, assessmentData.scoringPolicy || {});
+  var deliverySettings = _quizNormalizeDeliverySettings(assessmentData.deliverySettings);
   var assessmentAudit = _quizAuditAssessment(assessmentData);
   var assessmentH5PPreflight = _quizH5PPreflight(assessmentData);
-  var draftNamespace = !isTeacherMode && !isParentMode ? _quizDraftNamespace(assessmentData, activeSessionCode) : '';
+  var learnerBaseDraftNamespace = !isTeacherMode && !isParentMode ? _quizDraftNamespace(assessmentData, activeSessionCode) : '';
+  var attemptReceiptState = React.useState(function () {
+    return learnerBaseDraftNamespace ? _quizReadAttemptReceipt(learnerBaseDraftNamespace) : null;
+  });
+  var attemptReceipt = attemptReceiptState[0];
+  var setAttemptReceipt = attemptReceiptState[1];
+  var draftNamespace = learnerBaseDraftNamespace && !attemptReceipt ? learnerBaseDraftNamespace : '';
   var regeneratingState = React.useState({});
   var regeneratingQuestions = regeneratingState[0];
   var setRegeneratingQuestions = regeneratingState[1];
@@ -4407,6 +5082,182 @@ function QuizView(props) {
     } finally {
       setRepairingAssessment(false);
     }
+  }
+  var attemptMetaState = _quizUseDraftField(draftNamespace, 'root', 'attemptMeta', function () {
+    return {
+      attemptId: 'attempt-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
+      startedAt: Date.now(),
+      status: 'in-progress'
+    };
+  });
+  var attemptMeta = attemptMetaState[0];
+  var flaggedState = _quizUseDraftField(draftNamespace, 'root', 'flaggedQuestions', {});
+  var flaggedQuestions = flaggedState[0];
+  var setFlaggedQuestions = flaggedState[1];
+  var reviewOpenState = React.useState(false);
+  var reviewOpen = reviewOpenState[0];
+  var setReviewOpen = reviewOpenState[1];
+  var currentQuestionState = React.useState(0);
+  var currentQuestionIdx = currentQuestionState[0];
+  var setCurrentQuestionIdx = currentQuestionState[1];
+  var initialTimeSeconds = deliverySettings.timeLimitMinutes > 0 ? Math.round(deliverySettings.timeLimitMinutes * 60) : 0;
+  var timerStateHook = _quizUseDraftField(draftNamespace, 'root', 'timerState', function () {
+    return {
+      remainingSeconds: initialTimeSeconds,
+      running: initialTimeSeconds > 0,
+      deadlineAt: initialTimeSeconds > 0 ? Date.now() + initialTimeSeconds * 1000 : 0,
+      expired: false
+    };
+  });
+  var assessmentTimer = timerStateHook[0] || {
+    remainingSeconds: 0,
+    running: false,
+    deadlineAt: 0,
+    expired: false
+  };
+  var setAssessmentTimer = timerStateHook[1];
+  React.useEffect(function () {
+    if (!draftNamespace || !attemptMeta || !attemptMeta.attemptId) return;
+    _quizWriteDraftField(draftNamespace, 'root', 'attemptMeta', attemptMeta);
+  }, [draftNamespace, attemptMeta && attemptMeta.attemptId]);
+  React.useEffect(function () {
+    if (!draftNamespace || !assessmentTimer.running || !assessmentTimer.deadlineAt || assessmentTimer.expired) return;
+    var tick = function () {
+      setAssessmentTimer(function (previous) {
+        if (!previous || !previous.running || previous.expired) return previous;
+        var remaining = Math.max(0, Math.ceil((Number(previous.deadlineAt) - Date.now()) / 1000));
+        if (remaining <= 0) return Object.assign({}, previous, {
+          remainingSeconds: 0,
+          running: false,
+          expired: true
+        });
+        if (remaining === previous.remainingSeconds) return previous;
+        return Object.assign({}, previous, {
+          remainingSeconds: remaining
+        });
+      });
+    };
+    tick();
+    var interval = window.setInterval(tick, 1000);
+    return function () {
+      window.clearInterval(interval);
+    };
+  }, [draftNamespace, assessmentTimer.running, assessmentTimer.deadlineAt, assessmentTimer.expired]);
+  React.useEffect(function () {
+    if (draftNamespace && assessmentTimer.expired) setReviewOpen(true);
+  }, [draftNamespace, assessmentTimer.expired]);
+  function toggleQuestionFlag(questionIdx) {
+    setFlaggedQuestions(function (previous) {
+      var next = Object.assign({}, previous || {});
+      if (next[questionIdx]) delete next[questionIdx];else next[questionIdx] = true;
+      return next;
+    });
+  }
+  function goToAssessmentQuestion(questionIdx) {
+    var total = Array.isArray(assessmentData.questions) ? assessmentData.questions.length : 0;
+    var next = Math.max(0, Math.min(Math.max(0, total - 1), Number(questionIdx) || 0));
+    setCurrentQuestionIdx(next);
+    setReviewOpen(false);
+    window.setTimeout(function () {
+      try {
+        var node = document.getElementById('assessment-question-' + next);
+        if (node && typeof node.scrollIntoView === 'function') node.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      } catch (e) {}
+    }, 0);
+  }
+  function toggleAssessmentTimer() {
+    setAssessmentTimer(function (previous) {
+      if (!previous || previous.expired) return previous;
+      if (previous.running) {
+        var remaining = Math.max(0, Math.ceil((Number(previous.deadlineAt) - Date.now()) / 1000));
+        return Object.assign({}, previous, {
+          remainingSeconds: remaining,
+          running: false,
+          deadlineAt: 0
+        });
+      }
+      var seconds = Math.max(1, Number(previous.remainingSeconds) || initialTimeSeconds || 1);
+      return Object.assign({}, previous, {
+        remainingSeconds: seconds,
+        running: true,
+        deadlineAt: Date.now() + seconds * 1000
+      });
+    });
+  }
+  function extendAssessmentTimer() {
+    var extensionSeconds = deliverySettings.extensionMinutes * 60;
+    setAssessmentTimer(function (previous) {
+      var current = previous || {
+        remainingSeconds: 0,
+        running: false,
+        deadlineAt: 0,
+        expired: false
+      };
+      var remaining = current.running && current.deadlineAt ? Math.max(0, Math.ceil((Number(current.deadlineAt) - Date.now()) / 1000)) : Math.max(0, Number(current.remainingSeconds) || 0);
+      var nextRemaining = remaining + extensionSeconds;
+      return Object.assign({}, current, {
+        remainingSeconds: nextRemaining,
+        running: true,
+        deadlineAt: Date.now() + nextRemaining * 1000,
+        expired: false
+      });
+    });
+  }
+  function updateAssessmentDelivery(nextSettings) {
+    if (typeof props.handleQuizQuestionAction === 'function') props.handleQuizQuestionAction(0, 'patch-assessment', {
+      deliverySettings: nextSettings
+    });
+  }
+  function submitAssessmentAttempt() {
+    if (!draftNamespace) return;
+    var working = _quizReadWorkingDraft(draftNamespace);
+    var progress = _quizBuildAttemptProgress(assessmentData, working);
+    var submittedAt = Date.now();
+    var receipt = _quizFinalizeAttempt(draftNamespace, {
+      attemptId: attemptMeta && attemptMeta.attemptId || 'attempt-' + submittedAt.toString(36),
+      startedAt: attemptMeta && attemptMeta.startedAt || submittedAt,
+      submittedAt: submittedAt,
+      summary: {
+        total: progress.total,
+        answered: progress.answered,
+        unanswered: progress.unanswered,
+        flagged: progress.flagged
+      },
+      responses: working.items
+    });
+    if (!receipt) {
+      if (typeof props.addToast === 'function') props.addToast('Could not save the completion receipt. Your draft is still safe—please try again.', 'error');
+      return;
+    }
+    if (typeof onSubmitLiveAnswer === 'function') {
+      try {
+        onSubmitLiveAnswer({
+          questionIdx: progress.total,
+          itemType: 'assessment-complete',
+          conceptLabel: '',
+          answer: {
+            attemptId: receipt.attemptId,
+            answered: progress.answered,
+            total: progress.total,
+            submittedAt: submittedAt
+          },
+          timestamp: submittedAt
+        });
+      } catch (e) {}
+    }
+    setReviewOpen(false);
+    setAttemptReceipt(receipt);
+    if (typeof props.addToast === 'function') props.addToast('Assessment submitted.', 'success');
+  }
+  function startAnotherAssessmentAttempt() {
+    if (!_quizClearAttemptReceipt(learnerBaseDraftNamespace)) return;
+    setAttemptReceipt(null);
+    try {
+      window.location.reload();
+    } catch (e) {}
   }
   var mcqAnswersState = _quizUseDraftField(draftNamespace, 'root', 'mcqAnswers', {});
   var studentMcqAnswers = mcqAnswersState[0];
@@ -5095,12 +5946,78 @@ function QuizView(props) {
     repairing: repairingAssessment,
     onRepairAll: repairAssessmentQuality
   }) : null;
+  var deliverySettingsPanel = isTeacherMode && !(activeSessionCode && sessionData && sessionData.quizState && sessionData.quizState.isActive) ? /*#__PURE__*/React.createElement(AssessmentDeliveryPanel, {
+    settings: deliverySettings,
+    onChange: updateAssessmentDelivery
+  }) : null;
   var draftStatusPanel = draftNamespace && !isEditingQuiz && !isPresentationMode && !isReviewGame ? /*#__PURE__*/React.createElement(AssessmentDraftStatus, {
     namespace: draftNamespace
   }) : null;
+  var oneQuestionAtATime = deliverySettings.pacing === 'one-at-a-time' && !isEditingQuiz && !isPresentationMode;
+  var assessmentQuestionCount = Array.isArray(assessmentData.questions) ? assessmentData.questions.length : 0;
+  var reviewProgress = draftNamespace ? _quizBuildAttemptProgress(assessmentData, _quizReadWorkingDraft(draftNamespace)) : null;
+  var learnerAttemptPanel = draftNamespace && !isEditingQuiz && !isPresentationMode && !isReviewGame ? /*#__PURE__*/React.createElement("section", {
+    className: "rounded-xl border-2 border-indigo-200 bg-indigo-50 p-4",
+    "aria-label": "Assessment progress and submission"
+  }, /*#__PURE__*/React.createElement(AssessmentTimerBar, {
+    enabled: deliverySettings.timeLimitMinutes > 0,
+    remainingSeconds: assessmentTimer.remainingSeconds,
+    running: assessmentTimer.running,
+    expired: assessmentTimer.expired,
+    warningMinutes: deliverySettings.warningMinutes,
+    extensionMinutes: deliverySettings.extensionMinutes,
+    onTogglePause: toggleAssessmentTimer,
+    onExtend: extendAssessmentTimer,
+    onReview: function () {
+      setReviewOpen(true);
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: 'flex items-center gap-2 flex-wrap ' + (deliverySettings.timeLimitMinutes > 0 ? 'mt-3' : '')
+  }, deliverySettings.showProgress && /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-black text-indigo-950"
+  }, oneQuestionAtATime ? 'Question ' + (currentQuestionIdx + 1) + ' of ' + assessmentQuestionCount : assessmentQuestionCount + ' questions'), oneQuestionAtATime && /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      goToAssessmentQuestion(currentQuestionIdx - 1);
+    },
+    disabled: currentQuestionIdx <= 0,
+    className: "text-xs font-bold px-3 py-1.5 rounded-lg bg-white border border-indigo-300 text-indigo-900 disabled:opacity-40"
+  }, "Previous"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      goToAssessmentQuestion(currentQuestionIdx + 1);
+    },
+    disabled: currentQuestionIdx >= assessmentQuestionCount - 1,
+    className: "text-xs font-bold px-3 py-1.5 rounded-lg bg-white border border-indigo-300 text-indigo-900 disabled:opacity-40"
+  }, "Next")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      setReviewOpen(true);
+    },
+    className: "ml-auto text-xs font-black px-3 py-1.5 rounded-lg bg-indigo-700 text-white hover:bg-indigo-800"
+  }, "Review & submit"))) : null;
+  var reviewDialog = /*#__PURE__*/React.createElement(AssessmentReviewDialog, {
+    open: reviewOpen,
+    progress: reviewProgress,
+    onClose: function () {
+      setReviewOpen(false);
+    },
+    onGo: goToAssessmentQuestion,
+    onSubmit: submitAssessmentAttempt
+  });
+  if (attemptReceipt && !isTeacherMode && !isParentMode && !isEditingQuiz && !isPresentationMode && !isReviewGame) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "space-y-6"
+    }, modeBanner, /*#__PURE__*/React.createElement(AssessmentSubmittedPanel, {
+      receipt: attemptReceipt,
+      onStartAnother: startAnotherAssessmentAttempt
+    }));
+  }
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
-  }, classExplainerBanner, modeBanner, explainerPanel, qualityReviewPanel, draftStatusPanel, /*#__PURE__*/React.createElement("div", {
+  }, classExplainerBanner, modeBanner, explainerPanel, qualityReviewPanel, deliverySettingsPanel, draftStatusPanel, learnerAttemptPanel, reviewDialog, /*#__PURE__*/React.createElement("div", {
     className: "bg-teal-50 p-4 rounded-lg border border-teal-100 mb-6 flex justify-between items-center flex-wrap gap-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-teal-800 flex-grow"
@@ -5637,10 +6554,18 @@ function QuizView(props) {
     className: "text-2xl font-medium leading-relaxed text-center"
   }, "\"", generatedContent?.data.reflection, "\"")))) : /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
-  }, generatedContent?.data.questions.map((q, i) => q && q.type && q.type !== 'mcq' ? null : /*#__PURE__*/React.createElement("div", {
+  }, generatedContent?.data.questions.map((q, i) => oneQuestionAtATime && i !== currentQuestionIdx ? null : q && q.type && q.type !== 'mcq' ? null : /*#__PURE__*/React.createElement("div", {
     key: i,
-    className: "bg-white p-6 rounded-xl border border-slate-400 shadow-sm relative group/question"
-  }, q.imageUrl && /*#__PURE__*/React.createElement("div", {
+    id: 'assessment-question-' + i,
+    className: "bg-white p-6 rounded-xl border border-slate-400 shadow-sm relative group/question scroll-mt-24"
+  }, !isEditingQuiz && deliverySettings.allowFlagging && /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-end mb-2"
+  }, /*#__PURE__*/React.createElement(AssessmentQuestionFlagButton, {
+    flagged: !!flaggedQuestions[i],
+    onToggle: function () {
+      toggleQuestionFlag(i);
+    }
+  })), q.imageUrl && /*#__PURE__*/React.createElement("div", {
     className: "relative mb-3"
   }, /*#__PURE__*/React.createElement("img", {
     src: q.imageUrl,
@@ -5813,6 +6738,10 @@ function QuizView(props) {
     return q && (q.type === 'multi-select' || q.type === 'fill-blank' || q.type === 'short-answer' || q.type === 'self-explanation' || q.type === 'sequence-sense' || q.type === 'relation-mismatch' || q.type === 'answer-evidence' || q.type === 'numeric-response');
   }) && /*#__PURE__*/React.createElement(FreeformItemsBlock, {
     questions: generatedContent.data.questions,
+    visibleQuestionIdx: oneQuestionAtATime ? currentQuestionIdx : null,
+    flaggedQuestions: flaggedQuestions,
+    allowFlagging: deliverySettings.allowFlagging,
+    onToggleFlag: toggleQuestionFlag,
     draftNamespace: draftNamespace,
     callGemini: props.callGemini,
     callTTS: props.callTTS,

@@ -11923,8 +11923,8 @@ var createDocPipeline = function(deps) {
         if (_auditUiCurrent()) {
           addToast && addToast('♿ Audit loaded from cache (identical document seen recently)', 'info');
           setPdfAuditResult(cached);
-          setPdfAuditLoading(false);
         }
+        _finishAuditUi();
         return _auditCancelled() ? null : cached;
       }
     }
@@ -12092,9 +12092,9 @@ var createDocPipeline = function(deps) {
         if (_cacheKey) { try { _writeAuditCache(_cacheKey, result); } catch (_) {} }
         if (_auditUiCurrent()) {
           setPdfAuditResult(result);
-          setPdfAuditLoading(false);
           addToast && addToast(`📝 ${_officeKind.toUpperCase()} audited deterministically (axe-core on extracted text)${_mediaAll.length ? ` — ${_mediaAll.filter(m => !m.skipped).length} embedded image(s) preserved${_mediaAll.some(m => m.skipped) ? ` (${_mediaAll.filter(m => m.skipped).length} kept as descriptions only)` : ''}` : ''} — full AI verification runs during Fix & Verify.`, 'info');
         }
+        _finishAuditUi();
         return _auditCancelled() ? null : result;
       } catch (officeErr) {
         const failureResult = { score: -1, summary: `Office audit failed: ${officeErr?.message || 'Unknown error'}. You can still proceed to Fix & Verify.`, critical: [], serious: [], moderate: [], minor: [], passes: [], _officeInput: _officeKind };
