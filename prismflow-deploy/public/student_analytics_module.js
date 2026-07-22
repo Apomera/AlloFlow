@@ -282,6 +282,7 @@
     var started = _started[0];
     var setStarted = _started[1];
     var prevActiveRef = React.useRef(false);
+    var probeDialogRef = useStudentAnalyticsDialog(isActive ? (countdown > 0 ? 'countdown' : 'active') : false, onEndEarly);
 
     // Countdown logic: when probe becomes active, show 3-2-1 countdown
     React.useEffect(function () {
@@ -339,12 +340,19 @@
     // Countdown overlay
     if (countdown > 0) {
       return ReactDOM.createPortal(
-        h('div', { role: 'dialog', 'aria-modal': 'true',
+        h('div', {
           className: 'fixed inset-0 z-[250] bg-slate-900/95 flex items-center justify-center',
+          ref: probeDialogRef, role: 'dialog', 'aria-modal': 'true',
+          'aria-label': probeType + ' countdown',
+          tabIndex: -1,
           style: { backdropFilter: 'blur(8px)' }
         },
           h('div', { className: 'text-center' },
             h('div', {
+              role: 'timer',
+              'aria-live': 'assertive',
+              'aria-atomic': 'true',
+              'aria-label': probeType + ' begins in ' + countdown,
               className: 'text-[10rem] font-black text-white animate-pulse',
               style: { textShadow: '0 0 60px rgba(99,102,241,0.5)' }
             }, countdown),
@@ -357,8 +365,11 @@
 
     // Active probe overlay
     return ReactDOM.createPortal(
-      h('div', { role: 'dialog', 'aria-modal': 'true',
+      h('div', {
         className: 'fixed inset-0 z-[250] bg-white flex flex-col',
+        ref: probeDialogRef, role: 'dialog', 'aria-modal': 'true',
+        'aria-label': probeType + ' assessment',
+        tabIndex: -1,
         style: { minHeight: '100vh' }
       },
         // Top bar: probe type, timer, progress, end early
@@ -380,9 +391,12 @@
             ),
             // Timer
             timer !== undefined && h('div', {
+              role: 'timer',
+              'aria-label': 'Time remaining: ' + timerMin + ' minutes ' + Number(timerSec) + ' seconds',
+              'aria-live': isTimeLow ? 'polite' : 'off',
+              'aria-atomic': 'true',
               className: 'flex items-center gap-2 px-4 py-2 rounded-xl text-lg font-black tabular-nums ' +
-                (isTimeLow ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'),
-              'aria-live': 'polite'
+                (isTimeLow ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700')
             }, '\u23F1 ' + timerMin + ':' + timerSec),
             h('button', { "aria-label": "End Early",
               onClick: onEndEarly,
@@ -392,14 +406,18 @@
         ),
         // Timer progress bar
         timer !== undefined && h('div', { className: 'w-full bg-slate-100 h-1.5 shrink-0' },
-          h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100',
+          h('div', { role: 'progressbar', 'aria-label': 'Probe time remaining',
+            'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(timerPct),
+            'aria-valuetext': (timer || 0) + ' seconds remaining',
             className: 'h-full transition-all duration-1000 rounded-r ' + (isTimeLow ? 'bg-red-500' : 'bg-indigo-500'),
             style: { width: timerPct + '%' }
           })
         ),
         // Progress bar
         h('div', { className: 'w-full bg-slate-100 h-1 shrink-0' },
-          h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100',
+          h('div', { role: 'progressbar', 'aria-label': 'Probe item progress',
+            'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': progressPct,
+            'aria-valuetext': 'Item ' + Math.min(currentIndex + 1, totalItems) + ' of ' + totalItems,
             className: 'h-full bg-emerald-400 transition-all',
             style: { width: progressPct + '%' }
           })
