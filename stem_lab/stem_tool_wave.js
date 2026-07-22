@@ -3238,24 +3238,24 @@ const d = labToolData.wave;
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
             // Left: live SVG visualization
             h('div', { className: 'p-3 rounded-lg bg-slate-900 border border-slate-700' },
-              h('svg', { viewBox: '0 0 260 100', width: '100%', style: { height: 'auto' }, 'aria-label': 'Standing wave on a string' },
+              h('svg', { viewBox: '0 0 260 100', width: '100%', style: { height: 'auto' }, 'aria-label': __alloT('stem.wave.aria_standing_string', 'Standing wave on a string') },
                 h('line', { x1: 10, y1: 50, x2: 250, y2: 50, stroke: '#475569', strokeDasharray: '2,2', strokeWidth: 1 }),
                 h('path', { d: pathStr, fill: 'none', stroke: '#22d3ee', strokeWidth: 2.5, opacity: 0.95 }),
                 h('circle', { cx: 10, cy: 50, r: 4, fill: '#fbbf24' }),
                 h('circle', { cx: 250, cy: 50, r: 4, fill: '#fbbf24' }),
-                h('text', { x: 130, y: 92, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, 'Length L = 2.0 m (fixed)')
+                h('text', { x: 130, y: 92, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, __alloT('stem.wave.svg_length_2m', 'Length L = 2.0 m (fixed)'))
               ),
               h('div', { className: 'mt-2 grid grid-cols-2 gap-2 text-[11px]' },
                 h('div', { className: 'p-1.5 rounded bg-slate-800 text-cyan-300' },
-                  h('div', { className: 'text-[9px] uppercase text-slate-400 tracking-wider' }, 'Period T'),
+                  h('div', { className: 'text-[9px] uppercase text-slate-400 tracking-wider' }, __alloT('stem.wave.card_period', 'Period') + ' T'),
                   h('div', { className: 'font-mono font-bold text-base' }, period.toFixed(3) + ' s')
                 ),
                 h('div', { className: 'p-1.5 rounded bg-slate-800 text-cyan-300' },
-                  h('div', { className: 'text-[9px] uppercase text-slate-400 tracking-wider' }, 'Wavelength λ'),
+                  h('div', { className: 'text-[9px] uppercase text-slate-400 tracking-wider' }, __alloT('stem.wave.card_wavelength', 'Wavelength') + ' λ'),
                   h('div', { className: 'font-mono font-bold text-base' }, wavelength.toFixed(3) + ' m')
                 ),
                 h('div', { className: 'p-1.5 rounded bg-slate-800 text-amber-300' },
-                  h('div', { className: 'text-[9px] uppercase text-slate-400 tracking-wider' }, 'Wave speed v'),
+                  h('div', { className: 'text-[9px] uppercase text-slate-400 tracking-wider' }, __alloT('stem.wave.label_wavespeed', 'Wave speed') + ' v'),
                   h('div', { className: 'font-mono font-bold text-base' }, v.toFixed(2) + ' m/s')
                 ),
                 h('div', { className: 'p-1.5 rounded bg-slate-800 text-violet-300' },
@@ -3266,18 +3266,18 @@ const d = labToolData.wave;
             ),
             // Right: controls + observation log
             h('div', { className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-              h('label', { htmlFor: 'discFreq', className: 'block text-[11px] font-bold text-slate-700' }, 'Frequency f: ' + lab.freq.toFixed(2) + ' Hz'),
-              h('input', { id: 'discFreq', type: 'range', min: 1, max: 20, step: 0.5, value: lab.freq, onChange: function(e) { setLab({ freq: parseFloat(e.target.value) }); }, className: 'w-full', 'aria-label': 'Frequency in hertz' }),
-              h('label', { htmlFor: 'discTen', className: 'block text-[11px] font-bold text-slate-700 mt-2' }, 'String tension T: ' + lab.tension + ' N'),
-              h('input', { id: 'discTen', type: 'range', min: 10, max: 200, step: 5, value: lab.tension, onChange: function(e) { setLab({ tension: parseInt(e.target.value, 10) }); }, className: 'w-full', 'aria-label': 'Tension in newtons' }),
-              h('p', { className: 'text-[10px] text-slate-500 italic mt-1' }, '(string mass density μ fixed at 0.01 kg/m)'),
+              h('label', { htmlFor: 'discFreq', className: 'block text-[11px] font-bold text-slate-700' }, __alloT('stem.wave.disc_freq_label', 'Frequency f: ') + lab.freq.toFixed(2) + ' Hz'),
+              h('input', { id: 'discFreq', type: 'range', min: 1, max: 20, step: 0.5, value: lab.freq, onChange: function(e) { setLab({ freq: parseFloat(e.target.value) }); }, className: 'w-full', 'aria-label': __alloT('stem.wave.ctrl_frequency_aria', 'Frequency in hertz') }),
+              h('label', { htmlFor: 'discTen', className: 'block text-[11px] font-bold text-slate-700 mt-2' }, __alloT('stem.wave.disc_tension_label', 'String tension T: ') + lab.tension + ' N'),
+              h('input', { id: 'discTen', type: 'range', min: 10, max: 200, step: 5, value: lab.tension, onChange: function(e) { setLab({ tension: parseInt(e.target.value, 10) }); }, className: 'w-full', 'aria-label': __alloT('stem.wave.aria_tension_newtons', 'Tension in newtons') }),
+              h('p', { className: 'text-[10px] text-slate-500 italic mt-1' }, __alloT('stem.wave.disc_mu_note', '(string mass density μ fixed at 0.01 kg/m)')),
               h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
-                h('button', { onClick: logObservation, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-cyan-600 text-white hover:bg-cyan-700 focus:ring-2 focus:ring-cyan-400 focus:outline-none active:scale-[0.97]' }, '📝 Log observation'),
-                h('button', { onClick: reveal, disabled: lab.discovered, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]' }, lab.discovered ? '✓ Revealed' : '💡 I see it'),
-                h('button', { onClick: reset, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-2 focus:ring-slate-400 focus:outline-none active:scale-[0.97]' }, '↻ Reset')
+                h('button', { onClick: logObservation, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-cyan-600 text-white hover:bg-cyan-700 focus:ring-2 focus:ring-cyan-400 focus:outline-none active:scale-[0.97]' }, '📝 ' + __alloT('stem.wave.btn_log_observation', 'Log observation')),
+                h('button', { onClick: reveal, disabled: lab.discovered, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]' }, lab.discovered ? '✓ ' + __alloT('stem.wave.btn_revealed', 'Revealed') : '💡 ' + __alloT('stem.wave.btn_i_see_it', 'I see it')),
+                h('button', { onClick: reset, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-2 focus:ring-slate-400 focus:outline-none active:scale-[0.97]' }, '↻ ' + __alloT('stem.wave.btn_reset', 'Reset'))
               ),
               (lab.observationsLogged || []).length > 0 && h('div', { className: 'mt-2' },
-                h('div', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, 'Your observations'),
+                h('div', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, __alloT('stem.wave.disc_your_observations', 'Your observations')),
                 h('div', { className: 'overflow-x-auto' },
                   h('table', { className: 'text-[10px] border-collapse w-full' },
                     h('thead', null, h('tr', { className: 'bg-slate-200' },
@@ -3301,12 +3301,12 @@ const d = labToolData.wave;
           ),
           // Discovery prompt — appears regardless, escalates as observations + reveal happen
           (lab.observationsLogged || []).length >= 2 && !lab.discovered && h('div', { className: 'mt-3 p-2 rounded bg-amber-50 border-l-4 border-l-amber-400 text-[12px] text-amber-900' },
-            h('strong', null, '🔍 Hypothesis time: '), 'Compare your f × λ column. Is it constant for different f values at the same tension? What about when you change tension? Form a hypothesis before clicking "I see it".'),
+            h('strong', null, '🔍 ' + __alloT('stem.wave.disc_hypothesis_label', 'Hypothesis time: ')), __alloT('stem.wave.disc_hypothesis_text', 'Compare your f × λ column. Is it constant for different f values at the same tension? What about when you change tension? Form a hypothesis before clicking "I see it".')),
           lab.discovered && h('div', { className: 'mt-3 p-3 rounded-lg bg-emerald-50 border-l-4 border-l-emerald-500' },
-            h('div', { className: 'font-black text-emerald-900 mb-1' }, '✨ The wave equation: v = f · λ'),
+            h('div', { className: 'font-black text-emerald-900 mb-1' }, '✨ ' + __alloT('stem.wave.disc_equation_label', 'The wave equation: ') + 'v = f · λ'),
             h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' },
-              'For a wave on a string, the speed v depends ONLY on the string\'s tension and mass density (v = √(T/μ)). The product f·λ always equals v. Change frequency → wavelength compensates so f·λ stays constant. Increase tension → wave speed jumps → f·λ jumps with it. Frequency × wavelength is one of the deepest constancies in physics: it shows up identically for light, sound, water waves, and quantum matter waves.'),
-            h('p', { className: 'text-[11px] text-emerald-700 mt-1 italic' }, 'You just discovered it the way Hertz did — by watching what stays constant when you change one variable at a time.')
+              __alloT('stem.wave.disc_reveal_text', 'For a wave on a string, the speed v depends ONLY on the string\'s tension and mass density (v = √(T/μ)). The product f·λ always equals v. Change frequency → wavelength compensates so f·λ stays constant. Increase tension → wave speed jumps → f·λ jumps with it. Frequency × wavelength is one of the deepest constancies in physics: it shows up identically for light, sound, water waves, and quantum matter waves.')),
+            h('p', { className: 'text-[11px] text-emerald-700 mt-1 italic' }, __alloT('stem.wave.disc_reveal_hertz', 'You just discovered it the way Hertz did — by watching what stays constant when you change one variable at a time.'))
           )
         );
       }

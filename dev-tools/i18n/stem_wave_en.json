@@ -543,5 +543,22 @@
   "db_callout_label": "Permanent hearing loss: ",
   "db_callout_text": "OSHA: 85 dB for 8 hours, 90 dB for 4 hours, etc. (each +5 dB halves safe exposure time). Wear ear protection at concerts, with power tools, at firing ranges.",
   "sec_discover_title": "Discover the wave equation",
-  "sec_discover_intro": "A string is fixed at both ends. Wiggle the controls. Watch what changes and what stays the same. Log a few observations, then try to spot the pattern. Hit \"I see it\" when you think you have the law — no peeking."
+  "sec_discover_intro": "A string is fixed at both ends. Wiggle the controls. Watch what changes and what stays the same. Log a few observations, then try to spot the pattern. Hit \"I see it\" when you think you have the law — no peeking.",
+  "aria_standing_string": "Standing wave on a string",
+  "svg_length_2m": "Length L = 2.0 m (fixed)",
+  "label_wavespeed": "Wave speed",
+  "disc_freq_label": "Frequency f: ",
+  "disc_tension_label": "String tension T: ",
+  "aria_tension_newtons": "Tension in newtons",
+  "disc_mu_note": "(string mass density μ fixed at 0.01 kg/m)",
+  "btn_log_observation": "Log observation",
+  "btn_revealed": "Revealed",
+  "btn_i_see_it": "I see it",
+  "btn_reset": "Reset",
+  "disc_your_observations": "Your observations",
+  "disc_hypothesis_label": "Hypothesis time: ",
+  "disc_hypothesis_text": "Compare your f × λ column. Is it constant for different f values at the same tension? What about when you change tension? Form a hypothesis before clicking \"I see it\".",
+  "disc_equation_label": "The wave equation: ",
+  "disc_reveal_text": "For a wave on a string, the speed v depends ONLY on the string's tension and mass density (v = √(T/μ)). The product f·λ always equals v. Change frequency → wavelength compensates so f·λ stays constant. Increase tension → wave speed jumps → f·λ jumps with it. Frequency × wavelength is one of the deepest constancies in physics: it shows up identically for light, sound, water waves, and quantum matter waves.",
+  "disc_reveal_hertz": "You just discovered it the way Hertz did — by watching what stays constant when you change one variable at a time."
 }
