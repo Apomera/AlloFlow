@@ -750,6 +750,9 @@
     // Saved poems
     var _saved = useState(function () { try { return JSON.parse(localStorage.getItem(STORAGE_POEMS) || '[]'); } catch (e) { return []; } });
     var saved = _saved[0]; var setSaved = _saved[1];
+    var _pendingDelete = useState(null); var pendingDelete = _pendingDelete[0]; var setPendingDelete = _pendingDelete[1];
+    var deleteDialogRef = useRef(null);
+    var deleteReturnFocusRef = useRef(null);
 
     // Reading-friendly text mode (carry-over pattern from LitLab)
     var _largeText = useState(function () { try { var p = JSON.parse(localStorage.getItem(STORAGE_PREFS) || '{}'); return !!p.largeText; } catch (e) { return false; } });
@@ -981,6 +984,55 @@
       setSaved(updated);
       try { localStorage.setItem(STORAGE_POEMS, JSON.stringify(updated)); } catch (e) {}
     }, [saved]);
+
+    var requestPoemDelete = useCallback(function (poem, trigger) {
+      deleteReturnFocusRef.current = trigger || document.activeElement;
+      setPendingDelete(poem);
+    }, []);
+
+    var cancelPoemDelete = useCallback(function () {
+      setPendingDelete(null);
+    }, []);
+
+    var confirmPoemDelete = useCallback(function () {
+      if (!pendingDelete) return;
+      var poem = pendingDelete;
+      deletePoem(poem.id);
+      deleteReturnFocusRef.current = document.getElementById('pt-tab-share');
+      announcePT('Deleted saved poem ' + poem.title + '.');
+      setPendingDelete(null);
+    }, [pendingDelete, deletePoem]);
+
+    useEffect(function () {
+      if (pendingDelete) {
+        var timer = setTimeout(function () {
+          var dialog = deleteDialogRef.current;
+          var cancel = dialog && dialog.querySelector('[data-pt-delete-cancel]');
+          if (cancel) cancel.focus();
+        }, 0);
+        return function () { clearTimeout(timer); };
+      }
+      if (deleteReturnFocusRef.current) {
+        var trigger = deleteReturnFocusRef.current;
+        deleteReturnFocusRef.current = null;
+        setTimeout(function () { if (trigger && trigger.isConnected && trigger.focus) trigger.focus(); }, 0);
+      }
+    }, [pendingDelete]);
+
+    function handleDeleteDialogKeyDown(ev) {
+      if (ev.key === 'Escape') {
+        ev.preventDefault();
+        cancelPoemDelete();
+        return;
+      }
+      if (ev.key !== 'Tab' || !deleteDialogRef.current) return;
+      var controls = deleteDialogRef.current.querySelectorAll('button:not([disabled])');
+      if (!controls.length) return;
+      var first = controls[0];
+      var last = controls[controls.length - 1];
+      if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
+      else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+    }
 
     // ── AI feedback ──
     var getAiFeedback = useCallback(async function () {
@@ -3366,6 +3418,28 @@
                     ),
                     // Saved poem list
                     e('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+                      pendingDelete && e('div', {
+                        role: 'presentation',
+                        onMouseDown: function (ev) { if (ev.target === ev.currentTarget) cancelPoemDelete(); },
+                        style: { position: 'fixed', inset: 0, zIndex: 95, background: 'rgba(15,23,42,0.68)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }
+                      },
+                        e('div', {
+                          ref: deleteDialogRef,
+                          role: 'alertdialog',
+                          'aria-modal': 'true',
+                          'aria-labelledby': 'pt-delete-poem-title',
+                          'aria-describedby': 'pt-delete-poem-description',
+                          onKeyDown: handleDeleteDialogKeyDown,
+                          style: { width: 'min(420px, 100%)', background: '#fff', color: '#0f172a', borderRadius: '14px', padding: '22px', boxShadow: '0 24px 64px rgba(0,0,0,0.4)' }
+                        },
+                          e('h2', { id: 'pt-delete-poem-title', style: { margin: '0 0 8px', fontSize: '20px', lineHeight: 1.3 } }, 'Delete ' + pendingDelete.title + '?'),
+                          e('p', { id: 'pt-delete-poem-description', style: { margin: '0 0 18px', color: '#475569', lineHeight: 1.55 } }, 'This permanently removes the saved poem from this device. This action cannot be undone.'),
+                          e('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: '10px', flexWrap: 'wrap' } },
+                            e('button', { type: 'button', autoFocus: true, 'data-pt-delete-cancel': 'true', onClick: cancelPoemDelete, style: { minHeight: '44px', padding: '9px 16px', border: '1px solid #94a3b8', borderRadius: '8px', background: '#fff', color: '#0f172a', fontWeight: 700, cursor: 'pointer' } }, 'Cancel'),
+                            e('button', { type: 'button', onClick: confirmPoemDelete, 'aria-label': 'Delete ' + pendingDelete.title + ' permanently', style: { minHeight: '44px', padding: '9px 16px', border: '1px solid #b91c1c', borderRadius: '8px', background: '#b91c1c', color: '#fff', fontWeight: 700, cursor: 'pointer' } }, 'Delete poem')
+                          )
+                        )
+                      ),
                       saved.map(function (p) {
                     var f = FORMS.find(function (ff) { return ff.id === p.formId; });
                     return e('div', { key: p.id, style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px' } },
@@ -3377,7 +3451,7 @@
                         ),
                         e('div', { style: { display: 'flex', gap: '6px' } },
                           e('button', { onClick: function () { loadPoem(p); }, 'aria-label': 'Load ' + p.title, style: { padding: '4px 10px', background: TEAL, color: '#fff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, 'Open'),
-                          e('button', { onClick: function () { if (confirm('Delete "' + p.title + '"?')) deletePoem(p.id); }, 'aria-label': 'Delete ' + p.title, style: { padding: '4px 10px', background: '#fff', color: '#b91c1c', border: '1px solid #fca5a5', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, 'Delete')
+                          e('button', { onClick: function (ev) { requestPoemDelete(p, ev.currentTarget); }, 'aria-label': 'Delete ' + p.title, style: { padding: '4px 10px', background: '#fff', color: '#b91c1c', border: '1px solid #fca5a5', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, 'Delete')
                         )
                       ),
                       e('pre', { style: { whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif', fontSize: '12px', color: '#374151', margin: 0, maxHeight: '120px', overflowY: 'auto', lineHeight: 1.5 } }, p.text.length > 320 ? p.text.slice(0, 320) + '…' : p.text)
