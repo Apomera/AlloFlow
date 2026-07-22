@@ -266,10 +266,10 @@
             "type": "mcq",
             "question": "A puddle disappears on a sunny day. What actually happened to the water?",
             "options": [
-              "It changed into water vapor and mixed into the air",
               "It soaked completely into the concrete",
               "The Sun destroyed the water",
-              "It turned into oxygen"
+              "It turned into oxygen",
+              "It changed into water vapor and mixed into the air"
             ],
             "correctAnswer": "It changed into water vapor and mixed into the air",
             "conceptLabel": "evaporation basics"
@@ -290,8 +290,8 @@
             "type": "mcq",
             "question": "Why does condensation happen high in the sky?",
             "options": [
-              "Cold air cannot hold as much water vapor as warm air",
               "The sky pushes water droplets together",
+              "Cold air cannot hold as much water vapor as warm air",
               "There is no gravity high in the sky",
               "Clouds attract water from the ocean"
             ],
@@ -302,9 +302,9 @@
             "type": "mcq",
             "question": "Which of these is NOT a form of precipitation?",
             "options": [
-              "Fog sitting over a field",
               "Snow falling on a mountain",
               "Hail bouncing off a roof",
+              "Fog sitting over a field",
               "Sleet hitting a window"
             ],
             "correctAnswer": "Fog sitting over a field",

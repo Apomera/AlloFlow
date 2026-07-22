@@ -255,9 +255,9 @@
             "type": "mcq",
             "question": "Why did geologists reject Wegener's continental drift for decades?",
             "options": [
-              "He could not explain what force would move the continents",
               "His fossil evidence turned out to be faked",
               "The coastlines do not actually fit together",
+              "He could not explain what force would move the continents",
               "He was not a trained scientist"
             ],
             "correctAnswer": "He could not explain what force would move the continents",
@@ -267,10 +267,10 @@
             "type": "mcq",
             "question": "Identical Mesosaurus fossils appear in South America and Africa. Why is that strong evidence?",
             "options": [
-              "Mesosaurus lived in fresh water and could not have crossed an ocean",
               "Fossils are always found on exactly one continent",
               "Mesosaurus was a strong ocean swimmer",
-              "The fossils are the same age as the Atlantic Ocean"
+              "The fossils are the same age as the Atlantic Ocean",
+              "Mesosaurus lived in fresh water and could not have crossed an ocean"
             ],
             "correctAnswer": "Mesosaurus lived in fresh water and could not have crossed an ocean",
             "conceptLabel": "fossil evidence"
@@ -291,8 +291,8 @@
             "type": "mcq",
             "question": "What finally provided the MECHANISM Wegener was missing?",
             "options": [
-              "Sea-floor spreading discovered by mapping the ocean bottom",
               "Better maps of the continents' coastlines",
+              "Sea-floor spreading discovered by mapping the ocean bottom",
               "Finding more matching fossils on land",
               "Measuring the temperature of Earth's core"
             ],
@@ -303,10 +303,10 @@
             "type": "mcq",
             "question": "About how fast do tectonic plates move?",
             "options": [
-              "A few centimeters a year — about as fast as fingernails grow",
               "Several meters a day",
               "Only during earthquakes, then not at all",
-              "About one kilometer per year"
+              "About one kilometer per year",
+              "A few centimeters a year — about as fast as fingernails grow"
             ],
             "correctAnswer": "A few centimeters a year — about as fast as fingernails grow",
             "conceptLabel": "rate of plate motion"

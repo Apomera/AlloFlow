@@ -257,9 +257,9 @@
             "type": "mcq",
             "question": "What is the real difference between ice and liquid water?",
             "options": [
-              "How fast the particles are moving",
               "They are made of completely different particles",
               "Ice has more particles packed inside it",
+              "How fast the particles are moving",
               "Water has energy and ice has none at all"
             ],
             "correctAnswer": "How fast the particles are moving",
@@ -269,10 +269,10 @@
             "type": "mcq",
             "question": "Why does a gas fill its whole container while a liquid does not?",
             "options": [
-              "Gas particles are far apart and bounce around the entire space",
               "Gas is lighter than the container",
               "Liquids are attracted to the bottom by magnetism",
-              "Gas particles are much larger than liquid particles"
+              "Gas particles are much larger than liquid particles",
+              "Gas particles are far apart and bounce around the entire space"
             ],
             "correctAnswer": "Gas particles are far apart and bounce around the entire space",
             "conceptLabel": "gas behavior"
@@ -293,8 +293,8 @@
             "type": "mcq",
             "question": "An ice cube melts completely in a sealed container. What happens to its mass?",
             "options": [
-              "It stays exactly the same",
               "It gets lighter because ice is heavier",
+              "It stays exactly the same",
               "It gets heavier because water is denser",
               "The mass disappears with the shape"
             ],
@@ -305,10 +305,10 @@
             "type": "mcq",
             "question": "Water droplets appear on the outside of a cold glass on a hot day. What happened?",
             "options": [
-              "Water vapor in the air condensed on the cold surface",
               "Water leaked out through tiny holes in the glass",
               "The glass melted slightly and dripped",
-              "The ice inside evaporated through the glass"
+              "The ice inside evaporated through the glass",
+              "Water vapor in the air condensed on the cold surface"
             ],
             "correctAnswer": "Water vapor in the air condensed on the cold surface",
             "conceptLabel": "condensation"

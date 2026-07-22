@@ -271,10 +271,10 @@
             "type": "mcq",
             "question": "A muscle cell contains far more mitochondria than a skin cell. Why?",
             "options": [
-              "Muscle cells need much more usable energy to contract",
               "Muscle cells are larger so they need more of every part",
               "Mitochondria help muscles hold their shape",
-              "Skin cells cannot make mitochondria"
+              "Skin cells cannot make mitochondria",
+              "Muscle cells need much more usable energy to contract"
             ],
             "correctAnswer": "Muscle cells need much more usable energy to contract",
             "conceptLabel": "mitochondria function"
@@ -295,8 +295,8 @@
             "type": "mcq",
             "question": "A houseplant droops after a week without water. Which part best explains the drooping?",
             "options": [
-              "The central vacuole emptied, so the cells lost their firmness",
               "The cell walls dissolved without water",
+              "The central vacuole emptied, so the cells lost their firmness",
               "The chloroplasts stopped making food",
               "The nucleus shut down to save energy"
             ],
@@ -307,9 +307,9 @@
             "type": "mcq",
             "question": "Why is the cell membrane described as 'selectively permeable'?",
             "options": [
-              "It lets some substances through while blocking others",
               "It only opens at certain times of day",
               "It can be seen only with a microscope",
+              "It lets some substances through while blocking others",
               "It permits everything in but nothing out"
             ],
             "correctAnswer": "It lets some substances through while blocking others",

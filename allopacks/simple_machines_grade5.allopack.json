@@ -288,8 +288,8 @@
             "type": "mcq",
             "question": "What is the fulcrum of a lever?",
             "options": [
-              "The fixed point the bar turns on",
               "The heavy object being lifted",
+              "The fixed point the bar turns on",
               "The force you apply",
               "The long end of the bar"
             ],
@@ -300,9 +300,9 @@
             "type": "mcq",
             "question": "A screw is really which simple machine in disguise?",
             "options": [
-              "An inclined plane wrapped around a post",
               "A lever bent into a circle",
               "Two pulleys joined together",
+              "An inclined plane wrapped around a post",
               "A wedge with a wheel attached"
             ],
             "correctAnswer": "An inclined plane wrapped around a post",
@@ -312,10 +312,10 @@
             "type": "mcq",
             "question": "Why is pushing a heavy box up a ramp easier than lifting it straight up?",
             "options": [
-              "You use less force, but you travel a longer distance",
               "The box weighs less on a ramp",
               "Ramps remove friction completely",
-              "Gravity does not act on ramps"
+              "Gravity does not act on ramps",
+              "You use less force, but you travel a longer distance"
             ],
             "correctAnswer": "You use less force, but you travel a longer distance",
             "conceptLabel": "force distance trade"
@@ -336,9 +336,9 @@
             "type": "mcq",
             "question": "What does friction do in every real machine?",
             "options": [
-              "Turns some of your effort into heat, so a little is always lost",
               "Increases the total work the machine can do",
               "Only matters in machines with wheels",
+              "Turns some of your effort into heat, so a little is always lost",
               "Makes machines completely stop working"
             ],
             "correctAnswer": "Turns some of your effort into heat, so a little is always lost",

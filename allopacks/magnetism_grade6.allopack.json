@@ -264,9 +264,9 @@
             "type": "mcq",
             "question": "You bring the north poles of two magnets together. What happens?",
             "options": [
-              "They push each other apart",
               "They pull together strongly",
               "Nothing — poles only matter for compasses",
+              "They push each other apart",
               "One pole flips to become a south pole"
             ],
             "correctAnswer": "They push each other apart",
@@ -276,10 +276,10 @@
             "type": "mcq",
             "question": "You cut a bar magnet exactly in half. What do you have?",
             "options": [
-              "Two complete magnets, each with a north and a south pole",
               "One north-only magnet and one south-only magnet",
               "Two pieces of ordinary metal with no magnetism",
-              "One magnet twice as strong and one dead piece"
+              "One magnet twice as strong and one dead piece",
+              "Two complete magnets, each with a north and a south pole"
             ],
             "correctAnswer": "Two complete magnets, each with a north and a south pole",
             "conceptLabel": "no monopoles"
@@ -300,8 +300,8 @@
             "type": "mcq",
             "question": "The needle end of a compass that points toward geographic north is attracted to what?",
             "options": [
-              "A magnetic SOUTH pole — because opposite poles attract",
               "A magnetic north pole, matching the name",
+              "A magnetic SOUTH pole — because opposite poles attract",
               "The North Star's gravity",
               "Nothing — compasses use gravity, not magnetism"
             ],
@@ -312,10 +312,10 @@
             "type": "mcq",
             "question": "What is the single biggest practical advantage of an electromagnet over a permanent magnet?",
             "options": [
-              "It can be switched off and on",
               "It never loses strength over time",
               "It works without any metal nearby",
-              "It attracts every material equally"
+              "It attracts every material equally",
+              "It can be switched off and on"
             ],
             "correctAnswer": "It can be switched off and on",
             "conceptLabel": "electromagnet advantage"

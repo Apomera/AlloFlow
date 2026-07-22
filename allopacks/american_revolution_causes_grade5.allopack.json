@@ -264,8 +264,8 @@
             "type": "mcq",
             "question": "What did 'no taxation without representation' actually mean?",
             "options": [
-              "Colonists objected to being taxed by a body they had elected nobody to",
               "Colonists refused to pay any taxes at all, ever",
+              "Colonists objected to being taxed by a body they had elected nobody to",
               "Colonists wanted lower taxes than people in Britain",
               "Colonists wanted the king to collect taxes personally"
             ],
@@ -276,9 +276,9 @@
             "type": "mcq",
             "question": "Which British action most convinced OTHER colonies that Massachusetts' fight was their fight too?",
             "options": [
-              "The Intolerable Acts, which closed Boston's port and suspended self-government",
               "The repeal of the Stamp Act",
               "The Townshend Acts on glass and paper",
+              "The Intolerable Acts, which closed Boston's port and suspended self-government",
               "The end of the French and Indian War"
             ],
             "correctAnswer": "The Intolerable Acts, which closed Boston's port and suspended self-government",
@@ -288,10 +288,10 @@
             "type": "mcq",
             "question": "John Adams defended the British soldiers accused in the Boston Massacre. What does that tell us about him?",
             "options": [
-              "He believed even people he opposed deserved a fair trial",
               "He secretly supported British rule",
               "He was ordered to do it by Parliament",
-              "He did not believe the shooting had happened"
+              "He did not believe the shooting had happened",
+              "He believed even people he opposed deserved a fair trial"
             ],
             "correctAnswer": "He believed even people he opposed deserved a fair trial",
             "conceptLabel": "adams and fair trials"
@@ -300,8 +300,8 @@
             "type": "mcq",
             "question": "What was a boycott, and why was it an effective colonial weapon?",
             "options": [
-              "Refusing to buy British goods — it worked because huge numbers of ordinary people joined",
               "A tax colonists placed on British ships",
+              "Refusing to buy British goods — it worked because huge numbers of ordinary people joined",
               "A law passed by the Continental Congress",
               "A type of militia drill practiced on town greens"
             ],

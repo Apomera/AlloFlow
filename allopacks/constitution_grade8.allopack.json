@@ -315,8 +315,8 @@
             "type": "mcq",
             "question": "Why did the framers deliberately design a government that acts slowly?",
             "options": [
-              "So that no single group could seize control quickly or act unchecked",
               "Because communication in the 1780s was slow anyway",
+              "So that no single group could seize control quickly or act unchecked",
               "To give states time to ignore federal laws",
               "Because they expected the country to stay small"
             ],
@@ -327,9 +327,9 @@
             "type": "mcq",
             "question": "Congress passes a bill and the President vetoes it. What can Congress do next?",
             "options": [
-              "Override the veto with a two-thirds vote in both chambers",
               "Ask the Supreme Court to sign the bill instead",
               "Nothing — a veto is final",
+              "Override the veto with a two-thirds vote in both chambers",
               "Send it to the states for ratification"
             ],
             "correctAnswer": "Override the veto with a two-thirds vote in both chambers",
@@ -339,10 +339,10 @@
             "type": "mcq",
             "question": "What was the main weakness of the Articles of Confederation?",
             "options": [
-              "The national government could not tax or enforce its own laws",
               "It gave the President too much military power",
               "It created too many federal courts",
-              "It required unanimous state elections"
+              "It required unanimous state elections",
+              "The national government could not tax or enforce its own laws"
             ],
             "correctAnswer": "The national government could not tax or enforce its own laws",
             "conceptLabel": "articles weakness"
@@ -363,9 +363,9 @@
             "type": "mcq",
             "question": "Which statement about the original Constitution is accurate?",
             "options": [
-              "It counted enslaved people as three-fifths of a person for representation while denying them rights",
               "It guaranteed voting rights to all adult citizens",
               "It immediately outlawed slavery in every state",
+              "It counted enslaved people as three-fifths of a person for representation while denying them rights",
               "It gave women the same political rights as men"
             ],
             "correctAnswer": "It counted enslaved people as three-fifths of a person for representation while denying them rights",

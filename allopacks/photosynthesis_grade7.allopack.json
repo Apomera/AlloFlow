@@ -297,8 +297,8 @@
             "type": "mcq",
             "question": "Why do leaves look green?",
             "options": [
-              "Chlorophyll reflects green light instead of absorbing it",
               "Chlorophyll absorbs green light most strongly",
+              "Chlorophyll reflects green light instead of absorbing it",
               "Green is the color of glucose inside the leaf",
               "Leaves are dyed green by minerals from the soil"
             ],
@@ -309,9 +309,9 @@
             "type": "mcq",
             "question": "Do plants perform cellular respiration?",
             "options": [
-              "Yes — day and night, using the sugar they made",
               "No — respiration is only for animals",
               "Only at night, when photosynthesis stops",
+              "Yes — day and night, using the sugar they made",
               "Only when they are sick or dying"
             ],
             "correctAnswer": "Yes — day and night, using the sugar they made",
@@ -321,10 +321,10 @@
             "type": "mcq",
             "question": "Which list shows ONLY reactants of photosynthesis?",
             "options": [
-              "Carbon dioxide, water, light energy",
               "Glucose, oxygen, water",
               "Carbon dioxide, glucose, chlorophyll",
-              "Oxygen, light energy, soil minerals"
+              "Oxygen, light energy, soil minerals",
+              "Carbon dioxide, water, light energy"
             ],
             "correctAnswer": "Carbon dioxide, water, light energy",
             "conceptLabel": "reactants and products"
@@ -333,8 +333,8 @@
             "type": "mcq",
             "question": "A plant is kept in a dark closet with plenty of water. What happens to photosynthesis?",
             "options": [
-              "It stops, because light energy is a required ingredient",
               "It continues at the same rate using stored sugar",
+              "It stops, because light energy is a required ingredient",
               "It speeds up, because the plant is trying harder",
               "It switches to using soil minerals instead of light"
             ],

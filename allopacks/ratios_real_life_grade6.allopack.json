@@ -372,8 +372,8 @@
             "type": "mcq",
             "question": "8 apples cost $4.00. What is the unit rate?",
             "options": [
-              "$0.50 per apple",
               "$2.00 per apple",
+              "$0.50 per apple",
               "8 apples per dollar",
               "$32.00 per apple"
             ],
@@ -384,9 +384,9 @@
             "type": "mcq",
             "question": "Which ratio is equivalent to 2:3?",
             "options": [
-              "10:15",
               "4:5",
               "3:2",
+              "10:15",
               "2:6"
             ],
             "correctAnswer": "10:15",
@@ -396,10 +396,10 @@
             "type": "mcq",
             "question": "A recipe uses a 3:1 ratio of water to rice. If you use 6 cups of water, how much rice do you need?",
             "options": [
-              "2 cups",
               "18 cups",
               "3 cups",
-              "6 cups"
+              "6 cups",
+              "2 cups"
             ],
             "correctAnswer": "2 cups",
             "conceptLabel": "scaling ratios"
@@ -408,8 +408,8 @@
             "type": "mcq",
             "question": "A 10-oz bottle costs $2.50 and a 16-oz bottle costs $4.32. Which is the better buy?",
             "options": [
-              "The 10-oz bottle, at $0.25 per ounce versus $0.27",
               "The 16-oz bottle, because bigger is always cheaper per unit",
+              "The 10-oz bottle, at $0.25 per ounce versus $0.27",
               "They cost exactly the same per ounce",
               "You cannot compare bottles of different sizes"
             ],

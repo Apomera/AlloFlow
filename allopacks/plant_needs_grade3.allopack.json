@@ -238,8 +238,8 @@
             "type": "mcq",
             "question": "What wakes a sleeping seed up so it can grow?",
             "options": [
-              "Water",
               "Music",
+              "Water",
               "A blanket",
               "Being held"
             ],
@@ -250,9 +250,9 @@
             "type": "mcq",
             "question": "Which part of a plant grows DOWN to drink water?",
             "options": [
-              "The root",
               "The leaf",
               "The stem",
+              "The root",
               "The flower"
             ],
             "correctAnswer": "The root",
@@ -262,10 +262,10 @@
             "type": "mcq",
             "question": "A plant is kept in a dark closet with plenty of water. What happens?",
             "options": [
-              "It grows pale and weak because it cannot make food without light",
               "It grows faster because it is resting",
               "It turns bright green and healthy",
-              "Nothing changes at all"
+              "Nothing changes at all",
+              "It grows pale and weak because it cannot make food without light"
             ],
             "correctAnswer": "It grows pale and weak because it cannot make food without light",
             "conceptLabel": "plants need sunlight"
@@ -286,9 +286,9 @@
             "type": "mcq",
             "question": "What gas do plants let out that people need to breathe?",
             "options": [
-              "Oxygen",
               "Smoke",
               "Water",
+              "Oxygen",
               "Sunlight"
             ],
             "correctAnswer": "Oxygen",

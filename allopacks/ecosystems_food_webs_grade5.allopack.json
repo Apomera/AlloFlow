@@ -274,9 +274,9 @@
             "type": "mcq",
             "question": "Trace the energy in a hawk's body far enough back. Where did it originally come from?",
             "options": [
-              "The Sun",
               "The soil",
               "The hawk's own body heat",
+              "The Sun",
               "Water in the ecosystem"
             ],
             "correctAnswer": "The Sun",
@@ -286,10 +286,10 @@
             "type": "mcq",
             "question": "Why does an ecosystem need decomposers?",
             "options": [
-              "They return nutrients from dead material back to the soil for producers",
               "They keep predator populations from growing too large",
               "They make food from sunlight when plants cannot",
-              "They provide most of the energy for consumers"
+              "They provide most of the energy for consumers",
+              "They return nutrients from dead material back to the soil for producers"
             ],
             "correctAnswer": "They return nutrients from dead material back to the soil for producers",
             "conceptLabel": "decomposer role"
@@ -310,8 +310,8 @@
             "type": "mcq",
             "question": "A disease wipes out most of the mice in a meadow. Predict the most likely chain reaction.",
             "options": [
-              "Hawk numbers drop and seed-eating insects may increase",
               "Nothing else changes, since only mice were affected",
+              "Hawk numbers drop and seed-eating insects may increase",
               "Grass immediately dies without mice to eat it",
               "Decomposers disappear because they only eat mice"
             ],
@@ -322,10 +322,10 @@
             "type": "mcq",
             "question": "What is the difference between a food chain and a food web?",
             "options": [
-              "A chain shows one path; a web shows all the connections at once",
               "A chain is for land and a web is for water",
               "A web only includes producers and decomposers",
-              "There is no difference — they are two names for one thing"
+              "There is no difference — they are two names for one thing",
+              "A chain shows one path; a web shows all the connections at once"
             ],
             "correctAnswer": "A chain shows one path; a web shows all the connections at once",
             "conceptLabel": "chain vs web"

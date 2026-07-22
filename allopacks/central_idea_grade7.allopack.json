@@ -277,8 +277,8 @@
             "type": "mcq",
             "question": "What is the difference between a claim and evidence?",
             "options": [
-              "A claim is what someone wants you to accept; evidence is the specific proof for it",
               "A claim is always false and evidence is always true",
+              "A claim is what someone wants you to accept; evidence is the specific proof for it",
               "A claim is longer than evidence",
               "They are two words for the same thing"
             ],
@@ -289,9 +289,9 @@
             "type": "mcq",
             "question": "Passage: 'The garden club planted 200 trees downtown. Within five years, summer street temperatures there dropped by three degrees.' Which sentence is the best EVIDENCE that the trees cooled the streets?",
             "options": [
-              "'Within five years, summer street temperatures there dropped by three degrees'",
               "'The garden club planted 200 trees downtown'",
               "Neither sentence is evidence",
+              "'Within five years, summer street temperatures there dropped by three degrees'",
               "Both sentences are claims"
             ],
             "correctAnswer": "'Within five years, summer street temperatures there dropped by three degrees'",
@@ -301,10 +301,10 @@
             "type": "mcq",
             "question": "A claim states 'the new library hours help working families.' Which fact is NOT relevant evidence, even though it is true?",
             "options": [
-              "The library building was repainted last spring",
               "Evening visits by parents rose 60% after the hours changed",
               "A survey shows most weekday visitors now come after 5 p.m.",
-              "Checkouts of children's books increased on weeknights"
+              "Checkouts of children's books increased on weeknights",
+              "The library building was repainted last spring"
             ],
             "correctAnswer": "The library building was repainted last spring",
             "conceptLabel": "relevance of evidence"
@@ -313,8 +313,8 @@
             "type": "mcq",
             "question": "Which answer CITES evidence properly?",
             "options": [
-              "In paragraph two, the author writes that 'attendance doubled,' which shows the program was popular",
               "The text basically says people liked it",
+              "In paragraph two, the author writes that 'attendance doubled,' which shows the program was popular",
               "I just feel like the program worked",
               "Everyone knows programs like this are popular"
             ],

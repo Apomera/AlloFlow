@@ -375,10 +375,10 @@
             "type": "mcq",
             "question": "What is the test for whether a relationship is proportional?",
             "options": [
-              "Output divided by input is the same for every pair",
               "The numbers always go up",
               "The two quantities are measured in the same units",
-              "One quantity is always larger than the other"
+              "One quantity is always larger than the other",
+              "Output divided by input is the same for every pair"
             ],
             "correctAnswer": "Output divided by input is the same for every pair",
             "conceptLabel": "proportionality test"
@@ -399,8 +399,8 @@
             "type": "mcq",
             "question": "A proportional relationship, graphed, always looks like what?",
             "options": [
-              "A straight line passing through the origin (0, 0)",
               "A curve that bends upward",
+              "A straight line passing through the origin (0, 0)",
               "A straight line crossing the y-axis above zero",
               "A horizontal line"
             ],
@@ -411,9 +411,9 @@
             "type": "mcq",
             "question": "Table: (2, 9), (4, 18), (6, 27). Divide to check — is it proportional, and what is the constant?",
             "options": [
-              "Yes, constant is 4.5",
               "Yes, constant is 2",
               "No, it is not proportional",
+              "Yes, constant is 4.5",
               "Yes, constant is 9"
             ],
             "correctAnswer": "Yes, constant is 4.5",

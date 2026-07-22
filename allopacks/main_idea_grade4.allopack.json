@@ -240,10 +240,10 @@
             "type": "mcq",
             "question": "What is the difference between a topic and a main idea?",
             "options": [
-              "A topic is a word or phrase; a main idea is a full sentence about that topic",
               "A topic is longer than a main idea",
               "A topic is always in the first sentence",
-              "There is no real difference"
+              "There is no real difference",
+              "A topic is a word or phrase; a main idea is a full sentence about that topic"
             ],
             "correctAnswer": "A topic is a word or phrase; a main idea is a full sentence about that topic",
             "conceptLabel": "topic vs main idea"
@@ -264,8 +264,8 @@
             "type": "mcq",
             "question": "A main idea that is never written in the text is called what?",
             "options": [
-              "Implied",
               "Stated",
+              "Implied",
               "Irrelevant",
               "Summarized"
             ],
@@ -276,9 +276,9 @@
             "type": "mcq",
             "question": "You picked a main idea, but one detail in the paragraph does not support it. What does that most likely mean?",
             "options": [
-              "Your main idea may be too narrow — reconsider it",
               "The author made a mistake",
               "That detail should be ignored completely",
+              "Your main idea may be too narrow — reconsider it",
               "The paragraph has two topics and cannot be summarized"
             ],
             "correctAnswer": "Your main idea may be too narrow — reconsider it",

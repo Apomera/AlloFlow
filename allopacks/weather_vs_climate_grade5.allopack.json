@@ -206,8 +206,8 @@
             "type": "mcq",
             "question": "Which statement describes CLIMATE?",
             "options": [
-              "Winters in northern Maine are usually long and snowy",
               "It snowed eleven inches last Tuesday",
+              "Winters in northern Maine are usually long and snowy",
               "The forecast calls for freezing rain tonight",
               "There is a blizzard warning for the weekend"
             ],
@@ -218,9 +218,9 @@
             "type": "mcq",
             "question": "Why can forecasters predict weather only about a week ahead?",
             "options": [
-              "The atmosphere is chaotic, so tiny differences grow quickly",
               "Satellites can only see one week into the future",
               "Weather does not follow any rules at all",
+              "The atmosphere is chaotic, so tiny differences grow quickly",
               "Computers are not fast enough to calculate further"
             ],
             "correctAnswer": "The atmosphere is chaotic, so tiny differences grow quickly",
@@ -230,10 +230,10 @@
             "type": "mcq",
             "question": "Someone says: 'It was freezing this morning, so global warming must be fake.' What is wrong with that reasoning?",
             "options": [
-              "One day of weather cannot describe a decades-long climate pattern",
               "Nothing is wrong — cold days do disprove warming",
               "Mornings are always colder, so they never count",
-              "Global warming only affects summer temperatures"
+              "Global warming only affects summer temperatures",
+              "One day of weather cannot describe a decades-long climate pattern"
             ],
             "correctAnswer": "One day of weather cannot describe a decades-long climate pattern",
             "conceptLabel": "single event vs pattern"
@@ -242,8 +242,8 @@
             "type": "mcq",
             "question": "A single record-breaking heat wave happens. What does it prove about climate on its own?",
             "options": [
-              "Very little — scientists look for changes in frequency and intensity over decades",
               "It proves the climate has changed permanently",
+              "Very little — scientists look for changes in frequency and intensity over decades",
               "It proves climate scientists were wrong",
               "It proves nothing about weather either"
             ],

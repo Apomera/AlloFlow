@@ -365,8 +365,8 @@
             "type": "mcq",
             "question": "What does PERIMETER measure?",
             "options": [
-              "The distance all the way around the outside of a shape",
               "The space covered inside a shape",
+              "The distance all the way around the outside of a shape",
               "How heavy a shape is",
               "The longest side of a shape"
             ],
@@ -377,9 +377,9 @@
             "type": "mcq",
             "question": "A rectangle is 6 meters by 4 meters. What is its area?",
             "options": [
-              "24 square meters",
               "20 meters",
               "10 square meters",
+              "24 square meters",
               "24 meters"
             ],
             "correctAnswer": "24 square meters",
@@ -389,10 +389,10 @@
             "type": "mcq",
             "question": "Why is area measured in SQUARE units?",
             "options": [
-              "Because you are counting how many unit squares cover the shape",
               "Because rectangles have four square corners",
               "Because you always multiply two numbers",
-              "It is just a naming tradition with no reason"
+              "It is just a naming tradition with no reason",
+              "Because you are counting how many unit squares cover the shape"
             ],
             "correctAnswer": "Because you are counting how many unit squares cover the shape",
             "conceptLabel": "why square units"
@@ -413,9 +413,9 @@
             "type": "mcq",
             "question": "Rectangle A is 5 by 5. Rectangle B is 1 by 9. What is true about them?",
             "options": [
-              "They have the same perimeter but A has much more area",
               "They have the same area but different perimeters",
               "B has more area because it is longer",
+              "They have the same perimeter but A has much more area",
               "They are identical in every way"
             ],
             "correctAnswer": "They have the same perimeter but A has much more area",

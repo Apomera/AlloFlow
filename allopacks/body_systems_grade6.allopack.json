@@ -270,9 +270,9 @@
             "type": "mcq",
             "question": "Which system takes oxygen out of the air and passes it to the blood?",
             "options": [
-              "The respiratory system",
               "The digestive system",
               "The skeletal system",
+              "The respiratory system",
               "The muscular system"
             ],
             "correctAnswer": "The respiratory system",
@@ -282,10 +282,10 @@
             "type": "mcq",
             "question": "The circulatory system delivers two things to your cells. What are they?",
             "options": [
-              "Oxygen from the lungs and nutrients from the digestive system",
               "Oxygen and bones",
               "Nerve signals and muscles",
-              "Water and carbon dioxide only"
+              "Water and carbon dioxide only",
+              "Oxygen from the lungs and nutrients from the digestive system"
             ],
             "correctAnswer": "Oxygen from the lungs and nutrients from the digestive system",
             "conceptLabel": "circulatory teamwork"
@@ -306,8 +306,8 @@
             "type": "mcq",
             "question": "Why is the body called 'a system of systems'?",
             "options": [
-              "Because the systems constantly work together and hand materials to each other",
               "Because each system works completely alone",
+              "Because the systems constantly work together and hand materials to each other",
               "Because there is one giant system with no parts",
               "Because the systems compete with each other"
             ],
@@ -318,10 +318,10 @@
             "type": "mcq",
             "question": "When you sprint, your breathing AND your heartbeat both speed up. Why do BOTH change together?",
             "options": [
-              "Your muscles need more oxygen, so respiratory and circulatory systems ramp up together",
               "The two systems are actually the same system",
               "Only the heart changes; breathing stays the same",
-              "The skeletal system forces them to"
+              "The skeletal system forces them to",
+              "Your muscles need more oxygen, so respiratory and circulatory systems ramp up together"
             ],
             "correctAnswer": "Your muscles need more oxygen, so respiratory and circulatory systems ramp up together",
             "conceptLabel": "systems interaction"

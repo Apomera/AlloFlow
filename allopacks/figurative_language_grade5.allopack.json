@@ -279,10 +279,10 @@
             "type": "mcq",
             "question": "\"The old house wheezed every time the wind blew.\" Which tool is this, and why?",
             "options": [
-              "Personification — a house cannot wheeze, but people can",
               "Simile — it compares the house to a person using like",
               "Hyperbole — it exaggerates how windy it was",
-              "Idiom — wheezing house is a common saying"
+              "Idiom — wheezing house is a common saying",
+              "Personification — a house cannot wheeze, but people can"
             ],
             "correctAnswer": "Personification — a house cannot wheeze, but people can",
             "conceptLabel": "identify personification"
@@ -303,8 +303,8 @@
             "type": "mcq",
             "question": "\"My little sister is a tornado in the morning.\" What does this actually tell you about her?",
             "options": [
-              "She is loud, fast, and leaves a mess behind her",
               "She is dangerous and should be avoided",
+              "She is loud, fast, and leaves a mess behind her",
               "She is interested in weather",
               "She spins in circles when she wakes up"
             ],
@@ -315,9 +315,9 @@
             "type": "mcq",
             "question": "Why are idioms especially hard for someone learning a new language?",
             "options": [
-              "Their meaning cannot be worked out from the words themselves",
               "They use bigger vocabulary words than other sentences",
               "They are always spoken very quickly",
+              "Their meaning cannot be worked out from the words themselves",
               "They only appear in old books"
             ],
             "correctAnswer": "Their meaning cannot be worked out from the words themselves",

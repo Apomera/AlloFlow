@@ -387,8 +387,8 @@
             "type": "mcq",
             "question": "In y = mx + b, what does m represent?",
             "options": [
-              "The slope — how fast y changes for each step in x",
               "The starting value when x is zero",
+              "The slope — how fast y changes for each step in x",
               "The point where the line ends",
               "The number of solutions"
             ],
@@ -399,9 +399,9 @@
             "type": "mcq",
             "question": "In y = mx + b, what does b represent?",
             "options": [
-              "The y-intercept — the value of y when x is zero",
               "The steepness of the line",
               "How far the line goes to the right",
+              "The y-intercept — the value of y when x is zero",
               "Always zero"
             ],
             "correctAnswer": "The y-intercept — the value of y when x is zero",
@@ -411,10 +411,10 @@
             "type": "mcq",
             "question": "A line falls from left to right on a graph. What must be true?",
             "options": [
-              "Its slope is negative",
               "Its slope is positive",
               "Its slope is zero",
-              "It has no y-intercept"
+              "It has no y-intercept",
+              "Its slope is negative"
             ],
             "correctAnswer": "Its slope is negative",
             "conceptLabel": "sign of slope"
@@ -435,9 +435,9 @@
             "type": "mcq",
             "question": "A taxi charges $3 to start plus $2 per mile. Which equation models the total cost y for x miles?",
             "options": [
-              "y = 2x + 3",
               "y = 3x + 2",
               "y = 5x",
+              "y = 2x + 3",
               "y = 2x - 3"
             ],
             "correctAnswer": "y = 2x + 3",
