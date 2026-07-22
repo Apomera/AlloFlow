@@ -1787,12 +1787,16 @@
       }, React.createElement('thead', null, React.createElement('tr', {
         className: 'border-b border-slate-200'
       }, React.createElement('th', {
+        scope: 'col',
         className: 'text-left py-1.5 text-slate-600 font-medium'
       }, 'Date'), React.createElement('th', {
+        scope: 'col',
         className: 'text-right py-1.5 text-blue-600 font-medium'
       }, 'Word Sounds'), React.createElement('th', {
+        scope: 'col',
         className: 'text-right py-1.5 text-purple-600 font-medium'
       }, 'Quiz Avg'), React.createElement('th', {
+        scope: 'col',
         className: 'text-right py-1.5 text-emerald-600 font-medium'
       }, 'Fluency'))), React.createElement('tbody', null, ...insights.growthTrajectory.map((row, idx) => React.createElement('tr', {
         key: idx,
