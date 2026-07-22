@@ -102,7 +102,7 @@ window.StemLab = window.StemLab || {
       '.playlab-field-title{margin:0;color:#f8fafc;font-size:14px;font-weight:900;line-height:1.2}',
       '.playlab-chip-row{display:flex;gap:6px;flex-wrap:wrap}',
       '.playlab-chip{border:1px solid #94a3b8;background:rgba(15,23,42,.86);color:#f8fafc;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:800}',
-      '.playlab-field-canvas{position:relative;z-index:1;width:100%;max-width:720px;height:auto;border-radius:14px;border:1px solid #94a3b8;background:#0f172a;cursor:pointer;touch-action:none;display:block;margin:0 auto;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}',
+      '.playlab-field-canvas{position:relative;z-index:1;width:100%;max-width:720px;height:auto;aspect-ratio:2/1;border-radius:14px;border:1px solid #94a3b8;background:#0f172a;cursor:pointer;touch-action:none;display:block;margin:0 auto;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}',
       '.playlab-run-rack{margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}',
       '.playlab-run-button{padding:11px 18px;min-height:42px;border-radius:999px;cursor:pointer;border:1px solid #86efac;background:linear-gradient(135deg,#86efac,#22c55e);color:#052e16;font-size:14px;font-weight:900;box-shadow:0 10px 22px rgba(16,185,129,.22)}',
       '.playlab-run-button:disabled{cursor:wait;background:#334155;color:#e2e8f0;box-shadow:none;border-color:#94a3b8}',
@@ -3032,8 +3032,8 @@ window.StemLab = window.StemLab || {
         if (canvas._plDpr === dpr && canvas._plLogicalW === logicalW && canvas._plLogicalH === logicalH) return;
         canvas.width = Math.round(logicalW * dpr);
         canvas.height = Math.round(logicalH * dpr);
-        canvas.style.width = logicalW + 'px';
-        canvas.style.height = logicalH + 'px';
+        canvas.style.width = '100%';
+        canvas.style.height = 'auto';
         canvas._plDpr = dpr;
         canvas._plLogicalW = logicalW;
         canvas._plLogicalH = logicalH;
@@ -4569,10 +4569,8 @@ window.StemLab = window.StemLab || {
               ),
               h('canvas', {
               ref: canvasRef,
-              // width/height are set by _plSetupHiDPI on first effect run.
-              // Keep small placeholder values so the element has dimensions
-              // before the effect fires (prevents 1-frame layout jump).
-              width: 720, height: 360,
+              // The 2:1 CSS aspect ratio reserves space before HiDPI setup.
+              // The effect sets the internal 720x360 drawing buffer only.
               role: 'img', tabIndex: 0, 'data-pl-focusable': 'true',
               'data-playlab-canvas': 'true',
               className: 'playlab-field-canvas',
