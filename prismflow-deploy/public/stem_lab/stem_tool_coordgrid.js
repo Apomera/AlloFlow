@@ -730,8 +730,8 @@ window.StemLab = window.StemLab || {
         var by = toSvg(p.y, 'y') + 8;
         return h(React.Fragment, { key: 'qb' + i },
           h('rect', { x: bx - 2, y: by - 3, width: q.length * 7 + 8, height: 12, rx: 3, fill: qColor, opacity: 0.85 }),
-          h('text', { x: bx + 2, y: by + 6, fill: '#fff', fontSize: 8.5, fontWeight: 'bold' }, q),
-          h('text', { x: toSvg(p.x, 'x') + 8, y: toSvg(p.y, 'y') + 24, fill: qColor, fontSize: 9, fontWeight: 'bold', fontFamily: 'monospace', opacity: 0.85 }, '|d|=' + distStr)
+          h('text', { x: bx + 2, y: by + 6, fill: '#fff', fontSize: 10, fontWeight: 'bold' }, q),
+          h('text', { x: toSvg(p.x, 'x') + 8, y: toSvg(p.y, 'y') + 24, fill: qColor, fontSize: 10, fontWeight: 'bold', fontFamily: 'monospace', opacity: 0.85 }, '|d|=' + distStr)
         );
       });
 
@@ -1646,19 +1646,19 @@ window.StemLab = window.StemLab || {
             var gx = toMapX(lon);
             gridLines.push(h('line', { key: 'gml-' + lon, x1: gx, y1: PAD, x2: gx, y2: PAD + H, stroke: lon === 0 ? '#475569' : '#cbd5e1', strokeWidth: lon === 0 ? 1.2 : 0.5 }));
             if (lon !== -180 && lon !== 180) {
-              gridLines.push(h('text', { key: 'gmlt-' + lon, x: gx, y: PAD + H + 14, textAnchor: 'middle', fontSize: 9, fill: '#64748b' }, lon + '°'));
+              gridLines.push(h('text', { key: 'gmlt-' + lon, x: gx, y: PAD + H + 14, textAnchor: 'middle', fontSize: 10, fill: '#64748b' }, lon + '°'));
             }
           }
           for (var lat = -90; lat <= 90; lat += 30) {
             var gy = toMapY(lat);
             gridLines.push(h('line', { key: 'gpl-' + lat, x1: PAD, y1: gy, x2: PAD + W, y2: gy, stroke: lat === 0 ? '#475569' : '#cbd5e1', strokeWidth: lat === 0 ? 1.2 : 0.5 }));
             if (lat !== 90 && lat !== -90) {
-              gridLines.push(h('text', { key: 'gplt-' + lat, x: PAD - 4, y: gy + 3, textAnchor: 'end', fontSize: 9, fill: '#64748b' }, lat + '°'));
+              gridLines.push(h('text', { key: 'gplt-' + lat, x: PAD - 4, y: gy + 3, textAnchor: 'end', fontSize: 10, fill: '#64748b' }, lat + '°'));
             }
           }
           // Equator + prime meridian labels
-          gridLines.push(h('text', { key: 'eq-lbl', x: PAD + 4, y: toMapY(0) - 3, fontSize: 9, fill: '#475569', fontStyle: 'italic' }, t('stem.coordgrid.equator_lat_0', 'Equator (lat 0°)')));
-          gridLines.push(h('text', { key: 'pm-lbl', x: toMapX(0) + 3, y: PAD + 12, fontSize: 9, fill: '#475569', fontStyle: 'italic' }, t('stem.coordgrid.prime_meridian_lon_0', 'Prime meridian (lon 0°)')));
+          gridLines.push(h('text', { key: 'eq-lbl', x: PAD + 4, y: toMapY(0) - 3, fontSize: 10, fill: '#475569', fontStyle: 'italic' }, t('stem.coordgrid.equator_lat_0', 'Equator (lat 0°)')));
+          gridLines.push(h('text', { key: 'pm-lbl', x: toMapX(0) + 3, y: PAD + 12, fontSize: 10, fill: '#475569', fontStyle: 'italic' }, t('stem.coordgrid.prime_meridian_lon_0', 'Prime meridian (lon 0°)')));
 
           var cityDots = cities.map(function(c) {
             var active = c.id === worldCity;
@@ -1870,7 +1870,7 @@ window.StemLab = window.StemLab || {
                 ].map(function(metric) {
                   return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
                     h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
-                    h('div', { className: 'mt-1 text-[9px] font-bold uppercase tracking-wider text-cyan-200' }, metric.label)
+                    h('div', { className: 'mt-1 text-[10px] font-bold uppercase tracking-wider text-cyan-200' }, metric.label)
                   );
                 })
               )
