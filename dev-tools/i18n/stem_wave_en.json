@@ -1197,6 +1197,8 @@
   "nl_rocket_notes": "Causes hearing damage + can damage equipment.",
   "nl_krakatoa": "Krakatoa eruption (1883)",
   "nl_krakatoa_notes": "Possibly loudest sound in modern history. Heard 3000 miles away.",
+  "sec_stars_title": "Notable stars (visible spectra)",
+  "sec_stars_intro": "Star color reflects surface temperature: red coolest (~3,000 K) → orange → yellow → white → blue hottest (~30,000+ K). Spectral types O-B-A-F-G-K-M.",
   "sec_tvfreq_title": "Display technologies + resolutions",
   "sec_display_types": "Display types",
   "sec_standard_resolutions": "Standard resolutions",
