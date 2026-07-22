@@ -25,9 +25,13 @@
 // AlloFlow itself is AGPL-3.0. It stands on a large body of open-source work;
 // several of the licenses below (GPL/LGPL/MPL, and the CC-BY sim/content) also
 // REQUIRE that we preserve attribution and point to the source. This list is
-// the attribution surface — keep it in sync when a runtime dependency is added
-// or removed. Grouped for readability; rendered collapsed by <OssCredits/> at
-// the foot of the About tab.
+// the human-facing half of the attribution surface — its legal twin is
+// THIRD_PARTY_LICENSES.md, which carries each library's verbatim copyright
+// notice and points at the full texts bundled in licenses/. Keep the two in
+// sync when a runtime dependency is added or removed: dev-tools/check_oss_credits.cjs
+// fails the build if a credited library is missing its NOTICES row/notice.
+// Grouped for readability; rendered collapsed by <OssCredits/> at the foot of
+// the About tab.
 const OSS_CREDITS = [
   {
     group: 'App framework',
@@ -348,7 +352,7 @@ function OpenSourceTab({ t }) {
       </details>
 
       <p className="text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200">
-        {t('about.oss_credits_footer') || 'Hosted AI features use the provider configured in AI settings (such as Gemini, OpenAI, Claude, or an OpenAI-compatible endpoint); those services are not bundled software. Full license texts ship with the source (THIRD_PARTY_LICENSES.md). Spot something we should credit or correct? Let us know.'}
+        {t('about.oss_credits_footer') || 'Hosted AI features use the provider configured in AI settings (such as Gemini, OpenAI, Claude, or an OpenAI-compatible endpoint); those services are not bundled software. Each library above is credited with its own copyright notice in THIRD_PARTY_LICENSES.md, and the full verbatim license texts ship with the source in the licenses/ folder — bundled into the School Box desktop app too, so the attribution travels even offline. Spot something we should credit or correct? Let us know.'}
       </p>
     </div>
   );

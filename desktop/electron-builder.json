@@ -27,6 +27,18 @@
     {
       "from": "app-build",
       "to": "app-build"
+    },
+    {
+      "from": "../THIRD_PARTY_LICENSES.md",
+      "to": "THIRD_PARTY_LICENSES.md"
+    },
+    {
+      "from": "../LICENSE",
+      "to": "LICENSE"
+    },
+    {
+      "from": "../licenses",
+      "to": "licenses"
     }
   ],
   "asar": true,

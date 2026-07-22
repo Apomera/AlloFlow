@@ -68,6 +68,42 @@ describe('Info modal accuracy contracts', () => {
     expect(strings).not.toContain('AI features also use Google’s Gemini API');
   });
 
+  it('OSS attribution is complete: the credits guard passes', () => {
+    // Every library credited in the in-app tab must carry its own copyright
+    // notice in THIRD_PARTY_LICENSES.md, and every bundled license text it
+    // points at must exist. A drift here is a license violation, so it blocks.
+    const result = spawnSync(process.execPath, ['dev-tools/check_oss_credits.cjs'], { encoding: 'utf8' });
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+    expect(result.stdout).toMatch(/credited libraries all present with copyright notices/);
+  });
+
+  it('the NOTICES file carries real copyright notices, not placeholders', () => {
+    // The old file shipped "Copyright (c) <year> <copyright holders>" templates
+    // and told the reader to substitute them — which does not satisfy the
+    // notice-retention condition of MIT/BSD/ISC. Real holders must be present.
+    expect(licenses).toContain('Copyright (c) Meta Platforms, Inc. and affiliates.');
+    expect(licenses).toContain('Copyright (c) 2010-present three.js authors');
+    expect(licenses).toContain('Copyright (c) 2012 Lea Verou');
+    // no un-substituted placeholder rows remain in the inventory tables
+    expect(licenses).not.toMatch(/\|\s*Copyright \(c\) <year> <copyright holders>\s*\|/);
+  });
+
+  it('the offline license-text bundle is wired up (School Box carries attribution offline)', () => {
+    // full verbatim texts bundled, referenced, and packaged into the desktop app
+    for (const f of ['Apache-2.0.txt', 'MPL-2.0.txt', 'OFL-1.1.txt', 'GPL-3.0.txt', 'CC-BY-SA-4.0.txt']) {
+      expect(readFileSync('licenses/' + f, 'utf8').length, f).toBeGreaterThan(1000);
+    }
+    const builder = readFileSync('desktop/electron-builder.json', 'utf8');
+    expect(builder).toContain('"from": "../licenses"');
+    expect(builder).toContain('"from": "../THIRD_PARTY_LICENSES.md"');
+  });
+
+  it('the Apache PDFBox NOTICE and copyleft posture are documented', () => {
+    expect(licenses).toContain('Apache PDFBox\nCopyright 2014 The Apache Software Foundation');
+    expect(licenses).toMatch(/elects the \*{0,2}MPL-2\.0/); // veraPDF dual-license election
+    expect(licenses).toMatch(/CircuitJS1[\s\S]{0,400}iframe/i); // GPLv2 aggregation posture
+  });
+
   it('fails when the generated Atlas directory is stale', () => {
     // 2026-07-20: count-agnostic — pinning the exact entry count made this
     // test stale every time any session registered a tool.

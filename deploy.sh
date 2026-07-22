@@ -137,6 +137,8 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   echo "  ✓ Tool Forge vendored contract core in sync with dev-tools/forge_contract_core.js (no Tier-1/Tier-2 drift)."
   node dev-tools/check_i18n_fallback.cjs --quiet
   echo "  ✓ no \`__alloT = ctx.t\` fallback-dropping decls (missing keys must fall back to English, not render 'undefined')."
+  node dev-tools/check_oss_credits.cjs
+  echo "  ✓ OSS attribution intact (every credited library carries a copyright notice in THIRD_PARTY_LICENSES.md + bundled license text; blocks a dependency shipping uncredited; 2026-07-21)."
   # Self-healing (2026-07-20): this gate names its own fix — run it instead of
   # aborting. A stale block regenerates + stages, then the check must pass.
   if ! node dev-tools/gen_docsuite_theme.cjs --check; then
