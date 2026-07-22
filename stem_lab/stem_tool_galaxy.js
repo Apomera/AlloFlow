@@ -2638,62 +2638,62 @@ if (!window._galaxyHasLoadedOnce) {
             galaxyType: {
               icon: gType.icon,
               title: gType.label,
-              type: 'Galaxy shape',
+              type: __alloT('stem.galaxy.inspect_galaxytype_type', 'Galaxy shape'),
               color: '#6366f1',
               desc: gType.desc,
               facts: ['Example: ' + gType.example, (gType.arms ? gType.arms + ' visible arm pattern' : 'No spiral arm pattern'), gType.barLength ? 'Central stellar bar present' : 'No central bar'],
-              evidence: 'Astronomers classify galaxies by wide-field images, color, gas content, and the motion of stars and dust.',
-              question: 'Which visible features helped you classify this galaxy?'
+              evidence: __alloT('stem.galaxy.inspect_galaxytype_evidence', 'Astronomers classify galaxies by wide-field images, color, gas content, and the motion of stars and dust.'),
+              question: __alloT('stem.galaxy.inspect_galaxytype_question', 'Which visible features helped you classify this galaxy?')
             },
             blackHole: {
               icon: '\uD83D\uDD73\uFE0F',
-              title: 'Central black hole',
-              type: 'Galactic core',
+              title: __alloT('stem.galaxy.inspect_blackhole_title', 'Central black hole'),
+              type: __alloT('stem.galaxy.inspect_blackhole_type', 'Galactic core'),
               color: '#f59e0b',
-              desc: 'The Milky Way contains Sagittarius A*, a compact object of about four million solar masses at the galactic center.',
-              facts: ['Invisible event horizon', 'Bright accretion disk when gas falls in', 'Nearby stars orbit at extreme speeds'],
-              evidence: 'The strongest evidence is motion: stars whip around an unseen, tiny, massive object in the core.',
-              question: 'What evidence would convince you the mass is compact instead of spread out?'
+              desc: __alloT('stem.galaxy.inspect_blackhole_desc', 'The Milky Way contains Sagittarius A*, a compact object of about four million solar masses at the galactic center.'),
+              facts: [__alloT('stem.galaxy.inspect_blackhole_fact1', 'Invisible event horizon'), __alloT('stem.galaxy.inspect_blackhole_fact2', 'Bright accretion disk when gas falls in'), __alloT('stem.galaxy.inspect_blackhole_fact3', 'Nearby stars orbit at extreme speeds')],
+              evidence: __alloT('stem.galaxy.inspect_blackhole_evidence', 'The strongest evidence is motion: stars whip around an unseen, tiny, massive object in the core.'),
+              question: __alloT('stem.galaxy.inspect_blackhole_question', 'What evidence would convince you the mass is compact instead of spread out?')
             },
             spiralArms: {
               icon: '\uD83C\uDF00',
-              title: 'Spiral arms',
-              type: 'Density wave',
+              title: __alloT('stem.galaxy.inspect_spiralarms_title', 'Spiral arms'),
+              type: __alloT('stem.galaxy.inspect_spiralarms_type', 'Density wave'),
               color: '#60a5fa',
-              desc: 'Spiral arms are traffic jams of stars, gas, and dust. Stars move through them while gas compresses and forms new stars.',
-              facts: ['Young blue stars trace arms', 'Gas clouds collect there', 'Dust lanes outline the wave'],
-              evidence: 'Blue star clusters, emission nebulae, and radio maps of hydrogen reveal where arms are strongest.',
-              question: 'Why do blue stars mark recent star formation better than red stars?'
+              desc: __alloT('stem.galaxy.inspect_spiralarms_desc', 'Spiral arms are traffic jams of stars, gas, and dust. Stars move through them while gas compresses and forms new stars.'),
+              facts: [__alloT('stem.galaxy.inspect_spiralarms_fact1', 'Young blue stars trace arms'), __alloT('stem.galaxy.inspect_spiralarms_fact2', 'Gas clouds collect there'), __alloT('stem.galaxy.inspect_spiralarms_fact3', 'Dust lanes outline the wave')],
+              evidence: __alloT('stem.galaxy.inspect_spiralarms_evidence', 'Blue star clusters, emission nebulae, and radio maps of hydrogen reveal where arms are strongest.'),
+              question: __alloT('stem.galaxy.inspect_spiralarms_question', 'Why do blue stars mark recent star formation better than red stars?')
             },
             gasClouds: {
               icon: '\uD83C\uDF0C',
-              title: 'Gas clouds',
-              type: 'Star-forming material',
+              title: __alloT('stem.galaxy.inspect_gasclouds_title', 'Gas clouds'),
+              type: __alloT('stem.galaxy.inspect_gasclouds_type', 'Star-forming material'),
               color: '#22d3ee',
-              desc: 'Cold hydrogen and glowing ionized gas are the raw materials for new stars and nebulae.',
-              facts: ['Compressed gas can collapse', 'Massive stars ionize nearby gas', 'Radio telescopes map hidden hydrogen'],
-              evidence: 'Hydrogen emission and radio wavelengths show gas that visible-light images can miss.',
-              question: 'Where would you look for the next generation of stars?'
+              desc: __alloT('stem.galaxy.inspect_gasclouds_desc', 'Cold hydrogen and glowing ionized gas are the raw materials for new stars and nebulae.'),
+              facts: [__alloT('stem.galaxy.inspect_gasclouds_fact1', 'Compressed gas can collapse'), __alloT('stem.galaxy.inspect_gasclouds_fact2', 'Massive stars ionize nearby gas'), __alloT('stem.galaxy.inspect_gasclouds_fact3', 'Radio telescopes map hidden hydrogen')],
+              evidence: __alloT('stem.galaxy.inspect_gasclouds_evidence', 'Hydrogen emission and radio wavelengths show gas that visible-light images can miss.'),
+              question: __alloT('stem.galaxy.inspect_gasclouds_question', 'Where would you look for the next generation of stars?')
             },
             dustLanes: {
               icon: '\uD83C\uDF2B\uFE0F',
-              title: 'Dust lanes',
-              type: 'Light-blocking grains',
+              title: __alloT('stem.galaxy.inspect_dustlanes_title', 'Dust lanes'),
+              type: __alloT('stem.galaxy.inspect_dustlanes_type', 'Light-blocking grains'),
               color: '#a16207',
-              desc: 'Dust is not empty darkness. Tiny grains absorb visible light and help cool gas clouds so stars can form.',
-              facts: ['Blocks visible starlight', 'Glows in infrared', 'Outlines spiral structure'],
-              evidence: 'Compare visible and infrared views: dust hides stars in one wavelength and glows in another.',
-              question: 'Why can infrared telescopes see deeper through dusty regions?'
+              desc: __alloT('stem.galaxy.inspect_dustlanes_desc', 'Dust is not empty darkness. Tiny grains absorb visible light and help cool gas clouds so stars can form.'),
+              facts: [__alloT('stem.galaxy.inspect_dustlanes_fact1', 'Blocks visible starlight'), __alloT('stem.galaxy.inspect_dustlanes_fact2', 'Glows in infrared'), __alloT('stem.galaxy.inspect_dustlanes_fact3', 'Outlines spiral structure')],
+              evidence: __alloT('stem.galaxy.inspect_dustlanes_evidence', 'Compare visible and infrared views: dust hides stars in one wavelength and glows in another.'),
+              question: __alloT('stem.galaxy.inspect_dustlanes_question', 'Why can infrared telescopes see deeper through dusty regions?')
             },
             darkMatter: {
               icon: '\uD83C\uDF0C',
-              title: 'Dark matter halo',
-              type: 'Invisible gravity',
+              title: __alloT('stem.galaxy.inspect_darkmatter_title', 'Dark matter halo'),
+              type: __alloT('stem.galaxy.inspect_darkmatter_type', 'Invisible gravity'),
               color: '#e879f9',
-              desc: 'Outer stars orbit too fast for visible matter alone. A large invisible halo must be adding gravity.',
-              facts: ['Does not emit light', 'Revealed by motion', 'Dominates a galaxy mass budget'],
-              evidence: 'Rotation curves stay flat instead of falling, showing extra unseen mass around the galaxy.',
-              question: 'Why is motion better evidence here than a photograph?'
+              desc: __alloT('stem.galaxy.inspect_darkmatter_desc', 'Outer stars orbit too fast for visible matter alone. A large invisible halo must be adding gravity.'),
+              facts: [__alloT('stem.galaxy.inspect_darkmatter_fact1', 'Does not emit light'), __alloT('stem.galaxy.inspect_darkmatter_fact2', 'Revealed by motion'), __alloT('stem.galaxy.inspect_darkmatter_fact3', 'Dominates a galaxy mass budget')],
+              evidence: __alloT('stem.galaxy.inspect_darkmatter_evidence', 'Rotation curves stay flat instead of falling, showing extra unseen mass around the galaxy.'),
+              question: __alloT('stem.galaxy.inspect_darkmatter_question', 'Why is motion better evidence here than a photograph?')
             }
           };
           var getInspector = function () {
@@ -2705,9 +2705,9 @@ if (!window._galaxyHasLoadedOnce) {
                 type: 'Spectral class ' + selStar.id,
                 color: selStar.color,
                 desc: selStar.desc,
-                facts: [selStar.temp + ' K', selStar.mass || 'Mass varies', selStar.lifetime || 'Lifetime varies'],
-                evidence: 'A spectrum reveals temperature, composition, motion, and class from the pattern of absorption lines.',
-                question: 'How would this star change the galaxy if many formed at once?'
+                facts: [selStar.temp + ' K', selStar.mass || __alloT('stem.galaxy.inspect_mass_varies', 'Mass varies'), selStar.lifetime || __alloT('stem.galaxy.inspect_lifetime_varies', 'Lifetime varies')],
+                evidence: __alloT('stem.galaxy.inspect_star_evidence', 'A spectrum reveals temperature, composition, motion, and class from the pattern of absorption lines.'),
+                question: __alloT('stem.galaxy.inspect_star_question', 'How would this star change the galaxy if many formed at once?')
               };
             }
             if (selNeb) {
@@ -2715,24 +2715,24 @@ if (!window._galaxyHasLoadedOnce) {
                 key: 'nebula:' + selNeb.name,
                 icon: '\u2728',
                 title: selNeb.name,
-                type: selNeb.type || 'Nebula',
+                type: selNeb.type || __alloT('stem.galaxy.inspect_nebula_type_fallback', 'Nebula'),
                 color: selNeb.color,
                 desc: selNeb.desc,
-                facts: [selNeb.dist || 'Distance varies', 'Gas and dust cloud', selNeb.type || 'Deep-sky object'],
-                evidence: 'Color, emission lines, shape, and nearby stars tell whether this is a nursery, remnant, or dying-star shell.',
-                question: 'Is this object making stars, showing a dead star, or blocking light?'
+                facts: [selNeb.dist || __alloT('stem.galaxy.inspect_distance_varies', 'Distance varies'), __alloT('stem.galaxy.inspect_gas_dust_cloud', 'Gas and dust cloud'), selNeb.type || __alloT('stem.galaxy.inspect_deepsky_object', 'Deep-sky object')],
+                evidence: __alloT('stem.galaxy.inspect_nebula_evidence', 'Color, emission lines, shape, and nearby stars tell whether this is a nursery, remnant, or dying-star shell.'),
+                question: __alloT('stem.galaxy.inspect_nebula_question', 'Is this object making stars, showing a dead star, or blocking light?')
               };
             }
             return INSPECT_TARGETS[inspectTarget] || INSPECT_TARGETS.galaxyType;
           };
           var currentInspector = getInspector();
           var inspectButtons = [
-            { key: 'galaxyType', label: 'Shape', icon: gType.icon },
-            { key: 'spiralArms', label: 'Arms', icon: '\uD83C\uDF00' },
-            { key: 'gasClouds', label: 'Gas', icon: '\uD83C\uDF0C' },
-            { key: 'dustLanes', label: 'Dust', icon: '\uD83C\uDF2B\uFE0F' },
-            { key: 'blackHole', label: 'Core', icon: '\uD83D\uDD73\uFE0F' },
-            { key: 'darkMatter', label: 'Dark halo', icon: '\uD83C\uDF0C' }
+            { key: 'galaxyType', label: __alloT('stem.galaxy.inspect_btn_shape', 'Shape'), icon: gType.icon },
+            { key: 'spiralArms', label: __alloT('stem.galaxy.inspect_btn_arms', 'Arms'), icon: '\uD83C\uDF00' },
+            { key: 'gasClouds', label: __alloT('stem.galaxy.inspect_btn_gas', 'Gas'), icon: '\uD83C\uDF0C' },
+            { key: 'dustLanes', label: __alloT('stem.galaxy.inspect_btn_dust', 'Dust'), icon: '\uD83C\uDF2B\uFE0F' },
+            { key: 'blackHole', label: __alloT('stem.galaxy.inspect_btn_core', 'Core'), icon: '\uD83D\uDD73\uFE0F' },
+            { key: 'darkMatter', label: __alloT('stem.galaxy.inspect_btn_dark_halo', 'Dark halo'), icon: '\uD83C\uDF0C' }
           ];
           var observeSeenCount = Object.keys(inspectLog).filter(function (k) { return k.indexOf('observe:') === 0; }).length;
           var dopplerTouched = !!inspectLog.dopplerShift || Math.abs(dopplerVelocity) > 8;
@@ -2741,52 +2741,52 @@ if (!window._galaxyHasLoadedOnce) {
             {
               id: 'cartographer',
               icon: '\uD83D\uDDFA\uFE0F',
-              title: 'Map the Galaxy',
+              title: __alloT('stem.galaxy.mission_cartographer_title', 'Map the Galaxy'),
               steps: [
-                { label: 'Toggle 3 layers', done: Object.keys(d.layersToggled || {}).length >= 3 },
-                { label: 'Inspect a structure', done: !!(inspectLog.spiralArms || inspectLog.gasClouds || inspectLog.dustLanes || inspectLog.blackHole) },
-                { label: 'Warp to a landmark', done: !!d.warpInfo }
+                { label: __alloT('stem.galaxy.mission_step_toggle_layers', 'Toggle 3 layers'), done: Object.keys(d.layersToggled || {}).length >= 3 },
+                { label: __alloT('stem.galaxy.mission_step_inspect_structure', 'Inspect a structure'), done: !!(inspectLog.spiralArms || inspectLog.gasClouds || inspectLog.dustLanes || inspectLog.blackHole) },
+                { label: __alloT('stem.galaxy.mission_step_warp_landmark', 'Warp to a landmark'), done: !!d.warpInfo }
               ]
             },
             {
               id: 'nursery',
               icon: '\u2728',
-              title: 'Find Star Birth',
+              title: __alloT('stem.galaxy.mission_nursery_title', 'Find Star Birth'),
               steps: [
-                { label: 'Show gas or nebulae', done: layers.gas !== false || layers.nebulae !== false },
-                { label: 'Inspect a nebula or gas cloud', done: !!(selNeb || inspectLog.gasClouds) },
-                { label: 'Click any star', done: !!selStar || Object.keys(inspectLog).some(function (k) { return k.indexOf('star:') === 0; }) }
+                { label: __alloT('stem.galaxy.mission_step_show_gas', 'Show gas or nebulae'), done: layers.gas !== false || layers.nebulae !== false },
+                { label: __alloT('stem.galaxy.mission_step_inspect_nebula', 'Inspect a nebula or gas cloud'), done: !!(selNeb || inspectLog.gasClouds) },
+                { label: __alloT('stem.galaxy.mission_step_click_star', 'Click any star'), done: !!selStar || Object.keys(inspectLog).some(function (k) { return k.indexOf('star:') === 0; }) }
               ]
             },
             {
               id: 'darkMatter',
               icon: '\uD83C\uDF0C',
-              title: 'Prove the Invisible',
+              title: __alloT('stem.galaxy.mission_darkmatter_title', 'Prove the Invisible'),
               steps: [
-                { label: 'Try 2 rotation models', done: Object.keys(d.rotTried || {}).length >= 2 },
-                { label: 'Use the flat curve', done: rotMode === 'flat' },
-                { label: 'Inspect dark halo evidence', done: !!inspectLog.darkMatter || !!inspectLog['observe:gravity'] }
+                { label: __alloT('stem.galaxy.mission_step_try_rotation', 'Try 2 rotation models'), done: Object.keys(d.rotTried || {}).length >= 2 },
+                { label: __alloT('stem.galaxy.mission_step_flat_curve', 'Use the flat curve'), done: rotMode === 'flat' },
+                { label: __alloT('stem.galaxy.mission_step_inspect_darkhalo', 'Inspect dark halo evidence'), done: !!inspectLog.darkMatter || !!inspectLog['observe:gravity'] }
               ]
             },
             {
               id: 'multiwavelength',
               icon: '\uD83D\uDD2D',
-              title: 'Decode Hidden Light',
+              title: __alloT('stem.galaxy.mission_multiwavelength_title', 'Decode Hidden Light'),
               steps: [
-                { label: 'Try 2 observing filters', done: observeSeenCount >= 2 },
-                { label: 'Use radio or infrared', done: !!(inspectLog['observe:radio'] || inspectLog['observe:infrared']) },
-                { label: 'Use gravity view', done: !!inspectLog['observe:gravity'] },
-                { label: 'Test Doppler shift', done: dopplerTouched }
+                { label: __alloT('stem.galaxy.mission_step_try_filters', 'Try 2 observing filters'), done: observeSeenCount >= 2 },
+                { label: __alloT('stem.galaxy.mission_step_radio_infrared', 'Use radio or infrared'), done: !!(inspectLog['observe:radio'] || inspectLog['observe:infrared']) },
+                { label: __alloT('stem.galaxy.mission_step_gravity_view', 'Use gravity view'), done: !!inspectLog['observe:gravity'] },
+                { label: __alloT('stem.galaxy.mission_step_test_doppler', 'Test Doppler shift'), done: dopplerTouched }
               ]
             },
             {
               id: 'stellarDeath',
               icon: '\uD83D\uDCA5',
-              title: 'Track Stellar Death',
+              title: __alloT('stem.galaxy.mission_stellardeath_title', 'Track Stellar Death'),
               steps: [
-                { label: 'Trigger a supernova', done: !!d.lastGalaxyEvent },
-                { label: 'Inspect the core', done: !!inspectLog.blackHole },
-                { label: 'Open Star Life', done: !!showLifecycle }
+                { label: __alloT('stem.galaxy.mission_step_trigger_supernova', 'Trigger a supernova'), done: !!d.lastGalaxyEvent },
+                { label: __alloT('stem.galaxy.mission_step_inspect_core', 'Inspect the core'), done: !!inspectLog.blackHole },
+                { label: __alloT('stem.galaxy.mission_step_open_starlife', 'Open Star Life'), done: !!showLifecycle }
               ]
             }
           ];
