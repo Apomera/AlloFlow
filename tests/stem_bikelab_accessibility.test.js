@@ -47,6 +47,7 @@ describe('Bike Lab accessibility', () => {
     expect(text).toContain("h('h1', { className: 'font-black text-slate-800 text-lg' }, props.title)");
     expect(text).toContain("id: 'bikelab-ride-canvas-description', className: 'sr-only'");
     expect(text).toContain("role: 'img', tabIndex: 0, 'data-bikelab-canvas': 'true'");
+    expect(text).toContain("width: '100%', height: 'auto', aspectRatio: '900 / 440'");
     expect(text).toContain("'aria-describedby': 'bikelab-ride-canvas-description'");
     expect(text).toContain('focus-visible:ring-4 focus-visible:ring-cyan-300');
   });
