@@ -75,6 +75,22 @@
   .backbar button { background: rgba(15,23,42,0.85); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
   .loadmsg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--dim); font-size: 13px; z-index: 3; text-align: center; padding: 20px; }
   @media (max-width: 760px) { .wrap { flex-direction: column; } .coach { flex: 0 0 46%; border-right: 0; border-bottom: 1px solid var(--line); } }
+  /* Described view — an AI-generated spoken description of the current 3-D view,
+     for learners who cannot see the WebGL canvas (screen readers see nothing there). */
+  .described { margin: 0 12px 8px; border: 1px solid #3730a3; background: rgba(79,70,229,0.10); border-radius: 10px; padding: 9px 10px; }
+  .described-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11.5px; font-weight: 700; color: #c7d2fe; text-transform: uppercase; letter-spacing: 0.05em; }
+  .ra-toggle { display: inline-flex; align-items: center; gap: 4px; text-transform: none; letter-spacing: 0; font-weight: 600; color: var(--dim); cursor: pointer; }
+  button.describe-go { width: 100%; margin-top: 8px; background: var(--accent2); color: #fff; border: none; border-radius: 8px; padding: 10px 12px; font-size: 13px; font-weight: 700; cursor: pointer; min-height: 44px; }
+  button.describe-go:disabled { background: #3f3f5a; color: #8a8ab0; cursor: not-allowed; }
+  button.describe-go:focus-visible, .ra-toggle input:focus-visible, .ask-form input:focus-visible, .ask-form button:focus-visible { outline: 2px solid #a5b4fc; outline-offset: 2px; }
+  .described-out { margin-top: 8px; font-size: 13px; line-height: 1.55; color: var(--text); white-space: pre-wrap; }
+  .described-out:empty { display: none; }
+  .described-out.busy { color: var(--dim); font-style: italic; }
+  .described-note { margin-top: 6px; font-size: 11px; color: #8a8ab0; line-height: 1.4; }
+  .ask-form { display: flex; gap: 6px; margin-top: 8px; }
+  .ask-form input { flex: 1 1 auto; min-width: 0; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: inherit; }
+  .ask-form button { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 700; cursor: pointer; min-height: 44px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 </style>
 </head>
 <body>
@@ -87,6 +103,18 @@
   <aside class="coach" aria-label="Notice and Wonder coach">
     <h2>Observation coach</h2>
     <div class="ai-state" id="aiState">Connecting to AlloFlow…</div>
+    <section class="described" id="described" aria-labelledby="describedHead" hidden>
+      <div class="described-head"><span id="describedHead">👁 Described view</span>
+        <label class="ra-toggle"><input type="checkbox" id="raToggle" checked> Read aloud</label></div>
+      <button id="describeBtn" class="describe-go" type="button">Describe what's on screen</button>
+      <div class="described-out" id="describedOut" role="status" aria-live="polite" aria-atomic="true"></div>
+      <p class="described-note" id="describedNote" hidden></p>
+      <form id="askForm" class="ask-form" hidden>
+        <label class="sr-only" for="askInput">Ask a question about this view</label>
+        <input id="askInput" type="text" placeholder="Ask about this view…" autocomplete="off" maxlength="200">
+        <button type="submit">Ask</button>
+      </form>
+    </section>
     <div class="steps" role="tablist" aria-label="Observation steps">
       <button id="tabNotice" role="tab" aria-selected="true">1 · Notice</button>
       <button id="tabWonder" role="tab" aria-selected="false">2 · Wonder</button>
@@ -145,6 +173,7 @@
   var perStruct = {};           // pdb → {notice, wonder, feedback}
   var step = 'notice';
   var aiAvailable = false, openerOk = false, busy = false;
+  var visionAvailable = false, describing = false;
   var viewer = null, viewerPromise = null;
 
   var picker = document.getElementById('picker');
@@ -156,6 +185,13 @@
   var backBtn = document.getElementById('backBtn');
   var loadmsg = document.getElementById('loadmsg');
   var tabs = { notice: document.getElementById('tabNotice'), wonder: document.getElementById('tabWonder'), coach: document.getElementById('tabCoach') };
+  var describedEl = document.getElementById('described');
+  var describeBtn = document.getElementById('describeBtn');
+  var describedOut = document.getElementById('describedOut');
+  var describedNote = document.getElementById('describedNote');
+  var askForm = document.getElementById('askForm');
+  var askInput = document.getElementById('askInput');
+  var raToggle = document.getElementById('raToggle');
 
   // ── Opener AI bridge ─────────────────────────────────────────────────
   var pending = {};
@@ -166,18 +202,24 @@
   window.addEventListener('message', function (event) {
     var data = event && event.data;
     if (!data || typeof data.type !== 'string') return;
-    if (data.type === 'allocmol-ready') { openerOk = true; aiAvailable = Boolean(data.ai); renderAiState(); return; }
+    if (data.type === 'allocmol-ready') { openerOk = true; aiAvailable = Boolean(data.ai); visionAvailable = Boolean(data.vision); renderAiState(); refreshDescribe(); return; }
     if (data.type === 'allocmol-ai-response' && data.id && pending[data.id]) {
       var entry = pending[data.id]; delete pending[data.id]; clearTimeout(entry.timer); entry.resolve(data);
     }
   });
-  function askAi(structureName, notice, wonder) {
+  // Generic request over the opener bridge — resolves with the response object
+  // (or null on failure/timeout). Both the coach and the described-view layer
+  // ride this one promise mechanism.
+  function bridgeRequest(extra, timeoutMs) {
     var id = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     return new Promise(function (resolve) {
-      pending[id] = { resolve: resolve, timer: setTimeout(function () { delete pending[id]; resolve(null); }, 25000) };
-      var sent = toOpener({ type: 'allocmol-ai-request', id: id, structure: structureName, notice: notice, wonder: wonder });
+      pending[id] = { resolve: resolve, timer: setTimeout(function () { delete pending[id]; resolve(null); }, timeoutMs || 25000) };
+      var sent = toOpener(Object.assign({ type: 'allocmol-ai-request', id: id }, extra));
       if (!sent) { var e = pending[id]; delete pending[id]; if (e) clearTimeout(e.timer); resolve(null); }
     });
+  }
+  function askAi(structureName, notice, wonder) {
+    return bridgeRequest({ structure: structureName, notice: notice, wonder: wonder });
   }
 
   var REFLECT_BANK = [
@@ -195,6 +237,77 @@
       ? (aiAvailable ? 'AlloFlow connected · AI coach <span class="on">on</span>' : 'AlloFlow connected · AI hints <span class="off">off</span> — using built-in observation prompts')
       : 'Standalone — built-in observation prompts (open from AlloFlow for the AI coach)';
   }
+
+  // ── Described view ───────────────────────────────────────────────────
+  // The 3-D viewer is a WebGL canvas: a screen reader sees nothing there.
+  // The wrapper can't make Mol*'s internals accessible, but it CAN capture the
+  // current view and have the AI describe what is on screen — a genuine
+  // alternative access path (not an "overlay" that claims to auto-fix a11y).
+  function captureView() {
+    // Mol*'s screenshot helper re-renders offscreen, so it works even when the
+    // live canvas doesn't preserve its drawing buffer; fall back to the canvas.
+    return Promise.resolve().then(function () {
+      try {
+        var p = viewer && viewer.plugin;
+        var vs = p && p.helpers && p.helpers.viewportScreenshot;
+        if (vs && typeof vs.getImageDataUri === 'function') return vs.getImageDataUri();
+      } catch (_) {}
+      return null;
+    }).then(function (uri) {
+      if (uri) return uri;
+      try { var cv = document.querySelector('#molstar canvas'); if (cv) return cv.toDataURL('image/png'); } catch (_) {}
+      return null;
+    }).catch(function () { return null; });
+  }
+  function speak(text) {
+    try {
+      if (!raToggle.checked || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(String(text || ''));
+      u.rate = 0.98;
+      window.speechSynthesis.speak(u);
+    } catch (_) {}
+  }
+  function stopSpeak() { try { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); } catch (_) {} }
+  function setNote(msg) { describedNote.textContent = msg || ''; describedNote.hidden = !msg; }
+  function describeAvailable() { return !!(current && openerOk && aiAvailable); }
+  function refreshDescribe() {
+    if (!current) { describedEl.hidden = true; return; }
+    describedEl.hidden = false;
+    describeBtn.disabled = describing || !describeAvailable();
+    if (!openerOk) setNote('Open the Molecule Shelf from AlloFlow to hear the view described.');
+    else if (!aiAvailable) setNote('Ask your teacher to turn on AI hints to describe the view aloud.');
+    else if (!visionAvailable) setNote('Descriptions use known facts about this molecule (image vision is off this session).');
+    else setNote('');
+  }
+  function describeView(question) {
+    if (describing || !describeAvailable()) return;
+    describing = true; describeBtn.disabled = true; stopSpeak();
+    describedOut.classList.add('busy');
+    describedOut.textContent = question ? 'Thinking about your question…' : 'Looking at the current view…';
+    captureView().then(function (uri) {
+      var base64 = uri ? String(uri).replace(/^data:image\/[a-z0-9.+-]+;base64,/i, '') : null;
+      return bridgeRequest({
+        mode: 'describe', structure: current.name, pdb: current.pdb, meta: current.meta,
+        question: question || null, image: base64, mime: 'image/png'
+      }, 30000);
+    }).then(function (res) {
+      describing = false;
+      describedOut.classList.remove('busy');
+      var text = res && res.text ? String(res.text) : '';
+      if (text) {
+        describedOut.textContent = text;
+        askForm.hidden = false;
+        speak(text);
+      } else {
+        describedOut.textContent = 'The description could not be generated'
+          + (res && res.error ? ' (' + res.error + ')' : '')
+          + '. Try rotating the molecule, then describe again.';
+      }
+      refreshDescribe();
+    });
+  }
+  function resetDescribed() { stopSpeak(); describedOut.textContent = ''; describedOut.classList.remove('busy'); askForm.hidden = true; }
 
   // ── Coach panel rendering ───────────────────────────────────────────
   function el(tag, attrs, text) {
@@ -310,9 +423,11 @@
       loadmsg.style.display = 'flex';
     });
     toOpener({ type: 'allocmol-structopened', structure: current.pdb });
+    resetDescribed();
+    refreshDescribe();
     setStep('notice');
   }
-  function showPicker() { picker.style.display = 'block'; backbar.style.display = 'none'; }
+  function showPicker() { picker.style.display = 'block'; backbar.style.display = 'none'; current = null; resetDescribed(); describedEl.hidden = true; }
 
   STRUCTURES.forEach(function (s) {
     var opt = el('option', { value: s.pdb }, s.emoji + ' ' + s.name);
@@ -326,6 +441,15 @@
   });
   molSelect.addEventListener('change', function () { if (molSelect.value) loadStructure(molSelect.value); });
   backBtn.addEventListener('click', showPicker);
+  describeBtn.addEventListener('click', function () { describeView(null); });
+  askForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var q = (askInput.value || '').trim();
+    if (!q) return;
+    askInput.value = '';
+    describeView(q);
+  });
+  raToggle.addEventListener('change', function () { if (!raToggle.checked) stopSpeak(); });
 
   // ── Boot ────────────────────────────────────────────────────────────
   var requested = (params.get('pdb') || '').toUpperCase();

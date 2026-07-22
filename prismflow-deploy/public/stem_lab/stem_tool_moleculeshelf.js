@@ -60,6 +60,31 @@
     ].join('\n');
   }
 
+  // Described-view prompt: an accessible, spatial description of what is on
+  // screen RIGHT NOW, for a learner who cannot see the WebGL canvas. Grounded
+  // in the known molecule so the vision model describes the real view instead
+  // of guessing the identity.
+  function buildDescribePrompt(structure, pdb, meta, question, hasImage) {
+    var lines = [
+      'You are describing a 3-D molecular structure to a K-12 student who CANNOT SEE the screen (screen-reader user).',
+      'The structure is "' + String(structure || '').slice(0, 100) + '"' + (pdb ? ' (PDB ' + String(pdb).slice(0, 8) + ')' : '') + (meta ? ' — ' + String(meta).slice(0, 160) : '') + '.',
+      hasImage
+        ? 'The attached image is the EXACT current on-screen view (a specific angle, zoom, and representation). Describe what is visible in THIS view.'
+        : 'No image is available; describe the structure from what is well established about it.',
+      'Write 3-5 short, concrete sentences a student can picture from sound alone:',
+      '- overall shape and how big/compact it looks;',
+      '- major features you can make out (coils/helices, flat sheets/arrows, strands, separate subunits, pockets or grooves, any small highlighted groups);',
+      '- colors and what they seem to group or distinguish;',
+      '- spatial layout — left/right/center, top/bottom, and any symmetry.',
+      'Be specific and spatial. Do NOT invent detail you cannot see. Plain language, no jargon, no markdown.'
+    ];
+    if (question) {
+      lines.push('The student then asks about this view: "' + String(question).slice(0, 200) + '"');
+      lines.push('Answer their question directly and briefly, still grounded only in what is visible.');
+    }
+    return lines.join('\n');
+  }
+
   window.StemLab.registerTool('moleculeShelf', {
     icon: '🧬',
     label: 'Molecule Shelf',
@@ -89,6 +114,7 @@
       var _st = React.useState('idle'); var popupState = _st[0], setPopupState = _st[1];
 
       var aiOn = !!(ctx.aiHintsEnabled && typeof ctx.callGemini === 'function');
+      var visionOn = !!(aiOn && typeof ctx.callGeminiVision === 'function');
 
       function bumpSlice(key) {
         setLabToolData(function (prev) {
@@ -105,7 +131,7 @@
           var data = ev && ev.data;
           if (!data || typeof data.type !== 'string') return;
           if (data.type === 'allocmol-hello') {
-            try { if (ev.source) ev.source.postMessage({ type: 'allocmol-ready', ai: aiOn }, '*'); } catch (_) {}
+            try { if (ev.source) ev.source.postMessage({ type: 'allocmol-ready', ai: aiOn, vision: visionOn }, '*'); } catch (_) {}
             setPopupState('open');
             return;
           }
@@ -117,13 +143,33 @@
             try { if (replyTo) replyTo.postMessage(Object.assign({ type: 'allocmol-ai-response', id: data.id }, payload), '*'); } catch (_) {}
           };
           if (!aiOn) { respond({ error: 'ai-disabled' }); return; }
+          var toText = function (resp) {
+            return (typeof resp === 'string') ? resp : ((resp && (resp.text || resp.output || resp.response)) || '');
+          };
+          // Described-view request: describe the current 3-D view aloud. Uses
+          // the vision model on the captured image when available; otherwise
+          // falls back to a facts-based description via the text model.
+          if (data.mode === 'describe') {
+            bumpSlice('describeCount');
+            var hasImg = visionOn && typeof data.image === 'string' && data.image.length > 100;
+            var dprompt = buildDescribePrompt(data.structure, data.pdb, data.meta, data.question, hasImg);
+            Promise.resolve().then(function () {
+              return hasImg
+                ? ctx.callGeminiVision(dprompt, data.image, data.mime || 'image/png')
+                : ctx.callGemini(dprompt, false, false, 0.4);
+            }).then(function (resp) {
+              respond({ text: String(toText(resp) || '').slice(0, 1200), grounded: hasImg ? 'vision' : 'facts' });
+            }).catch(function (e) {
+              respond({ error: String((e && e.message) || e).slice(0, 120) });
+            });
+            return;
+          }
           bumpSlice('coachCount');
           var prompt = buildCoachPrompt(data.structure, data.notice, data.wonder);
           Promise.resolve().then(function () {
             return ctx.callGemini(prompt, false, false, 0.7);
           }).then(function (resp) {
-            var text = (typeof resp === 'string') ? resp : ((resp && (resp.text || resp.output || resp.response)) || '');
-            respond({ text: String(text || '').slice(0, 1000) });
+            respond({ text: String(toText(resp) || '').slice(0, 1000) });
           }).catch(function (e) {
             respond({ error: String((e && e.message) || e).slice(0, 120) });
           });
