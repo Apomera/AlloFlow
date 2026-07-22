@@ -15620,13 +15620,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // Reduces the anxiety of "how do I write this?" while building the skill.
   function PersonalTeacherEmail(props) {
     if (!R) return null;
-    var data = props.data || { saved: [] };
+    var data = props.data && typeof props.data === 'object' ? props.data : { saved: [] };
     var setData = props.setData;
+    var isRecord = function(value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
+    var textValue = function(value) { return typeof value === 'string' ? value : (typeof value === 'number' ? String(value) : ''); };
+    var rawSaved = Array.isArray(data.saved) ? data.saved : [];
     var emptyForm = { teacher: '', myName: '', class: '', body: '' };
     var ts = R.useState(null); var activeType = ts[0]; var setActiveType = ts[1];
     var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
     var be = R.useState(''); var bodyError = be[0]; var setBodyError = be[1];
     var cs = R.useState(''); var copyStatus = cs[0]; var setCopyStatus = cs[1];
+    var pfe = R.useState(null); var pendingFocus = pfe[0]; var setPendingFocus = pfe[1];
+
+    R.useEffect(function() {
+      if (!pendingFocus) return;
+      var target = document.getElementById(pendingFocus.id);
+      if (!target) return;
+      target.focus();
+      if (pendingFocus.select && typeof target.select === 'function') target.select();
+      setPendingFocus(null);
+    }, [pendingFocus, activeType, data]);
 
     var TEMPLATES = [
       { id: 'missed', label: 'Missed class', icon: '🤒',
@@ -15655,15 +15668,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }
     ];
 
-    function focusById(id, selectText) {
-      setTimeout(function() {
-        if (typeof document === 'undefined') return;
-        var target = document.getElementById(id);
-        if (!target || typeof target.focus !== 'function') return;
-        target.focus();
-        if (selectText && typeof target.select === 'function') target.select();
-      }, 0);
-    }
+    function focusById(id, selectText) { setPendingFocus({ id: id, select: !!selectText }); }
     function templateFor(id) {
       return TEMPLATES.filter(function(template) { return template.id === id; })[0] || null;
     }
@@ -15707,7 +15712,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return;
       }
       var entry = { id: tkId(), date: todayISO(), type: template.id, templateLabel: template.label, body: body };
-      setData(Object.assign({}, data, { saved: [entry].concat(data.saved || []) }));
+      setData(Object.assign({}, data, { saved: [entry].concat(rawSaved) }));
       llAnnounce(template.label + ' draft saved in this browser.');
       returnToTemplates();
     }
@@ -15737,11 +15742,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       });
     }
     function removeDraft(draft) {
-      askLearningLabConfirmation('Remove this saved ' + (draft.templateLabel || draft.type || 'email') + ' draft? This cannot be undone.', {
+      askLearningLabConfirmation('Remove this saved ' + (textValue(draft.templateLabel).trim() || textValue(draft.type).trim() || 'email') + ' draft? This cannot be undone.', {
         title: 'Remove this saved draft?', confirmText: 'Remove draft'
       }).then(function(accepted) {
         if (!accepted) return;
-        setData(Object.assign({}, data, { saved: (data.saved || []).filter(function(item) { return item.id !== draft.id; }) }));
+        setData(Object.assign({}, data, { saved: rawSaved.filter(function(item) { return !(isRecord(item) && item.id === draft.id); }) }));
         llAnnounce('Saved email draft removed.');
         focusById('learning-lab-email-saved-heading');
       });
@@ -15805,10 +15810,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       );
     }
 
-    var savedDrafts = data.saved || [];
+    var savedDrafts = rawSaved.filter(isRecord);
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('📧', 'Teacher Email Builder', 'Choose a template, review every placeholder, and adapt it in your own words.', '#3b82f6'),
-      hh('p', { style: { margin: '0 0 12px', color: '#dbeafe', fontSize: 11, lineHeight: 1.55 } }, 'This tool prepares text only. It does not address, send, or submit an email.'),
+      hh('p', { style: { margin: '0 0 12px', color: '#dbeafe', fontSize: 12, lineHeight: 1.55 } }, 'This tool prepares text only. It does not address, send, or submit an email.'),
       hh('section', { 'aria-labelledby': 'learning-lab-email-template-heading' },
         hh('h2', { id: 'learning-lab-email-template-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#dbeafe', fontSize: 15 } }, 'Choose an email template'),
         hh('ul', { 'aria-label': 'Teacher email templates', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, margin: '0 0 16px', padding: 0, listStyle: 'none' } },
@@ -15835,14 +15840,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           : hh('ul', { 'aria-label': 'Most recent saved email drafts', style: { display: 'flex', flexDirection: 'column', gap: 10, margin: 0, padding: 0, listStyle: 'none' } },
               savedDrafts.slice(0, 10).map(function(draft) {
                 var template = templateFor(draft.type);
-                var label = draft.templateLabel || (template ? template.label : 'Email');
+                var label = textValue(draft.templateLabel).trim() || (template ? template.label : 'Email');
                 var headingId = 'learning-lab-email-draft-heading-' + draft.id;
                 return hh('li', { key: 'sd-' + draft.id },
                   hh('article', { 'aria-labelledby': headingId, style: { padding: 12, borderRadius: 9, background: 'rgba(15,23,42,0.65)', border: '1px solid #60a5fa' } },
                     hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
                       hh('div', null,
                         hh('h3', { id: headingId, style: { margin: '0 0 4px', color: '#bfdbfe', fontSize: 13 } }, label + ' draft'),
-                        hh('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 11 } }, 'Saved ', hh('time', { dateTime: draft.date || undefined }, relDate(draft.date)))
+                        hh('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12 } }, 'Saved ', hh('time', { dateTime: textValue(draft.date).trim() || undefined }, relDate(textValue(draft.date).trim())))
                       ),
                       hh('button', {
                         type: 'button', onClick: function() { removeDraft(draft); }, 'aria-label': 'Remove saved ' + label + ' draft',
@@ -15851,7 +15856,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                     ),
                     hh('details', { style: { marginTop: 10, color: '#e2e8f0' } },
                       hh('summary', { style: { display: 'flex', alignItems: 'center', minHeight: 44, color: '#dbeafe', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Review full draft'),
-                      hh('pre', { style: { margin: '8px 0 0', padding: 10, overflow: 'auto', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', borderRadius: 6, background: '#020617', color: '#f1f5f9', fontSize: 11, lineHeight: 1.55 } }, String(draft.body || 'Empty draft'))
+                      hh('pre', { style: { margin: '8px 0 0', padding: 10, overflow: 'auto', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', borderRadius: 6, background: '#020617', color: '#f1f5f9', fontSize: 12, lineHeight: 1.55 } }, textValue(draft.body).trim() || 'Empty draft')
                     )
                   )
                 );
@@ -20768,7 +20773,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkSuccess',  icon: '🏆', label: 'Success Log',          color: '#10b981', desc: 'Log wins, tiny + big (Goldman 2020)',
         stat: (Array.isArray((data.mytkSuccess || {}).successes) ? (data.mytkSuccess || {}).successes.length : 0) + ' wins', cta: 'Log a win' },
       { id: 'mytkEmail',    icon: '📧', label: 'Teacher Email Builder',color: '#3b82f6', desc: '6 templates for common student emails',
-        stat: ((data.mytkEmail || {}).saved || []).length + ' drafts', cta: 'Pick a template' },
+        stat: (Array.isArray((data.mytkEmail || {}).saved) ? (data.mytkEmail || {}).saved.length : 0) + ' drafts', cta: 'Pick a template' },
       { id: 'mytkBody',     icon: '🫀', label: 'Body Awareness',       color: '#ec4899', desc: '8-area body scan, builds interoception',
         stat: ((data.mytkBody || {}).checks || []).length + ' scans', cta: 'Scan now' },
       { id: 'mytkAchieve',  icon: '🏆', label: 'Achievement Wall',     color: '#fbbf24', desc: 'Gallery of accomplishments',

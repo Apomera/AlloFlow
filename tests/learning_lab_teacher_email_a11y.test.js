@@ -73,7 +73,7 @@ describe('Learning Lab Teacher Email Builder accessibility', () => {
     expect(email).toContain('Clipboard access is unavailable. The email body is selected; use Control+C or Command+C');
     expect(email).toContain('The email could not be copied automatically. The body is selected; use Control+C or Command+C.');
     expect(email).toContain("focusById('learning-lab-email-body', true)");
-    expect(email).toContain("if (selectText && typeof target.select === 'function') target.select()");
+    expect(email).toContain("if (pendingFocus.select && typeof target.select === 'function') target.select()");
   });
 
   it('confirms before discarding changed editor content', () => {
@@ -90,7 +90,7 @@ describe('Learning Lab Teacher Email Builder accessibility', () => {
   it('trims saved body text and preserves unrelated section data', () => {
     expect(email).toContain('var body = form.body.trim();');
     expect(email).toContain('body: body');
-    expect(email).toContain("setData(Object.assign({}, data, { saved: [entry].concat(data.saved || []) }))");
+    expect(email).toContain("setData(Object.assign({}, data, { saved: [entry].concat(rawSaved) }))");
   });
 
   it('announces saves and accurately describes local-only storage', () => {
@@ -127,12 +127,12 @@ describe('Learning Lab Teacher Email Builder accessibility', () => {
   it('shows complete saved draft text on request without forced truncation', () => {
     expect(email).toContain("hh('details'");
     expect(email).toContain("'Review full draft'");
-    expect(email).toContain("String(draft.body || 'Empty draft')");
+    expect(email).toContain("textValue(draft.body).trim() || 'Empty draft'");
     expect(email).not.toContain("substring(0, 200) + '...'");
   });
 
   it('uses time semantics and explains the ten-draft display limit', () => {
-    expect(email).toContain("hh('time', { dateTime: draft.date || undefined }, relDate(draft.date))");
+    expect(email).toContain("hh('time', { dateTime: textValue(draft.date).trim() || undefined }, relDate(textValue(draft.date).trim()))");
     expect(email).toContain("'Showing the 10 most recent drafts out of ' + savedDrafts.length + '.'");
   });
 
@@ -143,7 +143,7 @@ describe('Learning Lab Teacher Email Builder accessibility', () => {
 
   it('names deletion controls, preserves data, announces removal, and restores focus', () => {
     expect(email).toContain("'aria-label': 'Remove saved ' + label + ' draft'");
-    expect(email).toContain("setData(Object.assign({}, data, { saved: (data.saved || []).filter");
+    expect(email).toContain("setData(Object.assign({}, data, { saved: rawSaved.filter");
     expect(email).toContain("llAnnounce('Saved email draft removed.')");
     expect(email).toContain("focusById('learning-lab-email-saved-heading')");
   });
@@ -153,6 +153,18 @@ describe('Learning Lab Teacher Email Builder accessibility', () => {
     expect(email).toContain("width: '100%', minHeight: 44");
     expect(email).toContain("minWidth: 44, minHeight: 44");
     expect(email).toContain("minHeight: 260");
+  });
+
+  it('handles malformed legacy draft data without crashing', () => {
+    expect(email).toContain('var rawSaved = Array.isArray(data.saved) ? data.saved : [];');
+    expect(email).toContain('var savedDrafts = rawSaved.filter(isRecord);');
+    expect(source).toContain("stat: (Array.isArray((data.mytkEmail || {}).saved) ? (data.mytkEmail || {}).saved.length : 0) + ' drafts'");
+  });
+
+  it('synchronizes focus with rendered state, keeping the select-text behavior', () => {
+    expect(email).toContain('function focusById(id, selectText) { setPendingFocus({ id: id, select: !!selectText }); }');
+    expect(email).toContain('if (pendingFocus.select && typeof target.select === ' + String.fromCharCode(39) + 'function' + String.fromCharCode(39) + ') target.select();');
+    expect(email).not.toContain('setTimeout');
   });
 
   it('keeps the deployed mirror identical', () => {
