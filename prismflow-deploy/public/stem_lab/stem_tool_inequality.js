@@ -143,6 +143,34 @@ window.StemLab = window.StemLab || {
       // i18n: __alloT(key, englishFallback) → ctx.t if available, else the English string.
       // Keys are stem.inequality.<snake_case>; harvested by dev-tools/i18n/extract_stem_tool_en.cjs.
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // i18n phase-2: BADGES is defined at module scope (before render) so its label/desc
+      // strings can't reach __alloT directly. This render-scope map holds literal keys (so
+      // extract_stem_tool_en.cjs harvests them) keyed by the English text, and _bt(en) looks
+      // up the translation at each render-scope display site (badge panel below). The badge
+      // TOAST at module scope (checkBadges) is a deeper refactor — left for phase-2b.
+      var _badgeT = {
+        'First Solve': __alloT('stem.inequality.badge_first_solve_label', 'First Solve'),
+        'Answer your first quiz correctly': __alloT('stem.inequality.badge_first_solve_desc', 'Answer your first quiz correctly'),
+        'On Fire': __alloT('stem.inequality.badge_on_fire_label', 'On Fire'),
+        '5 quiz answers in a row': __alloT('stem.inequality.badge_on_fire_desc', '5 quiz answers in a row'),
+        'Lightning': __alloT('stem.inequality.badge_lightning_label', 'Lightning'),
+        '10 quiz answers in a row': __alloT('stem.inequality.badge_lightning_desc', '10 quiz answers in a row'),
+        'All Levels': __alloT('stem.inequality.badge_all_levels_label', 'All Levels'),
+        'Solve quizzes in Easy, Medium & Hard': __alloT('stem.inequality.badge_all_levels_desc', 'Solve quizzes in Easy, Medium & Hard'),
+        'Solver Pro': __alloT('stem.inequality.badge_solver_pro_label', 'Solver Pro'),
+        'Use the step-by-step solver 5 times': __alloT('stem.inequality.badge_solver_pro_desc', 'Use the step-by-step solver 5 times'),
+        'Test Master': __alloT('stem.inequality.badge_test_master_label', 'Test Master'),
+        'Test 10 different values': __alloT('stem.inequality.badge_test_master_desc', 'Test 10 different values'),
+        'Abs Value': __alloT('stem.inequality.badge_abs_value_label', 'Abs Value'),
+        'Graph an absolute value inequality': __alloT('stem.inequality.badge_abs_value_desc', 'Graph an absolute value inequality'),
+        'Compound': __alloT('stem.inequality.badge_compound_label', 'Compound'),
+        'Graph a compound inequality': __alloT('stem.inequality.badge_compound_desc', 'Graph a compound inequality'),
+        'Dual Grapher': __alloT('stem.inequality.badge_dual_grapher_label', 'Dual Grapher'),
+        'Use both 1D and 2D graph modes': __alloT('stem.inequality.badge_dual_grapher_desc', 'Use both 1D and 2D graph modes'),
+        'Quiz Champ': __alloT('stem.inequality.badge_quiz_champ_label', 'Quiz Champ'),
+        'Get 20 total quiz answers correct': __alloT('stem.inequality.badge_quiz_champ_desc', 'Get 20 total quiz answers correct')
+      };
+      var _bt = function (s) { return _badgeT.hasOwnProperty(s) ? _badgeT[s] : s; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var setStemLabTool = ctx.setStemLabTool;
       var addToast = ctx.addToast;
@@ -578,7 +606,7 @@ window.StemLab = window.StemLab || {
                 ].map(function(metric) {
                   return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
                     h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
-                    h('div', { className: 'mt-1 text-[9px] font-bold uppercase tracking-wider text-fuchsia-200' }, metric.label)
+                    h('div', { className: 'mt-1 text-[10px] font-bold uppercase tracking-wider text-fuchsia-200' }, metric.label)
                   );
                 })
               )
@@ -611,10 +639,10 @@ window.StemLab = window.StemLab || {
                 key: badge.id,
                 className: 'text-center p-2 rounded-lg border transition-all ' +
                   (earned ? 'bg-white border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-200 opacity-50'),
-                title: badge.desc
+                title: _bt(badge.desc)
               },
                 h('div', { className: 'text-xl' }, earned ? badge.icon : '\uD83D\uDD12'),
-                h('div', { className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-600') }, badge.label)
+                h('div', { className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-600') }, _bt(badge.label))
               );
             })
           )
