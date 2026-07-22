@@ -5099,26 +5099,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           h('div', { className: 'bg-white dark:bg-slate-800 rounded-2xl p-5 max-w-sm mx-4 shadow-2xl border-2 border-emerald-400' },
             h('div', { className: 'flex items-center justify-between mb-3' },
               h('span', { className: 'text-sm font-bold text-emerald-700 dark:text-emerald-300' },
-                '\uD83C\uDF3F Step ' + (tutorialStep + 1) + ' of 5'),
-              h('button', { 'aria-label': 'Dismiss Tutorial', className: 'transition-colors text-slate-600 hover:text-slate-900 text-sm rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500', onClick: dismissTutorial }, '\u2715')
+                '\uD83C\uDF3F ' + __alloT('stem.ecosystem.step_prefix', 'Step ') + (tutorialStep + 1) + __alloT('stem.ecosystem.of_5_suffix', ' of 5')),
+              h('button', { 'aria-label': __alloT('stem.ecosystem.aria_dismiss_tutorial', 'Dismiss Tutorial'), className: 'transition-colors text-slate-600 hover:text-slate-900 text-sm rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500', onClick: dismissTutorial }, '\u2715')
             ),
             h('p', { className: 'text-sm text-slate-700 dark:text-slate-200 mb-4 leading-relaxed' },
               [
-                '\uD83C\uDF3F Welcome to the Ecosystem Simulator! Watch rabbits and foxes interact in the canvas above.',
-                '\uD83C\uDF0E Choose a biome at the top to change the environment. Each has unique colors and ecology.',
-                '\u26A1 Trigger environmental events to test the ecosystem\u2019s resilience! Try Drought or Wildfire.',
-                '\uD83C\uDFAF Complete ecology challenges by maintaining specific population patterns. Earn RP!',
-                '\uD83D\uDCCA Run the graph simulation with Lotka\u2013Volterra equations. Try all 4 presets!'
+                '\uD83C\uDF3F ' + __alloT('stem.ecosystem.tut_step_1', 'Welcome to the Ecosystem Simulator! Watch rabbits and foxes interact in the canvas above.'),
+                '\uD83C\uDF0E ' + __alloT('stem.ecosystem.tut_step_2', 'Choose a biome at the top to change the environment. Each has unique colors and ecology.'),
+                '\u26A1 ' + __alloT('stem.ecosystem.tut_step_3', 'Trigger environmental events to test the ecosystem\u2019s resilience! Try Drought or Wildfire.'),
+                '\uD83C\uDFAF ' + __alloT('stem.ecosystem.tut_step_4', 'Complete ecology challenges by maintaining specific population patterns. Earn RP!'),
+                '\uD83D\uDCCA ' + __alloT('stem.ecosystem.tut_step_5', 'Run the graph simulation with Lotka\u2013Volterra equations. Try all 4 presets!')
               ][tutorialStep]
             ),
             h('div', { className: 'flex gap-2' },
               tutorialStep > 0 && h('button', { 'aria-label': __alloT('stem.ecosystem.back', 'Back'),
                 className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-[0.97]',
                 onClick: function() { upd('tutorialStep', tutorialStep - 1); }
-              }, '\u2190 Back'),
+              }, '\u2190 ' + __alloT('stem.ecosystem.back', 'Back')),
               h('button', { className: 'transition-colors flex-1 py-2 rounded-xl text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-600 shadow-md active:scale-[0.97]',
                 onClick: tutorialStep < 4 ? advanceTutorial : dismissTutorial
-              }, tutorialStep < 4 ? 'Next \u2192' : '\u2714 Start Exploring!')
+              }, tutorialStep < 4 ? __alloT('stem.ecosystem.next', 'Next') + ' \u2192' : '\u2714 ' + __alloT('stem.ecosystem.start_exploring', 'Start Exploring!'))
             )
           )
         )

@@ -308,5 +308,15 @@
   "answer_to_track": "Answer questions to track your progress",
   "badges_earned": "Badges Earned: ",
   "earned": "EARNED",
-  "simulate": "Simulate"
+  "simulate": "Simulate",
+  "step_prefix": "Step ",
+  "of_5_suffix": " of 5",
+  "aria_dismiss_tutorial": "Dismiss Tutorial",
+  "tut_step_1": "Welcome to the Ecosystem Simulator! Watch rabbits and foxes interact in the canvas above.",
+  "tut_step_2": "Choose a biome at the top to change the environment. Each has unique colors and ecology.",
+  "tut_step_3": "Trigger environmental events to test the ecosystem’s resilience! Try Drought or Wildfire.",
+  "tut_step_4": "Complete ecology challenges by maintaining specific population patterns. Earn RP!",
+  "tut_step_5": "Run the graph simulation with Lotka–Volterra equations. Try all 4 presets!",
+  "next": "Next",
+  "start_exploring": "Start Exploring!"
 }
