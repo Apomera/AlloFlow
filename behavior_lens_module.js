@@ -593,11 +593,46 @@
      * InfoTooltip — generic tooltip for micro-trainings next to labels
      */
     const InfoTooltip = ({ text }) => {
-        return h('div', { className: 'group relative inline-flex items-center justify-center ms-1.5 z-10' },
-            h('span', { className: 'w-4 h-4 rounded-full bg-indigo-100/80 text-indigo-500 text-[11px] font-black flex items-center justify-center cursor-help border border-indigo-200 transition-colors group-hover:bg-indigo-500 group-hover:text-white' }, '?'),
-            h('div', { className: 'absolute z-[999] bottom-full left-1/2 -translate-x-1/2 mb-2 w-60 p-3 bg-slate-800 text-white text-xs font-medium rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-normal pointer-events-none leading-relaxed' },
+        const [show, setShow] = useState(false);
+        const tooltipIdRef = useRef(`bl-info-tooltip-${uid()}`);
+        useEffect(() => {
+            if (!show) return undefined;
+            const dismissOnEscape = (event) => {
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    setShow(false);
+                }
+            };
+            document.addEventListener('keydown', dismissOnEscape);
+            return () => document.removeEventListener('keydown', dismissOnEscape);
+        }, [show]);
+        const tooltipId = tooltipIdRef.current;
+        return h('span', {
+            className: 'relative inline-flex items-center justify-center ms-1.5 z-10',
+            onMouseEnter: () => setShow(true),
+            onMouseLeave: () => setShow(false)
+        },
+            h('button', {
+                type: 'button',
+                'aria-label': 'More information',
+                'aria-describedby': show ? tooltipId : undefined,
+                'aria-expanded': show ? 'true' : 'false',
+                onFocus: () => setShow(true),
+                onBlur: () => setShow(false),
+                onClick: () => setShow((current) => !current),
+                className: 'w-6 h-6 min-w-6 min-h-6 rounded-full bg-indigo-100 text-indigo-700 text-xs font-black inline-flex items-center justify-center cursor-help border border-indigo-300 transition-colors hover:bg-indigo-700 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700'
+            }, h('span', { 'aria-hidden': 'true' }, '?')),
+            show && h('span', {
+                id: tooltipId,
+                role: 'tooltip',
+                className: 'absolute z-[999] bottom-full left-1/2 -translate-x-1/2 mb-2 w-60 p-3 bg-slate-800 text-white text-xs font-medium rounded-xl shadow-xl whitespace-normal leading-relaxed',
+                style: { display: 'block' }
+            },
                 text,
-                h('div', { className: 'absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-s-[6px] border-e-[6px] border-t-[6px] border-s-transparent border-e-transparent border-t-slate-800' })
+                h('span', {
+                    'aria-hidden': 'true',
+                    className: 'absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-s-[6px] border-e-[6px] border-t-[6px] border-s-transparent border-e-transparent border-t-slate-800'
+                })
             )
         );
     };
