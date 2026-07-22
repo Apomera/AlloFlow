@@ -1344,7 +1344,7 @@ const d = labToolData.rocks || {};
 
             canvasEl.setAttribute('role', 'application');
 
-            canvasEl.setAttribute('aria-label', 'Rock cycle landscape. Press 1 for volcano igneous rocks, 2 for river delta sedimentary rocks, 3 for mountain core metamorphic rocks.');
+            canvasEl.setAttribute('aria-label', __alloT('stem.rocks.rock_cycle_landscape_aria', 'Rock cycle landscape. Press 1 for volcano igneous rocks, 2 for river delta sedimentary rocks, 3 for mountain core metamorphic rocks.'));
 
             function onRockKey(e) {
 
@@ -1703,17 +1703,17 @@ const d = labToolData.rocks || {};
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': __alloT('stem.rocks.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83E\uDEA8 Rocks & Minerals Explorer"),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83E\uDEA8 " + __alloT('stem.rocks.rocks_minerals_explorer', "Rocks & Minerals Explorer")),
 
-              React.createElement("button", { onClick: function () { setStemLabTool('geologyExplorer'); }, title: 'Open the 3D voxel cross-section of the crust', 'aria-label': 'Open Geology Explorer \u2014 3D voxel cross-section', className: "transition-colors active:scale-[0.97] text-[11px] font-bold px-2.5 py-1 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100" }, "\u26F0\uFE0F Explore in 3D \u2192"),
+              React.createElement("button", { onClick: function () { setStemLabTool('geologyExplorer'); }, title: __alloT('stem.rocks.open_3d_voxel_cross_section', 'Open the 3D voxel cross-section of the crust'), 'aria-label': __alloT('stem.rocks.open_geology_explorer_3d', 'Open Geology Explorer \u2014 3D voxel cross-section'), className: "transition-colors active:scale-[0.97] text-[11px] font-bold px-2.5 py-1 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100" }, "\u26F0\uFE0F " + __alloT('stem.rocks.explore_in_3d', "Explore in 3D") + " \u2192"),
 
               React.createElement("div", { className: "flex gap-1 ml-auto" },
 
                 ['landscape', 'rocks', 'minerals', 'mystery', 'quiz', 'weathHunt'].map(function (m) {
 
-                  const modeLabel = m === 'landscape' ? 'Landscape' : m === 'rocks' ? 'Rocks' : m === 'minerals' ? 'Minerals' : m === 'mystery' ? 'Mystery Rock' : m === 'weathHunt' ? 'Weathering Lab' : 'Quiz';
+                  const modeLabel = m === 'landscape' ? __alloT('stem.rocks.mode_landscape', 'Landscape') : m === 'rocks' ? __alloT('stem.rocks.mode_rocks', 'Rocks') : m === 'minerals' ? __alloT('stem.rocks.mode_minerals', 'Minerals') : m === 'mystery' ? __alloT('stem.rocks.mystery_rock', 'Mystery Rock') : m === 'weathHunt' ? __alloT('stem.rocks.weathering_lab', 'Weathering Lab') : __alloT('stem.rocks.mode_quiz', 'Quiz');
 
                   return React.createElement("button", { "aria-label": "Switch to " + modeLabel + " mode",
 
@@ -1731,7 +1731,7 @@ const d = labToolData.rocks || {};
 
                   },
 
-                    m === 'landscape' ? '🗺️ Landscape' : m === 'rocks' ? '🪨 Rocks' : m === 'minerals' ? '💎 Minerals' : m === 'mystery' ? '🔍 Mystery' : m === 'weathHunt' ? '⛏️ Weathering' : '🧠 Quiz');
+                    m === 'landscape' ? '🗺️ ' + __alloT('stem.rocks.mode_landscape', 'Landscape') : m === 'rocks' ? '🪨 ' + __alloT('stem.rocks.mode_rocks', 'Rocks') : m === 'minerals' ? '💎 ' + __alloT('stem.rocks.mode_minerals', 'Minerals') : m === 'mystery' ? '🔍 ' + __alloT('stem.rocks.mystery', 'Mystery') : m === 'weathHunt' ? '⛏️ ' + __alloT('stem.rocks.weathering', 'Weathering') : '🧠 ' + __alloT('stem.rocks.mode_quiz', 'Quiz'));
 
                 })
 
@@ -1751,7 +1751,7 @@ const d = labToolData.rocks || {};
                 ),
                 React.createElement("span", {
                   className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-600"
-                }, (d.completedChallenges || []).length + "/" + ROCKS_CHALLENGES.length + " challenges")
+                }, (d.completedChallenges || []).length + "/" + ROCKS_CHALLENGES.length + " " + __alloT('stem.rocks.challenges', "challenges"))
               ),
               React.createElement("div", { className: "w-full rounded-full h-2.5 bg-orange-100/50", style: { boxShadow: "inset 0 1px 2px rgba(0,0,0,0.1)" } },
                 React.createElement("div", {
@@ -1774,11 +1774,11 @@ const d = labToolData.rocks || {};
             // ── Topic-accent hero band per mode ──
             (function() {
               var MODE_META = {
-                landscape: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '🗺️', title: 'Landscape, the geology you can SEE',           hint: 'Volcano, river delta, mountain face. Surface features tell you what\u2019s underneath. Plate tectonics + erosion + time = every landscape. The Hawaiian volcanoes are 30+ million years old; Mt. Etna is 500K.' },
-                rocks:     { accent: '#92400e', soft: 'rgba(146,64,14,0.10)',  icon: '🪨', title: 'Rocks: igneous, sedimentary, metamorphic',     hint: 'Igneous (cooled magma: granite, basalt), sedimentary (compressed layers: sandstone, limestone), metamorphic (heat + pressure: marble, slate). The rock cycle moves stones between all three over millions of years.' },
-                minerals:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '💎', title: 'Minerals, the building blocks of rocks',         hint: 'Mohs scale 1-10: talc soft, diamond hardest. Streak, luster, cleavage, hardness, color = the 5 ID tests. Quartz is 12% of Earth\u2019s crust; you carry it in every grain of sand.' },
-                mystery:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '🔍', title: 'Mystery Rock, detective ID',                  hint: 'Real geology workflow: observe (color, crystals, layers), test (hardness, streak, fizz with HCl for carbonate), classify. The fizz test alone separates limestone from a pile of look-alikes.' },
-                quiz:      { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '🧠', title: 'Quiz, graded ID + classification',              hint: 'NGSS MS-ESS2-1: rock cycle as material system. AP ES practice: matching rocks to environment of formation. Builds the visual library so you can ID a rock at the Grand Canyon by sight.' }
+                landscape: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '🗺️', title: __alloT('stem.rocks.hero_landscape_title', 'Landscape, the geology you can SEE'),           hint: __alloT('stem.rocks.hero_landscape_hint', 'Volcano, river delta, mountain face. Surface features tell you what\u2019s underneath. Plate tectonics + erosion + time = every landscape. The Hawaiian volcanoes are 30+ million years old; Mt. Etna is 500K.') },
+                rocks:     { accent: '#92400e', soft: 'rgba(146,64,14,0.10)',  icon: '🪨', title: __alloT('stem.rocks.hero_rocks_title', 'Rocks: igneous, sedimentary, metamorphic'),     hint: __alloT('stem.rocks.hero_rocks_hint', 'Igneous (cooled magma: granite, basalt), sedimentary (compressed layers: sandstone, limestone), metamorphic (heat + pressure: marble, slate). The rock cycle moves stones between all three over millions of years.') },
+                minerals:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '💎', title: __alloT('stem.rocks.hero_minerals_title', 'Minerals, the building blocks of rocks'),         hint: __alloT('stem.rocks.hero_minerals_hint', 'Mohs scale 1-10: talc soft, diamond hardest. Streak, luster, cleavage, hardness, color = the 5 ID tests. Quartz is 12% of Earth\u2019s crust; you carry it in every grain of sand.') },
+                mystery:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '🔍', title: __alloT('stem.rocks.hero_mystery_title', 'Mystery Rock, detective ID'),                  hint: __alloT('stem.rocks.hero_mystery_hint', 'Real geology workflow: observe (color, crystals, layers), test (hardness, streak, fizz with HCl for carbonate), classify. The fizz test alone separates limestone from a pile of look-alikes.') },
+                quiz:      { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '🧠', title: __alloT('stem.rocks.hero_quiz_title', 'Quiz, graded ID + classification'),              hint: __alloT('stem.rocks.hero_quiz_hint', 'NGSS MS-ESS2-1: rock cycle as material system. AP ES practice: matching rocks to environment of formation. Builds the visual library so you can ID a rock at the Grand Canyon by sight.') }
               };
               var meta = MODE_META[mode] || MODE_META.landscape;
               return React.createElement('div', {
@@ -1806,13 +1806,13 @@ const d = labToolData.rocks || {};
 
             mode === 'landscape' && React.createElement("div", null,
 
-              React.createElement("p", { className: "text-xs text-slate-600 mb-2 italic" }, "Click landscape zones to explore rock types. Hover to see labels. Keyboard: Tab to canvas, then 1=Volcano, 2=River, 3=Mountain."),
+              React.createElement("p", { className: "text-xs text-slate-600 mb-2 italic" }, __alloT('stem.rocks.landscape_click_zones_hint', "Click landscape zones to explore rock types. Hover to see labels. Keyboard: Tab to canvas, then 1=Volcano, 2=River, 3=Mountain.")),
 
               React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-200", style: { height: '520px' } },
 
                 React.createElement("canvas", {
 
-                  role: "img", tabIndex: 0, "aria-label": "Rock cycle diagram — click a rock type or process to explore how rocks transform.",
+                  role: "img", tabIndex: 0, "aria-label": __alloT('stem.rocks.rock_cycle_diagram_aria', "Rock cycle diagram — click a rock type or process to explore how rocks transform."),
                   "data-rocks-canvas": "true",
 
                   ref: function (el) {
@@ -1859,9 +1859,9 @@ const d = labToolData.rocks || {};
 
               React.createElement("div", { className: "mt-2 bg-amber-50 rounded-xl border border-amber-200 p-3 text-xs text-slate-600" },
 
-                React.createElement("p", { className: "font-bold text-amber-800 mb-1" }, "🔄 The Rock Cycle"),
+                React.createElement("p", { className: "font-bold text-amber-800 mb-1" }, "🔄 " + __alloT('stem.rocks.the_rock_cycle', "The Rock Cycle")),
 
-                React.createElement("p", null, "Rocks continuously transform: Igneous rocks weather into sediment → Sediment compacts into Sedimentary rocks → Heat & pressure create Metamorphic rocks → Melting creates magma → Cooling forms new Igneous rocks. The cycle never stops!")
+                React.createElement("p", null, __alloT('stem.rocks.rock_cycle_explanation', "Rocks continuously transform: Igneous rocks weather into sediment → Sediment compacts into Sedimentary rocks → Heat & pressure create Metamorphic rocks → Melting creates magma → Cooling forms new Igneous rocks. The cycle never stops!"))
 
               )
 
@@ -4548,7 +4548,7 @@ const d = labToolData.rockCycle || {};
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { type: 'button', onClick: () => setStemLabTool(null), className: "transition-colors grid h-10 w-10 shrink-0 place-items-center border border-slate-200 hover:bg-slate-100 rounded-xl active:scale-[0.97]", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { type: 'button', onClick: () => setStemLabTool(null), className: "transition-colors grid h-10 w-10 shrink-0 place-items-center border border-slate-200 hover:bg-slate-100 rounded-xl active:scale-[0.97]", 'aria-label': __alloT('stem.rocks.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83E\uDEA8 Rock Cycle"),
 
