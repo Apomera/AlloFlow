@@ -179,6 +179,8 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "board" renders iden
 </div>
 <div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
 <div style="display:flex;flex-direction:column;flex:1;overflow:hidden;padding:16px;gap:12px">
+<p id="ss-page-reorder-help" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">To reorder board pages, focus a page and press Alt plus Left or Right Arrow.</p>
+<p id="ss-cell-reorder-help" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">To reorder a board cell, focus its Speak button and press Alt plus an Arrow key.</p>
 <div style="flex-shrink:0">
 <div style="font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Quick Templates</div>
 <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -255,7 +257,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "board" renders iden
 <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#6b7280;flex-direction:column;gap:10px">
 <div style="font-size:48px">📋</div>
 <p style="font-weight:600">Enter a topic and generate a complete communication board</p>
-<p style="font-size:12px;max-width:380px;text-align:center">AI writes the word list, you generate symbols, and export a print-ready board. Drag cells to reorder. Color coding follows AAC conventions.</p>
+<p style="font-size:12px;max-width:380px;text-align:center">AI writes the word list, you generate symbols, and export a print-ready board. Drag cells to reorder, or focus Speak and press Alt plus an Arrow key. Color coding follows AAC conventions.</p>
 </div>
 </div>
 </div>

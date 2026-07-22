@@ -7183,7 +7183,67 @@
     function renderBoardTab() {
       var hasImages = boardWords.some(function (w) { return w.image; });
       var isLoading = Object.keys(boardLoading).length > 0 || boardGenerating;
+      var announceBoardReorder = function (message) {
+        if (!ssLiveRef.current) return;
+        ssLiveRef.current.textContent = '';
+        setTimeout(function () { if (ssLiveRef.current) ssLiveRef.current.textContent = message; }, 0);
+      };
+      var focusReorderedControl = function (selector, value) {
+        setTimeout(function () {
+          var controls = document.querySelectorAll(selector);
+          for (var i = 0; i < controls.length; i++) {
+            if (controls[i].getAttribute(selector.indexOf('page') >= 0 ? 'data-board-page-id' : 'data-board-speak-id') === value) {
+              controls[i].focus();
+              break;
+            }
+          }
+        }, 0);
+      };
+      var moveBoardPage = function (fromIdx, toIdx) {
+        if (!boardPages || fromIdx < 0 || toIdx < 0 || fromIdx >= boardPages.length || toIdx >= boardPages.length || fromIdx === toIdx) return;
+        var movedPage = boardPages[fromIdx];
+        setBoardPages(function (prev) {
+          var flushed = commitCurrentPage(prev, activePageIdx, boardWords, boardCols, null);
+          var arr = flushed.slice();
+          var moved = arr.splice(fromIdx, 1)[0];
+          arr.splice(toIdx, 0, moved);
+          var newActive = activePageIdx === fromIdx ? toIdx : (activePageIdx > fromIdx && activePageIdx <= toIdx ? activePageIdx - 1 : (activePageIdx < fromIdx && activePageIdx >= toIdx ? activePageIdx + 1 : activePageIdx));
+          setActivePageIdx(newActive);
+          return arr;
+        });
+        announceBoardReorder((movedPage.title || ('Page ' + (fromIdx + 1))) + ' moved to position ' + (toIdx + 1) + ' of ' + boardPages.length);
+        focusReorderedControl('[data-board-page-id]', movedPage.id);
+      };
+      var reorderBoardWord = function (fromId, toId) {
+        if (!fromId || !toId || fromId === toId) return;
+        var from = boardWords.findIndex(function (w) { return w.id === fromId; });
+        var to = boardWords.findIndex(function (w) { return w.id === toId; });
+        if (from < 0 || to < 0) return;
+        var movedWord = boardWords[from];
+        setBoardWords(function (prev) {
+          var currentFrom = prev.findIndex(function (w) { return w.id === fromId; });
+          var currentTo = prev.findIndex(function (w) { return w.id === toId; });
+          if (currentFrom < 0 || currentTo < 0) return prev;
+          var next = prev.slice();
+          next.splice(currentTo, 0, next.splice(currentFrom, 1)[0]);
+          return next;
+        });
+        announceBoardReorder((movedWord.translatedLabel || movedWord.label) + ' moved to position ' + (to + 1) + ' of ' + boardWords.length);
+        focusReorderedControl('[data-board-speak-id]', movedWord.id);
+      };
+      var moveBoardWordByKeyboard = function (wordId, delta) {
+        var from = boardWords.findIndex(function (w) { return w.id === wordId; });
+        if (from < 0) return;
+        var to = Math.max(0, Math.min(boardWords.length - 1, from + delta));
+        if (to === from) {
+          announceBoardReorder((boardWords[from].translatedLabel || boardWords[from].label) + ' is already at the board edge');
+          return;
+        }
+        reorderBoardWord(wordId, boardWords[to].id);
+      };
       return e('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', padding: '16px', gap: '12px' } },
+        e('p', { id: 'ss-page-reorder-help', style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, 'To reorder board pages, focus a page and press Alt plus Left or Right Arrow.'),
+        e('p', { id: 'ss-cell-reorder-help', style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, 'To reorder a board cell, focus its Speak button and press Alt plus an Arrow key.'),
         // Template picker row
         e('div', { style: { flexShrink: 0 } },
           e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, 'Quick Templates'),
@@ -7294,21 +7354,20 @@
                   ev.currentTarget.style.borderColor = active ? '#92400e' : '#fde68a';
                   var fromIdx = parseInt(ev.dataTransfer.getData('text/plain'), 10);
                   if (isNaN(fromIdx) || fromIdx === pi) return;
-                  setBoardPages(function (prev) {
-                    var flushed = commitCurrentPage(prev, activePageIdx, boardWords, boardCols, null);
-                    var arr = flushed.slice();
-                    var moved = arr.splice(fromIdx, 1)[0];
-                    arr.splice(pi, 0, moved);
-                    // Update activePageIdx to follow the current page
-                    var newActive = activePageIdx === fromIdx ? pi : (activePageIdx > fromIdx && activePageIdx <= pi ? activePageIdx - 1 : (activePageIdx < fromIdx && activePageIdx >= pi ? activePageIdx + 1 : activePageIdx));
-                    setActivePageIdx(newActive);
-                    return arr;
-                  });
+                  moveBoardPage(fromIdx, pi);
                 },
                 onClick: function () { if (!active) switchPage(pi); },
-                'aria-label': (pg.title || ('Page ' + (pi + 1))) + ' board page',
-                style: { padding: '2px 8px', border: '2px solid ' + (active ? '#92400e' : '#fde68a'), borderRadius: '6px', background: active ? '#92400e' : 'transparent', color: active ? '#fff' : '#92400e', fontSize: '10px', fontWeight: active ? 700 : 400, cursor: 'grab', transition: 'border-color 0.15s' },
-                title: 'Drag to reorder pages'
+                onKeyDown: function (ev) {
+                  if (!ev.altKey || (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight')) return;
+                  ev.preventDefault();
+                  moveBoardPage(pi, Math.max(0, Math.min(boardPages.length - 1, pi + (ev.key === 'ArrowLeft' ? -1 : 1))));
+                },
+                'data-board-page-id': pg.id,
+                'aria-keyshortcuts': 'Alt+ArrowLeft Alt+ArrowRight',
+                'aria-describedby': 'ss-page-reorder-help',
+                'aria-label': (pg.title || ('Page ' + (pi + 1))) + ' board page, position ' + (pi + 1) + ' of ' + boardPages.length,
+                style: { padding: '5px 9px', minHeight: '32px', border: '2px solid ' + (active ? '#92400e' : '#fde68a'), borderRadius: '6px', background: active ? '#92400e' : 'transparent', color: active ? '#fff' : '#92400e', fontSize: '10px', fontWeight: active ? 700 : 400, cursor: 'grab', transition: 'border-color 0.15s' },
+                title: 'Drag or press Alt+Left/Right Arrow to reorder pages'
               }, pg.title || ('Page ' + (pi + 1)));
             }),
             e('button', { onClick: addPage, title: 'Add a new page', 'aria-label': 'Add a new page', style: { background: 'none', border: '1px dashed #92400e', borderRadius: '6px', padding: '2px 7px', color: '#92400e', fontSize: '11px', cursor: 'pointer' } }, '+'),
@@ -7511,7 +7570,7 @@
           ? e('div', { id: 'ss-pb', style: { flex: 1, overflowY: 'auto', background: theme.gridBg, padding: '8px', borderRadius: '8px', transition: 'background 0.2s' } },
               boardTitle && e('h2', { style: { fontWeight: 800, fontSize: '18px', color: theme.textColor, margin: '0 0 10px' } }, boardTitle),
               e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(' + boardCols + ', 1fr)', gap: '8px' } },
-                boardWords.map(function (word) {
+                boardWords.map(function (word, wordIndex) {
                   var bg = theme.cellBg || (boardColor ? (catFill[word.category] || '#f9fafb') : '#fff');
                   var isDragTarget = dragOverBoardId === word.id && dragBoardId !== word.id;
                   var baseBorder = theme.borderOverride || (boardColor ? (catBorder[word.category] || '#e5e7eb') : '#e5e7eb');
@@ -7527,12 +7586,7 @@
                     onDrop: function (ev) {
                       ev.preventDefault();
                       if (!dragBoardId || dragBoardId === word.id) return;
-                      setBoardWords(function (prev) {
-                        var from = prev.findIndex(function (w) { return w.id === dragBoardId; });
-                        var to = prev.findIndex(function (w) { return w.id === word.id; });
-                        if (from < 0 || to < 0) return prev;
-                        var next = prev.slice(); next.splice(to, 0, next.splice(from, 1)[0]); return next;
-                      });
+                      reorderBoardWord(dragBoardId, word.id);
                       setDragBoardId(null); setDragOverBoardId(null);
                     },
                     onDragEnd: function () { setDragBoardId(null); setDragOverBoardId(null); },
@@ -7563,23 +7617,17 @@
                       var fromId = td.fromId;
                       var toId = dragOverBoardId;
                       if (toId && toId !== fromId) {
-                        setBoardWords(function (prev) {
-                          var from = prev.findIndex(function (w) { return w.id === fromId; });
-                          var to = prev.findIndex(function (w) { return w.id === toId; });
-                          if (from < 0 || to < 0) return prev;
-                          var next = prev.slice(); next.splice(to, 0, next.splice(from, 1)[0]); return next;
-                        });
+                        reorderBoardWord(fromId, toId);
                       }
                       setDragBoardId(null); setDragOverBoardId(null);
                     },
                     onTouchCancel: function () { touchDragRef.current = null; setDragBoardId(null); setDragOverBoardId(null); },
-                    role: 'button', tabIndex: 0, 'aria-label': 'Speak ' + word.label,
-                    onClick: function () { speakCell(word.label); },
-                    onKeyDown: function (ev) { if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
-                    style: { background: bg, border: border, borderRadius: '10px', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'grab', minHeight: '100px', transition: 'border-color 0.1s, opacity 0.1s', position: 'relative', opacity: dragBoardId === word.id ? 0.45 : 1 }
+                    role: 'group',
+                    'aria-label': (word.translatedLabel || word.label) + ' board cell, position ' + (wordIndex + 1) + ' of ' + boardWords.length,
+                    style: { background: bg, border: border, borderRadius: '10px', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'grab', minHeight: '112px', transition: 'border-color 0.1s, opacity 0.1s', position: 'relative', opacity: dragBoardId === word.id ? 0.45 : 1 }
                   },
                     // Drag handle indicator
-                    e('div', { className: 'ss-no-print', style: { position: 'absolute', top: 3, left: 4, fontSize: '10px', color: '#d1d5db', lineHeight: 1, userSelect: 'none' } }, '\u28FF'),
+                    e('div', { 'aria-hidden': 'true', className: 'ss-no-print', style: { position: 'absolute', top: 3, left: 4, fontSize: '10px', color: '#d1d5db', lineHeight: 1, userSelect: 'none' } }, '\u28FF'),
                     // Label above image
                     boardTextPos === 'above' && e('span', { style: { fontSize: boardTextSize + 'px', fontWeight: 700, color: theme.textColor, textAlign: 'center', lineHeight: 1.3 } },
                       word.translatedLabel || word.label,
@@ -7604,8 +7652,25 @@
                     e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); recordCellAudio(word.id); }, 'aria-label': 'Reset progress', style: { position: 'absolute', top: 4, left: 4, background: cellRecording === word.id ? 'rgba(220,38,38,0.8)' : (word.audioData ? 'rgba(16,185,129,0.2)' : 'rgba(0,0,0,0.1)'), border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px', color: cellRecording === word.id ? '#fff' : undefined } }, cellRecording === word.id ? '⏹' : (word.audioData ? '🎙️' : '🎤')),
                     // Play custom audio button
                     word.audioData && e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); playCellAudio(word.audioData); }, 'aria-label': '🔊', style: { position: 'absolute', bottom: 4, left: 4, background: 'rgba(37,99,235,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px' } }, '🔊'),
+                    e('button', {
+                      className: 'ss-no-print',
+                      type: 'button',
+                      'data-board-speak-id': word.id,
+                      'aria-keyshortcuts': 'Alt+ArrowLeft Alt+ArrowRight Alt+ArrowUp Alt+ArrowDown',
+                      'aria-describedby': 'ss-cell-reorder-help',
+                      'aria-label': 'Speak ' + (word.translatedLabel || word.label) + '. Position ' + (wordIndex + 1) + ' of ' + boardWords.length,
+                      onClick: function () { speakCell(word.translatedLabel || word.label); },
+                      onKeyDown: function (ev) {
+                        if (!ev.altKey) return;
+                        var delta = ev.key === 'ArrowLeft' ? -1 : ev.key === 'ArrowRight' ? 1 : ev.key === 'ArrowUp' ? -boardCols : ev.key === 'ArrowDown' ? boardCols : 0;
+                        if (!delta) return;
+                        ev.preventDefault();
+                        moveBoardWordByKeyboard(word.id, delta);
+                      },
+                      style: { marginTop: 'auto', minHeight: '28px', minWidth: '64px', border: '1px solid #6d28d9', borderRadius: '6px', padding: '3px 8px', background: '#ede9fe', color: '#5b21b6', fontWeight: 700, fontSize: '10px', cursor: 'pointer' }
+                    }, '\uD83D\uDD0A Speak'),
                     // Remove button
-                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); setBoardWords(function (prev) { return prev.filter(function (w) { return w.id !== word.id; }); }); }, 'aria-label': 'u00d7', style: { position: 'absolute', bottom: 4, right: 4, background: 'rgba(220,38,38,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px', color: '#dc2626' } }, '\u00d7')
+                    e('button', { className: 'ss-no-print', type: 'button', onClick: function (ev) { ev.stopPropagation(); setBoardWords(function (prev) { return prev.filter(function (w) { return w.id !== word.id; }); }); }, 'aria-label': 'Remove ' + (word.translatedLabel || word.label) + ' from board', style: { position: 'absolute', bottom: 4, right: 4, background: 'rgba(220,38,38,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px', color: '#dc2626' } }, '\u00d7')
                   );
                 })
               ),
@@ -7631,7 +7696,7 @@
           : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', flexDirection: 'column', gap: '10px' } },
               e('div', { style: { fontSize: '48px' } }, '📋'),
               e('p', { style: { fontWeight: 600 } }, 'Enter a topic and generate a complete communication board'),
-              e('p', { style: { fontSize: '12px', maxWidth: '380px', textAlign: 'center' } }, 'AI writes the word list, you generate symbols, and export a print-ready board. Drag cells to reorder. Color coding follows AAC conventions.')
+              e('p', { style: { fontSize: '12px', maxWidth: '380px', textAlign: 'center' } }, 'AI writes the word list, you generate symbols, and export a print-ready board. Drag cells to reorder, or focus Speak and press Alt plus an Arrow key. Color coding follows AAC conventions.')
             )
       );
     }
