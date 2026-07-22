@@ -7345,6 +7345,17 @@
         var moved = newCards.splice(fromIdx, 1)[0];
         newCards.splice(toIdx, 0, moved);
         setDraft(Object.assign({}, draft, { data: { cards: newCards } }));
+        notifyAlloHaven('Card ' + (fromIdx + 1) + ' moved to position ' + (toIdx + 1) + ' of ' + cards.length + '.', 'info');
+        setTimeout(function() {
+          var rows = document.querySelectorAll('[data-ah-card-id]');
+          for (var ri = 0; ri < rows.length; ri++) {
+            if (rows[ri].getAttribute('data-ah-card-id') === moved.id) {
+              var focusTarget = rows[ri].querySelector('button:not([disabled]), input');
+              if (focusTarget) focusTarget.focus();
+              break;
+            }
+          }
+        }, 0);
       }
       async function clearAllCards() {
         if (!await askAlloHavenConfirmation('Remove all ' + cards.length + ' cards from this deck? Mastery stats will be lost.', { title: 'Clear flashcard deck', confirmText: 'Remove all cards' })) return;
@@ -7488,10 +7499,12 @@
           cards.map(function(card, idx) {
             return h('div', {
               key: card.id,
+              'data-ah-card-id': card.id,
               // Phase 2p.24 — drag-to-reorder. Drop anywhere on a row
               // moves the dragged card to that position.
               draggable: cards.length > 1 ? true : false,
               onDragStart: function(e) {
+                // Keyboard alternative: the card header provides Move up/down buttons.
                 if (cards.length <= 1) { e.preventDefault(); return; }
                 try {
                   e.dataTransfer.effectAllowed = 'move';
@@ -7523,18 +7536,28 @@
                 h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700 } },
                   // Phase 2p.24 — drag handle visual hint when reorder is possible
                   cards.length > 1 ? '⋮⋮ Card ' + (idx + 1) : 'Card ' + (idx + 1)),
-                cards.length > 1 ? h('button', {
-                  onClick: function() { deleteCard(card.id); },
-                  'aria-label': 'Delete card ' + (idx + 1),
-                  style: {
-                    background: 'transparent',
-                    color: palette.textMute,
-                    border: 'none',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    padding: '2px 4px'
-                  }
-                }, '✕') : null
+                cards.length > 1 ? h('div', { style: { display: 'flex', gap: '4px' } },
+                  h('button', {
+                    type: 'button',
+                    onClick: function() { moveCard(idx, idx - 1); },
+                    disabled: idx === 0,
+                    'aria-label': 'Move card ' + (idx + 1) + ' up',
+                    style: { width: '32px', height: '32px', border: '1px solid ' + palette.border, borderRadius: '6px', background: palette.surface, color: palette.text, cursor: idx === 0 ? 'not-allowed' : 'pointer' }
+                  }, '↑'),
+                  h('button', {
+                    type: 'button',
+                    onClick: function() { moveCard(idx, idx + 1); },
+                    disabled: idx === cards.length - 1,
+                    'aria-label': 'Move card ' + (idx + 1) + ' down',
+                    style: { width: '32px', height: '32px', border: '1px solid ' + palette.border, borderRadius: '6px', background: palette.surface, color: palette.text, cursor: idx === cards.length - 1 ? 'not-allowed' : 'pointer' }
+                  }, '↓'),
+                  h('button', {
+                    type: 'button',
+                    onClick: function() { deleteCard(card.id); },
+                    'aria-label': 'Delete card ' + (idx + 1),
+                    style: { width: '32px', height: '32px', background: 'transparent', color: palette.textMute, border: 'none', fontSize: '14px', cursor: 'pointer' }
+                  }, '✕')
+                ) : null
               ),
               h('input', {
                 type: 'text',
@@ -15684,6 +15707,40 @@
       setStateField('decorations', newDecs);
     }
 
+    function moveDecorationByKeyboard(decoration, surface, index, key) {
+      if (!decoration || state.roomMode === 'live') return;
+      var activeId = state.activeRoomId || 'main';
+      var room = (state.rooms || []).filter(function(r) { return r.id === activeId; })[0]
+              || state.rooms[0] || { wallSlots: 8, floorSlots: 12 };
+      var targetSurface = surface;
+      var targetIndex = index;
+      var cols = surface === 'wall' ? 4 : 6;
+      var slots = surface === 'wall' ? room.wallSlots : room.floorSlots;
+      if (key === 'ArrowLeft' && index % cols > 0) targetIndex = index - 1;
+      else if (key === 'ArrowRight' && index % cols < cols - 1 && index + 1 < slots) targetIndex = index + 1;
+      else if (key === 'ArrowUp' && index >= cols) targetIndex = index - cols;
+      else if (key === 'ArrowDown' && index + cols < slots) targetIndex = index + cols;
+      else if (key === 'PageUp' && surface !== 'wall') {
+        targetSurface = 'wall';
+        targetIndex = Math.min(index, Math.max(0, room.wallSlots - 1));
+      } else if (key === 'PageDown' && surface !== 'floor') {
+        targetSurface = 'floor';
+        targetIndex = Math.min(index, Math.max(0, room.floorSlots - 1));
+      }
+      if (targetSurface === surface && targetIndex === index) {
+        notifyAlloHaven('Decoration is already at the edge of the ' + surface + ' grid.', 'info');
+        return;
+      }
+      moveDecorationToCell(decoration.id, targetSurface, targetIndex);
+      notifyAlloHaven((decoration.templateLabel || decoration.template || 'Decoration') + ' moved to ' + targetSurface + ' slot ' + (targetIndex + 1) + '.', 'info');
+      setTimeout(function() {
+        var cells = document.querySelectorAll('[data-ah-decoration-id]');
+        for (var ci = 0; ci < cells.length; ci++) {
+          if (cells[ci].getAttribute('data-ah-decoration-id') === decoration.id) { cells[ci].focus(); break; }
+        }
+      }, 0);
+    }
+
     function placeDecoration(template, slots, artStyleId, imageBase64, reflectionText, moodTag, subjectTags) {
       var ctx = state.generateContext || { surface: 'floor', cellIndex: 0 };
       // Slight ±3° rotation, randomized once per item — "lived-in wobble"
@@ -17112,6 +17169,8 @@
           key: surface + '-cell-' + index,
           role: 'button',
           tabIndex: 0,
+          'data-ah-decoration-id': decoration.id,
+          'aria-keyshortcuts': 'Alt+ArrowLeft Alt+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+PageUp Alt+PageDown',
           'aria-label': 'Decoration: ' + label
             + (decoration.studentReflection ? ' (with reflection)' : '')
             + (hasMemoryContent
@@ -17119,7 +17178,7 @@
                   + (memoryDue ? ', due for review' : (memoryDueSoon ? ', due soon' : ''))
                   + ')'
                 : '')
-            + ' — click to add or review memory content',
+            + ' — click to add or review memory content. In build mode, press Alt plus arrow keys to move within this surface; Alt plus Page Up or Page Down moves between wall and floor.',
           className: 'ah-decoration' + (function() {
             // Phase 2p.16 — template-specific micro-animation class on the
             // <img> child. Plants sway, companions bob, lamps + weather +
@@ -17165,6 +17224,7 @@
           // cell, moveDecorationToCell handles the swap.
           draggable: state.roomMode !== 'live',
           onDragStart: function(e) {
+            // Keyboard alternative: Alt+Arrow keys and Alt+PageUp/PageDown are handled below.
             if (state.roomMode === 'live') { e.preventDefault(); return; }
             try {
               e.dataTransfer.effectAllowed = 'move';
@@ -17187,6 +17247,11 @@
           },
           onClick: function() { openMemoryModal(decoration.id); },
           onKeyDown: function(e) {
+            if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'PageUp' || e.key === 'PageDown')) {
+              e.preventDefault();
+              moveDecorationByKeyboard(decoration, surface, index, e.key);
+              return;
+            }
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
               openMemoryModal(decoration.id);
