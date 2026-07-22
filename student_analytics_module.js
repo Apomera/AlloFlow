@@ -2914,7 +2914,7 @@
     const renderResearchToolbar = () => {
       const surveyCount = Object.values(surveyResponses).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);
       const cbmCount = Object.values(externalCBMScores).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);
-      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', {
         className: 'mt-4 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl border border-indigo-200 p-3'
       }, React.createElement('div', {
         className: 'flex items-center gap-2 mb-2'
@@ -3233,7 +3233,7 @@
       const expectedSurveys = researchMode.surveyFrequency && researchMode.surveyFrequency !== '0' ? Math.floor(sessionCounter / parseInt(researchMode.surveyFrequency)) : 0;
       const studentSurveys = Object.entries(surveyResponses).filter(([k]) => k.startsWith('student_')).reduce((s, [, arr]) => s + arr.length, 0);
       const responseRate = expectedSurveys > 0 ? Math.round(studentSurveys / expectedSurveys * 100) : null;
-      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', {
         className: 'mt-4 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-xl border-2 border-emerald-300 p-4'
       }, React.createElement('div', {
         className: 'flex items-center justify-between mb-3'
@@ -5437,7 +5437,7 @@
           setNwfProbeActive(false);
         }
       };
-      return /*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return /*#__PURE__*/React.createElement("div", {
         className: "text-center"
       }, /*#__PURE__*/React.createElement("p", {
         className: "text-xs text-slate-600 mb-2 font-semibold uppercase tracking-wider"
@@ -6450,7 +6450,7 @@
       }
     })), qdProbeTimer > 0 && qdProbeIndex < qdProbeProblems.length ? (() => {
       const problem = qdProbeProblems[qdProbeIndex];
-      return /*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return /*#__PURE__*/React.createElement("div", {
         className: "text-center"
       }, /*#__PURE__*/React.createElement("p", {
         className: "text-sm text-slate-600 mb-4 font-medium"
