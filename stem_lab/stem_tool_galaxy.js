@@ -3941,11 +3941,11 @@ if (!window._galaxyHasLoadedOnce) {
                 React.createElement("div", { className: "flex flex-wrap items-start gap-3" },
                   React.createElement("div", { className: "h-11 w-11 rounded-xl flex items-center justify-center text-xl border", style: { borderColor: 'rgba(125,211,252,0.38)', background: 'radial-gradient(circle at 35% 25%, rgba(125,211,252,0.24), rgba(30,41,59,0.9))' } }, "\uD83D\uDD2D"),
                   React.createElement("div", { className: "min-w-0 flex-1" },
-                    React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-cyan-200" }, "Real Sky Survey Mode"),
+                    React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-cyan-200" }, __alloT('stem.galaxy.realsky_mode_title', 'Real Sky Survey Mode')),
                     React.createElement("h4", { className: "text-base font-black text-white" }, activeRealSkyTarget.name + " (" + activeRealSkyTarget.short + ")"),
                     React.createElement("p", { className: "text-[12px] text-slate-300 leading-relaxed mt-1" }, activeRealSkyTarget.story)
                   ),
-                  React.createElement("a", { href: activeAladinUrl, target: "_blank", rel: "noreferrer", className: "rounded-lg border px-3 py-1.5 text-[11px] font-bold text-cyan-100 hover:bg-cyan-400/10", style: { borderColor: 'rgba(103,232,249,0.35)' } }, "Open in Aladin")
+                  React.createElement("a", { href: activeAladinUrl, target: "_blank", rel: "noreferrer", className: "rounded-lg border px-3 py-1.5 text-[11px] font-bold text-cyan-100 hover:bg-cyan-400/10", style: { borderColor: 'rgba(103,232,249,0.35)' } }, __alloT('stem.galaxy.open_in_aladin', 'Open in Aladin'))
                 ),
                 React.createElement("div", { className: "mt-3 grid grid-cols-1 md:grid-cols-3 gap-2 text-[11px]" },
                   React.createElement("div", { className: "rounded-lg border border-cyan-300/20 bg-cyan-300/10 p-2" },
@@ -3966,7 +3966,7 @@ if (!window._galaxyHasLoadedOnce) {
               React.createElement("div", { className: "mb-3 rounded-xl border border-cyan-100 bg-white p-3 shadow-sm" },
                 React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-2" },
                   React.createElement("span", { className: "text-base", "aria-hidden": true }, "\uD83E\uDDEA"),
-                  React.createElement("p", { className: "text-xs font-black text-slate-800" }, "Real Data Lesson Prompt"),
+                  React.createElement("p", { className: "text-xs font-black text-slate-800" }, __alloT('stem.galaxy.real_data_lesson_title', 'Real Data Lesson Prompt')),
                   React.createElement("span", { className: "ml-auto rounded-full bg-cyan-50 px-2 py-0.5 text-[10px] font-bold text-cyan-700" }, activeRealSkyTarget.short)
                 ),
                 React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-2" },
@@ -3982,7 +3982,7 @@ if (!window._galaxyHasLoadedOnce) {
               React.createElement("div", { className: "grid grid-cols-1 xl:grid-cols-[260px_1fr] gap-3" },
                 React.createElement("div", { className: "space-y-3" },
                   React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white p-3 shadow-sm" },
-                    React.createElement("p", { className: "text-xs font-black text-slate-800 mb-2" }, "Targets"),
+                    React.createElement("p", { className: "text-xs font-black text-slate-800 mb-2" }, __alloT('stem.galaxy.targets_label', 'Targets')),
                     React.createElement("div", { className: "grid grid-cols-2 xl:grid-cols-1 gap-1.5" },
                       REAL_SKY_TARGETS.map(function (target) {
                         var on = target.key === activeRealSkyTarget.key;
@@ -3999,7 +3999,7 @@ if (!window._galaxyHasLoadedOnce) {
                     )
                   ),
                   React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white p-3 shadow-sm" },
-                    React.createElement("p", { className: "text-xs font-black text-slate-800 mb-2" }, "Survey Light"),
+                    React.createElement("p", { className: "text-xs font-black text-slate-800 mb-2" }, __alloT('stem.galaxy.survey_light_label', 'Survey Light')),
                     React.createElement("div", { className: "space-y-1.5" },
                       REAL_SKY_SURVEYS.map(function (survey) {
                         var on = survey.id === activeRealSkySurvey.id;
@@ -4013,7 +4013,7 @@ if (!window._galaxyHasLoadedOnce) {
                     )
                   ),
                   React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white p-3 shadow-sm" },
-                    React.createElement("p", { className: "text-xs font-black text-slate-800 mb-2" }, "Catalog Overlay"),
+                    React.createElement("p", { className: "text-xs font-black text-slate-800 mb-2" }, __alloT('stem.galaxy.catalog_overlay_label', 'Catalog Overlay')),
                     React.createElement("div", { className: "space-y-1.5" },
                       REAL_SKY_CATALOGS.map(function (catalog) {
                         var on = catalog.id === activeRealSkyCatalog.id;
@@ -4034,11 +4034,11 @@ if (!window._galaxyHasLoadedOnce) {
                     realSkyStatus !== 'ready' && React.createElement("div", { className: "absolute inset-0 flex items-center justify-center p-6 text-center", style: { pointerEvents: realSkyStatus === 'error' ? 'auto' : 'none', background: realSkyStatus === 'error' ? 'rgba(2,6,23,0.86)' : 'linear-gradient(180deg, rgba(2,6,23,0.62), rgba(2,6,23,0.34))' } },
                       React.createElement("div", { className: "max-w-sm rounded-xl border border-cyan-300/20 bg-slate-950/80 p-4 text-white shadow-xl" },
                         React.createElement("p", { className: "text-xl mb-1" }, realSkyStatus === 'error' ? "\u26A0\uFE0F" : "\uD83D\uDD2D"),
-                        React.createElement("p", { className: "text-sm font-black text-cyan-100" }, realSkyStatus === 'error' ? "Real-sky atlas unavailable" : "Connecting to real sky surveys"),
-                        React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mt-1" }, realSkyMessage || "Loading Aladin Lite, sky survey tiles, and catalog services."),
+                        React.createElement("p", { className: "text-sm font-black text-cyan-100" }, realSkyStatus === 'error' ? __alloT('stem.galaxy.realsky_atlas_unavailable', 'Real-sky atlas unavailable') : __alloT('stem.galaxy.realsky_connecting', 'Connecting to real sky surveys')),
+                        React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mt-1" }, realSkyMessage || __alloT('stem.galaxy.realsky_loading', 'Loading Aladin Lite, sky survey tiles, and catalog services.')),
                         realSkyStatus === 'error' && React.createElement("div", { className: "mt-3 flex flex-wrap items-center justify-center gap-2" },
-                          React.createElement("button", { type: "button", onClick: function () { patchGalaxy({ realSkyStatus: 'idle', realSkyMessage: '', realSkyRetry: realSkyRetry + 1 }); }, className: "rounded-lg border border-cyan-200/50 bg-cyan-400/15 px-3 py-1.5 text-[11px] font-bold text-cyan-50 hover:bg-cyan-400/25" }, "Retry atlas"),
-                          React.createElement("a", { href: activeAladinUrl, target: "_blank", rel: "noreferrer", className: "inline-block rounded-lg bg-cyan-500 px-3 py-1.5 text-[11px] font-bold text-white" }, "Open external atlas")
+                          React.createElement("button", { type: "button", onClick: function () { patchGalaxy({ realSkyStatus: 'idle', realSkyMessage: '', realSkyRetry: realSkyRetry + 1 }); }, className: "rounded-lg border border-cyan-200/50 bg-cyan-400/15 px-3 py-1.5 text-[11px] font-bold text-cyan-50 hover:bg-cyan-400/25" }, __alloT('stem.galaxy.retry_atlas', 'Retry atlas')),
+                          React.createElement("a", { href: activeAladinUrl, target: "_blank", rel: "noreferrer", className: "inline-block rounded-lg bg-cyan-500 px-3 py-1.5 text-[11px] font-bold text-white" }, __alloT('stem.galaxy.open_external_atlas', 'Open external atlas'))
                         )
                       )
                     )
@@ -4046,11 +4046,11 @@ if (!window._galaxyHasLoadedOnce) {
 
                   React.createElement("div", { className: "mt-3 grid grid-cols-1 md:grid-cols-3 gap-2" },
                     [
-                      { title: 'Observe it', body: 'Move this target into Night Sky & Astronomy to compare real survey data with telescope expectations.', action: 'Astronomy', onClick: function () {
+                      { title: __alloT('stem.galaxy.card_observe_title', 'Observe it'), body: __alloT('stem.galaxy.card_observe_body', 'Move this target into Night Sky & Astronomy to compare real survey data with telescope expectations.'), action: __alloT('stem.galaxy.card_observe_action', 'Astronomy'), onClick: function () {
                         setLabToolData(function (prev) { return Object.assign({}, prev, { astronomy: Object.assign({}, prev.astronomy || {}, { tab: 'observe', eyepieceTarget: activeRealSkyTarget.astronomyTarget || 'andromeda' }) }); });
                         setStemLabTool('astronomy');
                       } },
-                      { title: 'Place it in time', body: 'Jump to Universe with the matching real-data tour, evidence thread, and guided mission selected.', action: 'Universe', onClick: function () {
+                      { title: __alloT('stem.galaxy.card_time_title', 'Place it in time'), body: __alloT('stem.galaxy.card_time_body', 'Jump to Universe with the matching real-data tour, evidence thread, and guided mission selected.'), action: __alloT('stem.galaxy.card_time_action', 'Universe'), onClick: function () {
                         setLabToolData(function (prev) {
                           var prevUniverse = prev.universe || {};
                           var launched = prevUniverse.cosmicMissionsLaunched || [];
@@ -4059,7 +4059,7 @@ if (!window._galaxyHasLoadedOnce) {
                         });
                         setStemLabTool('universe');
                       } },
-                      { title: 'Analyze data', body: 'Use Data Lab for the next step: spectra, brightness, color, classification, and student research questions.', action: 'Data Lab', onClick: function () { setStemLabTool('dataLab'); } }
+                      { title: __alloT('stem.galaxy.card_analyze_title', 'Analyze data'), body: __alloT('stem.galaxy.card_analyze_body', 'Use Data Lab for the next step: spectra, brightness, color, classification, and student research questions.'), action: __alloT('stem.galaxy.card_analyze_action', 'Data Lab'), onClick: function () { setStemLabTool('dataLab'); } }
                     ].map(function (card) {
                       return React.createElement("div", { key: card.title, className: "rounded-xl border border-slate-200 bg-white p-3 shadow-sm" },
                         React.createElement("p", { className: "text-xs font-black text-slate-800" }, card.title),
@@ -4074,7 +4074,7 @@ if (!window._galaxyHasLoadedOnce) {
 
 // ── Quiz mode ──
 
-              d.quizMode && d.isGeneratingQuiz && React.createElement("div", { className: "flex flex-col items-center justify-center p-12 mt-6 max-w-2xl mx-auto rounded-2xl bg-indigo-50 border-2 border-indigo-300 animate-pulse"}, React.createElement("h2", {className: "text-lg font-bold text-indigo-600 mb-2"}, "✨ Gemini is Generating Astrophysic Questions..."), React.createElement("p", {className: "text-sm text-indigo-400"}, "Parsing deep space databases...")),
+              d.quizMode && d.isGeneratingQuiz && React.createElement("div", { className: "flex flex-col items-center justify-center p-12 mt-6 max-w-2xl mx-auto rounded-2xl bg-indigo-50 border-2 border-indigo-300 animate-pulse"}, React.createElement("h2", {className: "text-lg font-bold text-indigo-600 mb-2"}, "✨ " + __alloT('stem.galaxy.quiz_generating_title', 'Gemini is Generating Astrophysic Questions...')), React.createElement("p", {className: "text-sm text-indigo-400"}, __alloT('stem.galaxy.quiz_generating_sub', 'Parsing deep space databases...'))),
               d.quizMode && !d.isGeneratingQuiz && quizQ && React.createElement("div", { className: "mt-6 max-w-2xl mx-auto bg-white shadow-xl rounded-2xl border border-slate-400 p-8 animate-in fade-in slide-in-from-bottom-4" },
 
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
