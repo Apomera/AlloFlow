@@ -308,5 +308,22 @@
   "myth_not_solar_system": "A galaxy is NOT a solar system. Our entire solar system is just one of ~100–400 billion star systems in the Milky Way.",
   "myth_constellation": "Stars in a constellation only LOOK close together — they're often wildly different distances away, just along the same line of sight.",
   "myth_expansion": "Cosmic expansion stretches SPACE ITSELF — galaxies aren't flying outward through space, and there's no center. The Big Bang happened everywhere at once, not at one spot.",
-  "mission_control_title": "Mission Control"
+  "mission_control_title": "Mission Control",
+  "observatory_filters_title": "Observatory Filters",
+  "webgl_error_title": "Galaxy Explorer 3D Mode Unresolved",
+  "webgl_error_desc": "WebGL failed to initialize. Your browser or device might not support 3D hardware acceleration.",
+  "retry_3d_mode": "Retry 3D Mode",
+  "aria_galaxy_canvas": "Galaxy simulation — use arrow keys to orbit, +/- to zoom, R to reset view",
+  "star_types_legend_title": "Star Types",
+  "galaxy_model_title": "Galaxy model",
+  "galaxy_model_type": "Type",
+  "galaxy_model_stars": "Stars",
+  "galaxy_model_rotation": "Rotation",
+  "rot_rigid": "Rigid (toy)",
+  "rot_keplerian": "Keplerian",
+  "rot_flat": "Flat",
+  "galaxy_model_filter": "Filter",
+  "scale_overlay_title": "Scale",
+  "aria_toggle_layer": "Toggle layer",
+  "how_galaxy_spin_title": "How does a galaxy spin?"
 }

@@ -3248,7 +3248,7 @@ if (!window._galaxyHasLoadedOnce) {
                 React.createElement("div", { className: "flex flex-wrap items-start gap-2 mb-2" },
                   React.createElement("span", { className: "text-lg", "aria-hidden": true }, activeObserve.icon),
                   React.createElement("div", { className: "min-w-0 flex-1" },
-                    React.createElement("p", { className: "text-xs font-black text-slate-800" }, "Observatory Filters"),
+                    React.createElement("p", { className: "text-xs font-black text-slate-800" }, __alloT('stem.galaxy.observatory_filters_title', 'Observatory Filters')),
                     React.createElement("p", { className: "text-[11px] text-slate-500 leading-relaxed" }, activeObserve.label + ": " + activeObserve.desc)
                   )
                 ),
@@ -3295,18 +3295,18 @@ if (!window._galaxyHasLoadedOnce) {
                     style: { height: "100%", background: "rgba(5, 5, 16, 0.85)" }
                   },
                     React.createElement("span", { style: { fontSize: "48px", marginBottom: "16px" } }, "⚠️"),
-                    React.createElement("h4", { className: "text-lg font-bold text-red-400 mb-2" }, "Galaxy Explorer 3D Mode Unresolved"),
-                    React.createElement("p", { className: "text-xs text-slate-300 max-w-sm mb-6" }, "WebGL failed to initialize. Your browser or device might not support 3D hardware acceleration."),
+                    React.createElement("h4", { className: "text-lg font-bold text-red-400 mb-2" }, __alloT('stem.galaxy.webgl_error_title', 'Galaxy Explorer 3D Mode Unresolved')),
+                    React.createElement("p", { className: "text-xs text-slate-300 max-w-sm mb-6" }, __alloT('stem.galaxy.webgl_error_desc', 'WebGL failed to initialize. Your browser or device might not support 3D hardware acceleration.')),
                     React.createElement("button", {
                       onClick: function () {
                         upd("webglError", false);
                       },
                       className: "px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg shadow-md transition-colors"
-                    }, "Retry 3D Mode")
+                    }, __alloT('stem.galaxy.retry_3d_mode', 'Retry 3D Mode'))
                   ) :
                   React.createElement("canvas", {
 
-                    "data-galaxy-canvas": "true", tabIndex: 0, role: "application", "aria-label": "Galaxy simulation — use arrow keys to orbit, +/- to zoom, R to reset view", ref: function (el) { if (!el) { canvasRefCb(null); return; } el._onSelectStar = function (sd) { var key = 'star:' + sd.type.id; patchGalaxy({ selectedStar: sd.type.id, selectedNebula: null, inspectTarget: key, inspectLog: addInspectKey(key) }); if (typeof awardStemXP === 'function') awardStemXP('galaxy_explore', 2, 'Discovered ' + sd.type.label + ' star'); }; el._onSelectNebula = function (neb) { var key = 'nebula:' + neb.name; patchGalaxy({ selectedNebula: neb.name, selectedStar: null, inspectTarget: key, inspectLog: addInspectKey(key) }); if (typeof awardStemXP === 'function') awardStemXP('galaxy_explore', 3, 'Discovered ' + neb.name); }; canvasRefCb(el); }, onKeyDown: function (e) {
+                    "data-galaxy-canvas": "true", tabIndex: 0, role: "application", "aria-label": __alloT('stem.galaxy.aria_galaxy_canvas', 'Galaxy simulation — use arrow keys to orbit, +/- to zoom, R to reset view'), ref: function (el) { if (!el) { canvasRefCb(null); return; } el._onSelectStar = function (sd) { var key = 'star:' + sd.type.id; patchGalaxy({ selectedStar: sd.type.id, selectedNebula: null, inspectTarget: key, inspectLog: addInspectKey(key) }); if (typeof awardStemXP === 'function') awardStemXP('galaxy_explore', 2, 'Discovered ' + sd.type.label + ' star'); }; el._onSelectNebula = function (neb) { var key = 'nebula:' + neb.name; patchGalaxy({ selectedNebula: neb.name, selectedStar: null, inspectTarget: key, inspectLog: addInspectKey(key) }); if (typeof awardStemXP === 'function') awardStemXP('galaxy_explore', 3, 'Discovered ' + neb.name); }; canvasRefCb(el); }, onKeyDown: function (e) {
 
                     var cv = e.target; if (!cv || !cv._galaxyOrbit) return;
 
@@ -3340,26 +3340,26 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("div", { className: "absolute top-3 left-3 bg-slate-950/65 backdrop-blur-md rounded-lg px-2.5 py-2 text-[11px] text-white/85 border border-indigo-200/15 shadow-xl" },
 
-                  React.createElement("div", { className: "font-bold mb-1" }, "Star Types"),
+                  React.createElement("div", { className: "font-bold mb-1" }, __alloT('stem.galaxy.star_types_legend_title', 'Star Types')),
 
                   STAR_TYPES.map(function (st) { return React.createElement("div", { key: st.id, className: "flex items-center gap-1 leading-tight" }, React.createElement("span", { style: { color: st.color, fontSize: '10px' } }, "\u2B50"), React.createElement("span", null, st.id + " (" + st.temp + "K)")); })
 
                 ),
 
                 React.createElement("div", { className: "absolute top-3 right-3 bg-slate-950/65 backdrop-blur-md rounded-lg px-3 py-2 text-[11px] border border-indigo-200/15 shadow-xl", style: { color: '#dbeafe', minWidth: 150 } },
-                  React.createElement("div", { className: "font-black uppercase tracking-wider", style: { color: '#a5b4fc', fontSize: 10 } }, "Galaxy model"),
-                  React.createElement("div", { className: "flex justify-between gap-4 mt-1" }, React.createElement("span", { style: { color: '#94a3b8' } }, "Type"), React.createElement("span", { className: "font-bold" }, gType.label)),
-                  React.createElement("div", { className: "flex justify-between gap-4" }, React.createElement("span", { style: { color: '#94a3b8' } }, "Stars"), React.createElement("span", { className: "font-bold" }, starCount.toLocaleString())),
-                  React.createElement("div", { className: "flex justify-between gap-4" }, React.createElement("span", { style: { color: '#94a3b8' } }, "Age"), React.createElement("span", { className: "font-bold" }, cosmicAge.toFixed(1) + " Gyr")),
-                  React.createElement("div", { className: "flex justify-between gap-4" }, React.createElement("span", { style: { color: '#94a3b8' } }, "Rotation"), React.createElement("span", { className: "font-bold" }, rotMode === 'rigid' ? 'Rigid (toy)' : rotMode === 'keplerian' ? 'Keplerian' : 'Flat ✓')),
-                  React.createElement("div", { className: "flex justify-between gap-4" }, React.createElement("span", { style: { color: '#94a3b8' } }, "Filter"), React.createElement("span", { className: "font-bold", style: { color: activeObserve.accent } }, activeObserve.label))
+                  React.createElement("div", { className: "font-black uppercase tracking-wider", style: { color: '#a5b4fc', fontSize: 10 } }, __alloT('stem.galaxy.galaxy_model_title', 'Galaxy model')),
+                  React.createElement("div", { className: "flex justify-between gap-4 mt-1" }, React.createElement("span", { style: { color: '#94a3b8' } }, __alloT('stem.galaxy.galaxy_model_type', 'Type')), React.createElement("span", { className: "font-bold" }, gType.label)),
+                  React.createElement("div", { className: "flex justify-between gap-4" }, React.createElement("span", { style: { color: '#94a3b8' } }, __alloT('stem.galaxy.galaxy_model_stars', 'Stars')), React.createElement("span", { className: "font-bold" }, starCount.toLocaleString())),
+                  React.createElement("div", { className: "flex justify-between gap-4" }, React.createElement("span", { style: { color: '#94a3b8' } }, __alloT('stem.galaxy.scale_age', 'Age')), React.createElement("span", { className: "font-bold" }, cosmicAge.toFixed(1) + " Gyr")),
+                  React.createElement("div", { className: "flex justify-between gap-4" }, React.createElement("span", { style: { color: '#94a3b8' } }, __alloT('stem.galaxy.galaxy_model_rotation', 'Rotation')), React.createElement("span", { className: "font-bold" }, rotMode === 'rigid' ? __alloT('stem.galaxy.rot_rigid', 'Rigid (toy)') : rotMode === 'keplerian' ? __alloT('stem.galaxy.rot_keplerian', 'Keplerian') : __alloT('stem.galaxy.rot_flat', 'Flat') + ' ✓')),
+                  React.createElement("div", { className: "flex justify-between gap-4" }, React.createElement("span", { style: { color: '#94a3b8' } }, __alloT('stem.galaxy.galaxy_model_filter', 'Filter')), React.createElement("span", { className: "font-bold", style: { color: activeObserve.accent } }, activeObserve.label))
                 ),
 
                 // Scale info overlay
 
                 layers.grid && React.createElement("div", { className: "absolute bottom-3 right-3 bg-slate-950/70 backdrop-blur-md rounded-lg px-2.5 py-2 text-[11px] text-white/85 border border-blue-200/15 shadow-xl" },
 
-                  React.createElement("div", { className: "font-bold mb-1 text-blue-300" }, "\uD83D\uDCCF Scale"),
+                  React.createElement("div", { className: "font-bold mb-1 text-blue-300" }, "\uD83D\uDCCF " + __alloT('stem.galaxy.scale_overlay_title', 'Scale')),
 
                   SCALE_INFO.map(function (s) { return React.createElement("div", { key: s.label, className: "flex justify-between gap-3" }, React.createElement("span", { className: "text-white/50" }, s.label), React.createElement("span", { className: "font-bold" }, s.value)); })
 
@@ -3377,7 +3377,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   var isOn = layers[lt.key] !== false;
 
-                  return React.createElement("button", { "aria-label": "Toggle layer",
+                  return React.createElement("button", { "aria-label": __alloT('stem.galaxy.aria_toggle_layer', 'Toggle layer'),
 
                     key: lt.key,
 
@@ -3399,7 +3399,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-1" },
 
-                  React.createElement("h4", { className: "text-sm font-bold text-white" }, "🌀 How does a galaxy spin?"),
+                  React.createElement("h4", { className: "text-sm font-bold text-white" }, "🌀 " + __alloT('stem.galaxy.how_galaxy_spin_title', 'How does a galaxy spin?')),
 
                   React.createElement("span", { className: "ml-auto text-[10px] font-black uppercase tracking-wider text-fuchsia-300 bg-fuchsia-900/40 border border-fuchsia-700/50 px-2 py-0.5 rounded-full" }, "dark matter mystery")
 
