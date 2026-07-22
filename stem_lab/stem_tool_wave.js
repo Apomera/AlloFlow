@@ -4587,115 +4587,115 @@ const d = labToolData.wave;
       // ═════════════════════════════════════════════════════════════════════
 
       var COLOR_MODELS = [
-        { model: 'RGB (additive)', use: 'Screens, displays', notes: 'Red + Green + Blue. All three at max = white. Used because screens emit light.' },
-        { model: 'CMYK (subtractive)', use: 'Printing', notes: 'Cyan, Magenta, Yellow + Key (black). Inks absorb colors; all four = black. Used because paper reflects light.' },
-        { model: 'HSL / HSV', use: 'Color pickers, design', notes: 'Hue (angle 0-360°), Saturation (%), Lightness/Value (%). More intuitive than RGB for humans.' },
-        { model: 'LAB (CIELAB)', use: 'Color science, calibration', notes: 'L = lightness, a = green-red, b = blue-yellow. Perceptually uniform.' },
-        { model: 'XYZ (CIE 1931)', use: 'Reference for all other models', notes: 'Based on human cone responses. Foundation of modern colorimetry.' },
-        { model: 'sRGB', use: 'Standard web + most displays', notes: 'Limited color gamut. Defines specific RGB primaries + gamma curve.' },
-        { model: 'Adobe RGB', use: 'Print prep + pro photography', notes: 'Wider gamut than sRGB, especially in greens.' },
-        { model: 'Display P3', use: 'Apple devices, modern smartphones', notes: 'Wider gamut than sRGB, esp. reds. Standard for HDR.' },
-        { model: 'Rec. 2020', use: 'UHD TV / 4K + 8K video', notes: 'Very wide gamut. Few displays can reproduce it fully.' }
+        { model: __alloT('stem.wave.cm_rgb', 'RGB (additive)'), use: __alloT('stem.wave.cm_rgb_use', 'Screens, displays'), notes: __alloT('stem.wave.cm_rgb_notes', 'Red + Green + Blue. All three at max = white. Used because screens emit light.') },
+        { model: __alloT('stem.wave.cm_cmyk', 'CMYK (subtractive)'), use: __alloT('stem.wave.cm_cmyk_use', 'Printing'), notes: __alloT('stem.wave.cm_cmyk_notes', 'Cyan, Magenta, Yellow + Key (black). Inks absorb colors; all four = black. Used because paper reflects light.') },
+        { model: __alloT('stem.wave.cm_hsl', 'HSL / HSV'), use: __alloT('stem.wave.cm_hsl_use', 'Color pickers, design'), notes: __alloT('stem.wave.cm_hsl_notes', 'Hue (angle 0-360°), Saturation (%), Lightness/Value (%). More intuitive than RGB for humans.') },
+        { model: __alloT('stem.wave.cm_lab', 'LAB (CIELAB)'), use: __alloT('stem.wave.cm_lab_use', 'Color science, calibration'), notes: __alloT('stem.wave.cm_lab_notes', 'L = lightness, a = green-red, b = blue-yellow. Perceptually uniform.') },
+        { model: __alloT('stem.wave.cm_xyz', 'XYZ (CIE 1931)'), use: __alloT('stem.wave.cm_xyz_use', 'Reference for all other models'), notes: __alloT('stem.wave.cm_xyz_notes', 'Based on human cone responses. Foundation of modern colorimetry.') },
+        { model: __alloT('stem.wave.cm_srgb', 'sRGB'), use: __alloT('stem.wave.cm_srgb_use', 'Standard web + most displays'), notes: __alloT('stem.wave.cm_srgb_notes', 'Limited color gamut. Defines specific RGB primaries + gamma curve.') },
+        { model: __alloT('stem.wave.cm_adobe', 'Adobe RGB'), use: __alloT('stem.wave.cm_adobe_use', 'Print prep + pro photography'), notes: __alloT('stem.wave.cm_adobe_notes', 'Wider gamut than sRGB, especially in greens.') },
+        { model: __alloT('stem.wave.cm_p3', 'Display P3'), use: __alloT('stem.wave.cm_p3_use', 'Apple devices, modern smartphones'), notes: __alloT('stem.wave.cm_p3_notes', 'Wider gamut than sRGB, esp. reds. Standard for HDR.') },
+        { model: __alloT('stem.wave.cm_rec2020', 'Rec. 2020'), use: __alloT('stem.wave.cm_rec2020_use', 'UHD TV / 4K + 8K video'), notes: __alloT('stem.wave.cm_rec2020_notes', 'Very wide gamut. Few displays can reproduce it fully.') }
       ];
 
       var LASER_TYPES = [
-        { type: 'Helium-Neon (HeNe)', wavelength: '633 nm (red)', power: 'mW', use: 'Alignment, barcode scanners (old). One of the first practical lasers.' },
-        { type: 'CO₂', wavelength: '10.6 μm (IR)', power: 'W to kW', use: 'Cutting metal + acrylic, surgery, marking.' },
-        { type: 'Nd:YAG', wavelength: '1064 nm (NIR)', power: 'mW to kW', use: 'Industrial cutting + welding, medical (skin treatment, tattoo removal).' },
-        { type: 'Argon ion', wavelength: '488, 514 nm (blue-green)', power: 'mW to W', use: 'Eye surgery (retinal), flow cytometry, light shows.' },
-        { type: 'Excimer (ArF, KrF)', wavelength: '193, 248 nm (UV)', power: 'pulse', use: 'LASIK eye surgery, microchip photolithography.' },
-        { type: 'Semiconductor (laser diode)', wavelength: 'broad — 400 nm to 2 μm', power: 'mW to W', use: 'CD/DVD/Blu-ray, laser pointers, fiber-optic comm.' },
-        { type: 'Fiber laser', wavelength: '~1 μm (typically)', power: 'W to kW', use: 'Industrial cutting/welding. Higher efficiency than older lasers.' },
-        { type: 'Dye laser', wavelength: 'tunable across visible', power: 'mW to W', use: 'Spectroscopy, research. Largely replaced by tunable solid-state.' },
-        { type: 'Free-electron laser (FEL)', wavelength: 'tunable, microwave to X-ray', power: 'high', use: 'Research — accelerator-based. Atomic-scale imaging.' },
-        { type: 'Ti:Sapphire', wavelength: '~800 nm (tunable)', power: 'W (ultrafast)', use: 'Ultrafast science. Femtosecond pulses. Two-photon microscopy.' }
+        { type: __alloT('stem.wave.lt_hene', 'Helium-Neon (HeNe)'), wavelength: '633 nm (red)', power: 'mW', use: __alloT('stem.wave.lt_hene_use', 'Alignment, barcode scanners (old). One of the first practical lasers.') },
+        { type: __alloT('stem.wave.lt_co2', 'CO₂'), wavelength: '10.6 μm (IR)', power: 'W to kW', use: __alloT('stem.wave.lt_co2_use', 'Cutting metal + acrylic, surgery, marking.') },
+        { type: __alloT('stem.wave.lt_ndyag', 'Nd:YAG'), wavelength: '1064 nm (NIR)', power: 'mW to kW', use: __alloT('stem.wave.lt_ndyag_use', 'Industrial cutting + welding, medical (skin treatment, tattoo removal).') },
+        { type: __alloT('stem.wave.lt_argon', 'Argon ion'), wavelength: '488, 514 nm (blue-green)', power: 'mW to W', use: __alloT('stem.wave.lt_argon_use', 'Eye surgery (retinal), flow cytometry, light shows.') },
+        { type: __alloT('stem.wave.lt_excimer', 'Excimer (ArF, KrF)'), wavelength: '193, 248 nm (UV)', power: 'pulse', use: __alloT('stem.wave.lt_excimer_use', 'LASIK eye surgery, microchip photolithography.') },
+        { type: __alloT('stem.wave.lt_semiconductor', 'Semiconductor (laser diode)'), wavelength: 'broad — 400 nm to 2 μm', power: 'mW to W', use: __alloT('stem.wave.lt_semiconductor_use', 'CD/DVD/Blu-ray, laser pointers, fiber-optic comm.') },
+        { type: __alloT('stem.wave.lt_fiber', 'Fiber laser'), wavelength: '~1 μm (typically)', power: 'W to kW', use: __alloT('stem.wave.lt_fiber_use', 'Industrial cutting/welding. Higher efficiency than older lasers.') },
+        { type: __alloT('stem.wave.lt_dye', 'Dye laser'), wavelength: __alloT('stem.wave.lt_dye_wl', 'tunable across visible'), power: 'mW to W', use: __alloT('stem.wave.lt_dye_use', 'Spectroscopy, research. Largely replaced by tunable solid-state.') },
+        { type: __alloT('stem.wave.lt_fel', 'Free-electron laser (FEL)'), wavelength: __alloT('stem.wave.lt_fel_wl', 'tunable, microwave to X-ray'), power: __alloT('stem.wave.lt_fel_power', 'high'), use: __alloT('stem.wave.lt_fel_use', 'Research — accelerator-based. Atomic-scale imaging.') },
+        { type: __alloT('stem.wave.lt_tisapphire', 'Ti:Sapphire'), wavelength: '~800 nm (tunable)', power: 'W (ultrafast)', use: __alloT('stem.wave.lt_tisapphire_use', 'Ultrafast science. Femtosecond pulses. Two-photon microscopy.') }
       ];
 
       var LASER_FACTS = [
-        { fact: 'LASER acronym', detail: 'Light Amplification by Stimulated Emission of Radiation.' },
-        { fact: 'Stimulated emission', detail: 'A photon causes an excited atom to emit a SECOND identical photon. Cascade of identical photons = laser beam.' },
-        { fact: 'Population inversion', detail: 'More atoms in excited state than ground. Required for net amplification. Achieved via "pumping" (light, current, or chemical).' },
-        { fact: 'Coherence', detail: 'Laser photons all in phase. Allows interference effects + tight focusing.' },
-        { fact: 'Monochromatic', detail: 'Single wavelength. Real lasers have very narrow line width (kHz to GHz).' },
-        { fact: 'Beam divergence', detail: 'Laser beams spread VERY slowly. Apollo laser ranging spread <2 km over 384,400 km to Moon.' },
-        { fact: 'Eye safety', detail: 'Even low-power lasers can blind. Focused on retina, mW = sun-level brightness on photoreceptors.' },
-        { fact: 'Classes', detail: 'Class 1 (safe), Class 2 (eye blink protects), Class 3R/3B (potentially hazardous), Class 4 (skin burns + fire risk).' }
+        { fact: __alloT('stem.wave.lf_acronym', 'LASER acronym'), detail: __alloT('stem.wave.lf_acronym_detail', 'Light Amplification by Stimulated Emission of Radiation.') },
+        { fact: __alloT('stem.wave.lf_stimulated', 'Stimulated emission'), detail: __alloT('stem.wave.lf_stimulated_detail', 'A photon causes an excited atom to emit a SECOND identical photon. Cascade of identical photons = laser beam.') },
+        { fact: __alloT('stem.wave.lf_inversion', 'Population inversion'), detail: __alloT('stem.wave.lf_inversion_detail', 'More atoms in excited state than ground. Required for net amplification. Achieved via "pumping" (light, current, or chemical).') },
+        { fact: __alloT('stem.wave.lf_coherence', 'Coherence'), detail: __alloT('stem.wave.lf_coherence_detail', 'Laser photons all in phase. Allows interference effects + tight focusing.') },
+        { fact: __alloT('stem.wave.lf_monochromatic', 'Monochromatic'), detail: __alloT('stem.wave.lf_monochromatic_detail', 'Single wavelength. Real lasers have very narrow line width (kHz to GHz).') },
+        { fact: __alloT('stem.wave.lf_divergence', 'Beam divergence'), detail: __alloT('stem.wave.lf_divergence_detail', 'Laser beams spread VERY slowly. Apollo laser ranging spread <2 km over 384,400 km to Moon.') },
+        { fact: __alloT('stem.wave.lf_eyesafety', 'Eye safety'), detail: __alloT('stem.wave.lf_eyesafety_detail', 'Even low-power lasers can blind. Focused on retina, mW = sun-level brightness on photoreceptors.') },
+        { fact: __alloT('stem.wave.lf_classes', 'Classes'), detail: __alloT('stem.wave.lf_classes_detail', 'Class 1 (safe), Class 2 (eye blink protects), Class 3R/3B (potentially hazardous), Class 4 (skin burns + fire risk).') }
       ];
 
       var FIBER_OPTICS = [
-        { topic: 'How they work', detail: 'Total internal reflection traps light in core (higher n) surrounded by cladding (lower n). Light bounces along the fiber.' },
-        { topic: 'Single-mode fiber (SMF)', detail: 'Core ~9 μm. Only one mode propagates. Long distances (>100 km). Used in telecom backbones.' },
-        { topic: 'Multi-mode fiber (MMF)', detail: 'Core ~50-62.5 μm. Many modes — limits bandwidth-distance product. Short runs (<2 km).' },
-        { topic: 'Attenuation', detail: 'Modern fibers: ~0.2 dB/km at 1550 nm. Signal halves every ~15 km without amplification.' },
-        { topic: 'Dispersion', detail: 'Different wavelengths or modes travel at slightly different speeds → pulse spreading. Limits data rate.' },
-        { topic: 'EDFA (erbium-doped fiber amp)', detail: 'Amplifies optical signal directly without electrical conversion. Revolutionized long-haul fiber.' },
-        { topic: 'WDM (wavelength division multiplexing)', detail: 'Multiple wavelengths on one fiber. DWDM can fit 100+ channels — Tb/s per fiber.' },
-        { topic: 'Bandwidth-distance product', detail: 'Single-mode fiber: petabit-per-second times km. Vastly more than copper.' },
-        { topic: 'Real-world: internet backbones', detail: '99% of intercontinental data traffic goes over fiber-optic submarine cables.' },
-        { topic: 'Real-world: medical endoscopes', detail: 'Coherent fiber bundles transmit images. Used to inspect inside body.' },
-        { topic: 'Real-world: sensors', detail: 'Fiber Bragg gratings detect strain, temperature. Used in bridges, oil wells, aerospace.' }
+        { topic: __alloT('stem.wave.fo_howwork', 'How they work'), detail: __alloT('stem.wave.fo_howwork_detail', 'Total internal reflection traps light in core (higher n) surrounded by cladding (lower n). Light bounces along the fiber.') },
+        { topic: __alloT('stem.wave.fo_smf', 'Single-mode fiber (SMF)'), detail: __alloT('stem.wave.fo_smf_detail', 'Core ~9 μm. Only one mode propagates. Long distances (>100 km). Used in telecom backbones.') },
+        { topic: __alloT('stem.wave.fo_mmf', 'Multi-mode fiber (MMF)'), detail: __alloT('stem.wave.fo_mmf_detail', 'Core ~50-62.5 μm. Many modes — limits bandwidth-distance product. Short runs (<2 km).') },
+        { topic: __alloT('stem.wave.fo_attenuation', 'Attenuation'), detail: __alloT('stem.wave.fo_attenuation_detail', 'Modern fibers: ~0.2 dB/km at 1550 nm. Signal halves every ~15 km without amplification.') },
+        { topic: __alloT('stem.wave.fo_dispersion', 'Dispersion'), detail: __alloT('stem.wave.fo_dispersion_detail', 'Different wavelengths or modes travel at slightly different speeds → pulse spreading. Limits data rate.') },
+        { topic: __alloT('stem.wave.fo_edfa', 'EDFA (erbium-doped fiber amp)'), detail: __alloT('stem.wave.fo_edfa_detail', 'Amplifies optical signal directly without electrical conversion. Revolutionized long-haul fiber.') },
+        { topic: __alloT('stem.wave.fo_wdm', 'WDM (wavelength division multiplexing)'), detail: __alloT('stem.wave.fo_wdm_detail', 'Multiple wavelengths on one fiber. DWDM can fit 100+ channels — Tb/s per fiber.') },
+        { topic: __alloT('stem.wave.fo_bdp', 'Bandwidth-distance product'), detail: __alloT('stem.wave.fo_bdp_detail', 'Single-mode fiber: petabit-per-second times km. Vastly more than copper.') },
+        { topic: __alloT('stem.wave.fo_backbones', 'Real-world: internet backbones'), detail: __alloT('stem.wave.fo_backbones_detail', '99% of intercontinental data traffic goes over fiber-optic submarine cables.') },
+        { topic: __alloT('stem.wave.fo_endoscopes', 'Real-world: medical endoscopes'), detail: __alloT('stem.wave.fo_endoscopes_detail', 'Coherent fiber bundles transmit images. Used to inspect inside body.') },
+        { topic: __alloT('stem.wave.fo_sensors', 'Real-world: sensors'), detail: __alloT('stem.wave.fo_sensors_detail', 'Fiber Bragg gratings detect strain, temperature. Used in bridges, oil wells, aerospace.') }
       ];
 
       var COMM_PROTOCOLS = [
-        { name: 'Wi-Fi 6 (802.11ax)', band: '2.4 + 5 + 6 GHz', notes: 'Up to ~10 Gbps. OFDMA for many simultaneous users.' },
-        { name: 'Wi-Fi 7 (802.11be)', band: '2.4 + 5 + 6 GHz', notes: 'Up to ~46 Gbps theoretical. Wider channels (320 MHz).' },
-        { name: 'Bluetooth Classic', band: '2.4 GHz', notes: '~1-3 Mbps. Pairing for headphones, controllers.' },
-        { name: 'Bluetooth LE (low energy)', band: '2.4 GHz', notes: '~1-2 Mbps. Beacons, sensors, wearables. Years of coin-cell battery life.' },
-        { name: 'Zigbee', band: '2.4 GHz (mostly)', notes: '~250 kbps. Mesh networking. Smart-home devices.' },
-        { name: '4G LTE', band: '600 MHz - 2.6 GHz', notes: '~50-150 Mbps typical.' },
-        { name: '5G (sub-6 GHz)', band: '600 MHz - 6 GHz', notes: '~100 Mbps - 1 Gbps. Wider coverage than mmWave.' },
-        { name: '5G (mmWave)', band: '24-100 GHz', notes: 'Multi-Gbps in clear LOS. Heavily blocked by walls, body, rain.' },
-        { name: 'NFC', band: '13.56 MHz', notes: 'cm range. Contactless payment, pairing.' },
-        { name: 'RFID (UHF)', band: '860-960 MHz', notes: 'Inventory, tags. Reads at distance without battery in tag.' },
-        { name: 'AM radio', band: '535-1605 kHz', notes: 'Amplitude-modulated. Long range, low fidelity. Susceptible to noise.' },
-        { name: 'FM radio', band: '88-108 MHz', notes: 'Frequency-modulated. Better noise immunity than AM, higher fidelity.' },
-        { name: 'GPS L1', band: '1.575 GHz', notes: 'Civilian band. ~30 satellites.' },
-        { name: 'Satellite TV (Ku band)', band: '12-14 GHz', notes: 'Most consumer satellite TV.' },
-        { name: 'Microwave oven', band: '2.45 GHz', notes: 'Same band as Wi-Fi! Why microwaves can disrupt Wi-Fi when door seal is bad.' }
+        { name: 'Wi-Fi 6 (802.11ax)', band: '2.4 + 5 + 6 GHz', notes: __alloT('stem.wave.cp_wifi6_notes', 'Up to ~10 Gbps. OFDMA for many simultaneous users.') },
+        { name: 'Wi-Fi 7 (802.11be)', band: '2.4 + 5 + 6 GHz', notes: __alloT('stem.wave.cp_wifi7_notes', 'Up to ~46 Gbps theoretical. Wider channels (320 MHz).') },
+        { name: __alloT('stem.wave.cp_bt_classic', 'Bluetooth Classic'), band: '2.4 GHz', notes: __alloT('stem.wave.cp_bt_classic_notes', '~1-3 Mbps. Pairing for headphones, controllers.') },
+        { name: __alloT('stem.wave.cp_bt_le', 'Bluetooth LE (low energy)'), band: '2.4 GHz', notes: __alloT('stem.wave.cp_bt_le_notes', '~1-2 Mbps. Beacons, sensors, wearables. Years of coin-cell battery life.') },
+        { name: 'Zigbee', band: '2.4 GHz (mostly)', notes: __alloT('stem.wave.cp_zigbee_notes', '~250 kbps. Mesh networking. Smart-home devices.') },
+        { name: '4G LTE', band: '600 MHz - 2.6 GHz', notes: __alloT('stem.wave.cp_4g_notes', '~50-150 Mbps typical.') },
+        { name: '5G (sub-6 GHz)', band: '600 MHz - 6 GHz', notes: __alloT('stem.wave.cp_5g_sub6_notes', '~100 Mbps - 1 Gbps. Wider coverage than mmWave.') },
+        { name: '5G (mmWave)', band: '24-100 GHz', notes: __alloT('stem.wave.cp_5g_mmwave_notes', 'Multi-Gbps in clear LOS. Heavily blocked by walls, body, rain.') },
+        { name: 'NFC', band: '13.56 MHz', notes: __alloT('stem.wave.cp_nfc_notes', 'cm range. Contactless payment, pairing.') },
+        { name: 'RFID (UHF)', band: '860-960 MHz', notes: __alloT('stem.wave.cp_rfid_notes', 'Inventory, tags. Reads at distance without battery in tag.') },
+        { name: __alloT('stem.wave.cp_am', 'AM radio'), band: '535-1605 kHz', notes: __alloT('stem.wave.cp_am_notes', 'Amplitude-modulated. Long range, low fidelity. Susceptible to noise.') },
+        { name: __alloT('stem.wave.cp_fm', 'FM radio'), band: '88-108 MHz', notes: __alloT('stem.wave.cp_fm_notes', 'Frequency-modulated. Better noise immunity than AM, higher fidelity.') },
+        { name: 'GPS L1', band: '1.575 GHz', notes: __alloT('stem.wave.cp_gps_notes', 'Civilian band. ~30 satellites.') },
+        { name: __alloT('stem.wave.cp_sattv', 'Satellite TV (Ku band)'), band: '12-14 GHz', notes: __alloT('stem.wave.cp_sattv_notes', 'Most consumer satellite TV.') },
+        { name: __alloT('stem.wave.cp_microwave', 'Microwave oven'), band: '2.45 GHz', notes: __alloT('stem.wave.cp_microwave_notes', 'Same band as Wi-Fi! Why microwaves can disrupt Wi-Fi when door seal is bad.') }
       ];
 
       var MUSIC_ACOUSTICS = [
-        { topic: 'Pitch', detail: 'Perception of frequency. A4 = 440 Hz standard concert pitch (some orchestras use 442 Hz).' },
-        { topic: 'Octave', detail: 'Doubling of frequency. A4 = 440 Hz, A5 = 880 Hz, A3 = 220 Hz.' },
-        { topic: 'Equal temperament', detail: '12 semitones per octave, each ratio 2^(1/12) ≈ 1.05946. Allows transposing.' },
-        { topic: 'Just intonation', detail: 'Uses simple integer ratios (3:2 = perfect fifth, 5:4 = major third). Sounds more "pure" but not transposable.' },
-        { topic: 'Harmonics', detail: 'Integer multiples of fundamental. Determine timbre. Different instruments emphasize different harmonics.' },
-        { topic: 'Formants', detail: 'Resonant peaks in vocal/instrument spectrum. Distinguish vowels + instruments.' },
-        { topic: 'Beats', detail: 'Two close frequencies interfere → audible amplitude oscillation at difference frequency. Used to tune instruments.' },
-        { topic: 'Resonance (instruments)', detail: 'Air column or string vibrates at characteristic frequencies. Length + tension determine pitch.' },
-        { topic: 'String frequency', detail: 'f = (1/2L)·√(T/μ). Higher tension or shorter string → higher pitch.' },
-        { topic: 'Open pipe resonance', detail: 'f = nv/(2L). Both ends open. Even harmonics present (flute).' },
-        { topic: 'Closed pipe resonance', detail: 'f = (2n-1)v/(4L). One end closed. Only odd harmonics (clarinet).' },
-        { topic: 'Stereo + spatial audio', detail: 'Two ears → interaural time + level differences locate sound. Spatial audio reproduces this with head tracking.' },
-        { topic: 'Reverb time (RT60)', detail: 'Time for sound to decay by 60 dB. Concert hall ~1.5-2 s; cathedral ~5-10 s; recording studio <0.3 s.' },
-        { topic: 'Decibels (sound)', detail: '0 dB SPL = threshold of hearing. Conversation ~60 dB. Rock concert ~110 dB. Pain ~130 dB. Hearing damage >85 dB long exposure.' }
+        { topic: __alloT('stem.wave.ma_pitch', 'Pitch'), detail: __alloT('stem.wave.ma_pitch_detail', 'Perception of frequency. A4 = 440 Hz standard concert pitch (some orchestras use 442 Hz).') },
+        { topic: __alloT('stem.wave.ma_octave', 'Octave'), detail: __alloT('stem.wave.ma_octave_detail', 'Doubling of frequency. A4 = 440 Hz, A5 = 880 Hz, A3 = 220 Hz.') },
+        { topic: __alloT('stem.wave.ma_equaltemp', 'Equal temperament'), detail: __alloT('stem.wave.ma_equaltemp_detail', '12 semitones per octave, each ratio 2^(1/12) ≈ 1.05946. Allows transposing.') },
+        { topic: __alloT('stem.wave.ma_justint', 'Just intonation'), detail: __alloT('stem.wave.ma_justint_detail', 'Uses simple integer ratios (3:2 = perfect fifth, 5:4 = major third). Sounds more "pure" but not transposable.') },
+        { topic: __alloT('stem.wave.ma_harmonics', 'Harmonics'), detail: __alloT('stem.wave.ma_harmonics_detail', 'Integer multiples of fundamental. Determine timbre. Different instruments emphasize different harmonics.') },
+        { topic: __alloT('stem.wave.ma_formants', 'Formants'), detail: __alloT('stem.wave.ma_formants_detail', 'Resonant peaks in vocal/instrument spectrum. Distinguish vowels + instruments.') },
+        { topic: __alloT('stem.wave.ma_beats', 'Beats'), detail: __alloT('stem.wave.ma_beats_detail', 'Two close frequencies interfere → audible amplitude oscillation at difference frequency. Used to tune instruments.') },
+        { topic: __alloT('stem.wave.ma_resonance', 'Resonance (instruments)'), detail: __alloT('stem.wave.ma_resonance_detail', 'Air column or string vibrates at characteristic frequencies. Length + tension determine pitch.') },
+        { topic: __alloT('stem.wave.ma_string', 'String frequency'), detail: __alloT('stem.wave.ma_string_detail', 'f = (1/2L)·√(T/μ). Higher tension or shorter string → higher pitch.') },
+        { topic: __alloT('stem.wave.ma_openpipe', 'Open pipe resonance'), detail: __alloT('stem.wave.ma_openpipe_detail', 'f = nv/(2L). Both ends open. Even harmonics present (flute).') },
+        { topic: __alloT('stem.wave.ma_closedpipe', 'Closed pipe resonance'), detail: __alloT('stem.wave.ma_closedpipe_detail', 'f = (2n-1)v/(4L). One end closed. Only odd harmonics (clarinet).') },
+        { topic: __alloT('stem.wave.ma_stereo', 'Stereo + spatial audio'), detail: __alloT('stem.wave.ma_stereo_detail', 'Two ears → interaural time + level differences locate sound. Spatial audio reproduces this with head tracking.') },
+        { topic: __alloT('stem.wave.ma_reverb', 'Reverb time (RT60)'), detail: __alloT('stem.wave.ma_reverb_detail', 'Time for sound to decay by 60 dB. Concert hall ~1.5-2 s; cathedral ~5-10 s; recording studio <0.3 s.') },
+        { topic: __alloT('stem.wave.ma_decibels', 'Decibels (sound)'), detail: __alloT('stem.wave.ma_decibels_detail', '0 dB SPL = threshold of hearing. Conversation ~60 dB. Rock concert ~110 dB. Pain ~130 dB. Hearing damage >85 dB long exposure.') }
       ];
 
       var EAR_PARTS = [
-        { part: 'Pinna (outer ear)', function: 'Funnels sound to canal; helps localize sound', notes: 'Shape filters frequencies → vertical localization cues.' },
-        { part: 'Ear canal', function: 'Channels sound to eardrum', notes: 'Resonates at ~3 kHz → enhanced sensitivity to speech frequencies.' },
-        { part: 'Eardrum (tympanic membrane)', function: 'Vibrates with sound waves', notes: '~0.1 mm thick. Connected to ossicles.' },
-        { part: 'Ossicles (hammer, anvil, stirrup)', function: 'Amplify + transmit vibrations to cochlea', notes: 'Smallest bones in body. Lever action + area mismatch amplifies ~20×.' },
-        { part: 'Oval window', function: 'Membrane connecting middle to inner ear', notes: 'Stirrup pushes against it, transferring vibration to cochlear fluid.' },
-        { part: 'Cochlea', function: 'Frequency analysis — different positions respond to different frequencies', notes: 'Snail-shaped. ~3.5 turns. ~16,000 hair cells per ear.' },
-        { part: 'Basilar membrane', function: 'Mechanical frequency analysis', notes: 'Stiff near oval window (high freq), floppy at apex (low freq).' },
-        { part: 'Hair cells', function: 'Convert mechanical vibration to neural signal', notes: 'Outer hair cells amplify; inner hair cells transmit. Damage = permanent hearing loss.' },
-        { part: 'Auditory nerve', function: 'Carries signal to brain', notes: 'About 30,000 fibers per ear.' },
-        { part: 'Semicircular canals', function: 'Balance + head rotation', notes: '3 fluid-filled rings in 3 perpendicular planes. Detect angular acceleration.' },
-        { part: 'Otolith organs', function: 'Detect linear acceleration + gravity', notes: 'Crystals on hair cells move with motion. Source of "elevator stomach" feeling.' }
+        { part: __alloT('stem.wave.ear_pinna', 'Pinna (outer ear)'), function: __alloT('stem.wave.ear_pinna_fn', 'Funnels sound to canal; helps localize sound'), notes: __alloT('stem.wave.ear_pinna_notes', 'Shape filters frequencies → vertical localization cues.') },
+        { part: __alloT('stem.wave.ear_canal', 'Ear canal'), function: __alloT('stem.wave.ear_canal_fn', 'Channels sound to eardrum'), notes: __alloT('stem.wave.ear_canal_notes', 'Resonates at ~3 kHz → enhanced sensitivity to speech frequencies.') },
+        { part: __alloT('stem.wave.ear_eardrum', 'Eardrum (tympanic membrane)'), function: __alloT('stem.wave.ear_eardrum_fn', 'Vibrates with sound waves'), notes: __alloT('stem.wave.ear_eardrum_notes', '~0.1 mm thick. Connected to ossicles.') },
+        { part: __alloT('stem.wave.ear_ossicles', 'Ossicles (hammer, anvil, stirrup)'), function: __alloT('stem.wave.ear_ossicles_fn', 'Amplify + transmit vibrations to cochlea'), notes: __alloT('stem.wave.ear_ossicles_notes', 'Smallest bones in body. Lever action + area mismatch amplifies ~20×.') },
+        { part: __alloT('stem.wave.ear_oval', 'Oval window'), function: __alloT('stem.wave.ear_oval_fn', 'Membrane connecting middle to inner ear'), notes: __alloT('stem.wave.ear_oval_notes', 'Stirrup pushes against it, transferring vibration to cochlear fluid.') },
+        { part: __alloT('stem.wave.ear_cochlea', 'Cochlea'), function: __alloT('stem.wave.ear_cochlea_fn', 'Frequency analysis — different positions respond to different frequencies'), notes: __alloT('stem.wave.ear_cochlea_notes', 'Snail-shaped. ~3.5 turns. ~16,000 hair cells per ear.') },
+        { part: __alloT('stem.wave.ear_basilar', 'Basilar membrane'), function: __alloT('stem.wave.ear_basilar_fn', 'Mechanical frequency analysis'), notes: __alloT('stem.wave.ear_basilar_notes', 'Stiff near oval window (high freq), floppy at apex (low freq).') },
+        { part: __alloT('stem.wave.ear_haircells', 'Hair cells'), function: __alloT('stem.wave.ear_haircells_fn', 'Convert mechanical vibration to neural signal'), notes: __alloT('stem.wave.ear_haircells_notes', 'Outer hair cells amplify; inner hair cells transmit. Damage = permanent hearing loss.') },
+        { part: __alloT('stem.wave.ear_nerve', 'Auditory nerve'), function: __alloT('stem.wave.ear_nerve_fn', 'Carries signal to brain'), notes: __alloT('stem.wave.ear_nerve_notes', 'About 30,000 fibers per ear.') },
+        { part: __alloT('stem.wave.ear_semicircular', 'Semicircular canals'), function: __alloT('stem.wave.ear_semicircular_fn', 'Balance + head rotation'), notes: __alloT('stem.wave.ear_semicircular_notes', '3 fluid-filled rings in 3 perpendicular planes. Detect angular acceleration.') },
+        { part: __alloT('stem.wave.ear_otolith', 'Otolith organs'), function: __alloT('stem.wave.ear_otolith_fn', 'Detect linear acceleration + gravity'), notes: __alloT('stem.wave.ear_otolith_notes', 'Crystals on hair cells move with motion. Source of "elevator stomach" feeling.') }
       ];
 
       var MEDICAL_IMAGING = [
-        { method: 'X-ray', radiation: 'X-rays', use: 'Bones, dense tissue. Quick, cheap, ubiquitous.', notes: 'Ionizing radiation. Bone absorbs more than soft tissue → contrast.' },
-        { method: 'CT scan', radiation: 'X-rays (many angles)', use: '3D reconstruction. Trauma, tumors, internal injury.', notes: 'Higher dose than single X-ray. Excellent anatomical detail.' },
-        { method: 'MRI', radiation: 'Radio (in strong B field)', use: 'Soft tissue, brain, joints, tumors.', notes: 'No ionizing radiation. Long scans. T1 vs T2 highlights different features.' },
-        { method: 'fMRI', radiation: 'Radio (in strong B field)', use: 'Brain activity via blood oxygenation', notes: 'BOLD signal. Indirect — neural activity → blood flow change → MRI signal.' },
-        { method: 'Ultrasound', radiation: 'High-frequency sound', use: 'Pregnancy, heart, abdominal organs', notes: 'No radiation. Real-time. Doppler mode shows blood flow.' },
-        { method: 'PET scan', radiation: 'Positron emission (radiotracer)', use: 'Metabolic activity, cancer staging, brain disease', notes: 'Radioactive glucose (FDG) concentrates in active tissue.' },
-        { method: 'SPECT', radiation: 'Gamma (radiotracer)', use: 'Blood flow, heart, brain', notes: 'Like PET but uses single-photon emitters; lower resolution but cheaper.' },
-        { method: 'Mammography', radiation: 'Low-energy X-rays', use: 'Breast tissue screening', notes: 'Compression spreads tissue for clearer image.' },
-        { method: 'Bone densitometry (DEXA)', radiation: 'Dual-energy X-ray', use: 'Bone density (osteoporosis)', notes: 'Two energies subtract to isolate bone density.' },
-        { method: 'OCT (optical coherence tomography)', radiation: 'Near-infrared light', use: 'Retina + cornea imaging', notes: 'Like ultrasound but with light. μm resolution. No radiation.' }
+        { method: 'X-ray', radiation: __alloT('stem.wave.mi_xray_rad', 'X-rays'), use: __alloT('stem.wave.mi_xray_use', 'Bones, dense tissue. Quick, cheap, ubiquitous.'), notes: __alloT('stem.wave.mi_xray_notes', 'Ionizing radiation. Bone absorbs more than soft tissue → contrast.') },
+        { method: __alloT('stem.wave.mi_ct', 'CT scan'), radiation: __alloT('stem.wave.mi_ct_rad', 'X-rays (many angles)'), use: __alloT('stem.wave.mi_ct_use', '3D reconstruction. Trauma, tumors, internal injury.'), notes: __alloT('stem.wave.mi_ct_notes', 'Higher dose than single X-ray. Excellent anatomical detail.') },
+        { method: 'MRI', radiation: __alloT('stem.wave.mi_mri_rad', 'Radio (in strong B field)'), use: __alloT('stem.wave.mi_mri_use', 'Soft tissue, brain, joints, tumors.'), notes: __alloT('stem.wave.mi_mri_notes', 'No ionizing radiation. Long scans. T1 vs T2 highlights different features.') },
+        { method: 'fMRI', radiation: __alloT('stem.wave.mi_mri_rad', 'Radio (in strong B field)'), use: __alloT('stem.wave.mi_fmri_use', 'Brain activity via blood oxygenation'), notes: __alloT('stem.wave.mi_fmri_notes', 'BOLD signal. Indirect — neural activity → blood flow change → MRI signal.') },
+        { method: __alloT('stem.wave.mi_ultrasound', 'Ultrasound'), radiation: __alloT('stem.wave.mi_ultrasound_rad', 'High-frequency sound'), use: __alloT('stem.wave.mi_ultrasound_use', 'Pregnancy, heart, abdominal organs'), notes: __alloT('stem.wave.mi_ultrasound_notes', 'No radiation. Real-time. Doppler mode shows blood flow.') },
+        { method: __alloT('stem.wave.mi_pet', 'PET scan'), radiation: __alloT('stem.wave.mi_pet_rad', 'Positron emission (radiotracer)'), use: __alloT('stem.wave.mi_pet_use', 'Metabolic activity, cancer staging, brain disease'), notes: __alloT('stem.wave.mi_pet_notes', 'Radioactive glucose (FDG) concentrates in active tissue.') },
+        { method: 'SPECT', radiation: __alloT('stem.wave.mi_spect_rad', 'Gamma (radiotracer)'), use: __alloT('stem.wave.mi_spect_use', 'Blood flow, heart, brain'), notes: __alloT('stem.wave.mi_spect_notes', 'Like PET but uses single-photon emitters; lower resolution but cheaper.') },
+        { method: __alloT('stem.wave.mi_mammography', 'Mammography'), radiation: __alloT('stem.wave.mi_mammography_rad', 'Low-energy X-rays'), use: __alloT('stem.wave.mi_mammography_use', 'Breast tissue screening'), notes: __alloT('stem.wave.mi_mammography_notes', 'Compression spreads tissue for clearer image.') },
+        { method: __alloT('stem.wave.mi_dexa', 'Bone densitometry (DEXA)'), radiation: __alloT('stem.wave.mi_dexa_rad', 'Dual-energy X-ray'), use: __alloT('stem.wave.mi_dexa_use', 'Bone density (osteoporosis)'), notes: __alloT('stem.wave.mi_dexa_notes', 'Two energies subtract to isolate bone density.') },
+        { method: __alloT('stem.wave.mi_oct', 'OCT (optical coherence tomography)'), radiation: __alloT('stem.wave.mi_oct_rad', 'Near-infrared light'), use: __alloT('stem.wave.mi_oct_use', 'Retina + cornea imaging'), notes: __alloT('stem.wave.mi_oct_notes', 'Like ultrasound but with light. μm resolution. No radiation.') }
       ];
 
       var SATELLITE_FACTS = [
