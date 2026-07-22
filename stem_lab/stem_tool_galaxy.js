@@ -3401,21 +3401,21 @@ if (!window._galaxyHasLoadedOnce) {
 
                   React.createElement("h4", { className: "text-sm font-bold text-white" }, "🌀 " + __alloT('stem.galaxy.how_galaxy_spin_title', 'How does a galaxy spin?')),
 
-                  React.createElement("span", { className: "ml-auto text-[10px] font-black uppercase tracking-wider text-fuchsia-300 bg-fuchsia-900/40 border border-fuchsia-700/50 px-2 py-0.5 rounded-full" }, "dark matter mystery")
+                  React.createElement("span", { className: "ml-auto text-[10px] font-black uppercase tracking-wider text-fuchsia-300 bg-fuchsia-900/40 border border-fuchsia-700/50 px-2 py-0.5 rounded-full" }, __alloT('stem.galaxy.dark_matter_mystery_badge', 'dark matter mystery'))
 
                 ),
 
-                React.createElement("p", { className: "text-[11px] text-slate-400 leading-relaxed mb-2" }, "Pick a rotation model and watch the stars in the 3-D view above actually obey it. This one question — “how fast do outer stars orbit?” — led to one of the biggest discoveries in physics."),
+                React.createElement("p", { className: "text-[11px] text-slate-400 leading-relaxed mb-2" }, __alloT('stem.galaxy.rotation_intro', "Pick a rotation model and watch the stars in the 3-D view above actually obey it. This one question — “how fast do outer stars orbit?” — led to one of the biggest discoveries in physics.")),
 
                 React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
 
                   [
 
-                    { key: 'keplerian', label: '🪐 Keplerian', hint: 'what visible mass predicts' },
+                    { key: 'keplerian', label: '🪐 ' + __alloT('stem.galaxy.rot_keplerian', 'Keplerian'), hint: __alloT('stem.galaxy.rotbtn_keplerian_hint', 'what visible mass predicts') },
 
-                    { key: 'flat', label: '🌌 Flat (observed)', hint: 'what telescopes measure' },
+                    { key: 'flat', label: '🌌 ' + __alloT('stem.galaxy.rotbtn_flat_label', 'Flat (observed)'), hint: __alloT('stem.galaxy.rotbtn_flat_hint', 'what telescopes measure') },
 
-                    { key: 'rigid', label: '💿 Rigid disk', hint: 'toy model — spins like a DVD' }
+                    { key: 'rigid', label: '💿 ' + __alloT('stem.galaxy.rotbtn_rigid_label', 'Rigid disk'), hint: __alloT('stem.galaxy.rotbtn_rigid_hint', 'toy model — spins like a DVD') }
 
                   ].map(function (rm) {
 
@@ -3499,19 +3499,19 @@ if (!window._galaxyHasLoadedOnce) {
 
                   gapPath += 'Z';
 
-                  return React.createElement("svg", { viewBox: "0 0 " + CW + " " + CH, className: "w-full", style: { maxHeight: '160px' }, role: "img", "aria-label": "Rotation curve chart: orbital speed versus distance from the galactic center. The Keplerian prediction from visible matter falls off with distance, but the observed curve stays flat. The shaded gap between them is the evidence for dark matter." },
+                  return React.createElement("svg", { viewBox: "0 0 " + CW + " " + CH, className: "w-full", style: { maxHeight: '160px' }, role: "img", "aria-label": __alloT('stem.galaxy.aria_rotation_curve', 'Rotation curve chart: orbital speed versus distance from the galactic center. The Keplerian prediction from visible matter falls off with distance, but the observed curve stays flat. The shaded gap between them is the evidence for dark matter.') },
 
                     React.createElement("line", { x1: padL, y1: padT, x2: padL, y2: CH - padB, stroke: "#475569", strokeWidth: 1 }),
 
                     React.createElement("line", { x1: padL, y1: CH - padB, x2: CW - padR, y2: CH - padB, stroke: "#475569", strokeWidth: 1 }),
 
-                    React.createElement("text", { x: padL - 4, y: padT + 8, fill: "#94a3b8", fontSize: 8, textAnchor: "end" }, "fast"),
+                    React.createElement("text", { x: padL - 4, y: padT + 8, fill: "#94a3b8", fontSize: 8, textAnchor: "end" }, __alloT('stem.galaxy.chart_fast', 'fast')),
 
-                    React.createElement("text", { x: padL - 4, y: CH - padB, fill: "#94a3b8", fontSize: 8, textAnchor: "end" }, "slow"),
+                    React.createElement("text", { x: padL - 4, y: CH - padB, fill: "#94a3b8", fontSize: 8, textAnchor: "end" }, __alloT('stem.galaxy.chart_slow', 'slow')),
 
-                    React.createElement("text", { x: (padL + CW - padR) / 2, y: CH - 8, fill: "#94a3b8", fontSize: 8, textAnchor: "middle" }, "distance from galactic center →"),
+                    React.createElement("text", { x: (padL + CW - padR) / 2, y: CH - 8, fill: "#94a3b8", fontSize: 8, textAnchor: "middle" }, __alloT('stem.galaxy.chart_distance_axis', 'distance from galactic center') + " →"),
 
-                    React.createElement("text", { x: 8, y: (padT + CH - padB) / 2, fill: "#94a3b8", fontSize: 8, textAnchor: "middle", transform: "rotate(-90 8 " + ((padT + CH - padB) / 2) + ")" }, "orbital speed"),
+                    React.createElement("text", { x: 8, y: (padT + CH - padB) / 2, fill: "#94a3b8", fontSize: 8, textAnchor: "middle", transform: "rotate(-90 8 " + ((padT + CH - padB) / 2) + ")" }, __alloT('stem.galaxy.chart_orbital_speed', 'orbital speed')),
 
                     React.createElement("path", { d: gapPath, fill: "rgba(217,70,239,0.14)", stroke: "none" }),
 
@@ -3521,11 +3521,11 @@ if (!window._galaxyHasLoadedOnce) {
 
                     rotMode === 'rigid' && React.createElement("line", { x1: px(0), y1: py(0), x2: px(1), y2: py(0.9), stroke: "#94a3b8", strokeWidth: 2, strokeDasharray: "2 3" }),
 
-                    React.createElement("text", { x: px(0.62), y: py(0.72) - 6, fill: "#22d3ee", fontSize: 9, fontWeight: 700 }, "observed (flat)"),
+                    React.createElement("text", { x: px(0.62), y: py(0.72) - 6, fill: "#22d3ee", fontSize: 9, fontWeight: 700 }, __alloT('stem.galaxy.chart_observed_flat', 'observed (flat)')),
 
-                    React.createElement("text", { x: px(0.62), y: py(0.38) + 12, fill: "#fbbf24", fontSize: 9, fontWeight: 700 }, "visible matter alone"),
+                    React.createElement("text", { x: px(0.62), y: py(0.38) + 12, fill: "#fbbf24", fontSize: 9, fontWeight: 700 }, __alloT('stem.galaxy.chart_visible_matter', 'visible matter alone')),
 
-                    React.createElement("text", { x: px(0.80), y: py(0.55), fill: "#e879f9", fontSize: 9, fontWeight: 800, textAnchor: "middle" }, "↑ dark matter ↑"),
+                    React.createElement("text", { x: px(0.80), y: py(0.55), fill: "#e879f9", fontSize: 9, fontWeight: 800, textAnchor: "middle" }, "↑ " + __alloT('stem.galaxy.chart_dark_matter', 'dark matter') + " ↑"),
 
                     // our Sun sits ~55% of the way out, moving at the flat-curve speed
 
@@ -3541,17 +3541,17 @@ if (!window._galaxyHasLoadedOnce) {
 
                   rotMode === 'keplerian' ?
 
-                    "If starlight were all there is, gravity weakens with distance and outer stars should crawl — watch the galaxy's center above lap the outskirts and the disk shear apart. Our solar system really works this way: Mercury laps Neptune 700 times per Neptune-year." :
+                    __alloT('stem.galaxy.rotation_explain_keplerian', "If starlight were all there is, gravity weakens with distance and outer stars should crawl — watch the galaxy's center above lap the outskirts and the disk shear apart. Our solar system really works this way: Mercury laps Neptune 700 times per Neptune-year.") :
 
                   rotMode === 'rigid' ?
 
-                    "A toy model — the whole disk turns together like a painted DVD. No real galaxy does this; it would need mass to keep growing with radius squared. Compare it with the other two models!" :
+                    __alloT('stem.galaxy.rotation_explain_rigid', "A toy model — the whole disk turns together like a painted DVD. No real galaxy does this; it would need mass to keep growing with radius squared. Compare it with the other two models!") :
 
-                    "In the 1970s Vera Rubin measured real galaxies and found this: outer stars move just as fast as inner ones. Visible matter can't supply that much gravity — an invisible halo of dark matter (~85% of all matter in the universe) must be holding the galaxy together. Nobody yet knows what it is."
+                    __alloT('stem.galaxy.rotation_explain_flat', "In the 1970s Vera Rubin measured real galaxies and found this: outer stars move just as fast as inner ones. Visible matter can't supply that much gravity — an invisible halo of dark matter (~85% of all matter in the universe) must be holding the galaxy together. Nobody yet knows what it is.")
 
                 ),
 
-                React.createElement("p", { className: "text-[10px] text-slate-500 mt-1.5 italic" }, "💡 Also notice: the glowing gas lanes hold still while stars stream through them — real spiral arms are density waves (cosmic traffic jams), not fixed pinwheels of stars.")
+                React.createElement("p", { className: "text-[10px] text-slate-500 mt-1.5 italic" }, "💡 " + __alloT('stem.galaxy.rotation_density_wave_note', 'Also notice: the glowing gas lanes hold still while stars stream through them — real spiral arms are density waves (cosmic traffic jams), not fixed pinwheels of stars.'))
 
               ),
 
@@ -3567,7 +3567,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   type: "range", min: 2500, max: 100000, step: 2500, value: starCount,
 
-                  'aria-label': 'Number of stars',
+                  'aria-label': __alloT('stem.galaxy.aria_number_of_stars', 'Number of stars'),
 
                   onChange: function (e) {
 
