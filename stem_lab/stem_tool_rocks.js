@@ -219,10 +219,10 @@ const d = labToolData.rocks || {};
                 callGemini(prompt, false, false, 0.6).then(function(resp) {
                   updMulti({ aiAnswer: resp, aiLoading: false });
                 }).catch(function() {
-                  updMulti({ aiAnswer: 'Connection error. Please try again.', aiLoading: false });
+                  updMulti({ aiAnswer: __alloT('stem.rocks.ai_connection_error', 'Connection error. Please try again.'), aiLoading: false });
                 });
               } else {
-                updMulti({ aiAnswer: 'AI Petrologist is currently offline. Key not configured.', aiLoading: false });
+                updMulti({ aiAnswer: __alloT('stem.rocks.ai_offline_no_key', 'AI Petrologist is currently offline. Key not configured.'), aiLoading: false });
               }
               return;
             }
@@ -232,7 +232,7 @@ const d = labToolData.rocks || {};
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             }).then(function(r) { return r.json(); }).then(function(data) {
-              var answer = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || 'I could not generate a response. Try again!';
+              var answer = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || __alloT('stem.rocks.ai_no_response', 'I could not generate a response. Try again!');
               updMulti({ aiAnswer: answer, aiLoading: false });
             }).catch(function() {
               updMulti({ aiAnswer: 'Connection error. Please try again.', aiLoading: false });
@@ -1715,7 +1715,7 @@ const d = labToolData.rocks || {};
 
                   const modeLabel = m === 'landscape' ? __alloT('stem.rocks.mode_landscape', 'Landscape') : m === 'rocks' ? __alloT('stem.rocks.mode_rocks', 'Rocks') : m === 'minerals' ? __alloT('stem.rocks.mode_minerals', 'Minerals') : m === 'mystery' ? __alloT('stem.rocks.mystery_rock', 'Mystery Rock') : m === 'weathHunt' ? __alloT('stem.rocks.weathering_lab', 'Weathering Lab') : __alloT('stem.rocks.mode_quiz', 'Quiz');
 
-                  return React.createElement("button", { "aria-label": "Switch to " + modeLabel + " mode",
+                  return React.createElement("button", { "aria-label": __alloT('stem.rocks.switch_to_prefix', "Switch to ") + modeLabel + __alloT('stem.rocks.mode_suffix', " mode"),
 
                     key: m, onClick: function () {
 
