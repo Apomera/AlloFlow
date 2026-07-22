@@ -21,6 +21,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { hasLargeFixedWidth } = require('./stem_visual_overflow_heuristic.cjs');
 
 const ROOT = process.cwd();
 const MODULES = path.join(ROOT, 'prismflow-deploy', 'node_modules');
@@ -533,10 +534,7 @@ function auditMarkup(toolId, html) {
   }
 
   const fixedWidth = Array.from(doc.querySelectorAll('[style], [width]')).filter(function (el) {
-    const style = attr(el, 'style');
-    const width = attr(el, 'width');
-    return /\b([7-9]\d{2,}|1\d{3,})px\b/.test(style) ||
-      /\b([7-9]\d{2,}|1\d{3,})\b/.test(width);
+    return hasLargeFixedWidth(attr(el, 'style'), attr(el, 'width'));
   });
   if (fixedWidth.length) {
     issues.push(makeIssue(toolId, 'notice', 'horizontal-overflow-risk', 'First screen includes fixed-width surfaces that need phone-width visual review.', {
