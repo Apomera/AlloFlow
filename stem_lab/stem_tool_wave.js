@@ -3516,153 +3516,153 @@ const d = labToolData.wave;
       // ═════════════════════════════════════════════════════════════════════
 
       var OPTICS_ELEMENTS = [
-        { name: 'Converging (convex) lens', behavior: 'Bends parallel rays toward focal point', use: 'Magnifying glass, eyeglasses for farsightedness, camera lenses, microscope objectives.' },
-        { name: 'Diverging (concave) lens', behavior: 'Spreads parallel rays as if from focal point', use: 'Eyeglasses for nearsightedness, peephole viewers.' },
-        { name: 'Concave (converging) mirror', behavior: 'Reflects parallel rays through focal point', use: 'Reflecting telescopes, satellite dishes, makeup mirrors (magnification).' },
-        { name: 'Convex (diverging) mirror', behavior: 'Reflects parallel rays as if from focal point', use: 'Car side mirrors ("objects in mirror are closer than they appear"), store security mirrors.' },
-        { name: 'Plane mirror', behavior: 'Flat reflection — image distance = object distance', use: 'Everyday mirrors. Image is virtual, upright, same-size, laterally inverted.' },
-        { name: 'Prism (triangular)', behavior: 'Separates white light into spectrum by refraction', use: 'Spectroscopy, rainbow demos. Different wavelengths refract by different amounts (dispersion).' },
-        { name: 'Diffraction grating', behavior: 'Separates light by many parallel slits', use: 'Higher resolution than prism. Used in modern spectrometers.' },
-        { name: 'Beam splitter', behavior: 'Transmits part of beam, reflects rest', use: 'Interferometers, LIGO, projectors, optical instruments.' },
-        { name: 'Polarizing filter', behavior: 'Transmits only one polarization direction', use: 'Sunglasses (cut glare from water/road), LCD displays, photography filters.' },
-        { name: 'Optical fiber', behavior: 'Total internal reflection guides light along the core', use: 'Internet backbone, endoscopes, fiber-optic Christmas trees.' },
-        { name: 'Half-silvered mirror', behavior: '~50% transmitted, ~50% reflected', use: 'One-way windows (only works with brightness asymmetry), Michelson interferometer.' },
-        { name: 'Retroreflector (corner cube)', behavior: 'Returns light to source regardless of angle', use: 'Bike reflectors, road signs, Apollo lunar laser ranging.' }
+        { name: __alloT('stem.wave.oel1_name', 'Converging (convex) lens'), behavior: __alloT('stem.wave.oel1_behavior', 'Bends parallel rays toward focal point'), use: __alloT('stem.wave.oel1_use', 'Magnifying glass, eyeglasses for farsightedness, camera lenses, microscope objectives.') },
+        { name: __alloT('stem.wave.oel2_name', 'Diverging (concave) lens'), behavior: __alloT('stem.wave.oel2_behavior', 'Spreads parallel rays as if from focal point'), use: __alloT('stem.wave.oel2_use', 'Eyeglasses for nearsightedness, peephole viewers.') },
+        { name: __alloT('stem.wave.oel3_name', 'Concave (converging) mirror'), behavior: __alloT('stem.wave.oel3_behavior', 'Reflects parallel rays through focal point'), use: __alloT('stem.wave.oel3_use', 'Reflecting telescopes, satellite dishes, makeup mirrors (magnification).') },
+        { name: __alloT('stem.wave.oel4_name', 'Convex (diverging) mirror'), behavior: __alloT('stem.wave.oel4_behavior', 'Reflects parallel rays as if from focal point'), use: __alloT('stem.wave.oel4_use', 'Car side mirrors ("objects in mirror are closer than they appear"), store security mirrors.') },
+        { name: __alloT('stem.wave.oel5_name', 'Plane mirror'), behavior: __alloT('stem.wave.oel5_behavior', 'Flat reflection — image distance = object distance'), use: __alloT('stem.wave.oel5_use', 'Everyday mirrors. Image is virtual, upright, same-size, laterally inverted.') },
+        { name: __alloT('stem.wave.oel6_name', 'Prism (triangular)'), behavior: __alloT('stem.wave.oel6_behavior', 'Separates white light into spectrum by refraction'), use: __alloT('stem.wave.oel6_use', 'Spectroscopy, rainbow demos. Different wavelengths refract by different amounts (dispersion).') },
+        { name: __alloT('stem.wave.oel7_name', 'Diffraction grating'), behavior: __alloT('stem.wave.oel7_behavior', 'Separates light by many parallel slits'), use: __alloT('stem.wave.oel7_use', 'Higher resolution than prism. Used in modern spectrometers.') },
+        { name: __alloT('stem.wave.oel8_name', 'Beam splitter'), behavior: __alloT('stem.wave.oel8_behavior', 'Transmits part of beam, reflects rest'), use: __alloT('stem.wave.oel8_use', 'Interferometers, LIGO, projectors, optical instruments.') },
+        { name: __alloT('stem.wave.oel9_name', 'Polarizing filter'), behavior: __alloT('stem.wave.oel9_behavior', 'Transmits only one polarization direction'), use: __alloT('stem.wave.oel9_use', 'Sunglasses (cut glare from water/road), LCD displays, photography filters.') },
+        { name: __alloT('stem.wave.oel10_name', 'Optical fiber'), behavior: __alloT('stem.wave.oel10_behavior', 'Total internal reflection guides light along the core'), use: __alloT('stem.wave.oel10_use', 'Internet backbone, endoscopes, fiber-optic Christmas trees.') },
+        { name: __alloT('stem.wave.oel11_name', 'Half-silvered mirror'), behavior: __alloT('stem.wave.oel11_behavior', '~50% transmitted, ~50% reflected'), use: __alloT('stem.wave.oel11_use', 'One-way windows (only works with brightness asymmetry), Michelson interferometer.') },
+        { name: __alloT('stem.wave.oel12_name', 'Retroreflector (corner cube)'), behavior: __alloT('stem.wave.oel12_behavior', 'Returns light to source regardless of angle'), use: __alloT('stem.wave.oel12_use', 'Bike reflectors, road signs, Apollo lunar laser ranging.') }
       ];
 
       var REFRACTION_INDICES = [
-        { material: 'Vacuum', n: '1.0000 (defined)', notes: 'Reference. Light travels at c = 299,792,458 m/s.' },
-        { material: 'Air (STP)', n: '1.0003', notes: 'Essentially same as vacuum for most purposes.' },
-        { material: 'Water (20°C)', n: '1.333', notes: 'Bends light noticeably. Critical angle (water→air) ≈ 48.6°.' },
-        { material: 'Ethanol', n: '1.361', notes: 'Slightly more refractive than water.' },
-        { material: 'Glycerin', n: '1.473', notes: 'Submerged glass nearly invisible in glycerin (similar n).' },
-        { material: 'Quartz', n: '1.544', notes: 'Common in optics. Some birefringence.' },
-        { material: 'Crown glass', n: '1.52', notes: 'Standard eyeglass + lens material.' },
-        { material: 'Flint glass', n: '1.65', notes: 'Higher dispersion than crown — used in achromatic doublets.' },
-        { material: 'Sapphire', n: '1.77', notes: 'Watch crystals, smartphone camera lenses.' },
-        { material: 'Cubic zirconia', n: '2.16', notes: 'Higher than glass — used as diamond simulant.' },
-        { material: 'Diamond', n: '2.42', notes: 'Very high. Critical angle just 24.4° → "fire" via total internal reflection.' },
-        { material: 'Silicon (visible)', n: '~3.5', notes: 'Opaque to visible but transparent in IR. Used in IR optics.' },
-        { material: 'Negative-index metamaterials', n: '< 0 (engineered)', notes: 'Engineered structures bend light backward. Cloaking research.' }
+        { material: __alloT('stem.wave.ri_vacuum', 'Vacuum'), n: '1.0000 (defined)', notes: __alloT('stem.wave.ri_vacuum_notes', 'Reference. Light travels at c = 299,792,458 m/s.') },
+        { material: __alloT('stem.wave.ri_air', 'Air (STP)'), n: '1.0003', notes: __alloT('stem.wave.ri_air_notes', 'Essentially same as vacuum for most purposes.') },
+        { material: __alloT('stem.wave.ri_water', 'Water (20°C)'), n: '1.333', notes: __alloT('stem.wave.ri_water_notes', 'Bends light noticeably. Critical angle (water→air) ≈ 48.6°.') },
+        { material: __alloT('stem.wave.ri_ethanol', 'Ethanol'), n: '1.361', notes: __alloT('stem.wave.ri_ethanol_notes', 'Slightly more refractive than water.') },
+        { material: __alloT('stem.wave.ri_glycerin', 'Glycerin'), n: '1.473', notes: __alloT('stem.wave.ri_glycerin_notes', 'Submerged glass nearly invisible in glycerin (similar n).') },
+        { material: __alloT('stem.wave.ri_quartz', 'Quartz'), n: '1.544', notes: __alloT('stem.wave.ri_quartz_notes', 'Common in optics. Some birefringence.') },
+        { material: __alloT('stem.wave.ri_crown', 'Crown glass'), n: '1.52', notes: __alloT('stem.wave.ri_crown_notes', 'Standard eyeglass + lens material.') },
+        { material: __alloT('stem.wave.ri_flint', 'Flint glass'), n: '1.65', notes: __alloT('stem.wave.ri_flint_notes', 'Higher dispersion than crown — used in achromatic doublets.') },
+        { material: __alloT('stem.wave.ri_sapphire', 'Sapphire'), n: '1.77', notes: __alloT('stem.wave.ri_sapphire_notes', 'Watch crystals, smartphone camera lenses.') },
+        { material: __alloT('stem.wave.ri_cz', 'Cubic zirconia'), n: '2.16', notes: __alloT('stem.wave.ri_cz_notes', 'Higher than glass — used as diamond simulant.') },
+        { material: __alloT('stem.wave.ri_diamond', 'Diamond'), n: '2.42', notes: __alloT('stem.wave.ri_diamond_notes', 'Very high. Critical angle just 24.4° → "fire" via total internal reflection.') },
+        { material: __alloT('stem.wave.ri_silicon', 'Silicon (visible)'), n: '~3.5', notes: __alloT('stem.wave.ri_silicon_notes', 'Opaque to visible but transparent in IR. Used in IR optics.') },
+        { material: __alloT('stem.wave.ri_meta', 'Negative-index metamaterials'), n: '< 0 (engineered)', notes: __alloT('stem.wave.ri_meta_notes', 'Engineered structures bend light backward. Cloaking research.') }
       ];
 
       var DIFFRACTION_FACTS = [
-        { fact: 'Single-slit diffraction', formula: 'a·sin θ = m·λ (dark fringes)', notes: 'a = slit width. Central bright fringe is twice as wide as side fringes.' },
-        { fact: 'Double-slit interference', formula: 'd·sin θ = m·λ (bright fringes)', notes: 'd = slit separation. Demonstrates wave nature of light (Young, 1801).' },
-        { fact: 'Diffraction grating', formula: 'd·sin θ = m·λ', notes: 'Many slits, very sharp peaks. Resolution improves with more slits.' },
-        { fact: 'Rayleigh criterion', formula: 'θ_min ≈ 1.22 λ / D', notes: 'Smallest angle resolvable by circular aperture of diameter D. Limits telescope/microscope resolution.' },
-        { fact: 'Bragg\'s law (X-ray crystallography)', formula: '2d·sin θ = n·λ', notes: 'X-rays diffract from crystal planes. Used to determine atomic positions.' },
-        { fact: 'Diffraction-limited spot size', formula: '≈ λ/(2·NA)', notes: 'NA = numerical aperture. Visible light limit ~200 nm — why electron microscopes have higher resolution.' }
+        { fact: __alloT('stem.wave.df_singleslit', 'Single-slit diffraction'), formula: 'a·sin θ = m·λ (dark fringes)', notes: __alloT('stem.wave.df_singleslit_notes', 'a = slit width. Central bright fringe is twice as wide as side fringes.') },
+        { fact: __alloT('stem.wave.df_doubleslit', 'Double-slit interference'), formula: 'd·sin θ = m·λ (bright fringes)', notes: __alloT('stem.wave.df_doubleslit_notes', 'd = slit separation. Demonstrates wave nature of light (Young, 1801).') },
+        { fact: __alloT('stem.wave.df_grating', 'Diffraction grating'), formula: 'd·sin θ = m·λ', notes: __alloT('stem.wave.df_grating_notes', 'Many slits, very sharp peaks. Resolution improves with more slits.') },
+        { fact: __alloT('stem.wave.df_rayleigh', 'Rayleigh criterion'), formula: 'θ_min ≈ 1.22 λ / D', notes: __alloT('stem.wave.df_rayleigh_notes', 'Smallest angle resolvable by circular aperture of diameter D. Limits telescope/microscope resolution.') },
+        { fact: __alloT('stem.wave.df_bragg', 'Bragg\'s law (X-ray crystallography)'), formula: '2d·sin θ = n·λ', notes: __alloT('stem.wave.df_bragg_notes', 'X-rays diffract from crystal planes. Used to determine atomic positions.') },
+        { fact: __alloT('stem.wave.df_spotsize', 'Diffraction-limited spot size'), formula: '≈ λ/(2·NA)', notes: __alloT('stem.wave.df_spotsize_notes', 'NA = numerical aperture. Visible light limit ~200 nm — why electron microscopes have higher resolution.') }
       ];
 
       var POLARIZATION_NOTES = [
-        { topic: 'What it is', detail: 'Direction of oscillation of the electric field in EM waves. Sound (longitudinal) cannot be polarized.' },
-        { topic: 'Linear polarization', detail: 'E-field oscillates in single plane. Most "polarized" light is linear.' },
-        { topic: 'Circular polarization', detail: 'E-field rotates in circle. Right vs left circular. Used in 3D movies.' },
-        { topic: 'Malus\'s law', detail: 'I = I₀·cos²θ. Light through two polarizers: angle between them controls intensity.' },
-        { topic: 'Brewster\'s angle', detail: 'tan θ_B = n₂/n₁. Reflected light is fully polarized at this angle of incidence.' },
-        { topic: 'Birefringence', detail: 'Some crystals (calcite, quartz) split unpolarized light into two polarized rays.' },
-        { topic: 'Real-world: glare', detail: 'Reflection off horizontal surfaces (water, road) polarizes horizontally. Polarized sunglasses block this.' },
-        { topic: 'Real-world: LCDs', detail: 'Two crossed polarizers + liquid crystals → controllable transmission per pixel.' },
-        { topic: 'Real-world: stress analysis', detail: 'Polarized light through plastic models shows stress patterns as color bands.' },
-        { topic: 'Real-world: 3D movies', detail: 'Circular polarization (RealD) or linear at 45°/135° (older systems) separates left/right images.' }
+        { topic: __alloT('stem.wave.pol_whatis', 'What it is'), detail: __alloT('stem.wave.pol_whatis_detail', 'Direction of oscillation of the electric field in EM waves. Sound (longitudinal) cannot be polarized.') },
+        { topic: __alloT('stem.wave.pol_linear', 'Linear polarization'), detail: __alloT('stem.wave.pol_linear_detail', 'E-field oscillates in single plane. Most "polarized" light is linear.') },
+        { topic: __alloT('stem.wave.pol_circular', 'Circular polarization'), detail: __alloT('stem.wave.pol_circular_detail', 'E-field rotates in circle. Right vs left circular. Used in 3D movies.') },
+        { topic: __alloT('stem.wave.pol_malus', 'Malus\'s law'), detail: __alloT('stem.wave.pol_malus_detail', 'I = I₀·cos²θ. Light through two polarizers: angle between them controls intensity.') },
+        { topic: __alloT('stem.wave.pol_brewster', 'Brewster\'s angle'), detail: __alloT('stem.wave.pol_brewster_detail', 'tan θ_B = n₂/n₁. Reflected light is fully polarized at this angle of incidence.') },
+        { topic: __alloT('stem.wave.pol_birefringence', 'Birefringence'), detail: __alloT('stem.wave.pol_birefringence_detail', 'Some crystals (calcite, quartz) split unpolarized light into two polarized rays.') },
+        { topic: __alloT('stem.wave.pol_glare', 'Real-world: glare'), detail: __alloT('stem.wave.pol_glare_detail', 'Reflection off horizontal surfaces (water, road) polarizes horizontally. Polarized sunglasses block this.') },
+        { topic: __alloT('stem.wave.pol_lcds', 'Real-world: LCDs'), detail: __alloT('stem.wave.pol_lcds_detail', 'Two crossed polarizers + liquid crystals → controllable transmission per pixel.') },
+        { topic: __alloT('stem.wave.pol_stress', 'Real-world: stress analysis'), detail: __alloT('stem.wave.pol_stress_detail', 'Polarized light through plastic models shows stress patterns as color bands.') },
+        { topic: __alloT('stem.wave.pol_3d', 'Real-world: 3D movies'), detail: __alloT('stem.wave.pol_3d_detail', 'Circular polarization (RealD) or linear at 45°/135° (older systems) separates left/right images.') }
       ];
 
       var QUANTUM_WAVES = [
-        { topic: 'de Broglie wavelength', detail: 'λ = h/p. Every massive particle has a wave nature. For an electron at 100 eV, λ ≈ 0.12 nm.' },
-        { topic: 'Wave-particle duality', detail: 'Photons + electrons show both wave + particle behavior. Single-photon double-slit experiments confirm interference even with one photon at a time.' },
-        { topic: 'Schrödinger equation', detail: 'Wave equation for matter waves. Solutions ψ give probability amplitude. |ψ|² = probability density.' },
-        { topic: 'Heisenberg uncertainty', detail: 'Δx · Δp ≥ ℏ/2. Position + momentum can\'t both be measured precisely. Fundamental, not measurement error.' },
-        { topic: 'Quantized energy', detail: 'Bound systems (atoms, harmonic oscillators) only allow specific energy levels. Like standing waves on a string.' },
-        { topic: 'Tunneling', detail: 'Wave nature lets particles "tunnel" through energy barriers classically forbidden. Basis of STM, alpha decay, flash memory.' },
-        { topic: 'Photon energy', detail: 'E = hf = hc/λ. Higher frequency → higher-energy photon. UV photons can ionize; IR cannot.' },
-        { topic: 'Compton scattering', detail: 'Photon-electron collision shifts photon wavelength. Confirms photons carry momentum p = h/λ.' },
-        { topic: 'Pauli exclusion', detail: 'Identical fermions cannot occupy same quantum state. Why electrons fill shells; why matter has structure.' },
-        { topic: 'Coherence length', detail: 'Distance over which wave maintains phase. Laser: kilometers. Sunlight: micrometers. Needed for interference.' }
+        { topic: __alloT('stem.wave.qw_debroglie', 'de Broglie wavelength'), detail: __alloT('stem.wave.qw_debroglie_detail', 'λ = h/p. Every massive particle has a wave nature. For an electron at 100 eV, λ ≈ 0.12 nm.') },
+        { topic: __alloT('stem.wave.qw_duality', 'Wave-particle duality'), detail: __alloT('stem.wave.qw_duality_detail', 'Photons + electrons show both wave + particle behavior. Single-photon double-slit experiments confirm interference even with one photon at a time.') },
+        { topic: __alloT('stem.wave.qw_schrodinger', 'Schrödinger equation'), detail: __alloT('stem.wave.qw_schrodinger_detail', 'Wave equation for matter waves. Solutions ψ give probability amplitude. |ψ|² = probability density.') },
+        { topic: __alloT('stem.wave.qw_heisenberg', 'Heisenberg uncertainty'), detail: __alloT('stem.wave.qw_heisenberg_detail', 'Δx · Δp ≥ ℏ/2. Position + momentum can\'t both be measured precisely. Fundamental, not measurement error.') },
+        { topic: __alloT('stem.wave.qw_quantized', 'Quantized energy'), detail: __alloT('stem.wave.qw_quantized_detail', 'Bound systems (atoms, harmonic oscillators) only allow specific energy levels. Like standing waves on a string.') },
+        { topic: __alloT('stem.wave.qw_tunneling', 'Tunneling'), detail: __alloT('stem.wave.qw_tunneling_detail', 'Wave nature lets particles "tunnel" through energy barriers classically forbidden. Basis of STM, alpha decay, flash memory.') },
+        { topic: __alloT('stem.wave.qw_photon', 'Photon energy'), detail: __alloT('stem.wave.qw_photon_detail', 'E = hf = hc/λ. Higher frequency → higher-energy photon. UV photons can ionize; IR cannot.') },
+        { topic: __alloT('stem.wave.qw_compton', 'Compton scattering'), detail: __alloT('stem.wave.qw_compton_detail', 'Photon-electron collision shifts photon wavelength. Confirms photons carry momentum p = h/λ.') },
+        { topic: __alloT('stem.wave.qw_pauli', 'Pauli exclusion'), detail: __alloT('stem.wave.qw_pauli_detail', 'Identical fermions cannot occupy same quantum state. Why electrons fill shells; why matter has structure.') },
+        { topic: __alloT('stem.wave.qw_coherence', 'Coherence length'), detail: __alloT('stem.wave.qw_coherence_detail', 'Distance over which wave maintains phase. Laser: kilometers. Sunlight: micrometers. Needed for interference.') }
       ];
 
       var SEISMIC_WAVES = [
-        { name: 'P-wave (primary)', type: 'Body wave / longitudinal', speed: '~5–8 km/s in crust', notes: 'Fastest. Compression/rarefaction along travel direction. Travels through solids AND liquids — passes through Earth\'s outer core.' },
-        { name: 'S-wave (secondary/shear)', type: 'Body wave / transverse', speed: '~3–4.5 km/s in crust', notes: 'Slower than P. Side-to-side shaking. Cannot travel through liquids → outer core blocks S-waves (key evidence it\'s liquid).' },
-        { name: 'Love wave', type: 'Surface wave', speed: '~3–4.5 km/s', notes: 'Horizontal transverse motion at surface. More damaging to buildings than P/S.' },
-        { name: 'Rayleigh wave', type: 'Surface wave', speed: '~2–4 km/s', notes: 'Rolling motion (like ocean waves). Largest amplitude. Felt as the rolling shake of an earthquake.' }
+        { name: __alloT('stem.wave.sw_p', 'P-wave (primary)'), type: __alloT('stem.wave.sw_p_type', 'Body wave / longitudinal'), speed: __alloT('stem.wave.sw_p_speed', '~5–8 km/s in crust'), notes: __alloT('stem.wave.sw_p_notes', 'Fastest. Compression/rarefaction along travel direction. Travels through solids AND liquids — passes through Earth\'s outer core.') },
+        { name: __alloT('stem.wave.sw_s', 'S-wave (secondary/shear)'), type: __alloT('stem.wave.sw_s_type', 'Body wave / transverse'), speed: __alloT('stem.wave.sw_s_speed', '~3–4.5 km/s in crust'), notes: __alloT('stem.wave.sw_s_notes', 'Slower than P. Side-to-side shaking. Cannot travel through liquids → outer core blocks S-waves (key evidence it\'s liquid).') },
+        { name: __alloT('stem.wave.sw_love', 'Love wave'), type: __alloT('stem.wave.sw_surface_type', 'Surface wave'), speed: __alloT('stem.wave.sw_love_speed', '~3–4.5 km/s'), notes: __alloT('stem.wave.sw_love_notes', 'Horizontal transverse motion at surface. More damaging to buildings than P/S.') },
+        { name: __alloT('stem.wave.sw_rayleigh', 'Rayleigh wave'), type: __alloT('stem.wave.sw_surface_type', 'Surface wave'), speed: __alloT('stem.wave.sw_rayleigh_speed', '~2–4 km/s'), notes: __alloT('stem.wave.sw_rayleigh_notes', 'Rolling motion (like ocean waves). Largest amplitude. Felt as the rolling shake of an earthquake.') }
       ];
 
       var SEISMIC_FACTS = [
-        { fact: 'Richter magnitude', detail: 'Logarithmic. Each +1 magnitude = ~10× amplitude, ~32× energy. M7 releases ~1000× energy of M5.' },
-        { fact: 'Moment magnitude (Mw)', detail: 'Used for modern measurements, especially large quakes. Replaced Richter for M > ~6.5.' },
-        { fact: 'Mercalli intensity', detail: 'Felt-effects scale (I-XII). What people experienced, not energy released. Same quake = different intensity at different distances.' },
-        { fact: 'Locating an epicenter', detail: '3 stations measure P-S arrival-time difference → distance to each → triangulate epicenter.' },
-        { fact: 'Earth\'s structure (from seismology)', detail: 'P/S wave behavior revealed liquid outer core, solid inner core, mantle, crust. Discontinuities mapped.' },
-        { fact: 'Tsunami warning', detail: 'Underwater quake → ocean displacement → long-wavelength wave traveling ~700 km/h in deep water. P-wave arrival gives ~minutes warning before tsunami.' },
-        { fact: 'Largest recorded', detail: 'Chile 1960: M9.5 (~32× energy of biggest US quake — 1964 Alaska M9.2). Tsunami crossed Pacific.' }
+        { fact: __alloT('stem.wave.sf_richter', 'Richter magnitude'), detail: __alloT('stem.wave.sf_richter_detail', 'Logarithmic. Each +1 magnitude = ~10× amplitude, ~32× energy. M7 releases ~1000× energy of M5.') },
+        { fact: __alloT('stem.wave.sf_moment', 'Moment magnitude (Mw)'), detail: __alloT('stem.wave.sf_moment_detail', 'Used for modern measurements, especially large quakes. Replaced Richter for M > ~6.5.') },
+        { fact: __alloT('stem.wave.sf_mercalli', 'Mercalli intensity'), detail: __alloT('stem.wave.sf_mercalli_detail', 'Felt-effects scale (I-XII). What people experienced, not energy released. Same quake = different intensity at different distances.') },
+        { fact: __alloT('stem.wave.sf_epicenter', 'Locating an epicenter'), detail: __alloT('stem.wave.sf_epicenter_detail', '3 stations measure P-S arrival-time difference → distance to each → triangulate epicenter.') },
+        { fact: __alloT('stem.wave.sf_structure', 'Earth\'s structure (from seismology)'), detail: __alloT('stem.wave.sf_structure_detail', 'P/S wave behavior revealed liquid outer core, solid inner core, mantle, crust. Discontinuities mapped.') },
+        { fact: __alloT('stem.wave.sf_tsunami', 'Tsunami warning'), detail: __alloT('stem.wave.sf_tsunami_detail', 'Underwater quake → ocean displacement → long-wavelength wave traveling ~700 km/h in deep water. P-wave arrival gives ~minutes warning before tsunami.') },
+        { fact: __alloT('stem.wave.sf_largest', 'Largest recorded'), detail: __alloT('stem.wave.sf_largest_detail', 'Chile 1960: M9.5 (~32× energy of biggest US quake — 1964 Alaska M9.2). Tsunami crossed Pacific.') }
       ];
 
       var OCEAN_WAVES = [
-        { type: 'Wind wave (sea)', period: '< 10 s', wavelength: '~10–100 m', notes: 'Local wind generated. Variable height + direction.' },
-        { type: 'Swell', period: '10–30 s', wavelength: '~100–800 m', notes: 'Wind waves that have traveled far. Sorted into regular sets.' },
-        { type: 'Tsunami', period: '~10 min – 2 hr', wavelength: '~100–500 km', notes: 'Tiny height in deep ocean (<1 m) but VERY long wavelength. Pile up at shore.' },
-        { type: 'Tide', period: '~12 h or 24 h', wavelength: 'half Earth\'s circumference', notes: 'Gravitational pull of Moon + Sun. Bulges in ocean rotate as Earth turns.' },
-        { type: 'Seiche', period: 'min to hours', wavelength: 'enclosed basin', notes: 'Standing wave in enclosed/semi-enclosed water (lakes, harbors). Triggered by wind, pressure, quakes.' },
-        { type: 'Rogue wave', period: 'irregular', wavelength: 'irregular', notes: 'Unusually large (>2× average). Once thought myth, now confirmed; constructive interference of swells.' }
+        { type: __alloT('stem.wave.ow_wind', 'Wind wave (sea)'), period: '< 10 s', wavelength: '~10–100 m', notes: __alloT('stem.wave.ow_wind_notes', 'Local wind generated. Variable height + direction.') },
+        { type: __alloT('stem.wave.ow_swell', 'Swell'), period: '10–30 s', wavelength: '~100–800 m', notes: __alloT('stem.wave.ow_swell_notes', 'Wind waves that have traveled far. Sorted into regular sets.') },
+        { type: __alloT('stem.wave.ow_tsunami', 'Tsunami'), period: '~10 min – 2 hr', wavelength: '~100–500 km', notes: __alloT('stem.wave.ow_tsunami_notes', 'Tiny height in deep ocean (<1 m) but VERY long wavelength. Pile up at shore.') },
+        { type: __alloT('stem.wave.ow_tide', 'Tide'), period: '~12 h or 24 h', wavelength: 'half Earth\'s circumference', notes: __alloT('stem.wave.ow_tide_notes', 'Gravitational pull of Moon + Sun. Bulges in ocean rotate as Earth turns.') },
+        { type: __alloT('stem.wave.ow_seiche', 'Seiche'), period: 'min to hours', wavelength: 'enclosed basin', notes: __alloT('stem.wave.ow_seiche_notes', 'Standing wave in enclosed/semi-enclosed water (lakes, harbors). Triggered by wind, pressure, quakes.') },
+        { type: __alloT('stem.wave.ow_rogue', 'Rogue wave'), period: 'irregular', wavelength: 'irregular', notes: __alloT('stem.wave.ow_rogue_notes', 'Unusually large (>2× average). Once thought myth, now confirmed; constructive interference of swells.') }
       ];
 
       var OCEAN_FACTS = [
-        { fact: 'Deep water', detail: 'Depth > λ/2. Wave speed depends only on λ: v = √(gλ/2π).' },
-        { fact: 'Shallow water', detail: 'Depth < λ/20. Wave speed depends only on depth: v = √(gd). Tsunamis are always shallow-water waves (huge λ).' },
-        { fact: 'Wave breaking', detail: 'Waves break when amplitude/wavelength > ~1/7. Crest moves faster than trough → tips over.' },
-        { fact: 'Significant wave height', detail: 'Average height of tallest 1/3 of waves — better matches what a sailor would call "the wave height".' },
-        { fact: 'Spring vs neap tides', detail: 'Spring (extreme): Sun + Moon aligned (new/full moon). Neap (mild): Sun + Moon at 90° (quarter moons).' }
+        { fact: __alloT('stem.wave.of_deep', 'Deep water'), detail: __alloT('stem.wave.of_deep_detail', 'Depth > λ/2. Wave speed depends only on λ: v = √(gλ/2π).') },
+        { fact: __alloT('stem.wave.of_shallow', 'Shallow water'), detail: __alloT('stem.wave.of_shallow_detail', 'Depth < λ/20. Wave speed depends only on depth: v = √(gd). Tsunamis are always shallow-water waves (huge λ).') },
+        { fact: __alloT('stem.wave.of_breaking', 'Wave breaking'), detail: __alloT('stem.wave.of_breaking_detail', 'Waves break when amplitude/wavelength > ~1/7. Crest moves faster than trough → tips over.') },
+        { fact: __alloT('stem.wave.of_sigheight', 'Significant wave height'), detail: __alloT('stem.wave.of_sigheight_detail', 'Average height of tallest 1/3 of waves — better matches what a sailor would call "the wave height".') },
+        { fact: __alloT('stem.wave.of_tides', 'Spring vs neap tides'), detail: __alloT('stem.wave.of_tides_detail', 'Spring (extreme): Sun + Moon aligned (new/full moon). Neap (mild): Sun + Moon at 90° (quarter moons).') }
       ];
 
       var ANTENNA_TYPES = [
-        { type: 'Dipole', size: '~λ/2', use: 'Simplest resonant antenna. FM radio dipole is ~1.5 m.' },
-        { type: 'Yagi-Uda', size: 'multi-element', use: 'Directional. Old rooftop TV antennas, ham radio.' },
-        { type: 'Parabolic dish', size: '> 10λ for efficient gain', use: 'Satellite TV, radio astronomy, deep-space comm.' },
-        { type: 'Patch (microstrip)', size: '~λ/2', use: 'GPS, Wi-Fi, phones. Flat, easy to mass-manufacture.' },
-        { type: 'Helical', size: '~λ circumference per turn', use: 'Circularly polarized. Satellite uplinks.' },
-        { type: 'Loop', size: 'fraction of λ', use: 'AM radio receivers, RFID tags.' },
-        { type: 'Horn', size: '~few λ', use: 'Radar feeds, microwave links. Broadband.' },
-        { type: 'Phased array', size: 'matrix of elements', use: 'Steer beam electronically. Modern radar, 5G mmWave, Starlink user terminals.' }
+        { type: __alloT('stem.wave.ant_dipole', 'Dipole'), size: '~λ/2', use: __alloT('stem.wave.ant_dipole_use', 'Simplest resonant antenna. FM radio dipole is ~1.5 m.') },
+        { type: __alloT('stem.wave.ant_yagi', 'Yagi-Uda'), size: __alloT('stem.wave.ant_yagi_size', 'multi-element'), use: __alloT('stem.wave.ant_yagi_use', 'Directional. Old rooftop TV antennas, ham radio.') },
+        { type: __alloT('stem.wave.ant_dish', 'Parabolic dish'), size: __alloT('stem.wave.ant_dish_size', '> 10λ for efficient gain'), use: __alloT('stem.wave.ant_dish_use', 'Satellite TV, radio astronomy, deep-space comm.') },
+        { type: __alloT('stem.wave.ant_patch', 'Patch (microstrip)'), size: '~λ/2', use: __alloT('stem.wave.ant_patch_use', 'GPS, Wi-Fi, phones. Flat, easy to mass-manufacture.') },
+        { type: __alloT('stem.wave.ant_helical', 'Helical'), size: __alloT('stem.wave.ant_helical_size', '~λ circumference per turn'), use: __alloT('stem.wave.ant_helical_use', 'Circularly polarized. Satellite uplinks.') },
+        { type: __alloT('stem.wave.ant_loop', 'Loop'), size: __alloT('stem.wave.ant_loop_size', 'fraction of λ'), use: __alloT('stem.wave.ant_loop_use', 'AM radio receivers, RFID tags.') },
+        { type: __alloT('stem.wave.ant_horn', 'Horn'), size: '~few λ', use: __alloT('stem.wave.ant_horn_use', 'Radar feeds, microwave links. Broadband.') },
+        { type: __alloT('stem.wave.ant_phased', 'Phased array'), size: __alloT('stem.wave.ant_phased_size', 'matrix of elements'), use: __alloT('stem.wave.ant_phased_use', 'Steer beam electronically. Modern radar, 5G mmWave, Starlink user terminals.') }
       ];
 
       var RADAR_SONAR = [
-        { system: 'Primary radar', use: 'Aircraft detection. Pulse sent → echo measured. Range = c·Δt/2.' },
-        { system: 'Doppler radar', use: 'Weather (rain motion → wind), police speed guns. Frequency shift → velocity.' },
-        { system: 'Synthetic aperture radar (SAR)', use: 'Moving platform creates effective large aperture. Earth imaging from satellites; works through clouds + at night.' },
-        { system: 'Phased array radar', use: 'Steerable beam without moving the dish. AEGIS, modern fighters.' },
-        { system: 'Active sonar', use: 'Send pulse, listen for echo. Submarine detection, fish-finding. Limited range due to sound absorption.' },
-        { system: 'Passive sonar', use: 'Listen for sounds from targets. Submarines use this when avoiding detection (no emissions).' },
-        { system: 'Echolocation (biological)', use: 'Bats, dolphins. Frequencies up to ~200 kHz (bats); chirps adapted for prey.' },
-        { system: 'Ultrasound (medical)', use: '1–20 MHz pulses image internal tissues. Doppler mode shows blood flow.' },
-        { system: 'LIDAR', use: 'Laser pulses → 3D point clouds. Self-driving cars, archaeology (forest-floor mapping).' }
+        { system: __alloT('stem.wave.rs_primary', 'Primary radar'), use: __alloT('stem.wave.rs_primary_use', 'Aircraft detection. Pulse sent → echo measured. Range = c·Δt/2.') },
+        { system: __alloT('stem.wave.rs_doppler', 'Doppler radar'), use: __alloT('stem.wave.rs_doppler_use', 'Weather (rain motion → wind), police speed guns. Frequency shift → velocity.') },
+        { system: __alloT('stem.wave.rs_sar', 'Synthetic aperture radar (SAR)'), use: __alloT('stem.wave.rs_sar_use', 'Moving platform creates effective large aperture. Earth imaging from satellites; works through clouds + at night.') },
+        { system: __alloT('stem.wave.rs_phased', 'Phased array radar'), use: __alloT('stem.wave.rs_phased_use', 'Steerable beam without moving the dish. AEGIS, modern fighters.') },
+        { system: __alloT('stem.wave.rs_active', 'Active sonar'), use: __alloT('stem.wave.rs_active_use', 'Send pulse, listen for echo. Submarine detection, fish-finding. Limited range due to sound absorption.') },
+        { system: __alloT('stem.wave.rs_passive', 'Passive sonar'), use: __alloT('stem.wave.rs_passive_use', 'Listen for sounds from targets. Submarines use this when avoiding detection (no emissions).') },
+        { system: __alloT('stem.wave.rs_echo', 'Echolocation (biological)'), use: __alloT('stem.wave.rs_echo_use', 'Bats, dolphins. Frequencies up to ~200 kHz (bats); chirps adapted for prey.') },
+        { system: __alloT('stem.wave.rs_ultrasound', 'Ultrasound (medical)'), use: __alloT('stem.wave.rs_ultrasound_use', '1–20 MHz pulses image internal tissues. Doppler mode shows blood flow.') },
+        { system: __alloT('stem.wave.rs_lidar', 'LIDAR'), use: __alloT('stem.wave.rs_lidar_use', 'Laser pulses → 3D point clouds. Self-driving cars, archaeology (forest-floor mapping).') }
       ];
 
       var SHOCKWAVE_FACTS = [
-        { fact: 'Mach number', detail: 'M = v/v_sound. M<1 subsonic, M=1 transonic, M>1 supersonic, M>5 hypersonic.' },
-        { fact: 'Sonic boom', detail: 'Cone of compressed air trailing supersonic objects. Heard as boom when cone passes you.' },
-        { fact: 'Mach cone angle', detail: 'sin α = 1/M. Faster object → narrower cone.' },
-        { fact: 'Shock wave thickness', detail: 'Just a few mean free paths (~micrometers in atmosphere). Steep pressure jump.' },
-        { fact: 'Sound of speed (air, 20°C)', detail: '343 m/s = 1235 km/h = 767 mph. Increases with temperature: v ≈ 331 + 0.6·T(°C) m/s.' },
-        { fact: 'Other media', detail: 'Water: ~1480 m/s. Steel: ~5000 m/s. Hotter, denser, stiffer → faster sound.' },
-        { fact: 'Bullwhip crack', detail: 'Tip of whip exceeds Mach 1 → mini sonic boom.' },
-        { fact: 'Explosion shock wave', detail: 'Initial pressure jump (overpressure) travels faster than sound, slowing to sound speed with distance.' }
+        { fact: __alloT('stem.wave.shk_mach', 'Mach number'), detail: __alloT('stem.wave.shk_mach_detail', 'M = v/v_sound. M<1 subsonic, M=1 transonic, M>1 supersonic, M>5 hypersonic.') },
+        { fact: __alloT('stem.wave.shk_boom', 'Sonic boom'), detail: __alloT('stem.wave.shk_boom_detail', 'Cone of compressed air trailing supersonic objects. Heard as boom when cone passes you.') },
+        { fact: __alloT('stem.wave.shk_cone', 'Mach cone angle'), detail: __alloT('stem.wave.shk_cone_detail', 'sin α = 1/M. Faster object → narrower cone.') },
+        { fact: __alloT('stem.wave.shk_thickness', 'Shock wave thickness'), detail: __alloT('stem.wave.shk_thickness_detail', 'Just a few mean free paths (~micrometers in atmosphere). Steep pressure jump.') },
+        { fact: __alloT('stem.wave.shk_speed', 'Sound of speed (air, 20°C)'), detail: __alloT('stem.wave.shk_speed_detail', '343 m/s = 1235 km/h = 767 mph. Increases with temperature: v ≈ 331 + 0.6·T(°C) m/s.') },
+        { fact: __alloT('stem.wave.shk_media', 'Other media'), detail: __alloT('stem.wave.shk_media_detail', 'Water: ~1480 m/s. Steel: ~5000 m/s. Hotter, denser, stiffer → faster sound.') },
+        { fact: __alloT('stem.wave.shk_whip', 'Bullwhip crack'), detail: __alloT('stem.wave.shk_whip_detail', 'Tip of whip exceeds Mach 1 → mini sonic boom.') },
+        { fact: __alloT('stem.wave.shk_explosion', 'Explosion shock wave'), detail: __alloT('stem.wave.shk_explosion_detail', 'Initial pressure jump (overpressure) travels faster than sound, slowing to sound speed with distance.') }
       ];
 
       var WAVE_HISTORY = [
-        { year: '1665', who: 'Robert Hooke', what: 'First observed diffraction.' },
-        { year: '1690', who: 'Christiaan Huygens', what: 'Wave theory of light. Huygens\' principle (every point on wavefront is source of secondary wavelets).' },
-        { year: '1801', who: 'Thomas Young', what: 'Double-slit experiment. Established wave nature of light through interference.' },
-        { year: '1818', who: 'Augustin Fresnel', what: 'Mathematical theory of diffraction. Predicted (correctly) the "Poisson spot" — bright dot in center of circular shadow.' },
-        { year: '1842', who: 'Christian Doppler', what: 'Doppler effect for sound and light.' },
-        { year: '1864', who: 'James Clerk Maxwell', what: 'Maxwell\'s equations — light is electromagnetic wave. Predicted speed = c.' },
-        { year: '1887', who: 'Heinrich Hertz', what: 'Produced + detected radio waves in lab. Confirmed Maxwell\'s prediction.' },
-        { year: '1900', who: 'Max Planck', what: 'E = hf — energy is quantized. Birth of quantum theory.' },
-        { year: '1905', who: 'Albert Einstein', what: 'Photoelectric effect — light comes in quanta (photons). Nobel 1921.' },
-        { year: '1924', who: 'Louis de Broglie', what: 'Matter waves: λ = h/p. Even electrons are waves.' },
-        { year: '1927', who: 'Davisson + Germer', what: 'Confirmed electron diffraction — proved matter waves.' },
-        { year: '1960', who: 'Theodore Maiman', what: 'First working laser (ruby).' },
-        { year: '2015', who: 'LIGO collaboration', what: 'First direct detection of gravitational waves (binary black hole merger).' }
+        { year: '1665', who: 'Robert Hooke', what: __alloT('stem.wave.hist_1665', 'First observed diffraction.') },
+        { year: '1690', who: 'Christiaan Huygens', what: __alloT('stem.wave.hist_1690', 'Wave theory of light. Huygens\' principle (every point on wavefront is source of secondary wavelets).') },
+        { year: '1801', who: 'Thomas Young', what: __alloT('stem.wave.hist_1801', 'Double-slit experiment. Established wave nature of light through interference.') },
+        { year: '1818', who: 'Augustin Fresnel', what: __alloT('stem.wave.hist_1818', 'Mathematical theory of diffraction. Predicted (correctly) the "Poisson spot" — bright dot in center of circular shadow.') },
+        { year: '1842', who: 'Christian Doppler', what: __alloT('stem.wave.hist_1842', 'Doppler effect for sound and light.') },
+        { year: '1864', who: 'James Clerk Maxwell', what: __alloT('stem.wave.hist_1864', 'Maxwell\'s equations — light is electromagnetic wave. Predicted speed = c.') },
+        { year: '1887', who: 'Heinrich Hertz', what: __alloT('stem.wave.hist_1887', 'Produced + detected radio waves in lab. Confirmed Maxwell\'s prediction.') },
+        { year: '1900', who: 'Max Planck', what: __alloT('stem.wave.hist_1900', 'E = hf — energy is quantized. Birth of quantum theory.') },
+        { year: '1905', who: 'Albert Einstein', what: __alloT('stem.wave.hist_1905', 'Photoelectric effect — light comes in quanta (photons). Nobel 1921.') },
+        { year: '1924', who: 'Louis de Broglie', what: __alloT('stem.wave.hist_1924', 'Matter waves: λ = h/p. Even electrons are waves.') },
+        { year: '1927', who: 'Davisson + Germer', what: __alloT('stem.wave.hist_1927', 'Confirmed electron diffraction — proved matter waves.') },
+        { year: '1960', who: 'Theodore Maiman', what: __alloT('stem.wave.hist_1960', 'First working laser (ruby).') },
+        { year: '2015', who: 'LIGO collaboration', what: __alloT('stem.wave.hist_2015', 'First direct detection of gravitational waves (binary black hole merger).') }
       ];
 
       function renderOpticsSection() {
