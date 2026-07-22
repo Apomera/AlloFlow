@@ -2746,6 +2746,8 @@
         className: 'text-xs font-bold text-slate-600 uppercase mb-2'
       }, 'Practice vs Outcome Scatter Plot'), React.createElement('svg', {
         viewBox: '0 0 ' + W + ' ' + H,
+        role: 'img',
+        'aria-label': 'Practice versus outcome scatter plot for ' + studentName + '. ' + n + ' data points show a ' + (slope > 0 ? 'positive' : slope < 0 ? 'negative' : 'flat') + ' trend. Detailed values are available in the Growth Trajectory table.',
         className: 'w-full max-w-xs mx-auto',
         style: {
           overflow: 'visible'
