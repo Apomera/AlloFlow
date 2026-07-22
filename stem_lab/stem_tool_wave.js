@@ -3667,7 +3667,7 @@ const d = labToolData.wave;
 
       function renderOpticsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔍 Optics — lenses, mirrors, and elements'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔍 ' + __alloT('stem.wave.sec_optics_title', 'Optics — lenses, mirrors, and elements')),
           React.createElement('div', { className: 'space-y-2' },
             OPTICS_ELEMENTS.map(function(o, i) {
               return React.createElement('div', { key: 'o'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3682,13 +3682,13 @@ const d = labToolData.wave;
 
       function renderRefractionSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '↻ Refractive indices'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Snell\'s law: n₁ sin θ₁ = n₂ sin θ₂. Light slows by factor n in material; n is wavelength-dependent (dispersion).'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '↻ ' + __alloT('stem.wave.sec_refraction_title', 'Refractive indices')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_refraction_intro', 'Snell\'s law: n₁ sin θ₁ = n₂ sin θ₂. Light slows by factor n in material; n is wavelength-dependent (dispersion).')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
-                  ['Material', 'n', 'Notes'].map(function(hh, i) {
+                  [__alloT('stem.wave.col_material', 'Material'), 'n', __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
                     return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
@@ -3709,8 +3709,8 @@ const d = labToolData.wave;
 
       function renderDiffractionSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '∿ Diffraction'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Diffraction = bending of waves around obstacles or through openings. Most noticeable when feature size ≈ wavelength.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '∿ ' + __alloT('stem.wave.tab_diffraction', 'Diffraction')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_diffraction_intro', 'Diffraction = bending of waves around obstacles or through openings. Most noticeable when feature size ≈ wavelength.')),
           React.createElement('div', { className: 'space-y-2' },
             DIFFRACTION_FACTS.map(function(d, i) {
               return React.createElement('div', { key: 'd'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -3725,7 +3725,7 @@ const d = labToolData.wave;
 
       function renderPolarizationSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '↕ Polarization'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '↕ ' + __alloT('stem.wave.tab_polarization', 'Polarization')),
           React.createElement('div', { className: 'space-y-2' },
             POLARIZATION_NOTES.map(function(p, i) {
               return React.createElement('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },
@@ -3739,8 +3739,8 @@ const d = labToolData.wave;
 
       function renderQuantumSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚛ Quantum waves'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'In quantum mechanics, every particle has wave properties. The "wave function" ψ gives probability amplitude.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚛ ' + __alloT('stem.wave.tab_quantum', 'Quantum waves')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_quantum_intro', 'In quantum mechanics, every particle has wave properties. The "wave function" ψ gives probability amplitude.')),
           React.createElement('div', { className: 'space-y-2' },
             QUANTUM_WAVES.map(function(q, i) {
               return React.createElement('div', { key: 'q'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },
@@ -3754,9 +3754,9 @@ const d = labToolData.wave;
 
       function renderSeismicSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌋 Seismic waves'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌋 ' + __alloT('stem.wave.tab_seismicwaves', 'Seismic waves')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Wave types'),
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.tab_types', 'Wave types')),
             React.createElement('div', { className: 'space-y-1' },
               SEISMIC_WAVES.map(function(w, i) {
                 return React.createElement('div', { key: 'w'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
@@ -3770,7 +3770,7 @@ const d = labToolData.wave;
               })
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Seismology essentials'),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_seismology_essentials', 'Seismology essentials')),
           React.createElement('div', { className: 'space-y-1' },
             SEISMIC_FACTS.map(function(f, i) {
               return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
@@ -3784,7 +3784,7 @@ const d = labToolData.wave;
 
       function renderOceanSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏄 Ocean waves'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏄 ' + __alloT('stem.wave.tab_oceanwaves', 'Ocean waves')),
           React.createElement('div', { className: 'mb-3' },
             React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Ocean wave types'),
             React.createElement('div', { className: 'space-y-1' },

@@ -817,5 +817,13 @@
   "hist_1924": "Matter waves: λ = h/p. Even electrons are waves.",
   "hist_1927": "Confirmed electron diffraction — proved matter waves.",
   "hist_1960": "First working laser (ruby).",
-  "hist_2015": "First direct detection of gravitational waves (binary black hole merger)."
+  "hist_2015": "First direct detection of gravitational waves (binary black hole merger).",
+  "sec_optics_title": "Optics — lenses, mirrors, and elements",
+  "sec_refraction_title": "Refractive indices",
+  "sec_refraction_intro": "Snell's law: n₁ sin θ₁ = n₂ sin θ₂. Light slows by factor n in material; n is wavelength-dependent (dispersion).",
+  "col_material": "Material",
+  "col_notes": "Notes",
+  "sec_diffraction_intro": "Diffraction = bending of waves around obstacles or through openings. Most noticeable when feature size ≈ wavelength.",
+  "sec_quantum_intro": "In quantum mechanics, every particle has wave properties. The \"wave function\" ψ gives probability amplitude.",
+  "sec_seismology_essentials": "Seismology essentials"
 }
