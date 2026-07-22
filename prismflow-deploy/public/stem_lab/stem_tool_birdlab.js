@@ -7953,6 +7953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   ];
 
   window.StemLab.registerTool('birdLab', {
+    category: 'science',
     name: 'BirdLab — I-Spy Ornithology',
     icon: '🐦',
     desc: 'Interactive bird-spotting and species ID for adolescents. Layered habitat scenes with animated birds whose movement signatures double as field marks. Pairs with Cornell Lab\'s free Merlin Bird ID app for real photos and audio. Maine-relevant without being Maine-only.',
@@ -9395,7 +9396,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 )
               ),
               // Sky
-              h('rect', { x: 0, y: 0, width: 800, height: 240, fill: 'url(#bl-hero-sky)' }),
+              h('rect', { x: 0, y: 0, width: '100%', height: '100%', fill: 'url(#bl-hero-sky)' }),
               // Sun
               h('circle', { cx: 660, cy: 95, r: 72, fill: 'url(#bl-hero-sun)' }),
               h('circle', { cx: 660, cy: 95, r: 26, fill: '#fff5c2', opacity: 0.95, style: { filter: 'drop-shadow(0 0 14px rgba(253,230,138,0.85))' } }),
@@ -9424,7 +9425,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 return pines;
               })(),
               // Foreground ground band
-              h('rect', { x: 0, y: 218, width: 800, height: 22, fill: '#142420' }),
+              h('rect', { x: 0, y: 218, width: '100%', height: 22, fill: '#142420' }),
               // Flying-bird silhouettes in the sky (varied size + position for parallax feel)
               h('path', { d: 'M 130 60 q 12 -10 22 0 q 10 -10 22 0', stroke: '#0f172a', strokeWidth: 2.5, fill: 'none', strokeLinecap: 'round', opacity: 0.85 }),
               h('path', { d: 'M 220 95 q 8 -7 16 0 q 8 -7 16 0', stroke: '#0f172a', strokeWidth: 2, fill: 'none', strokeLinecap: 'round', opacity: 0.7 }),
@@ -9502,7 +9503,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     flexShrink: 0
                   }
                 },
-                  h('svg', { viewBox: '0 0 30 30', style: { width: 50, height: 50 } },
+                  h('svg', { viewBox: '0 0 30 30', 'aria-hidden': 'true', focusable: 'false', style: { width: 50, height: 50 } },
                     h('g', { transform: 'translate(2, 2)' }, __sp.svg(h))
                   )
                 ),
