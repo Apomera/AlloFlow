@@ -17,6 +17,38 @@ const getAssistedKnowledgeContext = (state) => {
   return `\n--- GUIDING HAND KNOWLEDGE (ASSISTED, NOT DEMONSTRATED MASTERY) ---\n${learned.map((entry, index) => `${index + 1}. ${entry}`).join('\n')}\nUse this knowledge when it is relevant in later scenes, but never treat it as evidence that the student independently demonstrated the concept.\n`;
 };
 
+let activeAdventureEstablishingShot = null;
+const cancelAdventureEstablishingShot = () => {
+  const request = activeAdventureEstablishingShot;
+  if (!request) return false;
+  request.cancelled = true;
+  if (request.timeoutId != null) clearTimeout(request.timeoutId);
+  if (activeAdventureEstablishingShot === request) activeAdventureEstablishingShot = null;
+  return true;
+};
+
+const scheduleAdventureEstablishingShot = ({ prompt, callImagen, setAdventureState, warnLog, delayMs = 250 }) => {
+  cancelAdventureEstablishingShot();
+  const request = { cancelled: false, timeoutId: null };
+  activeAdventureEstablishingShot = request;
+  request.timeoutId = setTimeout(async () => {
+      request.timeoutId = null;
+      if (request.cancelled) return;
+      try {
+          const url = await callImagen(prompt);
+          if (request.cancelled || !url) return;
+          setAdventureState(prev => prev.isReviewingCharacters
+              ? { ...prev, sceneImage: url, isImageLoading: false }
+              : prev);
+      } catch (establishingErr) {
+          if (!request.cancelled) warnLog('Adventure establishing shot failed; waiting for the confirmed cast image.', establishingErr);
+      } finally {
+          if (activeAdventureEstablishingShot === request) activeAdventureEstablishingShot = null;
+      }
+  }, Math.max(0, Number(delayMs) || 0));
+  return request;
+};
+
 const executeStartAdventure = async (contextOverride = null, deps) => {
   const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureArtStyle, adventureCustomArtStyle, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, callImagen, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] executeStartAdventure fired"); } catch(_) {}
@@ -413,17 +445,12 @@ Opening scene: ${sceneText.substring(0, 1200)}
               ? `Art style: ${adventureCustomArtStyle}.`
               : (adventureArtStyle && adventureArtStyle !== 'auto' ? `Art style: ${adventureArtStyle}.` : '');
           const establishingPrompt = `Wide establishing shot introducing this setting: ${String(sceneData.text || '').substring(0, 600)}. Scenic environment only, absolutely no people, no characters, no text. ${establishingStyle}`;
-          Promise.resolve()
-              .then(() => callImagen(establishingPrompt))
-              .then((url) => {
-                  if (!url) return;
-                  setAdventureState(prev => prev.isReviewingCharacters
-                      ? { ...prev, sceneImage: url, isImageLoading: false }
-                      : prev);
-              })
-              .catch((establishingErr) => {
-                  warnLog('Adventure establishing shot failed; waiting for the confirmed cast image.', establishingErr);
-              });
+          scheduleAdventureEstablishingShot({
+              prompt: establishingPrompt,
+              callImagen,
+              setAdventureState,
+              warnLog,
+          });
       }
       const newAdventureItem = {
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -1630,4 +1657,6 @@ window.AlloModules.AdventureHandlers = {
   handleAdventureChoice,
   handleGuidingHand,
   handleAdventureHint,
+  scheduleAdventureEstablishingShot,
+  cancelAdventureEstablishingShot,
 };

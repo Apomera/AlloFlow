@@ -12,6 +12,8 @@ describe('Adventure cast-review establishing shot', () => {
     expect(handlersSource).toContain('callGemini, callGeminiVision, callImagen, addToast');
     expect(handlersSource).toContain('Wide establishing shot introducing this setting:');
     expect(handlersSource).toContain('absolutely no people, no characters, no text');
+    expect(handlersSource).toContain('scheduleAdventureEstablishingShot({');
+    expect(handlersSource).toContain('cancelAdventureEstablishingShot');
     expect(handlersSource).toContain('prev.isReviewingCharacters');
     expect(handlersSource).toContain('? { ...prev, sceneImage: url, isImageLoading: false }');
     expect(anti).toMatch(/const _alloAdventureHandlersDeps[\s\S]*callGemini,[\s\S]*callImagen,/);
@@ -36,6 +38,13 @@ describe('Adventure structured character extraction retry', () => {
 });
 
 describe('Gemini-gated cast reference sheet', () => {
+  it('prioritizes portraits named in the current scene before the protagonist and remaining cast', () => {
+    expect(sessionSource).toContain('const selectAdventureReferenceCharacters =');
+    expect(sessionSource).toContain('normalizedSceneNames.has');
+    expect(sessionSource).toContain('pendingAdventureUpdate?.charactersInScene');
+    expect(sessionSource).toContain('adventureState.currentScene?.charactersInScene');
+    expect(sessionSource).toContain('selectAdventureReferenceCharacters(adventureState.characters, sceneCharacterNames)');
+  });
   it('composites up to four portraits only for the Gemini image backend', () => {
     expect(sessionSource).toContain('const createAdventureReferenceSheet = async (characters) =>');
     expect(sessionSource).toContain('.filter(character => character?.portrait)');
@@ -49,6 +58,7 @@ describe('Gemini-gated cast reference sheet', () => {
     expect(sessionSource).toContain("The attached reference sheet shows this story's cast.");
     expect(sessionSource).toContain('falling back to the protagonist portrait');
     expect(sessionSource).toContain("let referenceBase64 = protagonist?.portrait?.split(',')[1] || null");
+    expect(sessionSource).toContain('buildAdventureConsistencyReference({');
     expect(sessionSource).toContain('callGeminiImageEdit(consistencyPrompt, currentBase64, targetWidth, targetQual, referenceBase64)');
   });
 

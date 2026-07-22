@@ -529,6 +529,27 @@ const handleDiceRollComplete = (deps) => {
       setPendingAdventureUpdate(null);
 };
 
+const selectAdventureReferenceCharacters = (characters, sceneCharacterNames = []) => {
+  const portraitCharacters = (Array.isArray(characters) ? characters : []).filter(character => character?.portrait);
+  const normalizedSceneNames = new Set((Array.isArray(sceneCharacterNames) ? sceneCharacterNames : [])
+      .map(name => String(name || '').trim().toLocaleLowerCase())
+      .filter(Boolean));
+  const selected = [];
+  const addCharacter = (character) => {
+      if (character && !selected.includes(character)) selected.push(character);
+  };
+
+  portraitCharacters
+      .filter(character => normalizedSceneNames.has(String(character.name || '').trim().toLocaleLowerCase()))
+      .forEach(addCharacter);
+  addCharacter(portraitCharacters.find(character =>
+      character.role?.toLowerCase().includes('protagonist') ||
+      character.role?.toLowerCase().includes('player')
+  ));
+  portraitCharacters.forEach(addCharacter);
+  return selected.slice(0, 4);
+};
+
 const createAdventureReferenceSheet = async (characters) => {
   const portraitCharacters = (Array.isArray(characters) ? characters : [])
       .filter(character => character?.portrait)
@@ -568,6 +589,34 @@ const createAdventureReferenceSheet = async (characters) => {
   });
 
   return canvas.toDataURL('image/png').split(',')[1] || null;
+};
+
+const buildAdventureConsistencyReference = async ({ portraitCharacters, protagonist, useReferenceSheet, createReferenceSheet = createAdventureReferenceSheet, warn = () => {} }) => {
+  let referenceBase64 = protagonist?.portrait?.split(',')[1] || null;
+  let consistencyPrompt = `
+      Refine the main character in this scene to visually match this reference portrait.
+      Character: ${protagonist?.name || 'Protagonist'} — ${protagonist?.appearance || 'Use the supplied portrait'}.
+      Keep the scene composition, background, lighting, and any other characters unchanged.
+      Only adjust the protagonist's facial features, hair, and clothing to match the reference.
+      NO TEXT. NO LABELS. NO UI ELEMENTS.
+  `;
+  if (useReferenceSheet) {
+      try {
+          const compositeReference = await createReferenceSheet(portraitCharacters);
+          if (compositeReference) {
+              referenceBase64 = compositeReference;
+              consistencyPrompt = `
+                  The attached reference sheet shows this story's cast.
+                  Refine the characters in this scene to match their appearances in the reference sheet.
+                  Keep the scene composition, background, and lighting unchanged.
+                  NO TEXT. NO LABELS. NO UI ELEMENTS.
+              `;
+          }
+      } catch (referenceSheetErr) {
+          warn('Character reference sheet failed; falling back to the protagonist portrait.', referenceSheetErr);
+      }
+  }
+  return { referenceBase64, consistencyPrompt };
 };
 
 const generateAdventureImage = async (sceneText, targetTurn, deps) => {
@@ -693,7 +742,11 @@ const generateAdventureImage = async (sceneText, targetTurn, deps) => {
               warnLog("Adventure image refinement failed, using original.", refineErr);
           }
           if (adventureConsistentCharacters && adventureState.characters?.length > 0) {
-              const portraitCharacters = adventureState.characters.filter(character => character?.portrait).slice(0, 4);
+              const sceneCharacterNames = pendingAdventureUpdate?.charactersInScene
+                  || pendingAdventureUpdate?.scene?.charactersInScene
+                  || adventureState.currentScene?.charactersInScene
+                  || [];
+              const portraitCharacters = selectAdventureReferenceCharacters(adventureState.characters, sceneCharacterNames);
               const protagonist = adventureState.characters.find(c =>
                   c.role?.toLowerCase().includes('protagonist') ||
                   c.role?.toLowerCase().includes('player')
@@ -702,30 +755,12 @@ const generateAdventureImage = async (sceneText, targetTurn, deps) => {
               if (protagonist?.portrait || useGeminiReferenceSheet) {
                   try {
                       const currentBase64 = imageUrl.split(',')[1];
-                      let referenceBase64 = protagonist?.portrait?.split(',')[1] || null;
-                      let consistencyPrompt = `
-                          Refine the main character in this scene to visually match this reference portrait.
-                          Character: ${protagonist.name} — ${protagonist.appearance}.
-                          Keep the scene composition, background, lighting, and any other characters unchanged.
-                          Only adjust the protagonist's facial features, hair, and clothing to match the reference.
-                          NO TEXT. NO LABELS. NO UI ELEMENTS.
-                      `;
-                      if (useGeminiReferenceSheet) {
-                          try {
-                              const compositeReference = await createAdventureReferenceSheet(portraitCharacters);
-                              if (compositeReference) {
-                                  referenceBase64 = compositeReference;
-                                  consistencyPrompt = `
-                                      The attached reference sheet shows this story's cast.
-                                      Refine the characters in this scene to match their appearances in the reference sheet.
-                                      Keep the scene composition, background, and lighting unchanged.
-                                      NO TEXT. NO LABELS. NO UI ELEMENTS.
-                                  `;
-                              }
-                          } catch (referenceSheetErr) {
-                              warnLog('Character reference sheet failed; falling back to the protagonist portrait.', referenceSheetErr);
-                          }
-                      }
+                      const { referenceBase64, consistencyPrompt } = await buildAdventureConsistencyReference({
+                          portraitCharacters,
+                          protagonist,
+                          useReferenceSheet: useGeminiReferenceSheet,
+                          warn: warnLog,
+                      });
                       if (referenceBase64) {
                           const consistentUrl = await callGeminiImageEdit(consistencyPrompt, currentBase64, targetWidth, targetQual, referenceBase64);
                           if (consistentUrl) {
@@ -801,6 +836,9 @@ window.AlloModules.AdventureSessionHandlers = {
   handleDiceRollComplete,
   generateAdventureImage,
   generateNarrativeLedger,
+  selectAdventureReferenceCharacters,
+  createAdventureReferenceSheet,
+  buildAdventureConsistencyReference,
 };
 window.AlloModules.AdventureSessionHandlersModule = true;
 console.log("[AdventureSessionHandlers] 3 helpers registered");

@@ -8,7 +8,7 @@ describe('Adventure Cast Lobby portrait upload validation', () => {
     expect(source).not.toContain("alert('Image too large (max 5MB)");
     expect(source).toContain("rejectUpload('Only image files can be used for character portraits.')");
     expect(source).toContain("rejectUpload('Image too large (max 5MB). Please use a smaller image.')");
-    expect(source).toContain("message: 'This image could not be read. Please choose a different image.'");
+    expect(source).toContain("message: 'This image could not be prepared securely. Please choose a different image.'");
     expect(source).toContain('role="alert" aria-atomic="true"');
   });
 
@@ -34,13 +34,22 @@ describe('Adventure Cast Lobby portrait upload validation', () => {
     );
     expect(fileHandler).toContain('setPendingPortraitUpload({ charIdx, file, input })');
     expect(fileHandler).not.toContain('new FileReader()');
-    expect(source).toContain('const acceptPendingPortraitUpload = () =>');
+    expect(source).toContain('const acceptPendingPortraitUpload = async () =>');
     expect(source).toContain('onClick={acceptPendingPortraitUpload}');
     expect(source).toContain('onClick={() => clearPendingPortraitUpload(true)}');
     expect(source).toContain('the image is sent to the AI provider configured for this app with each scene');
     expect(source).toContain('Use image');
     expect(source).toContain('role="group" aria-labelledby={`adventure-portrait-consent-${i}`}');
     expect(source).toContain('requestAnimationFrame(() => portraitConsentButtonRef.current?.focus())');
+  });
+  it('re-encodes uploads through a bounded canvas before local storage or provider use', () => {
+    expect(source).toContain('const sanitizeAdventurePortraitFile =');
+    expect(source).toContain('const boundedDimension = Math.max(320, Math.min(2048');
+    expect(source).toContain("canvas.toDataURL('image/jpeg'");
+    expect(source).toContain('const sanitizedPortrait = await sanitizeAdventurePortraitFile(pending.file)');
+    expect(source).toContain('onUploadPortrait(pending.charIdx, sanitizedPortrait)');
+    expect(source).toContain('Preparing image securely…');
+    expect(source).toContain("disabled={isPortraitSanitizing} aria-describedby={isPortraitSanitizing ? 'adventure-portrait-sanitizing-status' : undefined}");
   });
   it('keeps authoritative and deployed source/module copies synchronized', () => {
     expect(readFileSync('prismflow-deploy/src/adventure_source.jsx', 'utf8')).toBe(source);

@@ -761,6 +761,42 @@ var AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
     )), /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" })))))
   );
 });
+var sanitizeAdventurePortraitFile = (file, { maxDimension = 1024, quality = 0.88 } = {}) => new Promise((resolve, reject) => {
+  if (!file) {
+    reject(new Error("No portrait file was selected."));
+    return;
+  }
+  const reader = new FileReader();
+  reader.onerror = () => reject(reader.error || new Error("The portrait file could not be read."));
+  reader.onload = () => {
+    const image = new Image();
+    image.onerror = () => reject(new Error("The portrait image could not be decoded."));
+    image.onload = () => {
+      try {
+        const sourceWidth = Number(image.naturalWidth || image.width);
+        const sourceHeight = Number(image.naturalHeight || image.height);
+        if (!sourceWidth || !sourceHeight) throw new Error("The portrait has invalid dimensions.");
+        const boundedDimension = Math.max(320, Math.min(2048, Number(maxDimension) || 1024));
+        const scale = Math.min(1, boundedDimension / Math.max(sourceWidth, sourceHeight));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(sourceWidth * scale));
+        canvas.height = Math.max(1, Math.round(sourceHeight * scale));
+        const ctx = canvas.getContext("2d");
+        if (!ctx) throw new Error("Portrait processing is unavailable in this browser.");
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        const sanitized = canvas.toDataURL("image/jpeg", Math.max(0.7, Math.min(0.95, Number(quality) || 0.88)));
+        if (!sanitized?.startsWith("data:image/jpeg;base64,")) throw new Error("The sanitized portrait could not be encoded.");
+        resolve(sanitized);
+      } catch (error) {
+        reject(error);
+      }
+    };
+    image.src = String(reader.result || "");
+  };
+  reader.readAsDataURL(file);
+});
 var CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGeneratePortrait, onRefinePortrait, onAddCharacter, onRemoveCharacter, onUploadPortrait, t }) => {
   const [editIdx, setEditIdx] = useState(null);
   const [editPrompt, setEditPrompt] = useState("");
@@ -772,6 +808,8 @@ var CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGenera
   const [editFieldValue, setEditFieldValue] = useState("");
   const [portraitUploadError, setPortraitUploadError] = useState(null);
   const [pendingPortraitUpload, setPendingPortraitUpload] = useState(null);
+  const [sanitizingPortraitIdx, setSanitizingPortraitIdx] = useState(null);
+  const isPortraitSanitizing = sanitizingPortraitIdx !== null;
   const hasTriggeredAutoGen = useRef(false);
   const portraitFileRefs = useRef({});
   const portraitUploadButtonRefs = useRef({});
@@ -781,7 +819,10 @@ var CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGenera
   useFocusTrap(castRef, true);
   useEffect(() => {
     const frame = requestAnimationFrame(() => castTitleRef.current?.focus());
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.AlloModules?.AdventureHandlers?.cancelAdventureEstablishingShot?.();
+    };
   }, []);
   useEffect(() => {
     if (!pendingPortraitUpload) return void 0;
@@ -796,20 +837,20 @@ var CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGenera
       requestAnimationFrame(() => portraitUploadButtonRefs.current[pending.charIdx]?.focus());
     }
   };
-  const acceptPendingPortraitUpload = () => {
+  const acceptPendingPortraitUpload = async () => {
     const pending = pendingPortraitUpload;
     if (!pending) return;
     setPendingPortraitUpload(null);
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      if (onUploadPortrait) onUploadPortrait(pending.charIdx, ev.target.result);
+    setSanitizingPortraitIdx(pending.charIdx);
+    try {
+      const sanitizedPortrait = await sanitizeAdventurePortraitFile(pending.file);
+      if (onUploadPortrait) onUploadPortrait(pending.charIdx, sanitizedPortrait);
+    } catch (error) {
+      setPortraitUploadError({ charIdx: pending.charIdx, message: "This image could not be prepared securely. Please choose a different image." });
+    } finally {
       pending.input.value = "";
-    };
-    reader.onerror = () => {
-      setPortraitUploadError({ charIdx: pending.charIdx, message: "This image could not be read. Please choose a different image." });
-      pending.input.value = "";
-    };
-    reader.readAsDataURL(pending.file);
+      setSanitizingPortraitIdx(null);
+    }
   };
   const handlePortraitFileChange = (charIdx, e) => {
     const file = e.target.files?.[0];
@@ -851,7 +892,7 @@ var CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGenera
     setEditingField(null);
     setEditFieldValue("");
   };
-  return /* @__PURE__ */ React.createElement("div", { ref: castRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "adventure-cast-lobby-title", className: "fixed inset-0 z-[250] bg-gradient-to-br from-violet-950/95 to-indigo-950/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl mb-2 block", "aria-hidden": "true" }, "\u{1F3AD}"), /* @__PURE__ */ React.createElement("h2", { ref: castTitleRef, id: "adventure-cast-lobby-title", tabIndex: -1, className: "text-2xl font-bold text-slate-800 focus:outline-none" }, t("adventure.cast_lobby") || "Meet Your Cast"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mt-1" }, t("adventure.cast_lobby_desc") || "Select any name, role, or description to edit. Portraits generate automatically.")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6" }, characters.map((char, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 p-4 flex flex-col items-center text-center transition-all hover:shadow-lg hover:border-violet-300 relative group/card" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+  return /* @__PURE__ */ React.createElement("div", { ref: castRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "adventure-cast-lobby-title", className: "fixed inset-0 z-[250] bg-gradient-to-br from-violet-950/95 to-indigo-950/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl mb-2 block", "aria-hidden": "true" }, "\u{1F3AD}"), /* @__PURE__ */ React.createElement("h2", { ref: castTitleRef, id: "adventure-cast-lobby-title", tabIndex: -1, className: "text-2xl font-bold text-slate-800 focus:outline-none" }, t("adventure.cast_lobby") || "Meet Your Cast"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mt-1" }, t("adventure.cast_lobby_desc") || "Select any name, role, or description to edit. Portraits generate automatically.")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6" }, characters.map((char, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 p-4 flex flex-col items-center text-center transition-all hover:shadow-lg hover:border-violet-300 relative group/card" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: isPortraitSanitizing, onClick: () => {
     setPortraitUploadError(null);
     clearPendingPortraitUpload();
     onRemoveCharacter(i);
@@ -876,7 +917,7 @@ var CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGenera
       setEditingField(null);
       setEditFieldValue("");
     }
-  }, autoFocus: true, rows: 3, className: "text-[11px] text-slate-600 mt-1 leading-relaxed w-full px-2 py-1 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none bg-white resize-none" }) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => startFieldEdit(i, "appearance"), className: "min-w-11 min-h-11 px-2 text-[11px] text-slate-700 mt-1 leading-relaxed cursor-pointer hover:text-slate-800 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2", title: t("adventure.edit_appearance"), "aria-label": (t("adventure.edit_appearance") || "Edit character appearance") + ": " + char.appearance }, char.appearance), char.portrait && !char.isGenerating && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5 justify-center" }, char.isUserUploaded && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-600 font-medium" }, "\u{1F4F7} User Photo"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onGeneratePortrait(i), className: "min-h-11 px-3 py-2 bg-violet-700 text-white rounded-full hover:bg-violet-800 transition-all font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2", title: t("adventure.regen_portrait") }, "\u{1F504} ", char.isUserUploaded ? "AI Generate" : "Regenerate"), /* @__PURE__ */ React.createElement("input", { type: "file", "aria-label": t("adventure.upload_portrait") || "Upload portrait image", "aria-describedby": portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : void 0, accept: "image/*", ref: (el) => portraitFileRefs.current[i] = el, onChange: (e) => handlePortraitFileChange(i, e), className: "hidden" }), /* @__PURE__ */ React.createElement("button", { type: "button", ref: (el) => portraitUploadButtonRefs.current[i] = el, "aria-describedby": portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : void 0, onClick: () => {
+  }, autoFocus: true, rows: 3, className: "text-[11px] text-slate-600 mt-1 leading-relaxed w-full px-2 py-1 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none bg-white resize-none" }) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => startFieldEdit(i, "appearance"), className: "min-w-11 min-h-11 px-2 text-[11px] text-slate-700 mt-1 leading-relaxed cursor-pointer hover:text-slate-800 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2", title: t("adventure.edit_appearance"), "aria-label": (t("adventure.edit_appearance") || "Edit character appearance") + ": " + char.appearance }, char.appearance), char.portrait && !char.isGenerating && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5 justify-center" }, char.isUserUploaded && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-600 font-medium" }, "\u{1F4F7} User Photo"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onGeneratePortrait(i), className: "min-h-11 px-3 py-2 bg-violet-700 text-white rounded-full hover:bg-violet-800 transition-all font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2", title: t("adventure.regen_portrait") }, "\u{1F504} ", char.isUserUploaded ? "AI Generate" : "Regenerate"), /* @__PURE__ */ React.createElement("input", { type: "file", "aria-label": t("adventure.upload_portrait") || "Upload portrait image", "aria-describedby": portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : void 0, accept: "image/*", ref: (el) => portraitFileRefs.current[i] = el, onChange: (e) => handlePortraitFileChange(i, e), className: "hidden" }), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: isPortraitSanitizing, ref: (el) => portraitUploadButtonRefs.current[i] = el, "aria-describedby": portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : void 0, onClick: () => {
     setPortraitUploadError(null);
     clearPendingPortraitUpload();
     portraitFileRefs.current[i]?.click();
@@ -902,11 +943,11 @@ var CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGenera
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }, className: "min-h-11 px-3 py-2 bg-emerald-50 text-emerald-700 rounded-full hover:bg-emerald-100 transition-all font-medium border border-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2" }, "\u{1F4BE} Save"))), !char.portrait && !char.isGenerating && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5 justify-center" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onGeneratePortrait(i), className: "min-h-11 px-3 py-2 bg-violet-700 text-white rounded-full hover:bg-violet-800 transition-all font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" }, "\u{1F3A8} Generate Portrait"), /* @__PURE__ */ React.createElement("input", { type: "file", "aria-label": t("adventure.upload_portrait") || "Upload portrait image", "aria-describedby": portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : void 0, accept: "image/*", ref: (el) => portraitFileRefs.current["new-" + i] = el, onChange: (e) => handlePortraitFileChange(i, e), className: "hidden" }), /* @__PURE__ */ React.createElement("button", { type: "button", ref: (el) => portraitUploadButtonRefs.current[i] = el, "aria-describedby": portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : void 0, onClick: () => {
+  }, className: "min-h-11 px-3 py-2 bg-emerald-50 text-emerald-700 rounded-full hover:bg-emerald-100 transition-all font-medium border border-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2" }, "\u{1F4BE} Save"))), !char.portrait && !char.isGenerating && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5 justify-center" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onGeneratePortrait(i), className: "min-h-11 px-3 py-2 bg-violet-700 text-white rounded-full hover:bg-violet-800 transition-all font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" }, "\u{1F3A8} Generate Portrait"), /* @__PURE__ */ React.createElement("input", { type: "file", "aria-label": t("adventure.upload_portrait") || "Upload portrait image", "aria-describedby": portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : void 0, accept: "image/*", ref: (el) => portraitFileRefs.current["new-" + i] = el, onChange: (e) => handlePortraitFileChange(i, e), className: "hidden" }), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: isPortraitSanitizing, ref: (el) => portraitUploadButtonRefs.current[i] = el, "aria-describedby": portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : void 0, onClick: () => {
     setPortraitUploadError(null);
     clearPendingPortraitUpload();
     portraitFileRefs.current["new-" + i]?.click();
-  }, className: "min-h-11 px-3 py-2 bg-sky-50 text-sky-700 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2", title: t("adventure.upload_portrait") || "Upload your own portrait image" }, "\u{1F4F7} Upload Photo")), portraitUploadError?.charIdx === i && /* @__PURE__ */ React.createElement("p", { id: `adventure-portrait-upload-error-${i}`, role: "alert", "aria-atomic": "true", className: "w-full mt-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800" }, portraitUploadError.message), pendingPortraitUpload?.charIdx === i && /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": `adventure-portrait-consent-${i}`, className: "w-full mt-2 rounded-xl border border-amber-400 bg-amber-50 px-3 py-3 text-left" }, /* @__PURE__ */ React.createElement("p", { id: `adventure-portrait-consent-${i}`, className: "text-xs font-semibold leading-relaxed text-amber-950" }, "Uploaded images are used by AI to keep this character consistent \u2014 the image is sent to the AI provider configured for this app with each scene. Only upload images you have permission to use this way (for photos of students, check your school's AI/data agreement)."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { ref: portraitConsentButtonRef, type: "button", onClick: acceptPendingPortraitUpload, className: "min-h-11 px-4 py-2 rounded-lg bg-amber-800 text-white font-bold hover:bg-amber-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-800 focus-visible:ring-offset-2" }, "Use image"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => clearPendingPortraitUpload(true), className: "min-h-11 px-4 py-2 rounded-lg border border-slate-500 bg-white text-slate-800 font-bold hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2" }, "Cancel"))), char.isGenerating && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-violet-700 animate-pulse font-medium", role: "status", "aria-live": "polite" }, t("common.loading") || "Loading"))), isAdding ? /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-indigo-50 rounded-2xl border-2 border-dashed border-violet-300 p-4 flex flex-col items-center text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl mb-2", "aria-hidden": "true" }, "\u2728"), /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.char_name_placeholder") || "Character name", value: newName, onChange: (e) => setNewName(e.target.value), placeholder: t("adventure.char_name_placeholder"), className: "w-full text-sm px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none text-center font-bold" }), /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.role_placeholder") || "Character role", value: newRole, onChange: (e) => setNewRole(e.target.value), placeholder: t("adventure.role_placeholder"), className: "w-full text-xs px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none text-center" }), /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.appearance_placeholder") || "Character appearance", value: newAppearance, onChange: (e) => setNewAppearance(e.target.value), placeholder: t("adventure.appearance_placeholder") || "Appearance (e.g. tall, silver hair, blue robe)", className: "w-full text-xs px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none text-center", onKeyDown: (e) => {
+  }, className: "min-h-11 px-3 py-2 bg-sky-50 text-sky-700 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2", title: t("adventure.upload_portrait") || "Upload your own portrait image" }, "\u{1F4F7} Upload Photo")), portraitUploadError?.charIdx === i && /* @__PURE__ */ React.createElement("p", { id: `adventure-portrait-upload-error-${i}`, role: "alert", "aria-atomic": "true", className: "w-full mt-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800" }, portraitUploadError.message), pendingPortraitUpload?.charIdx === i && /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": `adventure-portrait-consent-${i}`, className: "w-full mt-2 rounded-xl border border-amber-400 bg-amber-50 px-3 py-3 text-left" }, /* @__PURE__ */ React.createElement("p", { id: `adventure-portrait-consent-${i}`, className: "text-xs font-semibold leading-relaxed text-amber-950" }, "Uploaded images are used by AI to keep this character consistent \u2014 the image is sent to the AI provider configured for this app with each scene. Only upload images you have permission to use this way (for photos of students, check your school's AI/data agreement)."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { ref: portraitConsentButtonRef, type: "button", onClick: acceptPendingPortraitUpload, className: "min-h-11 px-4 py-2 rounded-lg bg-amber-800 text-white font-bold hover:bg-amber-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-800 focus-visible:ring-offset-2" }, "Use image"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => clearPendingPortraitUpload(true), className: "min-h-11 px-4 py-2 rounded-lg border border-slate-500 bg-white text-slate-800 font-bold hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2" }, "Cancel"))), sanitizingPortraitIdx === i && /* @__PURE__ */ React.createElement("p", { id: "adventure-portrait-sanitizing-status", className: "mt-2 text-[11px] text-sky-800 font-semibold", role: "status", "aria-live": "polite" }, "Preparing image securely\u2026"), char.isGenerating && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-violet-700 animate-pulse font-medium", role: "status", "aria-live": "polite" }, t("common.loading") || "Loading"))), isAdding ? /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-indigo-50 rounded-2xl border-2 border-dashed border-violet-300 p-4 flex flex-col items-center text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl mb-2", "aria-hidden": "true" }, "\u2728"), /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.char_name_placeholder") || "Character name", value: newName, onChange: (e) => setNewName(e.target.value), placeholder: t("adventure.char_name_placeholder"), className: "w-full text-sm px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none text-center font-bold" }), /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.role_placeholder") || "Character role", value: newRole, onChange: (e) => setNewRole(e.target.value), placeholder: t("adventure.role_placeholder"), className: "w-full text-xs px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none text-center" }), /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.appearance_placeholder") || "Character appearance", value: newAppearance, onChange: (e) => setNewAppearance(e.target.value), placeholder: t("adventure.appearance_placeholder") || "Appearance (e.g. tall, silver hair, blue robe)", className: "w-full text-xs px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none text-center", onKeyDown: (e) => {
     if (e.key === "Enter" && newName.trim()) {
       onAddCharacter({ name: newName.trim(), role: newRole.trim() || "Character", appearance: newAppearance.trim() || newName.trim(), portrait: null, isGenerating: false });
       setNewName("");
@@ -933,7 +974,10 @@ var CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGenera
         onGeneratePortrait(i);
       }
     });
-  }, className: "min-h-11 px-5 py-2.5 bg-violet-100 text-violet-700 font-bold rounded-xl hover:bg-violet-200 transition-all text-sm border border-violet-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F3A8}"), " ", t("adventure.generate_all") || "Generate All Portraits"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onConfirm, className: "min-h-11 px-6 py-2.5 bg-violet-700 text-white font-bold rounded-xl hover:bg-violet-800 shadow-lg hover:shadow-xl transition-all text-sm hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2694\uFE0F"), " ", t("adventure.begin_adventure") || "Begin Adventure"))));
+  }, className: "min-h-11 px-5 py-2.5 bg-violet-100 text-violet-700 font-bold rounded-xl hover:bg-violet-200 transition-all text-sm border border-violet-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F3A8}"), " ", t("adventure.generate_all") || "Generate All Portraits"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: isPortraitSanitizing, "aria-describedby": isPortraitSanitizing ? "adventure-portrait-sanitizing-status" : void 0, onClick: () => {
+    window.AlloModules?.AdventureHandlers?.cancelAdventureEstablishingShot?.();
+    onConfirm();
+  }, className: "min-h-11 px-6 py-2.5 bg-violet-700 text-white font-bold rounded-xl hover:bg-violet-800 shadow-lg hover:shadow-xl transition-all text-sm hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2694\uFE0F"), " ", t("adventure.begin_adventure") || "Begin Adventure"))));
 });
 
   window.AlloModules.MissionReportCard = MissionReportCard;
@@ -943,6 +987,7 @@ var CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGenera
   window.AlloModules.DiceOverlay = DiceOverlay;
   window.AlloModules.AdventureShop = AdventureShop;
   window.AlloModules.CastLobby = CastLobby;
+  window.AlloModules.sanitizeAdventurePortraitFile = sanitizeAdventurePortraitFile;
   window.AlloModules.playAdventureEventSound = playAdventureEventSound;
   window.AlloModules.playGenerativeSoundscape = playGenerativeSoundscape;
   window.AlloModules.playDiceSound = playDiceSound;

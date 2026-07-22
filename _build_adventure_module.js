@@ -67,6 +67,7 @@ const exportedDeclarations = [
   'InventoryGrid',
   'DiceOverlay',
   'AdventureShop',
+  'sanitizeAdventurePortraitFile',
   'CastLobby',
 ];
 
@@ -162,6 +163,7 @@ ${compiled}
   window.AlloModules.DiceOverlay = DiceOverlay;
   window.AlloModules.AdventureShop = AdventureShop;
   window.AlloModules.CastLobby = CastLobby;
+  window.AlloModules.sanitizeAdventurePortraitFile = sanitizeAdventurePortraitFile;
   window.AlloModules.playAdventureEventSound = playAdventureEventSound;
   window.AlloModules.playGenerativeSoundscape = playGenerativeSoundscape;
   window.AlloModules.playDiceSound = playDiceSound;

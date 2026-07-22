@@ -826,6 +826,45 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
   );
 });
 
+// Portrait uploads are re-encoded before storage or provider use. Drawing through
+// canvas strips EXIF/embedded metadata, normalizes orientation, and bounds pixels.
+const sanitizeAdventurePortraitFile = (file, { maxDimension = 1024, quality = 0.88 } = {}) => new Promise((resolve, reject) => {
+    if (!file) {
+        reject(new Error('No portrait file was selected.'));
+        return;
+    }
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error || new Error('The portrait file could not be read.'));
+    reader.onload = () => {
+        const image = new Image();
+        image.onerror = () => reject(new Error('The portrait image could not be decoded.'));
+        image.onload = () => {
+            try {
+                const sourceWidth = Number(image.naturalWidth || image.width);
+                const sourceHeight = Number(image.naturalHeight || image.height);
+                if (!sourceWidth || !sourceHeight) throw new Error('The portrait has invalid dimensions.');
+                const boundedDimension = Math.max(320, Math.min(2048, Number(maxDimension) || 1024));
+                const scale = Math.min(1, boundedDimension / Math.max(sourceWidth, sourceHeight));
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.max(1, Math.round(sourceWidth * scale));
+                canvas.height = Math.max(1, Math.round(sourceHeight * scale));
+                const ctx = canvas.getContext('2d');
+                if (!ctx) throw new Error('Portrait processing is unavailable in this browser.');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                const sanitized = canvas.toDataURL('image/jpeg', Math.max(0.7, Math.min(0.95, Number(quality) || 0.88)));
+                if (!sanitized?.startsWith('data:image/jpeg;base64,')) throw new Error('The sanitized portrait could not be encoded.');
+                resolve(sanitized);
+            } catch (error) {
+                reject(error);
+            }
+        };
+        image.src = String(reader.result || '');
+    };
+    reader.readAsDataURL(file);
+});
+
 // ═══ CastLobby (lines 16499-16660) ═══
 const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGeneratePortrait, onRefinePortrait, onAddCharacter, onRemoveCharacter, onUploadPortrait, t }) => {
     const [editIdx, setEditIdx] = useState(null);
@@ -838,6 +877,8 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
     const [editFieldValue, setEditFieldValue] = useState('');
     const [portraitUploadError, setPortraitUploadError] = useState(null);
     const [pendingPortraitUpload, setPendingPortraitUpload] = useState(null);
+    const [sanitizingPortraitIdx, setSanitizingPortraitIdx] = useState(null);
+    const isPortraitSanitizing = sanitizingPortraitIdx !== null;
     const hasTriggeredAutoGen = useRef(false);
     const portraitFileRefs = useRef({});
     const portraitUploadButtonRefs = useRef({});
@@ -847,7 +888,10 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
     useFocusTrap(castRef, true);
     useEffect(() => {
         const frame = requestAnimationFrame(() => castTitleRef.current?.focus());
-        return () => cancelAnimationFrame(frame);
+        return () => {
+            cancelAnimationFrame(frame);
+            window.AlloModules?.AdventureHandlers?.cancelAdventureEstablishingShot?.();
+        };
     }, []);
     useEffect(() => {
         if (!pendingPortraitUpload) return undefined;
@@ -862,20 +906,20 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
             requestAnimationFrame(() => portraitUploadButtonRefs.current[pending.charIdx]?.focus());
         }
     };
-    const acceptPendingPortraitUpload = () => {
+    const acceptPendingPortraitUpload = async () => {
         const pending = pendingPortraitUpload;
         if (!pending) return;
         setPendingPortraitUpload(null);
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            if (onUploadPortrait) onUploadPortrait(pending.charIdx, ev.target.result);
+        setSanitizingPortraitIdx(pending.charIdx);
+        try {
+            const sanitizedPortrait = await sanitizeAdventurePortraitFile(pending.file);
+            if (onUploadPortrait) onUploadPortrait(pending.charIdx, sanitizedPortrait);
+        } catch (error) {
+            setPortraitUploadError({ charIdx: pending.charIdx, message: 'This image could not be prepared securely. Please choose a different image.' });
+        } finally {
             pending.input.value = '';
-        };
-        reader.onerror = () => {
-            setPortraitUploadError({ charIdx: pending.charIdx, message: 'This image could not be read. Please choose a different image.' });
-            pending.input.value = '';
-        };
-        reader.readAsDataURL(pending.file);
+            setSanitizingPortraitIdx(null);
+        }
     };
     const handlePortraitFileChange = (charIdx, e) => {
         const file = e.target.files?.[0];
@@ -928,7 +972,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     {characters.map((char, i) => (
                         <div key={i} className="bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 p-4 flex flex-col items-center text-center transition-all hover:shadow-lg hover:border-violet-300 relative group/card">
-                            <button type="button" onClick={() => { setPortraitUploadError(null); clearPendingPortraitUpload(); onRemoveCharacter(i); }} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-700 text-xs font-bold opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100 focus:opacity-100 transition-opacity flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2" title={t('adventure.remove_character')} aria-label={(t('adventure.remove_character') || 'Remove character') + ': ' + (char.name || (i + 1))}>✕</button>
+                            <button type="button" disabled={isPortraitSanitizing} onClick={() => { setPortraitUploadError(null); clearPendingPortraitUpload(); onRemoveCharacter(i); }} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-700 text-xs font-bold opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100 focus:opacity-100 transition-opacity flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2" title={t('adventure.remove_character')} aria-label={(t('adventure.remove_character') || 'Remove character') + ': ' + (char.name || (i + 1))}>✕</button>
                             <div className="w-24 h-24 rounded-full bg-violet-100 border-2 border-violet-200 flex items-center justify-center overflow-hidden mb-3 shadow-inner" aria-busy={!!char.isGenerating} aria-label={char.isGenerating ? (t('adventure.generating_portrait_aria') || ('Generating portrait for ' + (char.name || 'character'))) : undefined}>
                                 {char.isGenerating ? (
                                     <div className="animate-spin w-6 h-6 border-2 border-violet-400 border-t-transparent rounded-full" aria-hidden="true"></div>
@@ -962,7 +1006,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                                         🔄 {char.isUserUploaded ? 'AI Generate' : 'Regenerate'}
                                     </button>
                                     <input type="file" aria-label={t('adventure.upload_portrait') || 'Upload portrait image'} aria-describedby={portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : undefined} accept="image/*" ref={el => portraitFileRefs.current[i] = el} onChange={(e) => handlePortraitFileChange(i, e)} className="hidden" />
-                                    <button type="button" ref={el => portraitUploadButtonRefs.current[i] = el} aria-describedby={portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : undefined} onClick={() => { setPortraitUploadError(null); clearPendingPortraitUpload(); portraitFileRefs.current[i]?.click(); }} className="min-h-11 px-3 py-2 bg-sky-50 text-sky-700 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2" title={t('adventure.upload_portrait') || 'Upload your own portrait image'}>
+                                    <button type="button" disabled={isPortraitSanitizing} ref={el => portraitUploadButtonRefs.current[i] = el} aria-describedby={portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : undefined} onClick={() => { setPortraitUploadError(null); clearPendingPortraitUpload(); portraitFileRefs.current[i]?.click(); }} className="min-h-11 px-3 py-2 bg-sky-50 text-sky-700 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2" title={t('adventure.upload_portrait') || 'Upload your own portrait image'}>
                                         📷 Upload
                                     </button>
                                     {editIdx === i ? (
@@ -996,7 +1040,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                                         🎨 Generate Portrait
                                     </button>
                                     <input type="file" aria-label={t('adventure.upload_portrait') || 'Upload portrait image'} aria-describedby={portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : undefined} accept="image/*" ref={el => portraitFileRefs.current['new-' + i] = el} onChange={(e) => handlePortraitFileChange(i, e)} className="hidden" />
-                                    <button type="button" ref={el => portraitUploadButtonRefs.current[i] = el} aria-describedby={portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : undefined} onClick={() => { setPortraitUploadError(null); clearPendingPortraitUpload(); portraitFileRefs.current['new-' + i]?.click(); }} className="min-h-11 px-3 py-2 bg-sky-50 text-sky-700 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2" title={t('adventure.upload_portrait') || 'Upload your own portrait image'}>
+                                    <button type="button" disabled={isPortraitSanitizing} ref={el => portraitUploadButtonRefs.current[i] = el} aria-describedby={portraitUploadError?.charIdx === i ? `adventure-portrait-upload-error-${i}` : undefined} onClick={() => { setPortraitUploadError(null); clearPendingPortraitUpload(); portraitFileRefs.current['new-' + i]?.click(); }} className="min-h-11 px-3 py-2 bg-sky-50 text-sky-700 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2" title={t('adventure.upload_portrait') || 'Upload your own portrait image'}>
                                         📷 Upload Photo
                                     </button>
                                 </div>
@@ -1020,6 +1064,9 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                                         </button>
                                     </div>
                                 </div>
+                            )}
+                            {sanitizingPortraitIdx === i && (
+                                <p id="adventure-portrait-sanitizing-status" className="mt-2 text-[11px] text-sky-800 font-semibold" role="status" aria-live="polite">Preparing image securely…</p>
                             )}
                             {char.isGenerating && (
                                 <p className="mt-2 text-[11px] text-violet-700 animate-pulse font-medium" role="status" aria-live="polite">{t('common.loading') || 'Loading'}</p>
@@ -1049,7 +1096,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                     <button type="button" onClick={() => { characters.forEach((_, i) => { if (!characters[i].portrait && !characters[i].isGenerating && !characters[i].isUserUploaded) { onGeneratePortrait(i); }}); }} className="min-h-11 px-5 py-2.5 bg-violet-100 text-violet-700 font-bold rounded-xl hover:bg-violet-200 transition-all text-sm border border-violet-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">
                         <span aria-hidden="true">🎨</span> {t('adventure.generate_all') || 'Generate All Portraits'}
                     </button>
-                    <button type="button" onClick={onConfirm} className="min-h-11 px-6 py-2.5 bg-violet-700 text-white font-bold rounded-xl hover:bg-violet-800 shadow-lg hover:shadow-xl transition-all text-sm hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">
+                    <button type="button" disabled={isPortraitSanitizing} aria-describedby={isPortraitSanitizing ? 'adventure-portrait-sanitizing-status' : undefined} onClick={() => { window.AlloModules?.AdventureHandlers?.cancelAdventureEstablishingShot?.(); onConfirm(); }} className="min-h-11 px-6 py-2.5 bg-violet-700 text-white font-bold rounded-xl hover:bg-violet-800 shadow-lg hover:shadow-xl transition-all text-sm hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">
                         <span aria-hidden="true">⚔️</span> {t('adventure.begin_adventure') || 'Begin Adventure'}
                     </button>
                 </div>
