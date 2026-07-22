@@ -65,6 +65,7 @@
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
       var t = ctx.t;
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -356,363 +357,363 @@ const d = labToolData.rocks || {};
 
           const QUIZ_BANK = [
             {
-              q: 'Which rock type forms from cooled magma?',
+              q: __alloT('stem.rocks.which_rock_type_forms_from_cooled_magma', 'Which rock type forms from cooled magma?'),
               a: t('stem.rocks.igneous'),
               options: [t('stem.rocks.igneous'), t('stem.rocks.sedimentary'), t('stem.rocks.metamorphic'), 'Organic'],
               concept: 'Igneous',
               wrongFeedback: [
-                'Correct! Igneous rocks solidify from molten magma.',
-                'Incorrect. Sedimentary rocks form from compressed layers of sediment.',
-                'Incorrect. Metamorphic rocks form from existing rocks changed by heat and pressure.',
-                'Incorrect. Organic materials form coal but not directly from cooled magma.'
+                __alloT('stem.rocks.correct_igneous_rocks_solidify_from_molten_magma', 'Correct! Igneous rocks solidify from molten magma.'),
+                __alloT('stem.rocks.incorrect_sedimentary_rocks_form_from_compressed_layers_of', 'Incorrect. Sedimentary rocks form from compressed layers of sediment.'),
+                __alloT('stem.rocks.incorrect_metamorphic_rocks_form_from_existing_rocks_changed', 'Incorrect. Metamorphic rocks form from existing rocks changed by heat and pressure.'),
+                __alloT('stem.rocks.incorrect_organic_materials_form_coal_but_not_directly', 'Incorrect. Organic materials form coal but not directly from cooled magma.')
               ]
             },
             {
-              q: 'What process turns sediment into sedimentary rock?',
+              q: __alloT('stem.rocks.what_process_turns_sediment_into_sedimentary_rock', 'What process turns sediment into sedimentary rock?'),
               a: 'Compaction and cementation',
               options: ['Compaction and cementation', 'Melting', 'Cooling', 'Erosion'],
               concept: 'Lithification',
               wrongFeedback: [
-                'Correct! Compaction and cementation bind sediment into rock.',
-                'Incorrect. Melting produces magma, leading to igneous rocks.',
-                'Incorrect. Cooling solidifies magma into igneous rocks.',
-                'Incorrect. Erosion breaks rocks down rather than building them.'
+                __alloT('stem.rocks.correct_compaction_and_cementation_bind_sediment_into_rock', 'Correct! Compaction and cementation bind sediment into rock.'),
+                __alloT('stem.rocks.incorrect_melting_produces_magma_leading_to_igneous_rocks', 'Incorrect. Melting produces magma, leading to igneous rocks.'),
+                __alloT('stem.rocks.incorrect_cooling_solidifies_magma_into_igneous_rocks', 'Incorrect. Cooling solidifies magma into igneous rocks.'),
+                __alloT('stem.rocks.incorrect_erosion_breaks_rocks_down_rather_than_building', 'Incorrect. Erosion breaks rocks down rather than building them.')
               ]
             },
             {
-              q: 'Marble is a metamorphic form of which rock?',
+              q: __alloT('stem.rocks.marble_is_a_metamorphic_form_of_which_rock', 'Marble is a metamorphic form of which rock?'),
               a: t('stem.rocks.limestone'),
               options: [t('stem.rocks.limestone'), t('stem.rocks.sandstone'), t('stem.rocks.granite'), t('stem.rocks.basalt')],
               concept: 'Metamorphic',
               wrongFeedback: [
-                'Correct! Limestone transforms into marble under heat and pressure.',
-                'Incorrect. Sandstone metamorphoses into quartzite.',
-                'Incorrect. Granite is igneous and can metamorphose into gneiss.',
-                'Incorrect. Basalt is volcanic igneous and does not form marble.'
+                __alloT('stem.rocks.correct_limestone_transforms_into_marble_under_heat_and', 'Correct! Limestone transforms into marble under heat and pressure.'),
+                __alloT('stem.rocks.incorrect_sandstone_metamorphoses_into_quartzite', 'Incorrect. Sandstone metamorphoses into quartzite.'),
+                __alloT('stem.rocks.incorrect_granite_is_igneous_and_can_metamorphose_into', 'Incorrect. Granite is igneous and can metamorphose into gneiss.'),
+                __alloT('stem.rocks.incorrect_basalt_is_volcanic_igneous_and_does_not', 'Incorrect. Basalt is volcanic igneous and does not form marble.')
               ]
             },
             {
-              q: 'Which mineral is the hardest on the Mohs scale?',
+              q: __alloT('stem.rocks.which_mineral_is_the_hardest_on_the_mohs', 'Which mineral is the hardest on the Mohs scale?'),
               a: t('stem.rocks.diamond'),
               options: [t('stem.rocks.diamond'), t('stem.rocks.quartz'), t('stem.rocks.corundum'), t('stem.rocks.topaz')],
               concept: 'Hardness',
               wrongFeedback: [
-                'Correct! Diamond is rated at 10 on the Mohs hardness scale.',
-                'Incorrect. Quartz is hard (7) but not the hardest.',
-                'Incorrect. Corundum is very hard (9) but softer than diamond.',
-                'Incorrect. Topaz is hard (8) but softer than corundum and diamond.'
+                __alloT('stem.rocks.correct_diamond_is_rated_at_10_on_the', 'Correct! Diamond is rated at 10 on the Mohs hardness scale.'),
+                __alloT('stem.rocks.incorrect_quartz_is_hard_7_but_not_the', 'Incorrect. Quartz is hard (7) but not the hardest.'),
+                __alloT('stem.rocks.incorrect_corundum_is_very_hard_9_but_softer', 'Incorrect. Corundum is very hard (9) but softer than diamond.'),
+                __alloT('stem.rocks.incorrect_topaz_is_hard_8_but_softer_than', 'Incorrect. Topaz is hard (8) but softer than corundum and diamond.')
               ]
             },
             {
-              q: 'What is the softest mineral?',
+              q: __alloT('stem.rocks.what_is_the_softest_mineral', 'What is the softest mineral?'),
               a: t('stem.rocks.talc'),
               options: [t('stem.rocks.talc'), t('stem.rocks.gypsum'), t('stem.rocks.calcite'), t('stem.rocks.halite')],
               concept: 'Hardness',
               wrongFeedback: [
-                'Correct! Talc is rated at 1 on the Mohs hardness scale.',
-                'Incorrect. Gypsum is rated at 2, which is harder than talc.',
-                'Incorrect. Calcite is rated at 3, which is harder than talc and gypsum.',
-                'Incorrect. Halite is table salt, rated at 2.5, harder than talc.'
+                __alloT('stem.rocks.correct_talc_is_rated_at_1_on_the', 'Correct! Talc is rated at 1 on the Mohs hardness scale.'),
+                __alloT('stem.rocks.incorrect_gypsum_is_rated_at_2_which_is', 'Incorrect. Gypsum is rated at 2, which is harder than talc.'),
+                __alloT('stem.rocks.incorrect_calcite_is_rated_at_3_which_is', 'Incorrect. Calcite is rated at 3, which is harder than talc and gypsum.'),
+                __alloT('stem.rocks.incorrect_halite_is_table_salt_rated_at_2', 'Incorrect. Halite is table salt, rated at 2.5, harder than talc.')
               ]
             },
             {
-              q: 'Obsidian forms when lava cools...',
+              q: __alloT('stem.rocks.obsidian_forms_when_lava_cools', 'Obsidian forms when lava cools...'),
               a: 'Very quickly',
               options: ['Very quickly', 'Very slowly', 'Underground', 'Underwater'],
               concept: 'Crystallization',
               wrongFeedback: [
-                'Correct! Obsidian is volcanic glass formed by extremely rapid cooling.',
-                'Incorrect. Slow cooling underground produces large coarse grains.',
-                'Incorrect. Intrusion underground is slow, while obsidian is volcanic.',
-                'Incorrect. Underwater cooling can form pillow basalt, but rapid air/surface cooling forms obsidian.'
+                __alloT('stem.rocks.correct_obsidian_is_volcanic_glass_formed_by_extremely', 'Correct! Obsidian is volcanic glass formed by extremely rapid cooling.'),
+                __alloT('stem.rocks.incorrect_slow_cooling_underground_produces_large_coarse_grains', 'Incorrect. Slow cooling underground produces large coarse grains.'),
+                __alloT('stem.rocks.incorrect_intrusion_underground_is_slow_while_obsidian_is', 'Incorrect. Intrusion underground is slow, while obsidian is volcanic.'),
+                __alloT('stem.rocks.incorrect_underwater_cooling_can_form_pillow_basalt_but', 'Incorrect. Underwater cooling can form pillow basalt, but rapid air/surface cooling forms obsidian.')
               ]
             },
             {
-              q: 'Which rock can float on water?',
+              q: __alloT('stem.rocks.which_rock_can_float_on_water', 'Which rock can float on water?'),
               a: t('stem.rocks.pumice'),
               options: [t('stem.rocks.pumice'), t('stem.rocks.basalt'), t('stem.rocks.marble'), t('stem.rocks.granite')],
               concept: 'Igneous',
               wrongFeedback: [
-                'Correct! Pumice is filled with gas pockets (vesicles) and is less dense than water.',
-                'Incorrect. Basalt is dense and will sink.',
-                'Incorrect. Marble is dense metamorphic rock and will sink.',
-                'Incorrect. Granite is dense intrusive igneous rock and will sink.'
+                __alloT('stem.rocks.correct_pumice_is_filled_with_gas_pockets_vesicles', 'Correct! Pumice is filled with gas pockets (vesicles) and is less dense than water.'),
+                __alloT('stem.rocks.incorrect_basalt_is_dense_and_will_sink', 'Incorrect. Basalt is dense and will sink.'),
+                __alloT('stem.rocks.incorrect_marble_is_dense_metamorphic_rock_and_will', 'Incorrect. Marble is dense metamorphic rock and will sink.'),
+                __alloT('stem.rocks.incorrect_granite_is_dense_intrusive_igneous_rock_and', 'Incorrect. Granite is dense intrusive igneous rock and will sink.')
               ]
             },
             {
-              q: 'What type of rock is shale?',
+              q: __alloT('stem.rocks.what_type_of_rock_is_shale', 'What type of rock is shale?'),
               a: t('stem.rocks.sedimentary'),
               options: [t('stem.rocks.sedimentary'), t('stem.rocks.igneous'), t('stem.rocks.metamorphic'), 'Mineral'],
               concept: 'Sedimentary',
               wrongFeedback: [
-                'Correct! Shale is a fine-grained clastic sedimentary rock made of mud and clay.',
-                'Incorrect. Igneous rocks form from cooled magma, not mud deposits.',
-                'Incorrect. Metamorphic rocks form under heat and pressure.',
-                'Incorrect. Shale is a rock composed of minerals, not a single mineral.'
+                __alloT('stem.rocks.correct_shale_is_a_fine_grained_clastic_sedimentary', 'Correct! Shale is a fine-grained clastic sedimentary rock made of mud and clay.'),
+                __alloT('stem.rocks.incorrect_igneous_rocks_form_from_cooled_magma_not', 'Incorrect. Igneous rocks form from cooled magma, not mud deposits.'),
+                __alloT('stem.rocks.incorrect_metamorphic_rocks_form_under_heat_and_pressure', 'Incorrect. Metamorphic rocks form under heat and pressure.'),
+                __alloT('stem.rocks.incorrect_shale_is_a_rock_composed_of_minerals', 'Incorrect. Shale is a rock composed of minerals, not a single mineral.')
               ]
             },
             {
-              q: 'Pyrite is also known as...',
+              q: __alloT('stem.rocks.pyrite_is_also_known_as', 'Pyrite is also known as...'),
               a: "Fool's gold",
               options: ["Fool's gold", "White gold", "Rose gold", "Black gold"],
               concept: 'Luster',
               wrongFeedback: [
-                'Correct! Pyrite has a golden metallic luster that resembles gold.',
-                'Incorrect. White gold is a real gold alloy.',
-                'Incorrect. Rose gold is gold mixed with copper.',
-                'Incorrect. Black gold refers to crude oil.'
+                __alloT('stem.rocks.correct_pyrite_has_a_golden_metallic_luster_that', 'Correct! Pyrite has a golden metallic luster that resembles gold.'),
+                __alloT('stem.rocks.incorrect_white_gold_is_a_real_gold_alloy', 'Incorrect. White gold is a real gold alloy.'),
+                __alloT('stem.rocks.incorrect_rose_gold_is_gold_mixed_with_copper', 'Incorrect. Rose gold is gold mixed with copper.'),
+                __alloT('stem.rocks.incorrect_black_gold_refers_to_crude_oil', 'Incorrect. Black gold refers to crude oil.')
               ]
             },
             {
-              q: 'Which rock shows distinct banding?',
+              q: __alloT('stem.rocks.which_rock_shows_distinct_banding', 'Which rock shows distinct banding?'),
               a: t('stem.rocks.gneiss'),
               options: [t('stem.rocks.gneiss'), t('stem.rocks.granite'), t('stem.rocks.basalt'), t('stem.rocks.slate')],
               concept: 'Foliation',
               wrongFeedback: [
-                'Correct! Gneiss displays prominent mineral banding from intense metamorphic heat and pressure.',
-                'Incorrect. Granite is massive and does not show metamorphic banding.',
-                'Incorrect. Basalt is fine-grained volcanic rock without layers.',
-                'Incorrect. Slate is foliated but splits into thin sheets instead of displaying thick bands.'
+                __alloT('stem.rocks.correct_gneiss_displays_prominent_mineral_banding_from_intense', 'Correct! Gneiss displays prominent mineral banding from intense metamorphic heat and pressure.'),
+                __alloT('stem.rocks.incorrect_granite_is_massive_and_does_not_show', 'Incorrect. Granite is massive and does not show metamorphic banding.'),
+                __alloT('stem.rocks.incorrect_basalt_is_fine_grained_volcanic_rock_without', 'Incorrect. Basalt is fine-grained volcanic rock without layers.'),
+                __alloT('stem.rocks.incorrect_slate_is_foliated_but_splits_into_thin', 'Incorrect. Slate is foliated but splits into thin sheets instead of displaying thick bands.')
               ]
             },
             {
-              q: 'Limestone fizzes when you add...',
+              q: __alloT('stem.rocks.limestone_fizzes_when_you_add', 'Limestone fizzes when you add...'),
               a: 'Acid',
               options: ['Acid', t('stem.chem_balance.water'), 'Salt', 'Oil'],
               concept: 'Sedimentary',
               wrongFeedback: [
-                'Correct! Hydrochloric acid reacts with calcium carbonate in limestone to release CO2 gas.',
-                'Incorrect. Water does not react chemically to cause limestone to fizz.',
-                'Incorrect. Salt does not react with carbonates.',
-                'Incorrect. Oil does not react with carbonates.'
+                __alloT('stem.rocks.correct_hydrochloric_acid_reacts_with_calcium_carbonate_in', 'Correct! Hydrochloric acid reacts with calcium carbonate in limestone to release CO2 gas.'),
+                __alloT('stem.rocks.incorrect_water_does_not_react_chemically_to_cause', 'Incorrect. Water does not react chemically to cause limestone to fizz.'),
+                __alloT('stem.rocks.incorrect_salt_does_not_react_with_carbonates', 'Incorrect. Salt does not react with carbonates.'),
+                __alloT('stem.rocks.incorrect_oil_does_not_react_with_carbonates', 'Incorrect. Oil does not react with carbonates.')
               ]
             },
             {
-              q: 'Quartzite is metamorphosed...',
+              q: __alloT('stem.rocks.quartzite_is_metamorphosed', 'Quartzite is metamorphosed...'),
               a: t('stem.rocks.sandstone'),
               options: [t('stem.rocks.sandstone'), t('stem.rocks.limestone'), t('stem.rocks.shale'), t('stem.rocks.granite')],
               concept: 'Metamorphic',
               wrongFeedback: [
-                'Correct! Sandstone fuses under heat and pressure into quartzite.',
-                'Incorrect. Limestone metamorphoses into marble.',
-                'Incorrect. Shale metamorphoses into slate.',
-                'Incorrect. Granite is igneous and does not form quartzite.'
+                __alloT('stem.rocks.correct_sandstone_fuses_under_heat_and_pressure_into', 'Correct! Sandstone fuses under heat and pressure into quartzite.'),
+                __alloT('stem.rocks.incorrect_limestone_metamorphoses_into_marble', 'Incorrect. Limestone metamorphoses into marble.'),
+                __alloT('stem.rocks.incorrect_shale_metamorphoses_into_slate', 'Incorrect. Shale metamorphoses into slate.'),
+                __alloT('stem.rocks.incorrect_granite_is_igneous_and_does_not_form', 'Incorrect. Granite is igneous and does not form quartzite.')
               ]
             },
             {
-              q: 'Rhyolite is the extrusive equivalent of...',
+              q: __alloT('stem.rocks.rhyolite_is_the_extrusive_equivalent_of', 'Rhyolite is the extrusive equivalent of...'),
               a: t('stem.rocks.granite'),
               options: [t('stem.rocks.granite'), t('stem.rocks.basalt'), 'Gabbro', t('stem.rocks.diorite')],
               concept: 'Igneous',
               wrongFeedback: [
-                'Correct! Both granite and rhyolite are high-silica rocks; granite is intrusive, rhyolite is extrusive.',
-                'Incorrect. Basalt is extrusive and equivalent to intrusive gabbro.',
-                'Incorrect. Gabbro is intrusive and equivalent to extrusive basalt.',
-                'Incorrect. Diorite is intrusive and equivalent to extrusive andesite.'
+                __alloT('stem.rocks.correct_both_granite_and_rhyolite_are_high_silica', 'Correct! Both granite and rhyolite are high-silica rocks; granite is intrusive, rhyolite is extrusive.'),
+                __alloT('stem.rocks.incorrect_basalt_is_extrusive_and_equivalent_to_intrusive', 'Incorrect. Basalt is extrusive and equivalent to intrusive gabbro.'),
+                __alloT('stem.rocks.incorrect_gabbro_is_intrusive_and_equivalent_to_extrusive', 'Incorrect. Gabbro is intrusive and equivalent to extrusive basalt.'),
+                __alloT('stem.rocks.incorrect_diorite_is_intrusive_and_equivalent_to_extrusive', 'Incorrect. Diorite is intrusive and equivalent to extrusive andesite.')
               ]
             },
             {
-              q: 'Which mineral is naturally magnetic?',
+              q: __alloT('stem.rocks.which_mineral_is_naturally_magnetic', 'Which mineral is naturally magnetic?'),
               a: t('stem.rocks.magnetite'),
               options: [t('stem.rocks.magnetite'), t('stem.rocks.hematite'), t('stem.rocks.pyrite'), t('stem.rocks.galena')],
               concept: 'Luster',
               wrongFeedback: [
-                'Correct! Magnetite is a magnetic iron oxide mineral.',
-                'Incorrect. Hematite contains iron but is not strongly magnetic.',
-                'Incorrect. Pyrite is an iron sulfide and is not magnetic.',
-                'Incorrect. Galena is lead sulfide and is not magnetic.'
+                __alloT('stem.rocks.correct_magnetite_is_a_magnetic_iron_oxide_mineral', 'Correct! Magnetite is a magnetic iron oxide mineral.'),
+                __alloT('stem.rocks.incorrect_hematite_contains_iron_but_is_not_strongly', 'Incorrect. Hematite contains iron but is not strongly magnetic.'),
+                __alloT('stem.rocks.incorrect_pyrite_is_an_iron_sulfide_and_is', 'Incorrect. Pyrite is an iron sulfide and is not magnetic.'),
+                __alloT('stem.rocks.incorrect_galena_is_lead_sulfide_and_is_not', 'Incorrect. Galena is lead sulfide and is not magnetic.')
               ]
             },
             {
-              q: 'Ruby and sapphire are both varieties of...',
+              q: __alloT('stem.rocks.ruby_and_sapphire_are_both_varieties_of', 'Ruby and sapphire are both varieties of...'),
               a: t('stem.rocks.corundum'),
               options: [t('stem.rocks.corundum'), t('stem.rocks.quartz'), t('stem.rocks.diamond'), t('stem.rocks.topaz')],
               concept: 'Hardness',
               wrongFeedback: [
-                'Correct! Rubies and sapphires are gemstone forms of corundum (hardness 9).',
-                'Incorrect. Quartz forms amethyst and citrine, not ruby.',
-                'Incorrect. Diamond is pure carbon.',
-                'Incorrect. Topaz is silicate and has a different composition.'
+                __alloT('stem.rocks.correct_rubies_and_sapphires_are_gemstone_forms_of', 'Correct! Rubies and sapphires are gemstone forms of corundum (hardness 9).'),
+                __alloT('stem.rocks.incorrect_quartz_forms_amethyst_and_citrine_not_ruby', 'Incorrect. Quartz forms amethyst and citrine, not ruby.'),
+                __alloT('stem.rocks.incorrect_diamond_is_pure_carbon', 'Incorrect. Diamond is pure carbon.'),
+                __alloT('stem.rocks.incorrect_topaz_is_silicate_and_has_a_different', 'Incorrect. Topaz is silicate and has a different composition.')
               ]
             },
             {
-              q: 'What gives Mars its red color?',
+              q: __alloT('stem.rocks.what_gives_mars_its_red_color', 'What gives Mars its red color?'),
               a: 'Hematite (iron oxide)',
               options: ['Hematite (iron oxide)', 'Rust from water', 'Red sand', 'Volcanic dust'],
               concept: 'Streak',
               wrongFeedback: [
-                'Correct! Hematite dust covers the Martian surface, giving it a rusty red hue.',
-                'Incorrect. General rust is iron oxide, but hematite is the specific mineral phase.',
-                'Incorrect. The sand is red due to hematite coating.',
-                'Incorrect. Volcanic dust on Mars is not the primary cause of its color.'
+                __alloT('stem.rocks.correct_hematite_dust_covers_the_martian_surface_giving', 'Correct! Hematite dust covers the Martian surface, giving it a rusty red hue.'),
+                __alloT('stem.rocks.incorrect_general_rust_is_iron_oxide_but_hematite', 'Incorrect. General rust is iron oxide, but hematite is the specific mineral phase.'),
+                __alloT('stem.rocks.incorrect_the_sand_is_red_due_to_hematite', 'Incorrect. The sand is red due to hematite coating.'),
+                __alloT('stem.rocks.incorrect_volcanic_dust_on_mars_is_not_the', 'Incorrect. Volcanic dust on Mars is not the primary cause of its color.')
               ]
             },
             {
-              q: 'The word "fluorescence" comes from which mineral?',
+              q: __alloT('stem.rocks.the_word_fluorescence_comes_from_which_mineral', 'The word "fluorescence" comes from which mineral?'),
               a: t('stem.rocks.fluorite'),
               options: [t('stem.rocks.fluorite'), t('stem.rocks.quartz'), t('stem.rocks.diamond'), t('stem.rocks.calcite')],
               concept: 'Luster',
               wrongFeedback: [
-                'Correct! George Stokes named fluorescence after studying fluorite under ultraviolet light.',
-                'Incorrect. Quartz does not commonly show fluorescence.',
-                'Incorrect. Diamond can fluoresce but was not the origin of the term.',
-                'Incorrect. Calcite can fluoresce but was not the origin of the term.'
+                __alloT('stem.rocks.correct_george_stokes_named_fluorescence_after_studying_fluorite', 'Correct! George Stokes named fluorescence after studying fluorite under ultraviolet light.'),
+                __alloT('stem.rocks.incorrect_quartz_does_not_commonly_show_fluorescence', 'Incorrect. Quartz does not commonly show fluorescence.'),
+                __alloT('stem.rocks.incorrect_diamond_can_fluoresce_but_was_not_the', 'Incorrect. Diamond can fluoresce but was not the origin of the term.'),
+                __alloT('stem.rocks.incorrect_calcite_can_fluoresce_but_was_not_the', 'Incorrect. Calcite can fluoresce but was not the origin of the term.')
               ]
             },
             {
-              q: 'Chalk is made of tiny shells from...',
+              q: __alloT('stem.rocks.chalk_is_made_of_tiny_shells_from', 'Chalk is made of tiny shells from...'),
               a: 'Microscopic plankton',
               options: ['Microscopic plankton', 'Snails', 'Clams', 'Coral'],
               concept: 'Sedimentary',
               wrongFeedback: [
-                'Correct! Chalk is composed of tiny coccolith shells from microscopic marine plankton.',
-                'Incorrect. Snail shells are too large and form coquina.',
-                'Incorrect. Clam shells form coquina or fossiliferous limestone.',
-                'Incorrect. Coral reefs form reef limestone, not chalk.'
+                __alloT('stem.rocks.correct_chalk_is_composed_of_tiny_coccolith_shells', 'Correct! Chalk is composed of tiny coccolith shells from microscopic marine plankton.'),
+                __alloT('stem.rocks.incorrect_snail_shells_are_too_large_and_form', 'Incorrect. Snail shells are too large and form coquina.'),
+                __alloT('stem.rocks.incorrect_clam_shells_form_coquina_or_fossiliferous_limestone', 'Incorrect. Clam shells form coquina or fossiliferous limestone.'),
+                __alloT('stem.rocks.incorrect_coral_reefs_form_reef_limestone_not_chalk', 'Incorrect. Coral reefs form reef limestone, not chalk.')
               ]
             },
             {
-              q: 'Diorite has what distinctive appearance?',
+              q: __alloT('stem.rocks.diorite_has_what_distinctive_appearance', 'Diorite has what distinctive appearance?'),
               a: 'Salt and pepper',
               options: ['Salt and pepper', 'Solid black', 'Striped', 'Glassy'],
               concept: 'Igneous',
               wrongFeedback: [
-                'Correct! Diorite is intrusive with a speckled salt-and-pepper look from light plagioclase and dark hornblende.',
-                'Incorrect. Basalt is solid black.',
-                'Incorrect. Gneiss is striped.',
-                'Incorrect. Obsidian is glassy.'
+                __alloT('stem.rocks.correct_diorite_is_intrusive_with_a_speckled_salt', 'Correct! Diorite is intrusive with a speckled salt-and-pepper look from light plagioclase and dark hornblende.'),
+                __alloT('stem.rocks.incorrect_basalt_is_solid_black', 'Incorrect. Basalt is solid black.'),
+                __alloT('stem.rocks.incorrect_gneiss_is_striped', 'Incorrect. Gneiss is striped.'),
+                __alloT('stem.rocks.incorrect_obsidian_is_glassy', 'Incorrect. Obsidian is glassy.')
               ]
             },
             {
-              q: 'Which mineral was used in early crystal radios?',
+              q: __alloT('stem.rocks.which_mineral_was_used_in_early_crystal_radios', 'Which mineral was used in early crystal radios?'),
               a: t('stem.rocks.galena'),
               options: [t('stem.rocks.galena'), t('stem.rocks.quartz'), t('stem.rocks.diamond'), t('stem.rocks.pyrite')],
               concept: 'Streak',
               wrongFeedback: [
-                'Correct! Galena was used as a point-contact semiconductor crystal in early radios.',
-                'Incorrect. Quartz is used for oscillation, not crystal detection.',
-                'Incorrect. Diamond is not a suitable semiconductor for crystal radios.',
-                'Incorrect. Pyrite was not the standard crystal for early radios.'
+                __alloT('stem.rocks.correct_galena_was_used_as_a_point_contact', 'Correct! Galena was used as a point-contact semiconductor crystal in early radios.'),
+                __alloT('stem.rocks.incorrect_quartz_is_used_for_oscillation_not_crystal', 'Incorrect. Quartz is used for oscillation, not crystal detection.'),
+                __alloT('stem.rocks.incorrect_diamond_is_not_a_suitable_semiconductor_for', 'Incorrect. Diamond is not a suitable semiconductor for crystal radios.'),
+                __alloT('stem.rocks.incorrect_pyrite_was_not_the_standard_crystal_for', 'Incorrect. Pyrite was not the standard crystal for early radios.')
               ]
             },
             {
-              q: 'The green beaches of Hawaii are made of...',
+              q: __alloT('stem.rocks.the_green_beaches_of_hawaii_are_made_of', 'The green beaches of Hawaii are made of...'),
               a: t('stem.rocks.olivine'),
               options: [t('stem.rocks.olivine'), 'Emerald', 'Jade', 'Green glass'],
               concept: 'Igneous',
               wrongFeedback: [
-                'Correct! Olivine crystals eroded from basaltic lava create green sand beaches.',
-                'Incorrect. Emerald is a rare beryl mineral, not found in beach sand.',
-                'Incorrect. Jade is metamorphic and does not form Hawaii beaches.',
-                'Incorrect. The sand is natural olivine, not man-made green glass.'
+                __alloT('stem.rocks.correct_olivine_crystals_eroded_from_basaltic_lava_create', 'Correct! Olivine crystals eroded from basaltic lava create green sand beaches.'),
+                __alloT('stem.rocks.incorrect_emerald_is_a_rare_beryl_mineral_not', 'Incorrect. Emerald is a rare beryl mineral, not found in beach sand.'),
+                __alloT('stem.rocks.incorrect_jade_is_metamorphic_and_does_not_form', 'Incorrect. Jade is metamorphic and does not form Hawaii beaches.'),
+                __alloT('stem.rocks.incorrect_the_sand_is_natural_olivine_not_man', 'Incorrect. The sand is natural olivine, not man-made green glass.')
               ]
             },
             {
-              q: 'Which building was made from travertine?',
+              q: __alloT('stem.rocks.which_building_was_made_from_travertine', 'Which building was made from travertine?'),
               a: 'The Colosseum',
               options: ['The Colosseum', 'The Pyramids', 'Stonehenge', 'Taj Mahal'],
               concept: 'Sedimentary',
               wrongFeedback: [
-                'Correct! The Colosseum in Rome was constructed largely of travertine limestone.',
-                'Incorrect. The Pyramids are made of standard limestone and granite.',
-                'Incorrect. Stonehenge is made of sarsen stones and bluestones.',
-                'Incorrect. The Taj Mahal is made of marble.'
+                __alloT('stem.rocks.correct_the_colosseum_in_rome_was_constructed_largely', 'Correct! The Colosseum in Rome was constructed largely of travertine limestone.'),
+                __alloT('stem.rocks.incorrect_the_pyramids_are_made_of_standard_limestone', 'Incorrect. The Pyramids are made of standard limestone and granite.'),
+                __alloT('stem.rocks.incorrect_stonehenge_is_made_of_sarsen_stones_and', 'Incorrect. Stonehenge is made of sarsen stones and bluestones.'),
+                __alloT('stem.rocks.incorrect_the_taj_mahal_is_made_of_marble', 'Incorrect. The Taj Mahal is made of marble.')
               ]
             },
             {
-              q: 'Schist gets its sparkly appearance from...',
+              q: __alloT('stem.rocks.schist_gets_its_sparkly_appearance_from', 'Schist gets its sparkly appearance from...'),
               a: 'Aligned mica flakes',
               options: ['Aligned mica flakes', 'Quartz crystals', 'Gold inclusions', 'Diamond dust'],
               concept: 'Foliation',
               wrongFeedback: [
-                'Correct! Aligned muscovite and biotite mica flakes reflect light, making schist sparkle.',
-                'Incorrect. Quartz crystals are glassy but do not cause the characteristic schist sheen.',
-                'Incorrect. Schist does not contain gold inclusions as a rule.',
-                'Incorrect. Diamond dust is not present in schist.'
+                __alloT('stem.rocks.correct_aligned_muscovite_and_biotite_mica_flakes_reflect', 'Correct! Aligned muscovite and biotite mica flakes reflect light, making schist sparkle.'),
+                __alloT('stem.rocks.incorrect_quartz_crystals_are_glassy_but_do_not', 'Incorrect. Quartz crystals are glassy but do not cause the characteristic schist sheen.'),
+                __alloT('stem.rocks.incorrect_schist_does_not_contain_gold_inclusions_as', 'Incorrect. Schist does not contain gold inclusions as a rule.'),
+                __alloT('stem.rocks.incorrect_diamond_dust_is_not_present_in_schist', 'Incorrect. Diamond dust is not present in schist.')
               ]
             },
             {
-              q: 'What makes quartz watches accurate?',
+              q: __alloT('stem.rocks.what_makes_quartz_watches_accurate', 'What makes quartz watches accurate?'),
               a: 'Piezoelectric effect',
               options: ['Piezoelectric effect', 'Magnetic field', 'Battery power', 'High density'],
               concept: 'Piezoelectric',
               wrongFeedback: [
-                'Correct! Squeezing quartz generates an electric charge, causing precise vibrations.',
-                'Incorrect. Magnetic fields do not drive quartz oscillations directly.',
-                'Incorrect. The battery power is just the source, but the quartz crystal regulation provides the accuracy.',
-                'Incorrect. Density is not related to timekeeping accuracy.'
+                __alloT('stem.rocks.correct_squeezing_quartz_generates_an_electric_charge_causing', 'Correct! Squeezing quartz generates an electric charge, causing precise vibrations.'),
+                __alloT('stem.rocks.incorrect_magnetic_fields_do_not_drive_quartz_oscillations', 'Incorrect. Magnetic fields do not drive quartz oscillations directly.'),
+                __alloT('stem.rocks.incorrect_the_battery_power_is_just_the_source', 'Incorrect. The battery power is just the source, but the quartz crystal regulation provides the accuracy.'),
+                __alloT('stem.rocks.incorrect_density_is_not_related_to_timekeeping_accuracy', 'Incorrect. Density is not related to timekeeping accuracy.')
               ]
             },
             {
-              q: 'Where are the largest crystals ever found?',
+              q: __alloT('stem.rocks.where_are_the_largest_crystals_ever_found', 'Where are the largest crystals ever found?'),
               a: 'Naica Mine, Mexico',
               options: ['Naica Mine, Mexico', 'Mount Everest', 'Grand Canyon', 'Sahara Desert'],
               concept: 'Crystallization',
               wrongFeedback: [
-                'Correct! Gypsum crystals up to 12 meters long grow in the extreme heat of the Naica Mine.',
-                'Incorrect. Mount Everest does not host giant caves of giant crystals.',
-                'Incorrect. The Grand Canyon features stratified sedimentary rocks.',
-                'Incorrect. The Sahara Desert is sand-covered rather than hosting giant gypsum crystal caves.'
+                __alloT('stem.rocks.correct_gypsum_crystals_up_to_12_meters_long', 'Correct! Gypsum crystals up to 12 meters long grow in the extreme heat of the Naica Mine.'),
+                __alloT('stem.rocks.incorrect_mount_everest_does_not_host_giant_caves', 'Incorrect. Mount Everest does not host giant caves of giant crystals.'),
+                __alloT('stem.rocks.incorrect_the_grand_canyon_features_stratified_sedimentary_rocks', 'Incorrect. The Grand Canyon features stratified sedimentary rocks.'),
+                __alloT('stem.rocks.incorrect_the_sahara_desert_is_sand_covered_rather', 'Incorrect. The Sahara Desert is sand-covered rather than hosting giant gypsum crystal caves.')
               ]
             },
             {
-              q: 'The word "salary" comes from the Latin word for...',
+              q: __alloT('stem.rocks.the_word_salary_comes_from_the_latin_word', 'The word "salary" comes from the Latin word for...'),
               a: 'Salt',
               options: ['Salt', t('stem.periodic.silver'), t('stem.periodic.gold'), 'Stone'],
               concept: 'Hardness',
               wrongFeedback: [
-                'Correct! Roman soldiers were sometimes paid in salt (halite), the origin of salarium.',
-                'Incorrect. Silver was money but not the root of salary.',
-                'Incorrect. Gold was money but not the root of salary.',
-                'Incorrect. Stone was not the root of salary.'
+                __alloT('stem.rocks.correct_roman_soldiers_were_sometimes_paid_in_salt', 'Correct! Roman soldiers were sometimes paid in salt (halite), the origin of salarium.'),
+                __alloT('stem.rocks.incorrect_silver_was_money_but_not_the_root', 'Incorrect. Silver was money but not the root of salary.'),
+                __alloT('stem.rocks.incorrect_gold_was_money_but_not_the_root', 'Incorrect. Gold was money but not the root of salary.'),
+                __alloT('stem.rocks.incorrect_stone_was_not_the_root_of_salary', 'Incorrect. Stone was not the root of salary.')
               ]
             },
             {
-              q: 'Andesite is named after...',
+              q: __alloT('stem.rocks.andesite_is_named_after', 'Andesite is named after...'),
               a: 'The Andes Mountains',
               options: ['The Andes Mountains', 'Andean people', 'A scientist named Ande', 'An ancient city'],
               concept: 'Igneous',
               wrongFeedback: [
-                'Correct! Andesite is volcanic rock typical of the Andes subduction zone.',
-                'Incorrect. It was named after the location rather than the people.',
-                'Incorrect. There is no scientist named Ande.',
-                'Incorrect. It was named after the mountain range.'
+                __alloT('stem.rocks.correct_andesite_is_volcanic_rock_typical_of_the', 'Correct! Andesite is volcanic rock typical of the Andes subduction zone.'),
+                __alloT('stem.rocks.incorrect_it_was_named_after_the_location_rather', 'Incorrect. It was named after the location rather than the people.'),
+                __alloT('stem.rocks.incorrect_there_is_no_scientist_named_ande', 'Incorrect. There is no scientist named Ande.'),
+                __alloT('stem.rocks.incorrect_it_was_named_after_the_mountain_range', 'Incorrect. It was named after the mountain range.')
               ]
             },
             {
-              q: 'Tuff is made from consolidated...',
+              q: __alloT('stem.rocks.tuff_is_made_from_consolidated', 'Tuff is made from consolidated...'),
               a: 'Volcanic ash',
               options: ['Volcanic ash', 'River sand', 'Coral reef', 'Glacier ice'],
               concept: 'Igneous',
               wrongFeedback: [
-                'Correct! Tuff is igneous rock composed of compacted volcanic ash.',
-                'Incorrect. River sand forms sandstone.',
-                'Incorrect. Coral reefs form limestone.',
-                'Incorrect. Glacier ice forms glacial till.'
+                __alloT('stem.rocks.correct_tuff_is_igneous_rock_composed_of_compacted', 'Correct! Tuff is igneous rock composed of compacted volcanic ash.'),
+                __alloT('stem.rocks.incorrect_river_sand_forms_sandstone', 'Incorrect. River sand forms sandstone.'),
+                __alloT('stem.rocks.incorrect_coral_reefs_form_limestone', 'Incorrect. Coral reefs form limestone.'),
+                __alloT('stem.rocks.incorrect_glacier_ice_forms_glacial_till', 'Incorrect. Glacier ice forms glacial till.')
               ]
             },
             {
-              q: 'Which metamorphic rock comes between slate and schist?',
+              q: __alloT('stem.rocks.which_metamorphic_rock_comes_between_slate_and_schist', 'Which metamorphic rock comes between slate and schist?'),
               a: t('stem.rocks.phyllite'),
               options: [t('stem.rocks.phyllite'), t('stem.rocks.marble'), t('stem.rocks.gneiss'), t('stem.rocks.quartzite')],
               concept: 'Metamorphic',
               wrongFeedback: [
-                'Correct! Phyllite represents low-to-medium grade metamorphism, between slate and schist.',
-                'Incorrect. Marble is non-foliated and forms from limestone.',
-                'Incorrect. Gneiss is high-grade metamorphism, occurring after schist.',
-                'Incorrect. Quartzite is non-foliated metamorphosed sandstone.'
+                __alloT('stem.rocks.correct_phyllite_represents_low_to_medium_grade_metamorphism', 'Correct! Phyllite represents low-to-medium grade metamorphism, between slate and schist.'),
+                __alloT('stem.rocks.incorrect_marble_is_non_foliated_and_forms_from', 'Incorrect. Marble is non-foliated and forms from limestone.'),
+                __alloT('stem.rocks.incorrect_gneiss_is_high_grade_metamorphism_occurring_after', 'Incorrect. Gneiss is high-grade metamorphism, occurring after schist.'),
+                __alloT('stem.rocks.incorrect_quartzite_is_non_foliated_metamorphosed_sandstone', 'Incorrect. Quartzite is non-foliated metamorphosed sandstone.')
               ]
             },
             {
-              q: 'Garnet crystals commonly have how many sides?',
+              q: __alloT('stem.rocks.garnet_crystals_commonly_have_how_many_sides', 'Garnet crystals commonly have how many sides?'),
               a: '12 (dodecahedral)',
               options: ['12 (dodecahedral)', '4 (tetrahedral)', '6 (cubic)', '8 (octahedral)'],
               concept: 'Crystallization',
               wrongFeedback: [
-                'Correct! Garnet crystals typically grow into 12-sided dodecahedrons.',
-                'Incorrect. Tetrahedrons have 4 sides, not characteristic of garnet.',
-                'Incorrect. Cubic crystals (6 sides) are typical of halite or pyrite.',
-                'Incorrect. Octahedral crystals (8 sides) are typical of fluorite or diamond.'
+                __alloT('stem.rocks.correct_garnet_crystals_typically_grow_into_12_sided', 'Correct! Garnet crystals typically grow into 12-sided dodecahedrons.'),
+                __alloT('stem.rocks.incorrect_tetrahedrons_have_4_sides_not_characteristic_of', 'Incorrect. Tetrahedrons have 4 sides, not characteristic of garnet.'),
+                __alloT('stem.rocks.incorrect_cubic_crystals_6_sides_are_typical_of', 'Incorrect. Cubic crystals (6 sides) are typical of halite or pyrite.'),
+                __alloT('stem.rocks.incorrect_octahedral_crystals_8_sides_are_typical_of', 'Incorrect. Octahedral crystals (8 sides) are typical of fluorite or diamond.')
               ]
             }
           ];
@@ -3616,6 +3617,7 @@ const d = labToolData.rocks || {};
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
       var t = ctx.t;
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
