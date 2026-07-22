@@ -518,6 +518,29 @@ describe('coaster lab — build-your-own discovery and visual feedback', () => {
     expect(pieces.right[1].z).toBeLessThan(0);
   });
 
+  it.each(TOOL_PATHS)('%s exposes keyboard-operable sidebar tabs with synchronized panel semantics', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'role=\\"tablist\\" aria-label=\\"Coaster Lab panels\\"',
+      'role=\\"tab\\" aria-controls=\\"clab-tab-build\\" aria-selected=\\"true\\"',
+      'role=\\"tabpanel\\" aria-labelledby=\\"clab-tab-build-btn\\"',
+      'function activateTab(b){', "e.key === 'ArrowRight'", "e.key === 'ArrowLeft'",
+      "e.key === 'Home'", "e.key === 'End'", "x.setAttribute('aria-selected', String(active))",
+    ]) expect(src).toContain(marker);
+  });
+
+  it.each(TOOL_PATHS)('%s lets keyboard users move between editable nodes with announced units', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'id=\\"clab-btnPrevPt\\"', 'id=\\"clab-btnNextPt\\"', 'function selectAdjacentPoint(delta){',
+      "selectAdjacentPoint(-1)", "selectAdjacentPoint(1)",
+      "slHeight.setAttribute('aria-valuetext'", "slBank.setAttribute('aria-valuetext'",
+      'id=\\"clab-banner\\" role=\\"status\\" aria-live=\\"polite\\"',
+      "bannerEl.setAttribute('aria-live', usesBridgeAnnouncer ? 'off' : 'polite')",
+      'id=\\"clab-gl\\" role=\\"img\\" aria-label=\\"Interactive 3-D coaster track visualization.',
+    ]) expect(src).toContain(marker);
+  });
+
   it.each(TOOL_PATHS)('%s has cohesive correct/wrong, timer, score, diagram, and summary visuals', (p) => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
     for (const marker of [
