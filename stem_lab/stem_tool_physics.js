@@ -2290,7 +2290,7 @@ const d = labToolData.physics;
                   }, (t1 * 1000) + 500);
                 },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100"
-              }, "\u{1F500} Symmetry Demo"),
+              }, "\u{1F500} " + __alloT('stem.physics.symmetry_demo', 'Symmetry Demo')),
 
               PRESETS.map(function (p) {
 
@@ -2306,7 +2306,7 @@ const d = labToolData.physics;
 
             React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3" },
 
-              [{ k: 'angle', label: 'Angle (\u00B0)', min: 5, max: 85, step: 1 }, { k: 'velocity', label: 'Velocity (m/s)', min: 5, max: 50, step: 1 }, { k: 'gravity', label: 'Gravity (m/s\u00B2)', min: 1, max: 25, step: 0.1 }, { k: 'mass', label: 'Mass (kg)', min: 1, max: 10, step: 1 }].map(function (s) {
+              [{ k: 'angle', label: __alloT('stem.physics.slider_angle', 'Angle (\u00B0)'), min: 5, max: 85, step: 1 }, { k: 'velocity', label: __alloT('stem.physics.slider_velocity', 'Velocity (m/s)'), min: 5, max: 50, step: 1 }, { k: 'gravity', label: __alloT('stem.physics.slider_gravity', 'Gravity (m/s\u00B2)'), min: 1, max: 25, step: 0.1 }, { k: 'mass', label: __alloT('stem.physics.slider_mass', 'Mass (kg)'), min: 1, max: 10, step: 1 }].map(function (s) {
                 var isLocked = d.targetMode && d.targetConstraint && (
                   (d.targetConstraint.type === 'fixedAngle' && s.k === 'angle') ||
                   (d.targetConstraint.type === 'fixedVelocity' && s.k === 'velocity')
@@ -2334,10 +2334,10 @@ const d = labToolData.physics;
 
             // ── XP & Stats Bar ──
             React.createElement("div", { className: "flex items-center gap-3 mb-2 px-1" },
-              React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "\uD83D\uDE80 Launches: " + (d.launchCount || 0)),
-              React.createElement("span", { className: "text-[11px] font-bold text-amber-500" }, "\uD83C\uDFAF Targets: " + (d.targetsHit || 0)),
-              d.predictionStreak > 0 && React.createElement("span", { className: "text-[11px] font-bold text-fuchsia-600" }, "\uD83D\uDD2E Prediction streak: " + d.predictionStreak),
-              d.quizStreak > 0 && React.createElement("span", { className: "text-[11px] font-bold text-orange-500" }, "\uD83D\uDD25 Streak: " + d.quizStreak)
+              React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "\uD83D\uDE80 " + __alloT('stem.physics.launches_count', 'Launches: ') + (d.launchCount || 0)),
+              React.createElement("span", { className: "text-[11px] font-bold text-amber-500" }, "\uD83C\uDFAF " + __alloT('stem.physics.targets_count', 'Targets: ') + (d.targetsHit || 0)),
+              d.predictionStreak > 0 && React.createElement("span", { className: "text-[11px] font-bold text-fuchsia-600" }, "\uD83D\uDD2E " + __alloT('stem.physics.prediction_streak_count', 'Prediction streak: ') + d.predictionStreak),
+              d.quizStreak > 0 && React.createElement("span", { className: "text-[11px] font-bold text-orange-500" }, "\uD83D\uDD25 " + __alloT('stem.physics.streak_count', 'Streak: ') + d.quizStreak)
             ),
 
             // \u2500\u2500 Live "Show Your Work" Formulas Panel \u2500\u2500
@@ -2367,10 +2367,10 @@ const d = labToolData.physics;
                   React.createElement("div", { className: "font-mono text-[12px] font-bold text-fuchsia-700 ml-3" }, "= " + numeric.toFixed(2) + " " + unit)
                 );
               };
-              return React.createElement("div", { className: "bg-fuchsia-50 rounded-xl border border-fuchsia-200 p-3 mb-3 animate-in fade-in duration-200", role: "region", "aria-label": "Show your work formulas panel" },
-                React.createElement("p", { className: "text-[11px] font-bold text-fuchsia-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCDD Show Your Work (no-drag ideal)"),
+              return React.createElement("div", { className: "bg-fuchsia-50 rounded-xl border border-fuchsia-200 p-3 mb-3 animate-in fade-in duration-200", role: "region", "aria-label": __alloT('stem.physics.aria_show_work_panel', 'Show your work formulas panel') },
+                React.createElement("p", { className: "text-[11px] font-bold text-fuchsia-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCDD " + __alloT('stem.physics.show_your_work_title', 'Show Your Work (no-drag ideal)')),
                 Row(
-                  "Range:",
+                  __alloT('stem.physics.row_range', 'Range:'),
                   "text-blue-600",
                   "R = v\u00B2 \u00B7 sin(2\u03B8) / g",
                   "(" + vel + ")\u00B2 \u00B7 sin(2 \u00B7 " + ang + "\u00B0) / " + grav,
@@ -2378,7 +2378,7 @@ const d = labToolData.physics;
                   range, "m"
                 ),
                 Row(
-                  "Max Height:",
+                  __alloT('stem.physics.row_max_height', 'Max Height:'),
                   "text-purple-600",
                   "H = v\u00B2 \u00B7 sin\u00B2(\u03B8) / (2g)",
                   "(" + vel + ")\u00B2 \u00B7 sin\u00B2(" + ang + "\u00B0) / (2 \u00B7 " + grav + ")",
@@ -2386,7 +2386,7 @@ const d = labToolData.physics;
                   maxH, "m"
                 ),
                 Row(
-                  "Flight Time:",
+                  __alloT('stem.physics.row_flight_time', 'Flight Time:'),
                   "text-emerald-600",
                   "t = 2v \u00B7 sin(\u03B8) / g",
                   "2 \u00B7 " + vel + " \u00B7 sin(" + ang + "\u00B0) / " + grav,
@@ -2394,7 +2394,7 @@ const d = labToolData.physics;
                   flightT, "s"
                 ),
                 d.airResist && React.createElement("p", { className: "text-[10px] text-orange-700 italic mt-1" },
-                  "\u26A0\uFE0F Air drag is ON. Actual values will be lower than these no-drag predictions."
+                  "\u26A0\uFE0F " + __alloT('stem.physics.air_drag_warning', 'Air drag is ON. Actual values will be lower than these no-drag predictions.')
                 )
               );
             })(),
@@ -2411,8 +2411,8 @@ const d = labToolData.physics;
               var lastTrail = trails.length > 0 ? trails[trails.length - 1] : null;
               if (!lastTrail || lastTrail.length < 2) {
                 return React.createElement("div", { className: "bg-teal-50 rounded-xl border border-teal-200 p-3 mb-3" },
-                  React.createElement("p", { className: "text-[11px] font-bold text-teal-700 uppercase tracking-wider mb-1" }, "\u{1F4C9} Motion Components"),
-                  React.createElement("p", { className: "text-xs text-teal-600 italic" }, "Launch a projectile to see Vx-vs-t and Vy-vs-t.")
+                  React.createElement("p", { className: "text-[11px] font-bold text-teal-700 uppercase tracking-wider mb-1" }, "\u{1F4C9} " + __alloT('stem.physics.motion_components', 'Motion Components')),
+                  React.createElement("p", { className: "text-xs text-teal-600 italic" }, __alloT('stem.physics.launch_to_see_vx_vy', 'Launch a projectile to see Vx-vs-t and Vy-vs-t.'))
                 );
               }
               var pts = lastTrail;
@@ -2454,12 +2454,12 @@ const d = labToolData.physics;
               };
               return React.createElement("div", { className: "bg-teal-50 rounded-xl border border-teal-200 p-3 mb-3 animate-in fade-in duration-200" },
                 React.createElement("p", { className: "text-[11px] font-bold text-teal-700 uppercase tracking-wider mb-2" },
-                  "\u{1F4C9} Motion Components (most recent launch)"
+                  "\u{1F4C9} " + __alloT('stem.physics.motion_components_recent', 'Motion Components (most recent launch)')
                 ),
                 React.createElement("div", { className: "grid grid-cols-2 gap-3" },
                   React.createElement("div", { className: "bg-white rounded-lg p-2 border border-teal-100" },
-                    React.createElement("p", { className: "text-[10px] font-bold text-blue-600 mb-1" }, "Vx vs t — horizontal velocity"),
-                    React.createElement("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", height: H, role: "img", "aria-label": "Horizontal velocity over time, a flat line" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-blue-600 mb-1" }, __alloT('stem.physics.vx_vs_t_label', 'Vx vs t — horizontal velocity')),
+                    React.createElement("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", height: H, role: "img", "aria-label": __alloT('stem.physics.aria_vx_graph', 'Horizontal velocity over time, a flat line') },
                       axisLine(padL, padT, padL, padT + innerH, '#94a3b8'),
                       axisLine(padL, padT + innerH, W - padR, padT + innerH, '#94a3b8'),
                       React.createElement('path', { d: vxPath, stroke: '#2563eb', strokeWidth: 2, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }),
@@ -2467,13 +2467,13 @@ const d = labToolData.physics;
                       lbl(padL - 4, padT + innerH, '0', '#475569', 8, 'end'),
                       lbl(padL, H - 4, '0', '#475569', 8, 'start'),
                       lbl(W - padR, H - 4, tMax.toFixed(1) + 's', '#475569', 8, 'end'),
-                      lbl(padL + innerW / 2, H - 4, 'time (s)', '#94a3b8', 8, 'middle')
+                      lbl(padL + innerW / 2, H - 4, __alloT('stem.physics.axis_time_s', 'time (s)'), '#94a3b8', 8, 'middle')
                     ),
-                    React.createElement("p", { className: "text-[10px] text-blue-700 mt-1 italic" }, "Flat → no horizontal force, Vx is constant.")
+                    React.createElement("p", { className: "text-[10px] text-blue-700 mt-1 italic" }, __alloT('stem.physics.vx_flat_note', 'Flat → no horizontal force, Vx is constant.'))
                   ),
                   React.createElement("div", { className: "bg-white rounded-lg p-2 border border-teal-100" },
-                    React.createElement("p", { className: "text-[10px] font-bold text-purple-600 mb-1" }, "Vy vs t — vertical velocity"),
-                    React.createElement("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", height: H, role: "img", "aria-label": "Vertical velocity over time, decreasing through zero at apex" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-purple-600 mb-1" }, __alloT('stem.physics.vy_vs_t_label', 'Vy vs t — vertical velocity')),
+                    React.createElement("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", height: H, role: "img", "aria-label": __alloT('stem.physics.aria_vy_graph', 'Vertical velocity over time, decreasing through zero at apex') },
                       axisLine(padL, padT, padL, padT + innerH, '#94a3b8'),
                       axisLine(padL, vyY0, W - padR, vyY0, '#cbd5e1'),
                       React.createElement('path', { d: vyPath, stroke: '#9333ea', strokeWidth: 2, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }),
@@ -2482,13 +2482,13 @@ const d = labToolData.physics;
                       lbl(padL - 4, padT + innerH, '−' + vyRange.toFixed(0), '#475569', 8, 'end'),
                       lbl(padL, H - 4, '0', '#475569', 8, 'start'),
                       lbl(W - padR, H - 4, tMax.toFixed(1) + 's', '#475569', 8, 'end'),
-                      lbl(padL + innerW / 2, H - 4, 'time (s)', '#94a3b8', 8, 'middle')
+                      lbl(padL + innerW / 2, H - 4, __alloT('stem.physics.axis_time_s', 'time (s)'), '#94a3b8', 8, 'middle')
                     ),
-                    React.createElement("p", { className: "text-[10px] text-purple-700 mt-1 italic" }, "Straight line → constant gravity. Crosses zero at apex.")
+                    React.createElement("p", { className: "text-[10px] text-purple-700 mt-1 italic" }, __alloT('stem.physics.vy_line_note', 'Straight line → constant gravity. Crosses zero at apex.'))
                   )
                 ),
                 React.createElement("p", { className: "text-[10px] text-teal-700 italic mt-2 text-center" },
-                  "\u{1F4A1} Horizontal and vertical motion are independent. Gravity only affects Vy."
+                  "\u{1F4A1} " + __alloT('stem.physics.motion_independent_note', 'Horizontal and vertical motion are independent. Gravity only affects Vy.')
                 ),
 
                 // ── Range vs Angle parameter sweep ──
@@ -2534,13 +2534,13 @@ const d = labToolData.physics;
                     React.createElement("p", { className: "text-[10px] font-bold text-amber-700 mb-1" },
                       "R vs θ — range across all angles at v=" + vel + " m/s, g=" + grav + " m/s²"
                     ),
-                    React.createElement("svg", { viewBox: "0 0 " + rW + " " + rH, width: "100%", height: rH, role: "img", "aria-label": "Range as a function of launch angle, peaking at 45 degrees" },
+                    React.createElement("svg", { viewBox: "0 0 " + rW + " " + rH, width: "100%", height: rH, role: "img", "aria-label": __alloT('stem.physics.aria_range_angle_graph', 'Range as a function of launch angle, peaking at 45 degrees') },
                       // Y/X axes
                       axisLine2(rPL, rPT, rPL, rPT + rIH, '#94a3b8'),
                       axisLine2(rPL, rPT + rIH, rW - rPR, rPT + rIH, '#94a3b8'),
                       // 45° optimum dashed vertical reference
                       axisLine2(optSX, rPT, optSX, rPT + rIH, '#cbd5e1', '3,3'),
-                      lbl2(optSX, rPT + rIH + 11, '45° (max)', '#94a3b8', 8, 'middle'),
+                      lbl2(optSX, rPT + rIH + 11, __alloT('stem.physics.axis_45_max', '45° (max)'), '#94a3b8', 8, 'middle'),
                       // Range curve
                       React.createElement('path', { d: rangePath, stroke: '#d97706', strokeWidth: 2, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }),
                       // Current-angle marker line + dot
@@ -2555,7 +2555,7 @@ const d = labToolData.physics;
                         return React.createElement('text', { key: a, x: ax, y: rH - 12, fontSize: 8, fill: '#475569', textAnchor: 'middle', fontFamily: 'monospace' }, a + '°');
                       }),
                       // Axis title
-                      lbl2(rPL + rIW / 2, rH - 2, 'launch angle (θ)', '#94a3b8', 8, 'middle'),
+                      lbl2(rPL + rIW / 2, rH - 2, __alloT('stem.physics.axis_launch_angle', 'launch angle (θ)'), '#94a3b8', 8, 'middle'),
                       // Current-angle callout
                       React.createElement('text', { x: Math.min(rW - rPR - 4, curSX + 8), y: Math.max(rPT + 10, curSY - 6), fontSize: 9, fill: '#0e7490', fontWeight: 'bold', textAnchor: 'start', fontFamily: 'monospace' },
                         'you: ' + ang + '° → R=' + curR.toFixed(1) + 'm'
@@ -2563,8 +2563,8 @@ const d = labToolData.physics;
                     ),
                     React.createElement("p", { className: "text-[10px] text-amber-700 mt-1 italic" },
                       d.airResist
-                        ? "With drag, the actual optimum is lower than 45° (~38-42°). This chart is no-drag."
-                        : "Range peaks at exactly 45° without drag. Complementary angles (e.g. 30° and 60°) hit the same R."
+                        ? __alloT('stem.physics.sweep_note_drag', 'With drag, the actual optimum is lower than 45° (~38-42°). This chart is no-drag.')
+                        : __alloT('stem.physics.sweep_note_nodrag', 'Range peaks at exactly 45° without drag. Complementary angles (e.g. 30° and 60°) hit the same R.')
                     )
                   );
                 })()
@@ -2573,55 +2573,55 @@ const d = labToolData.physics;
 
             // ── Learn Panel (Newton's Laws & Projectile Motion) ──
             d.showLearn && React.createElement("div", { className: "bg-emerald-50 rounded-xl border border-emerald-200 p-4 mb-3 animate-in fade-in duration-200" },
-              React.createElement("h4", { className: "text-sm font-bold text-emerald-800 mb-2" }, "\uD83D\uDCD6 Physics Concepts"),
+              React.createElement("h4", { className: "text-sm font-bold text-emerald-800 mb-2" }, "\uD83D\uDCD6 " + __alloT('stem.physics.physics_concepts', 'Physics Concepts')),
               React.createElement("div", { className: "grid grid-cols-1 gap-2 text-xs text-emerald-900" },
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-blue-600" }, "\uD83D\uDE80 Projectile Motion: "),
-                  "An object launched into the air follows a parabolic path. Horizontal velocity (Vx) stays constant while vertical velocity (Vy) changes due to gravity. Enable Vectors to see!"
+                  React.createElement("span", { className: "font-bold text-blue-600" }, "\uD83D\uDE80 " + __alloT('stem.physics.concept_projectile_label', 'Projectile Motion: ')),
+                  __alloT('stem.physics.concept_projectile_body', 'An object launched into the air follows a parabolic path. Horizontal velocity (Vx) stays constant while vertical velocity (Vy) changes due to gravity. Enable Vectors to see!')
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-red-600" }, "\uD83C\uDF0D Newton's 2nd Law: "),
-                  "F = ma. The only force on a projectile (ignoring drag) is gravity: a = g downward. This creates the curved trajectory."
+                  React.createElement("span", { className: "font-bold text-red-600" }, "\uD83C\uDF0D " + __alloT('stem.physics.concept_newton2_label', "Newton's 2nd Law: ")),
+                  __alloT('stem.physics.concept_newton2_body', 'F = ma. The only force on a projectile (ignoring drag) is gravity: a = g downward. This creates the curved trajectory.')
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-amber-600" }, "\uD83C\uDFAF Optimal Angle: "),
-                  "Without air resistance, 45\u00B0 gives maximum range. With drag, the optimal angle shifts lower (~38-42\u00B0). Try it!"
+                  React.createElement("span", { className: "font-bold text-amber-600" }, "\uD83C\uDFAF " + __alloT('stem.physics.concept_optimal_label', 'Optimal Angle: ')),
+                  __alloT('stem.physics.concept_optimal_body', 'Without air resistance, 45\u00B0 gives maximum range. With drag, the optimal angle shifts lower (~38-42\u00B0). Try it!')
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-purple-600" }, "\u26A1 Energy Conservation: "),
-                  "Kinetic Energy (KE = \u00BDmv\u00B2) converts to Potential Energy (PE = mgh) and back. Enable the Energy bar to watch this live!"
+                  React.createElement("span", { className: "font-bold text-purple-600" }, "\u26A1 " + __alloT('stem.physics.concept_energy_label', 'Energy Conservation: ')),
+                  __alloT('stem.physics.concept_energy_body', 'Kinetic Energy (KE = \u00BDmv\u00B2) converts to Potential Energy (PE = mgh) and back. Enable the Energy bar to watch this live!')
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-orange-600" }, "\uD83C\uDF2C\uFE0F Air Resistance: "),
-                  "Drag force opposes motion and increases with speed (F_drag \u221D v\u00B2). It shortens range, lowers max height, and makes the trajectory asymmetric."
+                  React.createElement("span", { className: "font-bold text-orange-600" }, "\uD83C\uDF2C\uFE0F " + __alloT('stem.physics.concept_air_label', 'Air Resistance: ')),
+                  __alloT('stem.physics.concept_air_body', 'Drag force opposes motion and increases with speed (F_drag \u221D v\u00B2). It shortens range, lowers max height, and makes the trajectory asymmetric.')
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-sky-600" }, "\uD83C\uDF11 Gravity Varies: "),
-                  "Different planets have different gravitational pull. Moon (1.6 m/s\u00B2) lets projectiles fly 6x farther than Earth (9.8 m/s\u00B2)! Try Jupiter for a challenge."
+                  React.createElement("span", { className: "font-bold text-sky-600" }, "\uD83C\uDF11 " + __alloT('stem.physics.concept_gravity_label', 'Gravity Varies: ')),
+                  __alloT('stem.physics.concept_gravity_body', 'Different planets have different gravitational pull. Moon (1.6 m/s\u00B2) lets projectiles fly 6x farther than Earth (9.8 m/s\u00B2)! Try Jupiter for a challenge.')
                 ),
                 React.createElement("div", { className: "rounded-lg p-2 border border-amber-300 bg-amber-100/70 mt-1" },
-                  React.createElement("span", { className: "font-bold text-amber-700" }, "\u26A0 Myth: \u201CA moving object needs a forward push.\u201D "),
-                  "Watch Vx \u2014 it never changes, and the Vectors view shows NO horizontal arrow. With no sideways force, the object keeps moving sideways on its own (Newton's 1st Law)."
+                  React.createElement("span", { className: "font-bold text-amber-700" }, "\u26A0 " + __alloT('stem.physics.myth1_label', 'Myth: \u201CA moving object needs a forward push.\u201D ')),
+                  __alloT('stem.physics.myth1_body', "Watch Vx \u2014 it never changes, and the Vectors view shows NO horizontal arrow. With no sideways force, the object keeps moving sideways on its own (Newton's 1st Law).")
                 ),
                 React.createElement("div", { className: "rounded-lg p-2 border border-amber-300 bg-amber-100/70" },
-                  React.createElement("span", { className: "font-bold text-amber-700" }, "\u26A0 Myth: \u201CHeavier objects fall faster.\u201D "),
-                  "Drag the Mass slider \u2014 the trajectory does NOT change. In a vacuum every mass falls with the same g; mass only scales the energy bar, never the path."
+                  React.createElement("span", { className: "font-bold text-amber-700" }, "\u26A0 " + __alloT('stem.physics.myth2_label', 'Myth: \u201CHeavier objects fall faster.\u201D ')),
+                  __alloT('stem.physics.myth2_body', 'Drag the Mass slider \u2014 the trajectory does NOT change. In a vacuum every mass falls with the same g; mass only scales the energy bar, never the path.')
                 ),
                 React.createElement("div", { className: "rounded-lg p-2 border border-amber-300 bg-amber-100/70" },
-                  React.createElement("span", { className: "font-bold text-amber-700" }, "\u26A0 Myth: \u201CVelocity points where the force points.\u201D "),
-                  "At the very top of the arc the velocity is purely horizontal, yet gravity still points straight DOWN. A force changes motion \u2014 it doesn't have to point along it."
+                  React.createElement("span", { className: "font-bold text-amber-700" }, "\u26A0 " + __alloT('stem.physics.myth3_label', 'Myth: \u201CVelocity points where the force points.\u201D ')),
+                  __alloT('stem.physics.myth3_body', "At the very top of the arc the velocity is purely horizontal, yet gravity still points straight DOWN. A force changes motion \u2014 it doesn't have to point along it.")
                 )
               )
             ),
 
             // ── Real-Time Flight Data Table ──
             d.showFlightData && React.createElement("div", { className: "bg-cyan-50 rounded-xl border border-cyan-200 p-3 mb-3 overflow-x-auto animate-in fade-in duration-200" },
-              React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCCA Flight Data"),
+              React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCCA " + __alloT('stem.physics.flight_data_title', 'Flight Data')),
               (function() {
                 var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
                 var trails = cv && cv._trails ? cv._trails : [];
                 var lastTrail = trails.length > 0 ? trails[trails.length - 1] : [];
-                if (lastTrail.length === 0) return React.createElement("p", { className: "text-xs text-cyan-400 italic" }, "Launch a projectile to see flight data");
+                if (lastTrail.length === 0) return React.createElement("p", { className: "text-xs text-cyan-400 italic" }, __alloT('stem.physics.launch_to_see_flight_data', 'Launch a projectile to see flight data'));
                 // Sample ~10 evenly spaced points
                 var step = Math.max(1, Math.floor(lastTrail.length / 10));
                 var rows = [];
@@ -2638,7 +2638,7 @@ const d = labToolData.physics;
                   ));
                 }
                 return React.createElement("table", { className: "w-full text-xs" },
-                  React.createElement("caption", { className: "sr-only" }, "physics data table"), React.createElement("thead", null,
+                  React.createElement("caption", { className: "sr-only" }, __alloT('stem.physics.caption_data_table', 'physics data table')), React.createElement("thead", null,
                     React.createElement("tr", { className: "border-b-2 border-cyan-300" },
                       React.createElement("th", { scope: "col", className: "px-2 py-1 text-left font-bold text-cyan-800" }, "t (s)"),
                       React.createElement("th", { scope: "col", className: "px-2 py-1 text-left font-bold text-slate-600" }, "x (m)"),
@@ -2657,14 +2657,14 @@ const d = labToolData.physics;
             // ═══ TARGET DESTRUCTION MODE UI ═══
             React.createElement("div", { className: "bg-gradient-to-r from-red-50 to-amber-50 rounded-xl border border-red-200 p-3 mb-3" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("p", { className: "text-[11px] font-bold text-red-700 uppercase tracking-wider" }, "\u{1F3AF} Target Destruction Mode"),
+                React.createElement("p", { className: "text-[11px] font-bold text-red-700 uppercase tracking-wider" }, "\u{1F3AF} " + __alloT('stem.physics.target_mode_title', 'Target Destruction Mode')),
                 !d.targetMode
-                  ? React.createElement("button", { "aria-label": "Start Mission",
+                  ? React.createElement("button", { "aria-label": __alloT('stem.physics.start_mission', 'Start Mission'),
                       onClick: function() { upd('targetMode', true); startTargetRound(1); },
                       className: "px-3 py-1 bg-red-600 text-white text-[11px] font-bold rounded-lg hover:bg-red-700 transition-all"
-                    }, "\u25B6 Start Mission")
+                    }, "\u25B6 " + __alloT('stem.physics.start_mission', 'Start Mission'))
                   : React.createElement("div", { className: "flex gap-1.5" },
-                      React.createElement("button", { "aria-label": "Next Round",
+                      React.createElement("button", { "aria-label": __alloT('stem.physics.next_round', 'Next Round'),
                         onClick: function() {
                           var allDone = d.targetList && d.targetList.every(function(t){return t.destroyed;});
                           if (allDone && d.targetRound < TARGET_LEVELS.length) {
