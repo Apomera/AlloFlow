@@ -34,7 +34,8 @@ describe('Learning Lab Emotion + Grounding accessibility', () => {
   });
   it('uses a pausable text breathing guide without interaction-triggered scaling motion or efficacy claims', () => {
     expect(emotion).toContain("role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'");
-    expect(emotion).toContain("'aria-pressed': boxPlaying ? 'true' : 'false'");
+    expect(emotion).not.toContain("'aria-pressed'");
+    expect(emotion).toContain("boxPlaying ? 'Pause breathing guide' : 'Start breathing guide'");
     expect(emotion).toContain('You may pause or stop at any time.');
     expect(emotion).not.toContain("transition: 'transform");
     expect(emotion).not.toContain("transform: boxPlaying");
@@ -58,10 +59,18 @@ describe('Learning Lab Emotion + Grounding accessibility', () => {
   it('uses semantic history, robust dates, focus restoration, and announcements', () => {
     expect(emotion).toContain("hh('article', { 'aria-label': emotion.name + ' check-in");
     expect(emotion).toContain("hh('time', { dateTime: checkDate.toISOString()");
-    expect(emotion).toContain("if (isNaN(checkDate.getTime())) checkDate = new Date()");
+    expect(emotion).toContain("var dateKnown = !isNaN(checkDate.getTime());");
+    expect(emotion).toContain("dateKnown ? hh('time', { dateTime: checkDate.toISOString() }, checkDate.toLocaleString()) : 'Date not recorded'");
     expect(emotion).toContain("focusId('learning-lab-emotion-history-heading')");
     expect(emotion).toContain("llAnnounce('Emotion check-in deleted.')");
   });
+  it('handles malformed legacy check-in data without crashing', () => {
+    expect(emotion).toContain('var rawChecks = Array.isArray(data.checks) ? data.checks : [];');
+    expect(emotion).toContain('var checks = rawChecks.filter(isRecord);');
+    expect(emotion).toContain("var intensityOf = function(value) { return Math.max(1, Math.min(10, Number(value) || 5)); };");
+    expect(source).toContain("stat: (Array.isArray((data.mytkEmotion || {}).checks) ? (data.mytkEmotion || {}).checks.length : 0) + ' check-ins'");
+  });
+
   it('updates discovery copy and keeps the deployed mirror identical', () => {
     expect(source).toContain("desc: 'Private check-in + optional adaptable grounding tools'");
     expect(source).toContain('Private emotion check-in with optional paced breathing and adaptable grounding prompts.');

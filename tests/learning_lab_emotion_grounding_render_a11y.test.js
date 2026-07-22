@@ -18,7 +18,8 @@ describe('Learning Lab Emotion + Grounding rendered accessibility states', () =>
     expect(host.querySelector('a[aria-label="Call the 988 Suicide and Crisis Lifeline"]')).not.toBeNull();
     expect(host.querySelector('a[aria-label*="opens in a new tab"]')?.getAttribute('rel')).toBe('noopener noreferrer');
     expect(host.querySelector('#learning-lab-emotion-privacy')).not.toBeNull();
-    expect(host.querySelector('article time')?.dateTime).toBeTruthy();
+    expect(host.querySelector('article')?.textContent).toContain('Date not recorded');
+    expect(host.querySelector('article time')).toBeNull();
   });
   it('uses a native required radio group and validates with focus', async () => {
     expect(host.querySelectorAll('fieldset input[type="radio"][name="learning-lab-emotion"]')).toHaveLength(10);
@@ -48,7 +49,7 @@ describe('Learning Lab Emotion + Grounding rendered accessibility states', () =>
     expect(host.querySelector('[role="status"]')?.textContent).toBe('Breathing guide paused');
     expect(host.innerHTML).not.toContain('transform: scale');
     await act(async () => { buttonByText(host, 'Start breathing guide').click(); await Promise.resolve(); });
-    expect(host.querySelector('button[aria-pressed="true"]')?.textContent).toBe('Pause breathing guide');
+    expect(Array.from(host.querySelectorAll('button')).find((b) => b.textContent === 'Pause breathing guide')).not.toBeUndefined();
     await act(async () => { buttonByText(host, '← Back to emotion check').click(); await new Promise((resolve) => setTimeout(resolve, 75)); });
     expect(document.activeElement?.id).toBe('learning-lab-open-breathing');
   });

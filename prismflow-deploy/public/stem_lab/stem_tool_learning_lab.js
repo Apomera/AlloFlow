@@ -9040,8 +9040,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // + body scan. Tools for when overwhelm hits. Links to crisis if needed.
   function PersonalEmotionRegulator(props) {
     if (!R) return null;
-    var data = props.data || { checks: [] };
+    var data = props.data && typeof props.data === 'object' ? props.data : { checks: [] };
     var setData = props.setData;
+    var isRecord = function(value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
+    var textValue = function(value) { return typeof value === 'string' ? value : (typeof value === 'number' ? String(value) : ''); };
+    var intensityOf = function(value) { return Math.max(1, Math.min(10, Number(value) || 5)); };
+    var rawChecks = Array.isArray(data.checks) ? data.checks : [];
     var vs = R.useState('check');                 var view = vs[0]; var setView = vs[1];
     var fsState = R.useState({ intensity: 5, label: '', what: '', need: '' });
     var form = fsState[0];                         var setForm = fsState[1];
@@ -9066,7 +9070,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'happy', name: 'Happy', icon: '😄', color: '#fde68a' }
     ];
     var BOX_STEPS = ['Breathe in for 4 seconds', 'Hold for 4 seconds', 'Breathe out for 4 seconds', 'Hold for 4 seconds'];
-    var checks = data.checks || [];
+    var checks = rawChecks.filter(isRecord);
     var inputStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(249,168,212,0.55)', background: 'rgba(2,6,23,0.55)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
     var labelStyle = { display: 'block', fontSize: 11, fontWeight: 800, color: '#f9a8d4', marginBottom: 4 };
     var listStyle = { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 };
@@ -9093,7 +9097,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return;
       }
       var entry = Object.assign({ id: tkId(), date: todayISO(), time: Date.now() }, form);
-      setData(Object.assign({}, data, { checks: [entry].concat(checks) }));
+      setData(Object.assign({}, data, { checks: [entry].concat(rawChecks) }));
       setForm({ intensity: 5, label: '', what: '', need: '' });
       setEmotionError('');
       llAnnounce('Emotion check-in saved: ' + form.label + ', intensity ' + form.intensity + ' out of 10.');
@@ -9103,7 +9107,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var check = checks.filter(function(item) { return item.id === id; })[0];
       if (!check) return;
       if (!(await askLearningLabConfirmation('This permanently removes the selected emotion check-in.', { title: 'Delete this emotion check-in?', confirmText: 'Delete check-in' }))) return;
-      setData(Object.assign({}, data, { checks: checks.filter(function(item) { return item.id !== id; }) }));
+      setData(Object.assign({}, data, { checks: rawChecks.filter(function(item) { return !(isRecord(item) && item.id === id); }) }));
       llAnnounce('Emotion check-in deleted.');
       focusId(checks.length > 1 ? 'learning-lab-emotion-history-heading' : 'learning-lab-emotion-save');
     }
@@ -9129,7 +9133,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { style: { textAlign: 'center', padding: 30 } },
           hh('div', { 'aria-hidden': 'true', style: { width: 120, height: 120, margin: '0 auto 20px', border: '4px solid #67e8f9', borderRadius: 12 } }),
           hh('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 20, fontWeight: 900, color: '#cffafe', marginBottom: 20 } }, boxPlaying ? BOX_STEPS[boxStep] : 'Breathing guide paused'),
-          hh('button', { type: 'button', 'aria-pressed': boxPlaying ? 'true' : 'false', onClick: function() { setBoxPlaying(!boxPlaying); if (!boxPlaying) setBoxStep(0); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: '14px 36px', borderRadius: 10, background: boxPlaying ? '#b91c1c' : '#0e7490', color: '#fff', border: '2px solid #cffafe', fontSize: 14, fontWeight: 900, cursor: 'pointer' } }, boxPlaying ? 'Pause breathing guide' : 'Start breathing guide')
+          hh('button', { type: 'button', onClick: function() { setBoxPlaying(!boxPlaying); if (!boxPlaying) setBoxStep(0); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: '14px 36px', borderRadius: 10, background: boxPlaying ? '#b91c1c' : '#0e7490', color: '#fff', border: '2px solid #cffafe', fontSize: 14, fontWeight: 900, cursor: 'pointer' } }, boxPlaying ? 'Pause breathing guide' : 'Start breathing guide')
         ),
         hh('div', { style: { textAlign: 'center' } }, hh('button', { type: 'button', onClick: function() { backToCheck('breathing'); }, style: { minHeight: 44, padding: '8px 14px' } }, '← Back to emotion check'))
       );
@@ -9218,18 +9222,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('h3', { id: 'learning-lab-emotion-history-heading', tabIndex: -1, style: { fontSize: 13, fontWeight: 800, color: '#fbcfe8', margin: '0 0 8px' } }, 'Recent emotion check-ins'),
         hh('ul', { style: listStyle },
           checks.map(function(check) {
-            var checkDate = new Date(check.time || check.date || Date.now());
-            if (isNaN(checkDate.getTime())) checkDate = new Date();
-            var emotion = EMOTION_LABELS.filter(function(item) { return item.id === check.label; })[0] || { name: check.label || 'Emotion', icon: '•', color: '#cbd5e1' };
+            var checkDate = new Date(Number.isFinite(Number(check.time)) && check.time !== null && check.time !== '' ? Number(check.time) : textValue(check.date) + 'T12:00:00');
+            var dateKnown = !isNaN(checkDate.getTime());
+            var emotion = EMOTION_LABELS.filter(function(item) { return item.id === check.label; })[0] || { name: textValue(check.label).trim() || 'Emotion', icon: '•', color: '#cbd5e1' };
             return hh('li', { key: 'check-' + check.id },
-              hh('article', { 'aria-label': emotion.name + ' check-in, intensity ' + check.intensity + ' out of 10', style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + emotion.color } },
+              hh('article', { 'aria-label': emotion.name + ' check-in, intensity ' + intensityOf(check.intensity) + ' out of 10', style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + emotion.color } },
                 hh('div', { style: { display: 'flex', gap: 8, alignItems: 'flex-start', flexWrap: 'wrap' } },
                   hh('span', { 'aria-hidden': 'true', style: { fontSize: 20 } }, emotion.icon),
                   hh('div', { style: { flex: 1, minWidth: 0 } },
                     hh('strong', { style: { color: emotion.color } }, emotion.name),
-                    hh('div', null, hh('time', { dateTime: checkDate.toISOString() }, checkDate.toLocaleString()), ' · intensity ' + check.intensity + ' out of 10'),
-                    check.what ? hh('p', { style: { margin: '4px 0 0', overflowWrap: 'anywhere' } }, check.what) : null,
-                    check.need ? hh('p', { style: { margin: '4px 0 0', overflowWrap: 'anywhere' } }, hh('strong', null, 'Might help: '), check.need) : null
+                    hh('div', null, dateKnown ? hh('time', { dateTime: checkDate.toISOString() }, checkDate.toLocaleString()) : 'Date not recorded', ' · intensity ' + intensityOf(check.intensity) + ' out of 10'),
+                    textValue(check.what).trim() ? hh('p', { style: { margin: '4px 0 0', overflowWrap: 'anywhere' } }, textValue(check.what).trim()) : null,
+                    textValue(check.need).trim() ? hh('p', { style: { margin: '4px 0 0', overflowWrap: 'anywhere' } }, hh('strong', null, 'Might help: '), textValue(check.need).trim()) : null
                   ),
                   hh('button', { type: 'button', 'aria-label': 'Delete ' + emotion.name + ' emotion check-in', onClick: function() { removeCheck(check.id); }, style: { minWidth: 44, minHeight: 44 } }, 'Delete')
                 )
@@ -20743,7 +20747,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkAgenda',   icon: '📋', label: 'Today',                color: '#10b981', desc: 'Today\'s pulled-together agenda',
         stat: 'today', cta: 'View today' },
       { id: 'mytkEmotion',  icon: '💖', label: 'Emotion + Grounding',  color: '#ec4899', desc: 'Private check-in + optional adaptable grounding tools',
-        stat: ((data.mytkEmotion || {}).checks || []).length + ' check-ins', cta: 'Check in' },
+        stat: (Array.isArray((data.mytkEmotion || {}).checks) ? (data.mytkEmotion || {}).checks.length : 0) + ' check-ins', cta: 'Check in' },
       { id: 'mytkEF',       icon: '🧩', label: 'EF Dashboard',         color: '#a855f7', desc: 'Optional context-dependent reflection across 8 dimensions',
         stat: ((data.mytkEF || {}).ratings || []).length + ' ratings', cta: 'Rate this week' },
       { id: 'mytkIEP',      icon: '🎓', label: 'My IEP Tracker',       color: '#06b6d4', desc: 'Personal notes about IEP goals and meetings',
