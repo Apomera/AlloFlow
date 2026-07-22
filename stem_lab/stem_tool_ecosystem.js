@@ -4924,7 +4924,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   '✓ ' + __alloT('stem.ecosystem.iq_saved_note', 'Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.'))
               ),
               h('div', { className: 'mt-3 p-2 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[10px] italic text-slate-600 dark:text-slate-400' },
-                'Model limit: two arbitrary weighted scores create three regime labels. This inquiry widget is not a population-dynamics model, does not calculate trophic energy transfer, and should not be interpreted as a forecast.')
+                __alloT('stem.ecosystem.iq_model_limit', 'Model limit: two arbitrary weighted scores create three regime labels. This inquiry widget is not a population-dynamics model, does not calculate trophic energy transfer, and should not be interpreted as a forecast.'))
             )
           );
         })(),
@@ -4940,30 +4940,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               color: '#e9d5ff', fontSize: 13, lineHeight: 1.55
             }
           },
-            h('summary', { style: { fontWeight: 700, color: '#a855f7', cursor: 'pointer', fontSize: 14 } }, '📜 What this quiz covers'),
+            h('summary', { style: { fontWeight: 700, color: '#a855f7', cursor: 'pointer', fontSize: 14 } }, '📜 ' + __alloT('stem.ecosystem.quiz_covers_title', 'What this quiz covers')),
             h('div', { style: { marginTop: 8, color: '#f3e8ff' } },
-              h('div', null, '6 multiple-choice questions on foundational ecology concepts:'),
+              h('div', null, __alloT('stem.ecosystem.quiz_covers_intro', '6 multiple-choice questions on foundational ecology concepts:')),
               h('ul', { style: { margin: '6px 0 0 18px', padding: 0, lineHeight: 1.7 } },
-                h('li', null, 'Predator response after prey availability increases'),
-                h('li', null, 'What the Lotka-Volterra family of models represents'),
-                h('li', null, 'Predation as an ecological interaction'),
-                h('li', null, 'Carrying capacity under specified conditions'),
-                h('li', null, 'Primary producers'),
-                h('li', null, 'Trophic levels in food chains and webs')
+                h('li', null, __alloT('stem.ecosystem.quiz_topic_1', 'Predator response after prey availability increases')),
+                h('li', null, __alloT('stem.ecosystem.quiz_topic_2', 'What the Lotka-Volterra family of models represents')),
+                h('li', null, __alloT('stem.ecosystem.quiz_topic_3', 'Predation as an ecological interaction')),
+                h('li', null, __alloT('stem.ecosystem.quiz_topic_4', 'Carrying capacity under specified conditions')),
+                h('li', null, __alloT('stem.ecosystem.quiz_topic_5', 'Primary producers')),
+                h('li', null, __alloT('stem.ecosystem.quiz_topic_6', 'Trophic levels in food chains and webs'))
               ),
-              h('div', { style: { marginTop: 8 } }, 'Each question links back to behavior you can produce in Explore or Sandbox. If a concept feels abstract, swap to Sandbox and rebuild the scenario.')
+              h('div', { style: { marginTop: 8 } }, __alloT('stem.ecosystem.quiz_covers_footer', 'Each question links back to behavior you can produce in Explore or Sandbox. If a concept feels abstract, swap to Sandbox and rebuild the scenario.'))
             )
           ),
           h('div', { className: 'bg-white dark:bg-slate-900 rounded-xl border border-slate-400 dark:border-slate-700 p-4 space-y-3' },
             h('div', { className: 'flex justify-between items-center' },
-              h('span', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200' }, 'Question ' + ((quizIndex % QUIZ_QUESTIONS.length) + 1) + ' of ' + QUIZ_QUESTIONS.length),
+              h('span', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200' }, __alloT('stem.ecosystem.question_prefix', 'Question ') + ((quizIndex % QUIZ_QUESTIONS.length) + 1) + __alloT('stem.ecosystem.of_mid', ' of ') + QUIZ_QUESTIONS.length),
               h('span', { className: 'text-xs text-emerald-600 font-bold' }, '\u2714 ' + quizCorrect + '/' + quizTotal)
             ),
             h('p', { className: 'text-sm font-semibold text-slate-800 dark:text-slate-100' }, currentQ.q),
-            callTTS && h('button', { 'aria-label': 'Read question',
+            callTTS && h('button', { 'aria-label': __alloT('stem.ecosystem.read_question', 'Read question'),
               className: 'transition-colors text-[11px] text-slate-600 hover:text-slate-700',
               onClick: function() { speakText(currentQ.q); }
-            }, '\uD83D\uDD0A Read question'),
+            }, '\uD83D\uDD0A ' + __alloT('stem.ecosystem.read_question', 'Read question')),
             h('div', { className: 'space-y-1.5' },
               currentQ.choices.map(function(choice, idx) {
                 var isSelected = quizAnswer === idx;
@@ -4977,7 +4977,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 } else if (showResult && isCorrectChoice) {
                   bgClass = 'border-green-400 bg-green-50/50 dark:bg-green-900/20';
                 }
-                return h('button', { 'aria-label': 'Answer ' + String.fromCharCode(65 + idx) + ': ' + choice,
+                return h('button', { 'aria-label': __alloT('stem.ecosystem.answer_prefix', 'Answer ') + String.fromCharCode(65 + idx) + ': ' + choice,
                   key: idx,
                   className: 'w-full text-left px-3 py-2 rounded-lg border text-xs transition-all ' + bgClass,
                   disabled: quizAnswer !== -1,
@@ -4995,7 +4995,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 className: 'text-xs font-semibold p-3 rounded-lg border ' +
                   (quizAnswer === currentQ.answer ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800')
               }, 
-                h('p', { className: 'font-bold' }, quizAnswer === currentQ.answer ? '🎉 Correct!' : '🤔 Not quite!'),
+                h('p', { className: 'font-bold' }, quizAnswer === currentQ.answer ? '🎉 ' + __alloT('stem.ecosystem.correct_excl', 'Correct!') : '🤔 ' + __alloT('stem.ecosystem.not_quite_excl', 'Not quite!')),
                 h('p', { className: 'text-slate-600 mt-1 font-normal' }, currentQ.wrongFeedback ? currentQ.wrongFeedback[quizAnswer] : quizFeedback)
               ),
 
@@ -5004,7 +5004,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 var lookedUp = (vocabLookedUp || []).indexOf(currentQ.concept) !== -1;
                 return h('div', { className: 'p-3 rounded-lg border border-orange-200 bg-orange-50/50' },
                   h('div', { className: 'flex items-center justify-between' },
-                    h('span', { className: 'text-xs font-bold text-orange-700' }, '🔍 Concept: ' + currentQ.concept),
+                    h('span', { className: 'text-xs font-bold text-orange-700' }, '🔍 ' + __alloT('stem.ecosystem.concept_prefix', 'Concept: ') + currentQ.concept),
                     !lookedUp && h('button', {
                       onClick: function() {
                         var newList = (vocabLookedUp || []).slice();
@@ -5018,21 +5018,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                         }
                       },
                       className: 'px-2 py-0.5 rounded bg-orange-100 hover:bg-orange-200 text-orange-700 text-[10px] font-bold transition-all active:scale-[0.97]'
-                    }, 'Study Term (+5 RP)')
+                    }, __alloT('stem.ecosystem.study_term', 'Study Term (+5 RP)'))
                   ),
                   lookedUp && h('div', { className: 'text-xs text-slate-600 mt-1 font-normal' }, ECO_VOCAB[currentQ.concept])
                 );
               })(),
 
-              h('button', { 'aria-label': 'Next Question',
+              h('button', { 'aria-label': __alloT('stem.ecosystem.next_question', 'Next Question'),
                 className: 'w-full py-2 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-600 transition-all active:scale-[0.97]',
                 onClick: nextQuiz
-              }, 'Next Question ➔')
+              }, __alloT('stem.ecosystem.next_question', 'Next Question') + ' ➔')
             )
           ),
           // Quiz progress
           h('div', { className: 'bg-slate-50 dark:bg-slate-800 rounded-xl p-3' },
-            h('p', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200 mb-1' }, 'Quiz Progress'),
+            h('p', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200 mb-1' }, __alloT('stem.ecosystem.quiz_progress', 'Quiz Progress')),
             h('div', { className: 'w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden' },
               h('div', {
                 className: 'h-full bg-emerald-500 rounded-full transition-all',
@@ -5041,8 +5041,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             ),
             h('p', { className: 'text-[11px] text-slate-600 mt-1' },
               quizTotal > 0
-                ? Math.round((quizCorrect / quizTotal) * 100) + '% correct (' + quizCorrect + '/' + quizTotal + ')'
-                : 'Answer questions to track your progress'
+                ? Math.round((quizCorrect / quizTotal) * 100) + __alloT('stem.ecosystem.percent_correct_mid', '% correct (') + quizCorrect + '/' + quizTotal + ')'
+                : __alloT('stem.ecosystem.answer_to_track', 'Answer questions to track your progress')
             )
           )
         ),
@@ -5050,7 +5050,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         // ═══ BADGES TAB (14 badges) ═══
         tab === 'badges' && h('div', { className: 'space-y-2' },
           h('p', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200' },
-            '\uD83C\uDFC5 Badges Earned: ' + badgeCount + ' / ' + BADGES.length
+            '\uD83C\uDFC5 ' + __alloT('stem.ecosystem.badges_earned', 'Badges Earned: ') + badgeCount + ' / ' + BADGES.length
           ),
           h('div', { className: 'w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-2' },
             h('div', {
@@ -5072,7 +5072,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('div', null,
                   h('p', { className: 'text-[11px] font-bold ' + (earned ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-300') }, b.label),
                   h('p', { className: 'text-[11px] text-slate-600' }, __alloT('stem.ecosystem.' + (b.id) + '_desc', b.desc)),
-                  earned && h('span', { className: 'text-[11px] text-emerald-700 dark:text-emerald-400 font-bold' }, '\u2714 EARNED')
+                  earned && h('span', { className: 'text-[11px] text-emerald-700 dark:text-emerald-400 font-bold' }, '\u2714 ' + __alloT('stem.ecosystem.earned', 'EARNED'))
                 )
               );
             })
@@ -5081,13 +5081,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
         // ── Keyboard shortcuts (updated) ──
         h('div', { className: 'text-[11px] text-slate-600 text-center space-x-3' },
-          h('span', null, 'E Explore'),
-          h('span', null, 'S Sandbox'),
-          h('span', null, 'C Conservation'),
-          h('span', null, 'Q Quiz'),
-          h('span', null, 'B Badges'),
-          h('span', null, 'R Simulate'),
-          h('span', null, 'P Pause'),
+          h('span', null, 'E ' + __alloT('stem.ecosystem.explore', 'Explore')),
+          h('span', null, 'S ' + __alloT('stem.ecosystem.sandbox', 'Sandbox')),
+          h('span', null, 'C ' + __alloT('stem.ecosystem.conservation', 'Conservation')),
+          h('span', null, 'Q ' + __alloT('stem.ecosystem.quiz', 'Quiz')),
+          h('span', null, 'B ' + __alloT('stem.ecosystem.badges', 'Badges')),
+          h('span', null, 'R ' + __alloT('stem.ecosystem.simulate', 'Simulate')),
+          h('span', null, 'P ' + __alloT('stem.ecosystem.pause', 'Pause')),
           h('span', null, '? AI')
         ),
 
