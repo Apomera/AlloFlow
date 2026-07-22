@@ -13,7 +13,9 @@ describe('Student Analytics sortable column headers', () => {
 
   it('uses native target-sized buttons instead of click-only table headers', () => {
     expect(source.match(/onClick: \(\) => handleSort\(col\.key\)/g)).toHaveLength(2);
-    expect(source.match(/min-h-11/g)).toHaveLength(2);
+    const sortButtons = [...source.matchAll(/type: \"button\",\s+onClick: \(\) => handleSort\(col\.key\),\s+className: ([^\n]+)/g)];
+    expect(sortButtons).toHaveLength(2);
+    for (const match of sortButtons) expect(match[1]).toContain('min-h-11');
     const headerProps = [...source.matchAll(/React\.createElement\("th", \{([\s\S]*?)\}, (?:\/\*#__PURE__\*\/)?React\.createElement\("button"/g)];
     expect(headerProps).toHaveLength(2);
     for (const match of headerProps) expect(match[1]).not.toContain('onClick');

@@ -6670,13 +6670,17 @@
       onClick: () => handleSort(col.key),
       className: `w-full min-h-11 p-2 inline-flex items-center gap-1 ${col.align === 'left' ? 'justify-start text-left' : 'justify-center text-center'} hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 select-none transition-colors`,
       "aria-label": col.label + (sortColumn === col.key ? (sortDirection === 'asc' ? ', sorted ascending; activate to sort descending' : ', sorted descending; activate to sort ascending') : ', activate to sort ascending')
-    }, col.label, " ", sortColumn === col.key ? (sortDirection === 'asc' ? ' â–²' : ' â–¼') : ''))))), /*#__PURE__*/React.createElement("tbody", null, sortedAndFiltered.map(student => /*#__PURE__*/React.createElement("tr", {
+    }, col.label, " ", sortColumn === col.key ? (sortDirection === 'asc' ? '\u25B2' : '\u25BC') : ''))))), /*#__PURE__*/React.createElement("tbody", null, sortedAndFiltered.map(student => /*#__PURE__*/React.createElement("tr", {
       key: student.id,
-      "data-help-key": "dashboard_student_row",
-      className: "border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors",
-      onClick: () => setSelectedStudent(student)
+      className: "border-b border-slate-100 hover:bg-slate-50 transition-colors"
     }, /*#__PURE__*/React.createElement("td", {
-      className: "p-2 font-medium"
+      className: "p-2"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-help-key": "dashboard_student_row",
+      onClick: () => setSelectedStudent(student),
+      className: "min-h-11 w-full inline-flex items-center text-left font-medium text-indigo-700 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 rounded",
+      "aria-label": "View details for " + student.name
     }, student.isLive && /*#__PURE__*/React.createElement("span", {
       title: t('common.live_sync'),
       style: {
@@ -6684,7 +6688,7 @@
         marginRight: '4px',
         verticalAlign: 'middle'
       }
-    }, "\uD83D\uDCE1"), student.name), /*#__PURE__*/React.createElement("td", {
+    }, "\uD83D\uDCE1"), student.name)), /*#__PURE__*/React.createElement("td", {
       className: "p-2 text-center"
     }, (() => {
       const rti = classifyRTITier(student.stats);
@@ -8062,7 +8066,7 @@
                   onClick: () => handleSort(col.key),
                   className: "w-full min-h-11 p-2 inline-flex items-center gap-1 " + (col.align === 'left' ? 'justify-start text-left' : 'justify-center text-center') + " hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 select-none transition-colors",
                   "aria-label": col.label + (sortColumn === col.key ? (sortDirection === 'asc' ? ', sorted ascending; activate to sort descending' : ', sorted descending; activate to sort ascending') : ', activate to sort ascending')
-                }, col.label, " ", sortColumn === col.key ? (sortDirection === 'asc' ? 'â–²' : 'â–¼') : '')))
+                }, col.label, " ", sortColumn === col.key ? (sortDirection === 'asc' ? '\u25B2' : '\u25BC') : '')))
               )
             ),
             React.createElement("tbody", null,
@@ -8070,13 +8074,14 @@
                 const rti = classifyRTITier(student.stats);
                 return React.createElement("tr", {
                   key: student.id,
-                  className: "border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors",
-                  tabIndex: 0,
-                  "aria-label": 'View detail profile for ' + student.name,
-                  onClick: () => { setSelectedStudent(student); setAssessmentCenterTab('assessments'); },
-                  onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedStudent(student); setAssessmentCenterTab('assessments'); } }
+                  className: "border-b border-slate-100 hover:bg-slate-50 transition-colors"
                 },
-                  React.createElement("td", { className: "p-2 font-medium text-slate-700" }, student.name),
+                  React.createElement("td", { className: "p-2" }, React.createElement("button", {
+                    type: "button",
+                    onClick: () => { setSelectedStudent(student); setAssessmentCenterTab('assessments'); },
+                    className: "min-h-11 w-full inline-flex items-center text-left font-medium text-indigo-700 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 rounded",
+                    "aria-label": 'View detail profile for ' + student.name
+                  }, student.name)),
                   React.createElement("td", { className: "p-2 text-center", title: rti.label, "aria-label": rti.label }, rti.emoji + ' ' + (typeof rti.tier === 'number' ? rti.tier : '')),
                   React.createElement("td", { className: "p-2 text-center" }, student.stats.quizAvg > 0 ? Math.round(student.stats.quizAvg) + '%' : '—'),
                   React.createElement("td", { className: "p-2 text-center" }, student.stats.fluencyWCPM > 0 ? student.stats.fluencyWCPM : '—'),
