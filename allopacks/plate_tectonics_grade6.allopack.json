@@ -303,9 +303,9 @@
             "type": "mcq",
             "question": "About how fast do tectonic plates move?",
             "options": [
-              "Several meters a day",
-              "Only during earthquakes, then not at all",
-              "About one kilometer per year",
+              "Several meters every single day, fast enough to feel",
+              "Only in sudden jumps during earthquakes, staying still between them",
+              "Around one full kilometer every year",
               "A few centimeters a year — about as fast as fingernails grow"
             ],
             "correctAnswer": "A few centimeters a year — about as fast as fingernails grow",

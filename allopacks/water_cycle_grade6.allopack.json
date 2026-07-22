@@ -266,9 +266,9 @@
             "type": "mcq",
             "question": "A puddle disappears on a sunny day. What actually happened to the water?",
             "options": [
-              "It soaked completely into the concrete",
-              "The Sun destroyed the water",
-              "It turned into oxygen",
+              "It soaked down into the concrete and stayed there as liquid",
+              "The Sun's heat destroyed the water completely",
+              "It broke apart into oxygen and hydrogen gas",
               "It changed into water vapor and mixed into the air"
             ],
             "correctAnswer": "It changed into water vapor and mixed into the air",
@@ -315,9 +315,9 @@
             "question": "About how old is the water you drank today?",
             "options": [
               "About four billion years — Earth keeps recycling the same water",
-              "Brand new — rain makes fresh water from nothing",
-              "About one hundred years old",
-              "As old as the pipes it traveled through"
+              "Brand new, because rain creates fresh water each storm",
+              "Only a few hundred years old, recycled since colonial times",
+              "As old as the treatment plant that cleaned it"
             ],
             "correctAnswer": "About four billion years — Earth keeps recycling the same water",
             "conceptLabel": "water conservation cycle"

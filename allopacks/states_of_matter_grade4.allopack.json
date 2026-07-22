@@ -282,9 +282,9 @@
             "question": "You see a white cloud above a boiling pot. What is it?",
             "options": [
               "Tiny liquid droplets that formed when hot vapor cooled",
-              "Pure water vapor, which is white",
-              "Smoke from the heat of the burner",
-              "Air being pushed out of the pot"
+              "Pure water vapor, which is naturally cloudy and white",
+              "Smoke rising from the hot metal of the pot",
+              "Ordinary air being pushed up and out of the pot"
             ],
             "correctAnswer": "Tiny liquid droplets that formed when hot vapor cooled",
             "conceptLabel": "steam misconception"
@@ -293,10 +293,10 @@
             "type": "mcq",
             "question": "An ice cube melts completely in a sealed container. What happens to its mass?",
             "options": [
-              "It gets lighter because ice is heavier",
+              "It gets lighter, because solid ice weighs more than liquid water",
               "It stays exactly the same",
               "It gets heavier because water is denser",
-              "The mass disappears with the shape"
+              "The mass disappears along with the ice cube's shape"
             ],
             "correctAnswer": "It stays exactly the same",
             "conceptLabel": "conservation of matter"

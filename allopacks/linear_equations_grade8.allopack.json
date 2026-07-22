@@ -399,10 +399,10 @@
             "type": "mcq",
             "question": "In y = mx + b, what does b represent?",
             "options": [
-              "The steepness of the line",
-              "How far the line goes to the right",
+              "How steep the line rises across the graph",
+              "How far the line extends to the right side",
               "The y-intercept — the value of y when x is zero",
-              "Always zero"
+              "The value zero, in every linear equation"
             ],
             "correctAnswer": "The y-intercept — the value of y when x is zero",
             "conceptLabel": "meaning of b"

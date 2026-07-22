@@ -262,9 +262,9 @@
             "type": "mcq",
             "question": "A plant is kept in a dark closet with plenty of water. What happens?",
             "options": [
-              "It grows faster because it is resting",
-              "It turns bright green and healthy",
-              "Nothing changes at all",
+              "It grows faster in the dark because it is resting",
+              "It turns a brighter, healthier green in the dark",
+              "Nothing changes at all as long as it has water",
               "It grows pale and weak because it cannot make food without light"
             ],
             "correctAnswer": "It grows pale and weak because it cannot make food without light",
@@ -275,9 +275,9 @@
             "question": "How does a plant get its food?",
             "options": [
               "It makes its own food using sunlight, water, and air",
-              "It eats bugs from the soil",
+              "It eats tiny bugs and bits from the soil",
               "It drinks food through its roots like a straw",
-              "It does not need food"
+              "It does not need any food to stay alive"
             ],
             "correctAnswer": "It makes its own food using sunlight, water, and air",
             "conceptLabel": "plants make food"

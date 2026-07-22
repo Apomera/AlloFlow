@@ -312,9 +312,9 @@
             "type": "mcq",
             "question": "Why is pushing a heavy box up a ramp easier than lifting it straight up?",
             "options": [
-              "The box weighs less on a ramp",
-              "Ramps remove friction completely",
-              "Gravity does not act on ramps",
+              "The box actually weighs less once it is on a ramp",
+              "Ramps work by removing friction from the surface entirely",
+              "Gravity stops pulling on objects that sit on a ramp",
               "You use less force, but you travel a longer distance"
             ],
             "correctAnswer": "You use less force, but you travel a longer distance",
@@ -325,9 +325,9 @@
             "question": "A machine lets you lift a load using half the force. What does it cost you?",
             "options": [
               "You must move roughly twice the distance",
-              "Nothing — machines give free strength",
-              "The load becomes twice as heavy",
-              "You must work twice as fast"
+              "Nothing at all, because machines add strength for free",
+              "The load you are lifting becomes twice as heavy",
+              "You must move the load twice as quickly to make up for it"
             ],
             "correctAnswer": "You must move roughly twice the distance",
             "conceptLabel": "force distance trade"
@@ -336,10 +336,10 @@
             "type": "mcq",
             "question": "What does friction do in every real machine?",
             "options": [
-              "Increases the total work the machine can do",
-              "Only matters in machines with wheels",
+              "Adds extra energy that increases the machine's total work",
+              "It only matters in machines that use wheels or axles",
               "Turns some of your effort into heat, so a little is always lost",
-              "Makes machines completely stop working"
+              "Builds up until it makes the machine stop working entirely"
             ],
             "correctAnswer": "Turns some of your effort into heat, so a little is always lost",
             "conceptLabel": "friction cost"

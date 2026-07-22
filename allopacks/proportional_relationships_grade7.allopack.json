@@ -375,9 +375,9 @@
             "type": "mcq",
             "question": "What is the test for whether a relationship is proportional?",
             "options": [
-              "The numbers always go up",
+              "The output numbers always increase as the input grows",
               "The two quantities are measured in the same units",
-              "One quantity is always larger than the other",
+              "One quantity always stays larger than the other one",
               "Output divided by input is the same for every pair"
             ],
             "correctAnswer": "Output divided by input is the same for every pair",
@@ -399,10 +399,10 @@
             "type": "mcq",
             "question": "A proportional relationship, graphed, always looks like what?",
             "options": [
-              "A curve that bends upward",
+              "A curve that bends steadily upward from left to right",
               "A straight line passing through the origin (0, 0)",
               "A straight line crossing the y-axis above zero",
-              "A horizontal line"
+              "A flat horizontal line across the graph"
             ],
             "correctAnswer": "A straight line passing through the origin (0, 0)",
             "conceptLabel": "proportional graphs"
@@ -424,9 +424,9 @@
             "question": "Why is y = 3x + 2 NOT a proportional relationship?",
             "options": [
               "When x is 0, y is 2, not 0 — it does not pass through the origin",
-              "Because it uses the letter x",
-              "Because 3 is an odd number",
-              "It actually is proportional"
+              "Because the equation contains the variable x",
+              "Because the slope 3 is an odd number",
+              "It actually is proportional, just written differently"
             ],
             "correctAnswer": "When x is 0, y is 2, not 0 — it does not pass through the origin",
             "conceptLabel": "why not proportional"

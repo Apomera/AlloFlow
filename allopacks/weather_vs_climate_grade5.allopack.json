@@ -242,10 +242,10 @@
             "type": "mcq",
             "question": "A single record-breaking heat wave happens. What does it prove about climate on its own?",
             "options": [
-              "It proves the climate has changed permanently",
+              "It proves on its own that the climate has permanently changed",
               "Very little — scientists look for changes in frequency and intensity over decades",
-              "It proves climate scientists were wrong",
-              "It proves nothing about weather either"
+              "It proves that climate scientists had been wrong all along",
+              "It proves nothing about the weather that week either"
             ],
             "correctAnswer": "Very little — scientists look for changes in frequency and intensity over decades",
             "conceptLabel": "single event vs pattern"

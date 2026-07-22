@@ -240,9 +240,9 @@
             "type": "mcq",
             "question": "What is the difference between a topic and a main idea?",
             "options": [
-              "A topic is longer than a main idea",
-              "A topic is always in the first sentence",
-              "There is no real difference",
+              "A topic is always longer and more detailed than a main idea",
+              "A topic always appears in the very first sentence of a text",
+              "There is no real difference between the two terms",
               "A topic is a word or phrase; a main idea is a full sentence about that topic"
             ],
             "correctAnswer": "A topic is a word or phrase; a main idea is a full sentence about that topic",
@@ -253,8 +253,8 @@
             "question": "Read: 'Sea otters eat sea urchins. Urchins eat kelp. Where otters were hunted out, urchins multiplied and kelp forests vanished. Where otters returned, kelp grew back.' What is the main idea?",
             "options": [
               "Sea otters protect kelp forests by keeping urchin numbers down",
-              "Sea urchins eat kelp",
-              "Sea otters were once hunted",
+              "Sea urchins eat kelp along the ocean floor",
+              "Sea otters were once hunted along the coast",
               "Kelp forests are found in the ocean"
             ],
             "correctAnswer": "Sea otters protect kelp forests by keeping urchin numbers down",
@@ -289,9 +289,9 @@
             "question": "Which of these is a MAIN IDEA rather than a topic?",
             "options": [
               "Volcanoes can create new land over time",
-              "Volcanoes",
-              "Lava and ash",
-              "Mount St. Helens"
+              "Volcanoes and the lava inside them",
+              "The lava and ash a volcano produces",
+              "The eruption of Mount St. Helens"
             ],
             "correctAnswer": "Volcanoes can create new land over time",
             "conceptLabel": "topic vs main idea"
