@@ -43,6 +43,13 @@ describe('Plate Tectonics boundary evidence simulator', () => {
     expect(source).not.toContain('most earthquakes fire here');
   });
 
+  it('keeps persistent evidence text at ten pixels or larger', () => {
+    const source = readFileSync(PATHS[0], 'utf8');
+    expect(source).not.toMatch(/text-\[(?:[0-9])px\]/);
+    expect(source).not.toMatch(/fontSize:\s*(?:[0-9](?:\.[0-9]+)?)\b/);
+    expect(source).toContain('text-[10px] font-bold uppercase');
+  });
+
   it('keeps source and public mirror identical', () => {
     expect(readFileSync(PATHS[1], 'utf8')).toBe(readFileSync(PATHS[0], 'utf8'));
   });

@@ -1162,7 +1162,7 @@
           ['Volcanism clue', evidence.volcanoes]
         ].map(function(item) {
           return h('div', { key: item[0], className: 'border-l-2 border-cyan-500 pl-2 py-1' },
-            h('span', { className: 'block text-[9px] font-bold uppercase ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, item[0]),
+            h('span', { className: 'block text-[10px] font-bold uppercase ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, item[0]),
             h('strong', { className: 'block text-[11px] leading-snug ' + (isDark ? 'text-slate-100' : 'text-slate-800') }, item[1])
           );
         })
