@@ -5396,10 +5396,15 @@
       className: "text-xs text-red-500 hover:text-red-700 font-bold"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-6"
-    }, /*#__PURE__*/React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
+    }, /*#__PURE__*/React.createElement("div", { role: "progressbar",
+      "aria-label": "NWF item progress",
+      "aria-valuemin": 0,
+      "aria-valuemax": 100,
+      "aria-valuenow": Math.round(nwfProbeIndex / Math.max(nwfProbeWords.length, 1) * 100),
+      "aria-valuetext": "Item " + Math.min(nwfProbeIndex + 1, nwfProbeWords.length) + " of " + nwfProbeWords.length,
       className: "bg-emerald-500 h-2 rounded-full transition-all",
       style: {
-        width: `${nwfProbeIndex / nwfProbeWords.length * 100}%`
+        width: `${nwfProbeIndex / Math.max(nwfProbeWords.length, 1) * 100}%`
       }
     })), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 mb-3 font-semibold uppercase tracking-wider text-center"
@@ -5572,10 +5577,15 @@
       className: "text-xs text-red-500 hover:text-red-700 font-bold"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-4"
-    }, /*#__PURE__*/React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
+    }, /*#__PURE__*/React.createElement("div", { role: "progressbar",
+      "aria-label": "LNF item progress",
+      "aria-valuemin": 0,
+      "aria-valuemax": 100,
+      "aria-valuenow": Math.round(lnfProbeIndex / Math.max(lnfProbeLetters.length, 1) * 100),
+      "aria-valuetext": "Item " + Math.min(lnfProbeIndex + 1, lnfProbeLetters.length) + " of " + lnfProbeLetters.length,
       className: "bg-blue-500 h-2 rounded-full transition-all",
       style: {
-        width: `${lnfProbeIndex / lnfProbeLetters.length * 100}%`
+        width: `${lnfProbeIndex / Math.max(lnfProbeLetters.length, 1) * 100}%`
       }
     })), lnfProbeTimer > 0 && lnfProbeIndex < lnfProbeLetters.length ? (() => {
       const markLetter = isCorrect => {
@@ -5741,10 +5751,15 @@
       className: "text-xs text-red-500 hover:text-red-700 font-bold"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-4"
-    }, /*#__PURE__*/React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
+    }, /*#__PURE__*/React.createElement("div", { role: "progressbar",
+      "aria-label": "RAN item progress",
+      "aria-valuemin": 0,
+      "aria-valuemax": 100,
+      "aria-valuenow": Math.round(ranProbeIndex / Math.max(ranProbeItems.length, 1) * 100),
+      "aria-valuetext": "Item " + Math.min(ranProbeIndex + 1, ranProbeItems.length) + " of " + ranProbeItems.length,
       className: "bg-amber-500 h-2 rounded-full transition-all",
       style: {
-        width: `${ranProbeIndex / ranProbeItems.length * 100}%`
+        width: `${ranProbeIndex / Math.max(ranProbeItems.length, 1) * 100}%`
       }
     })), ranProbeIndex < ranProbeItems.length ? (() => {
       const colorMap = {
@@ -6179,10 +6194,15 @@
       className: "text-xs text-red-500 hover:text-red-700 font-bold"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-4"
-    }, /*#__PURE__*/React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
+    }, /*#__PURE__*/React.createElement("div", { role: "progressbar",
+      "aria-label": "Missing Number item progress",
+      "aria-valuemin": 0,
+      "aria-valuemax": 100,
+      "aria-valuenow": Math.round(mnProbeIndex / Math.max(mnProbeProblems.length, 1) * 100),
+      "aria-valuetext": "Item " + Math.min(mnProbeIndex + 1, mnProbeProblems.length) + " of " + mnProbeProblems.length,
       className: "bg-purple-500 h-2 rounded-full transition-all",
       style: {
-        width: `${mnProbeIndex / mnProbeProblems.length * 100}%`
+        width: `${mnProbeIndex / Math.max(mnProbeProblems.length, 1) * 100}%`
       }
     })), mnProbeTimer > 0 && mnProbeIndex < mnProbeProblems.length ? (() => {
       const problem = mnProbeProblems[mnProbeIndex];
@@ -6418,10 +6438,15 @@
       className: "text-xs text-red-500 hover:text-red-700 font-bold"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-4"
-    }, /*#__PURE__*/React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
+    }, /*#__PURE__*/React.createElement("div", { role: "progressbar",
+      "aria-label": "Quantity Discrimination item progress",
+      "aria-valuemin": 0,
+      "aria-valuemax": 100,
+      "aria-valuenow": Math.round(qdProbeIndex / Math.max(qdProbeProblems.length, 1) * 100),
+      "aria-valuetext": "Item " + Math.min(qdProbeIndex + 1, qdProbeProblems.length) + " of " + qdProbeProblems.length,
       className: "bg-cyan-500 h-2 rounded-full transition-all",
       style: {
-        width: `${qdProbeIndex / qdProbeProblems.length * 100}%`
+        width: `${qdProbeIndex / Math.max(qdProbeProblems.length, 1) * 100}%`
       }
     })), qdProbeTimer > 0 && qdProbeIndex < qdProbeProblems.length ? (() => {
       const problem = qdProbeProblems[qdProbeIndex];
