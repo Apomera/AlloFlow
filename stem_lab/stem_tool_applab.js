@@ -19082,7 +19082,7 @@ test('no a11y violations', async () => {
 
       // ── Styles ──
       var PURPLE = '#7c3aed';
-      var btn = function(bg, fg, dis) { return { padding: '8px 16px', background: dis ? '#e5e7eb' : bg, color: dis ? '#9ca3af' : fg, border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '12px', cursor: dis ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }; };
+      var btn = function(bg, fg, dis) { return { padding: '8px 16px', background: dis ? '#e5e7eb' : bg, color: dis ? '#4b5563' : fg, border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '12px', cursor: dis ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }; };
       var card = { background: '#fff', borderRadius: '14px', padding: '16px', border: '1px solid #e5e7eb', marginBottom: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' };
 
       // ── Tab system state ──
