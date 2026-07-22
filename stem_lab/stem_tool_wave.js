@@ -2750,38 +2750,38 @@ const d = labToolData.wave;
 
       // ── Reference data ──
       var WAVE_TYPES = [
-        { name: 'Transverse', icon: '⤴', desc: 'Particle motion perpendicular to wave direction. Crests + troughs.', examples: ['Light + all EM waves', 'String wave', 'Surface water waves (mostly)', 'S-waves in earthquakes'], speed: 'Varies by medium' },
-        { name: 'Longitudinal (compressional)', icon: '⤇', desc: 'Particle motion parallel to wave direction. Compressions + rarefactions.', examples: ['Sound waves in air', 'Slinky push-pull', 'P-waves in earthquakes', 'Ultrasound'], speed: '~343 m/s sound in air at 20°C' },
-        { name: 'Surface (Rayleigh)', icon: '〰', desc: 'Particles trace elliptical paths. Combines transverse + longitudinal.', examples: ['Ocean surface waves', 'Rayleigh waves in earthquakes'], speed: 'Depends on water depth + λ' },
-        { name: 'Electromagnetic', icon: '⚡', desc: 'Oscillating electric + magnetic fields. No medium needed (travel through vacuum).', examples: ['Visible light', 'Radio', 'X-rays', 'Microwaves', 'IR / UV'], speed: 'c = 3.0 × 10⁸ m/s in vacuum' },
-        { name: 'Matter waves (de Broglie)', icon: 'λ', desc: 'All matter has wave properties. λ = h/p. Observable for electrons + atoms.', examples: ['Electron diffraction', 'Neutron scattering', 'Atom interferometry'], speed: 'Particle velocity (not wave)' },
-        { name: 'Gravitational waves', icon: '⊕', desc: 'Ripples in spacetime from accelerating masses. First detected 2015 (LIGO).', examples: ['Black hole + neutron star mergers', 'Predicted by Einstein 1915'], speed: 'c (speed of light)' }
+        { name: __alloT('stem.wave.wt_transverse_name', 'Transverse'), icon: '⤴', desc: __alloT('stem.wave.wt_transverse_desc', 'Particle motion perpendicular to wave direction. Crests + troughs.'), examples: [__alloT('stem.wave.wt_transverse_ex1', 'Light + all EM waves'), __alloT('stem.wave.wt_transverse_ex2', 'String wave'), __alloT('stem.wave.wt_transverse_ex3', 'Surface water waves (mostly)'), __alloT('stem.wave.wt_transverse_ex4', 'S-waves in earthquakes')], speed: __alloT('stem.wave.wt_transverse_speed', 'Varies by medium') },
+        { name: __alloT('stem.wave.wt_longitudinal_name', 'Longitudinal (compressional)'), icon: '⤇', desc: __alloT('stem.wave.wt_longitudinal_desc', 'Particle motion parallel to wave direction. Compressions + rarefactions.'), examples: [__alloT('stem.wave.wt_longitudinal_ex1', 'Sound waves in air'), __alloT('stem.wave.wt_longitudinal_ex2', 'Slinky push-pull'), __alloT('stem.wave.wt_longitudinal_ex3', 'P-waves in earthquakes'), __alloT('stem.wave.wt_longitudinal_ex4', 'Ultrasound')], speed: __alloT('stem.wave.wt_longitudinal_speed', '~343 m/s sound in air at 20°C') },
+        { name: __alloT('stem.wave.wt_surface_name', 'Surface (Rayleigh)'), icon: '〰', desc: __alloT('stem.wave.wt_surface_desc', 'Particles trace elliptical paths. Combines transverse + longitudinal.'), examples: [__alloT('stem.wave.wt_surface_ex1', 'Ocean surface waves'), __alloT('stem.wave.wt_surface_ex2', 'Rayleigh waves in earthquakes')], speed: __alloT('stem.wave.wt_surface_speed', 'Depends on water depth + λ') },
+        { name: __alloT('stem.wave.wt_em_name', 'Electromagnetic'), icon: '⚡', desc: __alloT('stem.wave.wt_em_desc', 'Oscillating electric + magnetic fields. No medium needed (travel through vacuum).'), examples: [__alloT('stem.wave.wt_em_ex1', 'Visible light'), __alloT('stem.wave.wt_em_ex2', 'Radio'), __alloT('stem.wave.wt_em_ex3', 'X-rays'), __alloT('stem.wave.wt_em_ex4', 'Microwaves'), __alloT('stem.wave.wt_em_ex5', 'IR / UV')], speed: __alloT('stem.wave.wt_em_speed', 'c = 3.0 × 10⁸ m/s in vacuum') },
+        { name: __alloT('stem.wave.wt_matter_name', 'Matter waves (de Broglie)'), icon: 'λ', desc: __alloT('stem.wave.wt_matter_desc', 'All matter has wave properties. λ = h/p. Observable for electrons + atoms.'), examples: [__alloT('stem.wave.wt_matter_ex1', 'Electron diffraction'), __alloT('stem.wave.wt_matter_ex2', 'Neutron scattering'), __alloT('stem.wave.wt_matter_ex3', 'Atom interferometry')], speed: __alloT('stem.wave.wt_matter_speed', 'Particle velocity (not wave)') },
+        { name: __alloT('stem.wave.wt_gravitational_name', 'Gravitational waves'), icon: '⊕', desc: __alloT('stem.wave.wt_gravitational_desc', 'Ripples in spacetime from accelerating masses. First detected 2015 (LIGO).'), examples: [__alloT('stem.wave.wt_gravitational_ex1', 'Black hole + neutron star mergers'), __alloT('stem.wave.wt_gravitational_ex2', 'Predicted by Einstein 1915')], speed: __alloT('stem.wave.wt_gravitational_speed', 'c (speed of light)') }
       ];
 
       var WAVE_QUANTITIES = [
-        { sym: 'λ', name: 'Wavelength', units: 'm (meters)', def: 'Distance between two successive crests (or troughs). Crest-to-crest.' },
-        { sym: 'f', name: 'Frequency', units: 'Hz (1/s)', def: 'Cycles per second. How many wave peaks pass a point per second.' },
-        { sym: 'T', name: 'Period', units: 's (seconds)', def: 'Time for one complete cycle. T = 1/f.' },
-        { sym: 'A', name: 'Amplitude', units: 'm (or whatever the wave displaces)', def: 'Maximum displacement from equilibrium. Carries energy; intensity ∝ A².' },
-        { sym: 'v', name: 'Wave speed', units: 'm/s', def: 'How fast the wave moves through the medium. v = fλ.' },
-        { sym: 'k', name: 'Wave number', units: '1/m (or rad/m)', def: 'k = 2π/λ. Spatial frequency. Useful in y = A·sin(kx − ωt).' },
-        { sym: 'ω', name: 'Angular frequency', units: 'rad/s', def: 'ω = 2πf. Used in trigonometric wave equations.' },
-        { sym: 'φ', name: 'Phase', units: 'rad (or degrees)', def: 'Position within a cycle. Two waves in phase: peaks align (constructive); out of phase by π: peaks meet troughs (destructive).' }
+        { sym: 'λ', name: __alloT('stem.wave.wq_wavelength_name', 'Wavelength'), units: __alloT('stem.wave.wq_wavelength_units', 'm (meters)'), def: __alloT('stem.wave.wq_wavelength_def', 'Distance between two successive crests (or troughs). Crest-to-crest.') },
+        { sym: 'f', name: __alloT('stem.wave.wq_frequency_name', 'Frequency'), units: __alloT('stem.wave.wq_frequency_units', 'Hz (1/s)'), def: __alloT('stem.wave.wq_frequency_def', 'Cycles per second. How many wave peaks pass a point per second.') },
+        { sym: 'T', name: __alloT('stem.wave.wq_period_name', 'Period'), units: __alloT('stem.wave.wq_period_units', 's (seconds)'), def: __alloT('stem.wave.wq_period_def', 'Time for one complete cycle. T = 1/f.') },
+        { sym: 'A', name: __alloT('stem.wave.wq_amplitude_name', 'Amplitude'), units: __alloT('stem.wave.wq_amplitude_units', 'm (or whatever the wave displaces)'), def: __alloT('stem.wave.wq_amplitude_def', 'Maximum displacement from equilibrium. Carries energy; intensity ∝ A².') },
+        { sym: 'v', name: __alloT('stem.wave.wq_wavespeed_name', 'Wave speed'), units: 'm/s', def: __alloT('stem.wave.wq_wavespeed_def', 'How fast the wave moves through the medium. v = fλ.') },
+        { sym: 'k', name: __alloT('stem.wave.wq_wavenumber_name', 'Wave number'), units: __alloT('stem.wave.wq_wavenumber_units', '1/m (or rad/m)'), def: __alloT('stem.wave.wq_wavenumber_def', 'k = 2π/λ. Spatial frequency. Useful in y = A·sin(kx − ωt).') },
+        { sym: 'ω', name: __alloT('stem.wave.wq_angfreq_name', 'Angular frequency'), units: 'rad/s', def: __alloT('stem.wave.wq_angfreq_def', 'ω = 2πf. Used in trigonometric wave equations.') },
+        { sym: 'φ', name: __alloT('stem.wave.wq_phase_name', 'Phase'), units: __alloT('stem.wave.wq_phase_units', 'rad (or degrees)'), def: __alloT('stem.wave.wq_phase_def', 'Position within a cycle. Two waves in phase: peaks align (constructive); out of phase by π: peaks meet troughs (destructive).') }
       ];
 
       var INTERFERENCE_PATTERNS = [
-        { type: 'Constructive', icon: '+', condition: 'Δφ = 0, 2π, 4π... (path diff = mλ)', result: 'Amplitudes ADD. Bright fringe (light), loud point (sound), large displacement.' },
-        { type: 'Destructive', icon: '−', condition: 'Δφ = π, 3π, 5π... (path diff = (m+½)λ)', result: 'Amplitudes CANCEL. Dark fringe, quiet point, no displacement.' },
-        { type: 'Partial', icon: '~', condition: 'Other Δφ values', result: 'Partial reinforcement or cancellation. Wave appears with intermediate amplitude.' }
+        { type: __alloT('stem.wave.ip_constructive_type', 'Constructive'), icon: '+', condition: 'Δφ = 0, 2π, 4π... (path diff = mλ)', result: __alloT('stem.wave.ip_constructive_result', 'Amplitudes ADD. Bright fringe (light), loud point (sound), large displacement.') },
+        { type: __alloT('stem.wave.ip_destructive_type', 'Destructive'), icon: '−', condition: 'Δφ = π, 3π, 5π... (path diff = (m+½)λ)', result: __alloT('stem.wave.ip_destructive_result', 'Amplitudes CANCEL. Dark fringe, quiet point, no displacement.') },
+        { type: __alloT('stem.wave.ip_partial_type', 'Partial'), icon: '~', condition: 'Other Δφ values', result: __alloT('stem.wave.ip_partial_result', 'Partial reinforcement or cancellation. Wave appears with intermediate amplitude.') }
       ];
 
       var DOPPLER_CASES = [
-        { case: 'Source moving toward you', effect: 'f observed > f emitted', detail: 'Wavefronts bunch up in front. Higher pitch (sound) / blueshift (light).' },
-        { case: 'Source moving away', effect: 'f observed < f emitted', detail: 'Wavefronts spread out behind. Lower pitch / redshift.' },
-        { case: 'Observer moving toward source', effect: 'f observed > f emitted', detail: 'You meet wavefronts faster. Higher apparent frequency.' },
-        { case: 'Observer moving away', effect: 'f observed < f emitted', detail: 'Wavefronts catch up to you slower.' },
-        { case: 'Both moving same direction, same speed', effect: 'No Doppler shift', detail: 'Relative velocity zero between source + observer.' },
-        { case: 'Source at sound barrier (v_source ≥ v_sound)', effect: 'Sonic boom (Mach cone)', detail: 'Wavefronts stack on top of each other. Cone of compression follows the source.' }
+        { case: __alloT('stem.wave.dc_toward_case', 'Source moving toward you'), effect: __alloT('stem.wave.dc_obs_higher', 'f observed > f emitted'), detail: __alloT('stem.wave.dc_toward_detail', 'Wavefronts bunch up in front. Higher pitch (sound) / blueshift (light).') },
+        { case: __alloT('stem.wave.dc_away_case', 'Source moving away'), effect: __alloT('stem.wave.dc_obs_lower', 'f observed < f emitted'), detail: __alloT('stem.wave.dc_away_detail', 'Wavefronts spread out behind. Lower pitch / redshift.') },
+        { case: __alloT('stem.wave.dc_obs_toward_case', 'Observer moving toward source'), effect: __alloT('stem.wave.dc_obs_higher', 'f observed > f emitted'), detail: __alloT('stem.wave.dc_obs_toward_detail', 'You meet wavefronts faster. Higher apparent frequency.') },
+        { case: __alloT('stem.wave.dc_obs_away_case', 'Observer moving away'), effect: __alloT('stem.wave.dc_obs_lower', 'f observed < f emitted'), detail: __alloT('stem.wave.dc_obs_away_detail', 'Wavefronts catch up to you slower.') },
+        { case: __alloT('stem.wave.dc_both_case', 'Both moving same direction, same speed'), effect: __alloT('stem.wave.dc_no_shift', 'No Doppler shift'), detail: __alloT('stem.wave.dc_both_detail', 'Relative velocity zero between source + observer.') },
+        { case: __alloT('stem.wave.dc_barrier_case', 'Source at sound barrier (v_source ≥ v_sound)'), effect: __alloT('stem.wave.dc_sonic_boom', 'Sonic boom (Mach cone)'), detail: __alloT('stem.wave.dc_barrier_detail', 'Wavefronts stack on top of each other. Cone of compression follows the source.') }
       ];
 
       var EM_SPECTRUM = [
