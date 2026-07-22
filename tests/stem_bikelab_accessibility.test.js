@@ -41,4 +41,13 @@ describe('Bike Lab accessibility', () => {
     expect(text).toContain("sliderRow('bikelab-strap-angle'");
     expect(text).toContain("sliderRow('bikelab-chin-slack'");
   });
+
+  it('provides a semantic subview heading and a described, keyboard-discoverable ride canvas', () => {
+    const text = source();
+    expect(text).toContain("h('h1', { className: 'font-black text-slate-800 text-lg' }, props.title)");
+    expect(text).toContain("id: 'bikelab-ride-canvas-description', className: 'sr-only'");
+    expect(text).toContain("role: 'img', tabIndex: 0, 'data-bikelab-canvas': 'true'");
+    expect(text).toContain("'aria-describedby': 'bikelab-ride-canvas-description'");
+    expect(text).toContain('focus-visible:ring-4 focus-visible:ring-cyan-300');
+  });
 });

@@ -558,7 +558,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           }, h('span', null, '←'), t('stem.bikelab.bikelab_menu', ' BikeLab Menu')),
           h('div', { className: 'flex items-center gap-2' },
             h('span', { className: 'text-2xl' }, props.icon),
-            h('span', { className: 'font-black text-slate-800 text-lg' }, props.title)
+            h('h1', { className: 'font-black text-slate-800 text-lg' }, props.title)
           )
         );
       }
@@ -1515,7 +1515,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 )
               ),
               h('div', { id: 'bikelab-sandbox-fs', className: 'bikelab-canvas-shell bg-slate-900 rounded-xl overflow-hidden shadow-xl border border-slate-800', 'data-bikelab-sim-surface': 'true', style: { position: 'relative' } },
-                h('canvas', { ref: canvasRef, width: 900, height: 440, className: 'w-full block', role: 'img', 'data-bikelab-canvas': 'true', style: { borderRadius: 12, border: '1px solid rgba(148,163,184,0.26)', boxShadow: 'inset 0 0 44px rgba(14,165,233,0.08)' }, 'aria-label': t('stem.bikelab.physics_sandbox_simulation_bicycle_on_', 'Physics sandbox simulation: bicycle on terrain with live force vectors (gravity, drag, rolling resistance, propulsion) and energy graphs.') }),
+                h('p', { id: 'bikelab-ride-canvas-description', className: 'sr-only' }, 'Live physics ride for ' + bike.name + ' on ' + terrain.name + '. Current speed ' + mph.toFixed(1) + ' miles per hour. The graphic shows terrain, force vectors, and energy. Use the nearby Bike, Terrain, Rider Power, Gear Ratio, Wind, Rider Mass, Start or Pause, and Reset controls to change the simulation.'),
+                h('canvas', { ref: canvasRef, width: 900, height: 440, className: 'w-full block focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-300', role: 'img', tabIndex: 0, 'data-bikelab-canvas': 'true', style: { borderRadius: 12, border: '1px solid rgba(148,163,184,0.26)', boxShadow: 'inset 0 0 44px rgba(14,165,233,0.08)' }, 'aria-label': t('stem.bikelab.physics_sandbox_simulation_bicycle_on_', 'Physics sandbox simulation: bicycle on terrain with live force vectors (gravity, drag, rolling resistance, propulsion) and energy graphs.'), 'aria-describedby': 'bikelab-ride-canvas-description' }),
                 // Fullscreen toggle (top-right)
                 h('button', {
                   'aria-label': t('stem.bikelab.toggle_fullscreen_for_the_physics_sand', 'Toggle fullscreen for the physics sandbox'),
