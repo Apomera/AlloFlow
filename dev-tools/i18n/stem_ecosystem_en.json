@@ -1,1 +1,17 @@
-{}
+{
+  "aria_pop_traj_pre": "Predator and prey population trajectories over ",
+  "aria_modeled_time_steps": " modeled time steps.",
+  "axis_time_steps": "Time Steps",
+  "axis_population": "Population",
+  "aria_phase_portrait_pre": "Phase portrait of predator abundance versus prey abundance across ",
+  "axis_prey_population": "Prey Population",
+  "axis_predator_population": "Predator Population",
+  "cycles_label": "Cycles: ",
+  "peak_prey_label": "Peak Prey: ",
+  "peak_pred_label": "Peak Pred: ",
+  "run_sim_env_data": "Run the canvas simulation to see environment data.",
+  "aria_veg_day_pre": "Vegetation-health and day-phase indices over ",
+  "aria_live_samples": " live samples.",
+  "axis_time": "Time",
+  "axis_level_0_1": "Level (0–1)"
+}

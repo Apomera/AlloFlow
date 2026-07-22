@@ -929,7 +929,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         // Carrying capacity dashed line
         var carryY = sy(carryingCapacity);
 
-        return h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', style: { maxHeight: 200 }, role: 'img', 'aria-label': 'Predator and prey population trajectories over ' + (data.length - 1) + ' modeled time steps.' },
+        return h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', style: { maxHeight: 200 }, role: 'img', 'aria-label': __alloT('stem.ecosystem.aria_pop_traj_pre', 'Predator and prey population trajectories over ') + (data.length - 1) + __alloT('stem.ecosystem.aria_modeled_time_steps', ' modeled time steps.') },
           h('defs', null,
             h('linearGradient', { id: 'eco-prey-grad', x1: '0', y1: '0', x2: '0', y2: '1' },
               h('stop', { offset: '0%', stopColor: '#22c55e', stopOpacity: 0.4 }),
@@ -965,8 +965,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           h('text', { x: sx(data.length - 1) + 6, y: sy(lastData.prey) + 3, fill: '#22c55e', fontSize: 11, fontWeight: 'bold' }, lastData.prey),
           h('text', { x: sx(data.length - 1) + 6, y: sy(lastData.pred) + 3, fill: '#ef4444', fontSize: 11, fontWeight: 'bold' }, lastData.pred),
           // Axis labels
-          h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, 'Time Steps'),
-          h('text', { x: 8, y: H / 2, textAnchor: 'middle', fill: '#94a3b8', fontSize: 11, transform: 'rotate(-90, 8, ' + (H / 2) + ')' }, 'Population')
+          h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, __alloT('stem.ecosystem.axis_time_steps', 'Time Steps')),
+          h('text', { x: 8, y: H / 2, textAnchor: 'middle', fill: '#94a3b8', fontSize: 11, transform: 'rotate(-90, 8, ' + (H / 2) + ')' }, __alloT('stem.ecosystem.axis_population', 'Population'))
         );
       };
 
@@ -1013,7 +1013,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         }
 
         return h('div', null,
-          h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', style: { maxHeight: 200 }, role: 'img', 'aria-label': 'Phase portrait of predator abundance versus prey abundance across ' + (data.length - 1) + ' modeled time steps.' },
+          h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', style: { maxHeight: 200 }, role: 'img', 'aria-label': __alloT('stem.ecosystem.aria_phase_portrait_pre', 'Phase portrait of predator abundance versus prey abundance across ') + (data.length - 1) + __alloT('stem.ecosystem.aria_modeled_time_steps', ' modeled time steps.') },
             phaseGrid,
             // Axes
             h('line', { x1: pad, y1: pad, x2: pad, y2: H - pad, stroke: '#475569', strokeWidth: 1 }),
@@ -1025,13 +1025,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             // End dot
             h('circle', { cx: sx(data[data.length - 1].prey), cy: sy(data[data.length - 1].pred), r: 5, fill: '#ef4444', stroke: '#fff', strokeWidth: 1 }),
             // Axis labels
-            h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, 'Prey Population'),
-            h('text', { x: 8, y: H / 2, textAnchor: 'middle', fill: '#94a3b8', fontSize: 11, transform: 'rotate(-90, 8, ' + (H / 2) + ')' }, 'Predator Population')
+            h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, __alloT('stem.ecosystem.axis_prey_population', 'Prey Population')),
+            h('text', { x: 8, y: H / 2, textAnchor: 'middle', fill: '#94a3b8', fontSize: 11, transform: 'rotate(-90, 8, ' + (H / 2) + ')' }, __alloT('stem.ecosystem.axis_predator_population', 'Predator Population'))
           ),
           h('div', { className: 'flex gap-3 text-xs text-slate-600 mt-1 justify-center' },
-            h('span', null, '\uD83D\uDD04 Cycles: ' + cycles),
-            h('span', null, '\uD83D\uDC07 Peak Prey: ' + peakPrey),
-            h('span', null, '\uD83E\uDD8A Peak Pred: ' + peakPred)
+            h('span', null, '\uD83D\uDD04 ' + __alloT('stem.ecosystem.cycles_label', 'Cycles: ') + cycles),
+            h('span', null, '\uD83D\uDC07 ' + __alloT('stem.ecosystem.peak_prey_label', 'Peak Prey: ') + peakPrey),
+            h('span', null, '\uD83E\uDD8A ' + __alloT('stem.ecosystem.peak_pred_label', 'Peak Pred: ') + peakPred)
           )
         );
       };
@@ -1039,7 +1039,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       // ── Environment graph (from livePopHistory) ──
       var buildEnvSVG = function() {
         var hist = livePopHistory;
-        if (!hist || hist.length < 2) return h('p', { className: 'text-xs text-slate-600 text-center py-4' }, 'Run the canvas simulation to see environment data.');
+        if (!hist || hist.length < 2) return h('p', { className: 'text-xs text-slate-600 text-center py-4' }, __alloT('stem.ecosystem.run_sim_env_data', 'Run the canvas simulation to see environment data.'));
         var sx = function(i) { return pad + (i / (hist.length - 1)) * (W - 2 * pad); };
         var sy = function(v) { return H - pad - v * (H - 2 * pad); };
 
@@ -1055,7 +1055,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         var lastVeg = hist[hist.length - 1].vegHealth !== undefined ? hist[hist.length - 1].vegHealth : 0.5;
         var lastDay = hist[hist.length - 1].dayPhase !== undefined ? hist[hist.length - 1].dayPhase : 0.5;
 
-        return h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', style: { maxHeight: 200 }, role: 'img', 'aria-label': 'Vegetation-health and day-phase indices over ' + hist.length + ' live samples.' },
+        return h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', style: { maxHeight: 200 }, role: 'img', 'aria-label': __alloT('stem.ecosystem.aria_veg_day_pre', 'Vegetation-health and day-phase indices over ') + hist.length + __alloT('stem.ecosystem.aria_live_samples', ' live samples.') },
           // Grid
           h('line', { x1: pad, y1: pad, x2: pad, y2: H - pad, stroke: '#334155', strokeWidth: 0.5 }),
           h('line', { x1: pad, y1: H - pad, x2: W - pad, y2: H - pad, stroke: '#334155', strokeWidth: 0.5 }),
@@ -1066,8 +1066,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           h('circle', { cx: sx(hist.length - 1), cy: sy(lastVeg), r: 4, fill: '#22c55e' }),
           h('circle', { cx: sx(hist.length - 1), cy: sy(lastDay), r: 4, fill: '#f59e0b' }),
           // Axis labels
-          h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, 'Time'),
-          h('text', { x: 8, y: H / 2, textAnchor: 'middle', fill: '#94a3b8', fontSize: 11, transform: 'rotate(-90, 8, ' + (H / 2) + ')' }, 'Level (0\u20131)')
+          h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, __alloT('stem.ecosystem.axis_time', 'Time')),
+          h('text', { x: 8, y: H / 2, textAnchor: 'middle', fill: '#94a3b8', fontSize: 11, transform: 'rotate(-90, 8, ' + (H / 2) + ')' }, __alloT('stem.ecosystem.axis_level_0_1', 'Level (0\u20131)'))
         );
       };
 
