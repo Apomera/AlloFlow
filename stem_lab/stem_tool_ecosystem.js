@@ -4724,31 +4724,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('span', { style: { color: '#fde68a' } }, coachingTip.priority),
                 h('div', { style: { marginTop: 4, color: '#e9d5ff' } }, coachingTip.text)
               ),
-              h('button', { onClick: function() { setConserve({ firstTipDismissed: true }); }, 'aria-label': 'Dismiss tip',
+              h('button', { onClick: function() { setConserve({ firstTipDismissed: true }); }, 'aria-label': __alloT('stem.ecosystem.dismiss_tip', 'Dismiss tip'),
                 style: { background: 'transparent', border: 'none', color: '#a855f7', cursor: 'pointer', fontSize: 16, padding: 0, marginLeft: 6 } }, '✕')
             ) : null,
             // HUD
             h('div', { style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
               h('div', null,
-                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Year'),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.ecosystem.year_label', 'Year')),
                 h('div', { style: { fontSize: 20, fontWeight: 800, color: T_GREEN_HI } }, conserve.year + ' / ' + conserve.maxYears)
               ),
               h('div', null,
-                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Field hours'),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.ecosystem.field_hours', 'Field hours')),
                 h('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, conserve.hoursLeft + ' / ' + conserve.hoursPerYear)
               ),
               h('div', null,
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.ecosystem.difficulty', 'Difficulty')),
-                h('div', { style: { fontSize: 14, fontWeight: 700, color: '#38bdf8' } }, diff2 ? diff2.label : 'Manager')
+                h('div', { style: { fontSize: 14, fontWeight: 700, color: '#38bdf8' } }, diff2 ? diff2.label : __alloT('stem.ecosystem.manager', 'Manager'))
               ),
               h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
                 callGemini ? h('button', { onClick: readEcosystem, disabled: conserve.aiReadLoading,
-                  'aria-label': 'Ask AI conservation biologist to read your ecosystem state',
-                  title: 'AI conservation educator reads your current state',
+                  'aria-label': __alloT('stem.ecosystem.aria_ask_ai_read', 'Ask AI conservation biologist to read your ecosystem state'),
+                  title: __alloT('stem.ecosystem.title_ai_reads_state', 'AI conservation educator reads your current state'),
                   style: { padding: '8px 12px', borderRadius: 10, border: '1px solid #38bdf8', cursor: conserve.aiReadLoading ? 'wait' : 'pointer', background: 'rgba(56,189,248,0.10)', color: '#38bdf8', fontWeight: 700, fontSize: 12, opacity: conserve.aiReadLoading ? 0.6 : 1 }
-                }, conserve.aiReadLoading ? '⏳ Reading...' : '🔍 Read the ecosystem (AI)') : null,
-                h('button', { onClick: endConserveYear, 'aria-label': 'End this year',
-                  style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 13 } }, 'End Year →')
+                }, conserve.aiReadLoading ? '⏳ ' + __alloT('stem.ecosystem.reading_status', 'Reading...') : '🔍 ' + __alloT('stem.ecosystem.read_ecosystem_ai', 'Read the ecosystem (AI)')) : null,
+                h('button', { onClick: endConserveYear, 'aria-label': __alloT('stem.ecosystem.aria_end_year', 'End this year'),
+                  style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 13 } }, __alloT('stem.ecosystem.end_year', 'End Year →'))
               )
             ),
 
@@ -4775,18 +4775,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                       h('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
                       h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, def.role)
                     ),
-                    def.deepDive ? h('button', { onClick: function() { openConservDeepDive(s.id); }, 'aria-label': 'Deep-dive for ' + def.name, title: __alloT('stem.ecosystem.species_deepdive', 'Species deep-dive'),
+                    def.deepDive ? h('button', { onClick: function() { openConservDeepDive(s.id); }, 'aria-label': __alloT('stem.ecosystem.aria_deepdive_for_pre', 'Deep-dive for ') + def.name, title: __alloT('stem.ecosystem.species_deepdive', 'Species deep-dive'),
                       style: { background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 } }, '📚') : null
                   ),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
-                    [['Pop', Math.round(s.pop), s.pop < 25 ? '#ef4444' : s.pop < 50 ? '#f59e0b' : '#22c55e', def.targets.pop],
-                     ['Hab', Math.round(s.habitat), s.habitat < 40 ? '#ef4444' : s.habitat < 60 ? '#f59e0b' : '#22c55e', def.targets.habitat],
-                     ['Sup', Math.round(s.support), s.support < 40 ? '#ef4444' : s.support < 60 ? '#f59e0b' : '#22c55e', def.targets.support]
+                    [[__alloT('stem.ecosystem.delta_pop', 'Pop'), Math.round(s.pop), s.pop < 25 ? '#ef4444' : s.pop < 50 ? '#f59e0b' : '#22c55e', def.targets.pop],
+                     [__alloT('stem.ecosystem.delta_hab', 'Hab'), Math.round(s.habitat), s.habitat < 40 ? '#ef4444' : s.habitat < 60 ? '#f59e0b' : '#22c55e', def.targets.habitat],
+                     [__alloT('stem.ecosystem.delta_sup', 'Sup'), Math.round(s.support), s.support < 40 ? '#ef4444' : s.support < 60 ? '#f59e0b' : '#22c55e', def.targets.support]
                     ].map(function(st, si) {
                       return h('div', { key: si, style: { background: 'var(--allo-stem-panel, #1e293b)', padding: 6, borderRadius: 6, textAlign: 'center' } },
                         h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, st[0]),
                         h('div', { style: { fontSize: 15, fontWeight: 800, color: st[2] } }, st[1]),
-                        h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)' } }, 'goal ' + st[3])
+                        h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)' } }, __alloT('stem.ecosystem.goal_prefix', 'goal ') + st[3])
                       );
                     })
                   ),
@@ -4810,11 +4810,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
             // Year action log
             conserve.yearActions.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 10, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
-              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, 'Year ' + conserve.year + ' actions'),
+              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, __alloT('stem.ecosystem.year_prefix', 'Year ') + conserve.year + __alloT('stem.ecosystem.actions_suffix', ' actions')),
               conserve.yearActions.map(function(a, ai) {
                 return h('div', { key: ai }, '· ' + a.tech + ' → ' + a.species + ' (' + a.hours + 'h)');
               })
-            ) : h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, 'No actions yet this year. Pick a species, pick a technique.')
+            ) : h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, __alloT('stem.ecosystem.no_actions_yet', 'No actions yet this year. Pick a species, pick a technique.'))
           );
         })(),
 

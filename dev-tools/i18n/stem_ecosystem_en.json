@@ -238,5 +238,19 @@
   "delta_sup": "Sup",
   "see_final_outcome": "See final outcome →",
   "begin_year_pre": "Begin Year ",
-  "year1_priority_label": "Year 1 priority: "
+  "year1_priority_label": "Year 1 priority: ",
+  "dismiss_tip": "Dismiss tip",
+  "year_label": "Year",
+  "field_hours": "Field hours",
+  "manager": "Manager",
+  "aria_ask_ai_read": "Ask AI conservation biologist to read your ecosystem state",
+  "title_ai_reads_state": "AI conservation educator reads your current state",
+  "reading_status": "Reading...",
+  "read_ecosystem_ai": "Read the ecosystem (AI)",
+  "aria_end_year": "End this year",
+  "end_year": "End Year →",
+  "aria_deepdive_for_pre": "Deep-dive for ",
+  "goal_prefix": "goal ",
+  "actions_suffix": " actions",
+  "no_actions_yet": "No actions yet this year. Pick a species, pick a technique."
 }
