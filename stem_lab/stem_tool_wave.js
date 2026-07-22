@@ -2785,97 +2785,97 @@ const d = labToolData.wave;
       ];
 
       var EM_SPECTRUM = [
-        { name: 'Radio', λ: '1 mm – 100 km', f: '3 Hz – 300 GHz', energy: 'Very low', uses: 'Broadcasting, communication, MRI' },
-        { name: 'Microwave', λ: '1 mm – 1 m', f: '300 MHz – 300 GHz', energy: 'Low', uses: 'Cooking (water rotation), radar, WiFi, satellite' },
-        { name: 'Infrared (IR)', λ: '700 nm – 1 mm', f: '300 GHz – 430 THz', energy: 'Low-mid', uses: 'Thermal imaging, TV remotes, fiber optics' },
-        { name: 'Visible light', λ: '380 – 700 nm', f: '430 – 790 THz', energy: 'Mid', uses: 'Vision, photosynthesis, photography' },
-        { name: 'Ultraviolet (UV)', λ: '10 – 380 nm', f: '790 THz – 30 PHz', energy: 'High', uses: 'Sterilization, fluorescence, Vit D synthesis' },
-        { name: 'X-ray', λ: '0.01 – 10 nm', f: '30 PHz – 30 EHz', energy: 'Very high', uses: 'Medical imaging, crystallography, security scanners' },
-        { name: 'Gamma ray', λ: '< 0.01 nm', f: '> 30 EHz', energy: 'Extreme', uses: 'Cancer treatment, sterilization, astronomy (most energetic photons)' }
+        { name: __alloT('stem.wave.em_radio_name', 'Radio'), λ: '1 mm – 100 km', f: '3 Hz – 300 GHz', energy: __alloT('stem.wave.em_radio_energy', 'Very low'), uses: __alloT('stem.wave.em_radio_uses', 'Broadcasting, communication, MRI') },
+        { name: __alloT('stem.wave.em_microwave_name', 'Microwave'), λ: '1 mm – 1 m', f: '300 MHz – 300 GHz', energy: __alloT('stem.wave.em_microwave_energy', 'Low'), uses: __alloT('stem.wave.em_microwave_uses', 'Cooking (water rotation), radar, WiFi, satellite') },
+        { name: __alloT('stem.wave.em_ir_name', 'Infrared (IR)'), λ: '700 nm – 1 mm', f: '300 GHz – 430 THz', energy: __alloT('stem.wave.em_ir_energy', 'Low-mid'), uses: __alloT('stem.wave.em_ir_uses', 'Thermal imaging, TV remotes, fiber optics') },
+        { name: __alloT('stem.wave.em_visible_name', 'Visible light'), λ: '380 – 700 nm', f: '430 – 790 THz', energy: __alloT('stem.wave.em_visible_energy', 'Mid'), uses: __alloT('stem.wave.em_visible_uses', 'Vision, photosynthesis, photography') },
+        { name: __alloT('stem.wave.em_uv_name', 'Ultraviolet (UV)'), λ: '10 – 380 nm', f: '790 THz – 30 PHz', energy: __alloT('stem.wave.em_uv_energy', 'High'), uses: __alloT('stem.wave.em_uv_uses', 'Sterilization, fluorescence, Vit D synthesis') },
+        { name: __alloT('stem.wave.em_xray_name', 'X-ray'), λ: '0.01 – 10 nm', f: '30 PHz – 30 EHz', energy: __alloT('stem.wave.em_xray_energy', 'Very high'), uses: __alloT('stem.wave.em_xray_uses', 'Medical imaging, crystallography, security scanners') },
+        { name: __alloT('stem.wave.em_gamma_name', 'Gamma ray'), λ: '< 0.01 nm', f: '> 30 EHz', energy: __alloT('stem.wave.em_gamma_energy', 'Extreme'), uses: __alloT('stem.wave.em_gamma_uses', 'Cancer treatment, sterilization, astronomy (most energetic photons)') }
       ];
 
       var VISIBLE_COLORS = [
-        { color: 'Violet', λnm: '380–450', f: '670–790 THz', hex: '#7c3aed', notes: 'Highest-energy visible. Just below UV.' },
-        { color: 'Blue', λnm: '450–485', f: '620–670 THz', hex: '#2563eb', notes: 'Sky color (Rayleigh scattering favors short λ).' },
-        { color: 'Cyan', λnm: '485–500', f: '600–620 THz', hex: '#0891b2', notes: 'Bright in shallow water.' },
-        { color: 'Green', λnm: '500–565', f: '530–600 THz', hex: '#16a34a', notes: 'Peak photopic eye sensitivity (~555 nm).' },
-        { color: 'Yellow', λnm: '565–590', f: '510–530 THz', hex: '#eab308', notes: 'Sodium lamp emission (589 nm doublet).' },
-        { color: 'Orange', λnm: '590–625', f: '480–510 THz', hex: '#ea580c', notes: 'Sunset enhances reds + oranges via scattering.' },
-        { color: 'Red', λnm: '625–700', f: '430–480 THz', hex: '#dc2626', notes: 'Lowest-energy visible. Just above IR.' }
+        { color: __alloT('stem.wave.vc_violet', 'Violet'), λnm: '380–450', f: '670–790 THz', hex: '#7c3aed', notes: __alloT('stem.wave.vc_violet_notes', 'Highest-energy visible. Just below UV.') },
+        { color: __alloT('stem.wave.vc_blue', 'Blue'), λnm: '450–485', f: '620–670 THz', hex: '#2563eb', notes: __alloT('stem.wave.vc_blue_notes', 'Sky color (Rayleigh scattering favors short λ).') },
+        { color: __alloT('stem.wave.vc_cyan', 'Cyan'), λnm: '485–500', f: '600–620 THz', hex: '#0891b2', notes: __alloT('stem.wave.vc_cyan_notes', 'Bright in shallow water.') },
+        { color: __alloT('stem.wave.vc_green', 'Green'), λnm: '500–565', f: '530–600 THz', hex: '#16a34a', notes: __alloT('stem.wave.vc_green_notes', 'Peak photopic eye sensitivity (~555 nm).') },
+        { color: __alloT('stem.wave.vc_yellow', 'Yellow'), λnm: '565–590', f: '510–530 THz', hex: '#eab308', notes: __alloT('stem.wave.vc_yellow_notes', 'Sodium lamp emission (589 nm doublet).') },
+        { color: __alloT('stem.wave.vc_orange', 'Orange'), λnm: '590–625', f: '480–510 THz', hex: '#ea580c', notes: __alloT('stem.wave.vc_orange_notes', 'Sunset enhances reds + oranges via scattering.') },
+        { color: __alloT('stem.wave.vc_red', 'Red'), λnm: '625–700', f: '430–480 THz', hex: '#dc2626', notes: __alloT('stem.wave.vc_red_notes', 'Lowest-energy visible. Just above IR.') }
       ];
 
       var HARMONICS = [
-        { mode: 'Fundamental (1st)', nodes: '2 (ends)', f: 'f₁', desc: 'Lowest mode. One antinode in the middle.' },
-        { mode: '2nd harmonic', nodes: '3', f: '2 f₁', desc: 'One full wavelength fits in the string length.' },
-        { mode: '3rd harmonic', nodes: '4', f: '3 f₁', desc: 'Three half-wavelengths fit. Common in plucked strings.' },
-        { mode: '4th harmonic', nodes: '5', f: '4 f₁', desc: 'Even integer; less common in stringed instruments tuned to fundamental.' },
-        { mode: 'nth harmonic', nodes: 'n+1', f: 'n f₁', desc: 'General formula. Higher harmonics give timbre / character to a note.' }
+        { mode: __alloT('stem.wave.harm_fundamental_mode', 'Fundamental (1st)'), nodes: '2 (ends)', f: 'f₁', desc: __alloT('stem.wave.harm_fundamental_desc', 'Lowest mode. One antinode in the middle.') },
+        { mode: __alloT('stem.wave.harm_2nd_mode', '2nd harmonic'), nodes: '3', f: '2 f₁', desc: __alloT('stem.wave.harm_2nd_desc', 'One full wavelength fits in the string length.') },
+        { mode: __alloT('stem.wave.harm_3rd_mode', '3rd harmonic'), nodes: '4', f: '3 f₁', desc: __alloT('stem.wave.harm_3rd_desc', 'Three half-wavelengths fit. Common in plucked strings.') },
+        { mode: __alloT('stem.wave.harm_4th_mode', '4th harmonic'), nodes: '5', f: '4 f₁', desc: __alloT('stem.wave.harm_4th_desc', 'Even integer; less common in stringed instruments tuned to fundamental.') },
+        { mode: __alloT('stem.wave.harm_nth_mode', 'nth harmonic'), nodes: 'n+1', f: 'n f₁', desc: __alloT('stem.wave.harm_nth_desc', 'General formula. Higher harmonics give timbre / character to a note.') }
       ];
 
       var WAVE_FORMULAS = [
-        { eq: 'v = f · λ', purpose: 'Wave speed from frequency + wavelength' },
-        { eq: 'T = 1 / f', purpose: 'Period and frequency are reciprocals' },
-        { eq: 'y(x,t) = A · sin(kx − ωt + φ)', purpose: 'Standard sinusoidal traveling wave' },
-        { eq: 'k = 2π / λ', purpose: 'Wave number ↔ wavelength' },
-        { eq: 'ω = 2π f', purpose: 'Angular frequency ↔ frequency' },
-        { eq: 'Intensity ∝ A²', purpose: 'Energy/area carried by wave grows as square of amplitude' },
-        { eq: 'n₁ sin θ₁ = n₂ sin θ₂', purpose: 'Snell\'s law — refraction at interface' },
-        { eq: 'd sin θ = m λ', purpose: 'Diffraction grating maxima (m = order)' },
-        { eq: 'f\' = f · (v + vₒ) / (v − vₛ)', purpose: 'Doppler shift (general; signs depend on directions)' },
-        { eq: 'E = hf = hc / λ', purpose: 'Photon energy (h = Planck constant)' }
+        { eq: 'v = f · λ', purpose: __alloT('stem.wave.wf_speed', 'Wave speed from frequency + wavelength') },
+        { eq: 'T = 1 / f', purpose: __alloT('stem.wave.wf_period', 'Period and frequency are reciprocals') },
+        { eq: 'y(x,t) = A · sin(kx − ωt + φ)', purpose: __alloT('stem.wave.wf_sinusoidal', 'Standard sinusoidal traveling wave') },
+        { eq: 'k = 2π / λ', purpose: __alloT('stem.wave.wf_wavenumber', 'Wave number ↔ wavelength') },
+        { eq: 'ω = 2π f', purpose: __alloT('stem.wave.wf_angfreq', 'Angular frequency ↔ frequency') },
+        { eq: 'Intensity ∝ A²', purpose: __alloT('stem.wave.wf_intensity', 'Energy/area carried by wave grows as square of amplitude') },
+        { eq: 'n₁ sin θ₁ = n₂ sin θ₂', purpose: __alloT('stem.wave.wf_snell', 'Snell\'s law — refraction at interface') },
+        { eq: 'd sin θ = m λ', purpose: __alloT('stem.wave.wf_grating', 'Diffraction grating maxima (m = order)') },
+        { eq: 'f\' = f · (v + vₒ) / (v − vₛ)', purpose: __alloT('stem.wave.wf_doppler', 'Doppler shift (general; signs depend on directions)') },
+        { eq: 'E = hf = hc / λ', purpose: __alloT('stem.wave.wf_photon', 'Photon energy (h = Planck constant)') }
       ];
 
       var STANDING_WAVE_INSTRUMENTS = [
-        { instrument: 'Guitar string', boundary: 'Both ends fixed', harmonics: 'All integers (1,2,3,4...)', formula: 'fₙ = n · v/(2L)', note: 'Pluck position selects which harmonics dominate. Near center → odd harmonics.' },
-        { instrument: 'Open organ pipe', boundary: 'Both ends open (antinodes)', harmonics: 'All integers (1,2,3,4...)', formula: 'fₙ = n · v/(2L)', note: 'Same formula as string. Wave equation symmetric.' },
-        { instrument: 'Closed organ pipe', boundary: 'One closed end', harmonics: 'Odd only (1,3,5,7...)', formula: 'fₙ = (2n−1) · v/(4L)', note: 'Only odd harmonics. Octave + 5th, not octave alone.' },
-        { instrument: 'Drum head', boundary: 'Circular fixed edge', harmonics: 'Bessel function modes', formula: 'Complex 2D', note: 'Inharmonic — doesn\'t sound like a clear pitch. Tympani tuned to approximate one.' },
-        { instrument: 'Marimba bar', boundary: 'Bar supported at nodes', harmonics: 'Tunable with bar shape', formula: 'Depends on cross-section', note: 'Undercut shapes the second partial to be a perfect octave above the fundamental.' }
+        { instrument: __alloT('stem.wave.swi_guitar_name', 'Guitar string'), boundary: __alloT('stem.wave.swi_guitar_boundary', 'Both ends fixed'), harmonics: __alloT('stem.wave.swi_all_integers', 'All integers (1,2,3,4...)'), formula: 'fₙ = n · v/(2L)', note: __alloT('stem.wave.swi_guitar_note', 'Pluck position selects which harmonics dominate. Near center → odd harmonics.') },
+        { instrument: __alloT('stem.wave.swi_openpipe_name', 'Open organ pipe'), boundary: __alloT('stem.wave.swi_openpipe_boundary', 'Both ends open (antinodes)'), harmonics: __alloT('stem.wave.swi_all_integers', 'All integers (1,2,3,4...)'), formula: 'fₙ = n · v/(2L)', note: __alloT('stem.wave.swi_openpipe_note', 'Same formula as string. Wave equation symmetric.') },
+        { instrument: __alloT('stem.wave.swi_closedpipe_name', 'Closed organ pipe'), boundary: __alloT('stem.wave.swi_closedpipe_boundary', 'One closed end'), harmonics: __alloT('stem.wave.swi_odd_only', 'Odd only (1,3,5,7...)'), formula: 'fₙ = (2n−1) · v/(4L)', note: __alloT('stem.wave.swi_closedpipe_note', 'Only odd harmonics. Octave + 5th, not octave alone.') },
+        { instrument: __alloT('stem.wave.swi_drum_name', 'Drum head'), boundary: __alloT('stem.wave.swi_drum_boundary', 'Circular fixed edge'), harmonics: __alloT('stem.wave.swi_drum_harmonics', 'Bessel function modes'), formula: __alloT('stem.wave.swi_drum_formula', 'Complex 2D'), note: __alloT('stem.wave.swi_drum_note', 'Inharmonic — doesn\'t sound like a clear pitch. Tympani tuned to approximate one.') },
+        { instrument: __alloT('stem.wave.swi_marimba_name', 'Marimba bar'), boundary: __alloT('stem.wave.swi_marimba_boundary', 'Bar supported at nodes'), harmonics: __alloT('stem.wave.swi_marimba_harmonics', 'Tunable with bar shape'), formula: __alloT('stem.wave.swi_marimba_formula', 'Depends on cross-section'), note: __alloT('stem.wave.swi_marimba_note', 'Undercut shapes the second partial to be a perfect octave above the fundamental.') }
       ];
 
       var SOUND_INTENSITY = [
-        { db: 0, source: 'Threshold of hearing', notes: 'Reference: 10⁻¹² W/m²' },
-        { db: 10, source: 'Breathing', notes: 'Quietest noticeable sound' },
-        { db: 30, source: 'Whisper', notes: 'Library quiet' },
-        { db: 60, source: 'Conversation', notes: 'Office background' },
-        { db: 70, source: 'Vacuum cleaner', notes: 'Annoying at length' },
-        { db: 85, source: 'Heavy traffic', notes: 'Hearing damage above this with extended exposure' },
-        { db: 100, source: 'Motorcycle / blender', notes: 'Damage in 15 min' },
-        { db: 110, source: 'Rock concert', notes: 'Damage in seconds to minutes' },
-        { db: 120, source: 'Jet engine at 100 m', notes: 'Threshold of pain' },
-        { db: 140, source: 'Gunshot at ear', notes: 'Instant damage' },
-        { db: 194, source: 'Theoretical max in air', notes: 'Pressure variation = atmospheric pressure (can\'t go louder without becoming shock wave)' }
+        { db: 0, source: __alloT('stem.wave.si_threshold_src', 'Threshold of hearing'), notes: __alloT('stem.wave.si_threshold_notes', 'Reference: 10⁻¹² W/m²') },
+        { db: 10, source: __alloT('stem.wave.si_breathing_src', 'Breathing'), notes: __alloT('stem.wave.si_breathing_notes', 'Quietest noticeable sound') },
+        { db: 30, source: __alloT('stem.wave.si_whisper_src', 'Whisper'), notes: __alloT('stem.wave.si_whisper_notes', 'Library quiet') },
+        { db: 60, source: __alloT('stem.wave.si_conversation_src', 'Conversation'), notes: __alloT('stem.wave.si_conversation_notes', 'Office background') },
+        { db: 70, source: __alloT('stem.wave.si_vacuum_src', 'Vacuum cleaner'), notes: __alloT('stem.wave.si_vacuum_notes', 'Annoying at length') },
+        { db: 85, source: __alloT('stem.wave.si_traffic_src', 'Heavy traffic'), notes: __alloT('stem.wave.si_traffic_notes', 'Hearing damage above this with extended exposure') },
+        { db: 100, source: __alloT('stem.wave.si_motorcycle_src', 'Motorcycle / blender'), notes: __alloT('stem.wave.si_motorcycle_notes', 'Damage in 15 min') },
+        { db: 110, source: __alloT('stem.wave.si_concert_src', 'Rock concert'), notes: __alloT('stem.wave.si_concert_notes', 'Damage in seconds to minutes') },
+        { db: 120, source: __alloT('stem.wave.si_jet_src', 'Jet engine at 100 m'), notes: __alloT('stem.wave.si_jet_notes', 'Threshold of pain') },
+        { db: 140, source: __alloT('stem.wave.si_gunshot_src', 'Gunshot at ear'), notes: __alloT('stem.wave.si_gunshot_notes', 'Instant damage') },
+        { db: 194, source: __alloT('stem.wave.si_max_src', 'Theoretical max in air'), notes: __alloT('stem.wave.si_max_notes', 'Pressure variation = atmospheric pressure (can\'t go louder without becoming shock wave)') }
       ];
 
       var WAVE_GLOSSARY = [
-        { term: 'Crest', def: 'Highest point of a transverse wave. Maximum positive displacement.' },
-        { term: 'Trough', def: 'Lowest point of a transverse wave. Maximum negative displacement.' },
-        { term: 'Compression', def: 'Region of high pressure in a longitudinal wave (sound).' },
-        { term: 'Rarefaction', def: 'Region of low pressure in a longitudinal wave.' },
-        { term: 'Node', def: 'Point of zero displacement on a standing wave.' },
-        { term: 'Antinode', def: 'Point of maximum displacement on a standing wave.' },
-        { term: 'Reflection', def: 'Wave bouncing off a boundary. Phase flips if going from less to more dense (hard boundary).' },
-        { term: 'Refraction', def: 'Wave bending as it crosses a boundary where speed changes. Snell\'s law.' },
-        { term: 'Diffraction', def: 'Wave bending around obstacles or through apertures. Effect strong when aperture ~ λ.' },
-        { term: 'Interference', def: 'Two waves overlapping. Constructive (in phase) or destructive (out of phase).' },
-        { term: 'Standing wave', def: 'Pattern from two identical waves traveling opposite directions. Nodes + antinodes fixed in space.' },
-        { term: 'Resonance', def: 'Large amplitude when driving frequency matches natural frequency. Tacoma Narrows bridge collapse classic example (with caveats).' },
-        { term: 'Damping', def: 'Loss of amplitude over time due to friction or radiation. Critical damping = fastest decay without overshoot.' },
-        { term: 'Coherence', def: 'Constant phase relationship between waves. Required for stable interference patterns. Lasers are highly coherent.' },
-        { term: 'Polarization', def: 'Direction of oscillation in a transverse wave. Light from sun is unpolarized; passing through a polarizer selects one direction.' },
-        { term: 'Photon', def: 'Quantum of EM radiation. Energy E = hf. Each photon carries momentum p = h/λ.' }
+        { term: __alloT('stem.wave.gl_crest_term', 'Crest'), def: __alloT('stem.wave.gl_crest_def', 'Highest point of a transverse wave. Maximum positive displacement.') },
+        { term: __alloT('stem.wave.gl_trough_term', 'Trough'), def: __alloT('stem.wave.gl_trough_def', 'Lowest point of a transverse wave. Maximum negative displacement.') },
+        { term: __alloT('stem.wave.gl_compression_term', 'Compression'), def: __alloT('stem.wave.gl_compression_def', 'Region of high pressure in a longitudinal wave (sound).') },
+        { term: __alloT('stem.wave.gl_rarefaction_term', 'Rarefaction'), def: __alloT('stem.wave.gl_rarefaction_def', 'Region of low pressure in a longitudinal wave.') },
+        { term: __alloT('stem.wave.gl_node_term', 'Node'), def: __alloT('stem.wave.gl_node_def', 'Point of zero displacement on a standing wave.') },
+        { term: __alloT('stem.wave.gl_antinode_term', 'Antinode'), def: __alloT('stem.wave.gl_antinode_def', 'Point of maximum displacement on a standing wave.') },
+        { term: __alloT('stem.wave.gl_reflection_term', 'Reflection'), def: __alloT('stem.wave.gl_reflection_def', 'Wave bouncing off a boundary. Phase flips if going from less to more dense (hard boundary).') },
+        { term: __alloT('stem.wave.gl_refraction_term', 'Refraction'), def: __alloT('stem.wave.gl_refraction_def', 'Wave bending as it crosses a boundary where speed changes. Snell\'s law.') },
+        { term: __alloT('stem.wave.gl_diffraction_term', 'Diffraction'), def: __alloT('stem.wave.gl_diffraction_def', 'Wave bending around obstacles or through apertures. Effect strong when aperture ~ λ.') },
+        { term: __alloT('stem.wave.gl_interference_term', 'Interference'), def: __alloT('stem.wave.gl_interference_def', 'Two waves overlapping. Constructive (in phase) or destructive (out of phase).') },
+        { term: __alloT('stem.wave.gl_standingwave_term', 'Standing wave'), def: __alloT('stem.wave.gl_standingwave_def', 'Pattern from two identical waves traveling opposite directions. Nodes + antinodes fixed in space.') },
+        { term: __alloT('stem.wave.gl_resonance_term', 'Resonance'), def: __alloT('stem.wave.gl_resonance_def', 'Large amplitude when driving frequency matches natural frequency. Tacoma Narrows bridge collapse classic example (with caveats).') },
+        { term: __alloT('stem.wave.gl_damping_term', 'Damping'), def: __alloT('stem.wave.gl_damping_def', 'Loss of amplitude over time due to friction or radiation. Critical damping = fastest decay without overshoot.') },
+        { term: __alloT('stem.wave.gl_coherence_term', 'Coherence'), def: __alloT('stem.wave.gl_coherence_def', 'Constant phase relationship between waves. Required for stable interference patterns. Lasers are highly coherent.') },
+        { term: __alloT('stem.wave.gl_polarization_term', 'Polarization'), def: __alloT('stem.wave.gl_polarization_def', 'Direction of oscillation in a transverse wave. Light from sun is unpolarized; passing through a polarizer selects one direction.') },
+        { term: __alloT('stem.wave.gl_photon_term', 'Photon'), def: __alloT('stem.wave.gl_photon_def', 'Quantum of EM radiation. Energy E = hf. Each photon carries momentum p = h/λ.') }
       ];
 
       function expHeader() {
         return React.createElement('div', { className: 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-2 p-3 rounded-xl bg-gradient-to-r from-cyan-50 to-blue-50 border-2 border-cyan-200' },
           React.createElement('div', null,
-            React.createElement('h3', { className: 'text-base font-black text-cyan-900' }, '🌊 Wave Reference Library'),
-            React.createElement('div', { className: 'text-[11px] text-cyan-700 mt-0.5' }, 'Interactive references — pick a topic below to explore.')
+            React.createElement('h3', { className: 'text-base font-black text-cyan-900' }, '🌊 ' + __alloT('stem.wave.exp_library_title', 'Wave Reference Library')),
+            React.createElement('div', { className: 'text-[11px] text-cyan-700 mt-0.5' }, __alloT('stem.wave.exp_library_subtitle', 'Interactive references — pick a topic below to explore.'))
           ),
           expSection && React.createElement('button', {
             onClick: function() { setExp({ expSection: null }); },
             className: 'transition-colors px-3 py-1 rounded-md text-xs font-bold bg-white border border-cyan-300 text-cyan-700 hover:bg-cyan-100 active:scale-[0.97]'
-          }, '✕ Close section')
+          }, '✕ ' + __alloT('stem.wave.exp_close_section', 'Close section'))
         );
       }
 
@@ -2886,66 +2886,66 @@ const d = labToolData.wave;
         // preserved. Groups: Wave Basics · Sound & Music · Light & Optics ·
         // EM Spectrum · Communications · Natural & Cosmic · Reference.
         var TAB_GROUPS = [
-          { id: 'basics', label: 'Wave Basics', color: 'cyan', tabs: [
-            { id: 'types', label: 'Wave types', icon: '🌊' },
-            { id: 'quantities', label: 'Wave quantities', icon: '📐' },
-            { id: 'formulas', label: 'Key formulas', icon: 'ƒ' },
-            { id: 'units2', label: 'Wave units', icon: '∑' },
-            { id: 'wavespeed', label: 'Wave speeds', icon: '⏱' },
-            { id: 'speeds2', label: 'Detailed speeds', icon: '⏲' },
-            { id: 'interference', label: 'Interference', icon: '+' },
-            { id: 'diffraction', label: 'Diffraction', icon: '∿' },
-            { id: 'polarization', label: 'Polarization', icon: '↕' },
-            { id: 'doppler', label: 'Doppler effect', icon: '🚓' },
-            { id: 'shockwaves', label: 'Shock waves', icon: '✈' },
-            { id: 'standingHunt', label: 'Standing-wave hunt', icon: '🎯' },
-            { id: 'discoverWave', label: 'Discover f·λ=v', icon: '🔬' }
+          { id: 'basics', label: __alloT('stem.wave.grp_basics', 'Wave Basics'), color: 'cyan', tabs: [
+            { id: 'types', label: __alloT('stem.wave.tab_types', 'Wave types'), icon: '🌊' },
+            { id: 'quantities', label: __alloT('stem.wave.tab_quantities', 'Wave quantities'), icon: '📐' },
+            { id: 'formulas', label: __alloT('stem.wave.tab_formulas', 'Key formulas'), icon: 'ƒ' },
+            { id: 'units2', label: __alloT('stem.wave.tab_units', 'Wave units'), icon: '∑' },
+            { id: 'wavespeed', label: __alloT('stem.wave.tab_wavespeeds', 'Wave speeds'), icon: '⏱' },
+            { id: 'speeds2', label: __alloT('stem.wave.tab_detailedspeeds', 'Detailed speeds'), icon: '⏲' },
+            { id: 'interference', label: __alloT('stem.wave.tab_interference', 'Interference'), icon: '+' },
+            { id: 'diffraction', label: __alloT('stem.wave.tab_diffraction', 'Diffraction'), icon: '∿' },
+            { id: 'polarization', label: __alloT('stem.wave.tab_polarization', 'Polarization'), icon: '↕' },
+            { id: 'doppler', label: __alloT('stem.wave.tab_doppler', 'Doppler effect'), icon: '🚓' },
+            { id: 'shockwaves', label: __alloT('stem.wave.tab_shockwaves', 'Shock waves'), icon: '✈' },
+            { id: 'standingHunt', label: __alloT('stem.wave.btn_standing_hunt', 'Standing-wave hunt'), icon: '🎯' },
+            { id: 'discoverWave', label: __alloT('stem.wave.tab_discover', 'Discover f·λ=v'), icon: '🔬' }
           ] },
-          { id: 'sound', label: 'Sound & Music', color: 'amber', tabs: [
-            { id: 'harmonics', label: 'Harmonics', icon: '🎵' },
-            { id: 'instruments', label: 'Standing waves', icon: '🎸' },
-            { id: 'instrumentfreqs', label: 'Instrument freqs', icon: '🎻' },
-            { id: 'music', label: 'Music + acoustics', icon: '🎼' },
-            { id: 'decibels', label: 'Sound intensity', icon: '🔊' },
-            { id: 'noise', label: 'Noise sources', icon: '📢' },
-            { id: 'hearing', label: 'Hearing + ear', icon: '👂' },
-            { id: 'recordings', label: 'Audio formats', icon: '🎧' }
+          { id: 'sound', label: __alloT('stem.wave.grp_sound', 'Sound & Music'), color: 'amber', tabs: [
+            { id: 'harmonics', label: __alloT('stem.wave.tab_harmonics', 'Harmonics'), icon: '🎵' },
+            { id: 'instruments', label: __alloT('stem.wave.tab_standingwaves', 'Standing waves'), icon: '🎸' },
+            { id: 'instrumentfreqs', label: __alloT('stem.wave.tab_instrumentfreqs', 'Instrument freqs'), icon: '🎻' },
+            { id: 'music', label: __alloT('stem.wave.tab_music', 'Music + acoustics'), icon: '🎼' },
+            { id: 'decibels', label: __alloT('stem.wave.tab_soundintensity', 'Sound intensity'), icon: '🔊' },
+            { id: 'noise', label: __alloT('stem.wave.tab_noise', 'Noise sources'), icon: '📢' },
+            { id: 'hearing', label: __alloT('stem.wave.tab_hearing', 'Hearing + ear'), icon: '👂' },
+            { id: 'recordings', label: __alloT('stem.wave.tab_audioformats', 'Audio formats'), icon: '🎧' }
           ] },
-          { id: 'optics', label: 'Light & Optics', color: 'fuchsia', tabs: [
-            { id: 'optics', label: 'Optics & lenses', icon: '🔍' },
-            { id: 'refraction', label: 'Refraction index', icon: '↻' },
-            { id: 'colors', label: 'Visible light', icon: '🌈' },
-            { id: 'colors2', label: 'Color models', icon: '🎨' },
-            { id: 'colorhex', label: 'Named colors', icon: '🖌' },
-            { id: 'lasers', label: 'Lasers', icon: '⫸' },
-            { id: 'cameras', label: 'Camera lenses', icon: '📷' },
-            { id: 'optical_facts', label: 'Perception & illusions', icon: '👁' }
+          { id: 'optics', label: __alloT('stem.wave.grp_optics', 'Light & Optics'), color: 'fuchsia', tabs: [
+            { id: 'optics', label: __alloT('stem.wave.tab_optics', 'Optics & lenses'), icon: '🔍' },
+            { id: 'refraction', label: __alloT('stem.wave.tab_refraction', 'Refraction index'), icon: '↻' },
+            { id: 'colors', label: __alloT('stem.wave.tab_visiblelight', 'Visible light'), icon: '🌈' },
+            { id: 'colors2', label: __alloT('stem.wave.tab_colormodels', 'Color models'), icon: '🎨' },
+            { id: 'colorhex', label: __alloT('stem.wave.tab_namedcolors', 'Named colors'), icon: '🖌' },
+            { id: 'lasers', label: __alloT('stem.wave.tab_lasers', 'Lasers'), icon: '⫸' },
+            { id: 'cameras', label: __alloT('stem.wave.tab_cameras', 'Camera lenses'), icon: '📷' },
+            { id: 'optical_facts', label: __alloT('stem.wave.tab_perception', 'Perception & illusions'), icon: '👁' }
           ] },
-          { id: 'spectrum', label: 'EM Spectrum', color: 'violet', tabs: [
-            { id: 'spectrum', label: 'EM spectrum', icon: '⚡' },
-            { id: 'radio', label: 'Radio bands', icon: '📻' },
-            { id: 'tvfreq', label: 'TV + screen', icon: '📺' },
-            { id: 'quantum', label: 'Quantum waves', icon: '⚛' }
+          { id: 'spectrum', label: __alloT('stem.wave.grp_spectrum', 'EM Spectrum'), color: 'violet', tabs: [
+            { id: 'spectrum', label: __alloT('stem.wave.tab_emspectrum', 'EM spectrum'), icon: '⚡' },
+            { id: 'radio', label: __alloT('stem.wave.tab_radiobands', 'Radio bands'), icon: '📻' },
+            { id: 'tvfreq', label: __alloT('stem.wave.tab_tvscreen', 'TV + screen'), icon: '📺' },
+            { id: 'quantum', label: __alloT('stem.wave.tab_quantum', 'Quantum waves'), icon: '⚛' }
           ] },
-          { id: 'comm', label: 'Communications', color: 'sky', tabs: [
-            { id: 'antennas', label: 'Antennas', icon: '📶' },
-            { id: 'radar', label: 'Radar/sonar', icon: '📡' },
-            { id: 'protocols', label: 'Comm protocols', icon: '🛜' },
-            { id: 'fibers', label: 'Fiber optics', icon: '〰' },
-            { id: 'satellites', label: 'GPS + satellites', icon: '🛰' },
-            { id: 'medical', label: 'Medical imaging', icon: '🏥' }
+          { id: 'comm', label: __alloT('stem.wave.grp_comm', 'Communications'), color: 'sky', tabs: [
+            { id: 'antennas', label: __alloT('stem.wave.tab_antennas', 'Antennas'), icon: '📶' },
+            { id: 'radar', label: __alloT('stem.wave.tab_radarsonar', 'Radar/sonar'), icon: '📡' },
+            { id: 'protocols', label: __alloT('stem.wave.tab_commprotocols', 'Comm protocols'), icon: '🛜' },
+            { id: 'fibers', label: __alloT('stem.wave.tab_fiberoptics', 'Fiber optics'), icon: '〰' },
+            { id: 'satellites', label: __alloT('stem.wave.tab_gpssatellites', 'GPS + satellites'), icon: '🛰' },
+            { id: 'medical', label: __alloT('stem.wave.tab_medicalimaging', 'Medical imaging'), icon: '🏥' }
           ] },
-          { id: 'natural', label: 'Natural & Cosmic', color: 'emerald', tabs: [
-            { id: 'ocean', label: 'Ocean waves', icon: '🏄' },
-            { id: 'seismic', label: 'Seismic waves', icon: '🌋' },
-            { id: 'animals', label: 'Animal senses', icon: '🦇' },
-            { id: 'stars', label: 'Stars + spectra', icon: '⭐' },
-            { id: 'gravitational', label: 'Gravitational waves', icon: '⌇' }
+          { id: 'natural', label: __alloT('stem.wave.grp_natural', 'Natural & Cosmic'), color: 'emerald', tabs: [
+            { id: 'ocean', label: __alloT('stem.wave.tab_oceanwaves', 'Ocean waves'), icon: '🏄' },
+            { id: 'seismic', label: __alloT('stem.wave.tab_seismicwaves', 'Seismic waves'), icon: '🌋' },
+            { id: 'animals', label: __alloT('stem.wave.tab_animalsenses', 'Animal senses'), icon: '🦇' },
+            { id: 'stars', label: __alloT('stem.wave.tab_stars', 'Stars + spectra'), icon: '⭐' },
+            { id: 'gravitational', label: __alloT('stem.wave.tab_gravwaves', 'Gravitational waves'), icon: '⌇' }
           ] },
-          { id: 'reference', label: 'Reference', color: 'slate', tabs: [
-            { id: 'careers', label: 'Wave careers', icon: '💼' },
-            { id: 'famous', label: 'History', icon: '🕰' },
-            { id: 'glossary', label: 'Glossary', icon: '📖' }
+          { id: 'reference', label: __alloT('stem.wave.grp_reference', 'Reference'), color: 'slate', tabs: [
+            { id: 'careers', label: __alloT('stem.wave.tab_careers', 'Wave careers'), icon: '💼' },
+            { id: 'famous', label: __alloT('stem.wave.tab_history', 'History'), icon: '🕰' },
+            { id: 'glossary', label: __alloT('stem.wave.tab_glossary', 'Glossary'), icon: '📖' }
           ] }
         ];
         function renderBtn(s, accent) {
