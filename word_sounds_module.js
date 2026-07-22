@@ -1899,6 +1899,62 @@
       const anchorReplayTimeoutRef = React.useRef(null);
       const [ttsSpeed, setTtsSpeed] = React.useState(wordSoundsTtsSpeed || 1.0);
       const modalRef = React.useRef(null);
+      const probeResultsDialogRef = React.useRef(null);
+      const sessionCompleteDialogRef = React.useRef(null);
+      const dialogReturnFocusRef = React.useRef(null);
+      React.useEffect(() => {
+        if (typeof document === "undefined") return undefined;
+        dialogReturnFocusRef.current = document.activeElement;
+        return () => {
+          const returnTarget = dialogReturnFocusRef.current;
+          if (returnTarget && returnTarget.isConnected && typeof returnTarget.focus === "function") {
+            try { returnTarget.focus({ preventScroll: true }); } catch (e) { try { returnTarget.focus(); } catch (e2) {} }
+          }
+        };
+      }, []);
+      const getDialogFocusable = (dialog) =>
+        dialog
+          ? Array.from(
+              dialog.querySelectorAll(
+                'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+              ),
+            ).filter((element) => {
+              if (
+                element.hidden ||
+                element.getAttribute("aria-hidden") === "true" ||
+                element.getAttribute("type") === "hidden" ||
+                element.classList.contains("hidden") ||
+                element.closest('[hidden], [aria-hidden="true"], .hidden')
+              ) return false;
+              if (typeof window !== "undefined" && typeof window.getComputedStyle === "function") {
+                const style = window.getComputedStyle(element);
+                if (style.display === "none" || style.visibility === "hidden") return false;
+              }
+              return true;
+            })
+          : [];
+      const handleDialogKeyDown = (event, onEscape) => {
+        if (event.key === "Escape" && typeof onEscape === "function") {
+          event.preventDefault();
+          event.stopPropagation();
+          onEscape();
+          return;
+        }
+        if (event.key !== "Tab") return;
+        const focusable = getDialogFocusable(event.currentTarget);
+        if (focusable.length === 0) {
+          event.preventDefault();
+          return;
+        }
+        const currentIndex = focusable.indexOf(document.activeElement);
+        if (event.shiftKey && currentIndex <= 0) {
+          event.preventDefault();
+          focusable[focusable.length - 1].focus();
+        } else if (!event.shiftKey && (currentIndex < 0 || currentIndex === focusable.length - 1)) {
+          event.preventDefault();
+          focusable[0].focus();
+        }
+      };
       const submissionLockRef = React.useRef(false);
       const sessionWordResults = React.useRef([]);
       const feedbackAudioRef = React.useRef(null);
@@ -5504,6 +5560,25 @@
       }, []);
       const [showProbeResults, setShowProbeResults] = React.useState(false);
       const probeStartTimeRef = React.useRef(null);
+      React.useEffect(() => {
+        if (typeof document === "undefined" || isMinimized) return undefined;
+        const dialog = showProbeResults
+          ? probeResultsDialogRef.current
+          : showSessionComplete
+            ? sessionCompleteDialogRef.current
+            : modalRef.current;
+        if (!dialog) return undefined;
+        const initialTarget =
+          dialog.querySelector("[data-dialog-initial-focus]") ||
+          getDialogFocusable(dialog)[0] ||
+          dialog;
+        const focusTimer = setTimeout(() => {
+          if (initialTarget && typeof initialTarget.focus === "function") {
+            try { initialTarget.focus({ preventScroll: true }); } catch (e) { try { initialTarget.focus(); } catch (e2) {} }
+          }
+        }, 0);
+        return () => clearTimeout(focusTimer);
+      }, [showProbeResults, showSessionComplete, isMinimized]);
       // Per-word-difficulty accuracy for THIS probe (each history item is tagged
       // with wordDifficulty at answer time). Shared by the live session-complete
       // modal and the onProbeComplete payload so a difficulty shift between
@@ -5585,17 +5660,35 @@
           document.body.removeChild(link);
           URL.revokeObjectURL(link.href);
         };
+        const finishProbe = () => {
+          setShowProbeResults(false);
+          if (onProbeComplete)
+            onProbeComplete({
+              correct,
+              total,
+              accuracy,
+              itemsPerMin,
+              duration: totalTime,
+              byDifficulty: { easy: { ..._byBand.easy }, medium: { ..._byBand.medium }, hard: { ..._byBand.hard } },
+            });
+          onClose();
+        };
         return /*#__PURE__*/ React.createElement(
           "div",
           {
+            ref: probeResultsDialogRef,
             className:
               "fixed inset-0 z-[300] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300",
+            role: "dialog",
+            "aria-modal": "true",
+            "aria-labelledby": "word-sounds-probe-results-title",
+            onKeyDown: (event) => handleDialogKeyDown(event, finishProbe),
           },
           /*#__PURE__*/ React.createElement(
             "div",
             {
               className:
-                "bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center border-4 border-violet-200",
+                "bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto p-8 text-center border-4 border-violet-200",
             },
             /*#__PURE__*/ React.createElement(
               "div",
@@ -5604,7 +5697,12 @@
             ),
             /*#__PURE__*/ React.createElement(
               "h2",
-              { className: "text-xl font-black text-slate-800 mb-1" },
+              {
+                id: "word-sounds-probe-results-title",
+                tabIndex: -1,
+                "data-dialog-initial-focus": "true",
+                className: "text-xl font-black text-slate-800 mb-1",
+              },
               t("common.benchmark_probe_results"),
             ),
             /*#__PURE__*/ React.createElement(
@@ -5741,19 +5839,7 @@
               /*#__PURE__*/ React.createElement(
                 "button",
                 {
-                  onClick: () => {
-                    setShowProbeResults(false);
-                    if (onProbeComplete)
-                      onProbeComplete({
-                        correct,
-                        total,
-                        accuracy,
-                        itemsPerMin,
-                        duration: totalTime,
-                        byDifficulty: { easy: { ..._byBand.easy }, medium: { ..._byBand.medium }, hard: { ..._byBand.hard } },
-                      });
-                    onClose();
-                  },
+                  onClick: finishProbe,
                   className:
                     "flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-violet-600 text-white hover:bg-violet-700 transition-colors",
                 },
@@ -15406,20 +15492,30 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         wordSoundsScore.total > 0
           ? Math.round((wordSoundsScore.correct / wordSoundsScore.total) * 100)
           : 0;
+      const closeSessionDialog = () => {
+        setShowSessionComplete(false);
+        onClose();
+      };
+      if (showProbeResults) return renderProbeResults();
       if (showSessionComplete) {
         const streakEmoji =
           wordSoundsStreak >= 5 ? "🔥" : wordSoundsStreak >= 3 ? "⚡" : "✨";
         return /*#__PURE__*/ React.createElement(
           "div",
           {
+            ref: sessionCompleteDialogRef,
             className:
               "fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in zoom-in duration-300",
+            role: "dialog",
+            "aria-modal": "true",
+            "aria-labelledby": "word-sounds-session-complete-title",
+            onKeyDown: (event) => handleDialogKeyDown(event, closeSessionDialog),
           },
           /*#__PURE__*/ React.createElement(
             "div",
             {
               className:
-                "bg-gradient-to-br from-violet-600 to-purple-700 rounded-3xl shadow-2xl max-w-md w-full overflow-hidden text-white",
+                "bg-gradient-to-br from-violet-600 to-purple-700 rounded-3xl shadow-2xl max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto text-white",
             },
             /*#__PURE__*/ React.createElement(
               "div",
@@ -15437,7 +15533,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ),
               /*#__PURE__*/ React.createElement(
                 "h2",
-                { className: "text-3xl font-black mb-2" },
+                {
+                  id: "word-sounds-session-complete-title",
+                  tabIndex: -1,
+                  "data-dialog-initial-focus": "true",
+                  className: "text-3xl font-black mb-2",
+                },
                 isParentMode
                   ? (accuracy >= 80
                     ? ts("word_sounds.parent_amazing") || "\uD83C\uDF1F Amazing home practice!"
@@ -15786,10 +15887,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               /*#__PURE__*/ React.createElement(
                 "button",
                 {
-                  onClick: () => {
-                    setShowSessionComplete(false);
-                    onClose();
-                  },
+                  onClick: closeSessionDialog,
                   className:
                     "w-full py-2 text-white/80 hover:text-white transition-colors",
                 },
@@ -15992,7 +16090,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             "fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in",
           role: "dialog",
           "aria-modal": "true",
-          "aria-label": ts("word_sounds.sr_welcome") || "Welcome to Word Sounds!",
+          "aria-labelledby": "word-sounds-dialog-title",
+          onKeyDown: (event) => handleDialogKeyDown(event, onClose),
         },
         /*#__PURE__*/ React.createElement(
           "div",
@@ -16127,7 +16226,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   null,
                   /*#__PURE__*/ React.createElement(
                     "h2",
-                    { className: "text-xl font-bold" },
+                    {
+                      id: "word-sounds-dialog-title",
+                      tabIndex: -1,
+                      "data-dialog-initial-focus": "true",
+                      className: "text-xl font-bold",
+                    },
                     "\uD83D\uDD24 Word Sounds Studio",
                   ),
                   /*#__PURE__*/ React.createElement(
@@ -16818,7 +16922,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 ref: activityRegionRef,
                 tabIndex: -1,
                 className:
-                  "animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none",
+                  "animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2",
               },
               // ── Graphophonemic anchor strip (WCAG-aligned, Orton-Gillingham style) ──
               // Persists letter ↔ sound ↔ key-word ↔ sentence association across every

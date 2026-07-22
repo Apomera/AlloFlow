@@ -1158,7 +1158,7 @@ exports[`layer 1 — linguistic anchor data (window.__alloAnchor) > grapho-phone
 `;
 
 exports[`layer 2 — render behavior per activity > activity "blending" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-label="Welcome to Word Sounds!">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -1190,7 +1190,7 @@ exports[`layer 2 — render behavior per activity > activity "blending" renders 
 </ellipse>
 </svg>
 <div>
-<h2 class="text-xl font-bold">🔤 Word Sounds Studio</h2>
+<h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
 <p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
 </div>
 </div>
@@ -1313,7 +1313,7 @@ exports[`layer 2 — render behavior per activity > activity "blending" renders 
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -1374,7 +1374,7 @@ exports[`layer 2 — render behavior per activity > activity "blending" renders 
 `;
 
 exports[`layer 2 — render behavior per activity > activity "counting" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-label="Welcome to Word Sounds!">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -1406,7 +1406,7 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 </ellipse>
 </svg>
 <div>
-<h2 class="text-xl font-bold">🔤 Word Sounds Studio</h2>
+<h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
 <p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
 </div>
 </div>
@@ -1529,7 +1529,7 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -1607,7 +1607,7 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 `;
 
 exports[`layer 2 — render behavior per activity > activity "decoding" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-label="Welcome to Word Sounds!">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -1639,7 +1639,7 @@ exports[`layer 2 — render behavior per activity > activity "decoding" renders 
 </ellipse>
 </svg>
 <div>
-<h2 class="text-xl font-bold">🔤 Word Sounds Studio</h2>
+<h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
 <p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
 </div>
 </div>
@@ -1762,7 +1762,7 @@ exports[`layer 2 — render behavior per activity > activity "decoding" renders 
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -1807,7 +1807,7 @@ exports[`layer 2 — render behavior per activity > activity "decoding" renders 
 `;
 
 exports[`layer 2 — render behavior per activity > activity "isolation" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-label="Welcome to Word Sounds!">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -1839,7 +1839,7 @@ exports[`layer 2 — render behavior per activity > activity "isolation" renders
 </ellipse>
 </svg>
 <div>
-<h2 class="text-xl font-bold">🔤 Word Sounds Studio</h2>
+<h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
 <p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
 </div>
 </div>
@@ -1962,7 +1962,7 @@ exports[`layer 2 — render behavior per activity > activity "isolation" renders
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -2003,7 +2003,7 @@ exports[`layer 2 — render behavior per activity > activity "isolation" renders
 `;
 
 exports[`layer 2 — render behavior per activity > activity "letter_tracing" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-label="Welcome to Word Sounds!">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -2035,7 +2035,7 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 </ellipse>
 </svg>
 <div>
-<h2 class="text-xl font-bold">🔤 Word Sounds Studio</h2>
+<h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
 <p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
 </div>
 </div>
@@ -2158,7 +2158,7 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -2234,7 +2234,7 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 `;
 
 exports[`layer 2 — render behavior per activity > activity "manipulation" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-label="Welcome to Word Sounds!">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -2266,7 +2266,7 @@ exports[`layer 2 — render behavior per activity > activity "manipulation" rend
 </ellipse>
 </svg>
 <div>
-<h2 class="text-xl font-bold">🔤 Word Sounds Studio</h2>
+<h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
 <p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
 </div>
 </div>
@@ -2389,7 +2389,7 @@ exports[`layer 2 — render behavior per activity > activity "manipulation" rend
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -2452,7 +2452,7 @@ exports[`layer 2 — render behavior per activity > activity "manipulation" rend
 `;
 
 exports[`layer 2 — render behavior per activity > activity "mapping" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-label="Welcome to Word Sounds!">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -2484,7 +2484,7 @@ exports[`layer 2 — render behavior per activity > activity "mapping" renders i
 </ellipse>
 </svg>
 <div>
-<h2 class="text-xl font-bold">🔤 Word Sounds Studio</h2>
+<h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
 <p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
 </div>
 </div>
@@ -2607,7 +2607,7 @@ exports[`layer 2 — render behavior per activity > activity "mapping" renders i
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -2675,7 +2675,7 @@ exports[`layer 2 — render behavior per activity > activity "mapping" renders i
 `;
 
 exports[`layer 2 — render behavior per activity > activity "orthography" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-label="Welcome to Word Sounds!">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -2707,7 +2707,7 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 </ellipse>
 </svg>
 <div>
-<h2 class="text-xl font-bold">🔤 Word Sounds Studio</h2>
+<h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
 <p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
 </div>
 </div>
@@ -2830,7 +2830,7 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -2919,7 +2919,7 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 `;
 
 exports[`layer 2 — render behavior per activity > activity "rhyming" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-label="Welcome to Word Sounds!">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -2951,7 +2951,7 @@ exports[`layer 2 — render behavior per activity > activity "rhyming" renders i
 </ellipse>
 </svg>
 <div>
-<h2 class="text-xl font-bold">🔤 Word Sounds Studio</h2>
+<h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
 <p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
 </div>
 </div>
@@ -3074,7 +3074,7 @@ exports[`layer 2 — render behavior per activity > activity "rhyming" renders i
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -3140,7 +3140,7 @@ exports[`layer 2 — render behavior per activity > activity "rhyming" renders i
 `;
 
 exports[`layer 2 — render behavior per activity > activity "segmentation" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-label="Welcome to Word Sounds!">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -3172,7 +3172,7 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 </ellipse>
 </svg>
 <div>
-<h2 class="text-xl font-bold">🔤 Word Sounds Studio</h2>
+<h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
 <p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
 </div>
 </div>
@@ -3295,7 +3295,7 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -3366,7 +3366,7 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 `;
 
 exports[`layer 2 — render behavior per activity > activity "sound_sort" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-label="Welcome to Word Sounds!">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -3398,7 +3398,7 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 </ellipse>
 </svg>
 <div>
-<h2 class="text-xl font-bold">🔤 Word Sounds Studio</h2>
+<h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
 <p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
 </div>
 </div>
@@ -3521,7 +3521,7 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -3599,7 +3599,7 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 `;
 
 exports[`layer 2 — render behavior per activity > activity "spelling_bee" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-label="Welcome to Word Sounds!">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -3631,7 +3631,7 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 </ellipse>
 </svg>
 <div>
-<h2 class="text-xl font-bold">🔤 Word Sounds Studio</h2>
+<h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
 <p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
 </div>
 </div>
@@ -3754,7 +3754,7 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
 <div class="flex flex-col items-center gap-5 p-4">
 <div class="text-center mb-6 relative">
 <button class="flex flex-col items-center justify-center gap-2 mx-auto p-4 rounded-2xl transition-all bg-white/60 hover:bg-violet-50 hover:scale-105">
@@ -3812,7 +3812,7 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 `;
 
 exports[`layer 2 — render behavior per activity > activity "syllable_blending" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-label="Welcome to Word Sounds!">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -3844,7 +3844,7 @@ exports[`layer 2 — render behavior per activity > activity "syllable_blending"
 </ellipse>
 </svg>
 <div>
-<h2 class="text-xl font-bold">🔤 Word Sounds Studio</h2>
+<h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
 <p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
 </div>
 </div>
@@ -3967,7 +3967,7 @@ exports[`layer 2 — render behavior per activity > activity "syllable_blending"
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -4037,7 +4037,7 @@ exports[`layer 2 — render behavior per activity > activity "syllable_blending"
 `;
 
 exports[`layer 2 — render behavior per activity > activity "syllable_counting" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-label="Welcome to Word Sounds!">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -4069,7 +4069,7 @@ exports[`layer 2 — render behavior per activity > activity "syllable_counting"
 </ellipse>
 </svg>
 <div>
-<h2 class="text-xl font-bold">🔤 Word Sounds Studio</h2>
+<h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
 <p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
 </div>
 </div>
@@ -4192,7 +4192,7 @@ exports[`layer 2 — render behavior per activity > activity "syllable_counting"
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -4259,7 +4259,7 @@ exports[`layer 2 — render behavior per activity > activity "syllable_counting"
 `;
 
 exports[`layer 2 — render behavior per activity > activity "word_families" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-label="Welcome to Word Sounds!">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -4291,7 +4291,7 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 </ellipse>
 </svg>
 <div>
-<h2 class="text-xl font-bold">🔤 Word Sounds Studio</h2>
+<h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
 <p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
 </div>
 </div>
@@ -4414,7 +4414,7 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -4509,7 +4509,7 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 `;
 
 exports[`layer 2 — render behavior per activity > correct-answer feedback banner (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-label="Welcome to Word Sounds!">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -4541,7 +4541,7 @@ exports[`layer 2 — render behavior per activity > correct-answer feedback bann
 </ellipse>
 </svg>
 <div>
-<h2 class="text-xl font-bold">🔤 Word Sounds Studio</h2>
+<h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
 <p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
 </div>
 </div>
@@ -4664,7 +4664,7 @@ exports[`layer 2 — render behavior per activity > correct-answer feedback bann
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -4726,7 +4726,7 @@ exports[`layer 2 — render behavior per activity > correct-answer feedback bann
 `;
 
 exports[`layer 2 — render behavior per activity > incorrect-answer feedback banner (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-label="Welcome to Word Sounds!">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -4758,7 +4758,7 @@ exports[`layer 2 — render behavior per activity > incorrect-answer feedback ba
 </ellipse>
 </svg>
 <div>
-<h2 class="text-xl font-bold">🔤 Word Sounds Studio</h2>
+<h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
 <p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
 </div>
 </div>
@@ -4881,7 +4881,7 @@ exports[`layer 2 — render behavior per activity > incorrect-answer feedback ba
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
