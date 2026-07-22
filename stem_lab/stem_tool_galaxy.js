@@ -4185,55 +4185,55 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("button", { type: "button", className: "mt-3 w-full rounded-lg bg-orange-700 px-3 py-2 text-xs font-bold text-white hover:bg-orange-800", onClick: function(){var cv=document.querySelector('[data-black-hole-canvas]');if(cv&&cv._dropIntoBlackHole)cv._dropIntoBlackHole(blackHoleDropObject,blackHoleMassMode);}, "aria-describedby": "black-hole-drop-help" }, __alloT('stem.galaxy.bh_drop_btn', 'Drop object into black hole'))
                 ),
                 React.createElement("div", { className: "rounded-2xl border border-violet-200 bg-violet-50 p-4" },
-                  React.createElement("h4", { className: "text-sm font-black text-violet-900" }, "What you are seeing"),
+                  React.createElement("h4", { className: "text-sm font-black text-violet-900" }, __alloT('stem.galaxy.bh_what_seeing_title', 'What you are seeing')),
                   React.createElement("ul", { className: "mt-2 space-y-2 text-[11px] leading-relaxed text-violet-950" },
-                    React.createElement("li", null, React.createElement("strong", null, "Event horizon:"), " the boundary beyond which light cannot escape."),
-                    React.createElement("li", null, React.createElement("strong", null, "Photon ring:"), " light bent into repeated paths around the shadow."),
-                    React.createElement("li", null, React.createElement("strong", null, "Doppler beaming:"), " the disk side moving toward us appears brighter."),
-                    React.createElement("li", null, React.createElement("strong", null, "Jets:"), " energized matter guided away from the disk along magnetic poles."))
+                    React.createElement("li", null, React.createElement("strong", null, __alloT('stem.galaxy.bh_li_event_horizon_label', 'Event horizon:')), __alloT('stem.galaxy.bh_li_event_horizon_text', ' the boundary beyond which light cannot escape.')),
+                    React.createElement("li", null, React.createElement("strong", null, __alloT('stem.galaxy.bh_li_photon_ring_label', 'Photon ring:')), __alloT('stem.galaxy.bh_li_photon_ring_text', ' light bent into repeated paths around the shadow.')),
+                    React.createElement("li", null, React.createElement("strong", null, __alloT('stem.galaxy.bh_li_doppler_label', 'Doppler beaming:')), __alloT('stem.galaxy.bh_li_doppler_text', ' the disk side moving toward us appears brighter.')),
+                    React.createElement("li", null, React.createElement("strong", null, __alloT('stem.galaxy.bh_li_jets_label', 'Jets:')), __alloT('stem.galaxy.bh_li_jets_text', ' energized matter guided away from the disk along magnetic poles.')))
                 )
               ),
               React.createElement("section", { className: "lg:col-span-2 overflow-hidden rounded-2xl border border-cyan-300/25 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 p-4 text-slate-100 shadow-xl", role: "region", "aria-labelledby": "black-hole-evidence-title" },
                 React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                   React.createElement("div", null,
-                    React.createElement("h4", { id: "black-hole-evidence-title", className: "text-sm font-black text-cyan-100" }, "What is a black hole - and what might be inside?"),
-                    React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-300" }, "The event horizon is an evidence boundary: outside effects can reach us; information from inside cannot.")),
-                  React.createElement("span", { className: "rounded-full border border-cyan-200/25 bg-cyan-300/10 px-2 py-1 text-[11px] font-bold text-cyan-100" }, "Evidence map")
+                    React.createElement("h4", { id: "black-hole-evidence-title", className: "text-sm font-black text-cyan-100" }, __alloT('stem.galaxy.bh_evidence_title', 'What is a black hole - and what might be inside?')),
+                    React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-300" }, __alloT('stem.galaxy.bh_evidence_desc', 'The event horizon is an evidence boundary: outside effects can reach us; information from inside cannot.'))),
+                  React.createElement("span", { className: "rounded-full border border-cyan-200/25 bg-cyan-300/10 px-2 py-1 text-[11px] font-bold text-cyan-100" }, __alloT('stem.galaxy.bh_evidence_map_badge', 'Evidence map'))
                 ),
                 React.createElement("div", { className: "mt-4 grid grid-cols-1 items-center gap-4 md:grid-cols-[1fr_150px_1fr]" },
                   React.createElement("div", { className: "rounded-xl border border-emerald-300/25 bg-emerald-300/10 p-3" },
-                    React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-emerald-200" }, "Outside - observable"),
+                    React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-emerald-200" }, __alloT('stem.galaxy.bh_outside_title', 'Outside - observable')),
                     React.createElement("ul", { className: "mt-2 space-y-1.5 text-[11px] leading-relaxed text-slate-200" },
-                      React.createElement("li", null, "Bright shadow and photon-ring structure"),
-                      React.createElement("li", null, "Fast stellar orbits, hot gas, and X-rays"),
-                      React.createElement("li", null, "Gravitational waves from black-hole mergers"))
+                      React.createElement("li", null, __alloT('stem.galaxy.bh_outside_li1', 'Bright shadow and photon-ring structure')),
+                      React.createElement("li", null, __alloT('stem.galaxy.bh_outside_li2', 'Fast stellar orbits, hot gas, and X-rays')),
+                      React.createElement("li", null, __alloT('stem.galaxy.bh_outside_li3', 'Gravitational waves from black-hole mergers')))
                   ),
                   React.createElement("div", { className: "mx-auto flex h-36 w-36 items-center justify-center rounded-full border border-cyan-200/50 bg-cyan-300/10 shadow-[0_0_35px_rgba(34,211,238,0.24)]", "aria-hidden": true },
                     React.createElement("div", { className: "flex h-28 w-28 items-center justify-center rounded-full border-2 border-amber-200/70 bg-gradient-to-br from-orange-400/30 via-indigo-500/20 to-black shadow-[0_0_24px_rgba(251,191,36,0.36)]" },
                       React.createElement("div", { className: "flex h-20 w-20 items-center justify-center rounded-full border border-violet-300/40 bg-black text-center text-[11px] font-black text-violet-200" }, "EVENT", React.createElement("br"), "HORIZON"))
                   ),
                   React.createElement("div", { className: "rounded-xl border border-violet-300/25 bg-violet-300/10 p-3" },
-                    React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-violet-200" }, "Inside - causally hidden"),
+                    React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-violet-200" }, __alloT('stem.galaxy.bh_inside_title', 'Inside - causally hidden')),
                     React.createElement("ul", { className: "mt-2 space-y-1.5 text-[11px] leading-relaxed text-slate-200" },
-                      React.createElement("li", null, "General relativity predicts continued collapse"),
-                      React.createElement("li", null, "Its singularity may mark the theory's limit"),
-                      React.createElement("li", null, "No outside observer can receive an interior signal"))
+                      React.createElement("li", null, __alloT('stem.galaxy.bh_inside_li1', 'General relativity predicts continued collapse')),
+                      React.createElement("li", null, __alloT('stem.galaxy.bh_inside_li2', "Its singularity may mark the theory's limit")),
+                      React.createElement("li", null, __alloT('stem.galaxy.bh_inside_li3', 'No outside observer can receive an interior signal')))
                   )
                 ),
                 React.createElement("div", { className: "mt-4 grid grid-cols-1 gap-2 md:grid-cols-3" },
-                  React.createElement("div", { className: "rounded-xl border border-sky-300/20 bg-sky-300/10 p-3" }, React.createElement("p", { className: "text-[11px] font-black text-sky-200" }, "Strongly supported"), React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-300" }, "Horizons, curved light paths, accretion, and mergers match observations and relativity.")),
-                  React.createElement("div", { className: "rounded-xl border border-amber-300/20 bg-amber-300/10 p-3" }, React.createElement("p", { className: "text-[11px] font-black text-amber-200" }, "Predicted, not directly seen"), React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-300" }, "A classical singularity and extremely slow Hawking evaporation remain theoretical.")),
-                  React.createElement("div", { className: "rounded-xl border border-fuchsia-300/20 bg-fuchsia-300/10 p-3" }, React.createElement("p", { className: "text-[11px] font-black text-fuchsia-200" }, "Speculative ideas"), React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-300" }, "Quantum cores, fuzzballs, firewalls, wormholes, and white holes are hypotheses - not established destinations."))
+                  React.createElement("div", { className: "rounded-xl border border-sky-300/20 bg-sky-300/10 p-3" }, React.createElement("p", { className: "text-[11px] font-black text-sky-200" }, __alloT('stem.galaxy.bh_supported_title', 'Strongly supported')), React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-300" }, __alloT('stem.galaxy.bh_supported_desc', 'Horizons, curved light paths, accretion, and mergers match observations and relativity.'))),
+                  React.createElement("div", { className: "rounded-xl border border-amber-300/20 bg-amber-300/10 p-3" }, React.createElement("p", { className: "text-[11px] font-black text-amber-200" }, __alloT('stem.galaxy.bh_predicted_title', 'Predicted, not directly seen')), React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-300" }, __alloT('stem.galaxy.bh_predicted_desc', 'A classical singularity and extremely slow Hawking evaporation remain theoretical.'))),
+                  React.createElement("div", { className: "rounded-xl border border-fuchsia-300/20 bg-fuchsia-300/10 p-3" }, React.createElement("p", { className: "text-[11px] font-black text-fuchsia-200" }, __alloT('stem.galaxy.bh_speculative_title', 'Speculative ideas')), React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-300" }, __alloT('stem.galaxy.bh_speculative_desc', 'Quantum cores, fuzzballs, firewalls, wormholes, and white holes are hypotheses - not established destinations.')))
                 ),
                 React.createElement("div", { className: "mt-4 border-t border-cyan-200/15 pt-4" },
-                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-cyan-200" }, "Black-hole life cycle"),
-                  React.createElement("ol", { className: "mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-5", "aria-label": "Possible stages in a black hole's history" },
+                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-cyan-200" }, __alloT('stem.galaxy.bh_lifecycle_title', 'Black-hole life cycle')),
+                  React.createElement("ol", { className: "mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-5", "aria-label": __alloT('stem.galaxy.aria_bh_lifecycle', "Possible stages in a black hole's history") },
                     [
-                      { icon: '\u2605', title: 'Formation', text: 'Massive-star collapse or growth of an earlier compact seed.', color: 'border-blue-300/25 bg-blue-300/10 text-blue-100' },
-                      { icon: '\u224b', title: 'Active feeding', text: 'Hot accretion, flares, and sometimes enormous particle jets.', color: 'border-orange-300/25 bg-orange-300/10 text-orange-100' },
-                      { icon: '\u25cf', title: 'Quiet phase', text: 'The disk can fade; gravity still reveals the hidden mass.', color: 'border-slate-300/25 bg-slate-300/10 text-slate-100' },
-                      { icon: '\u223f', title: 'Merger', text: 'Two black holes combine and send gravitational waves outward.', color: 'border-violet-300/25 bg-violet-300/10 text-violet-100' },
-                      { icon: '\u2726', title: 'Far future?', text: 'Hawking evaporation is predicted, but has not been observed.', color: 'border-fuchsia-300/25 bg-fuchsia-300/10 text-fuchsia-100' }
+                      { icon: '\u2605', title: __alloT('stem.galaxy.bh_stage_formation_title', 'Formation'), text: __alloT('stem.galaxy.bh_stage_formation_text', 'Massive-star collapse or growth of an earlier compact seed.'), color: 'border-blue-300/25 bg-blue-300/10 text-blue-100' },
+                      { icon: '\u224b', title: __alloT('stem.galaxy.bh_stage_feeding_title', 'Active feeding'), text: __alloT('stem.galaxy.bh_stage_feeding_text', 'Hot accretion, flares, and sometimes enormous particle jets.'), color: 'border-orange-300/25 bg-orange-300/10 text-orange-100' },
+                      { icon: '\u25cf', title: __alloT('stem.galaxy.bh_stage_quiet_title', 'Quiet phase'), text: __alloT('stem.galaxy.bh_stage_quiet_text', 'The disk can fade; gravity still reveals the hidden mass.'), color: 'border-slate-300/25 bg-slate-300/10 text-slate-100' },
+                      { icon: '\u223f', title: __alloT('stem.galaxy.bh_stage_merger_title', 'Merger'), text: __alloT('stem.galaxy.bh_stage_merger_text', 'Two black holes combine and send gravitational waves outward.'), color: 'border-violet-300/25 bg-violet-300/10 text-violet-100' },
+                      { icon: '\u2726', title: __alloT('stem.galaxy.bh_stage_future_title', 'Far future?'), text: __alloT('stem.galaxy.bh_stage_future_text', 'Hawking evaporation is predicted, but has not been observed.'), color: 'border-fuchsia-300/25 bg-fuchsia-300/10 text-fuchsia-100' }
                     ].map(function(stage, index){ return React.createElement("li", { key: stage.title, className: "relative rounded-xl border p-3 " + stage.color },
                       React.createElement("div", { className: "flex items-center gap-2" },
                         React.createElement("span", { className: "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-current/25 bg-black/25 text-sm", "aria-hidden": true }, stage.icon),
@@ -4241,7 +4241,7 @@ if (!window._galaxyHasLoadedOnce) {
                       React.createElement("p", { className: "mt-2 text-[11px] leading-relaxed text-slate-300" }, stage.text)); })
                   )
                 ),
-                React.createElement("p", { className: "mt-3 text-[11px] leading-relaxed text-cyan-100" }, "A black hole is not necessarily active forever: its surroundings can brighten, quiet down, and brighten again as matter becomes available.")
+                React.createElement("p", { className: "mt-3 text-[11px] leading-relaxed text-cyan-100" }, __alloT('stem.galaxy.bh_lifecycle_note', 'A black hole is not necessarily active forever: its surroundings can brighten, quiet down, and brighten again as matter becomes available.'))
               )
             ),
             !d.quizMode && simMode === 'star' && React.createElement("div", { className: "animate-in fade-in duration-300", style: { display: "flex", gap: "16px", alignItems: "stretch" } },
