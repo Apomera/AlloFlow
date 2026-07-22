@@ -292,9 +292,9 @@ const d = labToolData.wave;
             canvasEl._wavePointerUp = onPointerUp;
             // Canvas Narration: tool init
             if (typeof canvasNarrate === 'function') canvasNarrate('wave', 'init', {
-              first: 'Wave Simulator loaded. An underwater ocean scene shows animated waves. Adjust amplitude and frequency with sliders. Switch between Free Wave, Standing, Ripple Tank, Longitudinal, Doppler, and Spectrum modes.',
-              repeat: 'Wave Simulator ready.',
-              terse: 'Wave Simulator ready.'
+              first: __alloT('stem.wave.narrate_init_first', 'Wave Simulator loaded. An underwater ocean scene shows animated waves. Adjust amplitude and frequency with sliders. Switch between Free Wave, Standing, Ripple Tank, Longitudinal, Doppler, and Spectrum modes.'),
+              repeat: __alloT('stem.wave.narrate_ready', 'Wave Simulator ready.'),
+              terse: __alloT('stem.wave.narrate_ready', 'Wave Simulator ready.')
             });
 
             var cW = canvasEl.width = canvasEl.offsetWidth * 2;
@@ -1672,7 +1672,7 @@ const d = labToolData.wave;
 
             if (pct > 90 && !d.matchXpClaimed) {
 
-              awardStemXP('wave-match', 15, 'Matched a wave exactly!');
+              awardStemXP('wave-match', 15, __alloT('stem.wave.xp_matched_wave', 'Matched a wave exactly!'));
 
               upd('matchXpClaimed', true);
 
@@ -1791,33 +1791,33 @@ const d = labToolData.wave;
             { q: __alloT('stem.wave.quiz4_q', 'Destructive interference occurs when...'), a: 'Peaks meet troughs', opts: ['Peaks meet peaks', 'Peaks meet troughs', 'Waves stop', 'Amplitude doubles'],
               demo: { waveMode: 'free', showSecond: true, frequency: 3, frequency2: 3, amplitude: 45, amplitude2: 45, phase2: Math.PI },
               wrongFeedback: {
-                'Peaks meet peaks': 'Peak-on-peak is CONSTRUCTIVE interference \u2014 the wave gets bigger. Destruction needs opposites: peak + trough = flat.',
-                'Waves stop': 'The waves keep traveling \u2014 they only cancel at the spots where they overlap out of phase. Watch the dark bands in the Ripple Tank.',
-                'Amplitude doubles': 'Doubling is constructive interference. Destructive SUBTRACTS \u2014 a peak fills a trough.'
+                'Peaks meet peaks': __alloT('stem.wave.quiz4_fb_peaks', 'Peak-on-peak is CONSTRUCTIVE interference \u2014 the wave gets bigger. Destruction needs opposites: peak + trough = flat.'),
+                'Waves stop': __alloT('stem.wave.quiz4_fb_stop', 'The waves keep traveling \u2014 they only cancel at the spots where they overlap out of phase. Watch the dark bands in the Ripple Tank.'),
+                'Amplitude doubles': __alloT('stem.wave.quiz4_fb_doubles', 'Doubling is constructive interference. Destructive SUBTRACTS \u2014 a peak fills a trough.')
               } },
 
             { q: __alloT('stem.wave.quiz5_q', 'Sound is what type of wave?'), a: 'Longitudinal', opts: ['Transverse', 'Longitudinal', 'Circular', 'Standing'],
               demo: { waveMode: 'longitudinal' },
               wrongFeedback: {
-                'Transverse': 'Transverse waves wiggle PERPENDICULAR to travel (light, a guitar string). Air molecules push and pull ALONG the direction of travel \u2014 switch to Longitudinal mode and watch the compressions.',
-                'Circular': 'Water ripples spread in circles, but that describes the pattern on the surface, not the wave type.',
-                'Standing': 'Standing waves are trapped between boundaries. Traveling sound is free \u2014 it only forms standing waves inside pipes and rooms.'
+                'Transverse': __alloT('stem.wave.quiz5_fb_transverse', 'Transverse waves wiggle PERPENDICULAR to travel (light, a guitar string). Air molecules push and pull ALONG the direction of travel \u2014 switch to Longitudinal mode and watch the compressions.'),
+                'Circular': __alloT('stem.wave.quiz5_fb_circular', 'Water ripples spread in circles, but that describes the pattern on the surface, not the wave type.'),
+                'Standing': __alloT('stem.wave.quiz5_fb_standing', 'Standing waves are trapped between boundaries. Traveling sound is free \u2014 it only forms standing waves inside pipes and rooms.')
               } },
 
             { q: __alloT('stem.wave.quiz6_q', 'At a node of a standing wave, the displacement is:'), a: 'Always zero', opts: ['Maximum', 'Always zero', 'Half maximum', 'Random'],
               demo: { waveMode: 'standing', harmonic: 3 },
               wrongFeedback: {
-                'Maximum': 'Maximum displacement is the ANTInode. Nodes are the still points \u2014 in Standing mode, watch the spots where the string never moves.',
-                'Half maximum': 'Nodes are perfectly still \u2014 zero, not half. Points BETWEEN node and antinode oscillate at partial amplitude.',
-                'Random': 'Standing waves are perfectly ordered \u2014 the nodes stay locked in place. That is exactly why they are called STANDING.'
+                'Maximum': __alloT('stem.wave.quiz6_fb_maximum', 'Maximum displacement is the ANTInode. Nodes are the still points \u2014 in Standing mode, watch the spots where the string never moves.'),
+                'Half maximum': __alloT('stem.wave.quiz6_fb_half', 'Nodes are perfectly still \u2014 zero, not half. Points BETWEEN node and antinode oscillate at partial amplitude.'),
+                'Random': __alloT('stem.wave.quiz6_fb_random', 'Standing waves are perfectly ordered \u2014 the nodes stay locked in place. That is exactly why they are called STANDING.')
               } },
 
             { q: __alloT('stem.wave.quiz7_q', 'The speed of a wave equals:'), a: 'Frequency \u00D7 Wavelength', opts: ['Amplitude \u00D7 Frequency', 'Frequency \u00D7 Wavelength', 'Period \u00D7 Amplitude', 'None of these'],
               demo: { expSection: 'discoverWave' },
               wrongFeedback: {
-                'Amplitude \u00D7 Frequency': 'Amplitude carries ENERGY, not speed. v = f \u00D7 \u03BB: waves per second \u00D7 length of each wave = distance per second.',
-                'Period \u00D7 Amplitude': 'Period is just 1/frequency and amplitude is height \u2014 multiplying them gives nothing physical. v = f \u00D7 \u03BB.',
-                'None of these': 'One of them IS right: v = f \u00D7 \u03BB \u2014 how many waves pass per second times how long each one is.'
+                'Amplitude \u00D7 Frequency': __alloT('stem.wave.quiz7_fb_amp_freq', 'Amplitude carries ENERGY, not speed. v = f \u00D7 \u03BB: waves per second \u00D7 length of each wave = distance per second.'),
+                'Period \u00D7 Amplitude': __alloT('stem.wave.quiz7_fb_period_amp', 'Period is just 1/frequency and amplitude is height \u2014 multiplying them gives nothing physical. v = f \u00D7 \u03BB.'),
+                'None of these': __alloT('stem.wave.quiz7_fb_none', 'One of them IS right: v = f \u00D7 \u03BB \u2014 how many waves pass per second times how long each one is.')
               } },
 
           ];
@@ -3358,9 +3358,9 @@ const d = labToolData.wave;
           setLab({ observationsLogged: (lab.observationsLogged || []).concat([obs]).slice(-8) });
         }
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🎯 Standing-wave hunt'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🎯 ' + __alloT('stem.wave.btn_standing_hunt', 'Standing-wave hunt')),
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
-            'A string fixed at both ends. You control the tension and the driving frequency. There is no "right answer" — and no answer dump. Sweep the sliders. Look for the rare frequencies where the string locks into a clean standing pattern. Type what you discover in your own words.'),
+            __alloT('stem.wave.sec_standinghunt_intro', 'A string fixed at both ends. You control the tension and the driving frequency. There is no "right answer" — and no answer dump. Sweep the sliders. Look for the rare frequencies where the string locks into a clean standing pattern. Type what you discover in your own words.')),
           // Live SVG
           h('div', { className: 'mb-2 rounded border border-slate-200 bg-slate-50 p-2' },
             h('svg', { viewBox: '0 0 320 120', className: 'w-full h-32' },
