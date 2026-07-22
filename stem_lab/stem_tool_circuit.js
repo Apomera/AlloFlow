@@ -2313,46 +2313,46 @@ window.StemLab = window.StemLab || {
             (function() {
               var COMP_PHYSICS = {
                 resistor: {
-                  icon: '\u2AE8', name: 'Resistor', color: '#eab308',
-                  how: 'Electrons collide with atoms in the resistive material, converting electrical energy into heat. The more collisions (higher resistance), the less current flows.',
+                  icon: '\u2AE8', name: __alloT('stem.circuit.comp_resistor', 'Resistor'), color: '#eab308',
+                  how: __alloT('stem.circuit.physics_resistor_how', 'Electrons collide with atoms in the resistive material, converting electrical energy into heat. The more collisions (higher resistance), the less current flows.'),
                   equation: 'V = I \u00D7 R (Ohm\'s Law)',
-                  analogy: 'Like a narrow section of pipe - it restricts water flow and creates pressure difference.'
+                  analogy: __alloT('stem.circuit.physics_resistor_analogy', 'Like a narrow section of pipe - it restricts water flow and creates pressure difference.')
                 },
                 bulb: {
-                  icon: '\uD83D\uDCA1', name: 'Light Bulb', color: '#fbbf24',
-                  how: 'Current heats a thin wire (filament) to ~2,500\u00B0C until it glows white-hot. The filament\'s resistance increases with temperature.',
+                  icon: '\uD83D\uDCA1', name: __alloT('stem.circuit.comp_light_bulb', 'Light Bulb'), color: '#fbbf24',
+                  how: __alloT('stem.circuit.physics_bulb_how', "Current heats a thin wire (filament) to ~2,500\u00B0C until it glows white-hot. The filament's resistance increases with temperature."),
                   equation: 'Brightness \u221D Power = I\u00B2 \u00D7 R',
-                  analogy: 'Like rubbing your hands together fast - friction (resistance) creates heat and light.'
+                  analogy: __alloT('stem.circuit.physics_bulb_analogy', 'Like rubbing your hands together fast - friction (resistance) creates heat and light.')
                 },
                 switch: {
-                  icon: '\uD83D\uDD18', name: 'Switch', color: '#10b981',
-                  how: 'A physical gap in the conductor. When closed, electrons flow freely. When open, the air gap has near-infinite resistance, stopping current completely.',
+                  icon: '\uD83D\uDD18', name: __alloT('stem.circuit.comp_switch', 'Switch'), color: '#10b981',
+                  how: __alloT('stem.circuit.physics_switch_how', 'A physical gap in the conductor. When closed, electrons flow freely. When open, the air gap has near-infinite resistance, stopping current completely.'),
                   equation: 'R_open \u2248 \u221E, R_closed \u2248 0\u03A9',
-                  analogy: 'Like a drawbridge - when up, nothing crosses. When down, traffic flows.'
+                  analogy: __alloT('stem.circuit.physics_switch_analogy', 'Like a drawbridge - when up, nothing crosses. When down, traffic flows.')
                 },
                 led: {
-                  icon: '\uD83D\uDD34', name: 'LED', color: '#f43f5e',
-                  how: 'A semiconductor diode that emits photons when electrons drop from a high energy band to a low one. Different materials produce different colors.',
+                  icon: '\uD83D\uDD34', name: __alloT('stem.circuit.comp_led', 'LED'), color: '#f43f5e',
+                  how: __alloT('stem.circuit.physics_led_how', 'A semiconductor diode that emits photons when electrons drop from a high energy band to a low one. Different materials produce different colors.'),
                   equation: 'V_forward \u2248 1.8-3.3V (varies by color)',
-                  analogy: 'Like a one-way door with a light - electrons can only go one direction, and they release light as they pass.'
+                  analogy: __alloT('stem.circuit.physics_led_analogy', 'Like a one-way door with a light - electrons can only go one direction, and they release light as they pass.')
                 },
                 ammeter: {
-                  icon: '\u26A1', name: 'Ammeter', color: '#06b6d4',
-                  how: 'Measures current by detecting the magnetic field created by flowing electrons. Connected in series so all current passes through it. Has very low internal resistance.',
+                  icon: '\u26A1', name: __alloT('stem.circuit.comp_ammeter', 'Ammeter'), color: '#06b6d4',
+                  how: __alloT('stem.circuit.physics_ammeter_how', 'Measures current by detecting the magnetic field created by flowing electrons. Connected in series so all current passes through it. Has very low internal resistance.'),
                   equation: 'I = reading in Amperes (A)',
-                  analogy: 'Like a turnstile counting how many people pass per second.'
+                  analogy: __alloT('stem.circuit.physics_ammeter_analogy', 'Like a turnstile counting how many people pass per second.')
                 },
                 voltmeter: {
-                  icon: '\uD83D\uDD0B', name: 'Voltmeter', color: '#f59e0b',
-                  how: 'Measures potential difference (voltage) between two points. Connected in parallel with very high internal resistance so it doesn\'t affect the circuit.',
+                  icon: '\uD83D\uDD0B', name: __alloT('stem.circuit.comp_voltmeter', 'Voltmeter'), color: '#f59e0b',
+                  how: __alloT('stem.circuit.physics_voltmeter_how', "Measures potential difference (voltage) between two points. Connected in parallel with very high internal resistance so it doesn't affect the circuit."),
                   equation: 'V = reading in Volts (V)',
-                  analogy: 'Like a pressure gauge on a water pipe - measures the push without blocking flow.'
+                  analogy: __alloT('stem.circuit.physics_voltmeter_analogy', 'Like a pressure gauge on a water pipe - measures the push without blocking flow.')
                 },
                 capacitor: {
-                  icon: '\u2E28', name: 'Capacitor', color: '#38bdf8',
-                  how: 'Two metal plates separated by an insulator. Electrons accumulate on one plate and leave the other, storing energy in an electric field. Releases energy quickly when discharged.',
+                  icon: '\u2E28', name: __alloT('stem.circuit.comp_capacitor', 'Capacitor'), color: '#38bdf8',
+                  how: __alloT('stem.circuit.physics_capacitor_how', 'Two metal plates separated by an insulator. Electrons accumulate on one plate and leave the other, storing energy in an electric field. Releases energy quickly when discharged.'),
                   equation: 'Q = C \u00D7 V, Energy = \u00BDCV\u00B2',
-                  analogy: 'Like a water tank - it fills up slowly and can release all its stored water at once.'
+                  analogy: __alloT('stem.circuit.physics_capacitor_analogy', 'Like a water tank - it fills up slowly and can release all its stored water at once.')
                 }
               };
 
@@ -2383,14 +2383,14 @@ window.StemLab = window.StemLab || {
                   ),
                   h('p', { className: 'text-xs text-slate-300 leading-relaxed mb-3' }, physics.how),
                   h('div', { className: 'bg-cyan-950/20 rounded-lg p-2.5 border border-cyan-900/30' },
-                    h('span', { className: 'text-[10px] font-bold text-cyan-400' }, '\uD83D\uDCA1 Analogy: '),
+                    h('span', { className: 'text-[10px] font-bold text-cyan-400' }, '\uD83D\uDCA1 ' + __alloT('stem.circuit.analogy_label', 'Analogy: ')),
                     h('span', { className: 'text-[10px] text-cyan-300 leading-normal' }, physics.analogy)
                   ),
-                  typeof callTTS === 'function' ? h('button', { 'aria-label': 'Read aloud',
+                  typeof callTTS === 'function' ? h('button', { 'aria-label': __alloT('stem.circuit.aria_read_aloud', 'Read aloud'),
                     onClick: function() { callTTS(physics.name + '. ' + physics.how + ' ' + physics.analogy); },
                     className: 'transition-colors mt-2 text-[10px] text-yellow-500 hover:text-yellow-400 font-bold'
-                  }, '\uD83D\uDD0A Read aloud') : null
-                ) : h('p', { className: 'text-[10px] text-slate-500 italic' }, 'Tap a component above to learn how it works inside!')
+                  }, '\uD83D\uDD0A ' + __alloT('stem.circuit.read_aloud', 'Read aloud')) : null
+                ) : h('p', { className: 'text-[10px] text-slate-500 italic' }, __alloT('stem.circuit.tap_component_hint', 'Tap a component above to learn how it works inside!'))
               );
             })(),
 
@@ -2398,15 +2398,15 @@ window.StemLab = window.StemLab || {
             // Real-World Circuit Applications
             // ══════════════════════════════════════
             h('div', { className: 'mt-4 bg-slate-900/40 border border-slate-800 p-4 rounded-xl backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-cyan-400 uppercase tracking-wider mb-2' }, '\uD83C\uDF0D Real-World Circuits'),
+              h('p', { className: 'text-[11px] font-bold text-cyan-400 uppercase tracking-wider mb-2' }, '\uD83C\uDF0D ' + __alloT('stem.circuit.real_world_circuits_title', 'Real-World Circuits')),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
                 [
-                  { emoji: '\uD83D\uDD26', name: 'Flashlight', circuit: 'Series', desc: 'Battery + switch + bulb in series. Switch breaks circuit to turn off.', comps: 'Switch, Bulb' },
-                  { emoji: '\uD83D\uDCF1', name: 'Phone Charger', circuit: 'Series + Parallel', desc: 'Transformer reduces 120V to 5V. Capacitors smooth the current for steady charging.', comps: 'Resistor, Capacitor' },
-                  { emoji: '\uD83D\uDE97', name: 'Car Headlights', circuit: 'Parallel', desc: 'Headlights wired in parallel so if one burns out, the other stays on.', comps: 'Bulb, Switch' },
-                  { emoji: '\uD83C\uDFB5', name: 'Guitar Pedal', circuit: 'Series + Parallel', desc: 'Resistors and capacitors filter frequencies to create distortion or reverb effects.', comps: 'Resistor, Capacitor' },
-                  { emoji: '\uD83D\uDEA6', name: 'Traffic Light', circuit: 'Parallel', desc: 'Three LED groups in parallel, controlled by a timer circuit switching between them.', comps: 'LED, Switch' },
-                  { emoji: '\u2764\uFE0F', name: 'Heart Monitor', circuit: 'Series', desc: 'Amplifies tiny electrical signals from heart muscle. Resistors set gain, capacitors filter noise.', comps: 'Resistor, Ammeter' }
+                  { emoji: '\uD83D\uDD26', name: __alloT('stem.circuit.app_flashlight_name', 'Flashlight'), circuit: __alloT('stem.circuit.circuit_type_series', 'Series'), desc: __alloT('stem.circuit.app_flashlight_desc', 'Battery + switch + bulb in series. Switch breaks circuit to turn off.'), comps: __alloT('stem.circuit.app_flashlight_comps', 'Switch, Bulb') },
+                  { emoji: '\uD83D\uDCF1', name: __alloT('stem.circuit.app_phone_charger_name', 'Phone Charger'), circuit: __alloT('stem.circuit.circuit_type_series_parallel', 'Series + Parallel'), desc: __alloT('stem.circuit.app_phone_charger_desc', 'Transformer reduces 120V to 5V. Capacitors smooth the current for steady charging.'), comps: __alloT('stem.circuit.app_phone_charger_comps', 'Resistor, Capacitor') },
+                  { emoji: '\uD83D\uDE97', name: __alloT('stem.circuit.app_car_headlights_name', 'Car Headlights'), circuit: __alloT('stem.circuit.circuit_type_parallel', 'Parallel'), desc: __alloT('stem.circuit.app_car_headlights_desc', 'Headlights wired in parallel so if one burns out, the other stays on.'), comps: __alloT('stem.circuit.app_car_headlights_comps', 'Bulb, Switch') },
+                  { emoji: '\uD83C\uDFB5', name: __alloT('stem.circuit.app_guitar_pedal_name', 'Guitar Pedal'), circuit: __alloT('stem.circuit.circuit_type_series_parallel', 'Series + Parallel'), desc: __alloT('stem.circuit.app_guitar_pedal_desc', 'Resistors and capacitors filter frequencies to create distortion or reverb effects.'), comps: __alloT('stem.circuit.app_guitar_pedal_comps', 'Resistor, Capacitor') },
+                  { emoji: '\uD83D\uDEA6', name: __alloT('stem.circuit.app_traffic_light_name', 'Traffic Light'), circuit: __alloT('stem.circuit.circuit_type_parallel', 'Parallel'), desc: __alloT('stem.circuit.app_traffic_light_desc', 'Three LED groups in parallel, controlled by a timer circuit switching between them.'), comps: __alloT('stem.circuit.app_traffic_light_comps', 'LED, Switch') },
+                  { emoji: '\u2764\uFE0F', name: __alloT('stem.circuit.app_heart_monitor_name', 'Heart Monitor'), circuit: __alloT('stem.circuit.circuit_type_series', 'Series'), desc: __alloT('stem.circuit.app_heart_monitor_desc', 'Amplifies tiny electrical signals from heart muscle. Resistors set gain, capacitors filter noise.'), comps: __alloT('stem.circuit.app_heart_monitor_comps', 'Resistor, Ammeter') }
                 ].map(function(app) {
                   var expanded = d._expandedApp === app.name;
                   return h('button', { key: app.name, 'aria-expanded': expanded,
@@ -2423,7 +2423,7 @@ window.StemLab = window.StemLab || {
                     ),
                     expanded ? h('div', { className: 'animate-in fade-in duration-200 mt-1' },
                       h('p', { className: 'text-[10px] text-slate-400 leading-normal mb-1.5' }, app.desc),
-                      h('span', { className: 'text-[10px] text-slate-300 font-bold block' }, '\uD83D\uDD27 Key parts: ' + app.comps)
+                      h('span', { className: 'text-[10px] text-slate-300 font-bold block' }, '\uD83D\uDD27 ' + __alloT('stem.circuit.key_parts_label', 'Key parts: ') + app.comps)
                     ) : null
                   );
                 })
@@ -2434,7 +2434,7 @@ window.StemLab = window.StemLab || {
             // Snapshot + Footer
             // ══════════════════════════════════════
             h('div', { className: 'mt-4 flex items-center gap-2 justify-end' },
-              h('button', { 'aria-label': 'Snapshot',
+              h('button', { 'aria-label': __alloT('stem.circuit.snapshot', 'Snapshot'),
                 onClick: function() {
                   if (typeof setToolSnapshots === 'function') {
                     setToolSnapshots(function(prev) {
@@ -2450,10 +2450,10 @@ window.StemLab = window.StemLab || {
                   if (typeof addToast === 'function') addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
                 },
                 className: 'px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md shadow-indigo-500/10 hover:shadow-lg transition-all'
-              }, '\uD83D\uDCF8 Snapshot'),
+              }, '\uD83D\uDCF8 ' + __alloT('stem.circuit.snapshot', 'Snapshot')),
 
               // TTS button
-              typeof callTTS === 'function' && h('button', { 'aria-label': 'Read Aloud',
+              typeof callTTS === 'function' && h('button', { 'aria-label': __alloT('stem.circuit.read_aloud_btn', 'Read Aloud'),
                 onClick: function() {
                   var summary = 'Circuit Builder: ' + mode + ' mode, ' + voltage + ' volts, ' +
                     components.length + ' components. Total resistance ' + totalR.toFixed(1) + ' ohms. ' +
@@ -2463,11 +2463,11 @@ window.StemLab = window.StemLab || {
                   callTTS(summary);
                 },
                 className: 'px-4 py-2 text-xs font-bold text-slate-300 bg-slate-900/60 rounded-full hover:bg-slate-800 transition-all border border-slate-800 active:scale-[0.97]'
-              }, '\uD83D\uDD0A Read Aloud')
+              }, '\uD83D\uDD0A ' + __alloT('stem.circuit.read_aloud_btn', 'Read Aloud'))
             ),
 
             // Footer
-            h('p', { className: 'text-[10px] text-center text-slate-400 mt-4 mb-2 font-mono font-bold' }, '\uD83D\uDD0C Circuit Builder \u2022 Ohm\'s Law: V = IR \u2022 Power: P = IV')
+            h('p', { className: 'text-[10px] text-center text-slate-400 mt-4 mb-2 font-mono font-bold' }, '\uD83D\uDD0C ' + __alloT('stem.circuit.circuit_builder', 'Circuit Builder') + ' \u2022 ' + __alloT('stem.circuit.footer_ohm', "Ohm's Law: V = IR") + ' \u2022 ' + __alloT('stem.circuit.footer_power', 'Power: P = IV'))
           );
         };
       }
