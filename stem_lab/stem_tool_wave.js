@@ -2113,13 +2113,13 @@ const d = labToolData.wave;
 
               [
 
-                { k: 'amplitude', label: '\uD83D\uDCC8 Amplitude', aria: 'Amplitude', min: 10, max: 100, step: 1 },
+                { k: 'amplitude', label: '\uD83D\uDCC8 ' + __alloT('stem.wave.ctrl_amplitude', 'Amplitude'), aria: __alloT('stem.wave.ctrl_amplitude', 'Amplitude'), min: 10, max: 100, step: 1 },
 
-                { k: 'frequency', label: '\uD83C\uDFB5 Frequency', aria: 'Frequency in hertz', min: 0.5, max: 10, step: 0.5 },
+                { k: 'frequency', label: '\uD83C\uDFB5 ' + __alloT('stem.wave.ctrl_frequency', 'Frequency'), aria: __alloT('stem.wave.ctrl_frequency_aria', 'Frequency in hertz'), min: 0.5, max: 10, step: 0.5 },
 
-                { k: 'speed', label: '\u23E9 Speed', aria: 'Animation speed multiplier', min: 0.1, max: 5, step: 0.1 },
+                { k: 'speed', label: '\u23E9 ' + __alloT('stem.wave.ctrl_speed', 'Speed'), aria: __alloT('stem.wave.ctrl_speed_aria', 'Animation speed multiplier'), min: 0.1, max: 5, step: 0.1 },
 
-                { k: 'waveSpeed', label: '\uD83C\uDF0D Medium v (m/s)', aria: 'Medium wave speed in meters per second', min: 50, max: 1500, step: 10 },
+                { k: 'waveSpeed', label: '\uD83C\uDF0D ' + __alloT('stem.wave.ctrl_medium', 'Medium v (m/s)'), aria: __alloT('stem.wave.ctrl_medium_aria', 'Medium wave speed in meters per second'), min: 50, max: 1500, step: 10 },
 
               ].map(s =>
 
@@ -2132,10 +2132,10 @@ const d = labToolData.wave;
                   React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : 0), 'aria-label': s.aria || s.label,
                   'aria-valuetext': (function () {
                     var val = d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : 0);
-                    if (s.k === 'frequency') return val + ' hertz — wavelength ' + ((d.waveSpeed || 343) / val).toFixed(1) + ' meters, period ' + (1 / val).toFixed(2) + ' seconds';
-                    if (s.k === 'amplitude') return val + ' — wave height; energy grows as amplitude squared';
-                    if (s.k === 'speed') return val + ' times animation speed';
-                    return val + ' meters per second through the medium';
+                    if (s.k === 'frequency') return val + __alloT('stem.wave.vt_freq_a', ' hertz — wavelength ') + ((d.waveSpeed || 343) / val).toFixed(1) + __alloT('stem.wave.vt_freq_b', ' meters, period ') + (1 / val).toFixed(2) + __alloT('stem.wave.vt_freq_c', ' seconds');
+                    if (s.k === 'amplitude') return val + __alloT('stem.wave.vt_amplitude', ' — wave height; energy grows as amplitude squared');
+                    if (s.k === 'speed') return val + __alloT('stem.wave.vt_speed', ' times animation speed');
+                    return val + __alloT('stem.wave.vt_medium', ' meters per second through the medium');
                   })(), onChange: function (e) {
                     var v = parseFloat(e.target.value); upd(s.k, v);
                     if (s.k === 'frequency') syncOsc({ freq: v });
@@ -2143,7 +2143,7 @@ const d = labToolData.wave;
                     // Canvas Narration: parameter change
                     if (typeof canvasNarrate === 'function') {
                       var wl = (s.k === 'frequency' || s.k === 'waveSpeed') ? (d.waveSpeed || 343) / (s.k === 'frequency' ? v : d.frequency || 1) : null;
-                      var msg = s.label + ': ' + v + (wl ? '. Wavelength: ' + wl.toFixed(1) + ' m' : '');
+                      var msg = s.label + ': ' + v + (wl ? __alloT('stem.wave.narrate_wavelength_suffix', '. Wavelength: ') + wl.toFixed(1) + ' m' : '');
                       canvasNarrate('wave', 'param_' + s.k, msg, { debounce: 800 });
                     }
                   }, className: "mt-2 w-full accent-cyan-600" })
@@ -2160,9 +2160,9 @@ const d = labToolData.wave;
 
               React.createElement("label", { className: "text-xs font-bold text-pink-700 flex items-center gap-1.5 cursor-pointer" },
 
-                React.createElement("input", { type: "checkbox", checked: !!d.showSecond, 'aria-label': 'Show second wave', onChange: e => upd('showSecond', e.target.checked), className: "accent-pink-600" }),
+                React.createElement("input", { type: "checkbox", checked: !!d.showSecond, 'aria-label': __alloT('stem.wave.aria_show_second', 'Show second wave'), onChange: e => upd('showSecond', e.target.checked), className: "accent-pink-600" }),
 
-                "\u223F Show Second Wave (Interference)"
+                "\u223F " + __alloT('stem.wave.show_second_wave', 'Show Second Wave (Interference)')
 
               ),
 
@@ -2172,7 +2172,7 @@ const d = labToolData.wave;
 
                   React.createElement("span", { className: "text-[11px] text-pink-700 font-bold" }, "A2:"),
 
-                  React.createElement("input", { type: "range", min: 10, max: 80, step: 1, value: d.amplitude2 || 30, 'aria-label': 'Second wave amplitude', onChange: e => upd('amplitude2', parseFloat(e.target.value)), className: "w-24 accent-pink-500" }),
+                  React.createElement("input", { type: "range", min: 10, max: 80, step: 1, value: d.amplitude2 || 30, 'aria-label': __alloT('stem.wave.aria_second_amplitude', 'Second wave amplitude'), onChange: e => upd('amplitude2', parseFloat(e.target.value)), className: "w-24 accent-pink-500" }),
 
                   React.createElement("span", { className: "text-[11px] text-pink-700 font-bold" }, d.amplitude2 || 30)
 
@@ -2182,7 +2182,7 @@ const d = labToolData.wave;
 
                   React.createElement("span", { className: "text-[11px] text-pink-500 font-bold" }, "f2:"),
 
-                  React.createElement("input", { type: "range", min: 0.5, max: 10, step: 0.5, value: d.frequency2 || 3, 'aria-label': 'Second wave frequency', onChange: e => { var v2 = parseFloat(e.target.value); upd('frequency2', v2); syncOsc({ freq2: v2 }); }, className: "w-24 accent-pink-500" }),
+                  React.createElement("input", { type: "range", min: 0.5, max: 10, step: 0.5, value: d.frequency2 || 3, 'aria-label': __alloT('stem.wave.aria_second_frequency', 'Second wave frequency'), onChange: e => { var v2 = parseFloat(e.target.value); upd('frequency2', v2); syncOsc({ freq2: v2 }); }, className: "w-24 accent-pink-500" }),
 
                   React.createElement("span", { className: "text-[11px] text-pink-700 font-bold" }, d.frequency2 || 3)
 
@@ -2192,7 +2192,7 @@ const d = labToolData.wave;
 
                   React.createElement("span", { className: "text-[11px] text-pink-500 font-bold" }, "\u03C6\u2082:"),
 
-                  React.createElement("input", { type: "range", min: 0, max: 6.28, step: 0.1, value: d.phase2 || 0, 'aria-label': 'Second wave phase', onChange: e => upd('phase2', parseFloat(e.target.value)), className: "w-24 accent-pink-500" }),
+                  React.createElement("input", { type: "range", min: 0, max: 6.28, step: 0.1, value: d.phase2 || 0, 'aria-label': __alloT('stem.wave.aria_second_phase', 'Second wave phase'), onChange: e => upd('phase2', parseFloat(e.target.value)), className: "w-24 accent-pink-500" }),
 
                   React.createElement("span", { className: "text-[11px] text-pink-700 font-bold" }, ((d.phase2 || 0) / Math.PI).toFixed(1) + "\u03C0")
 
@@ -2205,11 +2205,11 @@ const d = labToolData.wave;
                   upd('showSecond', true); upd('frequency', 4); upd('frequency2', 4.5);
                   upd('amplitude', 45); upd('amplitude2', 45); upd('phase2', 0);
                   syncOsc({ freq: 4, freq2: 4.5 });
-                  if (typeof addToast === 'function') addToast('\uD83C\uDFB5 Beats: 4 Hz + 4.5 Hz \u2014 watch (and hear) the slow 0.5 Hz pulse', 'info');
+                  if (typeof addToast === 'function') addToast('\uD83C\uDFB5 ' + __alloT('stem.wave.toast_beats', 'Beats: 4 Hz + 4.5 Hz \u2014 watch (and hear) the slow 0.5 Hz pulse'), 'info');
                 },
-                'aria-label': 'Beats preset \u2014 two waves at 4 and 4.5 hertz so the beat envelope is visible',
+                'aria-label': __alloT('stem.wave.aria_beats_preset', 'Beats preset \u2014 two waves at 4 and 4.5 hertz so the beat envelope is visible'),
                 className: "transition-colors px-2.5 py-1 rounded-lg text-[11px] font-bold bg-pink-600 text-white hover:bg-pink-700 active:scale-[0.97]"
-              }, '\uD83C\uDFB5 Beats'),
+              }, '\uD83C\uDFB5 ' + __alloT('stem.wave.btn_beats', 'Beats')),
 
               d.showSecond && interferenceLabel && React.createElement("span", {
                 role: "status",
@@ -2224,9 +2224,9 @@ const d = labToolData.wave;
 
               React.createElement("label", { className: "text-xs font-bold text-amber-700 flex items-center gap-1.5 cursor-pointer" },
 
-                React.createElement("input", { type: "checkbox", checked: !!d.damping, 'aria-label': 'Enable damping', onChange: e => upd('damping', e.target.checked), className: "accent-amber-600" }),
+                React.createElement("input", { type: "checkbox", checked: !!d.damping, 'aria-label': __alloT('stem.wave.aria_enable_damping', 'Enable damping'), onChange: e => upd('damping', e.target.checked), className: "accent-amber-600" }),
 
-                "\uD83C\uDF0A Damping (Exponential Decay)"
+                "\uD83C\uDF0A " + __alloT('stem.wave.damping_label', 'Damping (Exponential Decay)')
 
               ),
 
@@ -2234,7 +2234,7 @@ const d = labToolData.wave;
 
                 React.createElement("span", { className: "text-[11px] text-amber-500 font-bold" }, "\u03B1:"),
 
-                React.createElement("input", { type: "range", min: 0.1, max: 2.0, step: 0.1, value: d.dampingAlpha || 0.5, 'aria-label': 'Damping coefficient', onChange: e => upd('dampingAlpha', parseFloat(e.target.value)), className: "w-20 accent-amber-500" }),
+                React.createElement("input", { type: "range", min: 0.1, max: 2.0, step: 0.1, value: d.dampingAlpha || 0.5, 'aria-label': __alloT('stem.wave.aria_damping_coeff', 'Damping coefficient'), onChange: e => upd('dampingAlpha', parseFloat(e.target.value)), className: "w-20 accent-amber-500" }),
 
                 React.createElement("span", { className: "text-[11px] text-amber-700 font-bold" }, (d.dampingAlpha || 0.5).toFixed(1))
 
@@ -2248,9 +2248,9 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "flex items-center gap-2" },
 
-                React.createElement("span", { className: "text-xs font-bold text-indigo-700" }, "Source Separation:"),
+                React.createElement("span", { className: "text-xs font-bold text-indigo-700" }, __alloT('stem.wave.ripple_source_separation', 'Source Separation:')),
 
-                React.createElement("input", { type: "range", min: 20, max: 200, step: 5, value: d.rippleSeparation || 80, 'aria-label': 'Slit separation', onChange: e => upd('rippleSeparation', parseFloat(e.target.value)), className: "w-24 accent-indigo-600" }),
+                React.createElement("input", { type: "range", min: 20, max: 200, step: 5, value: d.rippleSeparation || 80, 'aria-label': __alloT('stem.wave.aria_slit_separation', 'Slit separation'), onChange: e => upd('rippleSeparation', parseFloat(e.target.value)), className: "w-24 accent-indigo-600" }),
 
                 React.createElement("span", { className: "text-xs text-indigo-900 font-bold w-6" }, d.rippleSeparation || 80)
 
@@ -2258,9 +2258,9 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "flex items-center gap-2" },
 
-                React.createElement("span", { className: "text-xs font-bold text-indigo-700" }, "Medium Damping:"),
+                React.createElement("span", { className: "text-xs font-bold text-indigo-700" }, __alloT('stem.wave.ripple_medium_damping', 'Medium Damping:')),
 
-                React.createElement("input", { type: "range", min: 0.000, max: 0.010, step: 0.001, value: d.dampingCoeff !== undefined ? d.dampingCoeff : 0.002, 'aria-label': 'Damping coefficient for interference', onChange: e => upd('dampingCoeff', parseFloat(e.target.value)), className: "w-24 accent-indigo-600" }),
+                React.createElement("input", { type: "range", min: 0.000, max: 0.010, step: 0.001, value: d.dampingCoeff !== undefined ? d.dampingCoeff : 0.002, 'aria-label': __alloT('stem.wave.aria_damping_interference', 'Damping coefficient for interference'), onChange: e => upd('dampingCoeff', parseFloat(e.target.value)), className: "w-24 accent-indigo-600" }),
 
                 React.createElement("span", { className: "text-xs text-indigo-900 font-bold w-12" }, (d.dampingCoeff !== undefined ? d.dampingCoeff : 0.002).toFixed(3))
 
@@ -2272,14 +2272,14 @@ const d = labToolData.wave;
                   var c = canvasRef._lastCanvas;
                   if (c && c._drag) { c._drag.ripple1 = null; c._drag.ripple2 = null; }
                   upd('rippleSrc1', null); upd('rippleSrc2', null);
-                  if (typeof addToast === 'function') addToast('Sources reset to defaults', 'info');
+                  if (typeof addToast === 'function') addToast(__alloT('stem.wave.toast_sources_reset', 'Sources reset to defaults'), 'info');
                 },
                 className: "transition-colors px-3 py-1 rounded-md text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.97]",
-                'aria-label': 'Reset source positions to defaults'
-              }, '↻ Reset sources'),
+                'aria-label': __alloT('stem.wave.aria_reset_sources', 'Reset source positions to defaults')
+              }, '↻ ' + __alloT('stem.wave.btn_reset_sources', 'Reset sources')),
               React.createElement("span", { className: "text-[11px] text-indigo-800 ml-auto" },
-                React.createElement("strong", null, 'Bright'), ' = constructive · ',
-                React.createElement("strong", null, 'dark'), ' = destructive · 💡 drag the red sources')
+                React.createElement("strong", null, __alloT('stem.wave.ripple_bright', 'Bright')), __alloT('stem.wave.ripple_constructive', ' = constructive · '),
+                React.createElement("strong", null, __alloT('stem.wave.ripple_dark', 'dark')), __alloT('stem.wave.ripple_destructive_hint', ' = destructive · 💡 drag the red sources'))
 
             ),
 
