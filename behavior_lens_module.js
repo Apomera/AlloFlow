@@ -650,6 +650,51 @@
         const [quickFillLoading, setQuickFillLoading] = useState(false);
         const [includeNeighbors, setIncludeNeighbors] = useState(false);
         const [seatLookupBusy, setSeatLookupBusy] = useState(false);
+        const dialogRef = useRef(null);
+        const openerRef = useRef(null);
+        const onCloseRef = useRef(onClose);
+        useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
+        useEffect(() => {
+            const dialog = dialogRef.current;
+            if (!dialog) return undefined;
+            openerRef.current = document.activeElement;
+            const selector = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+            const focusInitial = window.setTimeout(() => {
+                const initial = dialog.querySelector('[data-bl-abc-modal-initial]') || dialog.querySelector(selector);
+                if (initial && typeof initial.focus === 'function') initial.focus();
+            }, 0);
+            const handleModalKeyDown = (event) => {
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onCloseRef.current();
+                    return;
+                }
+                if (event.key !== 'Tab') return;
+                const focusable = Array.from(dialog.querySelectorAll(selector));
+                if (!focusable.length) {
+                    event.preventDefault();
+                    dialog.focus();
+                    return;
+                }
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+                    event.preventDefault();
+                    last.focus();
+                } else if (!event.shiftKey && document.activeElement === last) {
+                    event.preventDefault();
+                    first.focus();
+                }
+            };
+            document.addEventListener('keydown', handleModalKeyDown, true);
+            return () => {
+                window.clearTimeout(focusInitial);
+                document.removeEventListener('keydown', handleModalKeyDown, true);
+                const opener = openerRef.current;
+                if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus();
+            };
+        }, []);
 
         // ── Seating-chart bridge ──
         // Fills Setting/Location from the class Seating Chart (roster tool):
@@ -773,20 +818,27 @@ Return ONLY valid JSON:
             );
         };
 
-        return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+        return h('div', {
+            role: 'presentation',
             className: 'fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200',
             onClick: (e) => { if (e.target === e.currentTarget) onClose(); }
         },
             h('div', {
-                role: 'dialog', 'aria-modal': 'true', 'aria-label': (entry ? 'Edit ABC entry' : 'New ABC entry'),
-                className: 'bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto mx-4 animate-in zoom-in-95 duration-200'
+                ref: dialogRef,
+                role: 'dialog',
+                'aria-modal': 'true',
+                'aria-label': (entry ? 'Edit ABC entry' : 'New ABC entry'),
+                tabIndex: -1,
+                className: 'bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto mx-4 animate-in zoom-in-95 duration-200 focus:outline-none'
             },
                 // Header
                 h('div', { className: 'sticky top-0 bg-white/90 backdrop-blur-md border-b border-slate-100 px-6 py-4 rounded-t-2xl z-10 flex justify-between items-center' },
                     h('h3', { className: 'text-lg font-black text-slate-800 flex items-center gap-2' },
                         '📋 ', t('behavior_lens.abc.modal_title') || (entry ? 'Edit Entry' : 'New ABC Entry')
                     ),
-                    h('button', { "aria-label": "On Close",
+                    h('button', { "aria-label": "Close ABC entry dialog",
+                        type: 'button',
+                        'data-bl-abc-modal-initial': 'true',
                         onClick: onClose,
                         className: 'p-1.5 rounded-full hover:bg-slate-100 text-slate-600 hover:text-slate-600 transition-colors'
                     }, h(X, { size: 18 }))
@@ -903,11 +955,12 @@ Return ONLY valid JSON:
                 ),
                 // Footer
                 h('div', { className: 'sticky bottom-0 bg-white/90 backdrop-blur-md border-t border-slate-100 px-6 py-4 rounded-b-2xl flex justify-end gap-3' },
-                    h('button', { "aria-label": "On Close",
+                    h('button', { "aria-label": "Cancel ABC entry changes",
+                        type: 'button',
                         onClick: onClose,
                         className: 'px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors'
                     }, tt('common.cancel', 'Cancel')),
-                    h('button', { onClick: handleSave,
+                    h('button', { type: 'button', onClick: handleSave,
                         disabled: !antecedent || !behavior || !consequence,
                         className: `px-5 py-2 text-sm font-bold rounded-lg transition-all ${antecedent && behavior && consequence
                             ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg'
