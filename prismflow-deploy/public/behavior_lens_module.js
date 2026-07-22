@@ -24538,6 +24538,49 @@ IMPORTANT rules for expert keys:
             try { return localStorage.getItem('bl_ai_consent_v1') === '1'; } catch { return false; }
         });
         const [showAiConsentModal, setShowAiConsentModal] = useState(false);
+        const aiConsentDialogRef = useRef(null);
+        const aiConsentOpenerRef = useRef(null);
+        useEffect(() => {
+            if (!showAiConsentModal) return undefined;
+            const dialog = aiConsentDialogRef.current;
+            const opener = aiConsentOpenerRef.current;
+            if (!dialog) return undefined;
+            const selector = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+            const focusInitial = window.setTimeout(() => {
+                const initial = dialog.querySelector('[data-bl-ai-consent-initial]') || dialog.querySelector(selector);
+                if (initial && typeof initial.focus === 'function') initial.focus();
+            }, 0);
+            const handleDialogKeyDown = (event) => {
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setShowAiConsentModal(false);
+                    return;
+                }
+                if (event.key !== 'Tab') return;
+                const focusable = Array.from(dialog.querySelectorAll(selector));
+                if (!focusable.length) {
+                    event.preventDefault();
+                    dialog.focus();
+                    return;
+                }
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+                    event.preventDefault();
+                    last.focus();
+                } else if (!event.shiftKey && document.activeElement === last) {
+                    event.preventDefault();
+                    first.focus();
+                }
+            };
+            document.addEventListener('keydown', handleDialogKeyDown, true);
+            return () => {
+                window.clearTimeout(focusInitial);
+                document.removeEventListener('keydown', handleDialogKeyDown, true);
+                if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus();
+            };
+        }, [showAiConsentModal]);
         const setAiConsent = useCallback((next) => {
             _setAiConsentRaw(next);
             try { localStorage.setItem('bl_ai_consent_v1', next ? '1' : '0'); } catch {}
@@ -27341,11 +27384,12 @@ Analyze this data and return ONLY valid JSON:
                         h('button', {
                             'aria-label': aiConsent ? 'AI is on — click to turn off' : 'AI is off — click to enable',
                             'aria-pressed': aiConsent ? 'true' : 'false',
-                            onClick: () => {
+                            onClick: (event) => {
                                 if (aiConsent) {
                                     setAiConsent(false);
                                     if (addToast) addToast(tt('behavior_lens.toast.ai_turned_off', '🤖 AI turned OFF — no student data will be sent to Gemini'), 'info');
                                 } else {
+                                    aiConsentOpenerRef.current = event.currentTarget;
                                     setShowAiConsentModal(true);
                                 }
                             },
@@ -28703,18 +28747,24 @@ Analyze this data and return ONLY valid JSON:
             // attempt to enable AI, surfaces exactly what gets transmitted,
             // and gives the teacher one last off-ramp before enabling.
             showAiConsentModal && h('div', {
-                role: 'dialog',
-                'aria-modal': 'true',
-                'aria-labelledby': 'bl-ai-consent-title',
+                role: 'presentation',
                 className: 'fixed inset-0 z-[300] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4',
                 onClick: (e) => { if (e.target === e.currentTarget) setShowAiConsentModal(false); }
             },
-                h('div', { className: 'bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto' },
+                h('div', {
+                    ref: aiConsentDialogRef,
+                    role: 'dialog',
+                    'aria-modal': 'true',
+                    'aria-labelledby': 'bl-ai-consent-title',
+                    'aria-describedby': 'bl-ai-consent-description',
+                    tabIndex: -1,
+                    className: 'bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto focus:outline-none'
+                },
                     h('div', { className: 'p-6 border-b border-slate-200' },
                         h('h2', { id: 'bl-ai-consent-title', className: 'text-xl font-black text-slate-800 flex items-center gap-2' },
                             '🤖 ', tt('behavior_lens.ai.consent_title', 'Enable AI assistance?')
                         ),
-                        h('p', { className: 'text-sm text-slate-600 mt-2' },
+                        h('p', { id: 'bl-ai-consent-description', className: 'text-sm text-slate-600 mt-2' },
                             tt('behavior_lens.ai.consent_subtitle', 'Before turning on AI features, please read what gets sent to Google Gemini.')
                         )
                     ),
@@ -28742,11 +28792,14 @@ Analyze this data and return ONLY valid JSON:
                     ),
                     h('div', { className: 'p-6 border-t border-slate-200 flex justify-end gap-2' },
                         h('button', {
+                            type: 'button',
+                            'data-bl-ai-consent-initial': 'true',
                             'aria-label': tt('behavior_lens.ai.consent_decline_aria', 'Decline — keep AI off'),
                             onClick: () => setShowAiConsentModal(false),
                             className: 'px-4 py-2 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors'
                         }, tt('behavior_lens.ai.consent_decline', 'Keep AI off')),
                         h('button', {
+                            type: 'button',
                             'aria-label': tt('behavior_lens.ai.consent_accept_aria', 'Enable AI and continue'),
                             onClick: () => {
                                 setAiConsent(true);
