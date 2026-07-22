@@ -1700,8 +1700,8 @@ const d = labToolData.wave;
 
                      type: "number", value: a,
 
-                     'aria-label': 'Wave amplitude',
-                     'aria-valuetext': a + ' — amplitude sets the wave height (loudness and energy)',
+                     'aria-label': __alloT('stem.wave.aria_wave_amplitude', 'Wave amplitude'),
+                     'aria-valuetext': a + ' — ' + __alloT('stem.wave.aria_amp_valuetext', 'amplitude sets the wave height (loudness and energy)'),
 
                      onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) { upd('amplitude', v); try { if (typeof checkWaveMatch !== 'undefined') checkWaveMatch(v, f); } catch(ex){} } },
 
@@ -1719,8 +1719,8 @@ const d = labToolData.wave;
 
                      type: "number", value: f,
 
-                     'aria-label': 'Wave frequency',
-                     'aria-valuetext': f + ' hertz, period ' + (f ? (1 / f).toFixed(2) : '∞') + ' seconds — frequency sets the pitch',
+                     'aria-label': __alloT('stem.wave.aria_wave_frequency', 'Wave frequency'),
+                     'aria-valuetext': f + __alloT('stem.wave.aria_freq_vt_a', ' hertz, period ') + (f ? (1 / f).toFixed(2) : '∞') + __alloT('stem.wave.aria_freq_vt_b', ' seconds — frequency sets the pitch'),
 
                      onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) { upd('frequency', v); syncOsc({ freq: v }); try { if (typeof checkWaveMatch !== 'undefined') checkWaveMatch(a, v); } catch(ex){} } },
 
@@ -1864,7 +1864,7 @@ const d = labToolData.wave;
 
               [['free', '\uD83C\uDF0A ' + __alloT('stem.wave.tab_free', 'Free Wave')], ['standing', '\uD83C\uDFB8 ' + __alloT('stem.wave.mode_standing_label', 'Standing')], ['ripple', '\uD83D\uDCA7 ' + __alloT('stem.wave.tab_ripple', 'Ripple Tank')], ['reflection', '\uD83E\uDE9E ' + __alloT('stem.wave.mode_reflection_label', 'Reflection')], ['longitudinal', '\u2261 ' + __alloT('stem.wave.mode_longitudinal_label', 'Longitudinal')], ['doppler', '\uD83D\uDE97 ' + __alloT('stem.wave.mode_doppler_label', 'Doppler')], ['spectrum', '\uD83D\uDCCA ' + __alloT('stem.wave.mode_spectrum_label', 'Spectrum')]].map(function (m) {
 
-                return React.createElement("button", { "aria-label": "Switch to " + m[1] + " mode", key: m[0], onClick: function () {
+                return React.createElement("button", { "aria-label": __alloT('stem.wave.aria_switch_to', 'Switch to ') + m[1] + __alloT('stem.wave.aria_mode_suffix', ' mode'), key: m[0], onClick: function () {
                   upd('waveMode', m[0]);
                   // Canvas Narration: mode switch
                   if (typeof canvasNarrate === 'function') {
