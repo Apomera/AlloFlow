@@ -88,6 +88,26 @@ for (const f of onDisk) {
   if (!uniqueRefs.includes(f)) note(`licenses/${f} is bundled but never referenced from THIRD_PARTY_LICENSES.md`);
 }
 
+// ── 7. vendored (copied-in) third-party files must keep a notice banner ──────
+// Minification strips leading comments; when a vendored lib's header goes, the
+// copyright/license notice its license requires goes with it. Assert each known
+// vendored file still carries a Copyright line near the top.
+const VENDORED = [
+  'lame.min.js',
+  'data_lab/vendor/iframe-phone.js',
+  'immersive_geometry/vendor/aframe.min.js',
+  'temml/temml.min.js',
+  'qrcode.js',
+];
+for (const rel of VENDORED) {
+  const p = path.join(ROOT, rel);
+  if (!fs.existsSync(p)) { note(`vendored file expected but missing: ${rel}`); continue; }
+  const head = fs.readFileSync(p, 'utf8').slice(0, 800);
+  if (!/copyright/i.test(head)) {
+    note(`vendored file lost its copyright/license banner (minification strips it): ${rel}`);
+  }
+}
+
 // ── report ───────────────────────────────────────────────────────────────────
 if (problems.length) {
   console.error('✗ check_oss_credits: ' + problems.length + ' attribution problem(s):');

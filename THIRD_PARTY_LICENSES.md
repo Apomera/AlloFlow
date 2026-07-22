@@ -65,6 +65,38 @@ row below.
   shared alike, with attribution preserved. AlloFlow uses them as-is and credits the
   source per item.
 
+## Modifications to third-party components
+
+AlloFlow integrates the components above **as libraries, through their public
+APIs, or as unmodified vendored upstream builds** — it does not maintain forks
+that change their source. Some concrete cases:
+
+- **The Whiteboard** mounts an **unmodified** Excalidraw (loaded from jsDelivr) and
+  wraps it with AlloFlow's own UI and graphic-organizer templates; Excalidraw's own
+  code is not altered.
+- **Vendored minified copies** — lamejs (`lame.min.js`), iframe-phone
+  (`data_lab/vendor/iframe-phone.js`), A-Frame (`immersive_geometry/vendor/aframe.min.js`),
+  and Temml (`temml/temml.min.js`) — are upstream release builds. Each carries its
+  original copyright/license banner at the top of the file (restored where an earlier
+  minification step had stripped it, so the notice travels with the code).
+- **FFmpeg** (`video_studio/vendor/ffmpeg/`) is the unmodified upstream `@ffmpeg/core`
+  build; see its `THIRD_PARTY_NOTICES.md`.
+
+Because none of these components is modified, no per-file "changed" notices are
+triggered. **Policy if that ever changes:** a component that AlloFlow forks or
+edits at the source level must carry the modification notice its license requires,
+recorded here —
+
+- **Apache-2.0 §4(b)** — modified files must carry prominent notices stating they were changed.
+- **GPL / LGPL / AGPL** — modified files must carry a notice of the change and its date, and the modified source must be made available.
+- **CC BY / CC BY-SA** — the attribution must indicate that changes were made (CC BY-SA adaptations stay under CC BY-SA).
+- **SIL OFL-1.1** — a modified font must be renamed and must not use the original's Reserved Font Name.
+
+**lamejs (LGPL-3.0)** is used as a library: it is loaded dynamically and can be
+replaced with a compatible build. Its complete corresponding source is at
+https://github.com/zhuker/lamejs and the full license text is in
+[`licenses/LGPL-3.0.txt`](./licenses/LGPL-3.0.txt).
+
 ## Optional media sources and Video Studio policy
 
 Video Studio may link to optional media-discovery sources, but those sites are
@@ -177,6 +209,7 @@ uses an open range.
 ### Utilities
 | Library | Used for | License | Copyright |
 |---|---|---|---|
+| [QR Code Generator](https://github.com/kazuhikoarase/qrcode-generator) | class-join & resource-share QR codes | MIT | Copyright (c) 2009 Kazuhiko Arase |
 | [lz-string](https://github.com/pieroxy/lz-string) | compressing saved work | MIT | Copyright (c) 2013 pieroxy |
 | [idb-keyval](https://github.com/jakearchibald/idb-keyval) | offline browser storage | Apache-2.0 | Copyright (c) Jake Archibald |
 | [jsdiff](https://github.com/kpdecker/jsdiff) | comparing text revisions | BSD-3-Clause | Copyright (c) 2009-2015 Kevin Decker |

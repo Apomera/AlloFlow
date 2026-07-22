@@ -98,6 +98,23 @@ describe('Info modal accuracy contracts', () => {
     expect(builder).toContain('"from": "../THIRD_PARTY_LICENSES.md"');
   });
 
+  it('modification posture is documented and vendored files keep their notice banner', () => {
+    // The NOTICES file must state whether third-party source was modified, and
+    // spell out the per-license modification-notice policy.
+    expect(licenses).toContain('## Modifications to third-party components');
+    expect(licenses).toMatch(/Whiteboard[\s\S]{0,200}unmodified[\s\S]{0,80}Excalidraw/);
+    expect(licenses).toContain('Apache-2.0 §4(b)'); // modification-notice rule spelled out
+    // qrcode was an uncredited MIT dependency — now credited
+    expect(source).toContain("name: 'QR Code Generator (Kazuhiko Arase)'");
+    expect(licenses).toContain('Copyright (c) 2009 Kazuhiko Arase');
+    // the vendored minified copies carry a restored copyright banner
+    const banner = (f) => readFileSync(f, 'utf8').slice(0, 800);
+    expect(banner('lame.min.js')).toMatch(/Copyright[\s\S]*LGPL-3\.0/i);
+    expect(banner('data_lab/vendor/iframe-phone.js')).toMatch(/Copyright \(c\) 2014 Concord Consortium/);
+    expect(banner('immersive_geometry/vendor/aframe.min.js')).toMatch(/Copyright \(c\) 2015-present A-Frame authors/);
+    expect(banner('temml/temml.min.js')).toMatch(/Copyright \(c\) 2020 Ron Kok/);
+  });
+
   it('the Apache PDFBox NOTICE and copyleft posture are documented', () => {
     expect(licenses).toContain('Apache PDFBox\nCopyright 2014 The Apache Software Foundation');
     expect(licenses).toMatch(/elects the \*{0,2}MPL-2\.0/); // veraPDF dual-license election

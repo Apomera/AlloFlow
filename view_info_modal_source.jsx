@@ -173,6 +173,7 @@ const OSS_CREDITS = [
   {
     group: 'Utilities',
     items: [
+      { name: 'QR Code Generator (Kazuhiko Arase)', use: 'generating class-join & resource-share QR codes', license: 'MIT', url: 'https://github.com/kazuhikoarase/qrcode-generator' },
       { name: 'lz-string', use: 'compressing saved work', license: 'MIT', url: 'https://github.com/pieroxy/lz-string' },
       { name: 'idb-keyval', use: 'offline browser storage', license: 'Apache-2.0', url: 'https://github.com/jakearchibald/idb-keyval' },
       { name: 'jsdiff', use: 'comparing text revisions', license: 'BSD-3-Clause', url: 'https://github.com/kpdecker/jsdiff' },
