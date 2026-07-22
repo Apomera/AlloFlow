@@ -4903,14 +4903,18 @@
         minHeight: '200px'
       }
     }, /*#__PURE__*/React.createElement("canvas", {
-      ref: quizChartRef
+      ref: quizChartRef,
+      role: "img",
+      "aria-label": "Quiz averages by student. Detailed values are available in the student table."
     })), classSummary?.totalFlags > 0 && /*#__PURE__*/React.createElement("div", {
       className: "bg-white border border-slate-400 rounded-xl p-4",
       style: {
         minHeight: '200px'
       }
     }, /*#__PURE__*/React.createElement("canvas", {
-      ref: flagsChartRef
+      ref: flagsChartRef,
+      role: "img",
+      "aria-label": "Safety flag counts by category. Detailed values are available in student records."
     }))),
     /* ── Assessment Workflow Guide ── */
     React.createElement("div", { className: "mb-4 bg-gradient-to-br from-slate-50 to-indigo-50/50 rounded-xl border border-slate-400 overflow-hidden" },
@@ -7913,10 +7917,10 @@
       // Charts
       importedStudents.length > 0 && React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4 mb-4" },
         React.createElement("div", { className: "bg-white border border-slate-400 rounded-xl p-4", style: { minHeight: '200px' } },
-          React.createElement("canvas", { ref: quizChartRef, role: "img", "aria-label": "Quiz performance chart showing class average and student trends" })
+          React.createElement("canvas", { ref: quizChartRef, role: "img", "aria-label": "Quiz averages by student. Detailed values are available in the student table." })
         ),
         classSummary && classSummary.totalFlags > 0 && React.createElement("div", { className: "bg-white border border-slate-400 rounded-xl p-4", style: { minHeight: '200px' } },
-          React.createElement("canvas", { ref: flagsChartRef, role: "img", "aria-label": "Flagged students chart showing distribution of student-flag categories" })
+          React.createElement("canvas", { ref: flagsChartRef, role: "img", "aria-label": "Safety flag counts by category. Detailed values are available in student records." })
         )
       ),
       // Student table
