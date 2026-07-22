@@ -309,6 +309,25 @@ describe('coaster lab — Ride & Solve math is GROUNDED in the checkpoint elemen
     }
   });
 
+  it('the answer placeholder is a single revealable node, still hidden as "?"', () => {
+    const { _mathViz } = loadGen(TOOL_PATHS[0]);
+    for (const [op, a, b, ans] of [['+', 19, 7, 26], ['\u2212', 24, 6, 18], ['\u00d7', 3, 8, 24], ['\u00f7', 24, 3, 8]]) {
+      const svg = _mathViz(op, a, b, ans);
+      expect((svg.match(/class="clab-ans"/g) || []).length).toBe(1);
+      expect(svg).toContain('>?<');
+    }
+  });
+
+  it.each(TOOL_PATHS)('%s: a correct math answer reveals the number + a reduced-motion-guarded burst', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    expect(src).toContain("_ansEl.classList.add('reveal')");
+    expect(src).toContain('function spawnAnswerBurst(){');
+    expect(src).toContain('if(REDUCED_MOTION) return;');
+    expect(src).toContain('@keyframes clabAnsPop');
+    expect(src).toContain('@keyframes clabSpark');
+    expect(src).toMatch(/if\(_ansEl\)\{[\s\S]*?spawnAnswerBurst\(\);[\s\S]*?\n      \}/);
+  });
+
   it.each(TOOL_PATHS)('%s: the question card renders the viz only for math topics', (p) => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
     expect(src).toContain('id=\\"clab-rqViz\\"');                    // the container exists
