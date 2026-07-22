@@ -1829,9 +1829,9 @@ const d = labToolData.wave;
             // First-run 3-step tour (self-contained; localStorage-persisted)
             (function () {
               var TOUR = [
-                { icon: '🎚', text: 'Welcome! Drag the Amplitude and Frequency sliders to shape your wave — or focus the wave itself and use the arrow keys. Space pauses.' },
-                { icon: '🌊', text: 'Switch modes above: Standing, Ripple Tank, Reflection, Longitudinal, Doppler, and Spectrum each show a different piece of wave physics.' },
-                { icon: '∿', text: 'Turn on the Second Wave to see superposition — two waves adding into one. Try the 🎵 Beats preset, then Play Sound to hear it.' }
+                { icon: '🎚', text: __alloT('stem.wave.tour_step1', 'Welcome! Drag the Amplitude and Frequency sliders to shape your wave — or focus the wave itself and use the arrow keys. Space pauses.') },
+                { icon: '🌊', text: __alloT('stem.wave.tour_step2', 'Switch modes above: Standing, Ripple Tank, Reflection, Longitudinal, Doppler, and Spectrum each show a different piece of wave physics.') },
+                { icon: '∿', text: __alloT('stem.wave.tour_step3', 'Turn on the Second Wave to see superposition — two waves adding into one. Try the 🎵 Beats preset, then Play Sound to hear it.') }
               ];
               var seen = false;
               try { seen = !!window.localStorage.getItem('allo_wave_tour_done'); } catch (e) {}
@@ -1839,22 +1839,22 @@ const d = labToolData.wave;
               if (step == null || step < 0 || step >= TOUR.length) return null;
               var cur = TOUR[step];
               var done = function () { try { window.localStorage.setItem('allo_wave_tour_done', '1'); } catch (e) {} upd('tourStep', -1); };
-              return React.createElement("div", { role: "region", "aria-label": "Getting started tips", className: "mb-3 p-3 rounded-xl border-2 border-cyan-300 bg-cyan-50 flex items-center gap-3 flex-wrap" },
+              return React.createElement("div", { role: "region", "aria-label": __alloT('stem.wave.tour_region_label', 'Getting started tips'), className: "mb-3 p-3 rounded-xl border-2 border-cyan-300 bg-cyan-50 flex items-center gap-3 flex-wrap" },
                 React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, cur.icon),
                 React.createElement("p", { className: "text-xs text-cyan-900 font-semibold flex-1 min-w-[200px] m-0" }, cur.text),
                 React.createElement("span", { className: "text-[10px] font-bold text-cyan-600" }, (step + 1) + '/' + TOUR.length),
-                React.createElement("button", { onClick: function () { if (step + 1 >= TOUR.length) done(); else upd('tourStep', step + 1); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-600 text-white hover:bg-cyan-700 active:scale-[0.97]" }, step + 1 >= TOUR.length ? '✓ Done' : 'Next →'),
-                React.createElement("button", { onClick: done, "aria-label": "Skip the tour", className: "transition-colors px-2 py-1.5 rounded-lg text-xs text-cyan-700 hover:bg-cyan-100 active:scale-[0.97]" }, 'Skip')
+                React.createElement("button", { onClick: function () { if (step + 1 >= TOUR.length) done(); else upd('tourStep', step + 1); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-600 text-white hover:bg-cyan-700 active:scale-[0.97]" }, step + 1 >= TOUR.length ? '✓ ' + __alloT('stem.wave.tour_done', 'Done') : __alloT('stem.wave.tour_next', 'Next') + ' →'),
+                React.createElement("button", { onClick: done, "aria-label": __alloT('stem.wave.tour_skip_label', 'Skip the tour'), className: "transition-colors px-2 py-1.5 rounded-lg text-xs text-cyan-700 hover:bg-cyan-100 active:scale-[0.97]" }, __alloT('stem.wave.tour_skip', 'Skip'))
               );
             })(),
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': __alloT('stem.wave.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83C\uDF0A Wave Simulator"),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83C\uDF0A " + __alloT('stem.wave.title', 'Wave Simulator')),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[11px] font-bold rounded-full" }, "ANIMATED")
+              React.createElement("span", { className: "px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[11px] font-bold rounded-full" }, __alloT('stem.wave.badge_animated', 'ANIMATED'))
 
             ),
 
@@ -1862,16 +1862,16 @@ const d = labToolData.wave;
 
             React.createElement("div", { className: "flex flex-wrap gap-2 mb-3 items-center" },
 
-              [['free', '\uD83C\uDF0A Free Wave'], ['standing', '\uD83C\uDFB8 Standing'], ['ripple', '\uD83D\uDCA7 Ripple Tank'], ['reflection', '\uD83E\uDE9E Reflection'], ['longitudinal', '\u2261 Longitudinal'], ['doppler', '\uD83D\uDE97 Doppler'], ['spectrum', '\uD83D\uDCCA Spectrum']].map(function (m) {
+              [['free', '\uD83C\uDF0A ' + __alloT('stem.wave.tab_free', 'Free Wave')], ['standing', '\uD83C\uDFB8 ' + __alloT('stem.wave.mode_standing_label', 'Standing')], ['ripple', '\uD83D\uDCA7 ' + __alloT('stem.wave.tab_ripple', 'Ripple Tank')], ['reflection', '\uD83E\uDE9E ' + __alloT('stem.wave.mode_reflection_label', 'Reflection')], ['longitudinal', '\u2261 ' + __alloT('stem.wave.mode_longitudinal_label', 'Longitudinal')], ['doppler', '\uD83D\uDE97 ' + __alloT('stem.wave.mode_doppler_label', 'Doppler')], ['spectrum', '\uD83D\uDCCA ' + __alloT('stem.wave.mode_spectrum_label', 'Spectrum')]].map(function (m) {
 
                 return React.createElement("button", { "aria-label": "Switch to " + m[1] + " mode", key: m[0], onClick: function () {
                   upd('waveMode', m[0]);
                   // Canvas Narration: mode switch
                   if (typeof canvasNarrate === 'function') {
-                    var modeDescs = { free: 'Free wave mode. Observe sine, square, triangle, and sawtooth waveforms.', standing: 'Standing wave mode. See nodes and antinodes form on a vibrating string.', ripple: 'Ripple tank mode. Drag two point sources to explore interference patterns.', reflection: 'Reflection mode. A wave hits a wall — drag the wall to see fixed vs free end behavior.', longitudinal: 'Longitudinal wave mode. See compression and rarefaction in a spring.', doppler: 'Doppler effect mode. A moving source shifts the observed frequency.', spectrum: 'Spectrum analysis mode. See the frequency components of your wave.' };
+                    var modeDescs = { free: __alloT('stem.wave.narrate_free', 'Free wave mode. Observe sine, square, triangle, and sawtooth waveforms.'), standing: __alloT('stem.wave.narrate_standing', 'Standing wave mode. See nodes and antinodes form on a vibrating string.'), ripple: __alloT('stem.wave.narrate_ripple', 'Ripple tank mode. Drag two point sources to explore interference patterns.'), reflection: __alloT('stem.wave.narrate_reflection', 'Reflection mode. A wave hits a wall — drag the wall to see fixed vs free end behavior.'), longitudinal: __alloT('stem.wave.narrate_longitudinal', 'Longitudinal wave mode. See compression and rarefaction in a spring.'), doppler: __alloT('stem.wave.narrate_doppler', 'Doppler effect mode. A moving source shifts the observed frequency.'), spectrum: __alloT('stem.wave.narrate_spectrum', 'Spectrum analysis mode. See the frequency components of your wave.') };
                     canvasNarrate('wave', 'modeSwitch', {
-                      first: 'Switched to ' + m[1] + '. ' + (modeDescs[m[0]] || ''),
-                      repeat: m[1] + ' mode active.',
+                      first: __alloT('stem.wave.narrate_switched_to', 'Switched to ') + m[1] + '. ' + (modeDescs[m[0]] || ''),
+                      repeat: m[1] + __alloT('stem.wave.narrate_mode_active', ' mode active.'),
                       terse: m[1]
                     });
                   }
@@ -1880,37 +1880,37 @@ const d = labToolData.wave;
               }),
 
               React.createElement("button", {
-                "aria-label": d.paused ? "Play animation" : "Pause animation (or press Space on the wave)",
+                "aria-label": d.paused ? __alloT('stem.wave.aria_play_animation', 'Play animation') : __alloT('stem.wave.aria_pause_animation', 'Pause animation (or press Space on the wave)'),
                 "aria-pressed": !!d.paused,
                 onClick: function () { upd('paused', !d.paused); },
                 className: "sm:ml-auto px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.paused ? 'bg-cyan-700 text-white shadow-sm' : 'transition-colors bg-white text-slate-600 border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50 active:scale-[0.97]')
-              }, d.paused ? '▶ Play' : '⏸ Pause'),
+              }, d.paused ? '▶ ' + __alloT('stem.wave.btn_play', 'Play') : '⏸ ' + __alloT('stem.wave.btn_pause', 'Pause')),
 
               d.paused && React.createElement("button", {
-                "aria-label": "Step the animation forward one frame",
+                "aria-label": __alloT('stem.wave.aria_step_frame', 'Step the animation forward one frame'),
                 onClick: function () { var c = canvasRef._lastCanvas; if (c && c._waveStep) c._waveStep(8); },
                 className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50 active:scale-[0.97]"
-              }, '⏭ Step'),
+              }, '⏭ ' + __alloT('stem.wave.btn_step', 'Step')),
 
-              React.createElement("button", { "aria-label": "Toggle Sound",
+              React.createElement("button", { "aria-label": __alloT('stem.wave.aria_toggle_sound', 'Toggle Sound'),
 
                 onClick: toggleSound,
 
                 className: "px-4 py-1.5 rounded-lg text-xs font-bold transition-all " + ((_waveAudio.ctx && d.soundPlaying) ? 'bg-emerald-700 text-white animate-pulse shadow-sm' : 'transition-colors bg-white text-slate-600 border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 active:scale-[0.97]')
 
-              }, (_waveAudio.ctx && d.soundPlaying) ? '\uD83D\uDD0A Stop Sound' : '\uD83D\uDD08 Play Sound (' + (d.frequency * 100) + 'Hz)')
+              }, (_waveAudio.ctx && d.soundPlaying) ? '\uD83D\uDD0A ' + __alloT('stem.wave.btn_stop_sound', 'Stop Sound') : '\uD83D\uDD08 ' + __alloT('stem.wave.btn_play_sound', 'Play Sound') + ' (' + (d.frequency * 100) + 'Hz)')
 
             ),
 
             // ── Topic-accent hero band per wave mode ──
             (function() {
               var MODE_META = {
-                free:         { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '\uD83C\uDF0A', title: 'Free Wave \u2014 sine, square, triangle, sawtooth',  hint: 'Pure sine = single frequency; square / triangle / sawtooth are sine sums (Fourier 1822). Each waveform sounds different at the same pitch \u2014 timbre IS the harmonic content.' },
-                standing:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83C\uDFB8', title: 'Standing \u2014 nodes + antinodes on a string',     hint: 'Two waves traveling opposite directions interfere into a stationary pattern. Guitar / violin strings vibrate at fundamental + integer harmonics. Length, tension, density set the pitch.' },
-                ripple:       { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCA7', title: 'Ripple Tank \u2014 two sources, interference',     hint: 'Where crests meet crests \u2192 bright (constructive); crests meet troughs \u2192 dark (destructive). Young\u2019s 1801 double-slit experiment proved light is a wave; same physics here.' },
-                longitudinal: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\u2261',         title: 'Longitudinal \u2014 compression + rarefaction',      hint: 'Sound is longitudinal: air molecules push and pull along the direction of travel, not perpendicular. P-waves in earthquakes are longitudinal too \u2014 they arrive first, hence the P (primary).' },
-                doppler:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDE97', title: 'Doppler \u2014 the moving siren effect',             hint: 'Source approaching = compressed wavelengths = higher pitch. Moving away = stretched wavelengths = lower pitch. Christian Doppler 1842; redshift in cosmology is the same idea, with light.' },
-                spectrum:     { accent: '#10b981', soft: 'rgba(16,185,129,0.10)', icon: '\uD83D\uDCCA', title: 'Spectrum \u2014 FFT decomposition',                  hint: 'Any periodic signal = sum of sines (Fourier transform). Music DAWs, JPEG, MRI, MP3 \u2014 all rest on this. Cooley + Tukey 1965 FFT made it computationally cheap; modern signal processing was born.' }
+                free:         { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '\uD83C\uDF0A', title: __alloT('stem.wave.hero_free_title', 'Free Wave \u2014 sine, square, triangle, sawtooth'),  hint: __alloT('stem.wave.hero_free_hint', 'Pure sine = single frequency; square / triangle / sawtooth are sine sums (Fourier 1822). Each waveform sounds different at the same pitch \u2014 timbre IS the harmonic content.') },
+                standing:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83C\uDFB8', title: __alloT('stem.wave.hero_standing_title', 'Standing \u2014 nodes + antinodes on a string'),     hint: __alloT('stem.wave.hero_standing_hint', 'Two waves traveling opposite directions interfere into a stationary pattern. Guitar / violin strings vibrate at fundamental + integer harmonics. Length, tension, density set the pitch.') },
+                ripple:       { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCA7', title: __alloT('stem.wave.hero_ripple_title', 'Ripple Tank \u2014 two sources, interference'),     hint: __alloT('stem.wave.hero_ripple_hint', 'Where crests meet crests \u2192 bright (constructive); crests meet troughs \u2192 dark (destructive). Young\u2019s 1801 double-slit experiment proved light is a wave; same physics here.') },
+                longitudinal: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\u2261',         title: __alloT('stem.wave.hero_longitudinal_title', 'Longitudinal \u2014 compression + rarefaction'),      hint: __alloT('stem.wave.hero_longitudinal_hint', 'Sound is longitudinal: air molecules push and pull along the direction of travel, not perpendicular. P-waves in earthquakes are longitudinal too \u2014 they arrive first, hence the P (primary).') },
+                doppler:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDE97', title: __alloT('stem.wave.hero_doppler_title', 'Doppler \u2014 the moving siren effect'),             hint: __alloT('stem.wave.hero_doppler_hint', 'Source approaching = compressed wavelengths = higher pitch. Moving away = stretched wavelengths = lower pitch. Christian Doppler 1842; redshift in cosmology is the same idea, with light.') },
+                spectrum:     { accent: '#10b981', soft: 'rgba(16,185,129,0.10)', icon: '\uD83D\uDCCA', title: __alloT('stem.wave.hero_spectrum_title', 'Spectrum \u2014 FFT decomposition'),                  hint: __alloT('stem.wave.hero_spectrum_hint', 'Any periodic signal = sum of sines (Fourier transform). Music DAWs, JPEG, MRI, MP3 \u2014 all rest on this. Cooley + Tukey 1965 FFT made it computationally cheap; modern signal processing was born.') }
               };
               var meta = MODE_META[waveMode] || MODE_META.free;
               return React.createElement('div', {
