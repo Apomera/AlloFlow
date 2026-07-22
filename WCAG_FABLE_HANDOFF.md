@@ -65,6 +65,8 @@ These sections were independently committed:
 | Teacher Email Builder | `f952f8178` |
 | Parent Message Builder | `7c11d260f` |
 | Race-proof suite gate runner | `3b6469390` |
+| Body Awareness | `528e84ce6` |
+| Achievement Wall | `deb110ec2` |
 
 The most recently completed section, Personal Reference Sheet Builder, passed:
 
@@ -156,9 +158,15 @@ Both issues surfaced last session are now FIXED:
 - **Parent Message Builder** `7c11d260f`: the Teacher Email fix set applied nearly verbatim as predicted (pendingFocus with select-text state, rawDrafts/isRecord/textValue guards, catalog stat guard, 11→12px). Its crisis-honesty aside ("does not address, send, or monitor... contact local emergency or crisis services now") was already excellent — untouched. Render test covers recipient substitution, empty-body rejection, discard-confirm, save/remove.
 - **Suite gate is now race-proof**: `node dev-tools/run_learning_lab_gate.cjs [maxWorkers]` (`3b6469390`) runs the full suite with the DEFAULT reporter (whose summary is written after all workers settle) and fails unless passed == total with zero failures. **Use this instead of --reporter=json for the per-section gate.** It also caught a second failure mode in the wild: under low free RAM (~2GB), vitest workers die with "Zone Allocation failed" OOM and tests silently vanish from the run — pass `2` (or `1`) as the workers argument when the machine is loaded. Gate verified: 2,291/2,291 across 154 files at 2 workers while the machine had <2GB free.
 
+## Session notes (2026-07-21 night, Fable — eleventh continuation)
+
+- **Body Awareness** `528e84ce6`: standard wave (pendingFocusId, rawChecks/isRecord guards — null entries crashed the today-check filter; textValue note/date; non-notification wording; 11→12px; stat guard). Its non-medical framing ("cannot explain or diagnose symptoms") was already excellent. Render test: 9 sliders labelled, malformed ratings clamp to neutral 5, save→completed-state flow, confirmed removal.
+- **Achievement Wall** `deb110ec2`: standard wave; null entries crashed `categoryFor`; bogus categories fall back to Academic; independent title/future-date validation render-tested; no cap (renders all). Gate 2,303/2,303 via `run_learning_lab_gate.cjs 2`.
+- Mirror SHA-256: `D6BD6176819C5A4F20D4D5C6FDB93EA3ABF20C482C7F6FB382F122DD25131C7C`.
+
 ## Next section
 
-Remaining unaudited (no-render-test list): **Body Check, Achievement Wall, Affirmations, Role Models, Self Assessment, Learning Contract, Emotion Regulator** — plus the ~28 timer-focus conversions as their sections come up. One independently tested and committed section at a time. Use the gate runner for the full-suite check. Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
+Remaining unaudited (no-render-test list): **Affirmations, Role Models, Self Assessment, Learning Contract, Emotion Regulator** — plus the remaining timer-focus conversions as their sections come up. One independently tested and committed section at a time. Use the gate runner (`node dev-tools/run_learning_lab_gate.cjs 2`) for the full-suite check. Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
 
 ## Completed section reference: Optional Support Request Notes
 
