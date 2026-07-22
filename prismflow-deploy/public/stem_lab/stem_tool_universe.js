@@ -2145,8 +2145,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   },
                     React.createElement("span", { className: "block text-base mb-1", "aria-hidden": "true" }, mission.icon),
                     React.createElement("span", { className: "block text-[10px] font-black leading-tight" }, mission.title),
-                    React.createElement("span", { className: "block mt-1 text-[9px] font-semibold opacity-75 leading-tight" }, mission.bridgeLabel),
-                    completed ? React.createElement("span", { className: "mt-1 inline-block rounded-full bg-emerald-300/15 px-1.5 py-0.5 text-[9px] font-black text-emerald-100" }, "complete") : launched && React.createElement("span", { className: "mt-1 inline-block rounded-full bg-sky-300/15 px-1.5 py-0.5 text-[9px] font-black text-sky-100" }, "started")
+                    React.createElement("span", { className: "block mt-1 text-[10px] font-semibold opacity-75 leading-tight" }, mission.bridgeLabel),
+                    completed ? React.createElement("span", { className: "mt-1 inline-block rounded-full bg-emerald-300/15 px-1.5 py-0.5 text-[10px] font-black text-emerald-100" }, "complete") : launched && React.createElement("span", { className: "mt-1 inline-block rounded-full bg-sky-300/15 px-1.5 py-0.5 text-[10px] font-black text-sky-100" }, "started")
                   );
                 })
               ),
@@ -2232,7 +2232,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   },
                     React.createElement("span", { className: "block text-base mb-1", "aria-hidden": "true" }, stop.icon),
                     React.createElement("span", { className: "block text-[10px] font-black leading-tight" }, stop.title),
-                    React.createElement("span", { className: "block mt-1 text-[9px] font-semibold opacity-75 leading-tight" }, stop.epoch)
+                    React.createElement("span", { className: "block mt-1 text-[10px] font-semibold opacity-75 leading-tight" }, stop.epoch)
                   );
                 })
               ),
@@ -2309,7 +2309,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   },
                     React.createElement("span", { className: "block text-base mb-1", "aria-hidden": "true" }, thread.icon),
                     React.createElement("span", { className: "block text-[10px] font-black leading-tight" }, thread.title),
-                    mastered && React.createElement("span", { className: "mt-1 inline-block rounded-full bg-emerald-300/15 px-1.5 py-0.5 text-[9px] font-black text-emerald-100" }, "explained")
+                    mastered && React.createElement("span", { className: "mt-1 inline-block rounded-full bg-emerald-300/15 px-1.5 py-0.5 text-[10px] font-black text-emerald-100" }, "explained")
                   );
                 })
               ),
@@ -2413,7 +2413,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   (recentCosmicNotebook.length ? recentCosmicNotebook : [{ key: 'empty', kind: 'Notebook', title: 'No saved notes yet', source: 'Start with Save evidence', claim: 'Choose a mission or evidence thread.', evidence: 'Use the visual data signal and CER cards.', reasoning: 'Saved notes will appear here for review.' }]).map(function (note) {
                     return React.createElement("div", { key: note.key, className: "rounded-lg border p-2", style: { borderColor: 'rgba(226,232,240,0.12)', background: 'rgba(2,6,23,0.38)' } },
                       React.createElement("div", { className: "flex items-center gap-2 mb-1" },
-                        React.createElement("span", { className: "rounded-full px-1.5 py-0.5 text-[9px] font-black text-emerald-100", style: { background: 'rgba(16,185,129,0.16)' } }, note.kind),
+                        React.createElement("span", { className: "rounded-full px-1.5 py-0.5 text-[10px] font-black text-emerald-100", style: { background: 'rgba(16,185,129,0.16)' } }, note.kind),
                         React.createElement("p", { className: "min-w-0 flex-1 truncate text-[11px] font-black text-white" }, note.title)
                       ),
                       React.createElement("p", { className: "text-[10px] font-bold text-cyan-200 mb-1" }, note.source),
@@ -2459,7 +2459,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   },
                     React.createElement("div", { className: "flex items-center gap-2 mb-1" },
                       React.createElement("span", { className: "text-[11px] font-black text-white" }, engine.name),
-                      React.createElement("span", { className: "ml-auto rounded-full px-2 py-0.5 text-[9px] font-bold text-cyan-100", style: { background: 'rgba(8,145,178,0.24)' } }, engine.fit)
+                      React.createElement("span", { className: "ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold text-cyan-100", style: { background: 'rgba(8,145,178,0.24)' } }, engine.fit)
                     ),
                     React.createElement("p", { className: "text-[10px] font-black text-emerald-200 mb-1" }, "Best paired with: " + engine.toolFit),
                     React.createElement("p", { className: "text-[10px] font-bold text-violet-200 mb-1" }, engine.license),
@@ -3290,7 +3290,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       { label: 'H\u2080 age est', val: ageEstGyr.toFixed(1) + ' Gyr' }
                     ].map(function(m) {
                       return React.createElement("div", { key: m.label, className: "p-1 rounded text-center", style: { background: '#0a0a1a', border: '1px solid ' + sm.border } },
-                        React.createElement("div", { className: "text-[9px] opacity-60" }, m.label),
+                        React.createElement("div", { className: "text-[10px] opacity-60" }, m.label),
                         React.createElement("div", { className: "text-[11px] font-bold font-mono", style: { color: sm.color } }, m.val)
                       );
                     })
@@ -3310,9 +3310,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       return React.createElement("polyline", { points: pts.trim(), fill: 'none', stroke: sm.color, strokeWidth: 1.5, opacity: 0.7 });
                     })(),
                     React.createElement("circle", { cx: 30 + (Math.min(1000, iq.distMpc) / 1000) * 280, cy: 100 - Math.min(90, recessionV / 800), r: 5, fill: sm.color, stroke: '#fff', strokeWidth: 1 }),
-                    React.createElement("text", { x: 30, y: 14, fill: '#94a3b8', fontSize: 8 }, 'v (km/s)'),
-                    React.createElement("text", { x: 310, y: 116, fill: '#94a3b8', fontSize: 8, textAnchor: 'end' }, 'distance (Mpc)'),
-                    React.createElement("text", { x: 160, y: 116, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'v = H\u2080d  \u00B7  fate: ' + fate)
+                    React.createElement("text", { x: 30, y: 14, fill: '#94a3b8', fontSize: 10 }, 'v (km/s)'),
+                    React.createElement("text", { x: 310, y: 116, fill: '#94a3b8', fontSize: 10, textAnchor: 'end' }, 'distance (Mpc)'),
+                    React.createElement("text", { x: 160, y: 116, fill: '#94a3b8', fontSize: 10, textAnchor: 'middle' }, 'v = H\u2080d  \u00B7  fate: ' + fate)
                   ),
                   React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
                     React.createElement("label", { className: "text-[10px]" },
@@ -3339,7 +3339,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     }, className: "flex-1 px-2 py-1 rounded text-[10px] font-bold", style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '\uD83D\uDCCB Log this cosmology'),
                     React.createElement("button", { type: "button", onClick: function() { setIQ({ distMpc: 100, hubbleConst: 70, darkEnergy: 70, matter: 30 }); }, className: "px-2 py-1 rounded text-[10px]", style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
                   ),
-                  iqLog.length > 0 && React.createElement("div", { className: "p-1.5 rounded text-[9px] font-mono mb-2", style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+                  iqLog.length > 0 && React.createElement("div", { className: "p-1.5 rounded text-[10px] font-mono mb-2", style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
                     iqLog.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' \u00B7 d=' + e.d + ' H=' + e.H + ' \u03A9de=' + e.de + ' \u03A9m=' + e.m + ' \u2192 z=' + e.z); })
                   ),
                   React.createElement("label", { className: "block text-[10px] font-bold opacity-85 mb-1" }, 'Your hypothesis (why are Planck (~67) and SH0ES (~73) values of H\u2080 in tension?)'),
@@ -3361,7 +3361,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     React.createElement("span", null, 'I can explain why this distance and \u03A9 mix yields this redshift / fate.')
                   ),
                   iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                  React.createElement("p", { className: "m-0 text-[9px] italic opacity-60" }, 'Inquiry widget \u2014 no score, no reveal, no answer dump. Look-back time uses linear approximation t \u2248 d/c (valid for low z; for z>0.3 a full \u039BCDM integration is needed). Fate label ignores spatial curvature (assumes \u03A9_total = 1) and dark-energy equation of state (assumes w = -1, cosmological constant); see open questions for what those simplifications cost. Hubble tension between Planck (~67) and local SH0ES (~73) measurements remains unresolved as of 2026.')
+                  React.createElement("p", { className: "m-0 text-[10px] italic opacity-60" }, 'Inquiry widget \u2014 no score, no reveal, no answer dump. Look-back time uses linear approximation t \u2248 d/c (valid for low z; for z>0.3 a full \u039BCDM integration is needed). Fate label ignores spatial curvature (assumes \u03A9_total = 1) and dark-energy equation of state (assumes w = -1, cosmological constant); see open questions for what those simplifications cost. Hubble tension between Planck (~67) and local SH0ES (~73) measurements remains unresolved as of 2026.')
                 );
               })()
             ),
@@ -3949,8 +3949,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       React.createElement("line", { x1: xOf(distMpc), y1: hH - 8, x2: xOf(distMpc), y2: yOf(velKms), stroke: 'rgba(244,114,182,0.5)', strokeWidth: 0.6, strokeDasharray: '1 2' }),
                       React.createElement("line", { x1: hPad, y1: yOf(velKms), x2: xOf(distMpc), y2: yOf(velKms), stroke: 'rgba(244,114,182,0.5)', strokeWidth: 0.6, strokeDasharray: '1 2' }),
                       React.createElement("circle", { cx: xOf(distMpc), cy: yOf(velKms), r: 3, fill: '#f43f5e', stroke: '#fff', strokeWidth: 0.7 }),
-                      React.createElement("text", { x: hPad - 2, y: 8, fontSize: 5, fill: '#94a3b8', textAnchor: 'end' }, 'v'),
-                      React.createElement("text", { x: hW - hPad, y: hH - 1, fontSize: 5, fill: '#94a3b8', textAnchor: 'end' }, 'd (Mpc)')
+                      React.createElement("text", { x: hPad - 2, y: 8, fontSize: 10, fill: '#94a3b8', textAnchor: 'end' }, 'v'),
+                      React.createElement("text", { x: hW - hPad, y: hH - 1, fontSize: 10, fill: '#94a3b8', textAnchor: 'end' }, 'd (Mpc)')
                     ),
                     React.createElement("div", { className: "text-[10px] text-slate-400 mt-1 italic text-center" },
                       'For nearby galaxies this linear model works well. At large distances, redshift needs the full expansion history of the universe, not a simple speed.')
