@@ -471,6 +471,53 @@ describe('coaster lab — build-your-own discovery and visual feedback', () => {
     expect(src).toContain("if(buildCoach) buildCoach.hidden = true;");
   });
 
+  function loadElementBuilder(p) {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const s = src.indexOf('/* @clab-elements-start');
+    const e = src.indexOf('/* @clab-elements-end');
+    expect(s).toBeGreaterThan(-1);
+    expect(e).toBeGreaterThan(s);
+    return new Function(src.slice(s, e) + '\nreturn { buildElementPoints };')().buildElementPoints;
+  }
+
+  it.each(TOOL_PATHS)('%s offers a sparse starter, editable element palette, and safety coach', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'function simpleDesign(){', 'id=\\"clab-btnStartSimple\\"', 'id=\\"clab-elementPalette\\"',
+      'data-element=\\"hill\\"', 'data-element=\\"drop\\"', 'data-element=\\"turn-left\\"',
+      'data-element=\\"turn-right\\"', 'data-element=\\"loop\\"', 'function insertTrackElement(kind){',
+      'Predictive safety coach', 'function predictSafetyFindings(){', 'function focusSafetyFinding(index){',
+      'data-safety-index', 'const safetyGroup = new THREE.Group();',
+    ]) expect(src).toContain(marker);
+    expect(src).toContain("points: [\n      { x:  0, y: 3.0, z:  0, bank:  0 }");
+    expect(src).toContain('design.points.splice(startIdx + 1, 0, ...added);');
+    expect(src).toContain('if(design.certTurnIdx > startIdx) design.certTurnIdx += added.length;');
+  });
+
+  it.each(TOOL_PATHS)('%s generates finite, editable geometry for every palette element', (p) => {
+    const build = loadElementBuilder(p);
+    const a = { x: 0, y: 4, z: 0, bank: 0 };
+    const b = { x: 30, y: 4, z: 0, bank: 0 };
+    const pieces = {
+      hill: build('hill', a, b), drop: build('drop', a, b),
+      left: build('turn-left', a, b), right: build('turn-right', a, b), loop: build('loop', a, b),
+    };
+    expect(pieces.hill).toHaveLength(3);
+    expect(pieces.drop).toHaveLength(4);
+    expect(pieces.left).toHaveLength(3);
+    expect(pieces.right).toHaveLength(3);
+    expect(pieces.loop).toHaveLength(10);
+    for (const pts of Object.values(pieces)) for (const pt of pts) {
+      expect([pt.x, pt.y, pt.z, pt.bank].every(Number.isFinite)).toBe(true);
+      expect(pt.y).toBeGreaterThanOrEqual(0.5);
+      expect(pt.y).toBeLessThanOrEqual(45);
+    }
+    expect(Math.max(...pieces.hill.map(pt => pt.y))).toBeGreaterThan(10);
+    expect(Math.max(...pieces.loop.map(pt => pt.y))).toBeGreaterThan(14);
+    expect(pieces.left[1].z).toBeGreaterThan(0);
+    expect(pieces.right[1].z).toBeLessThan(0);
+  });
+
   it.each(TOOL_PATHS)('%s has cohesive correct/wrong, timer, score, diagram, and summary visuals', (p) => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
     for (const marker of [
