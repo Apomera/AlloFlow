@@ -8,60 +8,82 @@ const TOOL_PATHS = [
 ];
 
 describe('Particle Lab 3D interaction surface accessibility contract', () => {
-  it('provides a focusable, described chamber with visible focus and shortcut metadata', () => {
-    const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_particlelab3d.js'), 'utf8');
-    expect(source).toContain("tabIndex: 0, role: 'application'");
+  const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_particlelab3d.js'), 'utf8');
+
+  it('puts focus and interactive semantics on the actual canvas', () => {
+    expect(source).toContain("h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application'");
     expect(source).toContain("'aria-roledescription': 'Interactive 3D particle chamber'");
-    expect(source).toContain("'aria-keyshortcuts': 'Space R T V E M G C L F H'");
-    expect(source).toContain('Click a particle to trace it, drag to orbit');
+    expect(source).toContain("'aria-describedby': 'particle-chamber-help'");
+    expect(source).toContain("'aria-keyshortcuts': 'Space R T V E M G C L F H ? Escape'");
+    expect(source).toContain('onKeyDown: onLabKey');
     expect(source).toContain('event.currentTarget.focus()');
     expect(source).toContain('focus-visible:outline-cyan-200');
-    expect(source).toContain("role: 'img', 'aria-label': preset + ' particle simulation");
-    expect(source).toContain("window.addEventListener('keydown', onLabKey)");
-    expect(source).toContain("window.removeEventListener('keydown', onLabKey)");
+    expect(source).not.toContain("h('div', { tabIndex: 0, role: 'application'");
+  });
+
+  it('scopes single-character shortcuts to the focused canvas', () => {
+    expect(source).toContain('function onLabKey(event)');
+    expect(source).toContain('onKeyDown: onLabKey');
+    expect(source).not.toContain("window.addEventListener('keydown', onLabKey)");
+    expect(source).not.toContain("window.removeEventListener('keydown', onLabKey)");
+    expect(source).toContain('Shortcuts work only while the particle chamber has keyboard focus.');
+  });
+
+  it('provides keyboard alternatives for pointer particle selection and camera dragging', () => {
+    expect(source).toContain('function selectParticle(nextValue)');
+    expect(source).toContain("id: 'particle-trace-selector', type: 'number'");
+    expect(source).toContain("htmlFor: 'particle-trace-selector'");
+    expect(source).toContain('keyboard users can use the labeled particle selector, camera views, and chamber shortcuts.');
+    expect(source).toContain("role: 'group', 'aria-label': 'Camera views'");
+    expect(source).toContain("setCameraShot('hero')");
+    expect(source).toContain("setCameraShot('top')");
+    expect(source).toContain("setCameraShot('close')");
+  });
+
+  it('gives the shortcuts dialog complete focus lifecycle and safe dismissal', () => {
+    expect(source).toContain("role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'particle-keys-title'");
+    expect(source).toContain("'aria-describedby': 'particle-keys-description'");
+    expect(source).toContain('if (closeButton) closeButton.focus()');
+    expect(source).toContain("if (event.key === 'Escape' || event.key === '?')");
+    expect(source).toContain("if (event.key !== 'Tab' || !dialog) return");
+    expect(source).toContain('function onStageKeyDown(event)');
+    expect(source).toContain('onKeyDown: onStageKeyDown');
+    expect(source).toContain('restoreKeysFocus()');
+    expect(source).toContain("'aria-haspopup': 'dialog'");
+  });
+
+  it('removes persistent 7, 8, and 9 pixel utility text and sizes compact buttons', () => {
+    expect(source).not.toMatch(/text-\[(?:7|8|9)px\]/);
+    expect(source).toContain("min-h-6 rounded px-2 py-1 text-[10px]");
+    expect(source).toContain("min-h-11 w-full rounded-lg");
   });
 
   it('fullscreen always works: native API with webkit prefixes plus a CSS immersive fallback', () => {
     TOOL_PATHS.forEach((filePath) => {
-      const source = readFileSync(resolve(process.cwd(), filePath), 'utf8');
-      // vendor-prefixed API coverage (Safari/iPad)
-      expect(source).toContain('stage.requestFullscreen || stage.webkitRequestFullscreen');
-      expect(source).toContain('document.exitFullscreen || document.webkitExitFullscreen');
-      expect(source).toContain('document.fullscreenElement || document.webkitFullscreenElement');
-      expect(source).toContain("document.addEventListener('webkitfullscreenchange', onFullscreenChange)");
-      // the fallback engages when the API is missing, disabled, or rejects
-      expect(source).toContain('function enterCssFullscreen()');
-      expect(source).toContain('.catch(function () { enterCssFullscreen(); })');
-      expect(source).toContain('document.fullscreenEnabled !== false');
-      // css mode: fixed-position stage + body scroll lock, restored on exit
-      expect(source).toContain("zIndex: 99990");
-      expect(source).toContain("document.body.style.overflow = 'hidden'");
-      expect(source).toContain('document.body.style.overflow = previousOverflow');
-      // the stale always-fails toast is gone
-      expect(source).not.toContain('Fullscreen is not available in this browser.');
+      const tool = readFileSync(resolve(process.cwd(), filePath), 'utf8');
+      expect(tool).toContain('stage.requestFullscreen || stage.webkitRequestFullscreen');
+      expect(tool).toContain('document.exitFullscreen || document.webkitExitFullscreen');
+      expect(tool).toContain('document.fullscreenElement || document.webkitFullscreenElement');
+      expect(tool).toContain("document.addEventListener('webkitfullscreenchange', onFullscreenChange)");
+      expect(tool).toContain('function enterCssFullscreen()');
+      expect(tool).toContain('.catch(function () { enterCssFullscreen(); })');
+      expect(tool).toContain('document.fullscreenEnabled !== false');
+      expect(tool).toContain("zIndex: 99990");
+      expect(tool).toContain("document.body.style.overflow = 'hidden'");
+      expect(tool).toContain('document.body.style.overflow = previousOverflow');
+      expect(tool).not.toContain('Fullscreen is not available in this browser.');
     });
   });
 
-  it('the HUD can be hidden and recovered three ways (H key, button, floating pill)', () => {
-    const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_particlelab3d.js'), 'utf8');
+  it('the HUD remains recoverable by key, button, and floating control', () => {
     expect(source).toContain("event.key === 'h' || event.key === 'H'");
     expect(source).toContain("'aria-label': 'Hide the simulation controls. Press H to show them again.'");
     expect(source).toContain("'Show controls (H)'");
-    // hiding gates the preset row, chamber-controls overlay, and control bar
-    const gated = (source.match(/showHud && h\('div'/g) || []).length;
-    expect(gated).toBeGreaterThanOrEqual(3);
-    // announcements for screen-reader users
+    expect((source.match(/showHud && h\('div'/g) || []).length).toBeGreaterThanOrEqual(3);
     expect(source).toContain('Simulation controls hidden. Press H');
   });
 
-  it('a keyboard-shortcuts panel documents every shortcut and closes on Escape', () => {
-    const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_particlelab3d.js'), 'utf8');
-    expect(source).toContain("'aria-label': 'Keyboard shortcuts'");
-    expect(source).toContain("'aria-modal': 'true'");
-    // ? opens it; Esc closes it (before Esc exits immersive view)
-    expect(source).toContain("event.key === '?'");
-    expect(source).toContain("event.key === 'Escape' && (showKeysRef.current || cssFsRef.current)");
-    // every registered shortcut is explained in the panel
+  it('documents every chamber shortcut', () => {
     ['Run or pause the simulation', 'Reset the chamber', 'Velocity vector arrows',
      'Diffusion membrane', 'Gravity field', 'Follow the traced particle',
      'immersive view where fullscreen is blocked', 'Hide or show the simulation controls',
@@ -70,25 +92,22 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     });
   });
 
-  it('the deploy mirror matches the root tool byte-for-byte', () => {
+  it('loads its 3D engine through the shared resilient loader with error UI and Retry', () => {
+    TOOL_PATHS.forEach((filePath) => {
+      const tool = readFileSync(resolve(process.cwd(), filePath), 'utf8');
+      expect(tool).toContain('window.StemLab.ensureThree({ orbit: true, orbitRequired: true })');
+      expect(tool).toContain("'3D engine unavailable'");
+      expect(tool).toContain('setLoadAttempt(function (a) { return a + 1; })');
+      expect(tool).toContain('School network filters sometimes block CDNs');
+      expect(tool).not.toContain('script.onload = loadOrbit');
+      expect(tool).not.toContain('three.min.js');
+    });
+  });
+
+  it('keeps the deploy mirror byte-identical', () => {
     const a = readFileSync(resolve(process.cwd(), TOOL_PATHS[0]));
     const b = readFileSync(resolve(process.cwd(), TOOL_PATHS[1]));
     expect(a.equals(b)).toBe(true);
-  });
-
-  it('loads its 3D engine through the shared resilient loader with error UI + Retry', () => {
-    TOOL_PATHS.forEach((filePath) => {
-      const source = readFileSync(resolve(process.cwd(), filePath), 'utf8');
-      // one canonical loader: the host's ensureThree (multi-CDN + timeout)
-      expect(source).toContain('window.StemLab.ensureThree({ orbit: true, orbitRequired: true })');
-      // real error state + Retry instead of an eternal 'Loading Three.js'
-      expect(source).toContain("'3D engine unavailable'");
-      expect(source).toContain('setLoadAttempt(function (a) { return a + 1; })');
-      expect(source).toContain('School network filters sometimes block CDNs');
-      // the old no-onerror single-shot loader is gone, URLs and all
-      expect(source).not.toContain('script.onload = loadOrbit');
-      expect(source).not.toContain('three.min.js');
-    });
   });
 });
 
