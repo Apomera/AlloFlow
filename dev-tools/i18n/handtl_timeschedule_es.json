@@ -1,5 +1,5 @@
 {
-  "spanish_latin_america": {
+  "spanish_castilian": {
     "clock_link": "Enlace de reloj",
     "analog_digital": "Analógico ↔ digital",
     "elapsed_timeline": "Línea de tiempo transcurrido",
@@ -60,8 +60,8 @@
     "the_interval_is_zero_so_start_and_end_": "El intervalo es cero, así que el inicio y el fin son iguales.",
     "use_24_hour_form_such_as_13_25": "Usa el formato de 24 horas, como 13:25.",
     "use_12_hour_form_with_am_or_pm": "Usa el formato de 12 horas con a. m. o p. m.",
-    "enter_a_time_such_as_13_25_or_1_25_pm": "Ingresa una hora, como 13:25 o 1:25 p. m.",
-    "enter_minutes_or_a_duration_such_as_1_": "Ingresa minutos o una duración, como 1 h 15 min.",
+    "enter_a_time_such_as_13_25_or_1_25_pm": "Introduce una hora, como 13:25 o 1:25 p. m.",
+    "enter_minutes_or_a_duration_such_as_1_": "Introduce minutos o una duración, como 1 h 15 min.",
     "correct": "¡Correcto! ",
     "schedule_reasoning": "razonamiento sobre horarios",
     "not_yet_draw_jumps_between_the_two_tim": "Todavía no. Dibuja saltos entre las dos horas e inténtalo de nuevo.",
@@ -92,8 +92,8 @@
     "mark_both_times_on_a_number_line_jump_": "Marca las dos horas en una recta numérica. Salta a una hora en punto cómoda, suma las horas completas y luego termina con los minutos restantes.",
     "solved_previously": "Resuelto anteriormente. ",
     "use_24_hour_form_such_as_18_40": "Usa el formato de 24 horas, como 18:40.",
-    "enter_a_time_such_as_18_40_or_6_40_pm": "Ingresa una hora, como 18:40 o 6:40 p. m.",
-    "enter_minutes_or_a_duration_such_as_2_": "Ingresa minutos o una duración, como 2 h 15 min.",
+    "enter_a_time_such_as_18_40_or_6_40_pm": "Introduce una hora, como 18:40 o 6:40 p. m.",
+    "enter_minutes_or_a_duration_such_as_2_": "Introduce minutos o una duración, como 2 h 15 min.",
     "time_challenge": "desafío de tiempo",
     "not_yet_use_a_clock_timeline_or_minute": "Todavía no. Usa un reloj, una línea de tiempo o los minutos después de la medianoche.",
     "moving_to_another_missed_challenge": "Pasando a otro desafío fallado.",
@@ -124,7 +124,7 @@
     "example_9_07_pm": "Ejemplo: 9:07 p. m.",
     "example_2_15_pm_or_14_15": "Ejemplo: 2:15 p. m. o 14:15",
     "example_95_min_or_1_h_35_m": "Ejemplo: 95 min o 1 h 35 min",
-    "durations_may_be_entered_in_total_minu": "Las duraciones se pueden ingresar en minutos totales o en horas y minutos.",
+    "durations_may_be_entered_in_total_minu": "Las duraciones se pueden introducir en minutos totales o en horas y minutos.",
     "use_two_digit_24_hour_form_hh_mm": "Usa el formato de 24 horas con dos dígitos (HH:MM).",
     "include_am_or_pm": "Incluye a. m. o p. m.",
     "you_may_use_either_12_hour_or_24_hour_": "Puedes usar el formato de 12 horas o el de 24 horas.",
