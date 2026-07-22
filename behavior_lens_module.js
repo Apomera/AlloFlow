@@ -560,30 +560,51 @@
      */
     const GlossaryTip = ({ term, children }) => {
         const [show, setShow] = useState(false);
+        const tooltipIdRef = useRef(`bl-glossary-tooltip-${uid()}`);
         const entry = GLOSSARY_TIPS[term];
+        useEffect(() => {
+            if (!show || !entry) return undefined;
+            const dismissOnEscape = (event) => {
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    setShow(false);
+                }
+            };
+            document.addEventListener('keydown', dismissOnEscape);
+            return () => document.removeEventListener('keydown', dismissOnEscape);
+        }, [show, entry]);
         if (!entry) return h('span', null, children || term);
+        const tooltipId = tooltipIdRef.current;
         return h('span', {
-            className: 'relative inline-block',
+            className: 'relative inline-flex items-center',
             onMouseEnter: () => setShow(true),
-            onMouseLeave: () => setShow(false),
-            onFocus: () => setShow(true),
-            onBlur: () => setShow(false),
-            tabIndex: 0,
-            role: 'button',
-            'aria-label': `Definition of ${term}`
+            onMouseLeave: () => setShow(false)
         },
-            h('span', {
-                className: 'border-b border-dotted border-indigo-400 text-indigo-700 cursor-help transition-colors hover:text-indigo-900 hover:border-indigo-600'
-            }, children || term),
+            h('button', {
+                type: 'button',
+                'aria-label': `Definition of ${term}`,
+                'aria-describedby': show ? tooltipId : undefined,
+                'aria-expanded': show ? 'true' : 'false',
+                onFocus: () => setShow(true),
+                onBlur: () => setShow(false),
+                onClick: () => setShow(true),
+                className: 'appearance-none bg-transparent border-0 rounded px-0.5 min-h-6 text-indigo-700 cursor-help transition-colors hover:text-indigo-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700'
+            },
+                h('span', {
+                    className: 'border-b border-dotted border-indigo-500'
+                }, children || term)
+            ),
             show && h('span', {
-                className: 'absolute z-[999] bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 p-3 bg-slate-900 text-white rounded-xl shadow-xl text-xs leading-relaxed pointer-events-none animate-in fade-in',
-                style: { animationDuration: '150ms', display: 'block' }
+                id: tooltipId,
+                role: 'tooltip',
+                className: 'absolute z-[999] bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 p-3 bg-slate-900 text-white rounded-xl shadow-xl text-xs leading-relaxed',
+                style: { display: 'block' }
             },
                 h('span', { className: 'font-bold text-indigo-300 text-[11px] mb-1', style: { display: 'block' } }, `${term} — ${entry.affirming}`),
                 h('span', { className: 'text-amber-200', style: { display: 'block' } }, entry.def),
                 h('span', {
-                    className: 'absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-s-[6px] border-e-[6px] border-t-[6px] border-s-transparent border-e-transparent border-t-slate-900',
-                    style: { display: 'block' }
+                    'aria-hidden': 'true',
+                    className: 'absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-s-[6px] border-e-[6px] border-t-[6px] border-s-transparent border-e-transparent border-t-slate-900'
                 })
             )
         );
@@ -26969,21 +26990,36 @@ Analyze this data and return ONLY valid JSON:
                     const renderCard = (tool) => {
                         const cc = colorClasses[tool.color];
                         const isFav = favorites.includes(tool.id);
-                        return h('button', { key: tool.id,
-                            onClick: () => { if (!tool.disabled) handleToolOpen(tool.id); },
-                            disabled: tool.disabled || (!selectedStudent && !['analysis', 'export', 'record', 'abaguide', 'glossary', 'fbaworkflow', 'sandbox'].includes(tool.id)),
-                            className: `relative text-start p-5 rounded-xl border-2 transition-all ${cc.border} ${cc.hover} bg-white shadow-sm hover:shadow-md ${tool.disabled || !selectedStudent ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`
+                        const canOpenWithoutStudent = ['analysis', 'export', 'record', 'abaguide', 'glossary', 'fbaworkflow', 'sandbox'].includes(tool.id);
+                        const isDisabled = Boolean(tool.disabled || (!selectedStudent && !canOpenWithoutStudent));
+                        const titleId = `bl-tool-${tool.id}-title`;
+                        const descriptionId = `bl-tool-${tool.id}-description`;
+                        return h('article', {
+                            key: tool.id,
+                            role: 'group',
+                            'aria-labelledby': titleId,
+                            'aria-describedby': descriptionId,
+                            className: `relative text-start p-5 rounded-xl border-2 transition-all ${cc.border} bg-white shadow-sm ${isDisabled ? 'opacity-60' : cc.hover + ' hover:shadow-md'}`
                         },
-                            // Favorite star
-                            h('span', { tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-                                onClick: (e) => { e.stopPropagation(); toggleFav(tool.id); },
-                                role: 'button', className: `absolute top-2 right-2 text-lg transition-all hover:scale-125 ${isFav ? 'text-yellow-400' : 'text-slate-200 hover:text-yellow-300'}`,
+                            h('button', {
+                                type: 'button',
+                                onClick: () => toggleFav(tool.id),
+                                'aria-label': `${isFav ? 'Remove' : 'Add'} ${tool.title} ${isFav ? 'from' : 'to'} favorites`,
+                                'aria-pressed': isFav ? 'true' : 'false',
+                                className: `absolute top-2 right-2 w-8 h-8 min-w-8 min-h-8 rounded-lg inline-flex items-center justify-center text-lg transition-all hover:scale-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700 ${isFav ? 'text-yellow-500' : 'text-slate-600 hover:text-yellow-600'}`,
                                 title: isFav ? 'Remove from favorites' : 'Add to favorites'
-                            }, isFav ? '★' : '☆'),
-                            h('div', { className: `w-12 h-12 rounded-xl ${cc.icon} flex items-center justify-center text-2xl mb-3` }, tool.icon),
-                            h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, DualLabel(tool.title)),
-                            h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, autoTip(tool.desc)),
-                            tool.badge && h('div', { className: `mt-3 inline-block text-[11px] font-bold px-2 py-0.5 rounded-full ${cc.bg} text-slate-600` }, tool.badge)
+                            }, h('span', { 'aria-hidden': 'true' }, isFav ? '★' : '☆')),
+                            h('div', { 'aria-hidden': 'true', className: `w-12 h-12 rounded-xl ${cc.icon} flex items-center justify-center text-2xl mb-3` }, tool.icon),
+                            h('h4', { id: titleId, className: 'text-sm font-black text-slate-800 mb-1 pe-8' }, DualLabel(tool.title)),
+                            h('p', { id: descriptionId, className: 'text-xs text-slate-600 leading-relaxed' }, autoTip(tool.desc)),
+                            tool.badge && h('div', { className: `mt-3 inline-block text-[11px] font-bold px-2 py-0.5 rounded-full ${cc.bg} text-slate-600` }, tool.badge),
+                            h('button', {
+                                type: 'button',
+                                disabled: isDisabled,
+                                onClick: () => handleToolOpen(tool.id),
+                                'aria-describedby': descriptionId,
+                                className: `mt-4 w-full min-h-11 px-3 py-2 rounded-lg border-2 text-xs font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700 ${isDisabled ? 'border-slate-300 bg-slate-100 text-slate-600 cursor-not-allowed' : cc.border + ' ' + cc.bg + ' text-slate-800 hover:bg-white'}`
+                            }, isDisabled ? 'Unavailable until required data is selected' : `Open ${tool.title}`)
                         );
                     };
 
