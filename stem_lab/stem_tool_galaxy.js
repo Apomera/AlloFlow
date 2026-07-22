@@ -414,9 +414,9 @@ if (!window._galaxyHasLoadedOnce) {
 
             { label: t('stem.galaxy.galactic_core'), x: 0, y: 0, z: 0, zoom: 2 },
 
-            { label: t('stem.galaxy.orion_arm_us'), x: 0.35, y: 0, z: 0.1, zoom: 4, desc: 'Our Solar System is here, about 26,000 light-years from the center.' },
+            { label: t('stem.galaxy.orion_arm_us'), x: 0.35, y: 0, z: 0.1, zoom: 4, desc: __alloT('stem.galaxy.orion_arm_us_desc', 'Our Solar System is here, about 26,000 light-years from the center.') },
 
-            { label: t('stem.galaxy.perseus_arm'), x: 0.5, y: 0, z: -0.2, zoom: 3, desc: 'The next spiral arm outward from us. Contains many young, hot stars.' },
+            { label: t('stem.galaxy.perseus_arm'), x: 0.5, y: 0, z: -0.2, zoom: 3, desc: __alloT('stem.galaxy.perseus_arm_desc', 'The next spiral arm outward from us. Contains many young, hot stars.') },
 
             { label: t('stem.galaxy.sagittarius_arm'), x: -0.15, y: 0, z: 0.35, zoom: 3, desc: t('stem.galaxy.the_next_arm_inward_toward') },
 
@@ -430,45 +430,45 @@ if (!window._galaxyHasLoadedOnce) {
 
           var QUIZ_BANK = [
 
-            { q: 'What type of star is our Sun?', a: t('stem.galaxy.gtype'), options: [t('stem.galaxy.otype'), t('stem.galaxy.atype'), t('stem.galaxy.gtype'), t('stem.galaxy.mtype')] },
+            { q: __alloT('stem.galaxy.quiz_sun_type', 'What type of star is our Sun?'), a: t('stem.galaxy.gtype'), options: [t('stem.galaxy.otype'), t('stem.galaxy.atype'), t('stem.galaxy.gtype'), t('stem.galaxy.mtype')] },
 
-            { q: 'What is at the center of the Milky Way?', a: 'Supermassive black hole', options: ['Supermassive black hole', 'Giant star', 'Neutron star', t('stem.galaxy.nebula')] },
+            { q: __alloT('stem.galaxy.quiz_mw_center', 'What is at the center of the Milky Way?'), a: 'Supermassive black hole', options: ['Supermassive black hole', 'Giant star', 'Neutron star', t('stem.galaxy.nebula')] },
 
-            { q: 'Which star type is the hottest?', a: t('stem.galaxy.otype'), options: [t('stem.galaxy.mtype'), t('stem.galaxy.gtype'), t('stem.galaxy.atype'), t('stem.galaxy.otype')] },
+            { q: __alloT('stem.galaxy.quiz_hottest_type', 'Which star type is the hottest?'), a: t('stem.galaxy.otype'), options: [t('stem.galaxy.mtype'), t('stem.galaxy.gtype'), t('stem.galaxy.atype'), t('stem.galaxy.otype')] },
 
-            { q: 'Which spiral arm contains our Solar System?', a: 'Orion Arm', options: [t('stem.galaxy.perseus_arm'), 'Orion Arm', t('stem.galaxy.sagittarius_arm'), 'Norma Arm'] },
+            { q: __alloT('stem.galaxy.quiz_our_arm', 'Which spiral arm contains our Solar System?'), a: 'Orion Arm', options: [t('stem.galaxy.perseus_arm'), 'Orion Arm', t('stem.galaxy.sagittarius_arm'), 'Norma Arm'] },
 
-            { q: 'What percentage of stars are M-type red dwarfs?', a: '~76%', options: ['~10%', '~30%', '~50%', '~76%'] },
+            { q: __alloT('stem.galaxy.quiz_mtype_pct', 'What percentage of stars are M-type red dwarfs?'), a: '~76%', options: ['~10%', '~30%', '~50%', '~76%'] },
 
-            { q: 'What is a nebula?', a: 'A cloud of gas and dust', options: ['A dead star', 'A cloud of gas and dust', 'A type of galaxy', 'A black hole'] },
+            { q: __alloT('stem.galaxy.quiz_what_nebula', 'What is a nebula?'), a: 'A cloud of gas and dust', options: ['A dead star', 'A cloud of gas and dust', 'A type of galaxy', 'A black hole'] },
 
-            { q: 'How many stars are in the Milky Way?', a: '100-400 billion', options: ['1 million', '100 million', '100-400 billion', '1 trillion'] },
+            { q: __alloT('stem.galaxy.quiz_star_count', 'How many stars are in the Milky Way?'), a: '100-400 billion', options: ['1 million', '100 million', '100-400 billion', '1 trillion'] },
 
-            { q: 'What type of galaxy is the Milky Way?', a: 'Barred spiral', options: [t('stem.galaxy.elliptical'), t('stem.galaxy.irregular'), 'Spiral', 'Barred spiral'] },
+            { q: __alloT('stem.galaxy.quiz_mw_type', 'What type of galaxy is the Milky Way?'), a: 'Barred spiral', options: [t('stem.galaxy.elliptical'), t('stem.galaxy.irregular'), 'Spiral', 'Barred spiral'] },
 
-            { q: 'Which star is closest to our Sun?', a: 'Proxima Centauri', options: ['Sirius', 'Proxima Centauri', 'Alpha Centauri A', 'Barnards Star'] },
+            { q: __alloT('stem.galaxy.quiz_closest_star', 'Which star is closest to our Sun?'), a: 'Proxima Centauri', options: ['Sirius', 'Proxima Centauri', 'Alpha Centauri A', 'Barnards Star'] },
 
-            { q: 'What color are the hottest stars?', a: 'Blue', options: ['Red', 'Yellow', 'White', 'Blue'] },
+            { q: __alloT('stem.galaxy.quiz_hottest_color', 'What color are the hottest stars?'), a: 'Blue', options: ['Red', 'Yellow', 'White', 'Blue'] },
 
-            { q: 'What is a planetary nebula?', a: 'Outer layers shed by a dying star', options: ['A nebula with planets', 'Outer layers shed by a dying star', 'Gas around a planet', 'A type of dark matter'] },
+            { q: __alloT('stem.galaxy.quiz_planetary_nebula', 'What is a planetary nebula?'), a: 'Outer layers shed by a dying star', options: ['A nebula with planets', 'Outer layers shed by a dying star', 'Gas around a planet', 'A type of dark matter'] },
 
-            { q: 'How wide is the Milky Way?', a: '~100,000 light-years', options: ['~1,000 light-years', '~10,000 light-years', '~100,000 light-years', '~1 million light-years'] },
+            { q: __alloT('stem.galaxy.quiz_mw_width', 'How wide is the Milky Way?'), a: '~100,000 light-years', options: ['~1,000 light-years', '~10,000 light-years', '~100,000 light-years', '~1 million light-years'] },
 
-            { q: 'What causes a supernova?', a: 'A massive star exploding', options: ['Two galaxies colliding', 'A massive star exploding', 'A nebula igniting', 'A black hole evaporating'] },
+            { q: __alloT('stem.galaxy.quiz_supernova_cause', 'What causes a supernova?'), a: 'A massive star exploding', options: ['Two galaxies colliding', 'A massive star exploding', 'A nebula igniting', 'A black hole evaporating'] },
 
-            { q: 'What is dark matter?', a: 'Invisible matter detected by gravity', options: ['Black holes', 'Invisible matter detected by gravity', 'Empty space', 'Antimatter'] },
+            { q: __alloT('stem.galaxy.quiz_dark_matter', 'What is dark matter?'), a: 'Invisible matter detected by gravity', options: ['Black holes', 'Invisible matter detected by gravity', 'Empty space', 'Antimatter'] },
 
-            { q: 'How long does it take light to cross the Milky Way?', a: '~100,000 years', options: ['~1,000 years', '~10,000 years', '~100,000 years', '~1 million years'] },
+            { q: __alloT('stem.galaxy.quiz_light_cross', 'How long does it take light to cross the Milky Way?'), a: '~100,000 years', options: ['~1,000 years', '~10,000 years', '~100,000 years', '~1 million years'] },
 
-            { q: 'What will our Sun become at the end of its life?', a: 'White dwarf', options: ['Black hole', 'Neutron star', 'White dwarf', 'Red dwarf'] },
+            { q: __alloT('stem.galaxy.quiz_sun_fate', 'What will our Sun become at the end of its life?'), a: 'White dwarf', options: ['Black hole', 'Neutron star', 'White dwarf', 'Red dwarf'] },
 
-            { q: 'What stage comes after a Red Giant for a massive star?', a: 'Supernova', options: ['White dwarf', 'Planetary nebula', 'Supernova', 'Protostar'] },
+            { q: __alloT('stem.galaxy.quiz_after_red_giant', 'What stage comes after a Red Giant for a massive star?'), a: 'Supernova', options: ['White dwarf', 'Planetary nebula', 'Supernova', 'Protostar'] },
 
-            { q: 'How long does a star with 1 solar mass live?', a: '~10 billion years', options: ['~1 million years', '~100 million years', '~10 billion years', '~1 trillion years'] },
+            { q: __alloT('stem.galaxy.quiz_solar_mass_life', 'How long does a star with 1 solar mass live?'), a: '~10 billion years', options: ['~1 million years', '~100 million years', '~10 billion years', '~1 trillion years'] },
 
-            { q: 'What is a protostar?', a: 'A star forming from a collapsing gas cloud', options: ['A dying star', 'A star forming from a collapsing gas cloud', 'A type of neutron star', 'A binary star system'] },
+            { q: __alloT('stem.galaxy.quiz_what_protostar', 'What is a protostar?'), a: 'A star forming from a collapsing gas cloud', options: ['A dying star', 'A star forming from a collapsing gas cloud', 'A type of neutron star', 'A binary star system'] },
 
-            { q: 'What determines a star\'s final fate?', a: 'Its mass', options: ['Its color', 'Its mass', 'Its age', 'Its distance from Earth'] }
+            { q: __alloT('stem.galaxy.quiz_final_fate', 'What determines a star\'s final fate?'), a: 'Its mass', options: ['Its color', 'Its mass', 'Its age', 'Its distance from Earth'] }
 
           ];
 
