@@ -6660,11 +6660,17 @@
       key: 'totalActivities',
       label: t('class_analytics.total_activities'),
       round: 'rounded-r-lg'
-    }].map(col => /*#__PURE__*/React.createElement("th", { scope: "col",
+    }].map(col => /*#__PURE__*/React.createElement("th", {
+      scope: "col",
       key: col.key,
+      "aria-sort": sortColumn === col.key ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none',
+      className: `${col.align !== 'left' ? 'text-center' : ''} ${col.round || ''}`
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
       onClick: () => handleSort(col.key),
-      className: `p-2 ${col.align !== 'left' ? 'text-center' : ''} ${col.round || ''} cursor-pointer hover:bg-slate-200 select-none transition-colors`
-    }, col.label, " ", sortColumn === col.key ? sortDirection === 'asc' ? ' ▲' : ' ▼' : '')))), /*#__PURE__*/React.createElement("tbody", null, sortedAndFiltered.map(student => /*#__PURE__*/React.createElement("tr", {
+      className: `w-full min-h-11 p-2 inline-flex items-center gap-1 ${col.align === 'left' ? 'justify-start text-left' : 'justify-center text-center'} hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 select-none transition-colors`,
+      "aria-label": col.label + (sortColumn === col.key ? (sortDirection === 'asc' ? ', sorted ascending; activate to sort descending' : ', sorted descending; activate to sort ascending') : ', activate to sort ascending')
+    }, col.label, " ", sortColumn === col.key ? (sortDirection === 'asc' ? ' â–²' : ' â–¼') : ''))))), /*#__PURE__*/React.createElement("tbody", null, sortedAndFiltered.map(student => /*#__PURE__*/React.createElement("tr", {
       key: student.id,
       "data-help-key": "dashboard_student_row",
       className: "border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors",
@@ -8047,9 +8053,16 @@
                   { key: 'fluencyWCPM', label: t('class_analytics.fluency_wcpm') || 'WCPM' },
                   { key: 'totalActivities', label: t('class_analytics.total_activities') || 'Activities' }
                 ].map(col => React.createElement("th", {
-                  scope: "col", key: col.key, onClick: () => handleSort(col.key),
-                  className: "p-2 " + (col.align === 'left' ? 'text-left' : 'text-center') + " cursor-pointer hover:bg-slate-200 select-none transition-colors"
-                }, col.label, " ", sortColumn === col.key ? (sortDirection === 'asc' ? '▲' : '▼') : ''))
+                  scope: "col",
+                  key: col.key,
+                  "aria-sort": sortColumn === col.key ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none',
+                  className: col.align === 'left' ? 'text-left' : 'text-center'
+                }, React.createElement("button", {
+                  type: "button",
+                  onClick: () => handleSort(col.key),
+                  className: "w-full min-h-11 p-2 inline-flex items-center gap-1 " + (col.align === 'left' ? 'justify-start text-left' : 'justify-center text-center') + " hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 select-none transition-colors",
+                  "aria-label": col.label + (sortColumn === col.key ? (sortDirection === 'asc' ? ', sorted ascending; activate to sort descending' : ', sorted descending; activate to sort ascending') : ', activate to sort ascending')
+                }, col.label, " ", sortColumn === col.key ? (sortDirection === 'asc' ? 'â–²' : 'â–¼') : '')))
               )
             ),
             React.createElement("tbody", null,
