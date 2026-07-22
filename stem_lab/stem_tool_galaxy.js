@@ -114,6 +114,8 @@ window.StemLab = window.StemLab || {
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
       var t = ctx.t;
+      // i18n: __alloT(key, englishFallback) → ctx.t if available, else the English string.
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -207,19 +209,19 @@ if (!window._galaxyHasLoadedOnce) {
 
           var STAR_TYPES = [
 
-            { id: 'O', label: t('stem.galaxy.otype'), color: '#9bb0ff', temp: '30,000+', pct: 0.003, example: 'Naos', desc: 'Extremely hot, blue, massive. Rarest type \u2014 short lives of only a few million years.', whyItMatters: 'O-type stars produce most of a galaxy\'s ultraviolet light and ionize surrounding gas, creating the glowing emission nebulae we see. Their supernovae seed the universe with heavy elements like iron and gold.', luminosity: '30,000-1,000,000x Sun', mass: '16-150 M\u2609', lifetime: '1-10 Myr' },
+            { id: 'O', label: t('stem.galaxy.otype'), color: '#9bb0ff', temp: '30,000+', pct: 0.003, example: 'Naos', desc: __alloT('stem.galaxy.otype_desc', 'Extremely hot, blue, massive. Rarest type \u2014 short lives of only a few million years.'), whyItMatters: __alloT('stem.galaxy.otype_why', 'O-type stars produce most of a galaxy\'s ultraviolet light and ionize surrounding gas, creating the glowing emission nebulae we see. Their supernovae seed the universe with heavy elements like iron and gold.'), luminosity: '30,000-1,000,000x Sun', mass: '16-150 M\u2609', lifetime: '1-10 Myr' },
 
-            { id: 'B', label: t('stem.galaxy.btype'), color: '#aabfff', temp: '10,000-30,000', pct: 0.13, example: 'Rigel', desc: 'Blue-white giants. Often found in young OB associations and spiral arms.', whyItMatters: 'B-type stars trace the spiral arms of galaxies because they are short-lived. Astronomers use them as markers for galactic structure and recent star formation.', luminosity: '25-30,000x Sun', mass: '2.1-16 M\u2609', lifetime: '10-100 Myr' },
+            { id: 'B', label: t('stem.galaxy.btype'), color: '#aabfff', temp: '10,000-30,000', pct: 0.13, example: 'Rigel', desc: __alloT('stem.galaxy.btype_desc', 'Blue-white giants. Often found in young OB associations and spiral arms.'), whyItMatters: __alloT('stem.galaxy.btype_why', 'B-type stars trace the spiral arms of galaxies because they are short-lived. Astronomers use them as markers for galactic structure and recent star formation.'), luminosity: '25-30,000x Sun', mass: '2.1-16 M\u2609', lifetime: '10-100 Myr' },
 
-            { id: 'A', label: t('stem.galaxy.atype'), color: '#cad7ff', temp: '7,500-10,000', pct: 0.6, example: 'Sirius', desc: 'White stars with strong hydrogen absorption lines. Many are binary systems.', whyItMatters: 'A-type stars like Sirius were among the first to have their spectra analyzed, helping astronomers develop the stellar classification system we use today.', luminosity: '5-25x Sun', mass: '1.4-2.1 M\u2609', lifetime: '1-2 Gyr' },
+            { id: 'A', label: t('stem.galaxy.atype'), color: '#cad7ff', temp: '7,500-10,000', pct: 0.6, example: 'Sirius', desc: __alloT('stem.galaxy.atype_desc', 'White stars with strong hydrogen absorption lines. Many are binary systems.'), whyItMatters: __alloT('stem.galaxy.atype_why', 'A-type stars like Sirius were among the first to have their spectra analyzed, helping astronomers develop the stellar classification system we use today.'), luminosity: '5-25x Sun', mass: '1.4-2.1 M\u2609', lifetime: '1-2 Gyr' },
 
-            { id: 'F', label: t('stem.galaxy.ftype'), color: '#f8f7ff', temp: '6,000-7,500', pct: 3, example: 'Procyon', desc: 'Yellow-white. Transition zone where convection begins in the outer layer.', whyItMatters: 'F-type stars are interesting for exoplanet searches because they have habitable zones and lifespans long enough for complex life to potentially develop.', luminosity: '1.5-5x Sun', mass: '1.04-1.4 M\u2609', lifetime: '2-4 Gyr' },
+            { id: 'F', label: t('stem.galaxy.ftype'), color: '#f8f7ff', temp: '6,000-7,500', pct: 3, example: 'Procyon', desc: __alloT('stem.galaxy.ftype_desc', 'Yellow-white. Transition zone where convection begins in the outer layer.'), whyItMatters: __alloT('stem.galaxy.ftype_why', 'F-type stars are interesting for exoplanet searches because they have habitable zones and lifespans long enough for complex life to potentially develop.'), luminosity: '1.5-5x Sun', mass: '1.04-1.4 M\u2609', lifetime: '2-4 Gyr' },
 
-            { id: 'G', label: t('stem.galaxy.gtype'), color: '#fff4ea', temp: '5,200-6,000', pct: 7.6, example: 'Sun', desc: 'Our Sun is a G2V star! Yellow stars with lifespans of ~10 billion years.', whyItMatters: 'G-type stars like our Sun prove that modest stars can nurture life. Their 10-billion-year lifespan gives plenty of time for biological evolution.', luminosity: '0.6-1.5x Sun', mass: '0.8-1.04 M\u2609', lifetime: '10 Gyr' },
+            { id: 'G', label: t('stem.galaxy.gtype'), color: '#fff4ea', temp: '5,200-6,000', pct: 7.6, example: 'Sun', desc: __alloT('stem.galaxy.gtype_desc', 'Our Sun is a G2V star! Yellow stars with lifespans of ~10 billion years.'), whyItMatters: __alloT('stem.galaxy.gtype_why', 'G-type stars like our Sun prove that modest stars can nurture life. Their 10-billion-year lifespan gives plenty of time for biological evolution.'), luminosity: '0.6-1.5x Sun', mass: '0.8-1.04 M\u2609', lifetime: '10 Gyr' },
 
-            { id: 'K', label: t('stem.galaxy.ktype'), color: '#ffd2a1', temp: '3,700-5,200', pct: 12.1, example: 'Arcturus', desc: 'Orange stars. Many have habitable zones \u2014 prime candidates for exoplanet searches.', whyItMatters: 'K-type stars are considered the best candidates for finding habitable exoplanets\u2014they are stable, long-lived, and common enough to offer many opportunities.', luminosity: '0.08-0.6x Sun', mass: '0.45-0.8 M\u2609', lifetime: '15-30 Gyr' },
+            { id: 'K', label: t('stem.galaxy.ktype'), color: '#ffd2a1', temp: '3,700-5,200', pct: 12.1, example: 'Arcturus', desc: __alloT('stem.galaxy.ktype_desc', 'Orange stars. Many have habitable zones \u2014 prime candidates for exoplanet searches.'), whyItMatters: __alloT('stem.galaxy.ktype_why', 'K-type stars are considered the best candidates for finding habitable exoplanets\u2014they are stable, long-lived, and common enough to offer many opportunities.'), luminosity: '0.08-0.6x Sun', mass: '0.45-0.8 M\u2609', lifetime: '15-30 Gyr' },
 
-            { id: 'M', label: t('stem.galaxy.mtype'), color: '#ffcc6f', temp: '2,400-3,700', pct: 76.5, example: 'Proxima Centauri', desc: 'Red dwarfs \u2014 76% of all stars! Extremely long-lived (trillions of years).', whyItMatters: 'M-type red dwarfs will be the last stars shining in the universe. Proxima Centauri b, a potentially habitable exoplanet, orbits one of these stars\u2014our closest neighbor!', luminosity: '0.001-0.08x Sun', mass: '0.08-0.45 M\u2609', lifetime: '100+ Gyr' }
+            { id: 'M', label: t('stem.galaxy.mtype'), color: '#ffcc6f', temp: '2,400-3,700', pct: 76.5, example: 'Proxima Centauri', desc: __alloT('stem.galaxy.mtype_desc', 'Red dwarfs \u2014 76% of all stars! Extremely long-lived (trillions of years).'), whyItMatters: __alloT('stem.galaxy.mtype_why', 'M-type red dwarfs will be the last stars shining in the universe. Proxima Centauri b, a potentially habitable exoplanet, orbits one of these stars\u2014our closest neighbor!'), luminosity: '0.001-0.08x Sun', mass: '0.08-0.45 M\u2609', lifetime: '100+ Gyr' }
 
           ];
 
@@ -271,21 +273,21 @@ if (!window._galaxyHasLoadedOnce) {
 
           var NEBULAE = [
 
-            { name: t('stem.galaxy.orion_nebula'), x: 0.35, y: 0.02, z: 0.15, r: 0.08, color: '#ff6b9d', type: 'Emission', dist: '1,344 ly', desc: 'Stellar nursery 1,344 light-years away. Visible to the naked eye. Contains the Trapezium star cluster.' },
+            { name: t('stem.galaxy.orion_nebula'), x: 0.35, y: 0.02, z: 0.15, r: 0.08, color: '#ff6b9d', type: 'Emission', dist: '1,344 ly', desc: __alloT('stem.galaxy.orion_nebula_desc', 'Stellar nursery 1,344 light-years away. Visible to the naked eye. Contains the Trapezium star cluster.') },
 
-            { name: t('stem.galaxy.eagle_nebula'), x: -0.2, y: 0.01, z: -0.25, r: 0.06, color: '#7c6dff', type: 'Emission', dist: '7,000 ly', desc: 'Home of the Pillars of Creation. Star-forming region 7,000 light-years from Earth.' },
+            { name: t('stem.galaxy.eagle_nebula'), x: -0.2, y: 0.01, z: -0.25, r: 0.06, color: '#7c6dff', type: 'Emission', dist: '7,000 ly', desc: __alloT('stem.galaxy.eagle_nebula_desc', 'Home of the Pillars of Creation. Star-forming region 7,000 light-years from Earth.') },
 
-            { name: t('stem.galaxy.crab_nebula'), x: 0.4, y: 0.05, z: -0.1, r: 0.05, color: '#00d4aa', type: 'Supernova Remnant', dist: '6,500 ly', desc: 'Supernova remnant from 1054 AD. Contains a pulsar spinning 30x per second.' },
+            { name: t('stem.galaxy.crab_nebula'), x: 0.4, y: 0.05, z: -0.1, r: 0.05, color: '#00d4aa', type: 'Supernova Remnant', dist: '6,500 ly', desc: __alloT('stem.galaxy.crab_nebula_desc', 'Supernova remnant from 1054 AD. Contains a pulsar spinning 30x per second.') },
 
-            { name: t('stem.galaxy.carina_nebula'), x: -0.3, y: -0.02, z: 0.3, r: 0.07, color: '#ff9f43', type: 'Emission', dist: '8,500 ly', desc: 'One of the largest nebulae. Contains Eta Carinae, a hypergiant 4 million times brighter than the Sun.' },
+            { name: t('stem.galaxy.carina_nebula'), x: -0.3, y: -0.02, z: 0.3, r: 0.07, color: '#ff9f43', type: 'Emission', dist: '8,500 ly', desc: __alloT('stem.galaxy.carina_nebula_desc', 'One of the largest nebulae. Contains Eta Carinae, a hypergiant 4 million times brighter than the Sun.') },
 
-            { name: t('stem.galaxy.helix_nebula'), x: 0.25, y: -0.01, z: -0.3, r: 0.05, color: '#00bcd4', type: 'Planetary', dist: '655 ly', desc: 'The "Eye of God." A planetary nebula \u2014 the outer shell of a dying Sun-like star.' },
+            { name: t('stem.galaxy.helix_nebula'), x: 0.25, y: -0.01, z: -0.3, r: 0.05, color: '#00bcd4', type: 'Planetary', dist: '655 ly', desc: __alloT('stem.galaxy.helix_nebula_desc', 'The "Eye of God." A planetary nebula \u2014 the outer shell of a dying Sun-like star.') },
 
-            { name: t('stem.galaxy.ring_nebula'), x: -0.15, y: 0.03, z: 0.2, r: 0.04, color: '#e040fb', type: 'Planetary', dist: '2,283 ly', desc: 'Classic planetary nebula in Lyra. The central white dwarf is visible at high zoom.' },
+            { name: t('stem.galaxy.ring_nebula'), x: -0.15, y: 0.03, z: 0.2, r: 0.04, color: '#e040fb', type: 'Planetary', dist: '2,283 ly', desc: __alloT('stem.galaxy.ring_nebula_desc', 'Classic planetary nebula in Lyra. The central white dwarf is visible at high zoom.') },
 
-            { name: t('stem.galaxy.horsehead_nebula'), x: 0.32, y: 0.01, z: 0.05, r: 0.04, color: '#8d6e63', type: 'Dark', dist: '1,375 ly', desc: 'Dark nebula silhouetted against the emission nebula IC 434. An iconic astronomical object.' },
+            { name: t('stem.galaxy.horsehead_nebula'), x: 0.32, y: 0.01, z: 0.05, r: 0.04, color: '#8d6e63', type: 'Dark', dist: '1,375 ly', desc: __alloT('stem.galaxy.horsehead_nebula_desc', 'Dark nebula silhouetted against the emission nebula IC 434. An iconic astronomical object.') },
 
-            { name: t('stem.galaxy.lagoon_nebula'), x: -0.1, y: -0.01, z: -0.15, r: 0.06, color: '#ef5350', type: 'Emission', dist: '4,100 ly', desc: 'One of the brightest emission nebulae. Visible with binoculars in Sagittarius.' }
+            { name: t('stem.galaxy.lagoon_nebula'), x: -0.1, y: -0.01, z: -0.15, r: 0.06, color: '#ef5350', type: 'Emission', dist: '4,100 ly', desc: __alloT('stem.galaxy.lagoon_nebula_desc', 'One of the brightest emission nebulae. Visible with binoculars in Sagittarius.') }
 
           ];
 
@@ -295,32 +297,32 @@ if (!window._galaxyHasLoadedOnce) {
 
           var GALAXY_TYPES = {
 
-            barredSpiral: { label: t('stem.galaxy.barred_spiral'), icon: '\uD83C\uDF00', desc: 'Like our Milky Way. A central bar of stars with spiral arms winding outward. ~60% of spirals have bars.', example: 'Milky Way, NGC 1300', arms: 4, barLength: 0.15, windTightness: 2.5 },
+            barredSpiral: { label: t('stem.galaxy.barred_spiral'), icon: '\uD83C\uDF00', desc: __alloT('stem.galaxy.barred_spiral_desc', 'Like our Milky Way. A central bar of stars with spiral arms winding outward. ~60% of spirals have bars.'), example: 'Milky Way, NGC 1300', arms: 4, barLength: 0.15, windTightness: 2.5 },
 
-            grandDesign: { label: t('stem.galaxy.grand_design_spiral'), icon: '\uD83C\uDF00', desc: 'Prominent, well-defined spiral arms. Usually triggered by gravitational interaction with a companion galaxy.', example: 'M51 (Whirlpool), M81', arms: 2, barLength: 0, windTightness: 3.5 },
+            grandDesign: { label: t('stem.galaxy.grand_design_spiral'), icon: '\uD83C\uDF00', desc: __alloT('stem.galaxy.grand_design_spiral_desc', 'Prominent, well-defined spiral arms. Usually triggered by gravitational interaction with a companion galaxy.'), example: 'M51 (Whirlpool), M81', arms: 2, barLength: 0, windTightness: 3.5 },
 
-            elliptical: { label: t('stem.galaxy.elliptical'), icon: '\u2B2D\uFE0F', desc: 'Smooth, featureless ellipsoidal shape. Contain old, red stars with little gas or dust. Formed from galaxy mergers.', example: 'M87, M49', arms: 0, barLength: 0, windTightness: 0 },
+            elliptical: { label: t('stem.galaxy.elliptical'), icon: '\u2B2D\uFE0F', desc: __alloT('stem.galaxy.elliptical_desc', 'Smooth, featureless ellipsoidal shape. Contain old, red stars with little gas or dust. Formed from galaxy mergers.'), example: 'M87, M49', arms: 0, barLength: 0, windTightness: 0 },
 
-            irregular: { label: t('stem.galaxy.irregular'), icon: '\u2728', desc: 'No distinct shape. Rich in gas and dust with active star formation. Often satellites of larger galaxies.', example: 'LMC, SMC', arms: 0, barLength: 0, windTightness: 0 }
+            irregular: { label: t('stem.galaxy.irregular'), icon: '\u2728', desc: __alloT('stem.galaxy.irregular_desc', 'No distinct shape. Rich in gas and dust with active star formation. Often satellites of larger galaxies.'), example: 'LMC, SMC', arms: 0, barLength: 0, windTightness: 0 }
 
           };
 
           var gType = GALAXY_TYPES[galaxyType] || GALAXY_TYPES.barredSpiral;
 
           var OBSERVE_MODES = [
-            { key: 'visible', icon: '\uD83D\uDC41\uFE0F', label: 'Visible', target: 'galaxyType', accent: '#6366f1', desc: 'Human-eye color shows stars, dust shadows, and the overall shape of the galaxy.', note: 'Best for classifying galaxy shape and comparing star colors.' },
-            { key: 'infrared', icon: '\uD83D\uDD25', label: 'Infrared', target: 'dustLanes', accent: '#f97316', desc: 'Infrared light passes through dusty lanes and reveals warm star-forming regions.', note: 'Great for seeing through dust that blocks visible light.' },
-            { key: 'radio', icon: '\uD83D\uDCE1', label: 'Radio', target: 'gasClouds', accent: '#06b6d4', desc: 'Radio maps trace cold hydrogen gas that outlines spiral arms and future star birth.', note: 'Hydrogen at 21 cm is one of the best maps of hidden galactic gas.' },
-            { key: 'xray', icon: '\u26A1', label: 'X-ray', target: 'blackHole', accent: '#38bdf8', desc: 'X-rays highlight the hottest, most energetic regions near compact objects and young massive stars.', note: 'Useful for black-hole accretion, neutron stars, and supernova remnants.' },
-            { key: 'gravity', icon: '\uD83C\uDF0C', label: 'Gravity', target: 'darkMatter', accent: '#c084fc', desc: 'A gravity view shows the invisible mass halo inferred from star motions.', note: 'This is evidence-based, not a photograph: motion reveals the dark matter halo.' }
+            { key: 'visible', icon: '\uD83D\uDC41\uFE0F', label: __alloT('stem.galaxy.observe_visible_label', 'Visible'), target: 'galaxyType', accent: '#6366f1', desc: __alloT('stem.galaxy.observe_visible_desc', 'Human-eye color shows stars, dust shadows, and the overall shape of the galaxy.'), note: __alloT('stem.galaxy.observe_visible_note', 'Best for classifying galaxy shape and comparing star colors.') },
+            { key: 'infrared', icon: '\uD83D\uDD25', label: __alloT('stem.galaxy.observe_infrared_label', 'Infrared'), target: 'dustLanes', accent: '#f97316', desc: __alloT('stem.galaxy.observe_infrared_desc', 'Infrared light passes through dusty lanes and reveals warm star-forming regions.'), note: __alloT('stem.galaxy.observe_infrared_note', 'Great for seeing through dust that blocks visible light.') },
+            { key: 'radio', icon: '\uD83D\uDCE1', label: __alloT('stem.galaxy.observe_radio_label', 'Radio'), target: 'gasClouds', accent: '#06b6d4', desc: __alloT('stem.galaxy.observe_radio_desc', 'Radio maps trace cold hydrogen gas that outlines spiral arms and future star birth.'), note: __alloT('stem.galaxy.observe_radio_note', 'Hydrogen at 21 cm is one of the best maps of hidden galactic gas.') },
+            { key: 'xray', icon: '\u26A1', label: __alloT('stem.galaxy.observe_xray_label', 'X-ray'), target: 'blackHole', accent: '#38bdf8', desc: __alloT('stem.galaxy.observe_xray_desc', 'X-rays highlight the hottest, most energetic regions near compact objects and young massive stars.'), note: __alloT('stem.galaxy.observe_xray_note', 'Useful for black-hole accretion, neutron stars, and supernova remnants.') },
+            { key: 'gravity', icon: '\uD83C\uDF0C', label: __alloT('stem.galaxy.observe_gravity_label', 'Gravity'), target: 'darkMatter', accent: '#c084fc', desc: __alloT('stem.galaxy.observe_gravity_desc', 'A gravity view shows the invisible mass halo inferred from star motions.'), note: __alloT('stem.galaxy.observe_gravity_note', 'This is evidence-based, not a photograph: motion reveals the dark matter halo.') }
           ];
           var activeObserve = OBSERVE_MODES.find(function (m) { return m.key === observeMode; }) || OBSERVE_MODES[0];
 
           var DOPPLER_PRESETS = [
-            { label: 'Approaching star', value: -450, icon: '\uD83D\uDD35' },
-            { label: 'No motion', value: 0, icon: '\u26AA' },
-            { label: 'Receding galaxy', value: 900, icon: '\uD83D\uDD34' },
-            { label: 'Fast quasar', value: 1800, icon: '\u2728' }
+            { label: __alloT('stem.galaxy.doppler_approaching_star', 'Approaching star'), value: -450, icon: '\uD83D\uDD35' },
+            { label: __alloT('stem.galaxy.doppler_no_motion', 'No motion'), value: 0, icon: '\u26AA' },
+            { label: __alloT('stem.galaxy.doppler_receding_galaxy', 'Receding galaxy'), value: 900, icon: '\uD83D\uDD34' },
+            { label: __alloT('stem.galaxy.doppler_fast_quasar', 'Fast quasar'), value: 1800, icon: '\u2728' }
           ];
           var dopplerDirection = dopplerVelocity < -8 ? 'blueshift' : dopplerVelocity > 8 ? 'redshift' : 'no shift';
           var dopplerColor = dopplerVelocity < -8 ? '#2563eb' : dopplerVelocity > 8 ? '#dc2626' : '#64748b';
