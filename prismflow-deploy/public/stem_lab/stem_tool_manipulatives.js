@@ -880,7 +880,7 @@ window.StemLab = window.StemLab || {
                 ].map(function(metric) {
                   return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
                     h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
-                    h('div', { className: 'mt-1 text-[9px] font-bold uppercase tracking-wider text-orange-200' }, metric.label)
+                    h('div', { className: 'mt-1 text-[10px] font-bold uppercase tracking-wider text-orange-200' }, metric.label)
                   );
                 })
               )
@@ -3888,7 +3888,7 @@ window.StemLab = window.StemLab || {
                 return h('div', { key: c, className: 'bg-amber-50 rounded p-2 text-center border border-amber-100' },
                   h('p', { className: 'text-[10px] font-bold text-amber-800' }, c),
                   h('p', { className: 'text-base font-black text-amber-900' }, catCounts[c]),
-                  h('p', { className: 'text-[9px] text-amber-600' }, catCounts[c] === 1 ? 'problem type' : 'problem types')
+                  h('p', { className: 'text-[10px] text-amber-600' }, catCounts[c] === 1 ? 'problem type' : 'problem types')
                 );
               })
             )
@@ -5623,10 +5623,10 @@ window.StemLab = window.StemLab || {
                     borderRadius: 3,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     color: p.color === '#fef2f2' ? '#0f172a' : '#fff', fontWeight: 900,
-                    fontSize: p.w >= 40 ? 12 : 9,
+                    fontSize: p.w >= 40 ? 12 : 10,
                     textShadow: p.color === '#fef2f2' ? 'none' : '0 1px 2px rgba(0,0,0,0.5)'
                   } }, p.name.split(' ')[0]),
-                  h('p', { className: 'text-[9px] font-bold text-indigo-700 text-center' }, p.name),
+                  h('p', { className: 'text-[10px] font-bold text-indigo-700 text-center' }, p.name),
                   h('button', { onClick: function(k) { return function() { atAdd(k); }; }(p.kind),
                     className: 'transition-colors px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-600 text-white hover:bg-indigo-700' }, __alloT('stem.manipulatives.add', '+ Add'))
                 );
