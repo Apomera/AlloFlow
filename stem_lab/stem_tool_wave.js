@@ -4699,61 +4699,61 @@ const d = labToolData.wave;
       ];
 
       var SATELLITE_FACTS = [
-        { topic: 'GPS orbital altitude', detail: '~20,200 km. Medium Earth orbit. Period ~12 hours (2 orbits per sidereal day).' },
-        { topic: 'GPS constellation', detail: '24+ satellites; need ≥4 in view for 3D fix + time.' },
-        { topic: 'Receiver position', detail: 'Triangulation by time-of-flight from satellites to receiver. Needs 4 satellites (3 for position + 1 for clock sync).' },
-        { topic: 'Accuracy', detail: 'Civilian GPS: ~3-10 m. With augmentation (DGPS, RTK): cm. Selective Availability ended in 2000.' },
-        { topic: 'Galileo', detail: 'EU GNSS. ~30 satellites. Open service ~1 m accuracy.' },
-        { topic: 'GLONASS', detail: 'Russian GNSS. ~24 satellites.' },
-        { topic: 'BeiDou', detail: 'Chinese GNSS. 35 satellites. Global service since 2020.' },
-        { topic: 'Geostationary orbit (GEO)', detail: '35,786 km altitude. Period = 24 hours → fixed over equator point. Used for TV, weather.' },
-        { topic: 'Low Earth orbit (LEO)', detail: '200-2000 km. Period ~90 min. ISS at ~400 km. Starlink at ~550 km. Lower latency.' },
-        { topic: 'Atomic clocks on GPS', detail: 'Cesium + rubidium clocks. Stability ~10⁻¹³. Even small relativistic effects matter — must correct for both special + general relativity.' },
-        { topic: 'Light travel time', detail: 'GPS satellite → receiver: ~70 ms. Geo satellite → receiver: ~250 ms (perceptible delay in geo satellite calls).' }
+        { topic: __alloT('stem.wave.sat_altitude', 'GPS orbital altitude'), detail: __alloT('stem.wave.sat_altitude_detail', '~20,200 km. Medium Earth orbit. Period ~12 hours (2 orbits per sidereal day).') },
+        { topic: __alloT('stem.wave.sat_constellation', 'GPS constellation'), detail: __alloT('stem.wave.sat_constellation_detail', '24+ satellites; need ≥4 in view for 3D fix + time.') },
+        { topic: __alloT('stem.wave.sat_receiver', 'Receiver position'), detail: __alloT('stem.wave.sat_receiver_detail', 'Triangulation by time-of-flight from satellites to receiver. Needs 4 satellites (3 for position + 1 for clock sync).') },
+        { topic: __alloT('stem.wave.sat_accuracy', 'Accuracy'), detail: __alloT('stem.wave.sat_accuracy_detail', 'Civilian GPS: ~3-10 m. With augmentation (DGPS, RTK): cm. Selective Availability ended in 2000.') },
+        { topic: 'Galileo', detail: __alloT('stem.wave.sat_galileo_detail', 'EU GNSS. ~30 satellites. Open service ~1 m accuracy.') },
+        { topic: 'GLONASS', detail: __alloT('stem.wave.sat_glonass_detail', 'Russian GNSS. ~24 satellites.') },
+        { topic: 'BeiDou', detail: __alloT('stem.wave.sat_beidou_detail', 'Chinese GNSS. 35 satellites. Global service since 2020.') },
+        { topic: __alloT('stem.wave.sat_geo', 'Geostationary orbit (GEO)'), detail: __alloT('stem.wave.sat_geo_detail', '35,786 km altitude. Period = 24 hours → fixed over equator point. Used for TV, weather.') },
+        { topic: __alloT('stem.wave.sat_leo', 'Low Earth orbit (LEO)'), detail: __alloT('stem.wave.sat_leo_detail', '200-2000 km. Period ~90 min. ISS at ~400 km. Starlink at ~550 km. Lower latency.') },
+        { topic: __alloT('stem.wave.sat_clocks', 'Atomic clocks on GPS'), detail: __alloT('stem.wave.sat_clocks_detail', 'Cesium + rubidium clocks. Stability ~10⁻¹³. Even small relativistic effects matter — must correct for both special + general relativity.') },
+        { topic: __alloT('stem.wave.sat_lighttime', 'Light travel time'), detail: __alloT('stem.wave.sat_lighttime_detail', 'GPS satellite → receiver: ~70 ms. Geo satellite → receiver: ~250 ms (perceptible delay in geo satellite calls).') }
       ];
 
       var GW_FACTS = [
-        { topic: 'What they are', detail: 'Ripples in spacetime predicted by Einstein (1916). Travel at speed of light.' },
-        { topic: 'Sources', detail: 'Massive accelerating objects: merging black holes + neutron stars, supernovae, pulsars, Big Bang.' },
-        { topic: 'LIGO', detail: 'Laser Interferometer Gravitational-wave Observatory. Two L-shaped detectors (Hanford WA, Livingston LA), 4 km arms.' },
-        { topic: 'First detection', detail: '14 September 2015. Two ~30 M☉ black holes merged ~1.3 billion years ago. Signal lasted ~0.2 sec. Nobel Prize 2017.' },
-        { topic: 'Sensitivity', detail: 'LIGO detects length changes ~10⁻¹⁸ m — 1/10000 the size of a proton.' },
-        { topic: 'Multi-messenger astronomy', detail: '17 August 2017: GW + gamma rays + visible light from neutron-star merger (GW170817). Confirmed kilonovae produce heavy elements.' },
-        { topic: 'Virgo', detail: 'European GW detector in Italy. 3 km arms.' },
-        { topic: 'KAGRA', detail: 'Japanese GW detector. Underground, cryogenic mirrors.' },
-        { topic: 'LISA (planned)', detail: 'Space-based detector. 3 satellites in 2.5 million km triangle. Launch ~2035. Sensitive to lower frequencies (supermassive black holes).' },
-        { topic: 'Pulsar timing arrays', detail: 'Use millisecond pulsars as natural clocks. Detect very low-frequency GWs from supermassive black hole binaries. NANOGrav announced detection 2023.' }
+        { topic: __alloT('stem.wave.gw_whatare', 'What they are'), detail: __alloT('stem.wave.gw_whatare_detail', 'Ripples in spacetime predicted by Einstein (1916). Travel at speed of light.') },
+        { topic: __alloT('stem.wave.gw_sources', 'Sources'), detail: __alloT('stem.wave.gw_sources_detail', 'Massive accelerating objects: merging black holes + neutron stars, supernovae, pulsars, Big Bang.') },
+        { topic: 'LIGO', detail: __alloT('stem.wave.gw_ligo_detail', 'Laser Interferometer Gravitational-wave Observatory. Two L-shaped detectors (Hanford WA, Livingston LA), 4 km arms.') },
+        { topic: __alloT('stem.wave.gw_firstdetect', 'First detection'), detail: __alloT('stem.wave.gw_firstdetect_detail', '14 September 2015. Two ~30 M☉ black holes merged ~1.3 billion years ago. Signal lasted ~0.2 sec. Nobel Prize 2017.') },
+        { topic: __alloT('stem.wave.gw_sensitivity', 'Sensitivity'), detail: __alloT('stem.wave.gw_sensitivity_detail', 'LIGO detects length changes ~10⁻¹⁸ m — 1/10000 the size of a proton.') },
+        { topic: __alloT('stem.wave.gw_multimessenger', 'Multi-messenger astronomy'), detail: __alloT('stem.wave.gw_multimessenger_detail', '17 August 2017: GW + gamma rays + visible light from neutron-star merger (GW170817). Confirmed kilonovae produce heavy elements.') },
+        { topic: 'Virgo', detail: __alloT('stem.wave.gw_virgo_detail', 'European GW detector in Italy. 3 km arms.') },
+        { topic: 'KAGRA', detail: __alloT('stem.wave.gw_kagra_detail', 'Japanese GW detector. Underground, cryogenic mirrors.') },
+        { topic: __alloT('stem.wave.gw_lisa', 'LISA (planned)'), detail: __alloT('stem.wave.gw_lisa_detail', 'Space-based detector. 3 satellites in 2.5 million km triangle. Launch ~2035. Sensitive to lower frequencies (supermassive black holes).') },
+        { topic: __alloT('stem.wave.gw_pta', 'Pulsar timing arrays'), detail: __alloT('stem.wave.gw_pta_detail', 'Use millisecond pulsars as natural clocks. Detect very low-frequency GWs from supermassive black hole binaries. NANOGrav announced detection 2023.') }
       ];
 
       var WAVE_UNITS = [
-        { quantity: 'Frequency', symbol: 'f or ν', unit: 'hertz (Hz)', notes: 'Cycles per second. kHz, MHz, GHz, THz common in modern tech.' },
-        { quantity: 'Period', symbol: 'T', unit: 'second (s)', notes: 'Time per cycle. T = 1/f. Heart: ~1 s; mains: 16.7 ms; visible light: ~2 fs.' },
-        { quantity: 'Wavelength', symbol: 'λ', unit: 'meter (m)', notes: 'Distance per cycle. Sub-mm (UHF radio) to thousands of km (extremely low freq).' },
-        { quantity: 'Wavenumber', symbol: 'k', unit: 'rad/m', notes: 'k = 2π/λ. Used in waveform math.' },
-        { quantity: 'Angular frequency', symbol: 'ω', unit: 'rad/s', notes: 'ω = 2πf. Common in oscillation + wave equations.' },
-        { quantity: 'Speed', symbol: 'v or c', unit: 'm/s', notes: 'v = fλ. Light in vacuum: c = 299,792,458 m/s (exact).' },
-        { quantity: 'Amplitude', symbol: 'A', unit: 'meters (mech), V/m (EM)', notes: 'Maximum displacement from equilibrium.' },
-        { quantity: 'Intensity', symbol: 'I', unit: 'W/m²', notes: 'Power per area. Solar irradiance at Earth: ~1361 W/m².' },
-        { quantity: 'Sound pressure level (SPL)', symbol: 'L_p', unit: 'dB', notes: '20·log₁₀(p/p_ref). Reference: 20 μPa.' },
-        { quantity: 'Photon energy', symbol: 'E', unit: 'joule (J) or eV', notes: 'E = hf = hc/λ. Visible photons: ~2 eV.' }
+        { quantity: __alloT('stem.wave.wu_frequency', 'Frequency'), symbol: 'f or ν', unit: __alloT('stem.wave.wu_frequency_unit', 'hertz (Hz)'), notes: __alloT('stem.wave.wu_frequency_notes', 'Cycles per second. kHz, MHz, GHz, THz common in modern tech.') },
+        { quantity: __alloT('stem.wave.wu_period', 'Period'), symbol: 'T', unit: __alloT('stem.wave.wu_period_unit', 'second (s)'), notes: __alloT('stem.wave.wu_period_notes', 'Time per cycle. T = 1/f. Heart: ~1 s; mains: 16.7 ms; visible light: ~2 fs.') },
+        { quantity: __alloT('stem.wave.wu_wavelength', 'Wavelength'), symbol: 'λ', unit: __alloT('stem.wave.wu_wavelength_unit', 'meter (m)'), notes: __alloT('stem.wave.wu_wavelength_notes', 'Distance per cycle. Sub-mm (UHF radio) to thousands of km (extremely low freq).') },
+        { quantity: __alloT('stem.wave.wu_wavenumber', 'Wavenumber'), symbol: 'k', unit: 'rad/m', notes: __alloT('stem.wave.wu_wavenumber_notes', 'k = 2π/λ. Used in waveform math.') },
+        { quantity: __alloT('stem.wave.wu_angfreq', 'Angular frequency'), symbol: 'ω', unit: 'rad/s', notes: __alloT('stem.wave.wu_angfreq_notes', 'ω = 2πf. Common in oscillation + wave equations.') },
+        { quantity: __alloT('stem.wave.wu_speed', 'Speed'), symbol: 'v or c', unit: 'm/s', notes: __alloT('stem.wave.wu_speed_notes', 'v = fλ. Light in vacuum: c = 299,792,458 m/s (exact).') },
+        { quantity: __alloT('stem.wave.wu_amplitude', 'Amplitude'), symbol: 'A', unit: __alloT('stem.wave.wu_amplitude_unit', 'meters (mech), V/m (EM)'), notes: __alloT('stem.wave.wu_amplitude_notes', 'Maximum displacement from equilibrium.') },
+        { quantity: __alloT('stem.wave.wu_intensity', 'Intensity'), symbol: 'I', unit: 'W/m²', notes: __alloT('stem.wave.wu_intensity_notes', 'Power per area. Solar irradiance at Earth: ~1361 W/m².') },
+        { quantity: __alloT('stem.wave.wu_spl', 'Sound pressure level (SPL)'), symbol: 'L_p', unit: 'dB', notes: __alloT('stem.wave.wu_spl_notes', '20·log₁₀(p/p_ref). Reference: 20 μPa.') },
+        { quantity: __alloT('stem.wave.wu_photon', 'Photon energy'), symbol: 'E', unit: __alloT('stem.wave.wu_photon_unit', 'joule (J) or eV'), notes: __alloT('stem.wave.wu_photon_notes', 'E = hf = hc/λ. Visible photons: ~2 eV.') }
       ];
 
       var WAVE_CAREERS = [
-        { career: 'Audio engineer', use: 'Mixing music, recording. Understand EQ, reverb, frequency response.' },
-        { career: 'Acoustic consultant', use: 'Design concert halls, recording studios, noise control for buildings + machinery.' },
-        { career: 'Audiologist', use: 'Test + treat hearing loss. Fit hearing aids and cochlear implants.' },
-        { career: 'Speech-language pathologist', use: 'Analyze speech sounds (acoustic phonetics). Treat voice + articulation disorders.' },
-        { career: 'RF engineer', use: 'Design antennas, wireless systems, radar.' },
-        { career: 'Optical engineer', use: 'Design cameras, microscopes, telescopes, fiber-optic links.' },
-        { career: 'Seismologist', use: 'Analyze earthquake waves, locate epicenters, monitor for nuclear tests.' },
-        { career: 'Oceanographer', use: 'Study tides, currents, ocean wave dynamics.' },
-        { career: 'Meteorologist', use: 'Doppler radar analysis. Wave physics in atmosphere (Rossby waves).' },
-        { career: 'Sonographer (medical)', use: 'Operate ultrasound for diagnostic imaging.' },
-        { career: 'Astronomer', use: 'Analyze light + radio waves from celestial objects.' },
-        { career: 'Music producer', use: 'Shape recorded sound. Synthesize tones. Mix tracks.' },
-        { career: 'Lighting designer', use: 'Theater, film. Color temperature, beam angles, intensity.' },
-        { career: 'Telecom engineer', use: 'Cellular networks, fiber backbones, satellite links.' },
-        { career: 'Radar technician', use: 'Maintain + operate weather, air-traffic, military radar.' }
+        { career: __alloT('stem.wave.wc_audio', 'Audio engineer'), use: __alloT('stem.wave.wc_audio_use', 'Mixing music, recording. Understand EQ, reverb, frequency response.') },
+        { career: __alloT('stem.wave.wc_acoustic', 'Acoustic consultant'), use: __alloT('stem.wave.wc_acoustic_use', 'Design concert halls, recording studios, noise control for buildings + machinery.') },
+        { career: __alloT('stem.wave.wc_audiologist', 'Audiologist'), use: __alloT('stem.wave.wc_audiologist_use', 'Test + treat hearing loss. Fit hearing aids and cochlear implants.') },
+        { career: __alloT('stem.wave.wc_slp', 'Speech-language pathologist'), use: __alloT('stem.wave.wc_slp_use', 'Analyze speech sounds (acoustic phonetics). Treat voice + articulation disorders.') },
+        { career: __alloT('stem.wave.wc_rf', 'RF engineer'), use: __alloT('stem.wave.wc_rf_use', 'Design antennas, wireless systems, radar.') },
+        { career: __alloT('stem.wave.wc_optical', 'Optical engineer'), use: __alloT('stem.wave.wc_optical_use', 'Design cameras, microscopes, telescopes, fiber-optic links.') },
+        { career: __alloT('stem.wave.wc_seismologist', 'Seismologist'), use: __alloT('stem.wave.wc_seismologist_use', 'Analyze earthquake waves, locate epicenters, monitor for nuclear tests.') },
+        { career: __alloT('stem.wave.wc_oceanographer', 'Oceanographer'), use: __alloT('stem.wave.wc_oceanographer_use', 'Study tides, currents, ocean wave dynamics.') },
+        { career: __alloT('stem.wave.wc_meteorologist', 'Meteorologist'), use: __alloT('stem.wave.wc_meteorologist_use', 'Doppler radar analysis. Wave physics in atmosphere (Rossby waves).') },
+        { career: __alloT('stem.wave.wc_sonographer', 'Sonographer (medical)'), use: __alloT('stem.wave.wc_sonographer_use', 'Operate ultrasound for diagnostic imaging.') },
+        { career: __alloT('stem.wave.wc_astronomer', 'Astronomer'), use: __alloT('stem.wave.wc_astronomer_use', 'Analyze light + radio waves from celestial objects.') },
+        { career: __alloT('stem.wave.wc_producer', 'Music producer'), use: __alloT('stem.wave.wc_producer_use', 'Shape recorded sound. Synthesize tones. Mix tracks.') },
+        { career: __alloT('stem.wave.wc_lighting', 'Lighting designer'), use: __alloT('stem.wave.wc_lighting_use', 'Theater, film. Color temperature, beam angles, intensity.') },
+        { career: __alloT('stem.wave.wc_telecom', 'Telecom engineer'), use: __alloT('stem.wave.wc_telecom_use', 'Cellular networks, fiber backbones, satellite links.') },
+        { career: __alloT('stem.wave.wc_radar', 'Radar technician'), use: __alloT('stem.wave.wc_radar_use', 'Maintain + operate weather, air-traffic, military radar.') }
       ];
 
       function renderColors2Section() {
