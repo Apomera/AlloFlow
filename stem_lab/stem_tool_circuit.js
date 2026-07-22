@@ -1673,8 +1673,8 @@ window.StemLab = window.StemLab || {
               var sx = function(v) { return pl + (v / Vmax) * (W - pl - pr); };
               var sy = function(i) { return pt + (1 - i / Imax) * (H - pt - pb); };
               return h('div', { className: 'mt-3 bg-slate-900/40 border border-blue-500/20 rounded-xl p-3' },
-                h('p', { className: 'text-[11px] font-bold text-blue-400 uppercase tracking-wider mb-1' }, "⚡ Ohm's law: I–V characteristic"),
-                h('p', { className: 'text-[10px] text-slate-400 mb-2' }, 'For a fixed resistance, current rises in a straight line with voltage (slope = 1/R). Steeper = lower resistance.'),
+                h('p', { className: 'text-[11px] font-bold text-blue-400 uppercase tracking-wider mb-1' }, "⚡ " + __alloT('stem.circuit.ohm_iv_title', "Ohm's law: I–V characteristic")),
+                h('p', { className: 'text-[10px] text-slate-400 mb-2' }, __alloT('stem.circuit.ohm_iv_desc', 'For a fixed resistance, current rises in a straight line with voltage (slope = 1/R). Steeper = lower resistance.')),
                 h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': 'Current versus voltage is a straight line through the origin; at ' + voltage + ' volts the current is ' + current.toFixed(3) + ' amps.' },
                   h('line', { x1: pl, y1: pt, x2: pl, y2: H - pb, stroke: '#334155', strokeWidth: 1 }),
                   h('line', { x1: pl, y1: H - pb, x2: W - pr, y2: H - pb, stroke: '#334155', strokeWidth: 1 }),
@@ -1683,7 +1683,7 @@ window.StemLab = window.StemLab || {
                   h('line', { x1: sx(0), y1: sy(current), x2: sx(voltage), y2: sy(current), stroke: '#475569', strokeWidth: 1, strokeDasharray: '2 2' }),
                   h('circle', { cx: sx(voltage), cy: sy(current), r: 4, fill: '#60a5fa', stroke: '#0f172a', strokeWidth: 1 }),
                   h('text', { x: sx(voltage) - 4, y: sy(current) - 4, textAnchor: 'end', fontSize: 8, fill: '#93c5fd', fontWeight: 'bold' }, voltage + 'V, ' + current.toFixed(2) + 'A'),
-                  h('text', { x: (pl + W - pr) / 2, y: H - 4, textAnchor: 'middle', fontSize: 8, fill: '#94a3b8' }, 'Voltage (V) →'),
+                  h('text', { x: (pl + W - pr) / 2, y: H - 4, textAnchor: 'middle', fontSize: 8, fill: '#94a3b8' }, __alloT('stem.circuit.axis_voltage', 'Voltage (V) →')),
                   h('text', { x: 8, y: pt + 6, fontSize: 8, fill: '#94a3b8' }, 'I (A)')
                 )
               );
@@ -1692,13 +1692,13 @@ window.StemLab = window.StemLab || {
             // Per-component analysis table
             // ══════════════════════════════════════
             components.length > 0 && !noLoadPath && h('div', { className: 'mt-3 bg-slate-900/40 border border-cyan-500/20 rounded-xl p-3 backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-cyan-400 uppercase tracking-wider mb-1.5' }, '\uD83E\uDDE0 Mental-model checks'),
+              h('p', { className: 'text-[11px] font-bold text-cyan-400 uppercase tracking-wider mb-1.5' }, '\uD83E\uDDE0 ' + __alloT('stem.circuit.mental_model_checks', 'Mental-model checks')),
               h('ul', { className: 'space-y-1 text-[11px] text-slate-300 leading-snug list-disc list-inside marker:text-cyan-500' },
-                h('li', null, h('b', { className: 'text-cyan-300' }, 'Electrons crawl; the signal races. '), 'The glowing dots move fast for visibility, but real electrons drift at only about 0.1 mm/s. The electric field that pushes them travels near light speed, so every bulb lights essentially the instant you connect the battery.'),
+                h('li', null, h('b', { className: 'text-cyan-300' }, __alloT('stem.circuit.mmc_electrons_bold', 'Electrons crawl; the signal races. ')), __alloT('stem.circuit.mmc_electrons_body', 'The glowing dots move fast for visibility, but real electrons drift at only about 0.1 mm/s. The electric field that pushes them travels near light speed, so every bulb lights essentially the instant you connect the battery.')),
                 mode === 'series'
-                  ? h('li', null, h('b', { className: 'text-cyan-300' }, 'Current is not used up. '), 'The very same ' + current.toFixed(3) + ' A flows through every component in series \u2014 an ammeter reads the same value before AND after each bulb. Energy gets spent along the way; charge does not.')
-                  : h('li', null, h('b', { className: 'text-cyan-300' }, 'A parallel branch LOWERS total resistance. '), 'Adding paths gives charge more ways to flow, so total current rises. Total R (' + (totalR >= 1e8 ? '\u221E' : totalR.toFixed(1) + '\u03A9') + ') is always smaller than the smallest single branch \u2014 counter-intuitive but true.'),
-                h('li', null, h('b', { className: 'text-cyan-300' }, 'The battery sets voltage, not current. '), 'It holds ' + voltage + ' V steady; the ' + current.toFixed(3) + ' A you read is whatever Ohm\'s law gives for the resistance you built. Lower the resistance and the current climbs \u2014 the battery does not "decide" the current.')
+                  ? h('li', null, h('b', { className: 'text-cyan-300' }, __alloT('stem.circuit.mmc_series_bold', 'Current is not used up. ')), 'The very same ' + current.toFixed(3) + ' A flows through every component in series \u2014 an ammeter reads the same value before AND after each bulb. Energy gets spent along the way; charge does not.')
+                  : h('li', null, h('b', { className: 'text-cyan-300' }, __alloT('stem.circuit.mmc_parallel_bold', 'A parallel branch LOWERS total resistance. ')), 'Adding paths gives charge more ways to flow, so total current rises. Total R (' + (totalR >= 1e8 ? '\u221E' : totalR.toFixed(1) + '\u03A9') + ') is always smaller than the smallest single branch \u2014 counter-intuitive but true.'),
+                h('li', null, h('b', { className: 'text-cyan-300' }, __alloT('stem.circuit.mmc_battery_bold', 'The battery sets voltage, not current. ')), 'It holds ' + voltage + ' V steady; the ' + current.toFixed(3) + ' A you read is whatever Ohm\'s law gives for the resistance you built. Lower the resistance and the current climbs \u2014 the battery does not "decide" the current.')
               )
             ),
 
@@ -1706,7 +1706,7 @@ window.StemLab = window.StemLab || {
             // Per-component analysis table
             // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
             components.length > 0 && h('div', { className: 'mt-4 bg-slate-900/40 border border-slate-800 p-4 rounded-xl backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-yellow-500 uppercase tracking-wider mb-2' }, '\u26A1 Per-Component Analysis'),
+              h('p', { className: 'text-[11px] font-bold text-yellow-500 uppercase tracking-wider mb-2' }, '\u26A1 ' + __alloT('stem.circuit.per_component_analysis', 'Per-Component Analysis')),
               h('div', { className: 'space-y-1.5' },
                 components.map(function(comp, i) {
                   var compR = getCompR(comp);
@@ -1722,18 +1722,18 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-slate-400 w-20 font-mono' }, rDisplay),
 
                     comp.type === 'ammeter'
-                      ? h('span', { className: 'text-cyan-400 w-40 font-mono font-bold' }, isIdealParallelBranch ? '\u26A0 connect ammeters in series' : '\u27A1 ' + compI.toFixed(3) + 'A (reads current)')
+                      ? h('span', { className: 'text-cyan-400 w-40 font-mono font-bold' }, isIdealParallelBranch ? '\u26A0 ' + __alloT('stem.circuit.connect_ammeters_series', 'connect ammeters in series') : '\u27A1 ' + compI.toFixed(3) + 'A (reads current)')
                       : comp.type === 'voltmeter'
-                      ? h('span', { className: 'text-yellow-400 w-40 font-mono font-bold' }, mode === 'series' ? '\u26A0 connect voltmeters in parallel' : '\u27A1 ' + voltage.toFixed(1) + 'V (reads voltage)')
-                      : isIdealParallelBranch ? h('span', { className: 'text-red-400 w-40 font-mono font-bold' }, '\u26A0 short branch (~0 \u03A9)') : h(React.Fragment, null,
+                      ? h('span', { className: 'text-yellow-400 w-40 font-mono font-bold' }, mode === 'series' ? '\u26A0 ' + __alloT('stem.circuit.connect_voltmeters_parallel', 'connect voltmeters in parallel') : '\u27A1 ' + voltage.toFixed(1) + 'V (reads voltage)')
+                      : isIdealParallelBranch ? h('span', { className: 'text-red-400 w-40 font-mono font-bold' }, '\u26A0 ' + __alloT('stem.circuit.short_branch', 'short branch (~0 \u03A9)')) : h(React.Fragment, null,
                           h('span', { className: 'text-cyan-400 w-20 font-mono' }, compV.toFixed(2) + 'V'),
                           h('span', { className: 'text-emerald-400 w-20 font-mono' }, compI.toFixed(3) + 'A'),
                           h('span', { className: 'text-rose-400 w-20 font-mono font-bold' }, compP.toFixed(2) + 'W')
                         ),
 
                     comp.type === 'bulb' && h('span', { className: 'text-yellow-400 ml-auto' }, compP > 10 ? '\uD83D\uDD06' : compP > 3 ? '\uD83D\uDCA1' : '\uD83D\uDD05'),
-                    comp.type === 'switch' && h('span', { className: 'ml-auto ' + (comp.closed ? 'text-emerald-400' : 'text-red-400') }, comp.closed ? '\u2705 Closed' : '\u274C Open'),
-                    comp.type === 'led' && h('span', { className: 'ml-auto', style: { color: comp.ledColor || '#ef4444' } }, compI > 0.005 ? '\u2B50 Lit' : '\u26AB Off'),
+                    comp.type === 'switch' && h('span', { className: 'ml-auto ' + (comp.closed ? 'text-emerald-400' : 'text-red-400') }, comp.closed ? '\u2705 ' + __alloT('stem.circuit.status_closed', 'Closed') : '\u274C ' + __alloT('stem.circuit.status_open', 'Open')),
+                    comp.type === 'led' && h('span', { className: 'ml-auto', style: { color: comp.ledColor || '#ef4444' } }, compI > 0.005 ? '\u2B50 ' + __alloT('stem.circuit.status_lit', 'Lit') : '\u26AB ' + __alloT('stem.circuit.status_off', 'Off')),
                     comp.type === 'capacitor' && h('span', { className: 'text-sky-400 ml-auto font-mono text-[10px]' }, comp.value + '\u00B5F (blocks DC)')
                   );
                 })
@@ -1745,7 +1745,7 @@ window.StemLab = window.StemLab || {
                 h('span', null, '\u2022'),
                 h('span', null, 'P = IV'),
                 h('span', null, '\u2022'),
-                h('span', null, mode === 'series' ? 'Series: same current through all' : 'Parallel: same voltage across all')
+                h('span', null, mode === 'series' ? __alloT('stem.circuit.formula_series_note', 'Series: same current through all') : __alloT('stem.circuit.formula_parallel_note', 'Parallel: same voltage across all'))
               )
             ),
 
