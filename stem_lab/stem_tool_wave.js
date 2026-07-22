@@ -4396,66 +4396,66 @@ const d = labToolData.wave;
       ];
 
       var NAMED_COLORS = [
-        { name: 'Black', hex: '#000000', wavelength: '—', notes: 'Absence of light. Truest black possible.' },
-        { name: 'White', hex: '#FFFFFF', wavelength: 'all visible', notes: 'All wavelengths reflected equally.' },
-        { name: 'Red', hex: '#FF0000', wavelength: '~620-750 nm', notes: 'Lowest energy visible.' },
-        { name: 'Orange', hex: '#FFA500', wavelength: '~590-620 nm', notes: 'Between red + yellow.' },
-        { name: 'Yellow', hex: '#FFFF00', wavelength: '~570-590 nm', notes: 'Brightest perceived color (peak human sensitivity).' },
-        { name: 'Green', hex: '#00FF00', wavelength: '~495-570 nm', notes: 'Most abundant in nature (chlorophyll reflects).' },
-        { name: 'Cyan', hex: '#00FFFF', wavelength: '~485-500 nm', notes: 'Halfway between blue + green.' },
-        { name: 'Blue', hex: '#0000FF', wavelength: '~450-495 nm', notes: 'Scattered most by atmosphere → blue sky.' },
-        { name: 'Magenta', hex: '#FF00FF', wavelength: 'not a single λ', notes: 'Brain perceives red+blue without green. Has no monochromatic wavelength.' },
-        { name: 'Violet', hex: '#8B00FF', wavelength: '~380-450 nm', notes: 'Highest energy visible. Beyond is UV.' },
-        { name: 'Pink', hex: '#FFC0CB', wavelength: '—', notes: 'Tint of red. Lots of cultural meaning.' },
-        { name: 'Brown', hex: '#A52A2A', wavelength: '—', notes: 'Dark orange/red. No "brown" wavelength exists — perceptual color only.' },
-        { name: 'Gray', hex: '#808080', wavelength: '—', notes: 'Achromatic. Equal RGB at any intensity.' },
-        { name: 'Silver', hex: '#C0C0C0', wavelength: '—', notes: 'Light gray, often with metallic sheen.' },
-        { name: 'Gold', hex: '#FFD700', wavelength: '—', notes: 'Yellow with brownish tint. Metallic sheen in physical samples.' },
-        { name: 'Maroon', hex: '#800000', wavelength: '—', notes: 'Dark red.' },
-        { name: 'Navy', hex: '#000080', wavelength: '—', notes: 'Dark blue. Original navy uniforms.' },
-        { name: 'Teal', hex: '#008080', wavelength: '—', notes: 'Dark cyan. Named after teal duck\'s head color.' },
-        { name: 'Olive', hex: '#808000', wavelength: '—', notes: 'Dark yellow-green.' },
-        { name: 'Purple', hex: '#800080', wavelength: '—', notes: 'Dark magenta. Royal purple historically rare + expensive (Tyrian dye).' },
-        { name: 'Indigo', hex: '#4B0082', wavelength: '~440-450 nm', notes: 'Between blue + violet. Newton\'s color of the spectrum.' },
-        { name: 'Lime', hex: '#00FF00', wavelength: '~495-570 nm', notes: 'Web "lime" = pure green RGB.' },
-        { name: 'Aqua', hex: '#00FFFF', wavelength: '~485-500 nm', notes: 'Same as cyan in web colors.' },
-        { name: 'Fuchsia', hex: '#FF00FF', wavelength: 'not a single λ', notes: 'Same as magenta in web colors.' },
-        { name: 'Coral', hex: '#FF7F50', wavelength: '—', notes: 'Orange-pink, named after coral reefs.' },
-        { name: 'Tomato', hex: '#FF6347', wavelength: '—', notes: 'Bright red-orange.' },
-        { name: 'Salmon', hex: '#FA8072', wavelength: '—', notes: 'Pinkish orange, like salmon flesh.' },
-        { name: 'Khaki', hex: '#F0E68C', wavelength: '—', notes: 'Light yellow-brown. Military uniforms.' },
-        { name: 'Crimson', hex: '#DC143C', wavelength: '~640 nm', notes: 'Deep red.' },
-        { name: 'Lavender', hex: '#E6E6FA', wavelength: '—', notes: 'Light purple, named after the flower.' },
-        { name: 'Turquoise', hex: '#40E0D0', wavelength: '~490 nm', notes: 'Greenish blue, named after the gemstone.' },
-        { name: 'Beige', hex: '#F5F5DC', wavelength: '—', notes: 'Pale yellow-brown. Common neutral.' }
+        { name: __alloT('stem.wave.nc_black', 'Black'), hex: '#000000', wavelength: '—', notes: __alloT('stem.wave.nc_black_notes', 'Absence of light. Truest black possible.') },
+        { name: __alloT('stem.wave.nc_white', 'White'), hex: '#FFFFFF', wavelength: __alloT('stem.wave.nc_all_visible', 'all visible'), notes: __alloT('stem.wave.nc_white_notes', 'All wavelengths reflected equally.') },
+        { name: __alloT('stem.wave.nc_red', 'Red'), hex: '#FF0000', wavelength: '~620-750 nm', notes: __alloT('stem.wave.nc_red_notes', 'Lowest energy visible.') },
+        { name: __alloT('stem.wave.nc_orange', 'Orange'), hex: '#FFA500', wavelength: '~590-620 nm', notes: __alloT('stem.wave.nc_orange_notes', 'Between red + yellow.') },
+        { name: __alloT('stem.wave.nc_yellow', 'Yellow'), hex: '#FFFF00', wavelength: '~570-590 nm', notes: __alloT('stem.wave.nc_yellow_notes', 'Brightest perceived color (peak human sensitivity).') },
+        { name: __alloT('stem.wave.nc_green', 'Green'), hex: '#00FF00', wavelength: '~495-570 nm', notes: __alloT('stem.wave.nc_green_notes', 'Most abundant in nature (chlorophyll reflects).') },
+        { name: __alloT('stem.wave.nc_cyan', 'Cyan'), hex: '#00FFFF', wavelength: '~485-500 nm', notes: __alloT('stem.wave.nc_cyan_notes', 'Halfway between blue + green.') },
+        { name: __alloT('stem.wave.nc_blue', 'Blue'), hex: '#0000FF', wavelength: '~450-495 nm', notes: __alloT('stem.wave.nc_blue_notes', 'Scattered most by atmosphere → blue sky.') },
+        { name: __alloT('stem.wave.nc_magenta', 'Magenta'), hex: '#FF00FF', wavelength: __alloT('stem.wave.nc_not_single', 'not a single λ'), notes: __alloT('stem.wave.nc_magenta_notes', 'Brain perceives red+blue without green. Has no monochromatic wavelength.') },
+        { name: __alloT('stem.wave.nc_violet', 'Violet'), hex: '#8B00FF', wavelength: '~380-450 nm', notes: __alloT('stem.wave.nc_violet_notes', 'Highest energy visible. Beyond is UV.') },
+        { name: __alloT('stem.wave.nc_pink', 'Pink'), hex: '#FFC0CB', wavelength: '—', notes: __alloT('stem.wave.nc_pink_notes', 'Tint of red. Lots of cultural meaning.') },
+        { name: __alloT('stem.wave.nc_brown', 'Brown'), hex: '#A52A2A', wavelength: '—', notes: __alloT('stem.wave.nc_brown_notes', 'Dark orange/red. No "brown" wavelength exists — perceptual color only.') },
+        { name: __alloT('stem.wave.nc_gray', 'Gray'), hex: '#808080', wavelength: '—', notes: __alloT('stem.wave.nc_gray_notes', 'Achromatic. Equal RGB at any intensity.') },
+        { name: __alloT('stem.wave.nc_silver', 'Silver'), hex: '#C0C0C0', wavelength: '—', notes: __alloT('stem.wave.nc_silver_notes', 'Light gray, often with metallic sheen.') },
+        { name: __alloT('stem.wave.nc_gold', 'Gold'), hex: '#FFD700', wavelength: '—', notes: __alloT('stem.wave.nc_gold_notes', 'Yellow with brownish tint. Metallic sheen in physical samples.') },
+        { name: __alloT('stem.wave.nc_maroon', 'Maroon'), hex: '#800000', wavelength: '—', notes: __alloT('stem.wave.nc_maroon_notes', 'Dark red.') },
+        { name: __alloT('stem.wave.nc_navy', 'Navy'), hex: '#000080', wavelength: '—', notes: __alloT('stem.wave.nc_navy_notes', 'Dark blue. Original navy uniforms.') },
+        { name: __alloT('stem.wave.nc_teal', 'Teal'), hex: '#008080', wavelength: '—', notes: __alloT('stem.wave.nc_teal_notes', 'Dark cyan. Named after teal duck\'s head color.') },
+        { name: __alloT('stem.wave.nc_olive', 'Olive'), hex: '#808000', wavelength: '—', notes: __alloT('stem.wave.nc_olive_notes', 'Dark yellow-green.') },
+        { name: __alloT('stem.wave.nc_purple', 'Purple'), hex: '#800080', wavelength: '—', notes: __alloT('stem.wave.nc_purple_notes', 'Dark magenta. Royal purple historically rare + expensive (Tyrian dye).') },
+        { name: __alloT('stem.wave.nc_indigo', 'Indigo'), hex: '#4B0082', wavelength: '~440-450 nm', notes: __alloT('stem.wave.nc_indigo_notes', 'Between blue + violet. Newton\'s color of the spectrum.') },
+        { name: __alloT('stem.wave.nc_lime', 'Lime'), hex: '#00FF00', wavelength: '~495-570 nm', notes: __alloT('stem.wave.nc_lime_notes', 'Web "lime" = pure green RGB.') },
+        { name: __alloT('stem.wave.nc_aqua', 'Aqua'), hex: '#00FFFF', wavelength: '~485-500 nm', notes: __alloT('stem.wave.nc_aqua_notes', 'Same as cyan in web colors.') },
+        { name: __alloT('stem.wave.nc_fuchsia', 'Fuchsia'), hex: '#FF00FF', wavelength: __alloT('stem.wave.nc_not_single', 'not a single λ'), notes: __alloT('stem.wave.nc_fuchsia_notes', 'Same as magenta in web colors.') },
+        { name: __alloT('stem.wave.nc_coral', 'Coral'), hex: '#FF7F50', wavelength: '—', notes: __alloT('stem.wave.nc_coral_notes', 'Orange-pink, named after coral reefs.') },
+        { name: __alloT('stem.wave.nc_tomato', 'Tomato'), hex: '#FF6347', wavelength: '—', notes: __alloT('stem.wave.nc_tomato_notes', 'Bright red-orange.') },
+        { name: __alloT('stem.wave.nc_salmon', 'Salmon'), hex: '#FA8072', wavelength: '—', notes: __alloT('stem.wave.nc_salmon_notes', 'Pinkish orange, like salmon flesh.') },
+        { name: __alloT('stem.wave.nc_khaki', 'Khaki'), hex: '#F0E68C', wavelength: '—', notes: __alloT('stem.wave.nc_khaki_notes', 'Light yellow-brown. Military uniforms.') },
+        { name: __alloT('stem.wave.nc_crimson', 'Crimson'), hex: '#DC143C', wavelength: '~640 nm', notes: __alloT('stem.wave.nc_crimson_notes', 'Deep red.') },
+        { name: __alloT('stem.wave.nc_lavender', 'Lavender'), hex: '#E6E6FA', wavelength: '—', notes: __alloT('stem.wave.nc_lavender_notes', 'Light purple, named after the flower.') },
+        { name: __alloT('stem.wave.nc_turquoise', 'Turquoise'), hex: '#40E0D0', wavelength: '~490 nm', notes: __alloT('stem.wave.nc_turquoise_notes', 'Greenish blue, named after the gemstone.') },
+        { name: __alloT('stem.wave.nc_beige', 'Beige'), hex: '#F5F5DC', wavelength: '—', notes: __alloT('stem.wave.nc_beige_notes', 'Pale yellow-brown. Common neutral.') }
       ];
 
       var WAVE_SPEEDS = [
-        { medium: 'Vacuum', speed: '299,792,458 m/s (light)', notes: 'Defined exactly. Maximum possible speed of any information.' },
-        { medium: 'Air at 0°C', speed: '331 m/s (sound)', notes: 'Speed of sound increases with temperature.' },
-        { medium: 'Air at 20°C', speed: '343 m/s (sound)', notes: 'Standard reference. ~1235 km/h, 767 mph.' },
-        { medium: 'Helium at 20°C', speed: '~1007 m/s (sound)', notes: 'Faster — lighter molecules. Why helium makes voice high-pitched.' },
-        { medium: 'Water at 20°C', speed: '~1482 m/s (sound)', notes: 'Sound travels ~4× faster in water than air.' },
-        { medium: 'Steel', speed: '~5960 m/s (sound)', notes: 'Sound very fast in stiff solids.' },
-        { medium: 'Diamond', speed: '~12,000 m/s (sound)', notes: 'Fastest sound speed of common materials.' },
-        { medium: 'Glass (typical)', speed: '~200,000 km/s (light)', notes: 'About 2/3 c. Refractive index n = c/v ≈ 1.5.' },
-        { medium: 'Water', speed: '~225,000 km/s (light)', notes: 'About 3/4 c. n ≈ 1.33.' },
-        { medium: 'Crust (P-waves)', speed: '~5-8 km/s', notes: 'Earthquake P-waves move at this speed in upper crust.' },
-        { medium: 'Crust (S-waves)', speed: '~3-4.5 km/s', notes: 'Slower than P-waves.' },
-        { medium: 'Tsunami (deep ocean)', speed: '~700 km/h', notes: 'Long-wavelength shallow-water wave. Slows + grows at shore.' },
-        { medium: 'Light in coaxial cable', speed: '~200,000 km/s', notes: 'Slower than vacuum — limits internet latency to/from data centers.' },
-        { medium: 'Sound in body tissue', speed: '~1500-1600 m/s', notes: 'Similar to water. Why ultrasound works for medical imaging.' },
-        { medium: 'Compressional wave in rope', speed: '√(T/μ) m/s', notes: 'T = tension, μ = linear density. Tighter rope → faster waves.' }
+        { medium: __alloT('stem.wave.ws_vacuum', 'Vacuum'), speed: '299,792,458 m/s (light)', notes: __alloT('stem.wave.ws_vacuum_notes', 'Defined exactly. Maximum possible speed of any information.') },
+        { medium: __alloT('stem.wave.ws_air0', 'Air at 0°C'), speed: '331 m/s (sound)', notes: __alloT('stem.wave.ws_air0_notes', 'Speed of sound increases with temperature.') },
+        { medium: __alloT('stem.wave.ws_air20', 'Air at 20°C'), speed: '343 m/s (sound)', notes: __alloT('stem.wave.ws_air20_notes', 'Standard reference. ~1235 km/h, 767 mph.') },
+        { medium: __alloT('stem.wave.ws_helium', 'Helium at 20°C'), speed: '~1007 m/s (sound)', notes: __alloT('stem.wave.ws_helium_notes', 'Faster — lighter molecules. Why helium makes voice high-pitched.') },
+        { medium: __alloT('stem.wave.ws_water20', 'Water at 20°C'), speed: '~1482 m/s (sound)', notes: __alloT('stem.wave.ws_water20_notes', 'Sound travels ~4× faster in water than air.') },
+        { medium: __alloT('stem.wave.ws_steel', 'Steel'), speed: '~5960 m/s (sound)', notes: __alloT('stem.wave.ws_steel_notes', 'Sound very fast in stiff solids.') },
+        { medium: __alloT('stem.wave.ws_diamond', 'Diamond'), speed: '~12,000 m/s (sound)', notes: __alloT('stem.wave.ws_diamond_notes', 'Fastest sound speed of common materials.') },
+        { medium: __alloT('stem.wave.ws_glass', 'Glass (typical)'), speed: '~200,000 km/s (light)', notes: __alloT('stem.wave.ws_glass_notes', 'About 2/3 c. Refractive index n = c/v ≈ 1.5.') },
+        { medium: __alloT('stem.wave.ws_water', 'Water'), speed: '~225,000 km/s (light)', notes: __alloT('stem.wave.ws_water_notes', 'About 3/4 c. n ≈ 1.33.') },
+        { medium: __alloT('stem.wave.ws_crust_p', 'Crust (P-waves)'), speed: '~5-8 km/s', notes: __alloT('stem.wave.ws_crust_p_notes', 'Earthquake P-waves move at this speed in upper crust.') },
+        { medium: __alloT('stem.wave.ws_crust_s', 'Crust (S-waves)'), speed: '~3-4.5 km/s', notes: __alloT('stem.wave.ws_crust_s_notes', 'Slower than P-waves.') },
+        { medium: __alloT('stem.wave.ws_tsunami', 'Tsunami (deep ocean)'), speed: '~700 km/h', notes: __alloT('stem.wave.ws_tsunami_notes', 'Long-wavelength shallow-water wave. Slows + grows at shore.') },
+        { medium: __alloT('stem.wave.ws_coax', 'Light in coaxial cable'), speed: '~200,000 km/s', notes: __alloT('stem.wave.ws_coax_notes', 'Slower than vacuum — limits internet latency to/from data centers.') },
+        { medium: __alloT('stem.wave.ws_tissue', 'Sound in body tissue'), speed: '~1500-1600 m/s', notes: __alloT('stem.wave.ws_tissue_notes', 'Similar to water. Why ultrasound works for medical imaging.') },
+        { medium: __alloT('stem.wave.ws_rope', 'Compressional wave in rope'), speed: '√(T/μ) m/s', notes: __alloT('stem.wave.ws_rope_notes', 'T = tension, μ = linear density. Tighter rope → faster waves.') }
       ];
 
       function renderAnimalsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🦇 Animal hearing ranges'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🦇 ' + __alloT('stem.wave.sec_animals_title', 'Animal hearing ranges')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
-                  ['Animal', 'Hearing range', 'Notes'].map(function(hh, i) {
+                  [__alloT('stem.wave.col_animal', 'Animal'), __alloT('stem.wave.col_hearing_range', 'Hearing range'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
                     return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
@@ -4476,12 +4476,12 @@ const d = labToolData.wave;
 
       function renderInstrumentFreqSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎻 Musical instrument frequencies'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎻 ' + __alloT('stem.wave.sec_instrumentfreq_title', 'Musical instrument frequencies')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
-                  ['Instrument', 'Range', 'Notes (notation)', 'Notes'].map(function(hh, i) {
+                  [__alloT('stem.wave.col_instrument', 'Instrument'), __alloT('stem.wave.col_range', 'Range'), __alloT('stem.wave.col_notes_notation', 'Notes (notation)'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
                     return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
@@ -4503,13 +4503,13 @@ const d = labToolData.wave;
 
       function renderRadioSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📻 Radio frequency bands (ITU)'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'EM waves below visible light, classified by frequency. Lower bands penetrate further; higher bands carry more data.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📻 ' + __alloT('stem.wave.sec_radio_bands_title', 'Radio frequency bands (ITU)')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_radio_bands_intro', 'EM waves below visible light, classified by frequency. Lower bands penetrate further; higher bands carry more data.')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
-                  ['Band', 'Frequency', 'Wavelength', 'Use'].map(function(hh, i) {
+                  [__alloT('stem.wave.col_band', 'Band'), __alloT('stem.wave.col_frequency', 'Frequency'), __alloT('stem.wave.col_wavelength', 'Wavelength'), __alloT('stem.wave.col_use', 'Use')].map(function(hh, i) {
                     return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
@@ -4531,12 +4531,12 @@ const d = labToolData.wave;
 
       function renderColorhexSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎨 Named colors + their wavelengths'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎨 ' + __alloT('stem.wave.sec_colorhex_title', 'Named colors + their wavelengths')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
-                  ['Color', 'Hex', 'λ peak', 'Notes'].map(function(hh, i) {
+                  [__alloT('stem.wave.col_color', 'Color'), __alloT('stem.wave.col_hex', 'Hex'), 'λ peak', __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
                     return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
@@ -4558,7 +4558,7 @@ const d = labToolData.wave;
 
       function renderWaveSpeedSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⏱ Wave speeds in different media'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⏱ ' + __alloT('stem.wave.sec_wavespeed_title', 'Wave speeds in different media')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
