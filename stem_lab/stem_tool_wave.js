@@ -4148,12 +4148,12 @@ const d = labToolData.wave;
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📷 ' + __alloT('stem.wave.sec_cameras_title', 'Camera lenses + photography')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Lens focal lengths (35mm full-frame)'),
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_lens_focal_lengths', 'Lens focal lengths (35mm full-frame)')),
             React.createElement('div', { className: 'overflow-x-auto' },
               React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
                 React.createElement('thead', null,
                   React.createElement('tr', { className: 'bg-slate-100' },
-                    ['Lens', 'Field of view', 'Use'].map(function(hh, i) {
+                    [__alloT('stem.wave.col_lens', 'Lens'), __alloT('stem.wave.col_fov', 'Field of view'), __alloT('stem.wave.col_use', 'Use')].map(function(hh, i) {
                       return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                     })
                   )
@@ -4170,7 +4170,7 @@ const d = labToolData.wave;
               )
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Photography essentials'),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_photography_essentials', 'Photography essentials')),
           React.createElement('div', { className: 'space-y-1' },
             CAMERA_FACTS.map(function(f, i) {
               return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
@@ -4187,62 +4187,62 @@ const d = labToolData.wave;
       // ═════════════════════════════════════════════════════════════════════
 
       var STAR_DATA = [
-        { star: 'Sun', type: 'G2V (yellow dwarf)', temp: '5,778 K', distance: '1 AU', notes: 'Our nearest star. Apparent peak ~480 nm (blue-green) but we see it yellow due to atmospheric scattering.' },
-        { star: 'Proxima Centauri', type: 'M5.5 (red dwarf)', temp: '~3,042 K', distance: '4.24 ly', notes: 'Nearest known star. Has planets including Proxima b in habitable zone.' },
-        { star: 'Sirius A', type: 'A1V (white)', temp: '9,940 K', distance: '8.6 ly', notes: 'Brightest in night sky. Binary with white-dwarf Sirius B.' },
-        { star: 'Betelgeuse', type: 'M1-2 (red supergiant)', temp: '~3,500 K', distance: '~640 ly', notes: 'Orion\'s shoulder. Variable. Could go supernova "soon" (anytime in next ~100,000 yr).' },
-        { star: 'Rigel', type: 'B8I (blue supergiant)', temp: '~12,100 K', distance: '~860 ly', notes: 'Orion\'s foot. Triple star system.' },
-        { star: 'Vega', type: 'A0V (white)', temp: '9,602 K', distance: '25 ly', notes: 'Was once "the" North Star. Will be again in ~13,727 CE (precession of equinoxes).' },
-        { star: 'Polaris', type: 'F7Ib (yellow supergiant)', temp: '6,015 K', distance: '~430 ly', notes: 'Current North Star. Within ~0.5° of celestial north.' },
-        { star: 'Aldebaran', type: 'K5III (orange giant)', temp: '~3,910 K', distance: '~65 ly', notes: 'Eye of Taurus. Reddish-orange.' },
-        { star: 'Antares', type: 'M1.5Iab (red supergiant)', temp: '~3,660 K', distance: '~550 ly', notes: 'Heart of Scorpius. Diameter ~700× Sun.' },
-        { star: 'Procyon', type: 'F5IV (yellow-white)', temp: '6,530 K', distance: '11.5 ly', notes: 'Eighth brightest star. Binary.' },
-        { star: 'Capella', type: 'G3III + G0III (yellow giants)', temp: '~5,000 K (combined)', distance: '~43 ly', notes: 'Sixth brightest. Two pairs (4 stars).' },
-        { star: 'Spica', type: 'B1III-IV (blue giant)', temp: '~22,400 K', distance: '~250 ly', notes: 'Brightest in Virgo. Binary.' },
-        { star: 'Eta Carinae', type: 'LBV (luminous blue variable)', temp: '~20,000 K', distance: '~7,500 ly', notes: 'Massive (90 M☉ + companion). Erupted dramatically in 1840s. Likely future supernova/hypernova.' },
-        { star: 'UY Scuti', type: 'M4Ia (red hypergiant)', temp: '~3,365 K', distance: '~5,200 ly', notes: 'Among largest known stars. Diameter ~1700× Sun.' }
+        { star: __alloT('stem.wave.star_sun', 'Sun'), type: __alloT('stem.wave.star_sun_type', 'G2V (yellow dwarf)'), temp: '5,778 K', distance: '1 AU', notes: __alloT('stem.wave.star_sun_notes', 'Our nearest star. Apparent peak ~480 nm (blue-green) but we see it yellow due to atmospheric scattering.') },
+        { star: __alloT('stem.wave.star_proxima', 'Proxima Centauri'), type: __alloT('stem.wave.star_proxima_type', 'M5.5 (red dwarf)'), temp: '~3,042 K', distance: '4.24 ly', notes: __alloT('stem.wave.star_proxima_notes', 'Nearest known star. Has planets including Proxima b in habitable zone.') },
+        { star: __alloT('stem.wave.star_sirius', 'Sirius A'), type: __alloT('stem.wave.star_sirius_type', 'A1V (white)'), temp: '9,940 K', distance: '8.6 ly', notes: __alloT('stem.wave.star_sirius_notes', 'Brightest in night sky. Binary with white-dwarf Sirius B.') },
+        { star: __alloT('stem.wave.star_betelgeuse', 'Betelgeuse'), type: __alloT('stem.wave.star_betelgeuse_type', 'M1-2 (red supergiant)'), temp: '~3,500 K', distance: '~640 ly', notes: __alloT('stem.wave.star_betelgeuse_notes', 'Orion\'s shoulder. Variable. Could go supernova "soon" (anytime in next ~100,000 yr).') },
+        { star: __alloT('stem.wave.star_rigel', 'Rigel'), type: __alloT('stem.wave.star_rigel_type', 'B8I (blue supergiant)'), temp: '~12,100 K', distance: '~860 ly', notes: __alloT('stem.wave.star_rigel_notes', 'Orion\'s foot. Triple star system.') },
+        { star: __alloT('stem.wave.star_vega', 'Vega'), type: __alloT('stem.wave.star_vega_type', 'A0V (white)'), temp: '9,602 K', distance: '25 ly', notes: __alloT('stem.wave.star_vega_notes', 'Was once "the" North Star. Will be again in ~13,727 CE (precession of equinoxes).') },
+        { star: __alloT('stem.wave.star_polaris', 'Polaris'), type: __alloT('stem.wave.star_polaris_type', 'F7Ib (yellow supergiant)'), temp: '6,015 K', distance: '~430 ly', notes: __alloT('stem.wave.star_polaris_notes', 'Current North Star. Within ~0.5° of celestial north.') },
+        { star: __alloT('stem.wave.star_aldebaran', 'Aldebaran'), type: __alloT('stem.wave.star_aldebaran_type', 'K5III (orange giant)'), temp: '~3,910 K', distance: '~65 ly', notes: __alloT('stem.wave.star_aldebaran_notes', 'Eye of Taurus. Reddish-orange.') },
+        { star: __alloT('stem.wave.star_antares', 'Antares'), type: __alloT('stem.wave.star_antares_type', 'M1.5Iab (red supergiant)'), temp: '~3,660 K', distance: '~550 ly', notes: __alloT('stem.wave.star_antares_notes', 'Heart of Scorpius. Diameter ~700× Sun.') },
+        { star: __alloT('stem.wave.star_procyon', 'Procyon'), type: __alloT('stem.wave.star_procyon_type', 'F5IV (yellow-white)'), temp: '6,530 K', distance: '11.5 ly', notes: __alloT('stem.wave.star_procyon_notes', 'Eighth brightest star. Binary.') },
+        { star: __alloT('stem.wave.star_capella', 'Capella'), type: __alloT('stem.wave.star_capella_type', 'G3III + G0III (yellow giants)'), temp: '~5,000 K (combined)', distance: '~43 ly', notes: __alloT('stem.wave.star_capella_notes', 'Sixth brightest. Two pairs (4 stars).') },
+        { star: __alloT('stem.wave.star_spica', 'Spica'), type: __alloT('stem.wave.star_spica_type', 'B1III-IV (blue giant)'), temp: '~22,400 K', distance: '~250 ly', notes: __alloT('stem.wave.star_spica_notes', 'Brightest in Virgo. Binary.') },
+        { star: __alloT('stem.wave.star_eta', 'Eta Carinae'), type: __alloT('stem.wave.star_eta_type', 'LBV (luminous blue variable)'), temp: '~20,000 K', distance: '~7,500 ly', notes: __alloT('stem.wave.star_eta_notes', 'Massive (90 M☉ + companion). Erupted dramatically in 1840s. Likely future supernova/hypernova.') },
+        { star: __alloT('stem.wave.star_uy', 'UY Scuti'), type: __alloT('stem.wave.star_uy_type', 'M4Ia (red hypergiant)'), temp: '~3,365 K', distance: '~5,200 ly', notes: __alloT('stem.wave.star_uy_notes', 'Among largest known stars. Diameter ~1700× Sun.') }
       ];
 
       var SCREEN_TYPES = [
-        { type: 'CRT (cathode ray tube)', refresh: '60-100 Hz', notes: 'Electron beam scans phosphors. Largely obsolete since ~2010.' },
-        { type: 'LCD (liquid crystal display)', refresh: '60-360 Hz', notes: 'LCs modulate backlight. Energy-efficient. Limited viewing angles.' },
-        { type: 'OLED (organic LED)', refresh: '60-240 Hz', notes: 'Each pixel emits own light. True blacks. Premium phones, TVs.' },
-        { type: 'micro-LED', refresh: '60-240 Hz', notes: 'Like OLED but inorganic LEDs. Brighter, longer-lived. Expensive (~2025).' },
-        { type: 'Plasma', refresh: '60 Hz typical', notes: 'Excited gas emits UV → phosphors. Discontinued ~2014.' },
-        { type: 'E-ink', refresh: 'on update', notes: 'Microcapsules with charged particles. No backlight needed. E-readers.' },
-        { type: 'Projector (DLP)', refresh: 'varies', notes: 'Micromirror array. Color via spinning wheel or 3 chips.' },
-        { type: 'Projector (LCD)', refresh: 'varies', notes: '3 LCD panels (RGB). Common in classrooms.' },
-        { type: 'Laser projector', refresh: 'varies', notes: 'RGB lasers, no lamp replacement. Wide color gamut.' }
+        { type: __alloT('stem.wave.scr_crt', 'CRT (cathode ray tube)'), refresh: '60-100 Hz', notes: __alloT('stem.wave.scr_crt_notes', 'Electron beam scans phosphors. Largely obsolete since ~2010.') },
+        { type: __alloT('stem.wave.scr_lcd', 'LCD (liquid crystal display)'), refresh: '60-360 Hz', notes: __alloT('stem.wave.scr_lcd_notes', 'LCs modulate backlight. Energy-efficient. Limited viewing angles.') },
+        { type: __alloT('stem.wave.scr_oled', 'OLED (organic LED)'), refresh: '60-240 Hz', notes: __alloT('stem.wave.scr_oled_notes', 'Each pixel emits own light. True blacks. Premium phones, TVs.') },
+        { type: __alloT('stem.wave.scr_microled', 'micro-LED'), refresh: '60-240 Hz', notes: __alloT('stem.wave.scr_microled_notes', 'Like OLED but inorganic LEDs. Brighter, longer-lived. Expensive (~2025).') },
+        { type: __alloT('stem.wave.scr_plasma', 'Plasma'), refresh: __alloT('stem.wave.scr_plasma_refresh', '60 Hz typical'), notes: __alloT('stem.wave.scr_plasma_notes', 'Excited gas emits UV → phosphors. Discontinued ~2014.') },
+        { type: __alloT('stem.wave.scr_eink', 'E-ink'), refresh: __alloT('stem.wave.scr_eink_refresh', 'on update'), notes: __alloT('stem.wave.scr_eink_notes', 'Microcapsules with charged particles. No backlight needed. E-readers.') },
+        { type: __alloT('stem.wave.scr_dlp', 'Projector (DLP)'), refresh: __alloT('stem.wave.scr_varies', 'varies'), notes: __alloT('stem.wave.scr_dlp_notes', 'Micromirror array. Color via spinning wheel or 3 chips.') },
+        { type: __alloT('stem.wave.scr_lcdproj', 'Projector (LCD)'), refresh: __alloT('stem.wave.scr_varies', 'varies'), notes: __alloT('stem.wave.scr_lcdproj_notes', '3 LCD panels (RGB). Common in classrooms.') },
+        { type: __alloT('stem.wave.scr_laser', 'Laser projector'), refresh: __alloT('stem.wave.scr_varies', 'varies'), notes: __alloT('stem.wave.scr_laser_notes', 'RGB lasers, no lamp replacement. Wide color gamut.') }
       ];
 
       var SCREEN_RESOLUTIONS = [
-        { name: '480p (SD)', resolution: '640×480 or 720×480', notes: 'Standard definition.' },
-        { name: '720p (HD)', resolution: '1280×720', notes: 'Cable TV, older laptops.' },
-        { name: '1080p (Full HD)', resolution: '1920×1080', notes: 'Most TVs + phones for a decade.' },
-        { name: '2K / QHD', resolution: '2560×1440', notes: 'High-end monitors.' },
-        { name: '4K (UHD)', resolution: '3840×2160', notes: 'Now standard for new TVs.' },
-        { name: '5K', resolution: '5120×2880', notes: 'Apple iMac 5K, pro monitors.' },
-        { name: '8K', resolution: '7680×4320', notes: 'Premium TVs. Limited content.' },
-        { name: 'DCI 4K', resolution: '4096×2160', notes: 'Cinema standard.' },
-        { name: '16K (experimental)', resolution: '15360×8640', notes: 'Not commercially available.' }
+        { name: '480p (SD)', resolution: '640×480 or 720×480', notes: __alloT('stem.wave.res_480_notes', 'Standard definition.') },
+        { name: '720p (HD)', resolution: '1280×720', notes: __alloT('stem.wave.res_720_notes', 'Cable TV, older laptops.') },
+        { name: '1080p (Full HD)', resolution: '1920×1080', notes: __alloT('stem.wave.res_1080_notes', 'Most TVs + phones for a decade.') },
+        { name: '2K / QHD', resolution: '2560×1440', notes: __alloT('stem.wave.res_2k_notes', 'High-end monitors.') },
+        { name: '4K (UHD)', resolution: '3840×2160', notes: __alloT('stem.wave.res_4k_notes', 'Now standard for new TVs.') },
+        { name: '5K', resolution: '5120×2880', notes: __alloT('stem.wave.res_5k_notes', 'Apple iMac 5K, pro monitors.') },
+        { name: '8K', resolution: '7680×4320', notes: __alloT('stem.wave.res_8k_notes', 'Premium TVs. Limited content.') },
+        { name: 'DCI 4K', resolution: '4096×2160', notes: __alloT('stem.wave.res_dci4k_notes', 'Cinema standard.') },
+        { name: '16K (experimental)', resolution: '15360×8640', notes: __alloT('stem.wave.res_16k_notes', 'Not commercially available.') }
       ];
 
       var NOISE_LEVELS = [
-        { source: 'Threshold of hearing', db: '0 dB SPL', notes: 'Quietest sound a young healthy ear can detect.' },
-        { source: 'Whisper at 1 m', db: '~30 dB', notes: 'Library.' },
-        { source: 'Quiet room', db: '~40 dB', notes: 'Empty house at night.' },
-        { source: 'Normal conversation', db: '~60 dB', notes: 'At 1 m.' },
-        { source: 'Vacuum cleaner', db: '~70 dB', notes: 'Most household appliances.' },
-        { source: 'Heavy traffic', db: '~80 dB', notes: 'Long exposure can cause hearing damage.' },
-        { source: 'Lawn mower', db: '~85-90 dB', notes: '85 dB = OSHA action level (hearing conservation required).' },
-        { source: 'Subway train', db: '~95-100 dB', notes: 'Pain threshold for prolonged exposure.' },
-        { source: 'Power tools (chainsaw)', db: '~110 dB', notes: 'Hearing protection essential.' },
-        { source: 'Rock concert / club', db: '~110-120 dB', notes: 'Permanent damage in minutes.' },
-        { source: 'Threshold of pain', db: '~130 dB', notes: 'Physically painful.' },
-        { source: 'Jet engine at 30 m', db: '~140 dB', notes: 'Instant hearing damage.' },
-        { source: 'Gunshot', db: '~150-170 dB', notes: 'Permanent damage possible from single exposure.' },
-        { source: 'Rocket launch at 100 m', db: '~180 dB', notes: 'Causes hearing damage + can damage equipment.' },
-        { source: 'Krakatoa eruption (1883)', db: '~310 dB at source', notes: 'Possibly loudest sound in modern history. Heard 3000 miles away.' }
+        { source: __alloT('stem.wave.nl_threshold', 'Threshold of hearing'), db: '0 dB SPL', notes: __alloT('stem.wave.nl_threshold_notes', 'Quietest sound a young healthy ear can detect.') },
+        { source: __alloT('stem.wave.nl_whisper', 'Whisper at 1 m'), db: '~30 dB', notes: __alloT('stem.wave.nl_whisper_notes', 'Library.') },
+        { source: __alloT('stem.wave.nl_quiet', 'Quiet room'), db: '~40 dB', notes: __alloT('stem.wave.nl_quiet_notes', 'Empty house at night.') },
+        { source: __alloT('stem.wave.nl_conversation', 'Normal conversation'), db: '~60 dB', notes: __alloT('stem.wave.nl_conversation_notes', 'At 1 m.') },
+        { source: __alloT('stem.wave.nl_vacuum', 'Vacuum cleaner'), db: '~70 dB', notes: __alloT('stem.wave.nl_vacuum_notes', 'Most household appliances.') },
+        { source: __alloT('stem.wave.nl_traffic', 'Heavy traffic'), db: '~80 dB', notes: __alloT('stem.wave.nl_traffic_notes', 'Long exposure can cause hearing damage.') },
+        { source: __alloT('stem.wave.nl_mower', 'Lawn mower'), db: '~85-90 dB', notes: __alloT('stem.wave.nl_mower_notes', '85 dB = OSHA action level (hearing conservation required).') },
+        { source: __alloT('stem.wave.nl_subway', 'Subway train'), db: '~95-100 dB', notes: __alloT('stem.wave.nl_subway_notes', 'Pain threshold for prolonged exposure.') },
+        { source: __alloT('stem.wave.nl_powertools', 'Power tools (chainsaw)'), db: '~110 dB', notes: __alloT('stem.wave.nl_powertools_notes', 'Hearing protection essential.') },
+        { source: __alloT('stem.wave.nl_concert', 'Rock concert / club'), db: '~110-120 dB', notes: __alloT('stem.wave.nl_concert_notes', 'Permanent damage in minutes.') },
+        { source: __alloT('stem.wave.nl_pain', 'Threshold of pain'), db: '~130 dB', notes: __alloT('stem.wave.nl_pain_notes', 'Physically painful.') },
+        { source: __alloT('stem.wave.nl_jet', 'Jet engine at 30 m'), db: '~140 dB', notes: __alloT('stem.wave.nl_jet_notes', 'Instant hearing damage.') },
+        { source: __alloT('stem.wave.nl_gunshot', 'Gunshot'), db: '~150-170 dB', notes: __alloT('stem.wave.nl_gunshot_notes', 'Permanent damage possible from single exposure.') },
+        { source: __alloT('stem.wave.nl_rocket', 'Rocket launch at 100 m'), db: '~180 dB', notes: __alloT('stem.wave.nl_rocket_notes', 'Causes hearing damage + can damage equipment.') },
+        { source: __alloT('stem.wave.nl_krakatoa', 'Krakatoa eruption (1883)'), db: '~310 dB at source', notes: __alloT('stem.wave.nl_krakatoa_notes', 'Possibly loudest sound in modern history. Heard 3000 miles away.') }
       ];
 
       function renderStarsSection() {
