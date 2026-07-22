@@ -3122,13 +3122,17 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                                     className: 'w-44 text-xs font-medium text-slate-600 text-start truncate hover:text-indigo-600 transition-colors'
                                 }, routine),
                             h('div', { className: 'flex-1 flex gap-1' },
-                                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-                                    className: 'flex-1 rounded-lg h-10 flex items-center justify-center font-bold text-sm transition-all cursor-pointer hover:opacity-80',
+                                h('button', {
+                                    type: 'button',
+                                    'aria-label': `Increment ${routine} hotspot count, currently ${count}`,
+                                    className: 'flex-1 rounded-lg min-h-11 flex items-center justify-center font-bold text-sm transition-all cursor-pointer hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-700',
                                     style: { background: colors.bg, color: colors.text },
                                     onClick: () => setMatrix(m => ({ ...m, [routine]: (m[routine] || 0) + 1 }))
                                 }, count > 0 ? count : '—')
                             ),
-                            h('button', { "aria-label": "Toggle matrix",
+                            h('button', {
+                                type: 'button',
+                                'aria-label': `Decrease ${routine} hotspot count, currently ${count}`,
                                 onClick: () => setMatrix(m => ({ ...m, [routine]: Math.max(0, (m[routine] || 0) - 1) })),
                                 className: 'text-xs text-slate-600 hover:text-red-500 px-1 transition-colors'
                             }, '−')
@@ -7934,17 +7938,23 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
         const renderImport = () => h('div', { className: 'space-y-4' },
             !importPreview ? (
                 // Drag-drop zone
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                h('div', {
+                    'aria-label': 'Snapshot JSON drop zone',
                     onDragOver: (e) => { e.preventDefault(); setDragActive(true); },
                     onDragLeave: () => setDragActive(false),
                     onDrop: handleDrop,
-                    onClick: () => fileRef.current?.click(),
                     className: `border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all ${dragActive ? 'border-cyan-500 bg-cyan-50' : 'border-slate-200 hover:border-cyan-300 hover:bg-slate-50'}`
                 },
                     h('div', { className: 'text-4xl mb-3' }, '📥'),
                     h('p', { className: 'text-sm font-bold text-slate-700 mb-1' }, tt('behavior_lens.ui.drop_a_snapshot_file_here', 'Drop a Snapshot File Here')),
                     h('p', { className: 'text-xs text-slate-600' }, 'or click to browse (.json)'),
-                    h('input', { ref: fileRef, type: 'file', accept: '.json', onChange: handleFileInput, className: 'hidden' })
+                    h('button', {
+                        type: 'button',
+                        onClick: () => fileRef.current?.click(),
+                        'aria-label': 'Choose a BehaviorLens snapshot JSON file',
+                        className: 'mt-4 min-h-11 px-4 py-2 rounded-lg bg-cyan-700 text-white text-sm font-bold hover:bg-cyan-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-800'
+                    }, 'Choose snapshot file'),
+                    h('input', { ref: fileRef, type: 'file', accept: '.json', onChange: handleFileInput, 'aria-label': 'BehaviorLens snapshot JSON file', className: 'hidden' })
                 )
             ) : (
                 // Preview & merge
@@ -8876,8 +8886,10 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                         )
                     ),
                     // Complexity Toggle
-                    h('div', { onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-                        role: 'button', tabIndex: 0,
+                    h('button', {
+                        type: 'button',
+                        'aria-pressed': isComplex ? 'true' : 'false',
+                        'aria-label': isComplex ? 'Use standard scenario complexity' : 'Use complex scenario complexity',
                         onClick: () => setIsComplex(prev => !prev),
                         className: `flex items-center gap-3 p-2.5 rounded-lg border-2 cursor-pointer transition-all ${isComplex ? 'bg-purple-50 border-purple-400' : 'bg-white border-slate-200 hover:border-slate-300'}`
                     },
@@ -12615,10 +12627,12 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
             activeTool === 'grounding' && h('div', { className: 'bg-teal-50 rounded-2xl border-2 border-teal-200 p-6' },
                 h('div', { className: 'space-y-3' },
                     groundingSteps.map((step, i) =>
-                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                        h('button', {
+                            type: 'button',
                             key: i,
+                            'aria-current': groundingStep === i ? 'step' : undefined,
                             onClick: () => setGroundingStep(i),
-                            className: `p-4 rounded-xl border-2 transition-all cursor-pointer ${groundingStep === i ? 'bg-teal-100 border-teal-400 shadow-md scale-[1.02]' : i < groundingStep ? 'bg-teal-50 border-teal-200 opacity-60' : 'bg-white border-teal-100'}`
+                            className: `w-full text-start p-4 rounded-xl border-2 transition-all cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-800 ${groundingStep === i ? 'bg-teal-100 border-teal-400 shadow-md scale-[1.02]' : i < groundingStep ? 'bg-teal-50 border-teal-200 opacity-60' : 'bg-white border-teal-100'}`
                         },
                             h('div', { className: 'flex items-center gap-3' },
                                 h('div', { className: `w-10 h-10 rounded-full flex items-center justify-center font-black text-lg ${groundingStep === i ? 'bg-teal-700 text-white' : 'bg-teal-100 text-teal-600'}` }, step.count),
@@ -26818,18 +26832,27 @@ Analyze this data and return ONLY valid JSON:
                     ),
                     h('div', { className: 'flex flex-wrap gap-1.5' },
                         studentRoster.filter(r => r.name !== selectedStudent).slice(0, 6).map(r =>
-                            h('button', { "aria-label": "Switch To Student",
+                            h('div', {
                                 key: r.name,
-                                onClick: () => switchToStudent(r.name),
-                                className: 'group flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all border ' +
-                                    'bg-gradient-to-r from-violet-50 to-indigo-50 border-violet-600 text-violet-700 hover:border-violet-400 hover:shadow-sm hover:shadow-violet-100'
+                                role: 'group',
+                                'aria-label': `Student ${r.name}`,
+                                className: 'group flex items-center gap-1 px-1.5 py-1 rounded-lg border bg-gradient-to-r from-violet-50 to-indigo-50 border-violet-600 text-violet-700 hover:border-violet-400 hover:shadow-sm hover:shadow-violet-100'
                             },
-                                h('span', { className: 'w-4 h-4 rounded-full bg-violet-700 text-white flex items-center justify-center text-[11px] font-black shrink-0' }, (r.name || '?')[0].toUpperCase()),
-                                h('span', { className: 'truncate max-w-[80px]' }, r.name),
-                                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-                                    onClick: (e) => { e.stopPropagation(); setStudentRoster(prev => prev.filter(x => x.name !== r.name)); },
-                                    'aria-label': 'Close', className: 'ms-0.5 text-violet-700 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity text-[11px]'
-                                }, '✕')
+                                h('button', {
+                                    type: 'button',
+                                    'aria-label': `Switch to student ${r.name}`,
+                                    onClick: () => switchToStudent(r.name),
+                                    className: 'flex items-center gap-1 flex-1 min-w-0 px-1 py-0.5 rounded text-[11px] font-bold text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-800'
+                                },
+                                    h('span', { 'aria-hidden': 'true', className: 'w-4 h-4 rounded-full bg-violet-700 text-white flex items-center justify-center text-[11px] font-black shrink-0' }, (r.name || '?')[0].toUpperCase()),
+                                    h('span', { className: 'truncate max-w-[80px]' }, r.name)
+                                ),
+                                h('button', {
+                                    type: 'button',
+                                    onClick: () => setStudentRoster(prev => prev.filter(x => x.name !== r.name)),
+                                    'aria-label': `Remove student ${r.name} from quick switch`,
+                                    className: 'w-6 h-6 min-w-6 min-h-6 rounded inline-flex items-center justify-center text-violet-700 hover:text-red-700 opacity-70 group-hover:opacity-100 focus:opacity-100 transition-opacity text-[11px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700'
+                                }, h('span', { 'aria-hidden': 'true' }, '✕'))
                             )
                         )
                     )
