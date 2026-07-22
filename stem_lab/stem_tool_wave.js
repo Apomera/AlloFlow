@@ -4758,8 +4758,8 @@ const d = labToolData.wave;
 
       function renderColors2Section() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎨 Color models'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Different ways to describe color numerically. Each is suited to a specific medium or application.'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎨 ' + __alloT('stem.wave.tab_colormodels', 'Color models')),
+          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_colors2_intro', 'Different ways to describe color numerically. Each is suited to a specific medium or application.')),
           React.createElement('div', { className: 'space-y-2' },
             COLOR_MODELS.map(function(c, i) {
               return React.createElement('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4776,9 +4776,9 @@ const d = labToolData.wave;
 
       function renderLasersSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⫸ Lasers'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⫸ ' + __alloT('stem.wave.tab_lasers', 'Lasers')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Common laser types'),
+            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_common_laser_types', 'Common laser types')),
             React.createElement('div', { className: 'space-y-1' },
               LASER_TYPES.map(function(L, i) {
                 return React.createElement('div', { key: 'L'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
@@ -4791,7 +4791,7 @@ const d = labToolData.wave;
               })
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Laser physics essentials'),
+          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_laser_physics', 'Laser physics essentials')),
           React.createElement('div', { className: 'space-y-1' },
             LASER_FACTS.map(function(f, i) {
               return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
@@ -4805,7 +4805,7 @@ const d = labToolData.wave;
 
       function renderFibersSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '〰 Fiber optics'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '〰 ' + __alloT('stem.wave.tab_fiberoptics', 'Fiber optics')),
           React.createElement('div', { className: 'space-y-1' },
             FIBER_OPTICS.map(function(f, i) {
               return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
@@ -4819,12 +4819,12 @@ const d = labToolData.wave;
 
       function renderProtocolsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📡 Wireless communication protocols'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📡 ' + __alloT('stem.wave.sec_protocols_title', 'Wireless communication protocols')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
-                  ['Standard', 'Frequency band', 'Notes'].map(function(hh, i) {
+                  [__alloT('stem.wave.col_standard', 'Standard'), __alloT('stem.wave.col_freq_band', 'Frequency band'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
                     return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
@@ -4845,7 +4845,7 @@ const d = labToolData.wave;
 
       function renderMusicSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎵 Music & acoustics'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎵 ' + __alloT('stem.wave.sec_music_title', 'Music & acoustics')),
           React.createElement('div', { className: 'space-y-1' },
             MUSIC_ACOUSTICS.map(function(m, i) {
               return React.createElement('div', { key: 'm'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
@@ -4859,7 +4859,7 @@ const d = labToolData.wave;
 
       function renderHearingSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '👂 The ear & hearing'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '👂 ' + __alloT('stem.wave.sec_hearing_title', 'The ear & hearing')),
           React.createElement('div', { className: 'space-y-2' },
             EAR_PARTS.map(function(p, i) {
               return React.createElement('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4874,7 +4874,7 @@ const d = labToolData.wave;
 
       function renderMedicalSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏥 Medical imaging (wave-based)'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏥 ' + __alloT('stem.wave.sec_medical_title', 'Medical imaging (wave-based)')),
           React.createElement('div', { className: 'space-y-2' },
             MEDICAL_IMAGING.map(function(m, i) {
               return React.createElement('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4882,7 +4882,7 @@ const d = labToolData.wave;
                   React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, m.method),
                   React.createElement('span', { className: 'text-[10px] text-cyan-700 font-mono ml-auto px-2 py-0.5 rounded bg-cyan-100' }, m.radiation)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' }, React.createElement('strong', null, 'Use: '), m.use),
+                React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' }, React.createElement('strong', null, __alloT('stem.wave.label_use_colon', 'Use: ')), m.use),
                 React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, m.notes)
               );
             })
@@ -4892,7 +4892,7 @@ const d = labToolData.wave;
 
       function renderSatellitesSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🛰 GPS & satellite communications'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🛰 ' + __alloT('stem.wave.sec_satellites_title', 'GPS & satellite communications')),
           React.createElement('div', { className: 'space-y-1' },
             SATELLITE_FACTS.map(function(s, i) {
               return React.createElement('div', { key: 's'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
@@ -4906,7 +4906,7 @@ const d = labToolData.wave;
 
       function renderGravitationalSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⌇ Gravitational waves'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⌇ ' + __alloT('stem.wave.tab_gravwaves', 'Gravitational waves')),
           React.createElement('div', { className: 'space-y-1' },
             GW_FACTS.map(function(g, i) {
               return React.createElement('div', { key: 'g'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
@@ -4920,12 +4920,12 @@ const d = labToolData.wave;
 
       function renderUnitsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '∑ Wave units & symbols'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '∑ ' + __alloT('stem.wave.sec_units_title', 'Wave units & symbols')),
           React.createElement('div', { className: 'overflow-x-auto' },
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
-                  ['Quantity', 'Symbol', 'Unit', 'Notes'].map(function(hh, i) {
+                  [__alloT('stem.wave.col_quantity', 'Quantity'), __alloT('stem.wave.col_symbol', 'Symbol'), __alloT('stem.wave.col_unit', 'Unit'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
                     return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
@@ -4947,7 +4947,7 @@ const d = labToolData.wave;
 
       function renderCareersSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💼 Careers using wave science'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '💼 ' + __alloT('stem.wave.sec_careers_title', 'Careers using wave science')),
           React.createElement('div', { className: 'space-y-2' },
             WAVE_CAREERS.map(function(c, i) {
               return React.createElement('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },

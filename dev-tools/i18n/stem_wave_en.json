@@ -1689,5 +1689,21 @@
   "wc_telecom": "Telecom engineer",
   "wc_telecom_use": "Cellular networks, fiber backbones, satellite links.",
   "wc_radar": "Radar technician",
-  "wc_radar_use": "Maintain + operate weather, air-traffic, military radar."
+  "wc_radar_use": "Maintain + operate weather, air-traffic, military radar.",
+  "sec_colors2_intro": "Different ways to describe color numerically. Each is suited to a specific medium or application.",
+  "sec_common_laser_types": "Common laser types",
+  "sec_laser_physics": "Laser physics essentials",
+  "sec_protocols_title": "Wireless communication protocols",
+  "col_standard": "Standard",
+  "col_freq_band": "Frequency band",
+  "sec_music_title": "Music & acoustics",
+  "sec_hearing_title": "The ear & hearing",
+  "sec_medical_title": "Medical imaging (wave-based)",
+  "label_use_colon": "Use: ",
+  "sec_satellites_title": "GPS & satellite communications",
+  "sec_units_title": "Wave units & symbols",
+  "col_quantity": "Quantity",
+  "col_symbol": "Symbol",
+  "col_unit": "Unit",
+  "sec_careers_title": "Careers using wave science"
 }
