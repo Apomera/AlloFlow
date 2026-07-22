@@ -512,8 +512,16 @@ function auditMarkup(toolId, html) {
         height: attr(el, 'height') || undefined
       }));
     }
-    if (!attr(el, 'tabindex') && attr(el, 'aria-hidden') !== 'true') {
-      issues.push(makeIssue(toolId, 'warning', 'canvas-focus', 'Canvas is not focusable in initial markup.', {
+    const descriptionIds = attr(el, 'aria-describedby').trim().split(/\s+/).filter(Boolean);
+    const hasDescription = descriptionIds.some(function (id) {
+      const target = doc.getElementById(id);
+      return target && meaningfulName(target.textContent);
+    });
+    const staticImageCanvas = role === 'img' &&
+      attr(el, 'data-a11y-static') === 'true' &&
+      meaningfulName(name) && hasDescription;
+    if (!attr(el, 'tabindex') && attr(el, 'aria-hidden') !== 'true' && !staticImageCanvas) {
+      issues.push(makeIssue(toolId, 'warning', 'canvas-focus', 'Canvas may be interactive but is not focusable in initial markup.', {
         index: idx,
         selector: cssPath(el)
       }));

@@ -44,7 +44,7 @@ describe('Skate Lab UX refinement', () => {
     expect(html).toContain('id="sk-predict-input"');
   });
 
-  it('uses an arrow-key-ready tab pattern and removes the inert canvas tab stop', () => {
+  it('uses an arrow-key-ready tab pattern and identifies the canvas as static output', () => {
     const html = renderTool('skatelab', state());
 
     expect(html).toContain('role="tablist"');
@@ -53,6 +53,9 @@ describe('Skate Lab UX refinement', () => {
     expect(html).toContain('aria-selected="true"');
     expect(html).toContain('role="tabpanel"');
     expect(html).toContain('aria-labelledby="sk-mode-tab-halfpipe"');
+    expect(html).toMatch(/<canvas[^>]*role="img"/);
+    expect(html).toMatch(/<canvas[^>]*data-a11y-static="true"/);
+    expect(html).toMatch(/<canvas[^>]*aria-describedby="sk-canvas-summary"/);
     expect(html).not.toMatch(/<canvas[^>]*tabindex=/);
   });
 
@@ -205,6 +208,15 @@ describe('Skate Lab UX refinement', () => {
     expect(source).toContain('cancelReducedHalfpipe');
     expect(source).toContain('cancelReducedGap');
   });
+  it('keeps static-canvas audit exemptions narrow and description-dependent', () => {
+    for (const auditPath of ['dev-tools/check_stem_a11y.cjs', 'dev-tools/check_stem_visual_qa.cjs']) {
+      const auditSource = readFileSync(auditPath, 'utf8');
+      expect(auditSource).toContain("attr(el, 'data-a11y-static') === 'true'");
+      expect(auditSource).toContain('meaningfulName(name) && hasDescription');
+      expect(auditSource).toContain('!staticImageCanvas');
+    }
+  });
+
   it('describes the current canvas scene and latest outcome in text', () => {
     const halfpipe = renderTool('skatelab', state({
       lastResult: {

@@ -3811,6 +3811,7 @@ window.StemLab = window.StemLab || {
             ref: canvasRef,
             width: 640, height: 320,
             role: 'img',
+            'data-a11y-static': 'true',
             'aria-describedby': 'sk-canvas-summary',
             // WCAG 1.1.1 — aria-label rolls up the canvas's current
             // environmental state so screen-reader users know what the
