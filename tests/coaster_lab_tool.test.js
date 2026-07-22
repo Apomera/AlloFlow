@@ -363,14 +363,16 @@ describe('coaster lab — Ride & Solve math is GROUNDED in the checkpoint elemen
     const rideState = {
       active: true, idx: 0, current: { choices: [['a', 'A']], correct: 'a', explain: 'Correct.' },
       qStart: 0, timerLen: 30, times: [], score: 0, streak: 0, correct: 0, bestStreak: 0,
-      resumeId: null, burstId: null,
+      results: [], resumeId: null, burstId: null,
     };
     const choices = document.createElement('div');
-    choices.innerHTML = '<button>A</button>';
+    choices.innerHTML = '<button data-v="a">A</button>';
     const rqState = {
       choices, num: document.createElement('input'), go: document.createElement('button'),
-      timer: document.createElement('span'), feed: document.createElement('p'), score: document.createElement('span'),
-      viz: null, box: { hidden: false },
+      numRow: document.createElement('div'), timer: document.createElement('span'),
+      feed: document.createElement('p'), score: document.createElement('span'),
+      streak: document.createElement('span'), delta: document.createElement('span'),
+      viewport: document.createElement('div'), viz: null, box: document.createElement('div'),
     };
     const submit = new Function(
       'ride', 'rq', 'performance', 'clearInterval', 'clearTimeout', 'setTimeout',
@@ -384,6 +386,10 @@ describe('coaster lab — Ride & Solve math is GROUNDED in the checkpoint elemen
 
     submit('a', false);
     expect(scheduled.map(x => x.delay)).toEqual([1300]);
+    expect(rqState.box.classList.contains('is-correct')).toBe(true);
+    expect(choices.querySelector('button').classList.contains('correct')).toBe(true);
+    expect(rqState.timer.classList.contains('done')).toBe(true);
+    expect(rideState.results).toEqual([true]);
     rideState.active = false;
     scheduled[0].fn();
     expect(rideState.idx).toBe(0);
@@ -442,6 +448,43 @@ describe('coaster lab — Ride & Solve math is GROUNDED in the checkpoint elemen
   });
 });
 
+describe('coaster lab — build-your-own discovery and visual feedback', () => {
+  it.each(TOOL_PATHS)('%s clearly presents the loaded coaster as an editable design', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    expect(src).toContain('Your coaster · fully editable');
+    expect(src).toContain('Shape the track yourself');
+    expect(src).toContain('The coaster in the 3-D view is your design—not a fixed demo.');
+    expect(src).toContain('class=\\"primary clab-edit-track\\"');
+    expect(src).toContain('Choose a glowing track node');
+    expect(src).toContain('Optional starting layouts');
+    expect(src).toContain('Templates only change your starting shape. Every node stays editable.');
+    expect(src).toContain('id=\\"clab-buildCoach\\"');
+  });
+
+  it.each(TOOL_PATHS)('%s offers a one-click path into the existing node editor', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    expect(src).toContain('function enterTrackEditor(){');
+    expect(src).toContain("for(const b of rootEl.querySelectorAll('.clab-edit-track')) b.addEventListener('click', enterTrackEditor);");
+    expect(src).toContain('if(design.points[i].y > design.points[idx].y) idx = i;');
+    expect(src).toContain('selectPoint(idx);');
+    expect(src).toContain("slHeight.focus({ preventScroll: true })");
+    expect(src).toContain("if(buildCoach) buildCoach.hidden = true;");
+  });
+
+  it.each(TOOL_PATHS)('%s has cohesive correct/wrong, timer, score, diagram, and summary visuals', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      '#clab-rideQ.is-correct', '#clab-rideQ.is-wrong', '.choice button.correct', '.choice button.wrong',
+      '#clab-rqTimer.urgent', '#clab-rqTimer.critical', '.rq-delta.on', '.rq-streak',
+      'ride-question-open', 'clabCardIn', 'clabScoreGain', 'ride-accuracy', 'ride-checkpoints',
+    ]) expect(src).toContain(marker);
+    expect(src).toContain('data-key="${String.fromCharCode(65 + i)}"');
+    expect(src).toContain("ride.results.push(ok)");
+    expect(src).toContain("rq.box.classList.add(ok ? 'is-correct' : 'is-wrong')");
+    expect(src).toContain("p.className = 'clab-spark ' +");
+    expect(src).toContain('transform:scaleX(.06) scale(.72)');
+  });
+});
 describe('coaster lab — AI "any topic" Ride & Solve questions', () => {
   // The AI response parser is the risky part (models return messy text), so it is
   // pure and exercised for real. The buffering/fallback wiring is pinned.
