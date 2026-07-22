@@ -67,6 +67,8 @@ These sections were independently committed:
 | Race-proof suite gate runner | `3b6469390` |
 | Body Awareness | `528e84ce6` |
 | Achievement Wall | `deb110ec2` |
+| Affirmation Library | `163e8ffdb` |
+| Role Models | `7e3526e75` |
 
 The most recently completed section, Personal Reference Sheet Builder, passed:
 
@@ -164,9 +166,15 @@ Both issues surfaced last session are now FIXED:
 - **Achievement Wall** `deb110ec2`: standard wave; null entries crashed `categoryFor`; bogus categories fall back to Academic; independent title/future-date validation render-tested; no cap (renders all). Gate 2,303/2,303 via `run_learning_lab_gate.cjs 2`.
 - Mirror SHA-256: `D6BD6176819C5A4F20D4D5C6FDB93EA3ABF20C482C7F6FB382F122DD25131C7C`.
 
+## Session notes (2026-07-21 late night, Fable — twelfth continuation)
+
+- **Affirmation Library** `163e8ffdb`: standard wave — non-array `custom`/`favorites` crashed the library; removed `aria-pressed` from the changing-label favorite toggle (established anti-pattern); its legacy plain-string migration (`legacyTextId`) and "not promises or treatment" framing were already excellent. Render test proves legacy string entries render/remove correctly, favorites toggle with live count, and built-ins are undeletable.
+- **Role Models** `7e3526e75`: standard wave (guards, pendingFocusId, textValue fallbacks incl. icon, non-notification wording, 11→12px, stat guard). Gate 2,314/2,314.
+- Mirror SHA-256: `A797CEC92D62D9CFFD68775778A12C3BBCDA85C7F62E97537FA6AC7F66CEFD12`.
+
 ## Next section
 
-Remaining unaudited (no-render-test list): **Affirmations, Role Models, Self Assessment, Learning Contract, Emotion Regulator** — plus the remaining timer-focus conversions as their sections come up. One independently tested and committed section at a time. Use the gate runner (`node dev-tools/run_learning_lab_gate.cjs 2`) for the full-suite check. Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
+Remaining unaudited (no-render-test list): **Self Assessment, Learning Contract, Emotion Regulator** — the final three of the Personal Toolkit tail — plus the remaining timer-focus conversions as their sections come up. One independently tested and committed section at a time. Use the gate runner (`node dev-tools/run_learning_lab_gate.cjs 2`) for the full-suite check. Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
 
 ## Completed section reference: Optional Support Request Notes
 
