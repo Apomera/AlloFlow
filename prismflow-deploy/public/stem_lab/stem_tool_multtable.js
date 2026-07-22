@@ -1003,7 +1003,7 @@ window.StemLab = window.StemLab || {
                 ].map(function(metric) {
                   return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
                     h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
-                    h('div', { className: 'mt-1 text-[9px] font-bold uppercase tracking-wider text-pink-200' }, metric.label)
+                    h('div', { className: 'mt-1 text-[10px] font-bold uppercase tracking-wider text-pink-200' }, metric.label)
                   );
                 })
               )
@@ -1251,7 +1251,7 @@ window.StemLab = window.StemLab || {
                 ),
                 h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
                   h('div', { style: { fontSize: 20, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),
-                  h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--allo-stem-text-soft, #64748b)' } }, _mt.score + ' / ' + _mt.total)
+                  h('div', { style: { fontSize: 10, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--allo-stem-text-soft, #64748b)' } }, _mt.score + ' / ' + _mt.total)
                 )
               ),
               h('div', { className: 'flex-1', style: { minWidth: 200 } },
