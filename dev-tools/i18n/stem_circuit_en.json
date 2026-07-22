@@ -40,5 +40,11 @@
   "interactive_badge": "INTERACTIVE",
   "short_circuit_banner": "SHORT CIRCUIT!",
   "ai_tutor": "AI Tutor",
-  "field_signal_light_speed": "field signal ≈ light speed"
+  "field_signal_light_speed": "field signal ≈ light speed",
+  "switch_on": "ON",
+  "switch_off": "OFF",
+  "meter_reading_short": "short",
+  "short_circuit_label": "SHORT CIRCUIT",
+  "short_circuit_detail": "near-zero resistance • current surge",
+  "add_components_below": "Add components below"
 }

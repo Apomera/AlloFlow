@@ -1126,7 +1126,7 @@ window.StemLab = window.StemLab || {
                               h('circle', { cx: cx + 6, cy: 75, r: 3, fill: '#94a3b8' }),
                               // Animated rotating switch arm
                               h('line', { x1: cx - 6, y1: 75, x2: cx + 8, y2: 75, stroke: comp.closed ? '#10b981' : '#ef4444', strokeWidth: 2.5, style: { transform: comp.closed ? 'none' : 'rotate(-35deg)', transformOrigin: (cx - 6) + 'px 75px', transition: 'transform 0.25s ease' } }),
-                              h('text', { x: cx, y: 66, textAnchor: 'middle', style: { fontSize: '7px', fontWeight: '900', fontFamily: 'system-ui' }, fill: comp.closed ? '#10b981' : '#ef4444' }, comp.closed ? 'ON' : 'OFF')
+                              h('text', { x: cx, y: 66, textAnchor: 'middle', style: { fontSize: '7px', fontWeight: '900', fontFamily: 'system-ui' }, fill: comp.closed ? '#10b981' : '#ef4444' }, comp.closed ? __alloT('stem.circuit.switch_on', 'ON') : __alloT('stem.circuit.switch_off', 'OFF'))
                             )
 
                           : comp.type === 'led'
@@ -1242,7 +1242,7 @@ window.StemLab = window.StemLab || {
                               h('circle', { cx: 208, cy: cy, r: 2.5, fill: '#94a3b8' }),
                               h('circle', { cx: 232, cy: cy, r: 2.5, fill: '#94a3b8' }),
                               h('line', { x1: 208, y1: cy, x2: 232, y2: cy, stroke: comp.closed ? '#10b981' : '#ef4444', strokeWidth: 2, style: { transform: comp.closed ? 'none' : 'rotate(-35deg)', transformOrigin: '208px ' + cy + 'px', transition: 'transform 0.25s ease' } }),
-                              h('text', { x: 220, y: cy - 10, textAnchor: 'middle', style: { fontSize: '7px', fontWeight: '900' }, fill: comp.closed ? '#10b981' : '#ef4444' }, comp.closed ? 'ON' : 'OFF')
+                              h('text', { x: 220, y: cy - 10, textAnchor: 'middle', style: { fontSize: '7px', fontWeight: '900' }, fill: comp.closed ? '#10b981' : '#ef4444' }, comp.closed ? __alloT('stem.circuit.switch_on', 'ON') : __alloT('stem.circuit.switch_off', 'OFF'))
                             )
 
                           : comp.type === 'led'
@@ -1281,9 +1281,9 @@ window.StemLab = window.StemLab || {
                         comp.type !== 'switch' && comp.type !== 'ammeter' && comp.type !== 'voltmeter'
                           && h('text', { x: 220, y: cy - 10, textAnchor: 'middle', style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#cbd5e1' }, comp.type === 'led' ? '~40\u03A9' : (comp.type === 'capacitor' ? comp.value + '\u00B5F' : comp.value + '\u03A9')),
 
-                        comp.type === 'ammeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#22d3ee' }, isIdealParallelBranch2 ? 'short' : compI2.toFixed(3) + 'A'),
+                        comp.type === 'ammeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#22d3ee' }, isIdealParallelBranch2 ? __alloT('stem.circuit.meter_reading_short', 'short') : compI2.toFixed(3) + 'A'),
                         comp.type === 'voltmeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#fbbf24' }, voltage.toFixed(1) + 'V'),
-                        comp.type !== 'ammeter' && comp.type !== 'voltmeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontFamily: 'monospace' }, fill: '#38bdf8' }, isIdealParallelBranch2 ? 'short' : compI2.toFixed(2) + 'A')
+                        comp.type !== 'ammeter' && comp.type !== 'voltmeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontFamily: 'monospace' }, fill: '#38bdf8' }, isIdealParallelBranch2 ? __alloT('stem.circuit.meter_reading_short', 'short') : compI2.toFixed(2) + 'A')
                       );
                     }),
 
@@ -1294,8 +1294,8 @@ window.StemLab = window.StemLab || {
                   h('path', { d: 'M91 48 L85 55 L92 61 L84 69', fill: 'none', stroke: '#fda4af', strokeWidth: 2, strokeLinecap: 'round' }),
                   h('path', { d: 'M48 83 L42 89 L49 95', fill: 'none', stroke: '#fda4af', strokeWidth: 2, strokeLinecap: 'round' }),
                   h('rect', { x: 105, y: 50, width: 130, height: 34, rx: 8, fill: '#450a0a', stroke: '#fb7185', strokeWidth: 1.2, opacity: 0.96 }),
-                  h('text', { x: 170, y: 64, textAnchor: 'middle', fill: '#fecaca', style: { fontSize: '9px', fontWeight: '900', fontFamily: 'system-ui' } }, 'SHORT CIRCUIT'),
-                  h('text', { x: 170, y: 76, textAnchor: 'middle', fill: '#fda4af', style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' } }, 'near-zero resistance • current surge')
+                  h('text', { x: 170, y: 64, textAnchor: 'middle', fill: '#fecaca', style: { fontSize: '9px', fontWeight: '900', fontFamily: 'system-ui' } }, __alloT('stem.circuit.short_circuit_label', 'SHORT CIRCUIT')),
+                  h('text', { x: 170, y: 76, textAnchor: 'middle', fill: '#fda4af', style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' } }, __alloT('stem.circuit.short_circuit_detail', 'near-zero resistance • current surge'))
                 ),
                 // Electron dots
                 electronDots.map(function(dot, i) {
@@ -1303,7 +1303,7 @@ window.StemLab = window.StemLab || {
                 }),
 
                 // Empty state
-                components.length === 0 && h('text', { x: W / 2, y: H / 2, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '12px', fontFamily: 'monospace', fontWeight: 'bold' } }, 'Add components below')
+                components.length === 0 && h('text', { x: W / 2, y: H / 2, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '12px', fontFamily: 'monospace', fontWeight: 'bold' } }, __alloT('stem.circuit.add_components_below', 'Add components below'))
               ),
 
               // Transparent HTML5 canvas overlay for short circuit particles
