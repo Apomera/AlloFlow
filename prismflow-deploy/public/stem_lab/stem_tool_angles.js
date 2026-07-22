@@ -688,7 +688,7 @@ window.StemLab = window.StemLab || {
                 ].map(function(metric) {
                   return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
                     h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
-                    h('div', { className: 'mt-1 text-[9px] font-bold uppercase tracking-wider text-violet-200' }, metric.label)
+                    h('div', { className: 'mt-1 text-[10px] font-bold uppercase tracking-wider text-violet-200' }, metric.label)
                   );
                 })
               )
@@ -1806,12 +1806,12 @@ window.StemLab = window.StemLab || {
             h('circle', { cx: topCx, cy: topCy, r: 3, fill: '#dc2626' }),
             // Opposite-side annotation (red horizontal at top, from vertical guide to top of tower)
             h('line', { x1: cx, y1: topCy, x2: topCx, y2: topCy, stroke: '#dc2626', strokeWidth: 2 }),
-            h('text', { x: (cx + topCx)/2, y: topCy - 5, textAnchor: 'middle', fontSize: 9, fill: '#dc2626', fontWeight: 'bold' }, 'opp ≈ ' + opp.toFixed(2) + ' m'),
+            h('text', { x: (cx + topCx)/2, y: topCy - 5, textAnchor: 'middle', fontSize: 10, fill: '#dc2626', fontWeight: 'bold' }, 'opp ≈ ' + opp.toFixed(2) + ' m'),
             // Angle arc at base
             h('path', { d: 'M ' + cx + ',' + (baseY - 26) + ' A 26,26 0 0,1 ' + (cx + 26 * Math.sin(thetaRad)).toFixed(1) + ',' + (baseY - 26 * Math.cos(thetaRad)).toFixed(1), fill: 'none', stroke: '#7c3aed', strokeWidth: 2 }),
             h('text', { x: cx + 14, y: baseY - 30, fontSize: 10, fill: '#7c3aed', fontWeight: 'bold' }, 'θ = ' + theta.toFixed(1) + '°'),
             // Caption
-            h('text', { x: 130, y: 215, textAnchor: 'middle', fontSize: 9, fill: '#475569' }, t('stem.angles.tower_of_pisa_actual_lean_4', 'Tower of Pisa — actual lean ≈ 4°'))
+            h('text', { x: 130, y: 215, textAnchor: 'middle', fontSize: 10, fill: '#475569' }, t('stem.angles.tower_of_pisa_actual_lean_4', 'Tower of Pisa — actual lean ≈ 4°'))
           );
         }
         // ── SVG: extracted triangle ──
