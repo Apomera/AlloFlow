@@ -5189,6 +5189,7 @@
       editing ? h('textarea', {
         value: draft,
         onChange: function(e) { setDraft(e.target.value); },
+        'aria-label': 'Edit journal entry',
         rows: 4,
         placeholder: 'Tip: wrap a {word} in curly braces to make it a fill-in-blank for self-quiz.',
         style: {
@@ -29619,6 +29620,7 @@
               h('textarea', {
                 value: draft,
                 onChange: function(e) { setDraft(e.target.value); },
+                'aria-label': 'Sentence using all three emoji prompts',
                 disabled: busy,
                 placeholder: 'Write one sentence using all three…',
                 rows: 4,
