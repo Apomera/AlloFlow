@@ -812,41 +812,41 @@ window.StemLab = window.StemLab || {
 
           // ── Grade-band intro text ──
           var introText = gradeText(
-            'Build a circuit! Connect parts to make electricity flow and light up bulbs.',
-            'Build series and parallel circuits. Add resistors, bulbs, and switches. Watch how changing voltage affects current!',
-            'Explore Ohm\'s Law (V=IR) by building circuits. Compare series vs parallel. Measure with ammeter and voltmeter.',
-            'Analyze DC circuits using Ohm\'s Law, Kirchhoff\'s Laws, and power dissipation. Series, parallel, and mixed configurations.'
+            __alloT('stem.circuit.intro_g_low', 'Build a circuit! Connect parts to make electricity flow and light up bulbs.'),
+            __alloT('stem.circuit.intro_g_mid', 'Build series and parallel circuits. Add resistors, bulbs, and switches. Watch how changing voltage affects current!'),
+            __alloT('stem.circuit.intro_g_high', 'Explore Ohm\'s Law (V=IR) by building circuits. Compare series vs parallel. Measure with ammeter and voltmeter.'),
+            __alloT('stem.circuit.intro_g_adv', 'Analyze DC circuits using Ohm\'s Law, Kirchhoff\'s Laws, and power dissipation. Series, parallel, and mixed configurations.')
           )(band);
           var earnedBadgeCount = Object.keys(badges).length;
           var challengeProgress = Object.keys(challengesDoneSet || {}).length;
           var circuitState = isShort ? {
-            label: 'Short risk',
+            label: __alloT('stem.circuit.state_short_risk', 'Short risk'),
             tone: '#f87171',
             soft: 'rgba(127,29,29,0.38)',
-            note: 'Add resistance before current spikes.'
+            note: __alloT('stem.circuit.state_short_risk_note', 'Add resistance before current spikes.')
           } : (components.length === 0 || noLoadPath || hasOpenSwitch) ? {
-            label: components.length === 0 ? 'Ready to build' : 'Open path',
+            label: components.length === 0 ? __alloT('stem.circuit.state_ready_to_build', 'Ready to build') : __alloT('stem.circuit.state_open_path', 'Open path'),
             tone: '#fbbf24',
             soft: 'rgba(120,53,15,0.34)',
-            note: components.length === 0 ? 'Start with a load, then close the loop.' : 'Close switches or add a real load.'
+            note: components.length === 0 ? __alloT('stem.circuit.state_ready_note', 'Start with a load, then close the loop.') : __alloT('stem.circuit.state_open_note', 'Close switches or add a real load.')
           } : {
-            label: 'Current flowing',
+            label: __alloT('stem.circuit.state_current_flowing', 'Current flowing'),
             tone: '#22d3ee',
             soft: 'rgba(8,145,178,0.20)',
-            note: 'Use the meters and readouts to test the model.'
+            note: __alloT('stem.circuit.state_current_flowing_note', 'Use the meters and readouts to test the model.')
           };
           var benchStats = [
-            { label: 'Parts', value: String(components.length), hint: mode + ' circuit' },
-            { label: 'Voltage', value: voltage + 'V', hint: 'battery source' },
-            { label: 'Current', value: current.toFixed(3) + 'A', hint: isShort ? 'too high' : 'live flow' },
-            { label: 'Badges', value: earnedBadgeCount + '/' + BADGES.length, hint: challengeProgress + ' challenges' }
+            { label: __alloT('stem.circuit.stat_parts', 'Parts'), value: String(components.length), hint: mode + ' circuit' },
+            { label: __alloT('stem.circuit.stat_voltage', 'Voltage'), value: voltage + 'V', hint: __alloT('stem.circuit.stat_voltage_hint', 'battery source') },
+            { label: __alloT('stem.circuit.stat_current', 'Current'), value: current.toFixed(3) + 'A', hint: isShort ? __alloT('stem.circuit.stat_current_too_high', 'too high') : __alloT('stem.circuit.stat_current_live_flow', 'live flow') },
+            { label: __alloT('stem.circuit.badges', 'Badges'), value: earnedBadgeCount + '/' + BADGES.length, hint: challengeProgress + ' challenges' }
           ];
           var benchRoutes = [
-            { title: 'Load Starter Circuit', icon: '\uD83D\uDD34', note: 'LED + resistor baseline', action: function() { loadPreset(CIRCUIT_PRESETS[0]); }, tone: '#f97316' },
-            { title: 'Open Presets', icon: '\uD83D\uDCCB', note: 'Voltage dividers, meters, short demo', action: function() { upd('showPresets', true); }, tone: '#facc15' },
-            { title: 'Advanced Simulator', icon: '\uD83D\uDD0C', note: 'CircuitJS meters and real-world challenges', action: function() { if (typeof ctx.setToolData === 'function') ctx.setToolData(function(prev) { var cur = Object.assign({}, (prev && prev._circuitShelf) || {}); cur.returnTool = 'circuit'; var next = Object.assign({}, prev); next._circuitShelf = cur; return next; }); if (typeof setStemLabTab === 'function') setStemLabTab('explore'); if (typeof setStemLabTool === 'function') { setStemLabTool('circuitShelf'); if (typeof announceToSR === 'function') announceToSR('Opening Circuit Shelf advanced simulator.'); } else if (typeof addToast === 'function') addToast('Advanced simulator is not available right now.', 'info'); }, tone: '#fb923c' },
-            { title: 'Try a Target', icon: '\uD83C\uDFAF', note: challengeProgress + '/' + CHALLENGES.length + ' solved', action: function() { upd('challenge', CHALLENGES[0]); if (typeof addToast === 'function') addToast('Target ready: ' + CHALLENGES[0].label, 'info'); }, tone: '#34d399' },
-            { title: band === 'g68' || band === 'g912' ? 'Show Laws' : 'Ask Tutor', icon: band === 'g68' || band === 'g912' ? '\u2696' : '\uD83E\uDD16', note: band === 'g68' || band === 'g912' ? 'Kirchhoff support' : 'Get a circuit hint', action: function() { if (band === 'g68' || band === 'g912') upd('showKirchhoff', true); else upd('showAI', true); }, tone: '#a78bfa' }
+            { title: __alloT('stem.circuit.route_load_starter', 'Load Starter Circuit'), icon: '\uD83D\uDD34', note: __alloT('stem.circuit.route_load_starter_note', 'LED + resistor baseline'), action: function() { loadPreset(CIRCUIT_PRESETS[0]); }, tone: '#f97316' },
+            { title: __alloT('stem.circuit.route_open_presets', 'Open Presets'), icon: '\uD83D\uDCCB', note: __alloT('stem.circuit.route_open_presets_note', 'Voltage dividers, meters, short demo'), action: function() { upd('showPresets', true); }, tone: '#facc15' },
+            { title: __alloT('stem.circuit.route_advanced_sim', 'Advanced Simulator'), icon: '\uD83D\uDD0C', note: __alloT('stem.circuit.route_advanced_sim_note', 'CircuitJS meters and real-world challenges'), action: function() { if (typeof ctx.setToolData === 'function') ctx.setToolData(function(prev) { var cur = Object.assign({}, (prev && prev._circuitShelf) || {}); cur.returnTool = 'circuit'; var next = Object.assign({}, prev); next._circuitShelf = cur; return next; }); if (typeof setStemLabTab === 'function') setStemLabTab('explore'); if (typeof setStemLabTool === 'function') { setStemLabTool('circuitShelf'); if (typeof announceToSR === 'function') announceToSR('Opening Circuit Shelf advanced simulator.'); } else if (typeof addToast === 'function') addToast('Advanced simulator is not available right now.', 'info'); }, tone: '#fb923c' },
+            { title: __alloT('stem.circuit.route_try_target', 'Try a Target'), icon: '\uD83C\uDFAF', note: challengeProgress + '/' + CHALLENGES.length + ' solved', action: function() { upd('challenge', CHALLENGES[0]); if (typeof addToast === 'function') addToast('Target ready: ' + CHALLENGES[0].label, 'info'); }, tone: '#34d399' },
+            { title: band === 'g68' || band === 'g912' ? __alloT('stem.circuit.route_show_laws', 'Show Laws') : __alloT('stem.circuit.route_ask_tutor', 'Ask Tutor'), icon: band === 'g68' || band === 'g912' ? '\u2696' : '\uD83E\uDD16', note: band === 'g68' || band === 'g912' ? __alloT('stem.circuit.route_kirchhoff_support', 'Kirchhoff support') : __alloT('stem.circuit.route_circuit_hint', 'Get a circuit hint'), action: function() { if (band === 'g68' || band === 'g912') upd('showKirchhoff', true); else upd('showAI', true); }, tone: '#a78bfa' }
           ];
           var renderCircuitBench = function() {
             return h('section', {
