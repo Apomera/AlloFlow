@@ -940,7 +940,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'mt-3 border-t border-slate-200 pt-3' },
           h('div', { className: 'flex items-center gap-1.5 mb-2' },
             ['easy', 'medium', 'hard', 'all'].map(function(tier) {
-              var labels = { easy: '\uD83D\uDFE2 Easy', medium: '\uD83D\uDFE1 Medium', hard: '\uD83D\uDD34 Hard', all: '\uD83C\uDF1F All' };
+              var labels = { easy: '\uD83D\uDFE2 ' + __alloT('stem.inequality.tier_easy', 'Easy'), medium: '\uD83D\uDFE1 ' + __alloT('stem.inequality.tier_medium', 'Medium'), hard: '\uD83D\uDD34 ' + __alloT('stem.inequality.tier_hard', 'Hard'), all: '\uD83C\uDF1F ' + __alloT('stem.inequality.tier_all', 'All') };
               var isActive = quizTier === tier;
               return h('button', { key: tier,
                 onClick: function() {
@@ -956,13 +956,13 @@ window.StemLab = window.StemLab || {
             })
           ),
           h('div', { className: 'flex items-center gap-2 mb-2' },
-            h('button', { 'aria-label': 'Iq Start Quiz',
+            h('button', { 'aria-label': __alloT('stem.inequality.aria_iq_start_quiz', 'Iq Start Quiz'),
               onClick: iqStartQuiz,
               className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (d.quiz ? 'bg-fuchsia-100 text-fuchsia-700' : 'bg-fuchsia-600 text-white') + ' transition-all',
-              title: 'Quiz (Q)'
-            }, d.quiz ? '\uD83D\uDD04 Next Challenge' : '\uD83E\uDDE0 Challenge Mode'),
-            d.quiz && d.quiz.score > 0 && h('span', { className: 'text-xs font-bold text-emerald-600' }, '\u2B50 ' + d.quiz.score + ' correct'),
-            d.quiz && d.quiz.streak > 1 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + d.quiz.streak + ' streak')
+              title: __alloT('stem.inequality.quiz_q', 'Quiz (Q)')
+            }, d.quiz ? '\uD83D\uDD04 ' + __alloT('stem.inequality.next_challenge', 'Next Challenge') : '\uD83E\uDDE0 ' + __alloT('stem.inequality.challenge_mode', 'Challenge Mode')),
+            d.quiz && d.quiz.score > 0 && h('span', { className: 'text-xs font-bold text-emerald-600' }, '\u2B50 ' + d.quiz.score + __alloT('stem.inequality.correct_suffix', ' correct')),
+            d.quiz && d.quiz.streak > 1 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + d.quiz.streak + __alloT('stem.inequality.streak_suffix', ' streak'))
           ),
           d.quiz && !d.quiz.answered && h('div', { className: 'bg-fuchsia-50 rounded-xl p-3 border border-fuchsia-200' },
             h('p', { className: 'text-sm font-bold text-fuchsia-800 mb-3' }, d.quiz.q),
@@ -1009,12 +1009,12 @@ window.StemLab = window.StemLab || {
           ),
           d.quiz && d.quiz.answered && h('div', { className: 'p-3 rounded-xl ' + (d.quiz.correct ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'), role: 'status' },
             h('p', { className: 'text-sm font-bold ' + (d.quiz.correct ? 'text-emerald-700' : 'text-red-700') },
-              d.quiz.correct ? '\u2705 Correct!' : '\u274C Not quite \u2014 the answer is ' + d.quiz.a.replace(/</g, '\u003c').replace(/>=/g, '\u2265').replace(/<=/g, '\u2264'),
-              d.quiz.streak > 2 && d.quiz.correct && h('span', { className: 'ml-2 text-xs text-amber-600' }, '\uD83D\uDD25 ' + d.quiz.streak + ' in a row!'),
-              !d.quiz.correct && h('button', { 'aria-label': 'Explain',
+              d.quiz.correct ? '\u2705 ' + __alloT('stem.inequality.correct_excl', 'Correct!') : '\u274C ' + __alloT('stem.inequality.not_quite_answer_is', 'Not quite \u2014 the answer is ') + d.quiz.a.replace(/</g, '\u003c').replace(/>=/g, '\u2265').replace(/<=/g, '\u2264'),
+              d.quiz.streak > 2 && d.quiz.correct && h('span', { className: 'ml-2 text-xs text-amber-600' }, '\uD83D\uDD25 ' + d.quiz.streak + __alloT('stem.inequality.in_a_row_suffix', ' in a row!')),
+              !d.quiz.correct && h('button', { 'aria-label': __alloT('stem.inequality.explain', 'Explain'),
                 onClick: askAI,
                 className: 'ml-2 text-xs font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-600 hover:bg-purple-200'
-              }, '\uD83E\uDDE0 Explain')),
+              }, '\uD83E\uDDE0 ' + __alloT('stem.inequality.explain', 'Explain'))),
             !d.quiz.correct && d.quiz.fb && h('p', { className: 'text-xs leading-relaxed text-red-800 mt-1' }, d.quiz.fb))
         ),
 

@@ -58,5 +58,19 @@
   "is_not_in_solution_set": " is NOT in the solution set",
   "enter_a_valid_number": "Enter a valid number",
   "toggle_tips": "Toggle tips (C)",
-  "learning_tips": "Learning Tips"
+  "learning_tips": "Learning Tips",
+  "tier_easy": "Easy",
+  "tier_medium": "Medium",
+  "tier_hard": "Hard",
+  "tier_all": "All",
+  "aria_iq_start_quiz": "Iq Start Quiz",
+  "quiz_q": "Quiz (Q)",
+  "next_challenge": "Next Challenge",
+  "challenge_mode": "Challenge Mode",
+  "correct_suffix": " correct",
+  "streak_suffix": " streak",
+  "correct_excl": "Correct!",
+  "not_quite_answer_is": "Not quite — the answer is ",
+  "in_a_row_suffix": " in a row!",
+  "explain": "Explain"
 }
