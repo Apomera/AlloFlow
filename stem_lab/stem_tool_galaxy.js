@@ -4977,12 +4977,12 @@ if (!window._galaxyHasLoadedOnce) {
                         React.createElement("span", { className: "text-[11px] text-slate-300 flex-shrink-0" },
                           s.id === 'nebula' ? "" :
                           s.id === 'protostar' ? "~100K yr" :
-                          s.id === 'main_sequence' ? (lifecycleMass < HYDROGEN_FUSION_LIMIT ? "cools over time" : lifecycleMass < M_DWARF_LIMIT ? "~Trillions of yr" : lifecycleMass < 2 ? "~10 Gyr" : lifecycleMass < 8 ? "~1 Gyr" : lifecycleMass < 25 ? "~10 Myr" : "~3 Myr") :
+                          s.id === 'main_sequence' ? (lifecycleMass < HYDROGEN_FUSION_LIMIT ? __alloT('stem.galaxy.dur_cools_over_time', 'cools over time') : lifecycleMass < M_DWARF_LIMIT ? "~Trillions of yr" : lifecycleMass < 2 ? "~10 Gyr" : lifecycleMass < 8 ? "~1 Gyr" : lifecycleMass < 25 ? "~10 Myr" : "~3 Myr") :
                           s.id === 'red_giant' ? (lifecycleMass < 2 ? "~1 Gyr" : "~100 Myr") :
                           s.id === 'red_supergiant' || s.id === 'blue_supergiant' ? "~1 Myr" :
                           s.id === 'planetary_nebula' ? "~10,000 yr" :
                           s.id === 'supernova' ? "~Months" :
-                          "Forever"
+                          __alloT('stem.galaxy.dur_forever', 'Forever')
                         )
                       ),
                       
@@ -5002,34 +5002,34 @@ if (!window._galaxyHasLoadedOnce) {
               // Core-collapse outcome panel
               (function () {
                 var collapseState = lifecycleMass < HYDROGEN_FUSION_LIMIT ? {
-                  title: 'No sustained stellar fusion',
-                  badge: 'Substellar',
-                  desc: 'A brown dwarf is below the hydrogen-fusion limit, so it cools and fades instead of becoming a white dwarf, neutron star, or black hole.',
+                  title: __alloT('stem.galaxy.collapse_bd_title', 'No sustained stellar fusion'),
+                  badge: __alloT('stem.galaxy.collapse_bd_badge', 'Substellar'),
+                  desc: __alloT('stem.galaxy.collapse_bd_desc', 'A brown dwarf is below the hydrogen-fusion limit, so it cools and fades instead of becoming a white dwarf, neutron star, or black hole.'),
                   accent: '#a16207',
-                  final: 'Cooling brown dwarf'
+                  final: __alloT('stem.galaxy.collapse_bd_final', 'Cooling brown dwarf')
                 } : lifecycleMass < 8 ? {
-                  title: 'No core-collapse supernova',
-                  badge: 'Gentle ending',
-                  desc: 'This star will shed outer layers and cool as a white dwarf instead of forming a neutron star or black hole.',
+                  title: __alloT('stem.galaxy.collapse_wd_title', 'No core-collapse supernova'),
+                  badge: __alloT('stem.galaxy.collapse_wd_badge', 'Gentle ending'),
+                  desc: __alloT('stem.galaxy.collapse_wd_desc', 'This star will shed outer layers and cool as a white dwarf instead of forming a neutron star or black hole.'),
                   accent: '#818cf8',
-                  final: 'White dwarf'
+                  final: __alloT('stem.galaxy.collapse_wd_final', 'White dwarf')
                 } : lifecycleMass < 25 ? {
-                  title: 'Core collapse makes a neutron star',
+                  title: __alloT('stem.galaxy.collapse_ns_title', 'Core collapse makes a neutron star'),
                   badge: '8-25 M\u2609',
-                  desc: 'The iron core collapses, rebounds as a supernova shock, and leaves an ultra-dense neutron-star remnant.',
+                  desc: __alloT('stem.galaxy.collapse_ns_desc', 'The iron core collapses, rebounds as a supernova shock, and leaves an ultra-dense neutron-star remnant.'),
                   accent: '#38bdf8',
-                  final: 'Neutron star'
+                  final: __alloT('stem.galaxy.collapse_ns_final', 'Neutron star')
                 } : {
-                  title: 'Core collapse can form a black hole',
+                  title: __alloT('stem.galaxy.collapse_bh_title', 'Core collapse can form a black hole'),
                   badge: '25+ M\u2609',
-                  desc: 'After the supernova, the remaining core is massive enough that gravity wins and an event horizon forms.',
+                  desc: __alloT('stem.galaxy.collapse_bh_desc', 'After the supernova, the remaining core is massive enough that gravity wins and an event horizon forms.'),
                   accent: '#c084fc',
-                  final: 'Black hole'
+                  final: __alloT('stem.galaxy.collapse_bh_final', 'Black hole')
                 };
                 var collapseSteps = [
-                  { label: 'Massive star', active: lifecycleMass >= 8, color: '#60a5fa' },
-                  { label: 'Iron core collapse', active: lifecycleMass >= 8, color: '#f59e0b' },
-                  { label: 'Supernova shock', active: lifecycleMass >= 8, color: '#fbbf24' },
+                  { label: __alloT('stem.galaxy.collapse_step_massive', 'Massive star'), active: lifecycleMass >= 8, color: '#60a5fa' },
+                  { label: __alloT('stem.galaxy.collapse_step_iron_core', 'Iron core collapse'), active: lifecycleMass >= 8, color: '#f59e0b' },
+                  { label: __alloT('stem.galaxy.collapse_step_supernova_shock', 'Supernova shock'), active: lifecycleMass >= 8, color: '#fbbf24' },
                   { label: collapseState.final, active: true, color: collapseState.accent }
                 ];
                 return React.createElement("div", { className: "bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 rounded-2xl border border-violet-400/30 p-4 shadow-lg" },
@@ -5076,35 +5076,35 @@ if (!window._galaxyHasLoadedOnce) {
 
                 var STAGE_HR = {
 
-                  protostar: { T: 3800, L: Math.max(0.01, msL * 1.5), note: "sliding down the Hayashi track toward the main sequence" },
+                  protostar: { T: 3800, L: Math.max(0.01, msL * 1.5), note: __alloT('stem.galaxy.stagehr_protostar_note', 'sliding down the Hayashi track toward the main sequence') },
 
-                  main_sequence: { T: msT, L: msL, note: mass < HYDROGEN_FUSION_LIMIT ? "a brown dwarf — below the sustained hydrogen-fusion limit" : "on the main sequence, where it spends ~90% of its life" },
+                  main_sequence: { T: msT, L: msL, note: mass < HYDROGEN_FUSION_LIMIT ? __alloT('stem.galaxy.stagehr_ms_note_bd', 'a brown dwarf — below the sustained hydrogen-fusion limit') : __alloT('stem.galaxy.stagehr_ms_note', 'on the main sequence, where it spends ~90% of its life') },
 
-                  red_giant: { T: 3600, L: Math.max(80, msL * 200), note: "climbing the giant branch — cooler but far more luminous" },
+                  red_giant: { T: 3600, L: Math.max(80, msL * 200), note: __alloT('stem.galaxy.stagehr_red_giant_note', 'climbing the giant branch — cooler but far more luminous') },
 
-                  red_supergiant: { T: 3500, L: 120000, note: "top right — enormous, cool, and doomed" },
+                  red_supergiant: { T: 3500, L: 120000, note: __alloT('stem.galaxy.stagehr_red_supergiant_note', 'top right — enormous, cool, and doomed') },
 
-                  blue_supergiant: { T: 22000, L: 300000, note: "top left — hyper-luminous and shedding mass" },
+                  blue_supergiant: { T: 22000, L: 300000, note: __alloT('stem.galaxy.stagehr_blue_supergiant_note', 'top left — hyper-luminous and shedding mass') },
 
-                  blue_dwarf: { T: 8000, L: 0.02, note: "a theoretical late phase — no red dwarf has died yet" },
+                  blue_dwarf: { T: 8000, L: 0.02, note: __alloT('stem.galaxy.stagehr_blue_dwarf_note', 'a theoretical late phase — no red dwarf has died yet') },
 
-                  planetary_nebula: { T: 42000, L: 3000, note: "the exposed core dashes hot and left before fading" },
+                  planetary_nebula: { T: 42000, L: 3000, note: __alloT('stem.galaxy.stagehr_planetary_nebula_note', 'the exposed core dashes hot and left before fading') },
 
-                  white_dwarf: { T: 12000, L: 0.003, note: "bottom left — white-hot but only Earth-sized" }
+                  white_dwarf: { T: 12000, L: 0.003, note: __alloT('stem.galaxy.stagehr_white_dwarf_note', 'bottom left — white-hot but only Earth-sized') }
 
                 };
 
                 var OFF_CHART = {
 
-                  nebula: "A nebula isn't a star yet — pick a later stage to see your star appear on the map.",
+                  nebula: __alloT('stem.galaxy.offchart_nebula', "A nebula isn't a star yet — pick a later stage to see your star appear on the map."),
 
-                  supernova: "💥 A supernova briefly outshines this entire chart — off the top by a factor of 10,000!",
+                  supernova: "💥 " + __alloT('stem.galaxy.offchart_supernova', 'A supernova briefly outshines this entire chart — off the top by a factor of 10,000!'),
 
-                  neutron_star: "A neutron star no longer fuses anything — it has left the H-R diagram forever.",
+                  neutron_star: __alloT('stem.galaxy.offchart_neutron_star', 'A neutron star no longer fuses anything — it has left the H-R diagram forever.'),
 
-                  black_hole: "A black hole emits no light at all — nothing to plot. The diagram only maps shining stars.",
+                  black_hole: __alloT('stem.galaxy.offchart_black_hole', 'A black hole emits no light at all — nothing to plot. The diagram only maps shining stars.'),
 
-                  black_dwarf: mass < HYDROGEN_FUSION_LIMIT ? "A cooling brown dwarf is faint and substellar — it fades below the main-sequence map." : "A black dwarf is a theoretical cooled white dwarf; the universe is not old enough for true black dwarfs yet."
+                  black_dwarf: mass < HYDROGEN_FUSION_LIMIT ? __alloT('stem.galaxy.offchart_black_dwarf_bd', 'A cooling brown dwarf is faint and substellar — it fades below the main-sequence map.') : __alloT('stem.galaxy.offchart_black_dwarf', 'A black dwarf is a theoretical cooled white dwarf; the universe is not old enough for true black dwarfs yet.')
 
                 };
 
@@ -5140,11 +5140,11 @@ if (!window._galaxyHasLoadedOnce) {
 
                 return React.createElement("div", { className: "bg-gradient-to-br from-slate-900 to-indigo-950 rounded-2xl border border-indigo-400/30 p-5 shadow-lg" },
 
-                  React.createElement("h4", { className: "text-sm font-bold text-white mb-1 flex items-center gap-2" }, React.createElement("span", null, "📈"), "H-R Diagram — the astronomer's map"),
+                  React.createElement("h4", { className: "text-sm font-bold text-white mb-1 flex items-center gap-2" }, React.createElement("span", null, "📈"), __alloT('stem.galaxy.hr_diagram_title', "H-R Diagram — the astronomer's map")),
 
-                  React.createElement("p", { className: "text-[11px] text-slate-400 leading-relaxed mb-2" }, "Every star is one dot: temperature across (hot on the LEFT — astronomers' quirk), luminosity up. Stars aren't scattered randomly. Drag the mass slider and click lifecycle stages — the dashed line traces YOUR star's whole journey."),
+                  React.createElement("p", { className: "text-[11px] text-slate-400 leading-relaxed mb-2" }, __alloT('stem.galaxy.hr_diagram_intro', "Every star is one dot: temperature across (hot on the LEFT — astronomers' quirk), luminosity up. Stars aren't scattered randomly. Drag the mass slider and click lifecycle stages — the dashed line traces YOUR star's whole journey.")),
 
-                  React.createElement("svg", { viewBox: "0 0 " + HW + " " + HH, className: "w-full", role: "img", "aria-label": "Hertzsprung-Russell diagram: surface temperature decreasing left to right, luminosity increasing upward. Shows the main sequence band, giants, supergiants and white dwarf regions, the Sun, and the current star's evolutionary track with its active stage highlighted." },
+                  React.createElement("svg", { viewBox: "0 0 " + HW + " " + HH, className: "w-full", role: "img", "aria-label": __alloT('stem.galaxy.aria_hr_diagram', "Hertzsprung-Russell diagram: surface temperature decreasing left to right, luminosity increasing upward. Shows the main sequence band, giants, supergiants and white dwarf regions, the Sun, and the current star's evolutionary track with its active stage highlighted.") },
 
                     // temperature color strip along the bottom
 
