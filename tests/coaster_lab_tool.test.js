@@ -240,6 +240,35 @@ describe('coaster lab — Ride & Solve math is GROUNDED in the checkpoint elemen
     expect(sawCars).toBe(true);
   });
 
+  it('tailors to THIS checkpoint: a loop asks about the loop, a turn about the turn', () => {
+    const { genElementMath } = loadGen(TOOL_PATHS[0]);
+    const LOOP = { ...FACTS, feat: 'loop', hereR: 6, loopH: 15, tag: 'Checkpoint · inversion' };
+    let sawDiameter = false, sawLoopDrop = false;
+    for (let i = 0; i < 400; i++) {
+      const m = genElementMath('multiplication', 'g68', LOOP);
+      if (/radius/.test(m.text) && m.answer === 12) sawDiameter = true; // 6 m radius × 2 = 12 m across
+      const s = genElementMath('subtraction', 'g68', LOOP);
+      if (/loop tops out/.test(s.text) && s.answer === 9) sawLoopDrop = true; // 24 crest − 15 loop
+    }
+    expect(sawDiameter).toBe(true);
+    expect(sawLoopDrop).toBe(true);
+    // a plain hill checkpoint with no radius never emits the diameter question
+    const noR = { ...FACTS, feat: 'crest', hereR: null };
+    for (let i = 0; i < 200; i++) expect(genElementMath('multiplication', 'g68', noR).text).not.toMatch(/radius/);
+  });
+
+  it('does not repeat the previous question back-to-back (anti-repeat via avoid key)', () => {
+    const { genElementMath } = loadGen(TOOL_PATHS[0]);
+    // subtraction has several candidates, so the avoided key must never come back
+    let repeats = 0;
+    for (let i = 0; i < 1000; i++) {
+      if (genElementMath('subtraction', 'g68', FACTS, 'sub-drop').key === 'sub-drop') repeats++;
+    }
+    expect(repeats).toBe(0);
+    // and the returned question always carries a key for the caller to thread
+    expect(genElementMath('multiplication', 'g68', FACTS).key).toBeTruthy();
+  });
+
   it('mixed math mixes +, −, × and never division; a flat/empty checkpoint still works', () => {
     const { genElementMath } = loadGen(TOOL_PATHS[0]);
     const ops = new Set();
@@ -261,10 +290,14 @@ describe('coaster lab — Ride & Solve math is GROUNDED in the checkpoint elemen
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
     expect(src).toContain("localStorage.getItem('coaster_lab_ride_topic') || 'physics'");
     expect(src).toContain("if(rideTopic === 'physics'){");
-    // the checkpoint math is grounded via facts read from the live sim + analysis
-    expect(src).toContain('ride.current = genElementMath(rideTopic, rideBand(), _coasterFacts(liveState, stop));');
+    // the checkpoint math is grounded via facts read from the live sim + analysis,
+    // and threads the previous question's key so it does not repeat back-to-back
+    expect(src).toContain('ride.current = genElementMath(rideTopic, rideBand(), _coasterFacts(liveState, stop), ride.lastQKey);');
+    expect(src).toContain('if(ride.current && ride.current.key) ride.lastQKey = ride.current.key;');
     expect(src).toContain('function _coasterFacts(live, stop){');
     expect(src).toContain('crestH: a.A ? R(a.A.h) : null');
+    // the checkpoint's own feature + radius are read so different stops differ
+    expect(src).toContain('feat: feat, hereR: hereR');
   });
 
   it.each(TOOL_PATHS)('%s: grade band comes from the host (auto) or a manual override', (p) => {
@@ -351,7 +384,7 @@ describe('coaster lab — AI "any topic" Ride & Solve questions', () => {
     expect(src).toContain("const opt = tSel.querySelector('option[value=\"ai\"]');");
     // a checkpoint serves a buffered question, else falls back to a grounded math question
     expect(src).toContain('if(aiQ.buffer.length){');
-    expect(src).toContain("ride.current = genElementMath('arithmetic', rideBand(), _coasterFacts(liveState, stop));");
+    expect(src).toContain("ride.current = genElementMath('arithmetic', rideBand(), _coasterFacts(liveState, stop), ride.lastQKey);");
     // questions are pre-fetched (never fetched synchronously at the freeze)
     expect(src).toContain('fetchAiQuestions(rideAiSubject, rideBand())');
     // grade-tuned prompt + JSON-only contract

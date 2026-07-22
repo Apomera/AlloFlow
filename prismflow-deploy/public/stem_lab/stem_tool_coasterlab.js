@@ -2387,7 +2387,7 @@ function capturePhoto(tele){
 const ride = {
   active: false, stops: [], idx: 0, score: 0, streak: 0, bestStreak: 0,
   correct: 0, total: 0, times: [], qStart: 0, timerId: null, timerLen: 30,
-  current: null, prevCam: 'orbit'
+  current: null, prevCam: 'orbit', lastQKey: null
 };
 const rq = {
   box: __clabGet('clab-rideQ'), tag: __clabGet('clab-rqTag'),
@@ -2438,61 +2438,78 @@ function _mathChoices(ans){
 const _MATH_OP_NAME = { '+': 'addition', '−': 'subtraction', '×': 'multiplication', '÷': 'division' };
 // genElementMath — arithmetic GROUNDED in the real coaster element at this
 // checkpoint. `f` carries whole-number facts read from the live sim + track
-// analysis (crest / valley / live height, live speed, car count), so the numbers
-// the student computes describe the ride they are actually on — the drop they are
-// about to take, this train's cars, their speed right now. It's the same physics
-// moment as the "engineer" question, posed as plain arithmetic instead of a
-// formula. The band scales any invented second operand and the display mode.
-// Every result is a non-negative integer and the arithmetic is exact.
-function genElementMath(topic, band, f){
+// analysis (crest / valley / live height, live speed, this checkpoint's own
+// feature + radius, car count), so the numbers the student computes describe the
+// ride they are actually on — the drop they are about to take, THIS loop's size,
+// their speed right now. It's the same physics moment as the "engineer" question,
+// posed as plain arithmetic instead of a formula.
+// Dynamism: many candidate templates per operation, each with randomized invented
+// operands (seats, laps, boost) and feature-specific questions that differ from
+// checkpoint to checkpoint; `avoid` (the previous question's key) is filtered out
+// so the same question does not repeat back-to-back within a ride. Every result
+// is a non-negative integer and the arithmetic is exact.
+function genElementMath(topic, band, f, avoid){
   f = f || {};
   const cfg = _bandCfg(band);
   const rp = () => _ri(cfg.partner[0], cfg.partner[1]);
   const has = v => (typeof v === 'number' && isFinite(v) && v >= 0);
   const cars = (has(f.cars) && f.cars > 0) ? f.cars : 3;
+  const feat = f.feat || 'hill';       // crest | valley | loop | turn | hill
+  const hereR = has(f.hereR) ? f.hereR : null;  // this checkpoint's curve radius
   const cand = [];
-  const add = (op, a, b, ans, text, unit) => cand.push({ op, a, b, ans, text, unit });
+  const add = (key, op, a, b, ans, text, unit) => cand.push({ key, op, a, b, ans, text, unit });
   const wantSub = topic === 'subtraction' || topic === 'arithmetic';
   const wantAdd = topic === 'addition' || topic === 'arithmetic';
   const wantMul = topic === 'multiplication' || topic === 'arithmetic';
   const wantDiv = topic === 'division';
   if(wantSub){
     if(has(f.crestH) && has(f.valleyH) && f.crestH > f.valleyH)
-      add('−', f.crestH, f.valleyH, f.crestH - f.valleyH,
+      add('sub-drop', '−', f.crestH, f.valleyH, f.crestH - f.valleyH,
         'You\'re cresting at <b>' + f.crestH + ' m</b> and the valley below sits at <b>' + f.valleyH + ' m</b>. How many metres will you drop?', 'm');
     if(has(f.liveH) && has(f.valleyH) && f.liveH > f.valleyH)
-      add('−', f.liveH, f.valleyH, f.liveH - f.valleyH,
-        'Right now you\'re <b>' + f.liveH + ' m</b> up and the valley ahead is <b>' + f.valleyH + ' m</b>. How many more metres will you fall?', 'm');
+      add('sub-here', '−', f.liveH, f.valleyH, f.liveH - f.valleyH,
+        'Right now at this ' + feat + ' you\'re <b>' + f.liveH + ' m</b> up and the valley ahead is <b>' + f.valleyH + ' m</b>. How many more metres will you fall?', 'm');
+    if(has(f.loopH) && has(f.crestH) && f.crestH > f.loopH)
+      add('sub-loop', '−', f.crestH, f.loopH, f.crestH - f.loopH,
+        'The loop tops out at <b>' + f.loopH + ' m</b>, below the first crest of <b>' + f.crestH + ' m</b>. How much lower is the loop?', 'm');
     const seats = rp(), cap = cars * seats, boarded = _ri(0, cap);
-    add('−', cap, boarded, cap - boarded,
+    add('sub-seats', '−', cap, boarded, cap - boarded,
       'The train\'s <b>' + cars + '</b> cars each seat <b>' + seats + '</b> (<b>' + cap + '</b> seats). Only <b>' + boarded + '</b> riders boarded. How many empty seats?', 'seats');
   }
   if(wantAdd){
-    if(has(f.liveV)){ const boost = rp(); add('+', f.liveV, boost, f.liveV + boost,
+    if(has(f.liveV)){ const boost = rp(); add('add-speed', '+', f.liveV, boost, f.liveV + boost,
       'You\'re moving <b>' + f.liveV + ' m/s</b> and this drop will add about <b>' + boost + ' m/s</b>. How fast at the bottom?', 'm/s'); }
-    if(has(f.crestH)){ const climb = rp(); add('+', f.crestH, climb, f.crestH + climb,
+    if(has(f.crestH)){ const climb = rp(); add('add-climb', '+', f.crestH, climb, f.crestH + climb,
       'This crest is <b>' + f.crestH + ' m</b> high. The next hill climbs <b>' + climb + ' m</b> higher. How tall is that next crest?', 'm'); }
+    if(has(f.turnH)){ const rise = rp(); add('add-turn', '+', f.turnH, rise, f.turnH + rise,
+      'The banked turn sits at <b>' + f.turnH + ' m</b>. A new hill after it climbs <b>' + rise + ' m</b> more. How high is that?', 'm'); }
   }
   if(wantMul){
-    const seats = rp(); add('×', cars, seats, cars * seats,
+    const seats = rp(); add('mul-cap', '×', cars, seats, cars * seats,
       'This train has <b>' + cars + '</b> cars with <b>' + seats + '</b> seats each. How many riders can it carry?', 'riders');
-    const laps = rp(), capL = cars * _ri(2, 5); add('×', capL, laps, capL * laps,
+    const laps = rp(), capL = cars * _ri(2, 5); add('mul-laps', '×', capL, laps, capL * laps,
       'Each full ride carries <b>' + capL + '</b> riders and the coaster runs <b>' + laps + '</b> rides tonight. How many riders in all?', 'riders');
+    if(hereR) add('mul-diam', '×', hereR, 2, hereR * 2,
+      'This ' + feat + ' curves with a <b>' + hereR + ' m</b> radius. How wide is it right across (2 × radius)?', 'm');
   }
   if(wantDiv){
-    const seats = rp(), cap = cars * seats; add('÷', cap, cars, seats,
+    const seats = rp(), cap = cars * seats; add('div-seats', '÷', cap, cars, seats,
       'The train\'s <b>' + cap + '</b> seats are spread evenly over its <b>' + cars + '</b> cars. How many seats per car?', 'seats');
     const per = rp(), lines = _ri(2, Math.max(2, Math.min(9, cfg.partner[1]))), tot = per * lines;
-    add('÷', tot, lines, per,
+    add('div-lines', '÷', tot, lines, per,
       '<b>' + tot + '</b> riders wait in <b>' + lines + '</b> equal lines for the coaster. How many riders per line?', 'riders');
   }
+  // drop the previous question's template so it never repeats back-to-back, as
+  // long as another candidate remains
+  let pool = cand;
+  if(avoid && cand.length > 1){ const filt = cand.filter(c => c.key !== avoid); if(filt.length) pool = filt; }
   // pick a grounded candidate; if none fit (e.g. a flat track has no drop) fall
   // back to the always-available capacity question so a ride never stalls
-  let p = cand.length ? cand[Math.floor(Math.random() * cand.length)] : null;
-  if(!p){ const seats = rp(); p = { op: '×', a: cars, b: seats, ans: cars * seats,
+  let p = pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
+  if(!p){ const seats = rp(); p = { key: 'mul-cap', op: '×', a: cars, b: seats, ans: cars * seats,
     text: 'This train has <b>' + cars + '</b> cars with <b>' + seats + '</b> seats each. How many riders can it carry?', unit: 'riders' }; }
   const q = {
-    text: p.text, unit: p.unit, answer: p.ans, tolAbs: 0.4,
+    text: p.text, unit: p.unit, answer: p.ans, tolAbs: 0.4, key: p.key,
     explain: p.a.toLocaleString() + ' ' + p.op + ' ' + p.b.toLocaleString() + ' = ' + p.ans.toLocaleString() + '.',
     tag: (f.tag ? '🔢 ' + f.tag : '🔢 Checkpoint · ride math'),
     timerLen: cfg.timer, mathOp: _MATH_OP_NAME[p.op] || 'addition'
@@ -2506,6 +2523,15 @@ function genElementMath(topic, band, f){
 function _coasterFacts(live, stop){
   const a = analysis || {};
   const R = v => (typeof v === 'number' && isFinite(v)) ? Math.max(0, Math.round(v)) : null;
+  // Which feature is this checkpoint about? Read it from the stop tag so the
+  // question can use THIS element's own radius (loop/turn) — different checkpoints
+  // ask about different real numbers within one ride.
+  const tag = (stop && stop.tag) ? stop.tag : 'Checkpoint';
+  let feat = 'hill', hereR = null;
+  if(/valley/i.test(tag)) feat = 'valley';
+  else if(/inversion|loop/i.test(tag)){ feat = 'loop'; hereR = a.C ? R(a.C.r) : null; }
+  else if(/turn/i.test(tag)){ feat = 'turn'; hereR = a.D ? R(a.D.r) : null; }
+  else if(/crest/i.test(tag)) feat = 'crest';
   return {
     crestH: a.A ? R(a.A.h) : null,
     valleyH: a.B ? R(a.B.h) : null,
@@ -2515,7 +2541,8 @@ function _coasterFacts(live, stop){
     liveV: R(live && live.v),
     cars: (typeof cars !== 'undefined' && cars) ? cars.length : 3,
     trackLen: (typeof track !== 'undefined' && track) ? Math.round(track.L) : null,
-    tag: (stop && stop.tag) ? stop.tag : 'Checkpoint'
+    feat: feat, hereR: hereR,
+    tag: tag
   };
 }
 
@@ -2719,13 +2746,14 @@ function pauseForQuestion(){
     if(aiQ.buffer.length){
       ride.current = aiQ.buffer.shift();
     } else {
-      ride.current = genElementMath('arithmetic', rideBand(), _coasterFacts(liveState, stop));
+      ride.current = genElementMath('arithmetic', rideBand(), _coasterFacts(liveState, stop), ride.lastQKey);
     }
     ride.timerLen = ride.current.timerLen || 26;
   } else {
-    ride.current = genElementMath(rideTopic, rideBand(), _coasterFacts(liveState, stop));
+    ride.current = genElementMath(rideTopic, rideBand(), _coasterFacts(liveState, stop), ride.lastQKey);
     ride.timerLen = ride.current.timerLen || 24;
   }
+  if(ride.current && ride.current.key) ride.lastQKey = ride.current.key;
   ride.total++;
   ride.qStart = performance.now();
   rq.tag.textContent = (ride.current && ride.current.tag) || stop.tag;
