@@ -4830,9 +4830,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           var collapseIndex = scarcity * 1.3 - prey * 0.5;
           var outcome = collapseIndex > 0.4 ? 'collapse' : (boomIndex > 0.25 ? 'boom' : 'balanced');
           var outcomeMeta = {
-            boom: { label: '📈 Predator-weighted regime', desc: 'In this teaching rule, the predator-birth input outweighs prey-lifespan and scarcity terms.', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
-            balanced: { label: '🔄 Middle weighted regime', desc: 'Neither arbitrary score crosses the classifier threshold; this does not demonstrate ecological equilibrium.', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
-            collapse: { label: '⬇️ Scarcity-weighted regime', desc: 'In this teaching rule, the scarcity score crosses its classifier threshold.', color: '#b91c1c', bg: '#fef2f2', border: '#fb7185' }
+            boom: { label: '📈 ' + __alloT('stem.ecosystem.iq_boom_label', 'Predator-weighted regime'), desc: __alloT('stem.ecosystem.iq_boom_desc', 'In this teaching rule, the predator-birth input outweighs prey-lifespan and scarcity terms.'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+            balanced: { label: '🔄 ' + __alloT('stem.ecosystem.iq_balanced_label', 'Middle weighted regime'), desc: __alloT('stem.ecosystem.iq_balanced_desc', 'Neither arbitrary score crosses the classifier threshold; this does not demonstrate ecological equilibrium.'), color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+            collapse: { label: '⬇️ ' + __alloT('stem.ecosystem.iq_collapse_label', 'Scarcity-weighted regime'), desc: __alloT('stem.ecosystem.iq_collapse_desc', 'In this teaching rule, the scarcity score crosses its classifier threshold.'), color: '#b91c1c', bg: '#fef2f2', border: '#fb7185' }
           }[outcome];
           function logObs() {
             var obs = { pb: iq.predBirth, pl: iq.preyLife, rs: iq.resScarcity, out: outcome };
@@ -4840,9 +4840,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           }
           return h('div', { className: 'space-y-3' },
             h('div', { className: 'p-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm' },
-              h('h4', { className: 'text-sm font-black text-slate-800 dark:text-slate-200 mb-1' }, '❔ Predator-prey discovery'),
+              h('h4', { className: 'text-sm font-black text-slate-800 dark:text-slate-200 mb-1' }, '❔ ' + __alloT('stem.ecosystem.iq_discovery_title', 'Predator-prey discovery')),
               h('p', { className: 'text-[12px] text-slate-700 dark:text-slate-300 mb-3 leading-relaxed' },
-                'Sweep three conceptual sliders and compare an arbitrary weighted classifier. The labels are prompts for inquiry, not Lotka-Volterra solutions, population forecasts, or measured ecological rates.'),
+                __alloT('stem.ecosystem.iq_intro', 'Sweep three conceptual sliders and compare an arbitrary weighted classifier. The labels are prompts for inquiry, not Lotka-Volterra solutions, population forecasts, or measured ecological rates.')),
               // Discrete outcome marker
               h('div', { className: 'mb-3 p-3 rounded-lg text-center', role: 'status', 'aria-live': 'polite', style: { background: outcomeMeta.bg, border: '2px solid ' + outcomeMeta.border } },
                 h('div', { className: 'text-lg font-black mb-1 tracking-tight', style: { color: outcomeMeta.color } }, outcomeMeta.label),
@@ -4851,9 +4851,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               // 3 sliders
               h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3' },
                 [
-                  { key: 'predBirth', label: 'Predator birth rate', val: iq.predBirth },
-                  { key: 'preyLife', label: 'Prey lifespan', val: iq.preyLife },
-                  { key: 'resScarcity', label: 'Resource scarcity', val: iq.resScarcity }
+                  { key: 'predBirth', label: __alloT('stem.ecosystem.iq_slider_pred_birth', 'Predator birth rate'), val: iq.predBirth },
+                  { key: 'preyLife', label: __alloT('stem.ecosystem.iq_slider_prey_life', 'Prey lifespan'), val: iq.preyLife },
+                  { key: 'resScarcity', label: __alloT('stem.ecosystem.iq_slider_res_scarcity', 'Resource scarcity'), val: iq.resScarcity }
                 ].map(function(s) {
                   return h('div', { key: s.key },
                     h('label', { htmlFor: 'eq-' + s.key, className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1' },
@@ -4865,16 +4865,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               ),
               // Log + reset
               h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
-                h('button', { onClick: logObs, className: 'transition-colors px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-[11px] font-bold text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 active:scale-[0.97]' }, '📋 Log observation'),
+                h('button', { onClick: logObs, className: 'transition-colors px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-[11px] font-bold text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 active:scale-[0.97]' }, '📋 ' + __alloT('stem.ecosystem.log_observation', 'Log observation')),
                 h('button', { onClick: function() { setIQ({ predBirth: 50, preyLife: 50, resScarcity: 30, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                  className: 'transition-colors px-2 py-1 rounded bg-white dark:bg-slate-900 hover:bg-slate-50 text-[11px] font-semibold text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-600 active:scale-[0.97]' }, '↺ Reset'),
-                (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' observations logged')
+                  className: 'transition-colors px-2 py-1 rounded bg-white dark:bg-slate-900 hover:bg-slate-50 text-[11px] font-semibold text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-600 active:scale-[0.97]' }, '↺ ' + __alloT('stem.ecosystem.reset', 'Reset')),
+                (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + __alloT('stem.ecosystem.observations_logged_suffix', ' observations logged'))
               ),
               // Log table
               (iq.log || []).length > 0 && h('div', { className: 'mb-3 overflow-x-auto' },
                 h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 dark:text-slate-300' },
                   h('thead', null, h('tr', { className: 'bg-slate-100 dark:bg-slate-700' },
-                    ['pred birth %', 'prey life %', 'resource scarcity %', 'outcome'].map(function(c, i) {
+                    [__alloT('stem.ecosystem.th_pred_birth', 'pred birth %'), __alloT('stem.ecosystem.th_prey_life', 'prey life %'), __alloT('stem.ecosystem.th_res_scarcity', 'resource scarcity %'), __alloT('stem.ecosystem.th_outcome', 'outcome')].map(function(c, i) {
                       return h('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 border border-slate-200 dark:border-slate-600 text-left' }, c);
                     }))),
                   h('tbody', null, iq.log.map(function(o, idx) {
@@ -4889,39 +4889,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               // Free-text hypothesis
               h('div', { className: 'mb-3' },
                 h('label', { htmlFor: 'eq-hypo', className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1' },
-                  'Your hypothesis (free text — no right answer):'),
+                  __alloT('stem.ecosystem.hypothesis_label', 'Your hypothesis (free text — no right answer):')),
                 h('textarea', { id: 'eq-hypo', value: iq.hypothesis || '',
                   onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
-                  placeholder: 'Which slider matters MOST for triggering a collapse? Can you balance the system with predator birth at 80%? Type your own theory.',
+                  placeholder: __alloT('stem.ecosystem.iq_hypo_placeholder', 'Which slider matters MOST for triggering a collapse? Can you balance the system with predator birth at 80%? Type your own theory.'),
                   className: 'w-full text-[12px] border border-slate-300 dark:border-slate-600 rounded p-2 font-mono leading-snug bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200', rows: 3 })
               ),
               // Opt-in
               h('div', { className: 'mb-3' },
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
                   className: 'transition-colors px-2 py-1 rounded bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 text-[11px] font-bold text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 active:scale-[0.97]' },
-                  '🤔 I\'m stuck — show me questions to think about (no answers)'),
+                  '🤔 ' + __alloT('stem.ecosystem.iq_stuck_btn', 'I\'m stuck — show me questions to think about (no answers)')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed' },
-                  h('div', { className: 'font-bold text-amber-900 dark:text-amber-300 mb-1' }, 'Open questions — investigate by manipulating:'),
+                  h('div', { className: 'font-bold text-amber-900 dark:text-amber-300 mb-1' }, __alloT('stem.ecosystem.open_questions', 'Open questions — investigate by manipulating:')),
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
-                    h('li', null, 'Start with all three at 50%. What outcome do you get? Now raise predator birth slowly. At what point does the regime flip?'),
-                    h('li', null, 'Set predator birth high (80%). Can you save the system by changing ONLY prey lifespan? What if you change only resource scarcity?'),
-                    h('li', null, 'Try to find TWO different settings that both produce a balanced cycle. What do they have in common?'),
-                    h('li', null, 'Log 4-5 observations of each regime (boom, balanced, collapse). Look for patterns in the table — are there single-variable thresholds, or do they interact?'),
-                    h('li', null, 'Ecological transfer efficiency varies among systems; about 10% is only a rough teaching heuristic. What additional information would you need to connect energy flow to predator abundance?')),
-                  h('div', { className: 'text-[10px] italic text-amber-700 dark:text-amber-400 mt-2' }, 'No answers will be revealed. Investigate.'))
+                    h('li', null, __alloT('stem.ecosystem.iq_q1', 'Start with all three at 50%. What outcome do you get? Now raise predator birth slowly. At what point does the regime flip?')),
+                    h('li', null, __alloT('stem.ecosystem.iq_q2', 'Set predator birth high (80%). Can you save the system by changing ONLY prey lifespan? What if you change only resource scarcity?')),
+                    h('li', null, __alloT('stem.ecosystem.iq_q3', 'Try to find TWO different settings that both produce a balanced cycle. What do they have in common?')),
+                    h('li', null, __alloT('stem.ecosystem.iq_q4', 'Log 4-5 observations of each regime (boom, balanced, collapse). Look for patterns in the table — are there single-variable thresholds, or do they interact?')),
+                    h('li', null, __alloT('stem.ecosystem.iq_q5', 'Ecological transfer efficiency varies among systems; about 10% is only a rough teaching heuristic. What additional information would you need to connect energy flow to predator abundance?'))),
+                  h('div', { className: 'text-[10px] italic text-amber-700 dark:text-amber-400 mt-2' }, __alloT('stem.ecosystem.no_answers_revealed', 'No answers will be revealed. Investigate.')))
               ),
               // Self-mark
               h('div', { className: 'p-3 rounded bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700' },
                 h('div', { className: 'flex items-center gap-2 mb-2' },
                   h('input', { type: 'checkbox', id: 'eq-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   h('label', { htmlFor: 'eq-und', className: 'text-[12px] font-bold text-emerald-800 dark:text-emerald-300 cursor-pointer' },
-                    'I think I understand the trade-offs — let me explain them in my own words')),
+                    __alloT('stem.ecosystem.iq_understand_label', 'I think I understand the trade-offs — let me explain them in my own words'))),
                 iq.understood && h('textarea', { value: iq.explanation || '',
                   onChange: function(e) { setIQ({ explanation: e.target.value }); },
-                  placeholder: 'Explain in your own words: how do predator birth, prey lifespan, and resource scarcity interact? Why does balanced cycling require something specific? When do predators win? When does the system collapse?',
+                  placeholder: __alloT('stem.ecosystem.iq_explain_placeholder', 'Explain in your own words: how do predator birth, prey lifespan, and resource scarcity interact? Why does balanced cycling require something specific? When do predators win? When does the system collapse?'),
                   className: 'w-full text-[12px] border border-emerald-300 dark:border-emerald-700 rounded p-2 font-mono leading-snug bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200', rows: 4 }),
                 iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700 dark:text-emerald-400' },
-                  '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.')
+                  '✓ ' + __alloT('stem.ecosystem.iq_saved_note', 'Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.'))
               ),
               h('div', { className: 'mt-3 p-2 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[10px] italic text-slate-600 dark:text-slate-400' },
                 'Model limit: two arbitrary weighted scores create three regime labels. This inquiry widget is not a population-dynamics model, does not calculate trophic energy transfer, and should not be interpreted as a forecast.')
