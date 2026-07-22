@@ -24,5 +24,21 @@
   "timbre_sine": "Pure sine — ONE frequency, no harmonics",
   "timbre_square": "Square — odd harmonics (1f, 3f, 5f…), ~1/n",
   "timbre_triangle": "Triangle — odd harmonics fading fast (~1/n²)",
-  "timbre_sawtooth": "Sawtooth — ALL harmonics (1f, 2f, 3f…), ~1/n"
+  "timbre_sawtooth": "Sawtooth — ALL harmonics (1f, 2f, 3f…), ~1/n",
+  "quiz1_q": "What happens to pitch when frequency increases?",
+  "quiz1_fb_goes_down": "Backwards — MORE vibrations per second means HIGHER pitch. Slide frequency up with Play Sound on and listen to it climb.",
+  "quiz1_fb_stays_same": "Pitch IS your ear’s perception of frequency — change one and you have changed the other.",
+  "quiz1_fb_disappears": "Sound only disappears when AMPLITUDE reaches zero. Frequency changes the pitch, not whether it exists.",
+  "quiz2_q": "What does amplitude control?",
+  "quiz2_fb_speed": "Wave speed is set by the MEDIUM (air, water, string tension) — a louder shout does not arrive any sooner.",
+  "quiz2_fb_color": "For light, FREQUENCY sets the color. Amplitude sets brightness — and for sound, loudness.",
+  "quiz2_fb_direction": "Direction comes from the source and reflections. Amplitude is the wave’s height — how much energy it carries.",
+  "quiz3_q": "What is superposition?",
+  "quiz3_fb_canceling": "Canceling is only ONE special case (destructive). Superposition is the general rule: overlapping waves ADD their displacements — sometimes bigger, sometimes smaller.",
+  "quiz3_fb_reflecting": "Reflection is a wave bouncing off a boundary. Superposition is what happens when two waves OVERLAP — try the Ripple Tank.",
+  "quiz3_fb_stopping": "Waves pass straight through each other and continue unchanged — they never stop each other.",
+  "quiz4_q": "Destructive interference occurs when...",
+  "quiz5_q": "Sound is what type of wave?",
+  "quiz6_q": "At a node of a standing wave, the displacement is:",
+  "quiz7_q": "The speed of a wave equals:"
 }

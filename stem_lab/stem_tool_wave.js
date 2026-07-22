@@ -1764,31 +1764,31 @@ const d = labToolData.wave;
           // specific mix-up and, where possible, points at the sim mode that shows it.
           var WAVE_QUIZ = [
 
-            { q: 'What happens to pitch when frequency increases?', a: 'Goes up', opts: ['Goes up', 'Goes down', 'Stays same', 'Disappears'],
+            { q: __alloT('stem.wave.quiz1_q', 'What happens to pitch when frequency increases?'), a: 'Goes up', opts: ['Goes up', 'Goes down', 'Stays same', 'Disappears'],
               demo: { waveMode: 'free' },
               wrongFeedback: {
-                'Goes down': 'Backwards \u2014 MORE vibrations per second means HIGHER pitch. Slide frequency up with Play Sound on and listen to it climb.',
-                'Stays same': 'Pitch IS your ear\u2019s perception of frequency \u2014 change one and you have changed the other.',
-                'Disappears': 'Sound only disappears when AMPLITUDE reaches zero. Frequency changes the pitch, not whether it exists.'
+                'Goes down': __alloT('stem.wave.quiz1_fb_goes_down', 'Backwards \u2014 MORE vibrations per second means HIGHER pitch. Slide frequency up with Play Sound on and listen to it climb.'),
+                'Stays same': __alloT('stem.wave.quiz1_fb_stays_same', 'Pitch IS your ear\u2019s perception of frequency \u2014 change one and you have changed the other.'),
+                'Disappears': __alloT('stem.wave.quiz1_fb_disappears', 'Sound only disappears when AMPLITUDE reaches zero. Frequency changes the pitch, not whether it exists.')
               } },
 
-            { q: 'What does amplitude control?', a: 'Loudness / height', opts: ['Speed', 'Loudness / height', 'Color', 'Direction'],
+            { q: __alloT('stem.wave.quiz2_q', 'What does amplitude control?'), a: 'Loudness / height', opts: ['Speed', 'Loudness / height', 'Color', 'Direction'],
               demo: { waveMode: 'free' },
               wrongFeedback: {
-                'Speed': 'Wave speed is set by the MEDIUM (air, water, string tension) \u2014 a louder shout does not arrive any sooner.',
-                'Color': 'For light, FREQUENCY sets the color. Amplitude sets brightness \u2014 and for sound, loudness.',
-                'Direction': 'Direction comes from the source and reflections. Amplitude is the wave\u2019s height \u2014 how much energy it carries.'
+                'Speed': __alloT('stem.wave.quiz2_fb_speed', 'Wave speed is set by the MEDIUM (air, water, string tension) \u2014 a louder shout does not arrive any sooner.'),
+                'Color': __alloT('stem.wave.quiz2_fb_color', 'For light, FREQUENCY sets the color. Amplitude sets brightness \u2014 and for sound, loudness.'),
+                'Direction': __alloT('stem.wave.quiz2_fb_direction', 'Direction comes from the source and reflections. Amplitude is the wave\u2019s height \u2014 how much energy it carries.')
               } },
 
-            { q: 'What is superposition?', a: 'Waves combining', opts: ['Waves combining', 'Waves canceling', 'Waves reflecting', 'Waves stopping'],
+            { q: __alloT('stem.wave.quiz3_q', 'What is superposition?'), a: 'Waves combining', opts: ['Waves combining', 'Waves canceling', 'Waves reflecting', 'Waves stopping'],
               demo: { waveMode: 'free', showSecond: true },
               wrongFeedback: {
-                'Waves canceling': 'Canceling is only ONE special case (destructive). Superposition is the general rule: overlapping waves ADD their displacements \u2014 sometimes bigger, sometimes smaller.',
-                'Waves reflecting': 'Reflection is a wave bouncing off a boundary. Superposition is what happens when two waves OVERLAP \u2014 try the Ripple Tank.',
-                'Waves stopping': 'Waves pass straight through each other and continue unchanged \u2014 they never stop each other.'
+                'Waves canceling': __alloT('stem.wave.quiz3_fb_canceling', 'Canceling is only ONE special case (destructive). Superposition is the general rule: overlapping waves ADD their displacements \u2014 sometimes bigger, sometimes smaller.'),
+                'Waves reflecting': __alloT('stem.wave.quiz3_fb_reflecting', 'Reflection is a wave bouncing off a boundary. Superposition is what happens when two waves OVERLAP \u2014 try the Ripple Tank.'),
+                'Waves stopping': __alloT('stem.wave.quiz3_fb_stopping', 'Waves pass straight through each other and continue unchanged \u2014 they never stop each other.')
               } },
 
-            { q: 'Destructive interference occurs when...', a: 'Peaks meet troughs', opts: ['Peaks meet peaks', 'Peaks meet troughs', 'Waves stop', 'Amplitude doubles'],
+            { q: __alloT('stem.wave.quiz4_q', 'Destructive interference occurs when...'), a: 'Peaks meet troughs', opts: ['Peaks meet peaks', 'Peaks meet troughs', 'Waves stop', 'Amplitude doubles'],
               demo: { waveMode: 'free', showSecond: true, frequency: 3, frequency2: 3, amplitude: 45, amplitude2: 45, phase2: Math.PI },
               wrongFeedback: {
                 'Peaks meet peaks': 'Peak-on-peak is CONSTRUCTIVE interference \u2014 the wave gets bigger. Destruction needs opposites: peak + trough = flat.',
@@ -1796,7 +1796,7 @@ const d = labToolData.wave;
                 'Amplitude doubles': 'Doubling is constructive interference. Destructive SUBTRACTS \u2014 a peak fills a trough.'
               } },
 
-            { q: 'Sound is what type of wave?', a: 'Longitudinal', opts: ['Transverse', 'Longitudinal', 'Circular', 'Standing'],
+            { q: __alloT('stem.wave.quiz5_q', 'Sound is what type of wave?'), a: 'Longitudinal', opts: ['Transverse', 'Longitudinal', 'Circular', 'Standing'],
               demo: { waveMode: 'longitudinal' },
               wrongFeedback: {
                 'Transverse': 'Transverse waves wiggle PERPENDICULAR to travel (light, a guitar string). Air molecules push and pull ALONG the direction of travel \u2014 switch to Longitudinal mode and watch the compressions.',
@@ -1804,7 +1804,7 @@ const d = labToolData.wave;
                 'Standing': 'Standing waves are trapped between boundaries. Traveling sound is free \u2014 it only forms standing waves inside pipes and rooms.'
               } },
 
-            { q: 'At a node of a standing wave, the displacement is:', a: 'Always zero', opts: ['Maximum', 'Always zero', 'Half maximum', 'Random'],
+            { q: __alloT('stem.wave.quiz6_q', 'At a node of a standing wave, the displacement is:'), a: 'Always zero', opts: ['Maximum', 'Always zero', 'Half maximum', 'Random'],
               demo: { waveMode: 'standing', harmonic: 3 },
               wrongFeedback: {
                 'Maximum': 'Maximum displacement is the ANTInode. Nodes are the still points \u2014 in Standing mode, watch the spots where the string never moves.',
@@ -1812,7 +1812,7 @@ const d = labToolData.wave;
                 'Random': 'Standing waves are perfectly ordered \u2014 the nodes stay locked in place. That is exactly why they are called STANDING.'
               } },
 
-            { q: 'The speed of a wave equals:', a: 'Frequency \u00D7 Wavelength', opts: ['Amplitude \u00D7 Frequency', 'Frequency \u00D7 Wavelength', 'Period \u00D7 Amplitude', 'None of these'],
+            { q: __alloT('stem.wave.quiz7_q', 'The speed of a wave equals:'), a: 'Frequency \u00D7 Wavelength', opts: ['Amplitude \u00D7 Frequency', 'Frequency \u00D7 Wavelength', 'Period \u00D7 Amplitude', 'None of these'],
               demo: { expSection: 'discoverWave' },
               wrongFeedback: {
                 'Amplitude \u00D7 Frequency': 'Amplitude carries ENERGY, not speed. v = f \u00D7 \u03BB: waves per second \u00D7 length of each wave = distance per second.',
