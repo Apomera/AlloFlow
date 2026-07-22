@@ -69,6 +69,9 @@ These sections were independently committed:
 | Achievement Wall | `deb110ec2` |
 | Affirmation Library | `163e8ffdb` |
 | Role Models | `7e3526e75` |
+| Learning Reflection (Self Assessment) | `332389994` |
+| Learning Contracts | `2932fcc13` |
+| Emotion Check + Tools | `dce5a7881` |
 
 The most recently completed section, Personal Reference Sheet Builder, passed:
 
@@ -172,9 +175,17 @@ Both issues surfaced last session are now FIXED:
 - **Role Models** `7e3526e75`: standard wave (guards, pendingFocusId, textValue fallbacks incl. icon, non-notification wording, 11→12px, stat guard). Gate 2,314/2,314.
 - Mirror SHA-256: `A797CEC92D62D9CFFD68775778A12C3BBCDA85C7F62E97537FA6AC7F66CEFD12`.
 
-## Next section
+## Session notes (2026-07-22 early morning, Fable — thirteenth continuation) — PERSONAL TOOLKIT TAIL COMPLETE
 
-Remaining unaudited (no-render-test list): **Self Assessment, Learning Contract, Emotion Regulator** — the final three of the Personal Toolkit tail — plus the remaining timer-focus conversions as their sections come up. One independently tested and committed section at a time. Use the gate runner (`node dev-tools/run_learning_lab_gate.cjs 2`) for the full-suite check. Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
+- **Learning Reflection** `332389994`: standard wave; object-valued legacy answers would have thrown as React children (textValue-guarded); non-diagnostic framing kept verbatim; per-question missing-answer errors render-tested.
+- **Learning Contracts** `2932fcc13`: standard wave; the render test CAUGHT a live crash the static pass missed (string-valued legacy `commitments` blew up `.filter`) — fixed and pinned. Selector lesson: contract cards contain nested `ul`s — scope list counts with `> ul > li`.
+- **Emotion Check + Tools** `dce5a7881`: already the best-audited component in the file (useLayoutEffect focus, superb crisis honesty) — only guards, intensity clamping, aria-pressed removal on the breathing toggle, and an HONESTY fix: invalid legacy dates used to render as *now* (`checkDate = new Date()` fallback); they now say "Date not recorded". The old behavior was pinned by both tests; both updated deliberately.
+- **Mid-session incident**: the machine exhausted its paging file (concurrent sessions) — PowerShell/Node couldn't spawn for a stretch. The gate runner correctly errored rather than passing incomplete runs; work resumed cleanly. Sessions on this machine should treat "Could not determine Node.js install directory" + assembly-load failures as memory pressure, not tooling breakage. Also: the shell CWD resets to HOME after such crashes — re-`Set-Location` before diagnosing "missing" files.
+- Final gate: **2,329/2,329 across 160 files** (1 worker). Mirror SHA-256: `772BD4BAB626124117FC42CCC4E72A136EE95B8C96518395711EAA8AF0A6B512`.
+
+## Goal status
+
+**The Personal Toolkit component tail is fully audited** — every `Personal*` component now has the current-wave treatment (render-synchronized focus where it had timer focus, malformed-data guards, honest non-notification/claims wording, paired contract + render tests, guarded hub stats). 33 broad-pattern `setTimeout`-focus sites remain OUTSIDE the audited components (shell/hub regions and non-toolkit areas of this file) plus 1 narrow variant — convert as those areas are audited. The comprehensive WCAG goal continues with the remaining app areas beyond the Learning Lab Personal Toolkit (other STEM tools, shell, SEL hub), plus the known cross-cutting debts: stale i18n keys serving old framing in 63 packs, and verifying the CDN artifact contains the focus-class fix (@1c513b558 stamp vs `784de7477`). Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
 
 ## Completed section reference: Optional Support Request Notes
 
