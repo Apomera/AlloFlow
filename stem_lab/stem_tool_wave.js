@@ -3373,7 +3373,7 @@ const d = labToolData.wave;
                 return h('circle', { key: 'n' + i, cx: nx, cy: 80, r: 3.5, fill: '#16a34a' });
               }),
               h('text', { x: 160, y: 18, textAnchor: 'middle', fontSize: 11, fontWeight: 'bold', fill: isHarmonic ? '#059669' : '#64748b' },
-                isHarmonic ? ('✓ Standing pattern — n = ' + nNear + ' (' + nNear + ' half-wavelengths)') : 'Off-resonance — pattern unstable'),
+                isHarmonic ? ('✓ ' + __alloT('stem.wave.sh_standing_pattern', 'Standing pattern — n = ') + nNear + ' (' + nNear + __alloT('stem.wave.sh_half_wavelengths', ' half-wavelengths)')) : __alloT('stem.wave.sh_off_resonance', 'Off-resonance — pattern unstable')),
               h('text', { x: 160, y: 112, textAnchor: 'middle', fontSize: 9, fill: '#475569' },
                 'T = ' + lab.tension.toFixed(0) + ' N  |  f = ' + lab.freq.toFixed(2) + ' Hz  |  v = ' + v.toFixed(1) + ' m/s  |  λ = ' + wavelength.toFixed(2) + ' m  |  n = ' + nEff.toFixed(2))
             )
@@ -3382,22 +3382,22 @@ const d = labToolData.wave;
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 mb-3' },
             h('div', null,
               h('label', { htmlFor: 'sh-tension', className: 'block text-[11px] font-bold text-slate-700 mb-1' },
-                'Tension: ', h('span', { className: 'font-mono text-indigo-700' }, lab.tension.toFixed(0) + ' N')),
+                __alloT('stem.wave.sh_tension_label', 'Tension: '), h('span', { className: 'font-mono text-indigo-700' }, lab.tension.toFixed(0) + ' N')),
               h('input', {
                 id: 'sh-tension', type: 'range', min: 10, max: 200, step: 1, value: lab.tension,
                 onChange: function(e) { setLab({ tension: parseFloat(e.target.value) }); },
-                className: 'w-full', 'aria-label': 'Tension in newtons'
+                className: 'w-full', 'aria-label': __alloT('stem.wave.aria_tension_newtons', 'Tension in newtons')
               }),
               h('div', { className: 'text-[9px] text-slate-500 flex justify-between' },
                 h('span', null, '10 N'), h('span', null, '200 N'))
             ),
             h('div', null,
               h('label', { htmlFor: 'sh-freq', className: 'block text-[11px] font-bold text-slate-700 mb-1' },
-                'Frequency: ', h('span', { className: 'font-mono text-indigo-700' }, lab.freq.toFixed(2) + ' Hz')),
+                __alloT('stem.wave.sh_frequency_label', 'Frequency: '), h('span', { className: 'font-mono text-indigo-700' }, lab.freq.toFixed(2) + ' Hz')),
               h('input', {
                 id: 'sh-freq', type: 'range', min: 1, max: 30, step: 0.05, value: lab.freq,
                 onChange: function(e) { setLab({ freq: parseFloat(e.target.value) }); },
-                className: 'w-full', 'aria-label': 'Driving frequency in hertz'
+                className: 'w-full', 'aria-label': __alloT('stem.wave.aria_driving_freq', 'Driving frequency in hertz')
               }),
               h('div', { className: 'text-[9px] text-slate-500 flex justify-between' },
                 h('span', null, '1 Hz'), h('span', null, '30 Hz'))
@@ -3408,19 +3408,19 @@ const d = labToolData.wave;
             h('button', {
               onClick: logObservation,
               className: 'transition-colors px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300 active:scale-[0.97]'
-            }, '📋 Log this observation'),
+            }, '📋 ' + __alloT('stem.wave.sh_log_observation', 'Log this observation')),
             h('button', {
               onClick: function() { setLab({ tension: 50, freq: 4, observationsLogged: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
               className: 'transition-colors px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300 active:scale-[0.97]'
-            }, '↺ Reset'),
-            (lab.observationsLogged || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (lab.observationsLogged || []).length + ' observation(s) logged')
+            }, '↺ ' + __alloT('stem.wave.btn_reset', 'Reset')),
+            (lab.observationsLogged || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (lab.observationsLogged || []).length + __alloT('stem.wave.sh_obs_logged', ' observation(s) logged'))
           ),
           // Observation log (auto-tabulated; no commentary required)
           (lab.observationsLogged || []).length > 0 && h('div', { className: 'mb-3 overflow-x-auto' },
             h('table', { className: 'text-[10px] w-full border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100 text-slate-700' },
-                  ['T (N)', 'f (Hz)', 'v (m/s)', 'λ (m)', 'n', 'locked'].map(function(h2, i) {
+                  ['T (N)', 'f (Hz)', 'v (m/s)', 'λ (m)', 'n', __alloT('stem.wave.sh_col_locked', 'locked')].map(function(h2, i) {
                     return h('th', { key: 'h' + i, className: 'px-2 py-1 border border-slate-200 text-left' }, h2);
                   })
                 )
@@ -3442,12 +3442,12 @@ const d = labToolData.wave;
           // Hypothesis textarea — learner-typed, free-form
           h('div', { className: 'mb-3' },
             h('label', { htmlFor: 'sh-hypo', className: 'block text-[11px] font-bold text-slate-700 mb-1' },
-              'Your hypothesis (free text — no right answer):'),
+              __alloT('stem.wave.sh_hypothesis_label', 'Your hypothesis (free text — no right answer):')),
             h('textarea', {
               id: 'sh-hypo',
               value: lab.hypothesis || '',
               onChange: function(e) { setLab({ hypothesis: e.target.value }); },
-              placeholder: 'What pattern do you notice in the values where the string locks into a clean standing wave? Type your own theory.',
+              placeholder: __alloT('stem.wave.sh_hypothesis_placeholder', 'What pattern do you notice in the values where the string locks into a clean standing wave? Type your own theory.'),
               className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug',
               rows: 3
             })
@@ -3457,17 +3457,17 @@ const d = labToolData.wave;
             !lab.stuckRevealed && h('button', {
               onClick: function() { setLab({ stuckRevealed: true }); },
               className: 'transition-colors px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300 active:scale-[0.97]'
-            }, '🤔 I\'m stuck — show me some questions to think about (no answers)'),
+            }, '🤔 ' + __alloT('stem.wave.sh_stuck_btn', 'I\'m stuck — show me some questions to think about (no answers)')),
             lab.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
-              h('div', { className: 'font-bold text-amber-900 mb-1' }, 'Open questions (no answers — investigate by manipulating):'),
+              h('div', { className: 'font-bold text-amber-900 mb-1' }, __alloT('stem.wave.sh_open_questions', 'Open questions (no answers — investigate by manipulating):')),
               h('ul', { className: 'list-disc pl-5 space-y-1' },
-                h('li', null, 'Try f = 5 Hz at T = 100 N, then T = 25 N. Does the locked state happen at the same f? Why might that be?'),
-                h('li', null, 'Sweep frequency slowly from 1 → 20 Hz at fixed T. How many locked states do you find? Are they evenly spaced or pattern-spaced?'),
-                h('li', null, 'When you triple the tension, does the f of the first locked state triple, or change by some other factor? Predict before you check.'),
-                h('li', null, 'Log 4-5 locked observations. Look at the n column — what value do they share? Is that a coincidence or a constraint?'),
-                h('li', null, 'What relationship between f, T, and L would have to be true for an integer number of half-wavelengths to fit on the string?')
+                h('li', null, __alloT('stem.wave.sh_q1', 'Try f = 5 Hz at T = 100 N, then T = 25 N. Does the locked state happen at the same f? Why might that be?')),
+                h('li', null, __alloT('stem.wave.sh_q2', 'Sweep frequency slowly from 1 → 20 Hz at fixed T. How many locked states do you find? Are they evenly spaced or pattern-spaced?')),
+                h('li', null, __alloT('stem.wave.sh_q3', 'When you triple the tension, does the f of the first locked state triple, or change by some other factor? Predict before you check.')),
+                h('li', null, __alloT('stem.wave.sh_q4', 'Log 4-5 locked observations. Look at the n column — what value do they share? Is that a coincidence or a constraint?')),
+                h('li', null, __alloT('stem.wave.sh_q5', 'What relationship between f, T, and L would have to be true for an integer number of half-wavelengths to fit on the string?'))
               ),
-              h('div', { className: 'text-[10px] italic text-amber-700 mt-2' }, 'No answers will be revealed here. The point is to push your thinking, not to hand you a result.')
+              h('div', { className: 'text-[10px] italic text-amber-700 mt-2' }, __alloT('stem.wave.sh_no_answers', 'No answers will be revealed here. The point is to push your thinking, not to hand you a result.'))
             )
           ),
           // "I see it now" self-mark + explanation textarea — no automated scoring
@@ -3480,26 +3480,26 @@ const d = labToolData.wave;
                 className: 'w-4 h-4'
               }),
               h('label', { htmlFor: 'sh-understood', className: 'text-[12px] font-bold text-emerald-900 cursor-pointer' },
-                'I think I understand the pattern now — let me explain it in my own words')
+                __alloT('stem.wave.sh_understood_label', 'I think I understand the pattern now — let me explain it in my own words'))
             ),
             lab.understood && h('textarea', {
               value: lab.explanation || '',
               onChange: function(e) { setLab({ explanation: e.target.value }); },
-              placeholder: 'Explain in your own words: what determines when a standing wave forms? What role does tension play? What role does frequency play? What is "n"?',
+              placeholder: __alloT('stem.wave.sh_explanation_placeholder', 'Explain in your own words: what determines when a standing wave forms? What role does tension play? What role does frequency play? What is "n"?'),
               className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug bg-white',
               rows: 4
             }),
             lab.understood && (lab.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
-              '✓ Saved. Notice — nobody checked your answer. The point of inquiry is the thinking that produced it, not external validation.')
+              '✓ ' + __alloT('stem.wave.sh_saved_note', 'Saved. Notice — nobody checked your answer. The point of inquiry is the thinking that produced it, not external validation.'))
           ),
           h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[10px] text-slate-600 italic' },
-            'Design note: this widget has no score, no chips, no reveal button, and no right-answer check. Everything you discover comes from manipulation and observation. That is what "inquiry" looks like when the answer-dump is removed.')
+            __alloT('stem.wave.sh_design_note', 'Design note: this widget has no score, no chips, no reveal button, and no right-answer check. Everything you discover comes from manipulation and observation. That is what "inquiry" looks like when the answer-dump is removed.'))
         );
       }
 
       function renderGlossarySection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📖 Wave glossary'),
+          React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📖 ' + __alloT('stem.wave.sec_glossary_title', 'Wave glossary')),
           React.createElement('div', { className: 'space-y-1' },
             WAVE_GLOSSARY.map(function(g, i) {
               return React.createElement('div', { key: 'g'+i, className: 'p-2 rounded-md bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },
