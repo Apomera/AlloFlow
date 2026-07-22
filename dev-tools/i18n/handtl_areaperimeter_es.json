@@ -1,5 +1,5 @@
 {
-  "spanish_latin_america": {
+  "spanish_castilian": {
     "tile_explorer": "Explorador de baldosas",
     "tile": "Baldosa",
     "compare_shapes": "Comparar figuras",
@@ -178,7 +178,7 @@
     "practice": "Práctica",
     "practice_selected": " práctica seleccionada.",
     "retrying_missed_challenge": "Reintentando el desafío fallado: ",
-    "enter_a_number_before_checking": "Ingresa un número antes de comprobar.",
+    "enter_a_number_before_checking": "Introduce un número antes de comprobar.",
     "correct": "¡Correcto! ",
     "area_perimeter_challenge": "Desafío de área y perímetro",
     "not_yet_this_challenge_is_saved_for_re": "Todavía no. Este desafío se guarda para reintentarlo. Comprueba si el problema pide el espacio de dentro, la distancia de fuera o un lado que falta.",
