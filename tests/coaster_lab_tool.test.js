@@ -265,6 +265,84 @@ describe('coaster lab — Ride & Solve topic + grade adaptation', () => {
   });
 });
 
+describe('coaster lab — AI "any topic" Ride & Solve questions', () => {
+  // The AI response parser is the risky part (models return messy text), so it is
+  // pure and exercised for real. The buffering/fallback wiring is pinned.
+  function loadParser(p) {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const s = src.indexOf('/* @clab-aiparse-start');
+    const e = src.indexOf('/* @clab-aiparse-end');
+    expect(s).toBeGreaterThan(-1);
+    expect(e).toBeGreaterThan(s);
+    return new Function(src.slice(s, e) + '\nreturn { _parseAiQuestions };')()._parseAiQuestions;
+  }
+
+  it('parses a clean JSON array into ride-question shape', () => {
+    const parse = loadParser(TOOL_PATHS[0]);
+    const raw = JSON.stringify([
+      { q: 'What gas do plants breathe in?', choices: ['Oxygen', 'Carbon dioxide', 'Helium', 'Nitrogen'], answer: 1, explain: 'Photosynthesis uses CO2.' },
+      { q: 'Chlorophyll is what color?', choices: ['Green', 'Red', 'Blue'], answer: 0, explain: 'It reflects green light.' },
+    ]);
+    const qs = parse(raw, 'photosynthesis');
+    expect(qs).toHaveLength(2);
+    expect(qs[0].text).toBe('What gas do plants breathe in?');
+    expect(qs[0].choices).toEqual([['0', 'Oxygen'], ['1', 'Carbon dioxide'], ['2', 'Helium'], ['3', 'Nitrogen']]);
+    expect(qs[0].correct).toBe('1'); // grading compares val === correct, indices as strings
+    expect(qs[0].tag).toContain('photosynthesis');
+    expect(qs[0].explain).toBe('Photosynthesis uses CO2.');
+  });
+
+  it('digs the array out of code fences and prose the model wraps around it', () => {
+    const parse = loadParser(TOOL_PATHS[0]);
+    const wrapped = 'Sure! Here are your questions:\n```json\n' +
+      JSON.stringify([{ q: 'Capital of France?', choices: ['Paris', 'Rome'], answer: 0 }]) +
+      '\n```\nHope that helps!';
+    const qs = parse(wrapped, 'capitals');
+    expect(qs).toHaveLength(1);
+    expect(qs[0].text).toBe('Capital of France?');
+    expect(qs[0].explain).toBeTruthy(); // missing explain gets a friendly default
+  });
+
+  it('never throws and never yields a malformed question on garbage input', () => {
+    const parse = loadParser(TOOL_PATHS[0]);
+    expect(parse('', 's')).toEqual([]);
+    expect(parse('the model refused to answer', 's')).toEqual([]);
+    expect(parse('{not valid json[', 's')).toEqual([]);
+    expect(parse(null, 's')).toEqual([]);
+    // mixed valid + invalid items: keep the good, drop the bad
+    const mixed = JSON.stringify([
+      { q: 'Good?', choices: ['a', 'b'], answer: 0 },
+      { q: 'No choices', choices: [] },            // too few choices → dropped
+      { q: 'Bad index', choices: ['x', 'y'], answer: 9 }, // out-of-range answer → clamped to 0
+      { notAQuestion: true },                       // wrong shape → dropped
+      'a bare string',                              // not an object → dropped
+    ]);
+    const qs = parse(mixed, 's');
+    expect(qs).toHaveLength(2);
+    expect(qs.every(q => q.choices.length >= 2)).toBe(true);
+    expect(qs.every(q => Number(q.correct) >= 0 && Number(q.correct) < q.choices.length)).toBe(true);
+    expect(qs[1].correct).toBe('0'); // the out-of-range index was clamped
+  });
+
+  it.each(TOOL_PATHS)('%s: AI mode buffers, falls back to math, and gates on host AI', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    // the option and the subject input exist in the header
+    expect(src).toContain('value=\\"ai\\">🤖 Any topic (AI)');
+    expect(src).toContain('id=\\"clab-rideAiSubject\\"');
+    // AI is only offered when the host provides it; otherwise the option is removed
+    expect(src).toContain('function aiAvailable(){ return !!(__clabBridge && typeof __clabBridge.ai === \'function\'); }');
+    expect(src).toContain("const opt = tSel.querySelector('option[value=\"ai\"]');");
+    // a checkpoint serves a buffered question, else falls back to a math question
+    expect(src).toContain('if(aiQ.buffer.length){');
+    expect(src).toContain("ride.current = genMathQuestion('arithmetic', rideBand());");
+    // questions are pre-fetched (never fetched synchronously at the freeze)
+    expect(src).toContain('fetchAiQuestions(rideAiSubject, rideBand())');
+    // grade-tuned prompt + JSON-only contract
+    expect(src).toContain("{ k2: 'grades K-2', g35: 'grades 3-5', g68: 'grades 6-8', g912: 'grades 9-12' }");
+    expect(src).toContain('Return ONLY a JSON array of 6 questions');
+  });
+});
+
 describe('coaster lab — wired into every load site', () => {
   it.each([
     'AlloFlowANTI.txt',
