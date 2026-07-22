@@ -1887,7 +1887,7 @@ const d = labToolData.rocks || {};
 
                     style: (d.selectedType || null) === (t === 'all' ? null : t) ? { background: t === 'all' ? '#78716c' : ROCK_TYPES[t]?.color || '#78716c' } : {}
 
-                  }, t === 'all' ? '📋 All' : (ROCK_TYPES[t]?.icon || '') + ' ' + ROCK_TYPES[t]?.label);
+                  }, t === 'all' ? '📋 ' + __alloT('stem.rocks.filter_all', 'All') : (ROCK_TYPES[t]?.icon || '') + ' ' + ROCK_TYPES[t]?.label);
 
                 })
 
@@ -1927,7 +1927,7 @@ const d = labToolData.rocks || {};
 
                   // Texture canvas
 
-                  React.createElement("canvas", { tabIndex: 0, ref: textureRef, role: "img", "aria-label": "Rock texture close-up", style: { width: '100px', height: '100px', borderRadius: '12px', border: '2px solid #e5e7eb' } }),
+                  React.createElement("canvas", { tabIndex: 0, ref: textureRef, role: "img", "aria-label": __alloT('stem.rocks.rock_texture_close_up', "Rock texture close-up"), style: { width: '100px', height: '100px', borderRadius: '12px', border: '2px solid #e5e7eb' } }),
 
                   React.createElement("div", { className: "flex-1" },
 
@@ -1969,7 +1969,7 @@ const d = labToolData.rocks || {};
 
                 React.createElement("div", { className: "mt-3" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, "Mohs Hardness Scale"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, __alloT('stem.rocks.mohs_hardness_scale', "Mohs Hardness Scale")),
 
                   React.createElement("div", { className: "flex gap-0.5 items-end" },
 
@@ -1995,9 +1995,9 @@ const d = labToolData.rocks || {};
 
                   React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 mt-0.5" },
 
-                    React.createElement("span", null, "1 (Talc)"),
+                    React.createElement("span", null, __alloT('stem.rocks.mohs_min_talc', "1 (Talc)")),
 
-                    React.createElement("span", null, "10 (Diamond)"))
+                    React.createElement("span", null, __alloT('stem.rocks.mohs_max_diamond', "10 (Diamond)")))
 
                 ),
 
@@ -2105,26 +2105,26 @@ const d = labToolData.rocks || {};
                   };
 
                   var speeds = [
-                    { id: 'slow', label: 'Slow (Intrusive)', desc: 'Forms deep underground. Atoms have time to form large, visible crystals (e.g. granite).' },
-                    { id: 'medium', label: 'Medium', desc: 'Intermediate depth, moderate cooling and crystal sizing.' },
-                    { id: 'fast', label: 'Fast (Extrusive)', desc: 'Cools rapidly at surface. Tiny, fine-grained crystals (e.g. basalt).' },
-                    { id: 'rapid', label: 'Rapid (Glassy)', desc: 'Instant quenching. Atoms frozen in place, no crystals (e.g. obsidian).' }
+                    { id: 'slow', label: __alloT('stem.rocks.speed_slow_label', 'Slow (Intrusive)'), desc: __alloT('stem.rocks.speed_slow_desc', 'Forms deep underground. Atoms have time to form large, visible crystals (e.g. granite).') },
+                    { id: 'medium', label: __alloT('stem.rocks.speed_medium_label', 'Medium'), desc: __alloT('stem.rocks.speed_medium_desc', 'Intermediate depth, moderate cooling and crystal sizing.') },
+                    { id: 'fast', label: __alloT('stem.rocks.speed_fast_label', 'Fast (Extrusive)'), desc: __alloT('stem.rocks.speed_fast_desc', 'Cools rapidly at surface. Tiny, fine-grained crystals (e.g. basalt).') },
+                    { id: 'rapid', label: __alloT('stem.rocks.speed_rapid_label', 'Rapid (Glassy)'), desc: __alloT('stem.rocks.speed_rapid_desc', 'Instant quenching. Atoms frozen in place, no crystals (e.g. obsidian).') }
                   ];
                   var currentSpeed = speeds.find(function(s) { return s.id === coolingSpeed; });
 
                   return React.createElement("div", { className: "border-t border-slate-100 pt-3 mt-3" },
                     React.createElement("p", { className: "text-xs font-black text-amber-700 mb-2 flex items-center gap-1.5" },
                       React.createElement("span", null, "🌋"),
-                      React.createElement("span", null, "Magma Cooling & Crystallization Simulator")
+                      React.createElement("span", null, __alloT('stem.rocks.magma_cooling_simulator_title', "Magma Cooling & Crystallization Simulator"))
                     ),
                     React.createElement("div", { className: "flex flex-col md:flex-row gap-3 items-center" },
                       React.createElement("div", { className: "w-full md:w-1/3 flex flex-col items-center" },
-                        React.createElement("canvas", { ref: coolingRef, role: "img", tabIndex: 0, "aria-label": "Crystal cooling-rate diagram — slower cooling grows larger crystals.", style: { width: '130px', height: '80px', borderRadius: '8px', border: '1px solid #cbd5e1', display: 'block', background: '#1e293b' } }),
+                        React.createElement("canvas", { ref: coolingRef, role: "img", tabIndex: 0, "aria-label": __alloT('stem.rocks.crystal_cooling_diagram_aria', "Crystal cooling-rate diagram — slower cooling grows larger crystals."), style: { width: '130px', height: '80px', borderRadius: '8px', border: '1px solid #cbd5e1', display: 'block', background: '#1e293b' } }),
                         React.createElement("button", {
                           disabled: isAnimActive,
                           onClick: startCooling,
                           className: "transition-colors mt-2 px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded text-[10px] shadow-sm disabled:opacity-50 active:scale-[0.97]"
-                        }, isAnimActive ? "Cooling..." : "⚡ Run Solidification")
+                        }, isAnimActive ? __alloT('stem.rocks.cooling_ellipsis', "Cooling...") : "⚡ " + __alloT('stem.rocks.run_solidification', "Run Solidification"))
                       ),
                       React.createElement("div", { className: "flex-1 w-full" },
                         React.createElement("div", { className: "grid grid-cols-4 gap-1 mb-2" },
@@ -2147,10 +2147,10 @@ const d = labToolData.rocks || {};
                 React.createElement("div", { className: "border-t border-slate-100 pt-3 mt-3" },
                   React.createElement("p", { className: "text-xs font-black text-violet-700 mb-2 flex items-center gap-1.5" },
                     React.createElement("span", null, "🧪"),
-                    React.createElement("span", null, "Acid Fizz Test Lab")
+                    React.createElement("span", null, __alloT('stem.rocks.acid_fizz_test_lab', "Acid Fizz Test Lab"))
                   ),
                   React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" },
-                    "Apply dilute hydrochloric acid (HCl) to test for the presence of carbonate minerals. Carbonates react by fizzing vigorously."
+                    __alloT('stem.rocks.acid_fizz_intro', "Apply dilute hydrochloric acid (HCl) to test for the presence of carbonate minerals. Carbonates react by fizzing vigorously.")
                   ),
                   React.createElement("div", { className: "flex items-center gap-3" },
                     React.createElement("button", {
@@ -2178,18 +2178,18 @@ const d = labToolData.rocks || {};
 
                           var res = "";
                           if (isCarbonate) {
-                            res = "🫧 Fizz! The acid reacted with calcium carbonate in the specimen, releasing carbon dioxide gas: CaCO3 + 2HCl -> CaCl2 + CO2 (gas) + H2O.";
+                            res = "🫧 " + __alloT('stem.rocks.fizz_positive', "Fizz! The acid reacted with calcium carbonate in the specimen, releasing carbon dioxide gas:") + " CaCO3 + 2HCl -> CaCl2 + CO2 (gas) + H2O.";
                           } else {
-                            res = "No reaction. The specimen does not contain carbonate minerals, so the acid simply sits on the surface.";
+                            res = __alloT('stem.rocks.fizz_no_reaction', "No reaction. The specimen does not contain carbonate minerals, so the acid simply sits on the surface.");
                           }
                           updMulti({ fizzAnimActive: false, fizzResult: res });
                         }, 1200);
                       },
                       className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50 active:scale-[0.97]"
-                    }, d.fizzAnimActive ? "🫧 Dropping Acid..." : "🧪 Drop HCl Acid"),
+                    }, d.fizzAnimActive ? "🫧 " + __alloT('stem.rocks.dropping_acid', "Dropping Acid...") : "🧪 " + __alloT('stem.rocks.drop_hcl_acid', "Drop HCl Acid")),
                     d.fizzAnimActive && React.createElement("div", { className: "flex items-center gap-1 animate-pulse" },
                       React.createElement("span", { className: "text-lg" }, "🫧"),
-                      React.createElement("span", { className: "text-[10px] text-violet-600 font-bold" }, "Bubbling reaction active...")
+                      React.createElement("span", { className: "text-[10px] text-violet-600 font-bold" }, __alloT('stem.rocks.bubbling_reaction_active', "Bubbling reaction active..."))
                     )
                   ),
                   d.fizzResult && React.createElement("p", { className: "text-xs font-bold text-slate-700 mt-2 leading-relaxed animate-in fade-in" },
@@ -2201,15 +2201,15 @@ const d = labToolData.rocks || {};
                 React.createElement("div", { className: "border-t border-slate-100 pt-3 mt-3" },
                   React.createElement("p", { className: "text-xs font-black text-slate-700 mb-1 flex items-center gap-1.5" },
                     React.createElement("span", null, "🧠"),
-                    React.createElement("span", null, "Ask the AI Petrologist")
+                    React.createElement("span", null, __alloT('stem.rocks.ask_ai_petrologist', "Ask the AI Petrologist"))
                   ),
                   React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" },
-                    "Query the AI about " + selRock.label + "'s geologic origin, chemical properties, or tectonic significance."
+                    __alloT('stem.rocks.query_ai_about_prefix', "Query the AI about ") + selRock.label + __alloT('stem.rocks.query_ai_suffix', "'s geologic origin, chemical properties, or tectonic significance.")
                   ),
                   React.createElement("div", { className: "flex gap-2" },
                     React.createElement("input", {
                       type: "text",
-                      placeholder: "Ask a question (e.g., How does this form?)...",
+                      placeholder: __alloT('stem.rocks.ask_question_placeholder', "Ask a question (e.g., How does this form?)..."),
                       value: d.aiQuestion || '',
                       onChange: function(e) { upd("aiQuestion", e.target.value); },
                       onKeyDown: function(e) { if (e.key === 'Enter') askPetrologist(); },
@@ -2219,7 +2219,7 @@ const d = labToolData.rocks || {};
                       disabled: d.aiLoading,
                       onClick: askPetrologist,
                       className: "px-3 py-1 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all disabled:opacity-50 active:scale-[0.97]"
-                    }, d.aiLoading ? "Thinking..." : "Ask")
+                    }, d.aiLoading ? __alloT('stem.rocks.thinking_ellipsis', "Thinking...") : __alloT('stem.rocks.ask_button', "Ask"))
                   ),
                   d.aiAnswer && React.createElement("div", { className: "mt-2 p-2.5 bg-slate-50 border rounded-lg animate-in slide-in-from-top-1" },
                     React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed font-medium" }, d.aiAnswer)
@@ -2900,9 +2900,9 @@ const d = labToolData.rocks || {};
 
                   React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 mt-0.5" },
 
-                    React.createElement("span", null, "1 (Talc)"),
+                    React.createElement("span", null, __alloT('stem.rocks.mohs_min_talc', "1 (Talc)")),
 
-                    React.createElement("span", null, "10 (Diamond)"))
+                    React.createElement("span", null, __alloT('stem.rocks.mohs_max_diamond', "10 (Diamond)")))
 
                 ),
 
@@ -3035,10 +3035,10 @@ const d = labToolData.rocks || {};
                 React.createElement("div", { className: "border-t border-violet-100 pt-3 mt-3" },
                   React.createElement("p", { className: "text-xs font-black text-violet-700 mb-2 flex items-center gap-1.5" },
                     React.createElement("span", null, "🧪"),
-                    React.createElement("span", null, "Acid Fizz Test Lab")
+                    React.createElement("span", null, __alloT('stem.rocks.acid_fizz_test_lab', "Acid Fizz Test Lab"))
                   ),
                   React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" },
-                    "Apply dilute hydrochloric acid (HCl) to test for the presence of carbonate minerals. Carbonates react by fizzing vigorously."
+                    __alloT('stem.rocks.acid_fizz_intro', "Apply dilute hydrochloric acid (HCl) to test for the presence of carbonate minerals. Carbonates react by fizzing vigorously.")
                   ),
                   React.createElement("div", { className: "flex items-center gap-3" },
                     React.createElement("button", {
@@ -3066,18 +3066,18 @@ const d = labToolData.rocks || {};
 
                           var res = "";
                           if (isCarbonate) {
-                            res = "🫧 Fizz! The acid reacted with calcium carbonate in the specimen, releasing carbon dioxide gas: CaCO3 + 2HCl -> CaCl2 + CO2 (gas) + H2O.";
+                            res = "🫧 " + __alloT('stem.rocks.fizz_positive', "Fizz! The acid reacted with calcium carbonate in the specimen, releasing carbon dioxide gas:") + " CaCO3 + 2HCl -> CaCl2 + CO2 (gas) + H2O.";
                           } else {
-                            res = "No reaction. The specimen does not contain carbonate minerals, so the acid simply sits on the surface.";
+                            res = __alloT('stem.rocks.fizz_no_reaction', "No reaction. The specimen does not contain carbonate minerals, so the acid simply sits on the surface.");
                           }
                           updMulti({ fizzAnimActive: false, fizzResult: res });
                         }, 1200);
                       },
                       className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50 active:scale-[0.97]"
-                    }, d.fizzAnimActive ? "🫧 Dropping Acid..." : "🧪 Drop HCl Acid"),
+                    }, d.fizzAnimActive ? "🫧 " + __alloT('stem.rocks.dropping_acid', "Dropping Acid...") : "🧪 " + __alloT('stem.rocks.drop_hcl_acid', "Drop HCl Acid")),
                     d.fizzAnimActive && React.createElement("div", { className: "flex items-center gap-1 animate-pulse" },
                       React.createElement("span", { className: "text-lg" }, "🫧"),
-                      React.createElement("span", { className: "text-[10px] text-violet-600 font-bold" }, "Bubbling reaction active...")
+                      React.createElement("span", { className: "text-[10px] text-violet-600 font-bold" }, __alloT('stem.rocks.bubbling_reaction_active', "Bubbling reaction active..."))
                     )
                   ),
                   d.fizzResult && React.createElement("p", { className: "text-xs font-bold text-slate-700 mt-2 leading-relaxed animate-in fade-in" },
@@ -3089,7 +3089,7 @@ const d = labToolData.rocks || {};
                 React.createElement("div", { className: "border-t border-slate-100 pt-3 mt-3" },
                   React.createElement("p", { className: "text-xs font-black text-slate-700 mb-1 flex items-center gap-1.5" },
                     React.createElement("span", null, "🧠"),
-                    React.createElement("span", null, "Ask the AI Petrologist")
+                    React.createElement("span", null, __alloT('stem.rocks.ask_ai_petrologist', "Ask the AI Petrologist"))
                   ),
                   React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" },
                     "Query the AI about " + selMineral.label + "'s geologic origin, chemical properties, or tectonic significance."
@@ -3097,7 +3097,7 @@ const d = labToolData.rocks || {};
                   React.createElement("div", { className: "flex gap-2" },
                     React.createElement("input", {
                       type: "text",
-                      placeholder: "Ask a question (e.g., How does this form?)...",
+                      placeholder: __alloT('stem.rocks.ask_question_placeholder', "Ask a question (e.g., How does this form?)..."),
                       value: d.aiQuestion || '',
                       onChange: function(e) { upd("aiQuestion", e.target.value); },
                       onKeyDown: function(e) { if (e.key === 'Enter') askPetrologist(); },
@@ -3107,7 +3107,7 @@ const d = labToolData.rocks || {};
                       disabled: d.aiLoading,
                       onClick: askPetrologist,
                       className: "px-3 py-1 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all disabled:opacity-50 active:scale-[0.97]"
-                    }, d.aiLoading ? "Thinking..." : "Ask")
+                    }, d.aiLoading ? __alloT('stem.rocks.thinking_ellipsis', "Thinking...") : __alloT('stem.rocks.ask_button', "Ask"))
                   ),
                   d.aiAnswer && React.createElement("div", { className: "mt-2 p-2.5 bg-slate-50 border rounded-lg animate-in slide-in-from-top-1" },
                     React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed font-medium" }, d.aiAnswer)
