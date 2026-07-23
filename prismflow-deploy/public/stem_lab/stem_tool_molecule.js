@@ -2021,7 +2021,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                     // Selection ring
 
-                    isSelected && React.createElement("circle", { cx: a.x, cy: a.y, r: 28, fill: "none", stroke: "#3b82f6", strokeWidth: 2, strokeDasharray: "4 2", className: "animate-spin" }),
+                    isSelected && React.createElement("circle", { cx: a.x, cy: a.y, r: 28, fill: "none", stroke: "#3b82f6", strokeWidth: 2, strokeDasharray: "4 2", className: "animate-spin motion-reduce:animate-none" }),
 
                     // Atom circle
 
