@@ -2751,17 +2751,18 @@ window.StemLab = window.StemLab || {
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⇊ Series vs parallel circuits'),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('caption', { className: 'sr-only' }, 'Series and parallel circuit comparison'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Aspect', 'Series', 'Parallel'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
               h('tbody', null,
                 SERIES_VS_PARALLEL.map(function(r, i) {
                   return h('tr', { key: 'r'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
-                    h('td', { className: 'px-2 py-1 text-slate-800 font-bold' }, r.aspect),
+                    h('th', { scope: 'row', className: 'px-2 py-1 text-left text-slate-800 font-bold' }, r.aspect),
                     h('td', { className: 'px-2 py-1 text-slate-700' }, r.series),
                     h('td', { className: 'px-2 py-1 text-slate-700' }, r.parallel)
                   );
@@ -3385,17 +3386,18 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'For 4-band resistors: first 2 bands = digits, 3rd = multiplier, 4th = tolerance. Mnemonic: "Big Boys Race Our Young Girls But Violet Generally Wins".'),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('caption', { className: 'sr-only' }, 'Resistor color code reference'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Color', 'Digit', 'Multiplier', 'Tolerance'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
               h('tbody', null,
                 RESISTOR_COLORS.map(function(c, i) {
                   return h('tr', { key: 'c'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
-                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, c.color),
+                    h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold text-slate-800' }, c.color),
                     h('td', { className: 'px-2 py-1 font-mono text-amber-700 font-bold' }, c.value),
                     h('td', { className: 'px-2 py-1 font-mono text-slate-700' }, c.mult),
                     h('td', { className: 'px-2 py-1 font-mono text-slate-600' }, c.tol)
@@ -3481,17 +3483,18 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Op-amp = operational amplifier. High gain (~100,000+), high input impedance, low output impedance. Used with feedback for predictable behavior.'),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('caption', { className: 'sr-only' }, 'Operational amplifier configurations'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Configuration', 'Gain', 'Use'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
               h('tbody', null,
                 OPAMP_CONFIGS.map(function(o, i) {
                   return h('tr', { key: 'o'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
-                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, o.name),
+                    h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold text-slate-800' }, o.name),
                     h('td', { className: 'px-2 py-1 font-mono text-amber-700 font-bold' }, o.gain),
                     h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, o.use)
                   );
@@ -3589,17 +3592,18 @@ window.StemLab = window.StemLab || {
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '∑ Units & constants'),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('caption', { className: 'sr-only' }, 'Electrical units and constants'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Quantity', 'Unit', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
               h('tbody', null,
                 UNITS_CONSTANTS.map(function(u, i) {
                   return h('tr', { key: 'u'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
-                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, u.quantity),
+                    h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold text-slate-800' }, u.quantity),
                     h('td', { className: 'px-2 py-1 font-mono text-amber-700 font-bold' }, u.unit),
                     h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, u.notes)
                   );
@@ -3800,17 +3804,18 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Most schematics use IEEE/ANSI (US) or IEC (European) symbols. Both are clear once you learn them, but mixing in one schematic is confusing.'),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('caption', { className: 'sr-only' }, 'Schematic symbols comparison'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Component', 'US (IEEE)', 'EU (IEC)', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
               h('tbody', null,
                 SCHEMATIC_SYMBOLS.map(function(s, i) {
                   return h('tr', { key: 's'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
-                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, s.name),
+                    h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold text-slate-800' }, s.name),
                     h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, s.us),
                     h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, s.eu),
                     h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, s.notes)
@@ -3859,17 +3864,18 @@ window.StemLab = window.StemLab || {
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔌 Common connectors + cables'),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('caption', { className: 'sr-only' }, 'Common electrical connectors and cables'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Connector', 'Pins', 'Use', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
               h('tbody', null,
                 CONNECTORS.map(function(c, i) {
                   return h('tr', { key: 'c'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
-                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, c.name),
+                    h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold text-slate-800' }, c.name),
                     h('td', { className: 'px-2 py-1 font-mono text-amber-700 font-bold text-[10px]' }, c.pins),
                     h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, c.use),
                     h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, c.notes)
@@ -3998,17 +4004,18 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Typical wattage of common devices. Watts × hours = watt-hours of energy used. 1 kWh costs ~$0.10-0.30 in most regions.'),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('caption', { className: 'sr-only' }, 'Household appliance power reference'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Device', 'Power', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
               h('tbody', null,
                 APPLIANCES.map(function(a, i) {
                   return h('tr', { key: 'a'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
-                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, a.device),
+                    h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold text-slate-800' }, a.device),
                     h('td', { className: 'px-2 py-1 font-mono text-amber-700 font-bold text-[10px]' }, a.watts),
                     h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, a.notes)
                   );
@@ -4112,17 +4119,18 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'American Wire Gauge. Lower number = THICKER. Doubles in cross-section every 3 gauges. Current capacity depends on insulation + ambient temp.'),
           h('div', { className: 'overflow-x-auto mb-3' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('caption', { className: 'sr-only' }, 'American Wire Gauge reference'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['AWG', 'Diameter', 'Max amps (chassis)', 'Typical use'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
               h('tbody', null,
                 WIRE_GAUGES.map(function(w, i) {
                   return h('tr', { key: 'w'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
-                    h('td', { className: 'px-2 py-1 font-mono font-black text-amber-700 text-center' }, w.awg),
+                    h('th', { scope: 'row', className: 'px-2 py-1 font-mono font-black text-amber-700 text-center' }, w.awg),
                     h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, w.dia),
                     h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, w.amps),
                     h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, w.use)
@@ -4299,17 +4307,18 @@ window.StemLab = window.StemLab || {
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔋 Battery technologies'),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('caption', { className: 'sr-only' }, 'Battery technology comparison'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Type', 'Voltage', 'Energy density', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
               h('tbody', null,
                 BATTERY_TYPES.map(function(b, i) {
                   return h('tr', { key: 'b'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
-                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, b.type),
+                    h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold text-slate-800' }, b.type),
                     h('td', { className: 'px-2 py-1 font-mono text-amber-700 font-bold text-[10px]' }, b.voltage),
                     h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, b.energy),
                     h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, b.notes)
@@ -4579,17 +4588,18 @@ window.StemLab = window.StemLab || {
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '↔ Digital communication protocols'),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('caption', { className: 'sr-only' }, 'Digital communication protocols'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Protocol', 'Wires', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
               h('tbody', null,
                 DIGITAL_PROTOCOLS.map(function(p, i) {
                   return h('tr', { key: 'p'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
-                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, p.protocol),
+                    h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold text-slate-800' }, p.protocol),
                     h('td', { className: 'px-2 py-1 font-mono text-amber-700 text-[10px]' }, p.wires),
                     h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, p.notes)
                   );
@@ -4605,17 +4615,18 @@ window.StemLab = window.StemLab || {
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '◉ Sensors'),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('caption', { className: 'sr-only' }, 'Electronic sensor reference'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Sensor', 'Measures', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
               h('tbody', null,
                 SENSORS.map(function(s, i) {
                   return h('tr', { key: 's'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
-                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, s.sensor),
+                    h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold text-slate-800' }, s.sensor),
                     h('td', { className: 'px-2 py-1 text-amber-700 font-medium text-[10px]' }, s.measures),
                     h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, s.notes)
                   );
@@ -4631,17 +4642,18 @@ window.StemLab = window.StemLab || {
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚙ Actuators + outputs'),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('caption', { className: 'sr-only' }, 'Electronic actuator reference'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Actuator', 'Purpose', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
               h('tbody', null,
                 ACTUATORS.map(function(a, i) {
                   return h('tr', { key: 'a'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
-                    h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, a.actuator),
+                    h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold text-slate-800' }, a.actuator),
                     h('td', { className: 'px-2 py-1 text-amber-700 font-medium text-[10px]' }, a.purpose),
                     h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, a.notes)
                   );
