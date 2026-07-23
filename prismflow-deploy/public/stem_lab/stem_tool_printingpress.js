@@ -2739,6 +2739,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8 } },
                 h('input', {
                   type: 'text', value: decodeAnswer,
+                  'aria-label': __alloT('stem.printingpress.mirror_word_answer_label', 'Readable version of the mirror-reversed type'),
                   onChange: function(e) { setDecodeAnswer(e.target.value); setDecodeFeedback(null); },
                   placeholder: __alloT('stem.printingpress.type_the_readable_word', 'Type the readable word…'),
                   style: { flex: 1, minWidth: 180, padding: 10, borderRadius: 6, border: '1px solid ' + T.border, background: T.cardAlt, color: T.text, fontSize: 16, fontFamily: 'Georgia, serif', letterSpacing: '0.05em', textTransform: 'uppercase' }
@@ -3761,6 +3762,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               h('span', { style: { color: T.text, fontWeight: 600 } }, label),
               h('strong', { style: { color: color, fontFamily: 'ui-monospace, monospace' } }, value.toFixed(0) + '%')),
             h('input', { type: 'range', min: 0, max: 100, value: value,
+              'aria-label': label + ' percentage', 'aria-valuetext': value.toFixed(0) + ' percent',
               onChange: onChange,
               className: 'printingpress-no-print',
               style: { width: '100%', accentColor: color }
@@ -10103,6 +10105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 16, marginBottom: 12 } },
               h('div', { style: { fontSize: 13, color: T.muted, marginBottom: 8, fontWeight: 700 } }, 'Dry rag weight: ' + pmRagWeight + ' lb'),
               h('input', { type: 'range', min: 10, max: 500, step: 10, value: pmRagWeight,
+                'aria-label': __alloT('stem.printingpress.dry_rag_weight_slider_label', 'Dry rag weight in pounds'), 'aria-valuetext': pmRagWeight + ' pounds',
                 onChange: function(e) { setPmRagWeight(parseInt(e.target.value, 10)); },
                 style: { width: '100%', accentColor: T.accent } }),
               h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: T.dim, marginTop: 4 } },
@@ -10593,6 +10596,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 16, marginBottom: 12 } },
               h('div', { style: { fontSize: 13, color: T.muted, marginBottom: 8, fontWeight: 700 } }, 'Target page count: ' + bbPages),
               h('input', { type: 'range', min: 32, max: 1500, step: 16, value: bbPages,
+                'aria-label': __alloT('stem.printingpress.target_page_count_slider_label', 'Target page count'), 'aria-valuetext': bbPages + ' pages',
                 onChange: function(e) { setBbPages(parseInt(e.target.value, 10)); },
                 style: { width: '100%', accentColor: T.accent } }),
               h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: T.dim, marginTop: 4 } },
@@ -12353,6 +12357,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 12 } },
                 h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 6, fontWeight: 700 } }, 'x-height: ' + tfXHeight + (tfXHeight >= 65 ? ' (tall)' : tfXHeight >= 35 ? ' (medium)' : ' (low)')),
                 h('input', { type: 'range', min: 0, max: 100, value: tfXHeight,
+                  'aria-label': __alloT('stem.printingpress.x_height_slider_label', 'typeface x-height'), 'aria-valuetext': tfXHeight + ' out of 100',
                   onChange: function(e) { setTfXHeight(parseInt(e.target.value, 10)); },
                   style: { width: '100%', accentColor: T.accent } }),
                 h('div', { style: { fontSize: 10, color: T.dim, fontStyle: 'italic', marginTop: 4 } }, __alloT('stem.printingpress.tall_readable_at_small_sizes_low_elega', 'Tall = readable at small sizes; low = elegant at large sizes'))),
@@ -12360,6 +12365,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 12 } },
                 h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 6, fontWeight: 700 } }, 'Weight: ' + tfWeight + (tfWeight >= 75 ? ' (bold)' : tfWeight >= 50 ? ' (regular)' : tfWeight >= 25 ? ' (light)' : ' (thin)')),
                 h('input', { type: 'range', min: 0, max: 100, value: tfWeight,
+                  'aria-label': __alloT('stem.printingpress.weight_slider_label', 'typeface weight'), 'aria-valuetext': tfWeight + ' out of 100',
                   onChange: function(e) { setTfWeight(parseInt(e.target.value, 10)); },
                   style: { width: '100%', accentColor: T.accent } }),
                 h('div', { style: { fontSize: 10, color: T.dim, fontStyle: 'italic', marginTop: 4 } }, __alloT('stem.printingpress.heavy_stroke_vs_delicate_stroke', 'Heavy stroke vs delicate stroke'))),
@@ -12367,6 +12373,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 12 } },
                 h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 6, fontWeight: 700 } }, 'Contrast: ' + tfContrast + (tfContrast >= 75 ? ' (Bodoni-like)' : tfContrast >= 40 ? ' (transitional)' : ' (uniform)')),
                 h('input', { type: 'range', min: 0, max: 100, value: tfContrast,
+                  'aria-label': __alloT('stem.printingpress.contrast_slider_label', 'typeface stroke contrast'), 'aria-valuetext': tfContrast + ' out of 100',
                   onChange: function(e) { setTfContrast(parseInt(e.target.value, 10)); },
                   style: { width: '100%', accentColor: T.accent } }),
                 h('div', { style: { fontSize: 10, color: T.dim, fontStyle: 'italic', marginTop: 4 } }, __alloT('stem.printingpress.difference_between_thick_thin_strokes', 'Difference between thick + thin strokes'))),
@@ -12374,6 +12381,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 12 } },
                 h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 6, fontWeight: 700 } }, 'Width: ' + tfWidth + (tfWidth >= 75 ? ' (extended)' : tfWidth >= 35 ? ' (regular)' : ' (condensed)')),
                 h('input', { type: 'range', min: 0, max: 100, value: tfWidth,
+                  'aria-label': __alloT('stem.printingpress.width_slider_label', 'typeface width'), 'aria-valuetext': tfWidth + ' out of 100',
                   onChange: function(e) { setTfWidth(parseInt(e.target.value, 10)); },
                   style: { width: '100%', accentColor: T.accent } }),
                 h('div', { style: { fontSize: 10, color: T.dim, fontStyle: 'italic', marginTop: 4 } }, __alloT('stem.printingpress.horizontal_extent_of_letters', 'Horizontal extent of letters')))
@@ -19862,6 +19870,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               __alloT('stem.printingpress.quick_reference_for_vocabulary_used_th', 'Quick reference for vocabulary used throughout the tool. Filter by typing.')),
             h('input', {
               type: 'text',
+              'aria-label': __alloT('stem.printingpress.glossary_filter_label', 'Filter print glossary terms'),
               placeholder: __alloT('stem.printingpress.filter_terms_e_g_serif_binding_ink', 'Filter terms (e.g., "serif", "binding", "ink")'),
               value: pgFilter,
               onChange: function(e) { setPgFilter(e.target.value); },
@@ -20060,8 +20069,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#13100c', border: '1px solid #5c4630', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
             iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · sz' + e.sz + ' ln' + e.ln + ' ld' + e.ld + ' c' + e.c + ' → ' + e.sc); })
           ),
-          h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.printingpress.your_hypothesis_which_slider_drops_leg', 'Your hypothesis (which slider drops legibility fastest? Why?)')),
-          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.printingpress.e_g_line_length_matters_most_because_s', 'e.g., line length matters most because saccades break down past ~80 chars...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#13100c', color: '#f5ecd9', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          h('label', { htmlFor: 'pp-inquiry-hypothesis', style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.printingpress.your_hypothesis_which_slider_drops_leg', 'Your hypothesis (which slider drops legibility fastest? Why?)')),
+          h('textarea', { id: 'pp-inquiry-hypothesis', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.printingpress.e_g_line_length_matters_most_because_s', 'e.g., line length matters most because saccades break down past ~80 chars...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#13100c', color: '#f5ecd9', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
           !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #5c4630', background: '#13100c', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.printingpress.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
           iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#13100c', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
             h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, __alloT('stem.printingpress.open_questions_no_answer_key', 'Open questions (no answer key)')),
@@ -20076,7 +20085,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
             h('span', null, __alloT('stem.printingpress.i_can_explain_why_this_typography_comb', 'I can explain why this typography combination yields this legibility state.'))
           ),
-          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.printingpress.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#13100c', color: '#f5ecd9', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+          iq.understood && h('label', { htmlFor: 'pp-inquiry-explanation', style: { display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 4 } }, __alloT('stem.printingpress.explanation_label', 'Explain why this typography combination produces the current legibility result')),
+          iq.understood && h('textarea', { id: 'pp-inquiry-explanation', value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.printingpress.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#13100c', color: '#f5ecd9', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
           h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.printingpress.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Legibility heuristics from Tschichold, Bringhurst, Tinker; real reading rates also depend on typeface design, reader age, content density, and lighting.'))
         );
       }
