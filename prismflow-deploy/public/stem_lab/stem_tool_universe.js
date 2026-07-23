@@ -55,6 +55,146 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   })();
 
 
+  function UniverseTutorialDialog(props) {
+    var React = props.React;
+    var h = React.createElement;
+    var dialogRef = React.useRef(null);
+    var startRef = React.useRef(null);
+    var dismissHandlerRef = React.useRef(props.onDismiss);
+    dismissHandlerRef.current = props.onDismiss;
+
+    React.useEffect(function() {
+      var dialog = dialogRef.current;
+      if (!dialog || typeof document === 'undefined') return undefined;
+      var previousFocus = document.activeElement;
+      var overlay = dialog.parentElement;
+      var root = dialog.closest('[data-universe-tool="true"]');
+      var blocked = [];
+
+      if (root && overlay) {
+        Array.prototype.forEach.call(root.children, function(element) {
+          if (element === overlay) return;
+          blocked.push({
+            element: element,
+            hadInert: element.hasAttribute('inert'),
+            inertValue: element.getAttribute('inert'),
+            hadAriaHidden: element.hasAttribute('aria-hidden'),
+            ariaHiddenValue: element.getAttribute('aria-hidden')
+          });
+          element.setAttribute('inert', '');
+          element.setAttribute('aria-hidden', 'true');
+        });
+      }
+
+      var getFocusable = function() {
+        return Array.prototype.slice.call(dialog.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        ));
+      };
+      var focusInitial = function() {
+        (startRef.current || dialog).focus();
+      };
+      var onKeyDown = function(event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          dismissHandlerRef.current();
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var focusable = getFocusable();
+        if (!focusable.length) {
+          event.preventDefault();
+          dialog.focus();
+          return;
+        }
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      };
+      var onFocusIn = function(event) {
+        if (!dialog.contains(event.target)) focusInitial();
+      };
+
+      document.addEventListener('keydown', onKeyDown, true);
+      document.addEventListener('focusin', onFocusIn, true);
+      setTimeout(focusInitial, 0);
+
+      return function() {
+        document.removeEventListener('keydown', onKeyDown, true);
+        document.removeEventListener('focusin', onFocusIn, true);
+        blocked.forEach(function(entry) {
+          if (entry.hadInert) entry.element.setAttribute('inert', entry.inertValue || '');
+          else entry.element.removeAttribute('inert');
+          if (entry.hadAriaHidden) entry.element.setAttribute('aria-hidden', entry.ariaHiddenValue || '');
+          else entry.element.removeAttribute('aria-hidden');
+        });
+        setTimeout(function() {
+          var target = previousFocus && previousFocus.isConnected &&
+            previousFocus !== document.body && previousFocus !== document.documentElement
+            ? previousFocus
+            : root && root.querySelector(
+                'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+              );
+          if (target && typeof target.focus === 'function') target.focus();
+        }, 0);
+      };
+    }, []);
+
+    var steps = [
+      { icon: '\u23F3', text: 'Use the Left and Right Arrow keys or drag the timeline slider to travel through cosmic epochs.' },
+      { icon: '\u25B6', text: 'Activate Play to watch the universe evolve; you can pause playback at any time.' },
+      { icon: '\u2B50', text: 'Explore the Star Lifecycle from birth to black hole.' },
+      { icon: '\uD83D\uDCCA', text: 'Study the HR Diagram to classify stars.' },
+      { icon: '\uD83D\uDD73', text: 'Learn about dark energy, dark matter, and cosmic structure.' },
+      { icon: '\uD83E\uDDD1\u200D\uD83D\uDE80', text: 'Ask the AI Cosmos Tutor any question about the universe.' }
+    ];
+
+    return h('div', {
+      role: 'presentation',
+      className: 'fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm',
+      onClick: function(event) {
+        if (event.target === event.currentTarget) dismissHandlerRef.current();
+      }
+    },
+      h('div', {
+        ref: dialogRef,
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'universe-tutorial-title',
+        'aria-describedby': 'universe-tutorial-description universe-tutorial-instructions',
+        tabIndex: -1,
+        className: 'w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl'
+      },
+        h('div', { className: 'text-center mb-4' },
+          h('div', { className: 'text-4xl mb-2', 'aria-hidden': 'true' }, '\uD83C\uDF20\uD83D\uDCA5\u2B50'),
+          h('h2', { id: 'universe-tutorial-title', className: 'text-lg font-black text-slate-800' }, 'Welcome to Universe Time-Lapse!'),
+          h('p', { id: 'universe-tutorial-description', className: 'text-sm text-slate-600 mt-1' }, 'Explore 13.8 billion years of cosmic history.')
+        ),
+        h('ul', { id: 'universe-tutorial-instructions', className: 'space-y-2 text-xs text-slate-600' },
+          steps.map(function(step, index) {
+            return h('li', { key: index, className: 'flex items-start gap-2' },
+              h('span', { className: 'text-lg', 'aria-hidden': 'true' }, step.icon),
+              h('span', null, step.text)
+            );
+          })
+        ),
+        h('button', {
+          ref: startRef,
+          type: 'button',
+          'aria-label': 'Dismiss tutorial and start exploring',
+          onClick: function() { dismissHandlerRef.current(); },
+          className: 'mt-4 min-h-11 w-full rounded-xl bg-gradient-to-r from-violet-500 to-indigo-500 px-4 py-2 text-sm font-bold text-white shadow-lg transition-colors hover:from-violet-600 hover:to-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2'
+        }, '\uD83C\uDF20 Start Exploring!')
+      )
+    );
+  }
+
   window.StemLab.registerTool('universe', {
     icon: "🌌",
     label: "Universe Explorer",
@@ -1986,7 +2126,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             if (window._universeTimeLapse) { clearInterval(window._universeTimeLapse); window._universeTimeLapse = null; }
           };
 
-          return React.createElement("div", { className: "max-w-6xl mx-auto animate-in fade-in duration-200" },
+          return React.createElement("div", { "data-universe-tool": "true", className: "max-w-6xl mx-auto animate-in fade-in duration-200" },
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
@@ -4447,37 +4587,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             ),
 
             // === TUTORIAL OVERLAY ===
-            !d.tutorialDismissed && React.createElement("div", { 
-              className: "fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50",
-              onClick: function(e) { if (e.target === e.currentTarget) upd('tutorialDismissed', true); }
-            },
-              React.createElement("div", { className: "bg-white rounded-2xl p-6 max-w-md shadow-2xl mx-4" },
-                React.createElement("div", { className: "text-center mb-4" },
-                  React.createElement("div", { className: "text-4xl mb-2" }, "\uD83C\uDF20\uD83D\uDCA5\u2B50"),
-                  React.createElement("h2", { className: "text-lg font-black text-slate-800" }, "Welcome to Universe Time-Lapse!"),
-                  React.createElement("p", { className: "text-sm text-slate-600 mt-1" }, "Explore 13.8 billion years of cosmic history")
-                ),
-                React.createElement("div", { className: "space-y-2 text-xs text-slate-600" },
-                  [
-                    { icon: '\u23F3', text: 'Drag the timeline slider to travel through cosmic epochs' },
-                    { icon: '\u25B6', text: 'Press Play to watch the universe evolve in real time' },
-                    { icon: '\u2B50', text: 'Explore the Star Lifecycle from birth to black hole' },
-                    { icon: '\uD83D\uDCCA', text: 'Study the HR Diagram to classify stars' },
-                    { icon: '\uD83D\uDD73', text: 'Learn about dark energy, dark matter, and cosmic structure' },
-                    { icon: '\uD83E\uDDD1\u200D\uD83D\uDE80', text: 'Ask the AI Cosmos Tutor any question about the universe' }
-                  ].map(function(step, si) {
-                    return React.createElement("div", { key: si, className: "flex items-center gap-2" },
-                      React.createElement("span", { className: "text-lg" }, step.icon),
-                      React.createElement("span", null, step.text)
-                    );
-                  })
-                ),
-                React.createElement("button", { "aria-label": "Dismiss tutorial and start exploring",
-                  onClick: function() { upd('tutorialDismissed', true); playBeep(); },
-                  className: "mt-4 w-full py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 shadow-lg"
-                }, "\uD83C\uDF20 Start Exploring!")
-              )
-            ),
+            !d.tutorialDismissed && React.createElement(UniverseTutorialDialog, {
+              React: React,
+              onDismiss: function() {
+                upd('tutorialDismissed', true);
+                playBeep();
+                if (typeof announceToSR === 'function') announceToSR('Universe tutorial closed.');
+              }
+            }),
 
             // Snapshot button
             React.createElement("div", { className: "flex mt-3" },
