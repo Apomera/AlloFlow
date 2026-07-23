@@ -3762,6 +3762,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.common_molecule_library', '📚 Common molecule library')),
           React.createElement('input', {
             type: 'text',
+            'aria-label': __alloT('stem.molecule.search_molecule_library', 'Search molecule library'),
             value: d2.libSearch || '',
             onChange: function(e) { setExp({ libSearch: e.target.value }); },
             placeholder: __alloT('stem.molecule.search_formula_name_use', 'Search formula / name / use...'),
@@ -4425,6 +4426,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   },
                     React.createElement('input', {
                       type: 'checkbox',
+                      'aria-label': EVIDENCE_LABELS[ek],
                       checked: checked,
                       disabled: st.revealed,
                       onChange: function(e) {
@@ -4434,7 +4436,6 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                         newCases[c.id] = Object.assign({}, st, { evidence: newEv });
                         setBM({ cases: newCases });
                       },
-                      'aria-label': EVIDENCE_LABELS[ek],
                       className: 'w-3 h-3'
                     }),
                     EVIDENCE_LABELS[ek]
