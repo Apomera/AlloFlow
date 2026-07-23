@@ -448,6 +448,83 @@ describe('coaster lab — Ride & Solve math is GROUNDED in the checkpoint elemen
   });
 });
 
+describe('coaster lab — geometry preflight', () => {
+  function loadGeometryPreflight(p) {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const s = src.indexOf('/* @clab-geometry-preflight-start');
+    const e = src.indexOf('/* @clab-geometry-preflight-end');
+    expect(s).toBeGreaterThan(-1);
+    expect(e).toBeGreaterThan(s);
+    return new Function(src.slice(s, e) + '\nreturn geometryPreflightSamples;')();
+  }
+  function flatLine(count = 80) {
+    const pos = Array.from({ length: count }, (_, i) => ({ x: i * 5, y: 5, z: 0 }));
+    const s = Array.from({ length: count }, (_, i) => i * 5);
+    return { pos, s, L: count * 5 };
+  }
+
+  it.each(TOOL_PATHS)('%s leaves a clean closed circuit unflagged', (p) => {
+    const preflight = loadGeometryPreflight(p);
+    const count = 180, radius = 30, L = Math.PI * 2 * radius;
+    const pos = Array.from({ length: count }, (_, i) => {
+      const a = i / count * Math.PI * 2;
+      return { x: Math.cos(a) * radius, y: 5, z: Math.sin(a) * radius };
+    });
+    const s = Array.from({ length: count }, (_, i) => i / count * L);
+    expect(preflight(pos, s, L)).toEqual([]);
+  });
+
+  it('detects a non-adjacent centerline overlap without confusing neighboring samples', () => {
+    const preflight = loadGeometryPreflight(TOOL_PATHS[0]);
+    const path = flatLine();
+    path.pos[40] = { ...path.pos[0] };
+    const findings = preflight(path.pos, path.s, path.L);
+    const hit = findings.find(f => f.kind === 'track-overlap');
+    expect(hit).toBeTruthy();
+    expect(hit.distance).toBe(0);
+    expect(Math.abs(hit.sampleIdx - hit.relatedSampleIdx)).toBeGreaterThan(20);
+  });
+
+  it('reports insufficient train-envelope clearance separately from an intersection', () => {
+    const preflight = loadGeometryPreflight(TOOL_PATHS[0]);
+    const path = flatLine();
+    path.pos[40] = { x: 1.5, y: 5, z: 0 };
+    const findings = preflight(path.pos, path.s, path.L);
+    const hit = findings.find(f => f.kind === 'track-clearance');
+    expect(hit).toBeTruthy();
+    expect(hit.distance).toBeCloseTo(1.5, 5);
+    expect(hit.detail).toMatch(/room for track and train/);
+  });
+
+  it('finds terrain strikes and nearly coincident build nodes', () => {
+    const preflight = loadGeometryPreflight(TOOL_PATHS[0]);
+    const path = flatLine();
+    path.pos[18].y = 0.1;
+    const nodes = [
+      { x: 0, y: 5, z: 0 }, { x: 0.4, y: 5, z: 0 },
+      { x: 30, y: 5, z: 20 }, { x: 60, y: 5, z: 20 },
+    ];
+    const kinds = preflight(path.pos, path.s, path.L, nodes).map(f => f.kind);
+    expect(kinds).toContain('ground-clearance');
+    expect(kinds).toContain('node-spacing');
+  });
+
+  it.each(TOOL_PATHS)('%s integrates geometry findings and clearly limits certification scope', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'geometryPreflightSamples(track.pos, track.s, track.L, design.points)',
+      'const geometryClear = geometryProblems.length === 0;',
+      'completed && comfy && geometryClear && allOk',
+      "kind: overlaps ? 'track-overlap' : 'track-clearance'",
+      "return out.slice(0, 7);",
+      'Design preflight coach',
+      'Educational geometry + ideal-dynamics preview—not structural approval.',
+      '★ SIMULATION CERTIFIED — your math and this educational model agree.',
+    ]) expect(src).toContain(marker);
+    expect(src).not.toContain('Ride open to the public!');
+    expect(src).not.toContain('Before the park can open your ride');
+  });
+});
 describe('coaster lab — design validation and recovery', () => {
   function loadDesignNormalizer(p) {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
@@ -588,7 +665,7 @@ describe('coaster lab — build-your-own discovery and visual feedback', () => {
       'function simpleDesign(){', 'id=\\"clab-btnStartSimple\\"', 'id=\\"clab-elementPalette\\"',
       'data-element=\\"hill\\"', 'data-element=\\"drop\\"', 'data-element=\\"turn-left\\"',
       'data-element=\\"turn-right\\"', 'data-element=\\"loop\\"', 'function insertTrackElement(kind){',
-      'Predictive safety coach', 'function predictSafetyFindings(){', 'function focusSafetyFinding(index){',
+      'Design preflight coach', 'function predictSafetyFindings(){', 'function focusSafetyFinding(index){',
       'data-safety-index', 'const safetyGroup = new THREE.Group();',
     ]) expect(src).toContain(marker);
     expect(src).toContain("points: [\n      { x:  0, y: 3.0, z:  0, bank:  0 }");
