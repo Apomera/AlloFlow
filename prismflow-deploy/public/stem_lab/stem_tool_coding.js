@@ -11,6 +11,24 @@
   // ── Coding Playground Audio ──
   var _codeAC = null;
   var _codeRunToken = 0, _codeStepTimer = null, _codeRobotTimer = null;
+  // WCAG timing note: program and music playback can be stopped at any time.
+  // No learner task has a countdown or deadline, so pause/extend controls for time limits do not apply.
+  function CodingActivityCleanup(props) {
+    var React = props.React;
+    React.useEffect(function() {
+      return function() {
+        _codeRunToken++;
+        if (_codeStepTimer) { clearTimeout(_codeStepTimer); _codeStepTimer = null; }
+        if (_codeRobotTimer) { clearTimeout(_codeRobotTimer); _codeRobotTimer = null; }
+        if (typeof window !== 'undefined' && window.__bgMusicInterval) {
+          clearInterval(window.__bgMusicInterval);
+          window.__bgMusicInterval = null;
+        }
+      };
+    }, []);
+    return null;
+  }
+
   function getCodeAC() { if (!_codeAC) { try { _codeAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_codeAC && _codeAC.state === 'suspended') { try { _codeAC.resume(); } catch(e) {} } return _codeAC; }
   function codeTone(f, d, t, v) { var ac = getCodeAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxCodeRun() { codeTone(440, 0.06, 'sine', 0.06); setTimeout(function() { codeTone(554, 0.06, 'sine', 0.06); }, 50); setTimeout(function() { codeTone(659, 0.08, 'sine', 0.07); }, 100); }
@@ -1438,9 +1456,10 @@
 
           // ── Background Music Loop ──
           function toggleBgMusic() {
-            if (bgMusicPlaying) {
+            if (bgMusicPlaying || window.__bgMusicInterval) {
               upd('bgMusicPlaying', false);
               if (window.__bgMusicInterval) { clearInterval(window.__bgMusicInterval); window.__bgMusicInterval = null; }
+              if (typeof announceToSR === 'function') announceToSR('Background music stopped.');
               return;
             }
             if (bgMusicNotes.length === 0) {
@@ -1448,6 +1467,7 @@
             }
             var notes = bgMusicNotes.length > 0 ? bgMusicNotes : [262, 330, 392, 330];
             upd('bgMusicPlaying', true);
+            if (typeof announceToSR === 'function') announceToSR('Background music playing. Activate the music control again to stop.');
             var noteIdx = 0;
             window.__bgMusicInterval = setInterval(function() {
               try {
@@ -1804,6 +1824,7 @@
             className: "grid gap-4 relative",
             style: { gridTemplateColumns: '220px 1fr', gridTemplateRows: 'auto auto' }
           },
+            React.createElement(CodingActivityCleanup, { React: React }),
             // ── Templates gallery overlay ──
             showTemplates && React.createElement("div", {
               className: "col-span-2 bg-slate-800/95 backdrop-blur-sm rounded-xl p-4 border border-amber-500/30 shadow-2xl z-10",
@@ -2143,10 +2164,10 @@
                   (showCoordPicker ? "bg-amber-700 text-white" + (reducedMotion ? "" : " animate-pulse") : "bg-white/15 text-white hover:bg-white/25")
               }, t('stem.coding.pick_2', "📌 Pick")),
               // Background Music toggle
-              React.createElement("button", { "aria-label": t('stem.coding.toggle_bg_music', "Toggle Bg Music"),
+              React.createElement("button", { type: "button", "aria-label": bgMusicPlaying ? "Stop background music" : "Play background music", "aria-pressed": bgMusicPlaying ? "true" : "false",
                 onClick: toggleBgMusic,
                 title: bgMusicPlaying ? 'Stop background music' : 'Play background music loop',
-                className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
+                className: "min-h-11 px-2.5 py-2 rounded-lg text-xs font-bold transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white " +
                   (bgMusicPlaying ? "bg-green-700 text-white" : "bg-white/15 text-white hover:bg-white/25")
               }, bgMusicPlaying ? "🔊 Music" : "🔇 Music"),
               // Canvas Layer toggle
@@ -2334,13 +2355,13 @@
                         },
                         className: "px-2 py-1 rounded text-[11px] font-bold text-slate-200 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
                       }, t('stem.coding.reset_2', "\u21BA Reset")),
-                      React.createElement("button", { onClick: handleRobotRun,
+                      React.createElement("button", { type: "button", "aria-label": "Run robot program", onClick: handleRobotRun,
                         disabled: robotBlocks.length === 0 || robotRunning || robotChallengeIdx < 0,
-                        className: "coding-robot-run-btn px-3 py-1 rounded text-[11px] font-bold transition-all " +
+                        className: "coding-robot-run-btn min-h-11 px-3 py-2 rounded text-[11px] font-bold transition-all " +
                           (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-600" : "bg-slate-700 text-slate-300 cursor-not-allowed")
                       }, robotRunning ? "\u23F3 Running..." : "\u25B6 Run"),
-                      robotRunning && React.createElement("button", { "aria-label": t('stem.coding.stop', "Stop"), onClick: stopRun,
-                        className: "px-3 py-1 rounded text-[11px] font-bold bg-red-600 text-white hover:bg-red-700 transition-all"
+                      robotRunning && React.createElement("button", { type: "button", "aria-label": "Stop robot program playback", onClick: stopRun,
+                        className: "min-h-11 px-3 py-2 rounded text-[11px] font-bold bg-red-600 text-white hover:bg-red-700 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                       }, t('stem.coding.stop_2', "\u25A0 Stop"))
                     )
                   ),
@@ -2621,14 +2642,14 @@
               ),
               // Controls
               React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
-                React.createElement("button", { "aria-label": "Run",
+                React.createElement("button", { type: "button", "aria-label": "Run turtle program",
                   onClick: handleRun,
                   disabled: running || (codeMode === 'blocks' ? blocks.length === 0 : !textCode.trim()),
-                  className: "coding-run-btn flex items-center gap-1 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all " +
+                  className: "coding-run-btn min-h-11 flex items-center gap-1 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all " +
                     (running ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 active:scale-95 shadow-lg hover:shadow-green-500/30')
                 }, t('stem.coding.run', "▶ Run")),
-                running && React.createElement("button", { "aria-label": t('stem.coding.stop_3', "Stop"), onClick: stopRun,
-                  className: "flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-bold bg-red-600 text-white hover:bg-red-700 active:scale-95 shadow-lg"
+                running && React.createElement("button", { type: "button", "aria-label": "Stop turtle program playback", onClick: stopRun,
+                  className: "min-h-11 flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-bold bg-red-600 text-white hover:bg-red-700 active:scale-95 shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 }, t('stem.coding.stop_4', "\u25A0 Stop")),
                 React.createElement("button", { "aria-label": t('stem.coding.clear_canvas', "Clear Canvas"),
                   onClick: handleClear,
