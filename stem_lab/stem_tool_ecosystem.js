@@ -604,6 +604,138 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
   // REGISTER TOOL
   // ═══════════════════════════════════════════
+  function EcosystemTutorialDialog(props) {
+    var React = props.React;
+    var h = React.createElement;
+    var dialogRef = React.useRef(null);
+    var dismissRef = React.useRef(null);
+    var dismissHandlerRef = React.useRef(props.onDismiss);
+    dismissHandlerRef.current = props.onDismiss;
+
+    React.useEffect(function() {
+      var dialog = dialogRef.current;
+      if (!dialog) return undefined;
+      var previousFocus = typeof document !== 'undefined' ? document.activeElement : null;
+      var overlay = dialog.parentElement;
+      var root = dialog.closest('[data-ecosystem-tool="true"]');
+      var blocked = [];
+
+      if (root && overlay) {
+        Array.prototype.forEach.call(root.children, function(element) {
+          if (element === overlay) return;
+          blocked.push({
+            element: element,
+            hadInert: element.hasAttribute('inert'),
+            inertValue: element.getAttribute('inert'),
+            hadAriaHidden: element.hasAttribute('aria-hidden'),
+            ariaHiddenValue: element.getAttribute('aria-hidden')
+          });
+          element.setAttribute('inert', '');
+          element.setAttribute('aria-hidden', 'true');
+        });
+      }
+
+      var getFocusable = function() {
+        return Array.prototype.slice.call(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+      };
+      var focusInitial = function() {
+        (dismissRef.current || dialog).focus();
+      };
+      var onKeyDown = function(event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          dismissHandlerRef.current();
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var focusable = getFocusable();
+        if (!focusable.length) {
+          event.preventDefault();
+          dialog.focus();
+          return;
+        }
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      };
+      var onFocusIn = function(event) {
+        if (!dialog.contains(event.target)) focusInitial();
+      };
+
+      document.addEventListener('keydown', onKeyDown, true);
+      document.addEventListener('focusin', onFocusIn, true);
+      setTimeout(focusInitial, 0);
+
+      return function() {
+        document.removeEventListener('keydown', onKeyDown, true);
+        document.removeEventListener('focusin', onFocusIn, true);
+        blocked.forEach(function(entry) {
+          if (entry.hadInert) entry.element.setAttribute('inert', entry.inertValue || '');
+          else entry.element.removeAttribute('inert');
+          if (entry.hadAriaHidden) entry.element.setAttribute('aria-hidden', entry.ariaHiddenValue || '');
+          else entry.element.removeAttribute('aria-hidden');
+        });
+        setTimeout(function() {
+          var target = previousFocus && previousFocus.isConnected &&
+            previousFocus !== document.body && previousFocus !== document.documentElement
+            ? previousFocus
+            : root && root.querySelector('button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])');
+          if (target && typeof target.focus === 'function') target.focus();
+        }, 0);
+      };
+    }, []);
+
+    return h('div', {
+      role: 'presentation',
+      className: 'fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4',
+      style: { backdropFilter: 'blur(2px)' }
+    },
+      h('div', {
+        ref: dialogRef,
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'ecosystem-tutorial-title',
+        'aria-describedby': 'ecosystem-tutorial-description',
+        tabIndex: -1,
+        className: 'w-full max-w-sm max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl border-2 border-emerald-400 bg-white p-5 shadow-2xl dark:bg-slate-800'
+      },
+        h('div', { className: 'flex items-start justify-between gap-3 mb-3' },
+          h('h2', { id: 'ecosystem-tutorial-title', className: 'text-sm font-bold text-emerald-700 dark:text-emerald-300' }, props.stepLabel),
+          h('button', {
+            ref: dismissRef,
+            type: 'button',
+            'aria-label': props.dismissLabel,
+            className: 'min-h-11 min-w-11 shrink-0 rounded text-sm text-slate-600 transition-colors hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:text-slate-200',
+            onClick: function() { dismissHandlerRef.current(); }
+          }, '\u2715')
+        ),
+        h('p', {
+          id: 'ecosystem-tutorial-description',
+          className: 'mb-4 text-sm leading-relaxed text-slate-700 dark:text-slate-200'
+        }, props.description),
+        h('div', { className: 'flex gap-2' },
+          props.step > 0 && h('button', {
+            type: 'button',
+            'aria-label': props.backLabel,
+            className: 'min-h-11 rounded-lg px-4 py-2 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 active:scale-[0.97] dark:text-slate-200 dark:hover:bg-slate-700',
+            onClick: props.onBack
+          }, '\u2190 ' + props.backLabel),
+          h('button', {
+            type: 'button',
+            className: 'min-h-11 flex-1 rounded-xl bg-emerald-700 py-2 text-xs font-bold text-white shadow-md transition-colors hover:bg-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 active:scale-[0.97]',
+            onClick: props.step < 4 ? props.onNext : props.onDismiss
+          }, props.step < 4 ? props.nextLabel + ' \u2192' : '\u2714 ' + props.startLabel)
+        )
+      )
+    );
+  }
+
   window.StemLab.registerTool('ecosystem', {
     icon: '\uD83E\uDD8A', label: 'Ecosystem Simulator',
     desc: 'Model predator-prey dynamics with Lotka\u2013Volterra equations, live canvas, sandbox mode, event injection, quiz & AI tutor.',
@@ -5092,36 +5224,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         ),
 
         // ── Tutorial Overlay ──
-        !tutorialDismissed && tutorialStep < 5 && h('div', { 
-          className: 'fixed inset-0 bg-black/40 flex items-center justify-center z-50',
-          style: { backdropFilter: 'blur(2px)' }
-        },
-          h('div', { className: 'bg-white dark:bg-slate-800 rounded-2xl p-5 max-w-sm mx-4 shadow-2xl border-2 border-emerald-400' },
-            h('div', { className: 'flex items-center justify-between mb-3' },
-              h('span', { className: 'text-sm font-bold text-emerald-700 dark:text-emerald-300' },
-                '\uD83C\uDF3F ' + __alloT('stem.ecosystem.step_prefix', 'Step ') + (tutorialStep + 1) + __alloT('stem.ecosystem.of_5_suffix', ' of 5')),
-              h('button', { 'aria-label': __alloT('stem.ecosystem.aria_dismiss_tutorial', 'Dismiss Tutorial'), className: 'transition-colors text-slate-600 hover:text-slate-900 text-sm rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500', onClick: dismissTutorial }, '\u2715')
-            ),
-            h('p', { className: 'text-sm text-slate-700 dark:text-slate-200 mb-4 leading-relaxed' },
-              [
-                '\uD83C\uDF3F ' + __alloT('stem.ecosystem.tut_step_1', 'Welcome to the Ecosystem Simulator! Watch rabbits and foxes interact in the canvas above.'),
-                '\uD83C\uDF0E ' + __alloT('stem.ecosystem.tut_step_2', 'Choose a biome at the top to change the environment. Each has unique colors and ecology.'),
-                '\u26A1 ' + __alloT('stem.ecosystem.tut_step_3', 'Trigger environmental events to test the ecosystem\u2019s resilience! Try Drought or Wildfire.'),
-                '\uD83C\uDFAF ' + __alloT('stem.ecosystem.tut_step_4', 'Complete ecology challenges by maintaining specific population patterns. Earn RP!'),
-                '\uD83D\uDCCA ' + __alloT('stem.ecosystem.tut_step_5', 'Run the graph simulation with Lotka\u2013Volterra equations. Try all 4 presets!')
-              ][tutorialStep]
-            ),
-            h('div', { className: 'flex gap-2' },
-              tutorialStep > 0 && h('button', { 'aria-label': __alloT('stem.ecosystem.back', 'Back'),
-                className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-[0.97]',
-                onClick: function() { upd('tutorialStep', tutorialStep - 1); }
-              }, '\u2190 ' + __alloT('stem.ecosystem.back', 'Back')),
-              h('button', { className: 'transition-colors flex-1 py-2 rounded-xl text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-600 shadow-md active:scale-[0.97]',
-                onClick: tutorialStep < 4 ? advanceTutorial : dismissTutorial
-              }, tutorialStep < 4 ? __alloT('stem.ecosystem.next', 'Next') + ' \u2192' : '\u2714 ' + __alloT('stem.ecosystem.start_exploring', 'Start Exploring!'))
-            )
-          )
-        )
+        !tutorialDismissed && tutorialStep < 5 && h(EcosystemTutorialDialog, {
+          React: React,
+          step: tutorialStep,
+          stepLabel: '\uD83C\uDF3F ' + __alloT('stem.ecosystem.step_prefix', 'Step ') + (tutorialStep + 1) + __alloT('stem.ecosystem.of_5_suffix', ' of 5'),
+          description: [
+            '\uD83C\uDF3F ' + __alloT('stem.ecosystem.tut_step_1', 'Welcome to the Ecosystem Simulator! Watch rabbits and foxes interact in the canvas above.'),
+            '\uD83C\uDF0E ' + __alloT('stem.ecosystem.tut_step_2', 'Choose a biome at the top to change the environment. Each has unique colors and ecology.'),
+            '\u26A1 ' + __alloT('stem.ecosystem.tut_step_3', 'Trigger environmental events to test the ecosystem\u2019s resilience! Try Drought or Wildfire.'),
+            '\uD83C\uDFAF ' + __alloT('stem.ecosystem.tut_step_4', 'Complete ecology challenges by maintaining specific population patterns. Earn RP!'),
+            '\uD83D\uDCCA ' + __alloT('stem.ecosystem.tut_step_5', 'Run the graph simulation with Lotka\u2013Volterra equations. Try all 4 presets!')
+          ][tutorialStep],
+          dismissLabel: __alloT('stem.ecosystem.aria_dismiss_tutorial', 'Dismiss Tutorial'),
+          backLabel: __alloT('stem.ecosystem.back', 'Back'),
+          nextLabel: __alloT('stem.ecosystem.next', 'Next'),
+          startLabel: __alloT('stem.ecosystem.start_exploring', 'Start Exploring!'),
+          onBack: function() { upd('tutorialStep', tutorialStep - 1); },
+          onNext: advanceTutorial,
+          onDismiss: dismissTutorial
+        })
 
       );
     }
