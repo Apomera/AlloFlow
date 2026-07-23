@@ -228,6 +228,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         }
       }
 
+      // Accessible destructive-action confirmation shared by every view.
+      var _confirmStateRaw = useState(null);
+      var confirmState = _confirmStateRaw[0], setConfirmState = _confirmStateRaw[1];
+      var _confirmActionRef = useRef(null);
+      var _confirmTriggerRef = useRef(null);
+      var _confirmRestoreRef = useRef(null);
+      var _confirmDialogRef = useRef(null);
+      var _confirmCancelRef = useRef(null);
+      var _appRef = useRef(null);
+
+      function requestConfirmation(config, trigger) {
+        _confirmActionRef.current = config.onConfirm;
+        _confirmTriggerRef.current = trigger || (typeof document !== 'undefined' ? document.activeElement : null);
+        setConfirmState({
+          title: config.title,
+          message: config.message,
+          confirmLabel: config.confirmLabel,
+          cancelLabel: config.cancelLabel
+        });
+      }
+
+      function closeConfirmation(confirmed) {
+        var action = confirmed ? _confirmActionRef.current : null;
+        var trigger = _confirmTriggerRef.current;
+        _confirmActionRef.current = null;
+        _confirmTriggerRef.current = null;
+        _confirmRestoreRef.current = { trigger: trigger };
+        setConfirmState(null);
+        if (typeof action === 'function') action();
+      }
+
+      useEffect(function() {
+        if (!confirmState) {
+          var pendingRestore = _confirmRestoreRef.current;
+          if (pendingRestore) {
+            _confirmRestoreRef.current = null;
+            var trigger = pendingRestore.trigger;
+            if (trigger && trigger.isConnected && typeof trigger.focus === 'function') trigger.focus();
+            else if (_appRef.current && typeof _appRef.current.focus === 'function') _appRef.current.focus();
+          }
+          return undefined;
+        }
+        if (typeof document === 'undefined') return undefined;
+        if (_confirmCancelRef.current) _confirmCancelRef.current.focus();
+        function handleConfirmKeyDown(event) {
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            closeConfirmation(false);
+            return;
+          }
+          if (event.key !== 'Tab' || !_confirmDialogRef.current) return;
+          var focusable = _confirmDialogRef.current.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+          if (!focusable.length) { event.preventDefault(); return; }
+          var first = focusable[0], last = focusable[focusable.length - 1];
+          if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+          else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        }
+        document.addEventListener('keydown', handleConfirmKeyDown);
+        return function() { document.removeEventListener('keydown', handleConfirmKeyDown); };
+      }, [confirmState]);
+
+      function renderConfirmationDialog() {
+        if (!confirmState) return null;
+        return h('div', {
+          style: { position: 'fixed', inset: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(0,0,0,0.72)' }
+        },
+          h('div', {
+            ref: _confirmDialogRef,
+            role: 'alertdialog',
+            'aria-modal': 'true',
+            'aria-labelledby': 'printingpress-confirm-title',
+            'aria-describedby': 'printingpress-confirm-message',
+            style: { width: 'min(100%, 460px)', padding: 20, borderRadius: 12, border: '2px solid ' + T.accent, background: T.card, color: T.text, boxShadow: '0 18px 55px rgba(0,0,0,0.65)' }
+          },
+            h('h2', { id: 'printingpress-confirm-title', style: { margin: '0 0 10px', color: T.accentHi, fontSize: 20 } }, confirmState.title),
+            h('p', { id: 'printingpress-confirm-message', style: { margin: '0 0 18px', color: T.muted, lineHeight: 1.55 } }, confirmState.message),
+            h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' } },
+              h('button', { ref: _confirmCancelRef, onClick: function() { closeConfirmation(false); }, style: btn({ minWidth: 100, textAlign: 'center' }) }, confirmState.cancelLabel),
+              h('button', { onClick: function() { closeConfirmation(true); }, style: btn({ minWidth: 100, textAlign: 'center', background: T.danger, borderColor: T.danger, color: '#fff' }) }, confirmState.confirmLabel)
+            )
+          )
+        );
+      }
+
       function awardBadge(id, label) {
         if (badges[id]) return;
         var next = Object.assign({}, badges);
@@ -8584,7 +8668,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 h('div', { style: { fontSize: 11, color: T.dim, marginTop: 2 } }, 'Decision ' + (step + 1) + ' of ' + allDecisions.length + ' · ' + currentDecision.time)
               ),
               h('button', { className: 'printingpress-no-print',
-                onClick: function() { if (typeof window !== 'undefined' && window.confirm && !window.confirm('Restart? You will lose your current progress.')) return; restart(); },
+                onClick: function(e) {
+                  requestConfirmation({
+                    title: __alloT('stem.printingpress.restart_confirmation_title', 'Restart this role-play?'),
+                    message: __alloT('stem.printingpress.restart_confirmation_message', 'Your current role-play progress and choices will be lost.'),
+                    confirmLabel: __alloT('stem.printingpress.restart', 'Restart'),
+                    cancelLabel: __alloT('stem.printingpress.cancel', 'Cancel'),
+                    onConfirm: function() { restart(); announce(__alloT('stem.printingpress.role_play_restarted', 'Role-play restarted')); }
+                  }, e.currentTarget);
+                },
+                'aria-haspopup': 'dialog',
                 style: btn({ padding: '4px 10px', fontSize: 11 }) }, __alloT('stem.printingpress.restart', 'Restart'))
             ),
             // Progress bar
@@ -9134,10 +9227,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8, gap: 8, flexWrap: 'wrap' } },
               h('h3', { style: { margin: 0, fontSize: 13, fontWeight: 700, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.06em' } }, '🕒 Recent answers (' + askHistory.length + ')'),
               h('button', {
-                onClick: function() {
-                  if (typeof window !== 'undefined' && window.confirm && !window.confirm('Clear all saved AI answers?')) return;
-                  upd('askHistory', []); announce('History cleared');
+                onClick: function(e) {
+                  requestConfirmation({
+                    title: __alloT('stem.printingpress.clear_history_confirmation_title', 'Clear saved AI answers?'),
+                    message: __alloT('stem.printingpress.clear_history_confirmation_message', 'This permanently removes every saved question and answer from this activity.'),
+                    confirmLabel: __alloT('stem.printingpress.clear_history', 'Clear history'),
+                    cancelLabel: __alloT('stem.printingpress.cancel', 'Cancel'),
+                    onConfirm: function() { upd('askHistory', []); announce(__alloT('stem.printingpress.history_cleared', 'History cleared')); }
+                  }, e.currentTarget);
                 },
+                'aria-haspopup': 'dialog',
                 style: btn({ padding: '4px 10px', fontSize: 11 })
               }, __alloT('stem.printingpress.clear_history', 'Clear history'))
             ),
@@ -20113,7 +20212,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         'radial-gradient(ellipse 70% 55% at 50% 0%, rgba(245, 215, 126, 0.10), transparent 70%), ' +
         'radial-gradient(ellipse 90% 70% at 50% 100%, rgba(0, 0, 0, 0.35), transparent 75%), ' +
         'url("' + paperGrainSvg + '"), ' + T.bg;
-      return h('div', { style: {
+      return h('div', { ref: _appRef, tabIndex: -1, style: {
           background: bgLayers,
           backgroundRepeat: 'no-repeat, no-repeat, repeat, no-repeat',
           backgroundAttachment: 'fixed, fixed, scroll, scroll',
@@ -20148,7 +20247,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           // Colophon credit line — period-style printer's mark.
           h('div', { style: { textAlign: 'center', fontSize: 11, color: T.dim, fontStyle: 'italic', marginTop: 6, fontFamily: 'Georgia, serif', lineHeight: 1.5 } },
             __alloT('stem.printingpress.composed_and_pressed_by_hand_at_the_al', 'Composed and pressed by hand at the AlloFlow PrintingPress · Mainz 1455 in spirit · MMXXVI'))
-        )
+        ),
+        renderConfirmationDialog()
       );
 
       } catch (err) {
