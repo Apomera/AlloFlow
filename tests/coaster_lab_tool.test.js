@@ -529,11 +529,31 @@ describe('coaster lab — build-your-own discovery and visual feedback', () => {
     ]) expect(src).toContain(marker);
   });
 
+  function loadKeyboardNudge(p) {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const s = src.indexOf('/* @clab-keyboard-edit-start');
+    const e = src.indexOf('/* @clab-keyboard-edit-end');
+    expect(s).toBeGreaterThan(-1);
+    expect(e).toBeGreaterThan(s);
+    return new Function(src.slice(s, e) + '\nreturn { nudgeNodeXZ };')().nudgeNodeXZ;
+  }
+
+  it.each(TOOL_PATHS)('%s clamps keyboard ground movement to the editable world', (p) => {
+    const nudge = loadKeyboardNudge(p);
+    expect(nudge({ x: 12, z: -8 }, 2, -5)).toEqual({ x: 14, z: -13 });
+    expect(nudge({ x: 259, z: -259 }, 5, -5)).toEqual({ x: 260, z: -260 });
+    expect(nudge({ x: 'bad', z: Infinity }, 2, -3)).toEqual({ x: 2, z: -3 });
+  });
+
   it.each(TOOL_PATHS)('%s lets keyboard users move between editable nodes with announced units', (p) => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
     for (const marker of [
       'id=\\"clab-btnPrevPt\\"', 'id=\\"clab-btnNextPt\\"', 'function selectAdjacentPoint(delta){',
+      'id=\\"clab-slX\\"', 'id=\\"clab-slZ\\"', 'id=\\"clab-nodeStep\\"',
+      'id=\\"clab-btnXMinus\\"', 'id=\\"clab-btnXPlus\\"', 'id=\\"clab-btnZMinus\\"', 'id=\\"clab-btnZPlus\\"',
+      'function nudgeSelectedNode(dx, dz){', 'function syncGroundPositionFromControls(){',
       "selectAdjacentPoint(-1)", "selectAdjacentPoint(1)",
+      "slX.setAttribute('aria-valuetext'", "slZ.setAttribute('aria-valuetext'",
       "slHeight.setAttribute('aria-valuetext'", "slBank.setAttribute('aria-valuetext'",
       'id=\\"clab-banner\\" role=\\"status\\" aria-live=\\"polite\\"',
       "bannerEl.setAttribute('aria-live', usesBridgeAnnouncer ? 'off' : 'polite')",
