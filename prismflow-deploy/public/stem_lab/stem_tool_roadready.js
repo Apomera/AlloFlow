@@ -4670,6 +4670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (!gl3d) { addToast('Photo: 3D canvas not ready.'); return; }
           var w = gl3d.width, hH = gl3d.height;
           var off = document.createElement('canvas');
+          off.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
           off.width = w; off.height = hH;
           var octx = off.getContext('2d');
           octx.drawImage(gl3d, 0, 0, w, hH);
@@ -4740,6 +4741,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var confCvs = document.getElementById(confId);
         if (!confCvs) {
           confCvs = document.createElement('canvas');
+          confCvs.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
           confCvs.id = confId;
           confCvs.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:99999;';
           document.body.appendChild(confCvs);
@@ -11779,6 +11781,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Helper: create a sign texture from canvas with text
           function makeSignTexture(lines, bgColor, textColor, w, h) {
             var c = document.createElement('canvas');
+            c.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
             c.width = w || 128; c.height = h || 192;
             var g = c.getContext('2d');
             // Background
@@ -12950,6 +12953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // mast-arm signals in the infinite world. Always faces camera.
                 try {
                   var slCv = document.createElement('canvas');
+                  slCv.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
                   slCv.width = 64; slCv.height = 64;
                   var slCx = slCv.getContext('2d');
                   slCx.fillStyle = 'rgba(0,0,0,0.55)';
@@ -13201,6 +13205,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Speedometer gauge face with mph numbers (canvas-textured)
           var gaugeMaxMph = Math.max(80, currentScenario.speedLimit + 30);
           var gaugeFaceCanvas = document.createElement('canvas');
+          gaugeFaceCanvas.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
           gaugeFaceCanvas.width = 256; gaugeFaceCanvas.height = 256;
           var gCtx = gaugeFaceCanvas.getContext('2d');
           // Dark background
@@ -13926,6 +13931,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // Digital speed readout on dashboard (updated canvas texture)
               if (!s3.digitalSpeedCanvas) {
                 s3.digitalSpeedCanvas = document.createElement('canvas');
+                s3.digitalSpeedCanvas.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
                 s3.digitalSpeedCanvas.width = 128; s3.digitalSpeedCanvas.height = 48;
                 var dsTex = new window.THREE.CanvasTexture(s3.digitalSpeedCanvas);
                 dsTex.minFilter = window.THREE.LinearFilter;
@@ -16774,6 +16780,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   // Sign text via canvas texture
                   try {
                     var signCan = document.createElement('canvas');
+                    signCan.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
                     signCan.width = 256; signCan.height = 128;
                     var signCtx = signCan.getContext('2d');
                     signCtx.fillStyle = '#' + lt.signColor.toString(16).padStart(6, '0');
@@ -16823,6 +16830,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   // Draw sign face with text via canvas texture
                   try {
                     var sgCan = document.createElement('canvas');
+                    sgCan.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
                     sgCan.width = 256; sgCan.height = shape === 'rect' ? 320 : 256;
                     var sgCtx = sgCan.getContext('2d');
                     var faceHex = '#' + faceColor.toString(16).padStart(6, '0');
@@ -17000,6 +17008,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 chunkGroup.add(spPost);
                 try {
                   var spCan = document.createElement('canvas');
+                  spCan.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
                   spCan.width = 256; spCan.height = 320;
                   var spCtx = spCan.getContext('2d');
                   spCtx.fillStyle = '#ffffff'; spCtx.fillRect(0, 0, 256, 320);
@@ -17566,6 +17575,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   // Face — white rectangle with canvas-textured number.
                   try {
                     var sc = document.createElement('canvas');
+                    sc.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
                     sc.width = 128; sc.height = 160;
                     var sx = sc.getContext('2d');
                     sx.fillStyle = '#ffffff';
@@ -17970,6 +17980,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   // because some embedded contexts disable canvas creation.
                   try {
                     var mc = document.createElement('canvas');
+                    mc.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
                     mc.width = 128; mc.height = 128;
                     var mx = mc.getContext('2d');
                     mx.clearRect(0, 0, 128, 128);
@@ -18140,6 +18151,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   // Green panel with white text "MILE N"
                   try {
                     var mmCan = document.createElement('canvas');
+                    mmCan.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
                     mmCan.width = 64; mmCan.height = 96;
                     var mmCx = mmCan.getContext('2d');
                     mmCx.fillStyle = '#0b5e2c'; // interstate green
@@ -18359,6 +18371,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var numTex = iw._roadNumCache[cacheKey];
                   if (!numTex) {
                     var numCan = document.createElement('canvas');
+                    numCan.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
                     numCan.width = 128; numCan.height = 256;
                     var numCtx = numCan.getContext('2d');
                     // Transparent background — only the number paints
@@ -18506,6 +18519,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 try {
                   if (!iw._rrPaintTex) {
                     var rrCan = document.createElement('canvas');
+                    rrCan.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
                     rrCan.width = 128; rrCan.height = 256;
                     var rrCtx = rrCan.getContext('2d');
                     rrCtx.clearRect(0, 0, 128, 256);
@@ -18910,6 +18924,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 wzPaddlePole.position.set(wzPaddleX, wzFlagHt + 1.05, wzPaddleZ);
                 chunkGroup.add(wzPaddlePole);
                 var wzPaddleCanvas = document.createElement('canvas');
+                wzPaddleCanvas.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
                 wzPaddleCanvas.width = 256; wzPaddleCanvas.height = 256;
                 var wzPaddleCtx = wzPaddleCanvas.getContext('2d');
                 var drawWzPaddle = function(showStop) {
@@ -19249,6 +19264,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   try {
                     if (!iw._bumpWordTex) {
                       var bwCan = document.createElement('canvas');
+                      bwCan.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
                       bwCan.width = 256; bwCan.height = 96;
                       var bwCtx = bwCan.getContext('2d');
                       bwCtx.clearRect(0, 0, 256, 96);
@@ -19626,6 +19642,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (chunk.crossStreetOneWayDirection) {
                   try {
                     var owCanvas = document.createElement('canvas');
+                    owCanvas.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
                     owCanvas.width = 384; owCanvas.height = 160;
                     var owCtx = owCanvas.getContext('2d');
                     owCtx.fillStyle = '#ffffff'; owCtx.fillRect(0, 0, 384, 160);
@@ -19761,6 +19778,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       // state (lit or dim).
                       try {
                         var lblCv = document.createElement('canvas');
+                        lblCv.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
                         lblCv.width = 64; lblCv.height = 64;
                         var lblCx = lblCv.getContext('2d');
                         lblCx.fillStyle = 'rgba(0,0,0,0.55)';
@@ -19861,6 +19879,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     // peds go), GREEN or YELLOW → don't-walk (cars moving).
                     var _buildPedTex = function(walkOn) {
                       var psCan = document.createElement('canvas');
+                      psCan.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
                       psCan.width = 128; psCan.height = 112;
                       var psCtx = psCan.getContext('2d');
                       psCtx.fillStyle = '#000000';
@@ -19923,6 +19942,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     // Octagonal face via canvas texture
                     try {
                       var ssCan = document.createElement('canvas');
+                      ssCan.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
                       ssCan.width = 256; ssCan.height = 256;
                       var ssCtx = ssCan.getContext('2d');
                       ssCtx.clearRect(0, 0, 256, 256);
@@ -19964,6 +19984,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     crossGroup.add(csPole);
                     try {
                       var cs_can = document.createElement('canvas');
+                      cs_can.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
                       cs_can.width = 256; cs_can.height = 256;
                       var cs_ctx = cs_can.getContext('2d');
                       cs_ctx.fillStyle = '#dc2626';
@@ -20022,6 +20043,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var stName = streets[((chunk.index * 7 + 13) & 0x7fffffff) % streets.length];
                   try {
                     var nc = document.createElement('canvas');
+                    nc.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
                     nc.width = 256; nc.height = 64;
                     var nx = nc.getContext('2d');
                     nx.fillStyle = '#166534';
@@ -24678,6 +24700,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               false && drivingStats.drivePath && drivingStats.drivePath.length > 5 ? h('div', { style: { marginBottom: '14px' } },
                 h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#22d3ee', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.your_drive_path', '🗺️ Your Drive Path')),
                 h('canvas', {
+                  'aria-hidden': true,
                   ref: function(c) {
                     if (!c) return;
                     var g = c.getContext('2d');
@@ -30600,6 +30623,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))', marginBottom: '14px' } },
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#10b981', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.mpg_vs_speed_steady_cruise', 'MPG vs Speed (steady cruise)')),
             h('canvas', {
+              role: 'img',
+              'aria-label': __alloT('stem.roadready.mpg_by_speed_chart_label', 'Miles per gallon by speed chart') + ': ' + currentVehicle.name + ' on ' + weatherChoice + ', best ' + maxMpg.toFixed(1) + ' miles per gallon at ' + bestSpeed + ' miles per hour',
               width: 700, height: 240,
               ref: function(canvas) {
                 if (!canvas) return;
@@ -30688,6 +30713,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))', marginBottom: '10px' } },
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.speed_mph_over_time', 'Speed (mph) over time')),
             h('canvas', {
+              role: 'img',
+              'aria-label': __alloT('stem.roadready.crash_replay_chart_label', 'Crash replay speed and steering chart') + ': final ' + (replay.length / 60).toFixed(1) + ' seconds before impact, peak speed ' + Math.max.apply(null, replay.map(function(r) { return Math.abs(r.speed) * MS_TO_MPH; })).toFixed(1) + ' miles per hour',
               ref: function(c) {
                 if (!c) return;
                 var g = c.getContext('2d');
@@ -31301,6 +31328,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Force diagram canvas
           h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))', marginBottom: '14px' } },
             h('canvas', {
+              role: 'img',
+              'aria-label': __alloT('stem.roadready.force_diagram_canvas_label', 'Live vehicle force diagram') + ': ' + fdSpeed + ' miles per hour on ' + fdWeather + ', thrust ' + Math.round(thrust) + ' newtons, air drag ' + Math.round(Fd) + ' newtons, rolling resistance ' + Math.round(Fr) + ' newtons, net force ' + Math.round(netF) + ' newtons, acceleration ' + accel.toFixed(2) + ' meters per second squared',
               ref: function(c) {
                 if (!c) return;
                 var g = c.getContext('2d');
@@ -31480,6 +31509,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Top-down diagram of blind spots
           h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))', marginBottom: '10px' } },
             h('canvas', {
+              role: 'img',
+              'aria-label': __alloT('stem.roadready.blind_spot_diagram_canvas_label', 'Top-down blind-spot diagram: your car is centered with forward vision ahead, rearview and side-mirror coverage behind, and red blind spots immediately behind the left and right sides where other vehicles can hide'),
               ref: function(c) {
                 if (!c) return;
                 var g = c.getContext('2d');
