@@ -890,6 +890,8 @@
       // ── hooks (all unconditional) ──
       var containerRef = React.useRef(null);
       var fsRef = React.useRef(null);
+      var fsToggleRef = React.useRef(null);
+      var fsPrevFocusRef = React.useRef(null);
       var fss = React.useState(false); var isFs = fss[0], setIsFs = fss[1];
       var dpp = React.useState(100); var datingParent = dpp[0], setDatingParent = dpp[1];
       var identifiedRef = React.useRef(d.identified || {}); identifiedRef.current = d.identified || {};
@@ -979,14 +981,99 @@
       // iframe's permissions policy (it rejects with "Disallowed by permissions
       // policy"), so we expand to a fixed-position overlay instead — works anywhere.
       function toggleFullscreen() {
+        if (!isFs) {
+          try { fsPrevFocusRef.current = document.activeElement; } catch (e) {}
+        }
         setIsFs(function (v) { return !v; });
         setTimeout(function () { try { if (window[ENGINE_KEY] && window[ENGINE_KEY].resize) window[ENGINE_KEY].resize(); } catch (e) {} }, 70);
       }
       React.useEffect(function () {
-        if (!isFs) return;
-        function onKey(e) { if (e.key === 'Escape') setIsFs(false); }
-        try { document.addEventListener('keydown', onKey); } catch (e) {}
-        return function () { try { document.removeEventListener('keydown', onKey); } catch (e) {} };
+        if (!isFs) return undefined;
+        var dialog = fsRef.current;
+        if (!dialog) return undefined;
+        var boundary = dialog.closest('[data-geology-tool="true"]');
+        var blocked = [];
+        var current = dialog;
+
+        // The fullscreen viewport is nested. Isolate siblings at every ancestor
+        // level so the rest of the tool is hidden and inert while it is modal.
+        while (boundary && current && current !== boundary) {
+          var parent = current.parentElement;
+          if (!parent) break;
+          Array.prototype.forEach.call(parent.children, function(element) {
+            if (element === current) return;
+            blocked.push({
+              element: element,
+              hadInert: element.hasAttribute('inert'),
+              inertValue: element.getAttribute('inert'),
+              hadAriaHidden: element.hasAttribute('aria-hidden'),
+              ariaHiddenValue: element.getAttribute('aria-hidden')
+            });
+            element.setAttribute('inert', '');
+            element.setAttribute('aria-hidden', 'true');
+          });
+          current = parent;
+        }
+
+        var getFocusable = function() {
+          return Array.prototype.slice.call(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+        };
+        var focusInitial = function() {
+          (fsToggleRef.current || dialog).focus();
+        };
+        function onKey(event) {
+          if (event.key === 'Escape') {
+            // First-person mode stops Escape at the viewport; otherwise Escape
+            // reaches this listener and closes fullscreen.
+            event.preventDefault();
+            toggleFullscreen();
+            return;
+          }
+          if (event.key !== 'Tab') return;
+          var focusable = getFocusable();
+          if (!focusable.length) {
+            event.preventDefault();
+            dialog.focus();
+            return;
+          }
+          var first = focusable[0];
+          var last = focusable[focusable.length - 1];
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
+        function onFocusIn(event) {
+          if (!dialog.contains(event.target)) focusInitial();
+        }
+
+        try {
+          document.addEventListener('keydown', onKey);
+          document.addEventListener('focusin', onFocusIn);
+        } catch (e) {}
+        setTimeout(focusInitial, 0);
+
+        return function () {
+          try {
+            document.removeEventListener('keydown', onKey);
+            document.removeEventListener('focusin', onFocusIn);
+          } catch (e) {}
+          blocked.forEach(function(entry) {
+            if (entry.hadInert) entry.element.setAttribute('inert', entry.inertValue || '');
+            else entry.element.removeAttribute('inert');
+            if (entry.hadAriaHidden) entry.element.setAttribute('aria-hidden', entry.ariaHiddenValue || '');
+            else entry.element.removeAttribute('aria-hidden');
+          });
+          setTimeout(function() {
+            var target = fsPrevFocusRef.current && fsPrevFocusRef.current.isConnected
+              ? fsPrevFocusRef.current
+              : fsToggleRef.current;
+            if (target && typeof target.focus === 'function') target.focus();
+          }, 0);
+        };
       }, [isFs]);
 
       React.useEffect(function () {
@@ -1327,7 +1414,8 @@
             className: 'w-8 h-8 flex items-center justify-center rounded-md border text-sm font-bold select-none touch-none ' + (isDark ? 'bg-slate-900/80 border-slate-600 text-slate-100 active:bg-slate-700' : 'bg-white/85 border-slate-300 text-slate-700 active:bg-slate-200') }, label);
         }
         var emptyCell = function (k) { return h('span', { key: k }); };
-        return h('div', { ref: fsRef, className: (isFs ? 'fixed inset-0 z-[9999] overflow-hidden bg-[#060913]' : 'relative rounded-xl overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300')) },
+        return h('div', Object.assign({ ref: fsRef, className: (isFs ? 'fixed inset-0 z-[9999] overflow-hidden bg-[#060913]' : 'relative rounded-xl overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300')) }, isFs ? { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'geology-fullscreen-title', tabIndex: -1, 'data-geology-fullscreen': 'true' } : {}),
+          isFs ? h('h2', { id: 'geology-fullscreen-title', className: 'sr-only' }, t('stem.geology.fullscreen_title', 'Fullscreen geology explorer')) : null,
           h('div', { ref: containerRef, tabIndex: fpOn ? 0 : undefined, style: { height: isFs ? '100vh' : 'min(58vh, 460px)', minHeight: 320, background: '#060913', cursor: fpOn ? 'move' : (excavate ? 'crosshair' : 'grab') }, className: fpOn ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-inset' : undefined, role: fpOn ? 'application' : 'img', 'aria-label': fpOn ? 'First-person geology explorer. W A S D or arrow keys to fly, Q and E for up and down, I J K L or drag to look, Escape to exit.' : 'Interactive 3D voxel cross-section of the crust. Use the rock list below for a non-visual version.' }),
           h('div', { className: 'absolute top-2 left-2 z-10 flex gap-1' },
             [['iso', '3D'], ['front', 'Front'], ['top', 'Top']].map(function (vw) {
@@ -1335,7 +1423,7 @@
             }).concat([
               h('button', { key: 'fp', ref: fpToggleRef, type: 'button', 'aria-pressed': fpOn ? 'true' : 'false', 'aria-label': fpOn ? 'Exit first-person explorer' : 'Drop into the world — first-person explorer', onClick: function () { setFpOn(function (v) { return !v; }); }, className: 'transition-colors active:scale-[0.97] text-[10px] font-bold px-2 py-1 rounded-md border ' + (fpOn ? 'bg-emerald-500 border-emerald-400 text-emerald-950' : (isDark ? 'bg-slate-900/75 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/80 border-slate-300 text-slate-700 hover:bg-white')) }, fpOn ? ('🚪 ' + t('stem.geology.fp_exit', 'Exit')) : ('🚶 ' + t('stem.geology.fp_enter', 'Drop in')))
             ])),
-          h('button', { type: 'button', onClick: toggleFullscreen, title: isFs ? t('stem.geology.exit_fullscreen', 'Exit fullscreen') : t('stem.geology.fullscreen', 'Fullscreen'), 'aria-label': isFs ? 'Exit fullscreen 3D view' : 'Fullscreen 3D view', className: 'absolute top-2 right-2 z-10 transition-colors active:scale-[0.97] text-base leading-none px-2 py-1.5 rounded-lg border ' + (isDark ? 'bg-slate-900/80 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/85 border-slate-300 text-slate-700 hover:bg-white') }, isFs ? '✕' : '⛶'),
+          h('button', { ref: fsToggleRef, type: 'button', 'data-geology-fullscreen-toggle': 'true', onClick: toggleFullscreen, title: isFs ? t('stem.geology.exit_fullscreen', 'Exit fullscreen') : t('stem.geology.fullscreen', 'Fullscreen'), 'aria-label': isFs ? 'Exit fullscreen 3D view' : 'Fullscreen 3D view', className: 'absolute top-2 right-2 z-10 min-h-11 min-w-11 transition-colors active:scale-[0.97] text-base leading-none px-2 py-1.5 rounded-lg border ' + (isDark ? 'bg-slate-900/80 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/85 border-slate-300 text-slate-700 hover:bg-white') }, isFs ? '✕' : '⛶'),
           fpOn ? null : h('select', { value: res, 'aria-label': t('stem.geology.detail', 'Voxel detail level'), title: t('stem.geology.detail_tip', 'Higher detail = smaller, sharper voxels (heavier on weak devices)'), onChange: function (e) { var v = e.target.value; setRes(v); upd('res', v); setSlice(0); setExcavate(false); }, className: 'absolute bottom-2 left-2 z-10 text-[10px] font-bold px-1.5 py-1 rounded-md border cursor-pointer ' + (isDark ? 'bg-slate-900/80 border-slate-600 text-slate-100' : 'bg-white/85 border-slate-300 text-slate-700') },
             h('option', { value: 'low' }, t('stem.geology.detail_low', 'Detail: Low')),
             h('option', { value: 'standard' }, t('stem.geology.detail_std', 'Detail: Standard')),
@@ -1373,7 +1461,7 @@
           ? 'Compare two more materials and look for depth, texture, or age patterns.'
           : 'Use a core, fossil, or dating tool to support an evidence-based history.';
 
-      return h('div', { className: 'space-y-3 animate-in fade-in duration-200', 'data-geology-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'), style: isContrast ? { background: '#000000', color: '#ffffff', padding: '2px' } : null },
+      return h('div', { className: 'space-y-3 animate-in fade-in duration-200', 'data-geology-tool': 'true', 'data-geology-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'), style: isContrast ? { background: '#000000', color: '#ffffff', padding: '2px' } : null },
         // live region (SR)
         h('div', { id: 'allo-live-geology', 'aria-live': 'polite', 'aria-atomic': 'true', role: 'status', className: 'sr-only' }),
         // header
