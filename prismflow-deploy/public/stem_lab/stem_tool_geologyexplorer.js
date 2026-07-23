@@ -1316,7 +1316,7 @@
         if (!threeReady) {
           return h('div', { className: 'rounded-xl border flex items-center justify-center ' + cardBg, style: { minHeight: 320 } },
             h('div', { className: 'text-center' },
-              h('div', { className: 'text-2xl mb-2 animate-pulse' }, '🔷'),
+              h('div', { className: 'text-2xl mb-2 animate-pulse motion-reduce:animate-none' }, '🔷'),
               h('div', { className: 'text-sm ' + muted }, t('stem.geology.loading3d', 'Loading the 3D engine…'))));
         }
         function fpSet(axis, val) { try { var o = {}; o[axis] = val; if (window[ENGINE_KEY]) window[ENGINE_KEY].fpInput('move', o); } catch (e) {} }
