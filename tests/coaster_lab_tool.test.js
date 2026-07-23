@@ -448,6 +448,108 @@ describe('coaster lab — Ride & Solve math is GROUNDED in the checkpoint elemen
   });
 });
 
+describe('coaster lab — design validation and recovery', () => {
+  function loadDesignNormalizer(p) {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const s = src.indexOf('/* @clab-design-normalize-start');
+    const e = src.indexOf('/* @clab-design-normalize-end');
+    expect(s).toBeGreaterThan(-1);
+    expect(e).toBeGreaterThan(s);
+    return new Function(src.slice(s, e) +
+      '\nreturn { normalizeDesign, parseDesignJson, DESIGN_SCHEMA, DESIGN_MAX_JSON_CHARS };')();
+  }
+  const makeDesign = (count = 6) => ({
+    points: Array.from({ length: count }, (_, i) => ({ x: i * 8, y: 3 + i, z: i * 2, bank: i ? 10 : undefined })),
+    certTurnIdx: 99,
+  });
+
+  it.each(TOOL_PATHS)('%s normalizes legacy designs into a bounded, cloned schema', (p) => {
+    const { normalizeDesign, DESIGN_SCHEMA } = loadDesignNormalizer(p);
+    const input = makeDesign();
+    const out = normalizeDesign(input);
+    expect(DESIGN_SCHEMA).toBe(1);
+    expect(out.points).toHaveLength(6);
+    expect(out.points[0]).toEqual({ x: 0, y: 3, z: 0, bank: 0 });
+    expect(out.points[0]).not.toBe(input.points[0]);
+    expect(out.certTurnIdx).toBe(5);
+    expect(out.propulsion).toEqual({ mode: 'chain', accel: 7.5 });
+    input.points[0].x = 200;
+    expect(out.points[0].x).toBe(0);
+  });
+
+  it('rejects malformed, excessive, and out-of-world node data', () => {
+    const { normalizeDesign } = loadDesignNormalizer(TOOL_PATHS[0]);
+    expect(() => normalizeDesign(makeDesign(5))).toThrow(/6-80 nodes/);
+    expect(() => normalizeDesign(makeDesign(81))).toThrow(/6-80 nodes/);
+    for (const patch of [{ x: 261 }, { z: -261 }, { y: 0.4 }, { y: 46 }, { bank: 181 }, { x: '12' }]) {
+      const d = makeDesign();
+      Object.assign(d.points[2], patch);
+      expect(() => normalizeDesign(d)).toThrow();
+    }
+  });
+
+  it('rejects unknown versions, invalid launch settings, and oversized JSON before parsing', () => {
+    const { normalizeDesign, parseDesignJson, DESIGN_MAX_JSON_CHARS } = loadDesignNormalizer(TOOL_PATHS[0]);
+    expect(() => normalizeDesign({ coasterlab: 2, ...makeDesign() })).toThrow(/unsupported design version/);
+    expect(() => normalizeDesign({ ...makeDesign(), propulsion: { mode: 'launch', accel: 4.5 } })).toThrow(/acceleration/);
+    expect(() => normalizeDesign({ ...makeDesign(), propulsion: { mode: 'launch', accel: 14.5 } })).toThrow(/acceleration/);
+    expect(() => parseDesignJson(' '.repeat(DESIGN_MAX_JSON_CHARS + 1))).toThrow(/too large/);
+  });
+
+  function loadDesignStorage(p, initial = {}) {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const s = src.indexOf('/* @clab-design-normalize-start');
+    const e = src.indexOf('/* @clab-design-storage-end');
+    expect(s).toBeGreaterThan(-1);
+    expect(e).toBeGreaterThan(s);
+    const data = new Map(Object.entries(initial));
+    const localStorage = {
+      getItem: key => data.has(key) ? data.get(key) : null,
+      setItem: (key, value) => data.set(key, String(value)),
+      removeItem: key => data.delete(key),
+    };
+    const api = new Function('localStorage', 'STORE_KEY', src.slice(s, e) +
+      '\nreturn { loadDesign, getRecovery: () => designRecovery, backupKey: DESIGN_BACKUP_KEY };')(localStorage, 'primary');
+    return { ...api, data };
+  }
+
+  it('loads valid versioned saves and quarantines a recoverable invalid save', () => {
+    const validRaw = JSON.stringify({ coasterlab: 1, ...makeDesign() });
+    const valid = loadDesignStorage(TOOL_PATHS[0], { primary: validRaw });
+    expect(valid.loadDesign().certTurnIdx).toBe(5);
+    expect(valid.getRecovery()).toBeNull();
+    expect(valid.data.get('primary')).toBe(validRaw);
+
+    const bad = makeDesign();
+    bad.points[2].x = 999;
+    const badRaw = JSON.stringify({ coasterlab: 1, ...bad });
+    const recovered = loadDesignStorage(TOOL_PATHS[0], { primary: badRaw });
+    expect(recovered.loadDesign()).toBeNull();
+    expect(recovered.data.has('primary')).toBe(false);
+    expect(recovered.data.get(recovered.backupKey)).toBe(badRaw);
+    expect(recovered.getRecovery().raw).toBe(badRaw);
+    expect(recovered.getRecovery().reason).toMatch(/outside the editable world/);
+  });
+  it.each(TOOL_PATHS)('%s routes storage, imports, templates, reset, and undo through validation', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'return parseDesignJson(raw);',
+      'JSON.stringify({ coasterlab: DESIGN_SCHEMA, ...design })',
+      'design = parseDesignJson(str);',
+      'design = loadDesign() || normalizeDesign(defaultDesign());',
+      'design = normalizeDesign(simpleDesign());',
+      'design = normalizeDesign(TEMPLATES[b.dataset.tpl]());',
+      'design = normalizeDesign(defaultDesign());',
+      'design = normalizeDesign(JSON.parse(history[idx]));',
+      "const DESIGN_BACKUP_KEY = 'coaster_lab_design_recovery_v1';",
+      'localStorage.removeItem(STORE_KEY);',
+      'function showDesignRecovery(){',
+      "btn.id = 'clab-btnRecovery';",
+    ]) expect(src).toContain(marker);
+    expect(src).toContain('// Canonical source: stem_lab/stem_tool_coasterlab.js in this repository.');
+    expect(src).not.toContain('prefer editing there and regenerating');
+  });
+});
 describe('coaster lab — build-your-own discovery and visual feedback', () => {
   it.each(TOOL_PATHS)('%s clearly presents the loaded coaster as an editable design', (p) => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');

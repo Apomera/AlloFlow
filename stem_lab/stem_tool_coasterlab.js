@@ -15,8 +15,8 @@
 // frames (transport through inversions); friction ∝ normal force.
 // NGSS MS-PS2/PS3, HS-PS2/PS3 (energy conservation, circular motion, F=ma).
 //
-// GENERATED from the prototype at C:\tmp\coaster-lab (gen_stem_tool.mjs) —
-// prefer editing there and regenerating so the two stay in sync.
+// Canonical source: stem_lab/stem_tool_coasterlab.js in this repository.
+// build.js mirrors this file into prismflow-deploy/public during builds.
 // House rules: no AI traffic (fully offline tool); localStorage state.
 // ═══════════════════════════════════════════════════════════════════════
 (function () {
@@ -288,16 +288,69 @@ const TEMPLATES = {
   oval: ovalDesign
 };
 
+/* @clab-design-normalize-start */
+const DESIGN_SCHEMA = 1;
+const DESIGN_MIN_POINTS = 6, DESIGN_MAX_POINTS = 80;
+const DESIGN_MAX_JSON_CHARS = 64 * 1024;
+const DESIGN_BOUNDS = { xz: 260, yMin: 0.5, yMax: 45, bank: 180, accelMin: 5, accelMax: 14 };
+function normalizeDesign(input){
+  if(!input || typeof input !== 'object' || Array.isArray(input)) throw new Error('not a design');
+  if(Object.prototype.hasOwnProperty.call(input, 'coasterlab') && input.coasterlab !== DESIGN_SCHEMA){
+    throw new Error('unsupported design version');
+  }
+  if(!Array.isArray(input.points) ||
+     input.points.length < DESIGN_MIN_POINTS || input.points.length > DESIGN_MAX_POINTS){
+    throw new Error(`design needs ${DESIGN_MIN_POINTS}-${DESIGN_MAX_POINTS} nodes`);
+  }
+  const points = input.points.map((p, i) => {
+    if(!p || typeof p !== 'object' || Array.isArray(p)) throw new Error(`bad node ${i}`);
+    const bank = p.bank == null ? 0 : p.bank;
+    if(![p.x, p.y, p.z, bank].every(Number.isFinite)) throw new Error(`bad node ${i}`);
+    if(Math.abs(p.x) > DESIGN_BOUNDS.xz || Math.abs(p.z) > DESIGN_BOUNDS.xz ||
+       p.y < DESIGN_BOUNDS.yMin || p.y > DESIGN_BOUNDS.yMax ||
+       Math.abs(bank) > DESIGN_BOUNDS.bank){
+      throw new Error(`node ${i} is outside the editable world`);
+    }
+    return { x: p.x, y: p.y, z: p.z, bank };
+  });
+  const rawIdx = Number.isFinite(input.certTurnIdx) ? Math.trunc(input.certTurnIdx) : 0;
+  const certTurnIdx = Math.max(0, Math.min(points.length - 1, rawIdx));
+  const rawProp = input.propulsion && typeof input.propulsion === 'object' ? input.propulsion : null;
+  const mode = rawProp && (rawProp.mode === 'chain' || rawProp.mode === 'launch') ? rawProp.mode : 'chain';
+  const accel = rawProp && Object.prototype.hasOwnProperty.call(rawProp, 'accel') ? rawProp.accel : 7.5;
+  if(!Number.isFinite(accel) || accel < DESIGN_BOUNDS.accelMin || accel > DESIGN_BOUNDS.accelMax){
+    throw new Error('launch acceleration is outside the editable range');
+  }
+  return { points, certTurnIdx, propulsion: { mode, accel } };
+}
+function parseDesignJson(raw){
+  if(typeof raw !== 'string' || !raw.length) throw new Error('empty design');
+  if(raw.length > DESIGN_MAX_JSON_CHARS) throw new Error('design is too large');
+  return normalizeDesign(JSON.parse(raw));
+}
+/* @clab-design-normalize-end */
+const DESIGN_BACKUP_KEY = 'coaster_lab_design_recovery_v1';
+let designRecovery = null;
 function loadDesign(){
   try{
     const raw = localStorage.getItem(STORE_KEY);
     if(!raw) return null;
-    const d = JSON.parse(raw);
-    if(!d || !Array.isArray(d.points) || d.points.length < 6) return null;
-    if(!d.propulsion) d.propulsion = { mode: 'chain', accel: 7.5 };
-    return d;
-  }catch(_e){ return null; }
+    return parseDesignJson(raw);
+  }catch(e){
+    let raw = null, backedUp = false;
+    try{
+      raw = localStorage.getItem(STORE_KEY);
+      if(raw && raw.length <= DESIGN_MAX_JSON_CHARS){
+        localStorage.setItem(DESIGN_BACKUP_KEY, raw);
+        backedUp = true;
+      }
+      localStorage.removeItem(STORE_KEY);
+    }catch(_e){}
+    designRecovery = { raw: backedUp ? raw : null, reason: String(e && e.message || e) };
+    return null;
+  }
 }
+/* @clab-design-storage-end */
 /* undo/redo history — every recorded save is a restorable snapshot */
 let history = [], hIdx = -1;
 function snapshot(){
@@ -310,9 +363,9 @@ function snapshot(){
 }
 function saveDesign(record = true){
   if(record) snapshot();
-  try{ localStorage.setItem(STORE_KEY, JSON.stringify(design)); }catch(_e){}
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify({ coasterlab: DESIGN_SCHEMA, ...design })); }catch(_e){}
 }
-let design = loadDesign() || defaultDesign();
+let design = loadDesign() || normalizeDesign(defaultDesign());
 
 /* ---------------- three.js scene ---------------- */
 const canvas = __clabGet('clab-gl');
@@ -2232,7 +2285,7 @@ const startSimpleBtn = __clabGet('clab-btnStartSimple');
 if(startSimpleBtn) startSimpleBtn.addEventListener('click', () => {
   if(sim.running){ banner('Stop the train before starting a new design.', 'fail', 2400); return; }
   if(!confirm('Start with a sparse six-node circuit? Your current design will be replaced (Undo is available).')) return;
-  design = simpleDesign();
+  design = normalizeDesign(simpleDesign());
   selIdx = 2;
   fullRebuild(); syncPointCard(); saveDesign();
   userTouched = true;
@@ -2388,24 +2441,32 @@ __clabGet('clab-btnFric').addEventListener('click', e => {
 });
 /* ---------------- share: export / import a design ---------------- */
 function exportDesign(){
-  return JSON.stringify({ coasterlab: 1, ...design });
+  return JSON.stringify({ coasterlab: DESIGN_SCHEMA, ...design });
 }
 function importDesign(str){
-  const d = JSON.parse(str);
-  if(!d || !Array.isArray(d.points) || d.points.length < 6) throw new Error('not a design');
-  for(const p of d.points){
-    if(![p.x, p.y, p.z].every(Number.isFinite)) throw new Error('bad node');
-    p.bank = Number.isFinite(p.bank) ? p.bank : 0;
-  }
-  design = {
-    points: d.points,
-    certTurnIdx: Math.min(d.certTurnIdx || 0, d.points.length - 1),
-    propulsion: d.propulsion && (d.propulsion.mode === 'launch' || d.propulsion.mode === 'chain')
-      ? { mode: d.propulsion.mode, accel: Number.isFinite(d.propulsion.accel) ? d.propulsion.accel : 7.5 }
-      : { mode: 'chain', accel: 7.5 }
-  };
+  design = parseDesignJson(str);
   selIdx = -1;
   fullRebuild(); syncPointCard(); saveDesign();
+}
+function showDesignRecovery(){
+  if(!designRecovery) return;
+  const kept = !!designRecovery.raw;
+  banner(kept
+    ? 'Saved design was invalid. Starter restored; a recovery copy is available beside Import.'
+    : 'Saved design was invalid or too large. Starter restored safely.', 'fail', 6500);
+  if(!kept || __clabGet('clab-btnRecovery')) return;
+  const anchor = __clabGet('clab-btnImport');
+  if(!anchor) return;
+  const btn = document.createElement('button');
+  btn.id = 'clab-btnRecovery'; btn.className = 'ghost'; btn.textContent = 'Copy recovered save';
+  btn.title = 'Copy the original invalid save before replacing it';
+  btn.addEventListener('click', () => {
+    const done = () => banner('Recovered save copied. Keep it somewhere safe before editing.', 'pass', 3200);
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(designRecovery.raw).then(done, () => window.prompt('Copy the recovered save:', designRecovery.raw));
+    } else window.prompt('Copy the recovered save:', designRecovery.raw);
+  });
+  anchor.insertAdjacentElement('afterend', btn);
 }
 __clabGet('clab-btnExport').addEventListener('click', () => {
   const s = exportDesign();
@@ -2442,7 +2503,7 @@ __clabGet('clab-btnFx').addEventListener('click', () => {
 for(const b of rootEl.querySelectorAll('button.tpl')){
   b.addEventListener('click', () => {
     if(!confirm(`Load the “${b.textContent.trim()}” template? Your current design will be replaced.`)) return;
-    design = TEMPLATES[b.dataset.tpl]();
+    design = normalizeDesign(TEMPLATES[b.dataset.tpl]());
     selIdx = -1;
     fullRebuild(); syncPointCard(); saveDesign();
     banner('Starting layout loaded — every glowing node is yours to reshape.', 'pass', 3000);
@@ -2450,7 +2511,7 @@ for(const b of rootEl.querySelectorAll('button.tpl')){
 }
 __clabGet('clab-btnResetDesign').addEventListener('click', () => {
   if(!confirm('Restore the starter layout? Your current design will be lost.')) return;
-  design = defaultDesign();
+  design = normalizeDesign(defaultDesign());
   selIdx = -1;
   fullRebuild(); syncPointCard(); saveDesign();
 });
@@ -2630,7 +2691,7 @@ rootEl.addEventListener('keydown', e => {
 function applyHistory(idx){
   if(idx < 0 || idx >= history.length) return;
   hIdx = idx;
-  design = JSON.parse(history[idx]);
+  design = normalizeDesign(JSON.parse(history[idx]));
   selIdx = -1;
   fullRebuild(); syncPointCard(); saveDesign(false);
 }
@@ -3610,6 +3671,7 @@ snapshot();
 renderMissions();
 if(fxLite) applyFx();
 placeTrain();
+showDesignRecovery();
 rootEl._selftest = selfTest();
 /* tiny hooks for automated smoke tests */
 rootEl._lab = {
