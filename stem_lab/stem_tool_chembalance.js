@@ -19020,7 +19020,7 @@
               })
             ),
             // Balance Scale SVG
-            h('svg', { viewBox: '0 0 400 100', role: 'img', 'aria-label': __alloT('stem.chembalance.balance_scale_visual', 'Balance scale comparing reactant and product atom counts'), className: 'w-full mb-3', style: { maxHeight: '100px' } },
+            h('svg', { viewBox: '0 0 400 100', role: 'img', 'aria-label': __alloT('stem.chembalance.balance_scale_accessible_summary', 'Balance scale comparing reactant and product atom counts') + '. ' + (isBalanced ? 'Balanced.' : 'Not balanced.') + ' Reactant atoms: ' + Object.keys(leftAtoms).map(function(atom) { return atom + ' ' + leftAtoms[atom]; }).join(', ') + '. Product atoms: ' + Object.keys(rightAtoms).map(function(atom) { return atom + ' ' + rightAtoms[atom]; }).join(', ') + '.', className: 'w-full mb-3', style: { maxHeight: '100px' } },
               h('polygon', { points: '200,95 190,75 210,75', fill: '#94a3b8' }),
               h('line', { x1: 60, y1: 75 + tilt * 8, x2: 340, y2: 75 - tilt * 8, stroke: isBalanced ? '#22c55e' : '#94a3b8', strokeWidth: 3, strokeLinecap: 'round', style: { transition: 'all 0.3s', filter: isBalanced ? 'drop-shadow(0 0 3px rgba(34,197,94,0.7))' : 'none' } }),
               h('ellipse', { cx: 100, cy: 80 + tilt * 8, rx: 50, ry: 8, fill: isBalanced ? '#dcfce7' : '#f1f5f9', stroke: isBalanced ? '#22c55e' : '#94a3b8', strokeWidth: 1.5, style: { transition: 'all 0.3s' } }),
@@ -19326,7 +19326,7 @@
                 h('p', { className: 'text-sm font-bold text-indigo-700' }, currentMol.name + ' (' + currentMol.formula + ')'),
                 h('span', { className: 'px-2 py-0.5 bg-indigo-100 text-indigo-600 text-[11px] font-bold rounded-full' }, currentMol.shape)
               ),
-              h('svg', { viewBox: '0 0 300 200', className: 'w-full max-w-sm mx-auto', style: { background: '#fafafa', borderRadius: '8px' } },
+              h('svg', { viewBox: '0 0 300 200', role: 'img', 'aria-label': __alloT('stem.chembalance.molecular_structure_accessible_summary', 'Molecular structure diagram') + ' for ' + currentMol.name + ', formula ' + currentMol.formula + ', shape ' + currentMol.shape + ', with ' + currentMol.atoms.length + ' atoms and ' + currentMol.bonds.length + ' bonds.', className: 'w-full max-w-sm mx-auto', style: { background: '#fafafa', borderRadius: '8px' } },
                 // Bonds
                 currentMol.bonds.map(function(bond, bi) {
                   var a1 = currentMol.atoms[bond[0]];
