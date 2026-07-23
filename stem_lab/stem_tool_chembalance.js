@@ -20748,11 +20748,12 @@
                 (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
               ),
               (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 mb-2' },
+                h('caption', { className: 'sr-only' }, __alloT('stem.chembalance.ph_observations_table_caption', 'pH inquiry observations')),
                 h('thead', null, h('tr', { className: 'bg-slate-100' },
-                  ['H⁺ exp', 'buffer %', 'temp °C', 'pH', 'band'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                  ['H⁺ exp', 'buffer %', 'temp °C', 'pH', 'band'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', className: 'px-1 border border-slate-200 text-left' }, c); }))),
                 h('tbody', null, iq.log.map(function(o, idx) {
                   return h('tr', { key: 'lr' + idx },
-                    h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.h),
+                    h('th', { scope: 'row', className: 'px-1 border border-slate-200 font-mono text-left' }, o.h),
                     h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.b),
                     h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.t),
                     h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.p),
