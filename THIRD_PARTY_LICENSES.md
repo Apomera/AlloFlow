@@ -162,6 +162,7 @@ uses an open range.
 | [mammoth.js](https://github.com/mwilliamson/mammoth.js) | importing Word documents | BSD-2-Clause | Copyright (c) 2013 Michael Williamson |
 | [docx](https://docx.js.org) | Word (.docx) export | MIT | Copyright (c) 2016 Dolan Miu |
 | [PptxGenJS](https://gitbrent.github.io/PptxGenJS/) | PowerPoint (.pptx) export | MIT | Copyright (c) 2015-2022 Brent Ely |
+| [H5P](https://h5p.org) | export to the H5P open content format (quizzes, flashcards, glossaries); the destination H5P installation provides the official H5P libraries — AlloFlow writes the `.h5p` archive but does not bundle or redistribute H5P's runtime | open content format (H5P core & content-type libraries are MIT) | Copyright (c) Joubel AS and the H5P community |
 | [JSZip](https://stuk.github.io/jszip/) | packaging multi-file exports | MIT / GPLv3 (AlloFlow uses MIT) | Copyright (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso |
 | [pako](https://github.com/nodeca/pako) | zlib compression | MIT | Copyright (C) 2014-2017 by Vitaly Puzrin and Andrey Tupitsin |
 

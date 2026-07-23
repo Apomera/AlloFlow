@@ -90,6 +90,7 @@ const OSS_CREDITS = [
       { name: 'mammoth.js', use: 'importing Word documents', license: 'BSD-2-Clause', url: 'https://github.com/mwilliamson/mammoth.js' },
       { name: 'docx', use: 'Word (.docx) export', license: 'MIT', url: 'https://docx.js.org' },
       { name: 'PptxGenJS', use: 'PowerPoint (.pptx) export', license: 'MIT', url: 'https://gitbrent.github.io/PptxGenJS/' },
+      { name: 'H5P', use: 'export to the H5P open content format (quizzes, flashcards, glossaries); the destination H5P site provides the official libraries — AlloFlow does not bundle them — Joubel AS & the H5P community', license: 'open content format (H5P libraries MIT)', url: 'https://h5p.org' },
       { name: 'JSZip', use: 'packaging multi-file exports', license: 'MIT / GPLv3', url: 'https://stuk.github.io/jszip/' },
       { name: 'pako', use: 'zlib compression', license: 'MIT', url: 'https://github.com/nodeca/pako' },
     ],
