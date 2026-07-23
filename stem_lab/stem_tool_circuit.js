@@ -2090,7 +2090,9 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-[11px] font-bold text-blue-400 uppercase tracking-wider mb-2' }, '\uD83E\uDD16 ' + __alloT('stem.circuit.ai_circuit_tutor', 'AI Circuit Tutor')),
               h('div', { className: 'flex gap-2' },
                 h('input', {
+                  id: 'circuit-ai-question',
                   type: 'text',
+                  'aria-label': __alloT('stem.circuit.ai_question_label', 'Question for the AI Circuit Tutor'),
                   placeholder: __alloT('stem.circuit.placeholder_ask', "Ask about circuits, Ohm's Law, components..."),
                   value: aiQuestion,
                   onChange: function(e) { upd('aiQuestion', e.target.value); },
@@ -3705,8 +3707,8 @@ window.StemLab = window.StemLab || {
           iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: 'var(--allo-stem-deeper, #0a0a1a)', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
             iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · V' + e.V + ' R' + e.R + ' I' + e.I + ' P' + e.P); })
           ),
-          h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which moves dissipation fastest — voltage or resistance? In which direction?)'),
-          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., doubling voltage quadruples power; halving resistance also quadruples — wait, does it?', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: 'var(--allo-stem-deeper, #0a0a1a)', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          h('label', { htmlFor: 'circuit-ohm-hypothesis', style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which moves dissipation fastest — voltage or resistance? In which direction?)'),
+          h('textarea', { id: 'circuit-ohm-hypothesis', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., doubling voltage quadruples power; halving resistance also quadruples — wait, does it?', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: 'var(--allo-stem-deeper, #0a0a1a)', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
           !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: 'var(--allo-stem-deeper, #0a0a1a)', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
           iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: 'var(--allo-stem-deeper, #0a0a1a)', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
             h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
@@ -3721,7 +3723,8 @@ window.StemLab = window.StemLab || {
             h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
             h('span', null, 'I can explain why this V/R combination yields this dissipation state.')
           ),
-          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+          iq.understood && h('label', { htmlFor: 'circuit-ohm-explanation', style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Explain the dissipation state in your own words'),
+          iq.understood && h('textarea', { id: 'circuit-ohm-explanation', value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
           h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. P/Resistor wattage thresholds are typical for through-hole carbon-film; SMD and wirewound differ.')
         );
       }
