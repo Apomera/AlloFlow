@@ -2878,6 +2878,10 @@ window.StemLab = window.StemLab || {
         function drawSchematic(scenario) {
           var s = scenario.svg;
           var bulbs = s.bulbs;
+          var schematicParts = bulbs.map(function(part, index) {
+            return (part.isBulb === false ? 'resistor ' : 'bulb ') + (index + 1) + ', ' + part.R + (part.R === 1 ? ' ohm' : ' ohms');
+          }).join('; ');
+          var schematicLabel = scenario.title + '. ' + s.battery + ' volt battery with ' + schematicParts + ' in ' + (s.topology === 'simple' ? 'a single-load closed circuit' : s.topology) + '.';
           var svgChildren = [];
           // Battery
           svgChildren.push(h('line', { x1: 20, y1: 50, x2: 20, y2: 70, stroke: '#fbbf24', strokeWidth: 3 }));
@@ -2927,7 +2931,7 @@ window.StemLab = window.StemLab || {
             svgChildren.push(h('text', { x: 100, y: 95, textAnchor: 'middle', fontSize: 9, fill: '#92400e', fontWeight: 'bold' }, bulbs[1].R + 'Ω'));
             // close circuit via battery
           }
-          return h('svg', { viewBox: '0 0 250 130', width: '100%', style: { maxWidth: 280, height: 'auto', background: 'var(--allo-stem-deeper, rgba(15,23,42,0.85))', borderRadius: 8, padding: 4 } }, svgChildren);
+          return h('svg', { viewBox: '0 0 250 130', width: '100%', role: 'img', 'aria-label': schematicLabel, style: { maxWidth: 280, height: 'auto', background: 'var(--allo-stem-deeper, rgba(15,23,42,0.85))', borderRadius: 8, padding: 4 } }, svgChildren);
         }
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '💡 Predict the bulb'),
@@ -3678,7 +3682,7 @@ window.StemLab = window.StemLab || {
               );
             })
           ),
-          h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: 'var(--allo-stem-deeper, #0a0a1a)', borderRadius: 6, marginBottom: 10 } },
+          h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', role: 'img', 'aria-label': 'Ohm inquiry current-versus-resistance graph at ' + iq.voltage + ' volts. Current decreases as resistance increases. Current point: ' + iq.resistance + ' ohms, ' + current.toFixed(3) + ' amps, ' + power.toFixed(3) + ' watts; dissipation state: ' + sm.label + '.', style: { background: 'var(--allo-stem-deeper, #0a0a1a)', borderRadius: 6, marginBottom: 10 } },
             h('line', { x1: 30, y1: 130, x2: 310, y2: 130, stroke: '#1e293b' }),
             h('line', { x1: 30, y1: 10, x2: 30, y2: 130, stroke: '#1e293b' }),
             [0, 250, 500, 750, 1000].map(function(r, i) { return h('text', { key: 'rx' + i, x: 30 + (r / 1000) * 280, y: 145, fill: '#64748b', fontSize: 8, textAnchor: 'middle' }, r + 'Ω'); }),
