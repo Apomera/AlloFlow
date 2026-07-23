@@ -3072,7 +3072,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             'aria-label': __alloT('stem.ecosystem.back', 'Back')
           }, h(ArrowLeft, { size: 18 })),
           h('span', { className: 'text-lg font-bold tracking-tight' }, '\uD83E\uDD8A ' + __alloT('stem.ecosystem.title', 'Ecosystem Simulator')),
-          h('span', { className: 'ml-auto px-2 py-0.5 text-[11px] font-bold bg-emerald-700 text-white rounded-full animate-pulse' }, __alloT('stem.ecosystem.live', 'LIVE')),
+          h('span', { className: 'ml-auto px-2 py-0.5 text-[11px] font-bold bg-emerald-700 text-white rounded-full animate-pulse motion-reduce:animate-none' }, __alloT('stem.ecosystem.live', 'LIVE')),
           h('span', { className: 'text-xs font-bold text-amber-600 dark:text-amber-400 ml-1' }, '\u2B50 ' + researchPoints + ' RP'),
         ),
 
@@ -3750,7 +3750,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   }, question);
                 })
               ),
-              aiLoading && h('p', { className: 'text-xs text-indigo-500 animate-pulse' }, __alloT('stem.ecosystem.thinking', 'Thinking...')),
+              aiLoading && h('p', { className: 'text-xs text-indigo-500 animate-pulse motion-reduce:animate-none' }, __alloT('stem.ecosystem.thinking', 'Thinking...')),
               aiResponse && h('div', { className: 'bg-white dark:bg-slate-800 rounded-lg p-2 text-xs text-slate-700 dark:text-slate-300 border border-indigo-100 dark:border-indigo-800' },
                 h('p', null, aiResponse),
                 callTTS && h('button', { 'aria-label': __alloT('stem.ecosystem.read_aloud', 'Read aloud'),
