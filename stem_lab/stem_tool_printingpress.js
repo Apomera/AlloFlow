@@ -10299,12 +10299,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             sectionHeader('📉', 'The paper price collapse, 1300-1450'),
             h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 16, marginBottom: 12 } },
               h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 13, color: T.muted } },
+                h('caption', { style: { captionSide: 'top', textAlign: 'left', padding: '0 6px 10px', color: T.accentHi, fontWeight: 700 } }, __alloT('stem.printingpress.paper_parchment_cost_table_caption', 'Historical paper and parchment prices, 1300-1500')),
                 h('thead', null,
                   h('tr', { style: { borderBottom: '1px solid ' + T.border } },
-                    h('th', { style: { textAlign: 'left', padding: 6, color: T.accentHi } }, __alloT('stem.printingpress.year', 'Year')),
-                    h('th', { style: { textAlign: 'left', padding: 6, color: T.accentHi } }, __alloT('stem.printingpress.paper_sheet_cost_1_chancery', 'Paper sheet cost (1 chancery)')),
-                    h('th', { style: { textAlign: 'left', padding: 6, color: T.accentHi } }, __alloT('stem.printingpress.comparable_parchment_cost', 'Comparable parchment cost')),
-                    h('th', { style: { textAlign: 'left', padding: 6, color: T.accentHi } }, __alloT('stem.printingpress.paper_as_of_parchment', 'Paper as % of parchment')))),
+                    h('th', { scope: 'col', style: { textAlign: 'left', padding: 6, color: T.accentHi } }, __alloT('stem.printingpress.year', 'Year')),
+                    h('th', { scope: 'col', style: { textAlign: 'left', padding: 6, color: T.accentHi } }, __alloT('stem.printingpress.paper_sheet_cost_1_chancery', 'Paper sheet cost (1 chancery)')),
+                    h('th', { scope: 'col', style: { textAlign: 'left', padding: 6, color: T.accentHi } }, __alloT('stem.printingpress.comparable_parchment_cost', 'Comparable parchment cost')),
+                    h('th', { scope: 'col', style: { textAlign: 'left', padding: 6, color: T.accentHi } }, __alloT('stem.printingpress.paper_as_of_parchment', 'Paper as % of parchment')))),
                 h('tbody', null,
                   [
                     { y: '1300', p: '~6 denarii', pa: '~36 denarii', pct: '17%' },
@@ -10314,7 +10315,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     { y: '1500', p: '~1 denarius',  pa: '~28 denarii', pct: '4%' }
                   ].map(function(row, i) {
                     return h('tr', { key: i, style: { borderBottom: '1px solid ' + T.border } },
-                      h('td', { style: { padding: 6, fontFamily: 'ui-monospace, monospace', color: T.text, fontWeight: 700 } }, row.y),
+                      h('th', { scope: 'row', style: { padding: 6, textAlign: 'left', fontFamily: 'ui-monospace, monospace', color: T.text, fontWeight: 700 } }, row.y),
                       h('td', { style: { padding: 6 } }, row.p),
                       h('td', { style: { padding: 6 } }, row.pa),
                       h('td', { style: { padding: 6, fontFamily: 'ui-monospace, monospace', color: T.accent, fontWeight: 700 } }, row.pct));
