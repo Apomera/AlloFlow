@@ -12,7 +12,8 @@ describe('Molecule Lab SVG alternatives', () => {
     expect(source).toContain('role: "group"');
     expect(source).toContain('"Molecule builder workspace with "');
     expect(source).toContain('" atoms and "');
-    expect(source).toContain('use arrow keys to move and Enter or Space');
+    expect(source).toContain('Tab to atoms and use arrow keys to move them.');
+    expect(source).toContain('Bond and remove controls follow the workspace.');
   });
 
   it('describes the solvent polarity diagram with live scientific values', () => {

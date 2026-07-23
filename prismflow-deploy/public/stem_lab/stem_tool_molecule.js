@@ -1357,6 +1357,45 @@ window.StemLab = window.StemLab || {
 
           const advanceTutorial = () => upd('tutorialStep', Math.min(tutorialStep + 1, 4));
           const dismissTutorial = () => updMulti({ tutorialDismissed: true, tutorialStep: 0 });
+          const cycleBuildBondType = (index) => {
+            const atoms = d.buildAtoms || [];
+            const bonds = d.buildBonds || [];
+            const bond = bonds[index];
+            if (!bond || !atoms[bond[0]] || !atoms[bond[1]]) return;
+            const nextType = ((bond[2] || 1) % 3) + 1;
+            const names = ['single', 'double', 'triple'];
+            upd('buildBonds', bonds.map((item, itemIndex) =>
+              itemIndex === index ? [item[0], item[1], nextType] : item
+            ));
+            upd('buildCheckResult', null);
+            if (typeof announceToSR === 'function') {
+              announceToSR(
+                'Changed the bond between ' + atoms[bond[0]].el + ' and ' + atoms[bond[1]].el +
+                ' to a ' + names[nextType - 1] + ' bond.'
+              );
+            }
+          };
+
+          const removeBuildAtom = (index) => {
+            const atoms = d.buildAtoms || [];
+            const atom = atoms[index];
+            if (!atom) return;
+            const newAtoms = atoms.filter((_, atomIndex) => atomIndex !== index);
+            const newBonds = (d.buildBonds || [])
+              .filter(bond => bond[0] !== index && bond[1] !== index)
+              .map(bond => [
+                bond[0] > index ? bond[0] - 1 : bond[0],
+                bond[1] > index ? bond[1] - 1 : bond[1],
+                bond[2] || 1
+              ]);
+            upd('buildAtoms', newAtoms);
+            upd('buildBonds', newBonds);
+            if (d.buildBondFrom === index) upd('buildBondFrom', null);
+            else if (d.buildBondFrom > index) upd('buildBondFrom', d.buildBondFrom - 1);
+            if (!newAtoms.length) upd('buildBondMode', false);
+            upd('buildCheckResult', null);
+            if (typeof announceToSR === 'function') announceToSR('Removed atom ' + atom.el + '.');
+          };
 
           // ═══ Electron Configuration ═══
           const getElectronConfig = (atomicNum) => {
@@ -1974,7 +2013,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
             mode === 'build' && React.createElement("div", null,
 
-              React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, __alloT('stem.molecule.drag_atoms_onto_the_canvas_and_draw_bo', "Drag atoms onto the canvas and draw bonds to build molecules! Click two atoms to connect them.")),
+              React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, __alloT('stem.molecule.drag_atoms_onto_the_canvas_and_draw_bo', "Drag atoms or use arrow keys to move them. Select two atoms to connect them; keyboard bond and remove controls follow the workspace.")),
 
               // Atom palette
 
@@ -2040,7 +2079,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
               React.createElement("svg", {
                 role: "group",
-                "aria-label": "Molecule builder workspace with " + (d.buildAtoms || []).length + " atoms and " + (d.buildBonds || []).length + " bonds. Tab to atoms; use arrow keys to move and Enter or Space to select atoms for a bond.",
+                "aria-label": "Molecule builder workspace with " + (d.buildAtoms || []).length + " atoms and " + (d.buildBonds || []).length + " bonds. Tab to atoms and use arrow keys to move them. Bond and remove controls follow the workspace.",
                 viewBox: "0 0 " + W + " " + H,
 
                 className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border-2 border-dashed border-slate-300 cursor-crosshair",
@@ -2159,11 +2198,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                       e.stopPropagation();
 
-                      const nb = (d.buildBonds || []).map((bb, bi) => bi === i ? [bb[0], bb[1], ((bb[2] || 1) % 3) + 1] : bb);
-
-                      upd('buildBonds', nb);
-
-                      upd('buildCheckResult', null);
+                      cycleBuildBondType(i);
 
                     }
 
@@ -2178,6 +2213,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 (d.buildAtoms || []).map((a, i) => {
 
                   const isSelected = d.buildBondFrom === i;
+                  const isFocused = d.buildFocusedAtom === i;
 
                   return React.createElement("g", { key: 'ba' + i },
 
@@ -2195,16 +2231,20 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     // SpEd assistive-tech users.
                     React.createElement("circle", {
 
-                      cx: a.x, cy: a.y, r: 22, fill: a.color || '#94a3b8', stroke: isSelected ? '#3b82f6' : '#fff', strokeWidth: isSelected ? 3 : 2.5,
+                      cx: a.x, cy: a.y, r: 22, fill: a.color || '#94a3b8', stroke: isFocused ? '#0f172a' : (isSelected ? '#3b82f6' : '#fff'), strokeWidth: isFocused ? 5 : (isSelected ? 3 : 2.5),
 
                       style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', cursor: 'grab' },
 
                       role: 'button',
                       tabIndex: 0,
                       'aria-label': (a.el || 'atom') + ' at x ' + Math.round(a.x) + ', y ' + Math.round(a.y) +
-                        '. Arrow keys to move; Enter or Space to ' +
-                        ((d.buildBondMode || (d.buildBondFrom !== null && d.buildBondFrom !== undefined)) ? 'select for bond' : 'pick up'),
+                        '. Arrow keys to move.' +
+                        ((d.buildBondMode || (d.buildBondFrom !== null && d.buildBondFrom !== undefined))
+                          ? ' Enter or Space to select for bond.'
+                          : ' Bond and remove controls follow the workspace.'),
                       'aria-pressed': isSelected ? 'true' : 'false',
+                      onFocus: () => upd('buildFocusedAtom', i),
+                      onBlur: () => { if (d.buildFocusedAtom === i) upd('buildFocusedAtom', null); },
                       onKeyDown: e => {
                         var dx = 0, dy = 0;
                         if (e.key === 'ArrowLeft') dx = -10;
@@ -2310,17 +2350,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                         e.stopPropagation();
 
-                        const newAtoms = (d.buildAtoms || []).filter((_, ai) => ai !== i);
-
-                        const newBonds = (d.buildBonds || []).filter(b => b[0] !== i && b[1] !== i).map(b => [b[0] > i ? b[0] - 1 : b[0], b[1] > i ? b[1] - 1 : b[1], b[2] || 1]);
-
-                        upd('buildAtoms', newAtoms);
-
-                        upd('buildBonds', newBonds);
-
-                        if (d.buildBondFrom === i) upd('buildBondFrom', null);
-
-                        upd('buildCheckResult', null);
+                        removeBuildAtom(i);
 
                       },
 
@@ -2340,39 +2370,80 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                 // "Drawing bond from..." indicator line
 
-                d.buildBondFrom !== null && d.buildBondFrom !== undefined && (d.buildAtoms || [])[d.buildBondFrom] && React.createElement("text", { x: W / 2, y: H - 10, textAnchor: "middle", fill: "#3b82f6", style: { fontSize: '10px', fontWeight: 'bold' } }, __alloT('stem.molecule.click_another_atom_to_connect', "\u{1F517} Click another atom to connect..."))
+                d.buildBondFrom !== null && d.buildBondFrom !== undefined && (d.buildAtoms || [])[d.buildBondFrom] && React.createElement("text", { x: W / 2, y: H - 10, textAnchor: "middle", fill: "#3b82f6", style: { fontSize: '10px', fontWeight: 'bold' } }, __alloT('stem.molecule.click_another_atom_to_connect', "\u{1F517} Select another atom to connect..."))
 
               ),
 
+              (d.buildAtoms || []).length > 0 && React.createElement('section', {
+                className: 'mt-3 rounded-xl border border-slate-300 bg-slate-50 p-3',
+                'aria-labelledby': 'molecule-builder-keyboard-controls-title'
+              },
+                React.createElement('h4', {
+                  id: 'molecule-builder-keyboard-controls-title',
+                  className: 'text-xs font-black text-slate-800'
+                }, __alloT('stem.molecule.atom_and_bond_controls', 'Atom and bond controls')),
+                React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-600' },
+                  __alloT('stem.molecule.controls_equivalent_help', 'These keyboard-accessible controls provide the same actions as the small controls inside the workspace.')),
+                React.createElement('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                  (d.buildAtoms || []).map((atom, atomIndex) => React.createElement('button', {
+                    key: 'remove-build-atom-' + atomIndex,
+                    type: 'button',
+                    'data-molecule-remove-atom': String(atomIndex),
+                    'aria-label': 'Remove atom ' + (atomIndex + 1) + ': ' + atom.el,
+                    onClick: () => removeBuildAtom(atomIndex),
+                    className: 'min-h-11 rounded-lg border border-red-600 bg-white px-3 py-2 text-xs font-bold text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2'
+                  }, '\u2715 Remove ' + (atomIndex + 1) + ': ' + atom.el))
+                ),
+                (d.buildBonds || []).length > 0 && React.createElement('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                  (d.buildBonds || []).map((bond, bondIndex) => {
+                    const atoms = d.buildAtoms || [];
+                    const first = atoms[bond[0]];
+                    const second = atoms[bond[1]];
+                    if (!first || !second) return null;
+                    const names = ['single', 'double', 'triple'];
+                    const currentType = bond[2] || 1;
+                    const nextType = (currentType % 3) + 1;
+                    return React.createElement('button', {
+                      key: 'cycle-build-bond-' + bondIndex,
+                      type: 'button',
+                      'data-molecule-cycle-bond': String(bondIndex),
+                      'aria-label': 'Bond ' + (bondIndex + 1) + ' between atom ' + (bond[0] + 1) + ' ' + first.el +
+                        ' and atom ' + (bond[1] + 1) + ' ' + second.el + ' is a ' + names[currentType - 1] +
+                        ' bond. Change to ' + names[nextType - 1] + '.',
+                      onClick: () => cycleBuildBondType(bondIndex),
+                      className: 'min-h-11 rounded-lg border border-indigo-600 bg-white px-3 py-2 text-xs font-bold text-indigo-800 transition-colors hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2'
+                    }, first.el + '\u2013' + second.el + ': ' + names[currentType - 1] + ' \u2192 ' + names[nextType - 1]);
+                  })
+                )
+              ),
               // Controls bar
 
               React.createElement("div", { className: "flex items-center gap-2 mt-3 flex-wrap" },
 
                 // Bond draw button
 
-                React.createElement("button", { "aria-label": (d.buildBondFrom !== null && d.buildBondFrom !== undefined ? "Cancel bond drawing" : "Enter bond drawing mode"),
-
+                React.createElement("button", {
+                  type: 'button',
+                  "aria-label": (d.buildBondFrom !== null && d.buildBondFrom !== undefined)
+                    ? "Cancel bond drawing"
+                    : (d.buildBondMode ? "Exit bond drawing mode" : "Enter bond drawing mode"),
+                  'aria-pressed': (d.buildBondMode || (d.buildBondFrom !== null && d.buildBondFrom !== undefined)) ? 'true' : 'false',
                   onClick: () => {
-
-                    if (d.buildBondFrom !== null && d.buildBondFrom !== undefined) {
-
+                    if (d.buildBondMode || (d.buildBondFrom !== null && d.buildBondFrom !== undefined)) {
+                      upd('buildBondMode', false);
                       upd('buildBondFrom', null);
-
+                      if (typeof announceToSR === 'function') announceToSR('Bond drawing mode off.');
                     } else {
-
-                      // Enter bond mode â€” user must click first atom
-
-                      upd('buildBondFrom', null);
-
-                      addToast('\u{1F517} Click an atom to start a bond, then click another to connect.', 'info');
-
+                      upd('buildBondMode', true);
+                      addToast('\uD83D\uDD17 Select one atom, then another atom, to create a bond.', 'info');
+                      if (typeof announceToSR === 'function') announceToSR('Bond drawing mode on. Select one atom, then another atom.');
                     }
-
                   },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all " + (d.buildBondFrom !== null && d.buildBondFrom !== undefined ? 'bg-blue-100 text-blue-700 border-blue-600' : 'transition-colors bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200 active:scale-[0.97]')
-
-                }, "\u{1F517} " + (d.buildBondFrom !== null && d.buildBondFrom !== undefined ? 'Cancel Bond' : 'Draw Bond')),
+                  className: "min-h-11 px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 " +
+                    ((d.buildBondMode || (d.buildBondFrom !== null && d.buildBondFrom !== undefined))
+                      ? 'bg-blue-100 text-blue-800 border-blue-600'
+                      : 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200 active:scale-[0.97]')
+                }, "\uD83D\uDD17 " + ((d.buildBondMode || (d.buildBondFrom !== null && d.buildBondFrom !== undefined)) ? 'Exit Bond Mode' : 'Draw Bond')),
 
                 // Bond-from selector â€” click an atom first
 
@@ -2398,7 +2469,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                 React.createElement("button", { "aria-label": __alloT('stem.molecule.clear_all', "Clear All"),
 
-                  onClick: () => { upd('buildAtoms', []); upd('buildBonds', []); upd('buildBondFrom', null); upd('buildCheckResult', null); },
+                  onClick: () => { upd('buildAtoms', []); upd('buildBonds', []); upd('buildBondFrom', null); upd('buildBondMode', false); upd('buildCheckResult', null); },
 
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 border border-red-600 hover:bg-red-100 transition-all ml-auto active:scale-[0.97]"
 
