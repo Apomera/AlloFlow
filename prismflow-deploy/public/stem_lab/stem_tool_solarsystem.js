@@ -2489,11 +2489,12 @@ const d = labToolData.solarSystem || {};
           ? "0 8px 28px rgba(15,23,42,0.55),0 0 0 1px rgba(99,102,241,0.25),inset 0 1px 0 rgba(255,255,255,0.05)"
           : "0 10px 26px rgba(15,23,42,0.10),0 0 0 1px rgba(99,102,241,0.22)") +
         ";border-color:" + (isDark ? "rgba(99,102,241,0.35)" : "rgba(99,102,241,0.30)") + "}",
-      ".orr-input:focus{outline:none;border-color:" + accent + "!important;box-shadow:0 0 0 3px " + accent + "33!important}",
+      ".orr-input:focus-visible{outline:3px solid " + accent + ";outline-offset:2px;border-color:" + accent + "!important;box-shadow:0 0 0 1px " + accent + "55!important}",
       ".orr-tr:hover{background:" + (isDark ? "rgba(74,144,217,0.10)" : "rgba(74,144,217,0.05)") + "!important}",
       ".orr-tr:nth-child(even){background:" + (isDark ? "#252535" : "#f4f6f9") + "}",
       // Custom range slider styling
-      "input[type=range].orr-slider{-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;outline:none;transition:all .2s}",
+      "input[type=range].orr-slider{-webkit-appearance:none;appearance:none;height:24px;border-radius:3px;background:transparent;transition:all .2s}",
+      "input[type=range].orr-slider:focus-visible{outline:3px solid " + accent + ";outline-offset:3px}",
       "input[type=range].orr-slider::-webkit-slider-track{height:6px;border-radius:3px;background:" + (isDark ? "linear-gradient(90deg,#1e293b,#334155)" : "linear-gradient(90deg,#e2e8f0,#cbd5e1)") + "}",
       "input[type=range].orr-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg," + accent + "," + accentLight + ");cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.3);border:2px solid #fff;transition:transform .15s}",
       "input[type=range].orr-slider::-webkit-slider-thumb:hover{transform:scale(1.2);box-shadow:0 0 10px " + accent + "55}",
