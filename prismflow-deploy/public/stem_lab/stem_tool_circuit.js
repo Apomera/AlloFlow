@@ -438,6 +438,135 @@ window.StemLab = window.StemLab || {
     return path[path.length - 1];
   }
 
+  function CircuitConfirmationDialog(props) {
+    var React = props.React;
+    var h = React.createElement;
+    var dialogRef = React.useRef(null);
+    var cancelButtonRef = React.useRef(null);
+    var cancelHandlerRef = React.useRef(props.onCancel);
+    var confirmHandlerRef = React.useRef(props.onConfirm);
+    cancelHandlerRef.current = props.onCancel;
+    confirmHandlerRef.current = props.onConfirm;
+
+    React.useEffect(function() {
+      var dialog = dialogRef.current;
+      if (!dialog) return undefined;
+      var previousFocus = typeof document !== 'undefined' ? document.activeElement : null;
+      var overlay = dialog.parentElement;
+      var root = dialog.closest('[data-circuit-builder-root="true"]');
+      var blocked = [];
+
+      if (root && overlay) {
+        Array.prototype.forEach.call(root.children, function(element) {
+          if (element === overlay) return;
+          blocked.push({
+            element: element,
+            hadInert: element.hasAttribute('inert'),
+            inertValue: element.getAttribute('inert'),
+            hadAriaHidden: element.hasAttribute('aria-hidden'),
+            ariaHiddenValue: element.getAttribute('aria-hidden')
+          });
+          element.setAttribute('inert', '');
+          element.setAttribute('aria-hidden', 'true');
+        });
+      }
+
+      var getFocusable = function() {
+        return Array.prototype.slice.call(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+      };
+      var focusInitial = function() {
+        (cancelButtonRef.current || dialog).focus();
+      };
+      var onKeyDown = function(event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          cancelHandlerRef.current();
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var focusable = getFocusable();
+        if (!focusable.length) {
+          event.preventDefault();
+          dialog.focus();
+          return;
+        }
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      };
+      var onFocusIn = function(event) {
+        if (!dialog.contains(event.target)) focusInitial();
+      };
+
+      document.addEventListener('keydown', onKeyDown, true);
+      document.addEventListener('focusin', onFocusIn, true);
+      if (typeof requestAnimationFrame === 'function') requestAnimationFrame(focusInitial);
+      else setTimeout(focusInitial, 0);
+
+      return function() {
+        document.removeEventListener('keydown', onKeyDown, true);
+        document.removeEventListener('focusin', onFocusIn, true);
+        blocked.forEach(function(entry) {
+          if (entry.hadInert) entry.element.setAttribute('inert', entry.inertValue || '');
+          else entry.element.removeAttribute('inert');
+          if (entry.hadAriaHidden) entry.element.setAttribute('aria-hidden', entry.ariaHiddenValue || '');
+          else entry.element.removeAttribute('aria-hidden');
+        });
+        var fallbackSelector = props.action && props.action.returnFocusSelector;
+        setTimeout(function() {
+          var target = previousFocus && previousFocus.isConnected ? previousFocus :
+            fallbackSelector && document.querySelector(fallbackSelector);
+          if (target && typeof target.focus === 'function') target.focus();
+        }, 0);
+      };
+    }, [props.action]);
+
+    var isRemove = props.action.type === 'remove';
+    var title = isRemove ? 'Remove component?' : 'Clear circuit?';
+    var description = isRemove
+      ? 'Remove this ' + props.action.componentName + '? You can add it back from the toolbox.'
+      : 'Clear all ' + props.action.count + ' components from the circuit? This cannot be undone.';
+    var confirmLabel = isRemove ? 'Remove component' : 'Clear circuit';
+
+    return h('div', {
+      role: 'presentation',
+      className: 'fixed inset-0 z-[10050] flex items-center justify-center bg-black/70 p-4',
+      onMouseDown: function(event) { if (event.target === event.currentTarget) cancelHandlerRef.current(); }
+    },
+      h('div', {
+        ref: dialogRef,
+        role: 'alertdialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'circuit-confirm-title',
+        'aria-describedby': 'circuit-confirm-description',
+        tabIndex: -1,
+        className: 'w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl border border-red-500/50 bg-slate-950 p-5 text-slate-100 shadow-2xl'
+      },
+        h('h2', { id: 'circuit-confirm-title', className: 'text-lg font-black text-white' }, title),
+        h('p', { id: 'circuit-confirm-description', className: 'mt-2 text-sm leading-relaxed text-slate-300' }, description),
+        h('div', { className: 'mt-5 flex flex-wrap justify-end gap-3' },
+          h('button', {
+            ref: cancelButtonRef,
+            type: 'button',
+            onClick: function() { cancelHandlerRef.current(); },
+            className: 'min-h-11 rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-bold text-white hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300'
+          }, 'Cancel'),
+          h('button', {
+            type: 'button',
+            onClick: function() { confirmHandlerRef.current(); },
+            className: 'min-h-11 rounded-lg border border-red-500 bg-red-700 px-4 py-2 text-sm font-bold text-white hover:bg-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300'
+          }, confirmLabel)
+        )
+      )
+    );
+  }
+
   window.StemLab.registerTool('circuit', {
     icon: '\uD83D\uDD0C',
     label: 'Circuit Builder',
@@ -477,6 +606,7 @@ window.StemLab = window.StemLab || {
           // ── State via labToolData ──
           var ld = ctx.toolData || {};
           var d = ld._circuit || {};
+          var confirmationAction = d.confirmAction || null;
           var upd = function(key, val) {
             if (typeof ctx.setToolData === 'function') {
               ctx.setToolData(function(prev) {
@@ -711,25 +841,50 @@ window.StemLab = window.StemLab || {
           };
 
           // ── Remove component ──
+          var performRemoveComponent = function(idx) {
+            var newComps = components.filter(function(_, j) { return j !== idx; });
+            upd('components', newComps);
+            circuitSound('removeComp');
+          };
           var removeComponent = function(idx) {
             // Confirm only when removing from a substantial circuit (5+ components),
             // so quick early-stage edits stay frictionless.
             if (components.length >= 5) {
               var comp = components[idx];
-              var name = comp && comp.type ? comp.type : 'component';
-              if (!window.confirm('Remove this ' + name + '? You can undo by adding it back from the toolbox.')) return;
+              var adjacent = components[idx + 1] || components[idx - 1];
+              upd('confirmAction', {
+                type: 'remove',
+                componentId: comp && comp.id,
+                componentName: comp && comp.type ? comp.type : 'component',
+                returnFocusSelector: adjacent
+                  ? '[data-circuit-remove-id="' + adjacent.id + '"]'
+                  : '[data-circuit-add-component="resistor"]'
+              });
+              return;
             }
-            var newComps = components.filter(function(_, j) { return j !== idx; });
-            upd('components', newComps);
-            circuitSound('removeComp');
+            performRemoveComponent(idx);
           };
 
           // ── Clear components ──
           var clearComponents = function() {
-            // Always confirm — this wipes the entire circuit with no undo.
-            if (components.length === 0) return; // nothing to clear, no need to ask
-            if (!window.confirm('Clear all ' + components.length + ' components from the circuit? This cannot be undone.')) return;
-            upd('components', []);
+            if (components.length === 0) return;
+            upd('confirmAction', {
+              type: 'clear',
+              count: components.length,
+              returnFocusSelector: '[data-circuit-clear="true"]'
+            });
+          };
+          var confirmCircuitAction = function() {
+            var action = d.confirmAction;
+            if (!action) return;
+            if (action.type === 'remove') {
+              var remaining = components.filter(function(component) { return component.id !== action.componentId; });
+              updMulti({ components: remaining, confirmAction: null });
+              if (typeof announceToSR === 'function') announceToSR('Component removed. ' + remaining.length + ' components remain.');
+            } else if (action.type === 'clear') {
+              updMulti({ components: [], confirmAction: null });
+              if (typeof announceToSR === 'function') announceToSR('Circuit cleared.');
+            }
             circuitSound('removeComp');
           };
 
@@ -917,7 +1072,7 @@ window.StemLab = window.StemLab || {
           // ──────────────────────────────────────────
           // RENDER
           // ──────────────────────────────────────────
-          return h('div', { className: 'max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 motion-reduce:animate-none' },
+          return h('div', { 'data-circuit-builder-root': 'true', className: 'max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 motion-reduce:animate-none' },
 
             // ── Header ──
             h('div', { className: 'flex items-center gap-3 mb-3 flex-wrap' },
@@ -1463,7 +1618,7 @@ window.StemLab = window.StemLab || {
             // Component buttons
             // ══════════════════════════════════════
             h('div', { className: 'flex flex-wrap gap-2 mt-4 mb-4 justify-center sm:justify-start' },
-              h('button', { 'aria-label': __alloT('stem.circuit.comp_resistor', 'Resistor'),
+              h('button', { 'data-circuit-add-component': 'resistor', 'aria-label': __alloT('stem.circuit.comp_resistor', 'Resistor'),
                 onClick: function() { addComponent('resistor', 100); },
                 className: 'px-3 py-1.5 bg-yellow-950/20 hover:bg-yellow-500/20 text-yellow-400 font-bold rounded-lg text-xs border border-yellow-500/30 hover:border-yellow-400 transition-all glow-button active:scale-[0.97]'
               }, '\u2795 ' + __alloT('stem.circuit.comp_resistor', 'Resistor')),
@@ -1498,7 +1653,7 @@ window.StemLab = window.StemLab || {
                 className: 'px-3 py-1.5 bg-sky-950/20 hover:bg-sky-500/20 text-sky-400 font-bold rounded-lg text-xs border border-sky-500/30 hover:border-sky-400 transition-all glow-button active:scale-[0.97]'
               }, '\u2E28 ' + __alloT('stem.circuit.comp_capacitor', 'Capacitor')),
 
-              h('button', { 'aria-label': __alloT('stem.circuit.comp_clear', 'Clear'),
+              h('button', { 'data-circuit-clear': 'true', 'aria-label': __alloT('stem.circuit.comp_clear', 'Clear'),
                 onClick: clearComponents,
                 className: 'px-3 py-1.5 bg-red-950/30 hover:bg-red-500/30 text-red-400 font-bold rounded-lg text-xs border border-red-500/30 hover:border-red-400 transition-all active:scale-[0.97]'
               }, '\uD83D\uDDD1 ' + __alloT('stem.circuit.comp_clear', 'Clear')),
@@ -1609,7 +1764,7 @@ window.StemLab = window.StemLab || {
                     }),
 
                     // Remove button
-                    h('button', { 'aria-label': __alloT('stem.circuit.aria_remove_component', 'Remove Component'),
+                    h('button', { 'data-circuit-remove-id': comp.id, 'aria-label': __alloT('stem.circuit.aria_remove_component', 'Remove Component'),
                       onClick: function() { removeComponent(i); },
                       className: 'transition-colors text-slate-500 hover:text-red-400 ml-auto font-bold text-lg px-1 tracking-tight'
                     }, '\u00D7')
@@ -2471,7 +2626,13 @@ window.StemLab = window.StemLab || {
             ),
 
             // Footer
-            h('p', { className: 'text-[10px] text-center text-slate-400 mt-4 mb-2 font-mono font-bold' }, '\uD83D\uDD0C ' + __alloT('stem.circuit.circuit_builder', 'Circuit Builder') + ' \u2022 ' + __alloT('stem.circuit.footer_ohm', "Ohm's Law: V = IR") + ' \u2022 ' + __alloT('stem.circuit.footer_power', 'Power: P = IV'))
+            h('p', { className: 'text-[10px] text-center text-slate-400 mt-4 mb-2 font-mono font-bold' }, '\uD83D\uDD0C ' + __alloT('stem.circuit.circuit_builder', 'Circuit Builder') + ' \u2022 ' + __alloT('stem.circuit.footer_ohm', "Ohm's Law: V = IR") + ' \u2022 ' + __alloT('stem.circuit.footer_power', 'Power: P = IV')),
+            confirmationAction && h(CircuitConfirmationDialog, {
+              React: React,
+              action: confirmationAction,
+              onCancel: function() { upd('confirmAction', null); },
+              onConfirm: confirmCircuitAction
+            })
           );
         };
       }
