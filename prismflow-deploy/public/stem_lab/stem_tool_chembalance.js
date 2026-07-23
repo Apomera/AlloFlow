@@ -18821,10 +18821,10 @@
               h('div', { className: 'ml-auto flex items-center gap-2' },
                 h('input', {
                   type: 'text',
+                  'aria-label': __alloT('stem.chembalance.search_chemistry_sub_tools', 'Search chemistry sub-tools'),
                   placeholder: __alloT('stem.chembalance.search_38_sub_tools', 'Search 38 sub-tools...'),
                   value: d._chemSearch || '',
                   onChange: function(e) { upd('_chemSearch', e.target.value); upd('_activeCategory', null); },
-                  'aria-label': __alloT('stem.chembalance.search_chemistry_sub_tools', 'Search chemistry sub-tools'),
                   className: 'px-2 py-1.5 text-xs bg-white border border-slate-300 rounded text-slate-700 placeholder-slate-400 w-full sm:w-52'
                 }),
                 searchTerm && h('span', { className: 'text-xs text-slate-500 font-mono' }, searchResults.length + ' match')
@@ -20545,7 +20545,7 @@
             return h('div', null,
               h('p', { className: 'text-xs text-slate-600 italic mb-3' }, CHEM_GLOSSARY.length + ' chemistry terms.'),
               h('div', { className: 'mb-3' },
-                h('input', { type: 'text', placeholder: __alloT('stem.chembalance.search_terms', 'Search terms...'), value: glossSearch, onChange: function(e) { upd('_glossSearch', e.target.value); }, className: 'w-full px-3 py-2 text-sm border-2 border-indigo-300 rounded-lg' })
+                h('input', { type: 'text', 'aria-label': __alloT('stem.chembalance.filter_chemistry_glossary_terms', 'Filter chemistry glossary terms'), placeholder: __alloT('stem.chembalance.search_terms', 'Search terms...'), value: glossSearch, onChange: function(e) { upd('_glossSearch', e.target.value); }, className: 'w-full px-3 py-2 text-sm border-2 border-indigo-300 rounded-lg' })
               ),
               h('div', { className: 'grid md:grid-cols-2 gap-2' },
                 filtered.map(function(g, i) {
@@ -20759,7 +20759,9 @@
                     h('td', { className: 'px-1 border border-slate-200' }, o.bd));
                 }))
               ),
-              h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
+              h('label', { htmlFor: 'chem-ph-hypothesis', className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+                __alloT('stem.chembalance.ph_hypothesis_label', 'Your pH hypothesis')),
+              h('textarea', { id: 'chem-ph-hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
                 placeholder: __alloT('stem.chembalance.hypothesis_free_text_no_right_answer_h', 'Hypothesis (free text — no right answer): How does buffer affect the H+ → pH relationship?'),
                 className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug mb-2', rows: 3 }),
               !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
@@ -20774,7 +20776,9 @@
                 h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   __alloT('stem.chembalance.i_think_i_understand_explain_in_own_wo', 'I think I understand — explain in own words')),
-                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
+                iq.understood && h('label', { htmlFor: 'chem-ph-explanation', className: 'block text-[11px] font-bold text-emerald-800 mt-2 mb-1' },
+                  __alloT('stem.chembalance.ph_explanation_label', 'Explain your reasoning')),
+                iq.understood && h('textarea', { id: 'chem-ph-explanation', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
                   placeholder: __alloT('stem.chembalance.explain_how_h_concentration_buffering_', 'Explain how H⁺ concentration, buffering, and temperature jointly determine pH.'),
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
               h('div', { className: 'mt-2 text-[10px] italic text-slate-500' },
