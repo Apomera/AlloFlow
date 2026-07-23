@@ -10112,18 +10112,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('p', { className: 'text-xs text-slate-300 mb-3' }, 'Cohen (1988) proposed rough benchmarks for small/medium/large effects in psychology. These are guidelines, not laws — an effect that counts as "small" may be hugely important (e.g., small effects on millions of students add up to massive population impact). But they help you calibrate what you\'re reading.'),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'w-full text-xs text-slate-200 border-collapse' },
+              h('caption', { className: 'sr-only' }, 'Cohen effect size reference benchmarks'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-900/60' },
-                  h('th', { className: 'p-2 text-left font-black text-purple-200' }, 'Measure'),
-                  h('th', { className: 'p-2 text-center font-black text-purple-200' }, 'Small'),
-                  h('th', { className: 'p-2 text-center font-black text-purple-200' }, 'Medium'),
-                  h('th', { className: 'p-2 text-center font-black text-purple-200' }, 'Large')
+                  h('th', { scope: 'col', className: 'p-2 text-left font-black text-purple-200' }, 'Measure'),
+                  h('th', { scope: 'col', className: 'p-2 text-center font-black text-purple-200' }, 'Small'),
+                  h('th', { scope: 'col', className: 'p-2 text-center font-black text-purple-200' }, 'Medium'),
+                  h('th', { scope: 'col', className: 'p-2 text-center font-black text-purple-200' }, 'Large')
                 )
               ),
               h('tbody', null,
                 EFFECT_SIZE_GUIDE.map(function(e, i) {
                   return h('tr', { key: i, className: 'border-t border-slate-700' },
-                    h('td', { className: 'p-2 font-bold text-purple-300', colSpan: 1 }, e.measure),
+                    h('th', { scope: 'row', className: 'p-2 text-left font-bold text-purple-300' }, e.measure),
                     h('td', { className: 'p-2 text-center' }, e.small),
                     h('td', { className: 'p-2 text-center' }, e.medium),
                     h('td', { className: 'p-2 text-center' }, e.large)
@@ -11596,6 +11597,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         // Comparison table \u2014 careers as columns
         h('div', { className: 'overflow-x-auto rounded-xl border border-emerald-500/30' },
           h('table', { className: 'w-full text-xs', style: { minWidth: 600 } },
+            h('caption', { className: 'sr-only' }, 'Career comparison: ' + compareCareers.map(function(c) { return c.title; }).join(', ')),
             // header row \u2014 career titles
             h('thead', null,
               h('tr', { className: 'bg-slate-900/80' },
