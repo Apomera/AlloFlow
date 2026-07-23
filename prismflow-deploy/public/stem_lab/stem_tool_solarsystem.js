@@ -4712,7 +4712,7 @@ const d = labToolData.solarSystem || {};
       var a3 = b.a * b.a * b.a;
       var ratio = T2 / a3;
       return h("tr", { key: "k3r-" + b.id, className: "orr-tr" },
-        h("td", { style: tCellStyle }, b.emoji + " " + b.name),
+        h("th", { scope: "row", style: Object.assign({}, tCellStyle, { textAlign: "left" }) }, b.emoji + " " + b.name),
         h("td", { style: tCellR }, fmt(b.a, 3)),
         h("td", { style: tCellR }, fmt(b.T, 2)),
         h("td", { style: tCellR }, fmt(T2, 2)),
@@ -4723,14 +4723,15 @@ const d = labToolData.solarSystem || {};
 
     var verTable = h("div", { style: { overflowX: "auto", marginTop: "10px" } },
       h("table", { style: { borderCollapse: "collapse", fontSize: "12px", color: fg, width: "100%" } },
+        h("caption", { className: "sr-only" }, __alloT('stem.solarsystem.verification_table_t_a_should_1_00_for', "Verification Table — T²/a³ should ≈ 1.00 for solar orbits")),
         h("thead", null,
           h("tr", { style: { background: isDark ? "#1e2a3e" : "#eef2f7" } },
-            h("th", { style: Object.assign({}, tHeadStyle, { textAlign: "left" }) }, __alloT('stem.solarsystem.body', "Body")),
-            h("th", { style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, __alloT('stem.solarsystem.a_au', "a (AU)")),
-            h("th", { style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, __alloT('stem.solarsystem.t_yr', "T (yr)")),
-            h("th", { style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, "T\u00b2"),
-            h("th", { style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, "a\u00b3"),
-            h("th", { style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, "T\u00b2/a\u00b3")
+            h("th", { scope: "col", style: Object.assign({}, tHeadStyle, { textAlign: "left" }) }, __alloT('stem.solarsystem.body', "Body")),
+            h("th", { scope: "col", style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, __alloT('stem.solarsystem.a_au', "a (AU)")),
+            h("th", { scope: "col", style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, __alloT('stem.solarsystem.t_yr', "T (yr)")),
+            h("th", { scope: "col", style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, "T\u00b2"),
+            h("th", { scope: "col", style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, "a\u00b3"),
+            h("th", { scope: "col", style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, "T\u00b2/a\u00b3")
           )
         ),
         h("tbody", null, tableRows)
@@ -5161,7 +5162,7 @@ const d = labToolData.solarSystem || {};
       var t = hohmann(earth.a, p.a);
       var diffColor = t.dvTotal > 15 ? "#ef4444" : t.dvTotal > 8 ? "#f59e0b" : "#22c55e";
       return h("tr", { key: "bud-" + p.id, className: "orr-tr" },
-        h("td", { style: bCellStyle }, p.emoji + " " + p.name),
+        h("th", { scope: "row", style: Object.assign({}, bCellStyle, { textAlign: "left" }) }, p.emoji + " " + p.name),
         h("td", { style: bCellR }, fmt(t.dv1, 2)),
         h("td", { style: bCellR }, fmt(t.dv2, 2)),
         h("td", { style: Object.assign({}, bCellR, { fontWeight: 700, color: diffColor }) }, fmt(t.dvTotal, 2)),
@@ -5207,13 +5208,14 @@ const d = labToolData.solarSystem || {};
         ),
         h("div", { key: "bt", style: { overflowX: "auto" } },
           h("table", { style: { borderCollapse: "collapse", fontSize: "12px", color: fg, width: "100%" } },
+            h("caption", { className: "sr-only" }, __alloT('stem.solarsystem.v_budget_earth_all_planets_hohmann', "Δv Budget: Earth → All Planets (Hohmann)")),
             h("thead", null,
               h("tr", { style: { background: isDark ? "#1e2a3e" : "#eef2f7" } },
-                h("th", { style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "left", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, __alloT('stem.solarsystem.destination', "Destination")),
-                h("th", { style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, "\u0394v\u2081"),
-                h("th", { style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, "\u0394v\u2082"),
-                h("th", { style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, __alloT('stem.solarsystem.total', "Total")),
-                h("th", { style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, __alloT('stem.solarsystem.transit', "Transit"))
+                h("th", { scope: "col", style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "left", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, __alloT('stem.solarsystem.destination', "Destination")),
+                h("th", { scope: "col", style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, "\u0394v\u2081"),
+                h("th", { scope: "col", style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, "\u0394v\u2082"),
+                h("th", { scope: "col", style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, __alloT('stem.solarsystem.total', "Total")),
+                h("th", { scope: "col", style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, __alloT('stem.solarsystem.transit', "Transit"))
               )
             ),
             h("tbody", null, budgetRows)
@@ -20771,16 +20773,17 @@ const d = labToolData.solarSystem || {};
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg p-3 overflow-x-auto ' + (isDark ? 'bg-slate-900' : 'bg-slate-50') },
                                           React.createElement('table', { className: 'w-full text-[10px]' },
+                                            React.createElement('caption', { className: 'sr-only' }, __alloT('stem.solarsystem.quick_table_of_planet_properties_diame', 'Quick table of planet properties. Diameter, gravity, day length, moons.')),
                                             React.createElement('thead', null,
                                               React.createElement('tr', null,
-                                                React.createElement('th', { className: 'text-left p-1 ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, __alloT('stem.solarsystem.property', 'Property')),
-                                                labels.map(function(L) { return React.createElement('th', { key: L, className: 'text-right p-1 ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, L); })
+                                                React.createElement('th', { scope: 'col', className: 'text-left p-1 ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, __alloT('stem.solarsystem.property', 'Property')),
+                                                labels.map(function(L) { return React.createElement('th', { scope: 'col', key: L, className: 'text-right p-1 ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, L); })
                                               )
                                             ),
                                             React.createElement('tbody', null,
                                               props.map(function(p, pi) {
                                                 return React.createElement('tr', { key: pi, className: (pi % 2 ? '' : (isDark ? 'bg-slate-800' : 'bg-slate-100')) },
-                                                  React.createElement('td', { className: 'p-1 font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, p.name),
+                                                  React.createElement('th', { scope: 'row', className: 'p-1 font-bold text-left ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, p.name),
                                                   keys.map(function(k) { return React.createElement('td', { key: k, className: 'text-right p-1 font-mono ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, typeof p[k] === 'number' ? (p[k] > 1000 ? p[k].toLocaleString() : p[k].toString()) : p[k]); })
                                                 );
                                               })
