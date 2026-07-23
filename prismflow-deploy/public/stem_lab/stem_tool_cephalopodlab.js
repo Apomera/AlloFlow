@@ -10088,6 +10088,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           active && threeLoaded ? h('div', null,
             h('div', { style: { position: 'relative', width: '100%', maxWidth: 960, margin: '0 auto', aspectRatio: '16 / 10', background: '#0a4a6b', borderRadius: 12, overflow: 'hidden' } },
               h('canvas', {
+                role: 'application',
+                'aria-label': __alloT('stem.cephalopodlab.3d_octopus_hunt_simulator_wasd_to_craw', '3D octopus hunt simulator. WASD to crawl, A and D rotate. Space jets. Click hunts. I uses ink defense. G grabs shelters.'),
+                'aria-describedby': 'cl-hunt-canvas-instructions',
                 // Bump key on Dive Again so React unmounts + remounts the
                 // canvas, triggering a fresh initHuntSim3D against the same
                 // species. Without this, calling setCL with the same
@@ -10095,9 +10098,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 // leaks across runs.
                 key: 'cl-hunt-canvas-' + (d.huntDiveGen || 0),
                 tabIndex: 0,
-                role: 'application',
-                'aria-label': __alloT('stem.cephalopodlab.3d_octopus_hunt_simulator_wasd_to_craw', '3D octopus hunt simulator. WASD to crawl, A and D rotate. Space jets. Click hunts. I uses ink defense. G grabs shelters.'),
-                style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair', outline: 'none' },
+                onFocus: function(event) {
+                  event.currentTarget.style.outline = '3px solid #fde68a';
+                  event.currentTarget.style.outlineOffset = '3px';
+                  event.currentTarget.style.boxShadow = '0 0 0 6px rgba(15,23,42,0.9)';
+                },
+                onBlur: function(event) {
+                  event.currentTarget.style.outline = '3px solid transparent';
+                  event.currentTarget.style.boxShadow = 'none';
+                },
+                style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair', outline: '3px solid transparent', outlineOffset: 3 },
                 ref: function(canvasEl) {
                   if (!canvasEl) return;
                   if (canvasEl._clInit) return;
@@ -10110,14 +10120,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     setCL({ hunt3DActive: false, _threeError: true, _threeLoaded: false });
                   }
                 }
-              })),
+              }, __alloT('stem.cephalopodlab.3d_hunt_canvas_fallback', 'Interactive 3D octopus hunt. Use WASD to crawl, A and D to rotate, Space to jet, I for ink defense, and G to grab shelters.'))),
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' } },
               h('button', { onClick: function() { setCL({ hunt3DActive: false }); clAnnounce('Surfaced. Ready to dive again.'); },
                 style: { padding: '10px 20px', background: 'transparent', color: '#c7d2fe',
                   border: '1px solid rgba(167,139,250,0.4)', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' } },
                 __alloT('stem.cephalopodlab.end_run_surface', '◀ End run + surface'))),
-            h('div', { style: { textAlign: 'center', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 8, fontStyle: 'italic' } },
-              __alloT('stem.cephalopodlab.tip_click_the_canvas_first_so_keyboard', 'Tip: click the canvas first so keyboard input is captured.'))
+            h('div', { id: 'cl-hunt-canvas-instructions', style: { textAlign: 'center', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 8, fontStyle: 'italic' } },
+              __alloT('stem.cephalopodlab.tip_tab_to_or_click_the_canvas_for_keyboard', 'Tip: Tab to or click the canvas so keyboard input is captured.'))
           ) : null
         );
       }
@@ -10194,6 +10204,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         floorGeo.computeVertexNormals();
         // Sand texture (procedural canvas)
         var sandCv = document.createElement('canvas');
+        sandCv.setAttribute('aria-hidden', 'true');
         sandCv.width = 256; sandCv.height = 256;
         var sandCx = sandCv.getContext('2d');
         sandCx.fillStyle = '#c9a06a';
@@ -10281,7 +10292,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         // ─── Caustic light overlay (animated bright spots) ───
         var causticsGeo = new THREE.PlaneGeometry(140, 140, 1, 1);
         var causticsTex = (function() {
-          var cv = document.createElement('canvas'); cv.width = 256; cv.height = 256;
+          var cv = document.createElement('canvas');
+          cv.setAttribute('aria-hidden', 'true');
+          cv.width = 256; cv.height = 256;
           var cx = cv.getContext('2d');
           cx.fillStyle = 'rgba(0,0,0,0)';
           cx.fillRect(0, 0, 256, 256);
@@ -12049,6 +12062,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var MINIMAP_SIZE = 130;
         var MINIMAP_RANGE = 50;     // world units that fit in the radar
         var minimap = document.createElement('canvas');
+        minimap.setAttribute('role', 'img');
+        minimap.setAttribute('aria-label', 'Mini-map showing the octopus at center, nearby prey, predators, dens, shelters, landmarks, and north orientation.');
         minimap.width = MINIMAP_SIZE; minimap.height = MINIMAP_SIZE;
         minimap.style.cssText = 'position:absolute;top:10px;right:10px;border:1px solid rgba(167,139,250,0.4);border-radius:8px;background:rgba(8,16,30,0.85);pointer-events:none;box-shadow:0 4px 10px rgba(0,0,0,0.35);';
         canvasEl.parentElement.appendChild(minimap);

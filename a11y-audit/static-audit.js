@@ -124,6 +124,7 @@ const CHECKS = [
       // A canvas used only as an internal drawing/mask buffer has no user-facing
       // information to name. Explicit aria-hidden is the correct 1.1.1 treatment.
       if (/["']?aria-hidden["']?\s*[:=]\s*["']?true["']?/.test(context)) return false;
+      if (/setAttribute\(\s*["']aria-hidden["']\s*,\s*["']true["']\s*\)/.test(context)) return false;
       if (/aria-label/.test(context) && /role/.test(context)) return false;
       return true;
     },
