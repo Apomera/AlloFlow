@@ -1158,7 +1158,7 @@ exports[`layer 1 — linguistic anchor data (window.__alloAnchor) > grapho-phone
 `;
 
 exports[`layer 2 — render behavior per activity > activity "blending" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -1374,7 +1374,7 @@ exports[`layer 2 — render behavior per activity > activity "blending" renders 
 `;
 
 exports[`layer 2 — render behavior per activity > activity "counting" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -1607,7 +1607,7 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 `;
 
 exports[`layer 2 — render behavior per activity > activity "decoding" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -1807,7 +1807,7 @@ exports[`layer 2 — render behavior per activity > activity "decoding" renders 
 `;
 
 exports[`layer 2 — render behavior per activity > activity "isolation" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -1995,7 +1995,7 @@ exports[`layer 2 — render behavior per activity > activity "isolation" renders
 <div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[11px] text-slate-700">
 <span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
 </div>
-<div class="p-8 text-center animate-pulse text-violet-700">Loading sounds...</div>
+<div class="p-8 text-center animate-pulse motion-reduce:animate-none text-violet-700">Loading sounds...</div>
 </div>
 </div>
 </div>
@@ -2003,7 +2003,7 @@ exports[`layer 2 — render behavior per activity > activity "isolation" renders
 `;
 
 exports[`layer 2 — render behavior per activity > activity "letter_tracing" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -2235,7 +2235,7 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 `;
 
 exports[`layer 2 — render behavior per activity > activity "manipulation" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -2453,7 +2453,7 @@ exports[`layer 2 — render behavior per activity > activity "manipulation" rend
 `;
 
 exports[`layer 2 — render behavior per activity > activity "mapping" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -2676,7 +2676,7 @@ exports[`layer 2 — render behavior per activity > activity "mapping" renders i
 `;
 
 exports[`layer 2 — render behavior per activity > activity "orthography" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -2920,7 +2920,7 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 `;
 
 exports[`layer 2 — render behavior per activity > activity "rhyming" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -3141,7 +3141,7 @@ exports[`layer 2 — render behavior per activity > activity "rhyming" renders i
 `;
 
 exports[`layer 2 — render behavior per activity > activity "segmentation" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -3367,7 +3367,7 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 `;
 
 exports[`layer 2 — render behavior per activity > activity "sound_sort" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -3600,7 +3600,7 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 `;
 
 exports[`layer 2 — render behavior per activity > activity "spelling_bee" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -3813,7 +3813,7 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 `;
 
 exports[`layer 2 — render behavior per activity > activity "syllable_blending" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -4038,7 +4038,7 @@ exports[`layer 2 — render behavior per activity > activity "syllable_blending"
 `;
 
 exports[`layer 2 — render behavior per activity > activity "syllable_counting" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -4260,7 +4260,7 @@ exports[`layer 2 — render behavior per activity > activity "syllable_counting"
 `;
 
 exports[`layer 2 — render behavior per activity > activity "word_families" renders identically (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -4510,7 +4510,7 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 `;
 
 exports[`layer 2 — render behavior per activity > correct-answer feedback banner (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
@@ -4727,7 +4727,7 @@ exports[`layer 2 — render behavior per activity > correct-answer feedback bann
 `;
 
 exports[`layer 2 — render behavior per activity > incorrect-answer feedback banner (snapshot) 1`] = `
-"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
 <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
 <div class="flex items-center justify-between">
