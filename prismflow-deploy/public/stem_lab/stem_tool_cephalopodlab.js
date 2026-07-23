@@ -16550,11 +16550,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               // The matrix table
               h('div', { style: { overflowX: 'auto' } },
                 h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)' } },
+                  h('caption', { className: 'sr-only' }, __alloT('stem.cephalopodlab.comparative_cognition_matrix_caption', 'Comparative cognition evidence matrix')),
                   h('thead', null,
                     h('tr', null,
-                      h('th', { style: { padding: '10px 8px', textAlign: 'left', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', borderBottom: '1px solid rgba(100,116,139,0.3)' } }, __alloT('stem.cephalopodlab.ability', 'Ability')),
+                      h('th', { scope: 'col', style: { padding: '10px 8px', textAlign: 'left', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', borderBottom: '1px solid rgba(100,116,139,0.3)' } }, __alloT('stem.cephalopodlab.ability', 'Ability')),
                       ANIMALS.map(function(a) {
-                        return h('th', { key: a.id, style: { padding: '10px 8px', textAlign: 'center',
+                        return h('th', { key: a.id, scope: 'col', style: { padding: '10px 8px', textAlign: 'center',
                           color: a.color, fontSize: 11, fontWeight: 800, borderBottom: '1px solid rgba(100,116,139,0.3)' } },
                           h('div', { 'aria-hidden': 'true', style: { fontSize: 22, marginBottom: 3 } }, a.emoji),
                           a.name);
@@ -16562,7 +16563,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   h('tbody', null,
                     DIMENSIONS.map(function(dim, i) {
                       return h('tr', { key: dim.id, style: { borderBottom: '1px solid rgba(100,116,139,0.15)' } },
-                        h('td', { style: { padding: '12px 8px', fontWeight: 700, verticalAlign: 'top' } },
+                        h('th', { scope: 'row', style: { padding: '12px 8px', fontWeight: 700, verticalAlign: 'top', textAlign: 'left' } },
                           h('div', { style: { fontSize: 13, color: '#fde68a', marginBottom: 2 } },
                             h('span', { 'aria-hidden': 'true', style: { marginRight: 4 } }, dim.emoji),
                             dim.name),
@@ -17558,14 +17559,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           // Observation log table
           (st.log || []).length > 0 && h('div', { className: 'mb-3 overflow-x-auto' },
             h('table', { className: 'text-[10px] w-full border-collapse' },
+              h('caption', { className: 'sr-only' }, __alloT('stem.cephalopodlab.camouflage_observations_caption', 'Camouflage observations')),
               h('thead', null, h('tr', { className: 'bg-slate-100' },
                 ['substrate', 'brightness', 'hue', 'coarseness', 'detection'].map(function(c, i) {
-                  return h('th', { key: 'h' + i, className: 'px-2 py-1 border border-slate-200 text-left' }, c);
+                  return h('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 border border-slate-200 text-left' }, c);
                 })
               )),
               h('tbody', null, st.log.map(function(o, idx) {
                 return h('tr', { key: 'lr' + idx, className: o.det < 20 ? 'bg-emerald-50' : (o.det > 60 ? 'bg-rose-50' : '') },
-                  h('td', { className: 'px-2 py-1 border border-slate-200' }, o.substrate),
+                  h('th', { scope: 'row', className: 'px-2 py-1 border border-slate-200 text-left font-semibold' }, o.substrate),
                   h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.b),
                   h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.h),
                   h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.c),
@@ -18681,10 +18683,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { fontSize: 17, fontWeight: 800, color: '#c7d2fe', marginBottom: 12 } }, t.title),
               h('div', { style: { overflowX: 'auto', marginBottom: 10 } },
                 h('table', { style: { borderCollapse: 'collapse', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', width: '100%' } },
+                  h('caption', { className: 'sr-only' }, t.title),
                   h('thead', null,
                     h('tr', { style: { background: 'rgba(167,139,250,0.18)' } },
                       Object.keys(t.rows[0]).map(function(k, i) {
-                        return h('th', { key: i, style: { padding: '8px 12px', textAlign: 'left', fontWeight: 800, color: '#c7d2fe', borderBottom: '2px solid rgba(167,139,250,0.4)' } }, k.charAt(0).toUpperCase() + k.slice(1));
+                        return h('th', { key: i, scope: 'col', style: { padding: '8px 12px', textAlign: 'left', fontWeight: 800, color: '#c7d2fe', borderBottom: '2px solid rgba(167,139,250,0.4)' } }, k.charAt(0).toUpperCase() + k.slice(1));
                       })
                     )
                   ),
@@ -18692,7 +18695,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     t.rows.map(function(row, ri) {
                       return h('tr', { key: ri, style: { borderBottom: '1px solid rgba(255,255,255,0.06)' } },
                         Object.keys(row).map(function(k, i) {
-                          return h('td', { key: i, style: { padding: '8px 12px', verticalAlign: 'top', lineHeight: 1.5 } }, row[k]);
+                          return h(i === 0 ? 'th' : 'td', { key: i, scope: i === 0 ? 'row' : undefined, style: { padding: '8px 12px', verticalAlign: 'top', lineHeight: 1.5, textAlign: 'left', fontWeight: i === 0 ? 700 : 400 } }, row[k]);
                         })
                       );
                     })
@@ -19312,10 +19315,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8 } }, 'Variables: ' + ds.variables),
               h('div', { style: { overflowX: 'auto', marginBottom: 10 } },
                 h('table', { style: { borderCollapse: 'collapse', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', width: '100%' } },
+                  h('caption', { className: 'sr-only' }, ds.name),
                   h('thead', null,
                     h('tr', { style: { background: 'rgba(167,139,250,0.18)' } },
                       Object.keys(ds.data[0]).map(function(k, i) {
-                        return h('th', { key: i, style: { padding: '6px 10px', textAlign: 'left', fontWeight: 800, color: '#c7d2fe', borderBottom: '2px solid rgba(167,139,250,0.4)' } }, k);
+                        return h('th', { key: i, scope: 'col', style: { padding: '6px 10px', textAlign: 'left', fontWeight: 800, color: '#c7d2fe', borderBottom: '2px solid rgba(167,139,250,0.4)' } }, k);
                       })
                     )
                   ),
@@ -19323,7 +19327,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     ds.data.map(function(row, ri) {
                       return h('tr', { key: ri, style: { borderBottom: '1px solid rgba(255,255,255,0.06)' } },
                         Object.keys(row).map(function(k, i) {
-                          return h('td', { key: i, style: { padding: '6px 10px', verticalAlign: 'top' } }, String(row[k]));
+                          return h(i === 0 ? 'th' : 'td', { key: i, scope: i === 0 ? 'row' : undefined, style: { padding: '6px 10px', verticalAlign: 'top', textAlign: 'left', fontWeight: i === 0 ? 700 : 400 } }, String(row[k]));
                         })
                       );
                     })
@@ -19416,11 +19420,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           ),
           h('div', { style: cardStyle() },
             h('table', { style: { borderCollapse: 'collapse', width: '100%', fontSize: 12 } },
+              h('caption', { className: 'sr-only' }, __alloT('stem.cephalopodlab.taxonomy_table_caption', 'Cephalopod taxonomy from kingdom to family')),
               h('thead', null,
                 h('tr', { style: { background: 'rgba(167,139,250,0.18)' } },
-                  h('th', { style: { padding: '8px 12px', textAlign: 'left', color: '#c7d2fe', fontWeight: 800 } }, __alloT('stem.cephalopodlab.rank', 'Rank')),
-                  h('th', { style: { padding: '8px 12px', textAlign: 'left', color: '#c7d2fe', fontWeight: 800 } }, __alloT('stem.cephalopodlab.name', 'Name')),
-                  h('th', { style: { padding: '8px 12px', textAlign: 'left', color: '#c7d2fe', fontWeight: 800 } }, __alloT('stem.cephalopodlab.notes', 'Notes'))
+                  h('th', { scope: 'col', style: { padding: '8px 12px', textAlign: 'left', color: '#c7d2fe', fontWeight: 800 } }, __alloT('stem.cephalopodlab.rank', 'Rank')),
+                  h('th', { scope: 'col', style: { padding: '8px 12px', textAlign: 'left', color: '#c7d2fe', fontWeight: 800 } }, __alloT('stem.cephalopodlab.name', 'Name')),
+                  h('th', { scope: 'col', style: { padding: '8px 12px', textAlign: 'left', color: '#c7d2fe', fontWeight: 800 } }, __alloT('stem.cephalopodlab.notes', 'Notes'))
                 )
               ),
               h('tbody', null,
@@ -19434,7 +19439,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     : 6;
                   return h('tr', { key: idx, style: { borderBottom: '1px solid rgba(255,255,255,0.06)' } },
                     h('td', { style: { padding: '6px 12px', color: '#a78bfa', fontWeight: 700, paddingLeft: (indent * 12 + 8) + 'px' } }, r.rank),
-                    h('td', { style: { padding: '6px 12px', color: '#c7d2fe', fontWeight: 700, fontStyle: 'italic' } }, r.name),
+                    h('th', { scope: 'row', style: { padding: '6px 12px', color: '#c7d2fe', fontWeight: 700, fontStyle: 'italic', textAlign: 'left' } }, r.name),
                     h('td', { style: { padding: '6px 12px', color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5 } }, r.notes)
                   );
                 })
