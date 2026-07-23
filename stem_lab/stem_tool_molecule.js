@@ -1397,6 +1397,62 @@ window.StemLab = window.StemLab || {
             if (typeof announceToSR === 'function') announceToSR('Removed atom ' + atom.el + '.');
           };
 
+          const setMoleculeCameraView = (action) => {
+            const camera = threeCameraRef.current;
+            const controls = threeControlsRef.current;
+            if (!camera || !controls) {
+              if (typeof announceToSR === 'function') announceToSR('The 3D molecule view is still loading.');
+              return;
+            }
+            const target = controls.target || { x: 0, y: 0, z: 0 };
+            if (action === 'reset') {
+              if (camera.up && camera.up.set) camera.up.set(0, 1, 0);
+              controls.reset();
+              controls.update();
+            } else if (action === 'zoom-in' || action === 'zoom-out') {
+              const dx = camera.position.x - target.x;
+              const dy = camera.position.y - target.y;
+              const dz = camera.position.z - target.z;
+              const distance = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+              const factor = action === 'zoom-in' ? 0.75 : 1.25;
+              const minDistance = controls.minDistance || 2;
+              const maxDistance = controls.maxDistance || 50;
+              const nextDistance = Math.max(minDistance, Math.min(maxDistance, distance * factor));
+              camera.position.set(
+                target.x + (dx / distance) * nextDistance,
+                target.y + (dy / distance) * nextDistance,
+                target.z + (dz / distance) * nextDistance
+              );
+              controls.update();
+            } else {
+              const positions = {
+                front: [0, 0, 15],
+                side: [15, 0, 0],
+                top: [0, 15, 0]
+              };
+              const position = positions[action];
+              if (!position) return;
+              if (camera.up && camera.up.set) {
+                if (action === 'top') camera.up.set(0, 0, -1);
+                else camera.up.set(0, 1, 0);
+              }
+              camera.position.set(target.x + position[0], target.y + position[1], target.z + position[2]);
+              if (camera.lookAt) camera.lookAt(target.x, target.y, target.z);
+              controls.update();
+            }
+            if (typeof announceToSR === 'function') {
+              const labels = {
+                front: 'Front molecule view.',
+                side: 'Side molecule view.',
+                top: 'Top molecule view.',
+                'zoom-in': 'Molecule view zoomed in.',
+                'zoom-out': 'Molecule view zoomed out.',
+                reset: 'Molecule camera reset.'
+              };
+              announceToSR(labels[action] || 'Molecule camera updated.');
+            }
+          };
+
           // ═══ Electron Configuration ═══
           const getElectronConfig = (atomicNum) => {
             const orbitals = ['1s','2s','2p','3s','3p','4s','3d','4p','5s','4d','5p','6s','4f','5d','6p','7s','5f','6d','7p'];
@@ -1797,11 +1853,12 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               React.createElement("div", { className: "flex gap-1 mb-3 flex-wrap" }, viewerPresets.map(p => React.createElement("button", { "aria-label": "View molecule: " + p.name, key: p.name, onClick: () => { upd('atoms', p.atoms.map(a => ({ ...a }))); upd('bonds', [...p.bonds]); upd('formula', p.formula); }, className: "px-2 py-1 rounded-lg text-xs font-bold " + (d.formula === p.formula ? 'bg-slate-700 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]') }, p.name))),
 
               threeLoaded
-                ? React.createElement("div", { className: "relative w-full rounded-xl overflow-hidden border", style: { height: "320px", background: "radial-gradient(circle at 50% 42%, rgba(30,64,175,0.34), rgba(15,23,42,0.72) 38%, #020617 78%)", borderColor: "rgba(30,41,59,0.95)", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -42px 80px rgba(2,6,23,0.72), 0 18px 38px rgba(15,23,42,0.22)" } },
+                ? React.createElement(React.Fragment, null,
+                  React.createElement("div", { className: "relative w-full rounded-xl overflow-hidden border", style: { height: "320px", background: "radial-gradient(circle at 50% 42%, rgba(30,64,175,0.34), rgba(15,23,42,0.72) 38%, #020617 78%)", borderColor: "rgba(30,41,59,0.95)", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -42px 80px rgba(2,6,23,0.72), 0 18px 38px rgba(15,23,42,0.22)" } },
                     React.createElement("canvas", {
                       ref: webglCanvasRef,
                       role: "img",
-                      "aria-label": "3D molecular model of " + (d.formula || "the selected molecule") + ". A Reset View button follows.",
+                      "aria-label": "3D molecular model of " + (d.formula || "the selected molecule") + ". Camera controls follow with front, side, top, zoom, and reset options.",
                       className: "w-full h-full",
                       style: { display: 'block', background: 'transparent' }
                     }),
@@ -1815,16 +1872,6 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       React.createElement("span", { style: { color: "#67e8f9" } }, "3D molecular model"),
                       React.createElement("span", { style: { color: "#94a3b8", fontWeight: 700 } }, d.formula || "No formula")
                     ),
-                    React.createElement("button", {
-                      onClick: function() {
-                        if (threeControlsRef.current) {
-                          threeControlsRef.current.reset();
-                        }
-                      },
-                      className: "absolute bottom-3 right-3 px-2.5 py-1.5 rounded-md text-[10px] font-bold shadow border backdrop-blur-sm transition-colors active:scale-[0.97]",
-                      style: { background: "rgba(248,250,252,0.9)", color: "#0f172a", borderColor: "rgba(203,213,225,0.8)" },
-                      'aria-label': __alloT('stem.molecule.reset_view', 'Reset View')
-                    }, __alloT('stem.molecule.reset_camera', '🔄 Reset Camera')),
                     xrSupported && React.createElement("button", {
                       onClick: function() { if (vrRef.current && vrRef.current.enterVR) vrRef.current.enterVR(); },
                       className: "absolute bottom-3 left-3 px-2.5 py-1.5 rounded-md text-[10px] font-bold shadow border backdrop-blur-sm transition-colors active:scale-[0.97]",
@@ -1832,7 +1879,32 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       'aria-label': __alloT('vr.enter_title', 'Enter VR (needs a headset)'),
                       title: __alloT('vr.enter_title', 'Enter VR (needs a headset)')
                     }, '🥽 ' + __alloT('vr.enter', 'VR'))
+                  ),
+                  React.createElement('div', {
+                    role: 'group',
+                    'aria-label': __alloT('stem.molecule.camera_controls', '3D molecule camera controls. Single-click alternatives to dragging the model.'),
+                    className: 'mt-2 mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-slate-300 bg-slate-50 p-2'
+                  },
+                    React.createElement('span', { className: 'px-1 text-xs font-black text-slate-800' },
+                      __alloT('stem.molecule.camera', 'Camera')),
+                    [
+                      { id: 'front', label: __alloT('stem.molecule.front_view', 'Front view'), text: __alloT('stem.molecule.front', 'Front') },
+                      { id: 'side', label: __alloT('stem.molecule.side_view', 'Side view'), text: __alloT('stem.molecule.side', 'Side') },
+                      { id: 'top', label: __alloT('stem.molecule.top_view', 'Top view'), text: __alloT('stem.molecule.top', 'Top') },
+                      { id: 'zoom-in', label: __alloT('stem.molecule.zoom_in', 'Zoom in'), text: '+' },
+                      { id: 'zoom-out', label: __alloT('stem.molecule.zoom_out', 'Zoom out'), text: '\u2212' },
+                      { id: 'reset', label: __alloT('stem.molecule.reset_view', 'Reset view'), text: __alloT('stem.molecule.reset', 'Reset') }
+                    ].map(control => React.createElement('button', {
+                      key: control.id,
+                      type: 'button',
+                      'data-molecule-camera-control': control.id,
+                      'aria-label': control.label,
+                      title: control.label,
+                      onClick: () => setMoleculeCameraView(control.id),
+                      className: 'min-h-11 min-w-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-xs font-bold text-slate-800 transition-colors hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 active:scale-[0.97]'
+                    }, control.text))
                   )
+                )
                 : React.createElement("svg", { viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "2D molecule structure with " + (d.atoms || []).length + " atom" + ((d.atoms || []).length === 1 ? "" : "s") + ". Drag an atom to reposition it; use the controls to add atoms and bonds.", className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { maxHeight: "300px" }, onMouseMove: e => { if (d.dragging !== null && d.dragging !== undefined) { const svg = e.currentTarget; const rect = svg.getBoundingClientRect(); const nx = (e.clientX - rect.left) / rect.width * W; const ny = (e.clientY - rect.top) / rect.height * H; const na = d.atoms.map((a, i) => i === d.dragging ? { ...a, x: Math.round(nx), y: Math.round(ny) } : a); upd("atoms", na); } }, onMouseUp: () => upd("dragging", null), onMouseLeave: () => upd("dragging", null) },
                     (d.bonds || []).map((b, i) => d.atoms[b[0]] && d.atoms[b[1]] ? React.createElement("line", { key: 'b' + i, x1: d.atoms[b[0]].x, y1: d.atoms[b[0]].y, x2: d.atoms[b[1]].x, y2: d.atoms[b[1]].y, stroke: "#94a3b8", strokeWidth: 4, strokeLinecap: "round" }) : null),
                     (d.atoms || []).map((a, i) => React.createElement("g", { key: i },

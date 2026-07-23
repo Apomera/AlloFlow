@@ -13,10 +13,10 @@ describe('Molecule Lab canvas alternatives', () => {
     expect(source).toContain("canvas.setAttribute('aria-hidden', 'true');");
   });
 
-  it('names the 3D molecular model and retains its reset alternative', () => {
+  it('names the 3D molecular model and describes its complete camera alternatives', () => {
     expect(source).toContain('"aria-label": "3D molecular model of "');
     expect(source).toContain('role: "img"');
-    expect(source).toContain('A Reset View button follows.');
+    expect(source).toContain('Camera controls follow with front, side, top, zoom, and reset options.');
     expect(source).not.toContain("outline: 'none'");
   });
 
