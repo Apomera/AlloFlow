@@ -2447,14 +2447,25 @@
                 blocks.length === 0 && React.createElement("p", { className: "text-slate-200 text-xs italic text-center py-4" },
                   t('stem.coding.click_blocks_above_or_load_a_template_', 'Click blocks above or load a template to start')
                 ),
-                React.createElement("div", { className: "flex flex-col gap-1" },
+                React.createElement("p", { id: "coding-block-reorder-help", className: "mb-2 text-[11px] text-slate-300" }, "Reorder blocks with the Move up and Move down buttons, or focus a block and press Alt+Up or Alt+Down."),
+                React.createElement("div", { role: "list", "aria-label": "Program blocks", className: "flex flex-col gap-1" },
                   blocks.map(function (b, idx) {
                     var def = BLOCK_TYPES.find(function (bt) { return bt.type === b.type; });
                     var isActive = running && stepIdx === idx;
                     return React.createElement("div", {
                       key: idx,
+                      role: "listitem",
+                      tabIndex: running ? -1 : 0,
+                      "aria-describedby": "coding-block-reorder-help",
+                      "aria-label": "Program block " + (idx + 1) + ": " + (def ? def.label : b.type),
+                      "aria-keyshortcuts": "Alt+ArrowUp Alt+ArrowDown",
                       draggable: !running,
                       onDragStart: function (e) { handleDragStart(e, idx); },
+                      onKeyDown: function (e) {
+                        if (e.target !== e.currentTarget || running || !e.altKey) return;
+                        if (e.key === "ArrowUp" && idx > 0) { e.preventDefault(); moveBlock(idx, -1); if (typeof announceToSR === "function") announceToSR("Block moved up."); }
+                        if (e.key === "ArrowDown" && idx < blocks.length - 1) { e.preventDefault(); moveBlock(idx, 1); if (typeof announceToSR === "function") announceToSR("Block moved down."); }
+                      },
                       onDragOver: handleDragOver,
                       onDragLeave: handleDragLeave,
                       onDrop: function (e) { handleDrop(e, idx); },
@@ -2560,9 +2571,9 @@
                           placeholder: t('stem.coding.x_250', "x > 250")
                         }),
                         // Move / Remove buttons
-                        React.createElement("button", { onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[11px]", disabled: idx === 0 }, "▲"),
-                        React.createElement("button", { onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[11px]", disabled: idx === blocks.length - 1 }, "▼"),
-                        React.createElement("button", { "aria-label": t('stem.coding.remove_block', "Remove block"), onClick: function () { removeBlock(idx); }, className: "text-white/60 hover:text-red-300 text-sm ml-1" }, "×")
+                        React.createElement("button", { type: "button", "aria-label": "Move " + (def ? def.label : b.type) + " up", onClick: function () { moveBlock(idx, -1); }, className: "min-h-11 min-w-11 rounded text-white/80 hover:bg-white/15 hover:text-white text-[11px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white", disabled: idx === 0 }, "▲"),
+                        React.createElement("button", { type: "button", "aria-label": "Move " + (def ? def.label : b.type) + " down", onClick: function () { moveBlock(idx, 1); }, className: "min-h-11 min-w-11 rounded text-white/80 hover:bg-white/15 hover:text-white text-[11px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white", disabled: idx === blocks.length - 1 }, "▼"),
+                        React.createElement("button", { type: "button", "aria-label": t('stem.coding.remove_block', "Remove block"), onClick: function () { removeBlock(idx); }, className: "min-h-11 min-w-11 rounded text-white/80 hover:bg-white/15 hover:text-red-200 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" }, "×")
                       ),
                       // ── Repeat children ──
                       b.type === 'repeat' && React.createElement("div", { className: "ml-4 mt-1 pl-2 border-l-2 border-purple-400/50 flex flex-col gap-1" },
