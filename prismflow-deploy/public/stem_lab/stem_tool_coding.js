@@ -461,6 +461,7 @@
     return (function() {
           // ── State from labToolData ──
           var d = (labToolData && labToolData._codingPlayground) || {};
+          var reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
           var projectName = d.projectName || '';
           function slugifyName(nm) { var z = String(nm || '').trim().replace(/[^A-Za-z0-9_ -]+/g, '').replace(/ +/g, '_').slice(0, 40); return z || 'coding'; }
 
@@ -2139,7 +2140,7 @@
                 onClick: function() { upd('showCoordPicker', !showCoordPicker); },
                 title: showCoordPicker ? 'Cancel coordinate picker' : 'Click canvas to add goto(x,y)',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
-                  (showCoordPicker ? "bg-amber-700 text-white animate-pulse" : "bg-white/15 text-white hover:bg-white/25")
+                  (showCoordPicker ? "bg-amber-700 text-white" + (reducedMotion ? "" : " animate-pulse") : "bg-white/15 text-white hover:bg-white/25")
               }, t('stem.coding.pick_2', "📌 Pick")),
               // Background Music toggle
               React.createElement("button", { "aria-label": t('stem.coding.toggle_bg_music', "Toggle Bg Music"),
@@ -2637,7 +2638,7 @@
                   onClick: handleReset,
                   className: "flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold bg-red-600/80 text-white hover:bg-red-600 transition-all"
                 }, t('stem.coding.reset_all_2', "⏪ Reset All")),
-                running && React.createElement("span", { className: "text-xs text-yellow-400 animate-pulse font-medium" },
+                running && React.createElement("span", { className: "text-xs text-yellow-400 font-medium" + (reducedMotion ? "" : " animate-pulse") },
                   "🔄 Running... step " + (stepIdx + 1)
                 )
               ),
@@ -2833,7 +2834,7 @@
                 ),
                 aiLoading ?
                   React.createElement("div", { className: "flex items-center gap-2 py-2" },
-                    React.createElement("div", { className: "animate-spin w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full" }),
+                    React.createElement("div", { "aria-hidden": "true", className: "w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full" + (reducedMotion ? "" : " animate-spin") }),
                     React.createElement("span", { className: "text-[11px] text-blue-300" }, "Thinking...")
                   ) :
                   React.createElement("p", { className: "text-[11px] text-blue-200/80 leading-relaxed whitespace-pre-wrap" }, aiExplanation || "Click 'Explain', 'Suggest', or 'Debug' to get AI help!")
