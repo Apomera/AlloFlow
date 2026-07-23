@@ -1386,7 +1386,7 @@ const d = labToolData.solarSystem || {};
                 // Atmosphere glow — soft halo around planets with atmospheres
                 if (p.atmosphere && p.atmosphere !== 'None' && p.atmosphere.indexOf('None') === -1) {
                   var glowSize = p.size * 2.4;
-                  var glowCanvas = document.createElement('canvas'); glowCanvas.width = 128; glowCanvas.height = 128;
+                  var glowCanvas = document.createElement('canvas'); glowCanvas.setAttribute('aria-hidden', 'true'); glowCanvas.width = 128; glowCanvas.height = 128;
                   var gctx = glowCanvas.getContext('2d');
                   var glowGrad = gctx.createRadialGradient(64, 64, 20, 64, 64, 64);
                   glowGrad.addColorStop(0, 'rgba(' + Math.round(p.rgb[0]*255) + ',' + Math.round(p.rgb[1]*255) + ',' + Math.round(p.rgb[2]*255) + ',0.3)');
@@ -2843,14 +2843,14 @@ const d = labToolData.solarSystem || {};
     }, [props.redrawKey || 0]);
 
     return h("canvas", {
-      ref: ref,
-      width: props.width,
-      height: props.height,
-      tabIndex: 0,
       role: props.panZoom ? 'application' : 'img',
       'aria-label': props.ariaLabel || (props.panZoom
         ? 'Solar system visualization. Keyboard: arrow keys to pan, plus and minus to zoom, Home to reset, Enter or Space to interact at center.'
         : 'Solar system visualization.'),
+      ref: ref,
+      width: props.width,
+      height: props.height,
+      tabIndex: 0,
       style: Object.assign({
         border: isDark ? "1px solid rgba(74,144,217,0.2)" : "1px solid " + border,
         borderRadius: "12px",
@@ -3064,7 +3064,7 @@ const d = labToolData.solarSystem || {};
         // into an offscreen canvas and blit. Gives the background real depth instead of
         // a flat gradient.
         if (isDark && !cv._nebulaCache) {
-          var neb = document.createElement("canvas");
+          var neb = document.createElement("canvas"); neb.setAttribute("aria-hidden", "true");
           neb.width = W; neb.height = H;
           var nctx = neb.getContext("2d");
           // Milky Way band — a diffuse diagonal stripe of warm, dusty glow that reads as
@@ -7948,6 +7948,7 @@ const d = labToolData.solarSystem || {};
                 // Cutaway canvas
                 React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-orange-300 shadow-lg", style: { height: '420px' } },
                   React.createElement("canvas", {
+                    role: "img",
                     "aria-label": "Interior cutaway diagram of " + sel.name,
                     style: { width: '100%', height: '100%', display: 'block', background: '#0a0a20' },
                     ref: function(canvasEl) {
@@ -8242,6 +8243,7 @@ const d = labToolData.solarSystem || {};
                 // Descent visualization canvas
                 React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 shadow-lg " + (isDark ? 'border-indigo-700/60' : 'border-indigo-300'), style: { height: '400px' } },
                   React.createElement("canvas", {
+                    role: "img",
                     "aria-label": "Atmospheric descent visualization for " + sel.name,
                     style: { width: '100%', height: '100%', display: 'block' },
                     ref: function(canvasEl) {
@@ -8462,15 +8464,15 @@ const d = labToolData.solarSystem || {};
                     }, __alloT('stem.solarsystem.retry_3d_mode_2', "Retry 3D Mode"))
                   ) : React.createElement("canvas", {
 
+                    role: "application",
+
+                    "aria-label": ((sel && (sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant')) ? 'Atmospheric probe' : (sel && sel.terrainType === 'earthlike') ? 'Deep-sea submersible' : 'Surface rover') + ' simulation on ' + (sel ? sel.name : 'the selected world') + '. Use W A S D or arrow keys to move. Use the action controls to scan, collect evidence, take photos, review the mission and journal, or start navigation.',
+
                     "data-drone-canvas": "true",
 
                     "data-drone-vehicle-mode": (sel && (sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant')) ? 'atmospheric-probe' : (sel && sel.terrainType === 'earthlike') ? 'deep-sea-submersible' : 'surface-rover',
 
-                    role: "application",
-
                     tabIndex: 0,
-
-                    "aria-label": ((sel && (sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant')) ? 'Atmospheric probe' : (sel && sel.terrainType === 'earthlike') ? 'Deep-sea submersible' : 'Surface rover') + ' simulation on ' + (sel ? sel.name : 'the selected world') + '. Use W A S D or arrow keys to move. Use the action controls to scan, collect evidence, take photos, review the mission and journal, or start navigation.',
 
                     "aria-describedby": "hud-science-focus",
 
@@ -8630,7 +8632,7 @@ const d = labToolData.solarSystem || {};
 
                         // Sun glow corona
                         var coronaSize = sunRadius * 4;
-                        var coronaCv = document.createElement('canvas'); coronaCv.width = 128; coronaCv.height = 128;
+                        var coronaCv = document.createElement('canvas'); coronaCv.setAttribute('aria-hidden', 'true'); coronaCv.width = 128; coronaCv.height = 128;
                         var coronaCtx = coronaCv.getContext('2d');
                         var coronaGrad = coronaCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
                         coronaGrad.addColorStop(0, 'rgba(255,248,225,0.9)');
@@ -8648,7 +8650,7 @@ const d = labToolData.solarSystem || {};
                         // ── Horizon Haze (ground fog/dust for atmosphere) ──
                         if (sel.atmosphere && sel.atmosphere !== 'Virtually none' && !isFluid) {
                           var hazeGeo = new THREE.PlaneGeometry(400, 400);
-                          var hazeCv = document.createElement('canvas'); hazeCv.width = 64; hazeCv.height = 64;
+                          var hazeCv = document.createElement('canvas'); hazeCv.setAttribute('aria-hidden', 'true'); hazeCv.width = 64; hazeCv.height = 64;
                           var hazeCtx = hazeCv.getContext('2d');
                           var hazeGrad = hazeCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
                           var hazeColor = sel.terrainType === 'earthlike' ? 'rgba(200,220,255,' : sel.terrainType === 'desert' ? 'rgba(200,160,100,' : sel.terrainType === 'volcanic' ? 'rgba(200,130,50,' : 'rgba(180,180,200,';
@@ -8835,7 +8837,7 @@ const d = labToolData.solarSystem || {};
                           scene.add(causticLight);
 
                           // ── Animated caustic light pattern on seafloor ──
-                          var causticCv = document.createElement('canvas'); causticCv.width = 256; causticCv.height = 256;
+                          var causticCv = document.createElement('canvas'); causticCv.setAttribute('aria-hidden', 'true'); causticCv.width = 256; causticCv.height = 256;
                           var causticCtx2 = causticCv.getContext('2d');
                           var causticTex = new THREE.CanvasTexture(causticCv);
                           causticTex.wrapS = causticTex.wrapT = THREE.RepeatWrapping;
@@ -9264,7 +9266,7 @@ const d = labToolData.solarSystem || {};
                           // Add swirling storm vortex (Great Red Spot style) for Jupiter/Saturn
                           if (sel.name === 'Jupiter' || sel.name === 'Saturn') {
                             var stormGeo = new THREE.CircleGeometry(8, 32);
-                            var stormCv = document.createElement('canvas'); stormCv.width = 128; stormCv.height = 128;
+                            var stormCv = document.createElement('canvas'); stormCv.setAttribute('aria-hidden', 'true'); stormCv.width = 128; stormCv.height = 128;
                             var stormCx = stormCv.getContext('2d');
                             var grad = stormCx.createRadialGradient(64, 64, 0, 64, 64, 64);
                             grad.addColorStop(0, sel.name === 'Jupiter' ? 'rgba(200,80,40,0.9)' : 'rgba(180,160,100,0.7)');
@@ -9956,7 +9958,7 @@ const d = labToolData.solarSystem || {};
                             var ringW = 3 + sri * 1.5;
                             var rGeo = new THREE.RingGeometry(ringR - ringW, ringR + ringW, 64);
                             // Create ring texture with gaps
-                            var rCv = document.createElement('canvas'); rCv.width = 256; rCv.height = 1;
+                            var rCv = document.createElement('canvas'); rCv.setAttribute('aria-hidden', 'true'); rCv.width = 256; rCv.height = 1;
                             var rCtx = rCv.getContext('2d');
                             for (var rpx = 0; rpx < 256; rpx++) {
                               var alpha = 0.15 + Math.sin(rpx * 0.3 + sri) * 0.08 + Math.random() * 0.03;
@@ -10918,7 +10920,7 @@ const d = labToolData.solarSystem || {};
                           poiMeshes.push(ringMesh);
 
                           // 3D text label above POI (canvas-textured plane, billboards toward camera)
-                          var labelCv = document.createElement('canvas');
+                          var labelCv = document.createElement('canvas'); labelCv.setAttribute('aria-hidden', 'true');
                           labelCv.width = 256; labelCv.height = 48;
                           var lCtx = labelCv.getContext('2d');
                           lCtx.fillStyle = 'rgba(0,0,0,0.65)';
@@ -11406,6 +11408,8 @@ const d = labToolData.solarSystem || {};
 
                         // ── Mini-Map Radar (bottom-right) ──
                         var miniMap = document.createElement('canvas');
+                        miniMap.setAttribute('role', 'img');
+                        miniMap.setAttribute('aria-label', 'Radar map showing the vehicle position and nearby points of interest');
                         miniMap.width = 120; miniMap.height = 120;
                         miniMap.style.cssText = 'position:absolute;bottom:12px;right:12px;width:120px;height:120px;border-radius:50%;border:2px solid rgba(56,189,248,0.3);background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);pointer-events:none;z-index:10';
                         canvasEl.parentElement.appendChild(miniMap);
@@ -14499,6 +14503,7 @@ const d = labToolData.solarSystem || {};
                   ),
                   // Simple star field canvas
                   React.createElement("canvas", {
+                    'aria-hidden': 'true',
                     style: { width: '100%', height: '80px', display: 'block', borderRadius: '8px' },
                     ref: function(skyEl) {
                       if (!skyEl || skyEl._skyInit === sel.name) return;
@@ -14691,6 +14696,7 @@ const d = labToolData.solarSystem || {};
                       })
                     ),
                     React.createElement("canvas", {
+                      role: 'img',
                       'data-kepler-canvas': true,
                       'aria-label': __alloT('stem.solarsystem.kepler_laws_orbital_simulation_with_ca', 'Kepler Laws orbital simulation with calculus equations'),
                       width: 520, height: 580,
@@ -15296,6 +15302,8 @@ const d = labToolData.solarSystem || {};
                   ),
                   // Visual transfer orbit
                   React.createElement("canvas", {
+                    role: 'img',
+                    'aria-label': 'Animated Hohmann transfer orbit from Earth to ' + sel.name,
                     style: { width: '100%', height: '100px', display: 'block', borderRadius: '8px', marginTop: '8px' },
                     ref: function(hohEl) {
                       if (!hohEl || hohEl._hohInit === sel.name) return;
