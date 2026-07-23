@@ -1941,7 +1941,7 @@
                 React.createElement("p", { className: "text-[10px] opacity-85 mb-2 leading-snug" }, t('stem.coding.set_input_size_loop_depth_data_structu', 'Set input size, loop depth, data structure, and recursion shape. Predict how fast (or slow) your code will run before testing it. No score, no reveal.')),
                 React.createElement("div", { className: "inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2", style: { background: sm.color, color: '#000' } }, sm.label + ' · ~' + totalOps.toExponential(1) + ' ops · ~' + (msAt1GHz < 1 ? (msAt1GHz * 1000).toFixed(2) + ' µs' : msAt1GHz < 1000 ? msAt1GHz.toFixed(1) + ' ms' : (msAt1GHz / 1000).toFixed(1) + ' s')),
                 React.createElement("p", { className: "text-[10px] opacity-80 mb-2" }, sm.desc),
-                React.createElement("svg", { width: '100%', height: 100, viewBox: '0 0 320 100', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+                React.createElement("svg", { role: "img", "aria-label": "Big-O growth comparison chart. Current estimate: " + sm.label + ", approximately " + totalOps.toExponential(1) + " operations.", width: '100%', height: 100, viewBox: '0 0 320 100', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
                   React.createElement("line", { x1: 30, y1: 80, x2: 310, y2: 80, stroke: '#1e293b' }),
                   React.createElement("line", { x1: 30, y1: 10, x2: 30, y2: 80, stroke: '#1e293b' }),
                   // Reference curves: O(1) O(log n) O(n) O(n²) O(2^n)
