@@ -2033,7 +2033,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                   onChange: function (e) { var val = parseFloat(e.target.value); upd("cosmicTime", val); var cv = document.querySelector('[data-universe-canvas]'); if (cv) cv.dataset.time = String(val); },
 
-                  className: "flex-1 h-1.5 accent-violet-500"
+                  className: "flex-1 h-6 accent-violet-500"
 
                 }),
 
@@ -2043,15 +2043,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
               // Playback controls
 
-              React.createElement("div", { className: "flex gap-2 mt-2" },
+              React.createElement("div", { className: "flex flex-wrap items-center gap-2 mt-2" },
 
-                React.createElement("button", { "aria-label": "Toggle cosmic timeline playback",
+                React.createElement("button", { type: "button", "aria-label": isPlaying ? "Pause cosmic timeline playback" : "Play cosmic timeline playback", "aria-pressed": isPlaying ? "true" : "false",
 
                   onClick: function () {
 
-                    if (window._universeTimeLapse) { clearInterval(window._universeTimeLapse); window._universeTimeLapse = null; upd("isPlaying", false); return; }
+                    if (window._universeTimeLapse) { clearInterval(window._universeTimeLapse); window._universeTimeLapse = null; upd("isPlaying", false); if (typeof announceToSR === "function") announceToSR("Cosmic timeline paused."); return; }
 
-                    upd("isPlaying", true);
+                    upd("isPlaying", true); if (typeof announceToSR === "function") announceToSR("Cosmic timeline playing.");
 
                     var t = cosmicTime;
 
@@ -2069,19 +2069,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                     }, 50);
 
-                  }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (isPlaying ? "bg-red-700 text-white" : "transition-colors bg-violet-600 text-white hover:bg-violet-700") + " transition-all"
+                  }, className: "min-h-11 px-3 py-2 rounded-lg text-xs font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700 " + (isPlaying ? "bg-red-700 text-white" : "transition-colors bg-violet-600 text-white hover:bg-violet-700") + " transition-all"
 
-                }, isPlaying ? "\u23F9 Stop" : "\u25B6 Play"),
+                }, isPlaying ? "\u23F8 Pause" : "\u25B6 Play"),
 
-                React.createElement("div", { className: "flex items-center gap-1.5 bg-white/60 rounded-lg px-2 py-1 border border-violet-200" },
+                React.createElement("div", { className: "min-h-11 flex items-center gap-1.5 bg-white/60 rounded-lg px-2 py-1 border border-violet-200" },
 
                   React.createElement("span", { className: "text-[11px] text-violet-500 font-bold" }, "Speed"),
 
-                  React.createElement("input", { type: "range", min: 0.5, max: 5, step: 0.5, value: speed, 'aria-label': 'Simulation speed', onChange: function (e) { upd("speed", parseFloat(e.target.value)); }, className: "w-16 h-1 accent-violet-400" }),
+                  React.createElement("input", { type: "range", min: 0.5, max: 5, step: 0.5, value: speed, 'aria-label': 'Simulation speed', onChange: function (e) { upd("speed", parseFloat(e.target.value)); }, className: "w-20 h-6 accent-violet-400" }),
 
                   React.createElement("span", { className: "text-[11px] text-violet-600 font-bold w-6" }, speed + "x")
 
-                )
+                ),
+
+                React.createElement("span", { className: "text-xs text-violet-700" }, "Playback can be paused at any time.")
 
               ),
 
@@ -4149,7 +4151,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     value: d.scaleIdx || 0,
                     'aria-label': 'Cosmic scale zoom from quarks to universe',
                     onChange: function(e) { upd('scaleIdx', parseInt(e.target.value)); playBeep(); },
-                    className: "flex-1 h-1.5 accent-violet-500"
+                    className: "flex-1 h-6 accent-violet-500"
                   }),
                   React.createElement("span", { className: "text-[11px] " + (isDark ? 'text-violet-400' : 'text-violet-500') }, "Universe")
                 ),
