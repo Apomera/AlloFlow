@@ -81,7 +81,8 @@ window.StemLab = window.StemLab || {
       '.glass-panel { background: var(--allo-stem-deeper, rgba(15, 23, 42, 0.6)) !important; backdrop-filter: blur(12px) !important; border: 1px solid var(--allo-stem-border, rgba(255, 255, 255, 0.08)) !important; }',
       '.short-active-flash { animation: shortRedFlash 1s ease-in-out infinite !important; }',
       '.glow-button { transition: all 0.2s ease; }',
-      '.glow-button:hover { transform: translateY(-1px); box-shadow: 0 0 10px currentColor; }'
+      '.glow-button:hover { transform: translateY(-1px); box-shadow: 0 0 10px currentColor; }',
+      '@media (prefers-reduced-motion: reduce) { .circ-signal-pulse, .circ-electron-drift, .circuit-card, .circuit-badge, .circuit-active, .circuit-short, .short-active-flash { animation: none !important; } .glow-button { transition: none !important; } .glow-button:hover { transform: none !important; } }'
     ].join('\n');
     document.head.appendChild(circStyle);
   }
@@ -916,7 +917,7 @@ window.StemLab = window.StemLab || {
           // ──────────────────────────────────────────
           // RENDER
           // ──────────────────────────────────────────
-          return h('div', { className: 'max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200' },
+          return h('div', { className: 'max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200 motion-reduce:animate-none' },
 
             // ── Header ──
             h('div', { className: 'flex items-center gap-3 mb-3 flex-wrap' },
@@ -930,7 +931,7 @@ window.StemLab = window.StemLab || {
 
               h('span', { className: 'px-2 py-0.5 bg-yellow-950/60 text-yellow-400 text-[10px] font-black rounded-full border border-yellow-500/20' }, __alloT('stem.circuit.interactive_badge', 'INTERACTIVE')),
 
-              isShort && h('span', { className: 'px-2 py-0.5 bg-red-950/60 text-red-400 text-[10px] font-black rounded-full border border-red-500/30 animate-pulse' }, '\u26A0 ' + __alloT('stem.circuit.short_circuit_banner', 'SHORT CIRCUIT!')),
+              isShort && h('span', { className: 'px-2 py-0.5 bg-red-950/60 text-red-400 text-[10px] font-black rounded-full border border-red-500/30 animate-pulse motion-reduce:animate-none' }, '\u26A0 ' + __alloT('stem.circuit.short_circuit_banner', 'SHORT CIRCUIT!')),
 
               // Badge toggle
               h('button', { 'aria-label': __alloT('stem.circuit.badges', 'Badges'),
@@ -2016,7 +2017,7 @@ window.StemLab = window.StemLab || {
                     className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (ohmQuiz ? 'bg-blue-900/40 text-blue-300 border border-blue-800' : 'transition-colors bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 active:scale-[0.97]')
                   }, ohmQuiz ? '\uD83D\uDD04 ' + __alloT('stem.circuit.next_question', 'Next Question') : '\u26A1 ' + __alloT('stem.circuit.ohm_law_quiz', 'Ohm\'s Law Quiz')),
                   ohmScore > 0 && h('span', { className: 'text-xs font-bold text-emerald-400' }, '\u2B50 ' + ohmScore + ' correct'),
-                  ohmStreak > 1 && h('span', { className: 'text-xs font-bold text-orange-400 animate-pulse' }, '\uD83D\uDD25 ' + ohmStreak + ' streak')
+                  ohmStreak > 1 && h('span', { className: 'text-xs font-bold text-orange-400 animate-pulse motion-reduce:animate-none' }, '\uD83D\uDD25 ' + ohmStreak + ' streak')
                 ),
 
                 // Unanswered question
@@ -2106,7 +2107,7 @@ window.StemLab = window.StemLab || {
                   className: 'px-4 py-2 text-xs font-bold rounded-lg transition-all ' + (aiLoading ? 'bg-slate-800 text-slate-600' : 'transition-colors bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-600/10 active:scale-[0.97]')
                 }, aiLoading ? __alloT('stem.circuit.thinking_ellipsis', 'Thinking...') : __alloT('stem.circuit.ask_btn', 'Ask'))
               ),
-              aiLoading && h('div', { className: 'mt-2 text-xs text-blue-400 animate-pulse' }, __alloT('stem.circuit.ai_is_thinking', 'AI is thinking...')),
+              aiLoading && h('div', { className: 'mt-2 text-xs text-blue-400 animate-pulse motion-reduce:animate-none' }, __alloT('stem.circuit.ai_is_thinking', 'AI is thinking...')),
               aiResponse && h('div', { role: 'status', 'aria-live': 'polite', className: 'mt-2 bg-slate-950/80 rounded-lg p-3 border border-blue-900/50 text-xs text-blue-200 whitespace-pre-wrap leading-relaxed' }, aiResponse),
               // Quick-ask suggestions
               h('div', { className: 'flex flex-wrap gap-1.5 mt-2' },
@@ -2197,7 +2198,7 @@ window.StemLab = window.StemLab || {
             // ══════════════════════════════════════
             components.length > 0 && !isOpen ? h('div', { className: 'mt-4 bg-slate-950 rounded-xl border border-slate-800 overflow-hidden shadow-xl' },
               h('div', { className: 'px-3 py-2 flex items-center gap-2 border-b border-slate-800 bg-slate-950/60' },
-                h('div', { className: 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse' }),
+                h('div', { className: 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse motion-reduce:animate-none' }),
                 h('span', { className: 'text-[10px] font-bold text-emerald-400 uppercase tracking-wider font-mono' }, __alloT('stem.circuit.oscilloscope_label', 'Oscilloscope')),
                 h('span', { className: 'ml-auto text-[10px] text-slate-500 font-mono' },
                   voltage.toFixed(1) + 'V  ' + current.toFixed(3) + 'A  ' + totalR.toFixed(1) + '\u03A9')
@@ -2378,7 +2379,7 @@ window.StemLab = window.StemLab || {
                     }, info.icon + ' ' + info.name);
                   })
                 ),
-                physics ? h('div', { className: 'bg-slate-950/60 rounded-xl border border-slate-800/80 p-3 animate-in fade-in duration-200' },
+                physics ? h('div', { className: 'bg-slate-950/60 rounded-xl border border-slate-800/80 p-3 animate-in fade-in duration-200 motion-reduce:animate-none' },
                   h('div', { className: 'flex items-center gap-2 mb-2 flex-wrap' },
                     h('span', { className: 'text-xl' }, physics.icon),
                     h('h4', { className: 'font-bold text-slate-200 text-sm' }, physics.name),
@@ -2424,7 +2425,7 @@ window.StemLab = window.StemLab || {
                         h('span', { className: 'text-[10px] text-cyan-400 font-bold uppercase tracking-wider' }, app.circuit)
                       )
                     ),
-                    expanded ? h('div', { className: 'animate-in fade-in duration-200 mt-1' },
+                    expanded ? h('div', { className: 'animate-in fade-in duration-200 motion-reduce:animate-none mt-1' },
                       h('p', { className: 'text-[10px] text-slate-400 leading-normal mb-1.5' }, app.desc),
                       h('span', { className: 'text-[10px] text-slate-300 font-bold block' }, '\uD83D\uDD27 ' + __alloT('stem.circuit.key_parts_label', 'Key parts: ') + app.comps)
                     ) : null
