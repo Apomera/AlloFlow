@@ -9703,6 +9703,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('div', { className: 'sticky top-0 z-10 bg-slate-900/90 backdrop-blur py-2 no-print' },
             h('input', {
               type: 'text',
+              'aria-label': __alloT('stem.assessmentliteracy.glossary_filter_accessible_label', 'Filter glossary terms'),
               value: s.glossaryFilter || '',
               onChange: function(e) { upd({ glossaryFilter: e.target.value }); },
               placeholder: __alloT('stem.assessmentliteracy.filter_by_term_definition_or_module', 'Filter by term, definition, or module'),
@@ -9808,8 +9809,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             iq.log.length > 0 && h('div', { className: 'p-2 rounded text-xs font-mono mb-3', style: { background: '#0a0a1a', maxHeight: 100, overflow: 'auto', border: '1px solid #1e293b' } },
               iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · r=' + e.r + ' SEM=' + e.sem + ' obs=' + e.obs + ' stk=' + e.stk + ' → CI ' + e.ci); })
             ),
-            h('label', { className: 'block text-xs font-bold opacity-85 mb-1' }, __alloT('stem.assessmentliteracy.your_hypothesis_which_slider_should_we', 'Your hypothesis (which slider should weigh most when stakes are high?)')),
-            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 3, placeholder: __alloT('stem.assessmentliteracy.e_g_for_special_education_eligibility_', 'e.g., for special education eligibility we should never act on r<.90 even if the point estimate looks clear...'), className: 'w-full p-2 rounded text-xs mb-3', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+            h('label', { htmlFor: 'al-reliability-hypothesis', className: 'block text-xs font-bold opacity-85 mb-1' }, __alloT('stem.assessmentliteracy.your_hypothesis_which_slider_should_we', 'Your hypothesis (which slider should weigh most when stakes are high?)')),
+            h('textarea', { id: 'al-reliability-hypothesis', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 3, placeholder: __alloT('stem.assessmentliteracy.e_g_for_special_education_eligibility_', 'e.g., for special education eligibility we should never act on r<.90 even if the point estimate looks clear...'), className: 'w-full p-2 rounded text-xs mb-3', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-3 py-2 rounded text-xs font-bold mb-3', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.assessmentliteracy.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
             iq.stuckRevealed && h('div', { className: 'p-3 rounded text-xs mb-3', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.6 } },
               h('div', { className: 'font-bold mb-2', style: { color: sm.color } }, __alloT('stem.assessmentliteracy.open_questions_no_answer_key', 'Open questions (no answer key)')),
@@ -9825,7 +9826,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
               h('span', null, __alloT('stem.assessmentliteracy.i_can_explain_why_this_reliability_sem', 'I can explain why this reliability/SEM/score/stakes combination yields this action-readiness state.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 3, placeholder: __alloT('stem.assessmentliteracy.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-2 rounded text-xs mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+            iq.understood && h('label', { htmlFor: 'al-reliability-explanation', className: 'block text-xs font-bold opacity-85 mb-1' }, __alloT('stem.assessmentliteracy.explain_your_reliability_reasoning', 'Explain your reasoning')),
+            iq.understood && h('textarea', { id: 'al-reliability-explanation', value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 3, placeholder: __alloT('stem.assessmentliteracy.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-2 rounded text-xs mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
             h('p', { className: 'm-0 text-xs italic opacity-60' }, __alloT('stem.assessmentliteracy.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. CIs assume normal sampling distribution; for very small samples use the appropriate t-distribution. Reliability is necessary but not sufficient — validity matters too. Always consult test manuals and standards (AAIDD-12, AERA/APA/NCME Standards).'))
           )
         );
@@ -10217,9 +10219,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         h('h2', { className: 'text-2xl font-black text-purple-200' }, '\uD83D\uDC65 Peer Ratings'),
         h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Ask someone who knows you well (roommate, partner, long-time friend, parent, close colleague) to rate the same 30 items based on what they observe about you. You will enter their ratings below. After submission, you\'ll see where their observations agree with your self-rating — and where they diverge.'),
         h('div', { className: 'p-3 rounded-lg bg-slate-800/60 border border-purple-500/30' },
-          h('label', { className: 'text-xs font-bold text-purple-300 mb-1 block' }, 'Peer\'s name (optional, for your reference):'),
+          h('label', { htmlFor: 'al-peer-name', className: 'text-xs font-bold text-purple-300 mb-1 block' }, 'Peer\'s name (optional, for your reference):'),
           h('input', {
-            type: 'text', value: pName,
+            id: 'al-peer-name', type: 'text', value: pName,
             onChange: function(e) { upd({ peerName: e.target.value }); },
             placeholder: 'Who rated you?',
             className: 'w-full p-2 rounded bg-slate-900/60 border border-slate-600 text-xs text-slate-100'
@@ -10692,6 +10694,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('p', { className: 'text-xs text-slate-300 mb-2' }, 'Ask the AI for occupation matches to your code. Optionally narrow with a focus (e.g., "in healthcare", "that don\'t require a 4-year degree", "accessible to someone with a hearing impairment").'),
           h('input', {
             type: 'text',
+            'aria-label': __alloT('stem.assessmentliteracy.occupation_focus_accessible_label', 'Optional occupation focus'),
             value: query,
             onChange: function(e) { upd({ occupationQuery: e.target.value }); },
             placeholder: 'Optional focus — or leave blank',
@@ -10929,6 +10932,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           ),
           h('input', {
             type: 'text', value: f.search || '',
+            'aria-label': __alloT('stem.assessmentliteracy.career_search_accessible_label', 'Search careers by title, skill, or task'),
             onChange: function(e) { setF({ search: e.target.value }); },
             placeholder: 'Search by title, skill, or task (e.g., "patient", "data", "welding")',
             className: 'w-full p-2 rounded bg-slate-900/60 border border-slate-600 text-xs text-slate-100 placeholder-slate-500'
@@ -11941,6 +11945,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         h('section', { className: 'p-3 rounded-xl bg-slate-800/60 border border-emerald-500/30' },
           h('input', {
             type: 'text',
+            'aria-label': __alloT('stem.assessmentliteracy.skill_search_accessible_label', 'Search skills'),
             value: s.skillFilter || '',
             onChange: function(e) { upd({ skillFilter: e.target.value }); },
             placeholder: 'Search skills (e.g., "communication", "data", "lifting", "patience")',
@@ -17362,9 +17367,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               )
             ),
             h('div', null,
-              h('label', { className: 'text-xs font-bold text-amber-300 mb-1 block' }, 'Step 2: Role context (optional)'),
+              h('label', { htmlFor: 'al-interview-role', className: 'text-xs font-bold text-amber-300 mb-1 block' }, 'Step 2: Role context (optional)'),
               h('input', {
-                type: 'text', value: role,
+                id: 'al-interview-role', type: 'text', value: role,
                 onChange: function(e) { upd({ interviewRole: e.target.value }); },
                 placeholder: 'e.g., "school psychologist", "software engineer", "sales manager"',
                 className: 'w-full p-2 rounded bg-slate-900/60 border border-slate-600 text-xs text-slate-100'
@@ -17381,8 +17386,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('pre', { className: 'text-xs text-slate-100 whitespace-pre-wrap font-sans leading-relaxed' }, q)
           ),
           q && h('div', { className: 'mt-4 space-y-2' },
-            h('label', { className: 'text-xs font-bold text-amber-300 mb-1 block' }, 'Step 3: Write your STAR response'),
+            h('label', { htmlFor: 'al-interview-star-response', className: 'text-xs font-bold text-amber-300 mb-1 block' }, 'Step 3: Write your STAR response'),
             h('textarea', {
+              id: 'al-interview-star-response',
               value: ans,
               onChange: function(e) { upd({ interviewAnswer: e.target.value, interviewCritique: '' }); },
               placeholder: 'Write your answer here. Aim for 2-3 minutes when spoken aloud (roughly 300-500 words typed). Cover all four STAR elements.',
