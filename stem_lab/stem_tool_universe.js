@@ -706,10 +706,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           var recentCosmicNotebook = cosmicEvidenceNotebook.slice(-4).reverse();
 
           var renderCosmicEvidenceSignal = function (thread) {
-            var commonProps = { viewBox: "0 0 560 150", className: "w-full mt-3 rounded-xl border", style: { borderColor: 'rgba(125,211,252,0.2)', background: 'rgba(2,6,23,0.48)' }, role: "img", "aria-label": thread.title + " visual evidence signal" };
+            var commonProps = { viewBox: "0 0 560 150", className: "w-full mt-3 rounded-xl border", style: { borderColor: 'rgba(125,211,252,0.2)', background: 'rgba(2,6,23,0.48)' } };
             if (thread.id === 'redshift') {
               var restLines = [130, 214, 318];
-              return React.createElement("svg", commonProps,
+              return React.createElement("svg", Object.assign({}, commonProps, { role: "img", "aria-label": thread.title + " visual evidence signal" }),
                 React.createElement("defs", null,
                   React.createElement("linearGradient", { id: "cosmicEvidenceSpectrum", x1: "0", y1: "0", x2: "1", y2: "0" },
                     React.createElement("stop", { offset: "0%", stopColor: "#312e81" }),
@@ -740,7 +740,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               for (var cmbi = 0; cmbi < 34; cmbi++) {
                 spots.push({ x: 44 + (cmbi * 73) % 470, y: 26 + (cmbi * 41) % 92, r: 8 + (cmbi % 5) * 3, c: cmbi % 4 });
               }
-              return React.createElement("svg", commonProps,
+              return React.createElement("svg", Object.assign({}, commonProps, { role: "img", "aria-label": thread.title + " visual evidence signal" }),
                 React.createElement("defs", null,
                   React.createElement("radialGradient", { id: "cosmicCmbGlow", cx: "50%", cy: "48%", r: "70%" },
                     React.createElement("stop", { offset: "0%", stopColor: "#fde68a" }),
@@ -757,7 +757,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               );
             }
             if (thread.id === 'lensing') {
-              return React.createElement("svg", commonProps,
+              return React.createElement("svg", Object.assign({}, commonProps, { role: "img", "aria-label": thread.title + " visual evidence signal" }),
                 React.createElement("defs", null,
                   React.createElement("radialGradient", { id: "cosmicLensCluster", cx: "50%", cy: "50%", r: "60%" },
                     React.createElement("stop", { offset: "0%", stopColor: "#f8fafc" }),
@@ -777,7 +777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               );
             }
             if (thread.id === 'candles') {
-              return React.createElement("svg", commonProps,
+              return React.createElement("svg", Object.assign({}, commonProps, { role: "img", "aria-label": thread.title + " visual evidence signal" }),
                 React.createElement("line", { x1: 52, y1: 118, x2: 510, y2: 118, stroke: "#334155", strokeWidth: 2 }),
                 React.createElement("line", { x1: 52, y1: 24, x2: 52, y2: 118, stroke: "#334155", strokeWidth: 2 }),
                 React.createElement("path", { d: "M58 111 C96 109, 128 99, 154 62 C184 20, 236 44, 258 75 C292 123, 374 121, 496 116", fill: "none", stroke: "#fbbf24", strokeWidth: 5, strokeLinecap: "round" }),
@@ -789,7 +789,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 React.createElement("text", { x: 24, y: 141, fill: "#fde68a", fontSize: 11, fontWeight: 900 }, "Predictable light curves let astronomers estimate distance.")
               );
             }
-            return React.createElement("svg", commonProps,
+            return React.createElement("svg", Object.assign({}, commonProps, { role: "img", "aria-label": thread.title + " visual evidence signal" }),
               React.createElement("defs", null,
                 React.createElement("radialGradient", { id: "cosmicHoleRing", cx: "50%", cy: "50%", r: "56%" },
                   React.createElement("stop", { offset: "0%", stopColor: "#020617" }),
