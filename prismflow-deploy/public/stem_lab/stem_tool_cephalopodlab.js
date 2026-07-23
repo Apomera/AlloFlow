@@ -9992,6 +9992,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 __alloT('stem.cephalopodlab.mute', 'Mute')),
               h('input', {
                 type: 'range', min: 0, max: 1, step: 0.05,
+                'aria-label': __alloT('stem.cephalopodlab.audio_volume', 'Audio volume'),
                 value: as.volume,
                 disabled: as.muted,
                 onChange: function(e) {
@@ -9999,13 +10000,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   setCL({ _audioSettingsBump: Date.now() });
                 },
                 style: { flex: 1, maxWidth: 240, opacity: as.muted ? 0.4 : 1 },
-                'aria-label': __alloT('stem.cephalopodlab.audio_volume', 'Audio volume'),
               }),
               h('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', minWidth: 32 } }, (as.volume * 100).toFixed(0) + '%')
             );
           })() : null,
 
-          // ───── Accessibility settings card (WCAG 2.1 AA) ─────
+          // ───── Accessibility settings card (WCAG 2.2 AA) ─────
           // Surfaces colorblind palette + caption mode + high contrast +
           // large text + reduced motion. Persisted across runs. Read at
           // sim init so changes apply on the next Dive.
@@ -10070,7 +10070,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   __alloT('stem.cephalopodlab.reduced_motion_2', '〰 Reduced motion'))
               ),
               h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', lineHeight: 1.4 } },
-                __alloT('stem.cephalopodlab.wcag_2_1_aa_changes_apply_on_next_dive', 'WCAG 2.1 AA. Changes apply on next Dive. Captions mirror every audio cue (predator alerts, hunt success, ink, achievements). Reduced motion dims animation amplitudes. All settings persist on this device only — no cloud, no FERPA surface.'))
+                __alloT('stem.cephalopodlab.wcag_2_2_aa_changes_apply_on_next_dive', 'WCAG 2.2 AA. Changes apply on next Dive. Captions mirror every audio cue (predator alerts, hunt success, ink, achievements). Reduced motion dims animation amplitudes. All settings persist on this device only — no cloud, no FERPA surface.'))
             );
           })() : null,
 
@@ -17610,8 +17610,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('label', { htmlFor: 'ch-und', className: 'text-[12px] font-bold text-emerald-900 cursor-pointer' },
                 __alloT('stem.cephalopodlab.i_think_i_understand_the_pattern_now_l', 'I think I understand the pattern now — let me explain it in my own words'))
             ),
+            st.understood && h('label', { htmlFor: 'ch-explanation', className: 'block text-[11px] font-bold text-emerald-900 mb-1' },
+              __alloT('stem.cephalopodlab.explain_your_reasoning', 'Explain your reasoning')),
             st.understood && h('textarea', {
-              value: st.explanation || '', onChange: function(e) { setCH({ explanation: e.target.value }); },
+              id: 'ch-explanation', value: st.explanation || '', onChange: function(e) { setCH({ explanation: e.target.value }); },
               placeholder: __alloT('stem.cephalopodlab.explain_in_your_own_words_what_does_ef', 'Explain in your own words: what does effective camouflage require? Why does pattern matter more on patchy substrates than on smooth ones? Why might disruptive coloration sometimes beat uniform matching?'),
               className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug bg-white', rows: 4
             }),
