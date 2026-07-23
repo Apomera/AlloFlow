@@ -19492,7 +19492,7 @@
               h('span', { className: 'text-xs font-bold text-slate-600' }, 'Q ' + (chalIdx + 1) + '/' + chalQuestions.length),
               h('span', { className: 'text-xs font-bold text-emerald-600' }, '\u2705 ' + chalScore),
               h('span', { className: 'text-xs font-bold text-amber-600' }, '\uD83D\uDD25 ' + chalStreak),
-              chalStreak >= 3 && h('span', { className: 'text-[11px] font-bold text-fuchsia-600 animate-pulse' }, __alloT('stem.chembalance.bonus', '\u2B50 BONUS!'))
+              chalStreak >= 3 && h('span', { className: 'text-[11px] font-bold text-fuchsia-600 animate-pulse motion-reduce:animate-none' }, __alloT('stem.chembalance.bonus', '\u2B50 BONUS!'))
             ),
             chalIdx < chalQuestions.length ? h('div', { className: 'bg-white rounded-xl border p-4' },
               h('p', { className: 'text-sm font-bold text-slate-700 mb-3' }, chalQuestions[chalIdx].q),
