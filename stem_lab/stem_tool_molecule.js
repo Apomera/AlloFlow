@@ -117,6 +117,168 @@ window.StemLab = window.StemLab || {
 
   if (window.StemLab && window.StemLab.isRegistered && window.StemLab.isRegistered('molecule')) return;
 
+
+  function MoleculeTutorialDialog(props) {
+    var React = props.React;
+    var h = React.createElement;
+    var dialogRef = React.useRef(null);
+    var dismissRef = React.useRef(null);
+    var dismissHandlerRef = React.useRef(props.onDismiss);
+    dismissHandlerRef.current = props.onDismiss;
+
+    React.useEffect(function() {
+      var dialog = dialogRef.current;
+      if (!dialog || typeof document === 'undefined') return undefined;
+      var previousFocus = document.activeElement;
+      var overlay = dialog.parentElement;
+      var root = dialog.closest('[data-molecule-tool="true"]');
+      var blocked = [];
+
+      if (root && overlay) {
+        Array.prototype.forEach.call(root.children, function(element) {
+          if (element === overlay) return;
+          blocked.push({
+            element: element,
+            hadInert: element.hasAttribute('inert'),
+            inertValue: element.getAttribute('inert'),
+            hadAriaHidden: element.hasAttribute('aria-hidden'),
+            ariaHiddenValue: element.getAttribute('aria-hidden')
+          });
+          element.setAttribute('inert', '');
+          element.setAttribute('aria-hidden', 'true');
+        });
+      }
+
+      var getFocusable = function() {
+        return Array.prototype.slice.call(dialog.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        ));
+      };
+      var focusInitial = function() {
+        (dismissRef.current || dialog).focus();
+      };
+      var onKeyDown = function(event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          dismissHandlerRef.current();
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var focusable = getFocusable();
+        if (!focusable.length) {
+          event.preventDefault();
+          dialog.focus();
+          return;
+        }
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      };
+      var onFocusIn = function(event) {
+        if (!dialog.contains(event.target)) focusInitial();
+      };
+
+      document.addEventListener('keydown', onKeyDown, true);
+      document.addEventListener('focusin', onFocusIn, true);
+      setTimeout(focusInitial, 0);
+
+      return function() {
+        document.removeEventListener('keydown', onKeyDown, true);
+        document.removeEventListener('focusin', onFocusIn, true);
+        blocked.forEach(function(entry) {
+          if (entry.hadInert) entry.element.setAttribute('inert', entry.inertValue || '');
+          else entry.element.removeAttribute('inert');
+          if (entry.hadAriaHidden) entry.element.setAttribute('aria-hidden', entry.ariaHiddenValue || '');
+          else entry.element.removeAttribute('aria-hidden');
+        });
+        setTimeout(function() {
+          var target = previousFocus && previousFocus.isConnected &&
+            previousFocus !== document.body && previousFocus !== document.documentElement
+            ? previousFocus
+            : root && root.querySelector(
+                'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+              );
+          if (target && typeof target.focus === 'function') target.focus();
+        }, 0);
+      };
+    }, []);
+
+    var title = props.titles[props.step];
+    return h('div', {
+      role: 'presentation',
+      className: 'fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4',
+      style: { backdropFilter: 'blur(2px)' },
+      onClick: function(event) {
+        if (event.target === event.currentTarget) dismissHandlerRef.current();
+      }
+    },
+      h('div', {
+        ref: dialogRef,
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'molecule-tutorial-title',
+        'aria-describedby': 'molecule-tutorial-description',
+        tabIndex: -1,
+        className: 'relative w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl'
+      },
+        h('button', {
+          ref: dismissRef,
+          type: 'button',
+          'aria-label': props.dismissLabel,
+          onClick: function() { dismissHandlerRef.current(); },
+          className: 'absolute right-3 top-3 flex min-h-11 min-w-11 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 active:scale-[0.97]'
+        }, '✕'),
+        h('p', { className: 'mb-1 text-2xl', 'aria-hidden': 'true' }, props.icons[props.step]),
+        h('h2', {
+          id: 'molecule-tutorial-title',
+          'aria-live': 'polite',
+          className: 'mb-2 pr-10 text-lg font-bold tracking-tight text-slate-800'
+        }, props.stepLabel + ' ' + (props.step + 1) + ' ' + props.ofLabel + ' 5: ' + title),
+        h('p', {
+          id: 'molecule-tutorial-description',
+          className: 'mb-4 text-sm leading-relaxed text-slate-700'
+        }, props.descriptions[props.step]),
+        h('div', { className: 'flex items-center justify-between gap-4' },
+          h('div', { className: 'flex gap-1', 'aria-hidden': 'true' },
+            [0, 1, 2, 3, 4].map(function(index) {
+              return h('span', {
+                key: index,
+                className: 'h-2 w-2 rounded-full ' + (index === props.step ? 'bg-indigo-500' : 'bg-slate-200')
+              });
+            })
+          ),
+          h('div', { className: 'flex gap-2' },
+            props.step > 0 && h('button', {
+              type: 'button',
+              'aria-label': props.backLabel,
+              onClick: props.onBack,
+              className: 'min-h-11 rounded-lg bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 active:scale-[0.97]'
+            }, '← ' + props.backLabel),
+            props.step < 4
+              ? h('button', {
+                  type: 'button',
+                  'aria-label': props.nextLabel,
+                  onClick: props.onNext,
+                  className: 'min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 active:scale-[0.97]'
+                }, props.nextLabel + ' →')
+              : h('button', {
+                  type: 'button',
+                  'aria-label': props.startLabel,
+                  onClick: function() { dismissHandlerRef.current(); },
+                  className: 'min-h-11 rounded-lg bg-emerald-700 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 active:scale-[0.97]'
+                }, '✓ ' + props.startLabel)
+          )
+        )
+      )
+    );
+  }
+
   window.StemLab.registerTool('molecule', {
     icon: "⚛️",
     label: "Molecule Lab",
@@ -1488,7 +1650,7 @@ window.StemLab = window.StemLab || {
 
             
 
-return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" + (isDark ? " dark-mode" : "") },
+return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" + (isDark ? " dark-mode" : ""), 'data-molecule-tool': 'true' },
             React.createElement("div", { "aria-live": "polite", "aria-atomic": "true", style: { position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" } }, d._srMsg || ""),
 
             // Header
@@ -3336,54 +3498,28 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               )
             ),
 // ═══ Tutorial Overlay ═══
-            !tutorialDismissed && React.createElement("div", { 
-              className: "fixed inset-0 z-50 flex items-center justify-center bg-black/40",
-              onClick: (e) => { if (e.target === e.currentTarget) dismissTutorial(); }
-            },
-              React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl p-6 max-w-md mx-4 relative" },
-                React.createElement("button", { "aria-label": __alloT('stem.molecule.dismiss_tutorial', "Dismiss Tutorial"),
-                  onClick: dismissTutorial,
-                  className: "transition-colors absolute top-3 right-3 w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 text-sm font-bold active:scale-[0.97]"
-                }, "✕"),
-
-                React.createElement("p", { className: "text-2xl mb-1" }, ["🔬", "⚗️", "🧱", "🗂️", "🔥"][tutorialStep]),
-                React.createElement("p", { className: "text-lg font-bold text-slate-800 mb-2 tracking-tight" },
-                  ['Welcome to Molecule Lab!', 'Compound Creator', 'Build Mode', 'Periodic Table', 'Reaction Simulator'][tutorialStep]
-                ),
-                React.createElement("p", { className: "text-sm text-slate-600 mb-4 leading-relaxed" },
-                  [
-                    'Explore chemistry through 5 interactive modes. View molecules, create compounds, build structures, study elements, and balance reactions!',
-                    'Select elements from the grid to craft real compounds. Discover all 32 recipes to earn the Master Chemist challenge!',
-                    'Place atoms on the canvas and draw bonds between them. Click bonds to cycle single → double → triple. Try the Random Challenge!',
-                    'Browse all 118 elements with animated Bohr models, electron configurations, and electronegativity values. Test yourself with the Element Quiz!',
-                    'Adjust coefficients to balance chemical equations. Match atom counts on both sides. 10 reactions from easy to hard - earn RP for each!'
-                  ][tutorialStep]
-                ),
-                React.createElement("div", { className: "flex items-center justify-between" },
-                  React.createElement("div", { className: "flex gap-1" },
-                    [0,1,2,3,4].map(i => React.createElement("div", {
-                      key: i,
-                      className: "w-2 h-2 rounded-full " + (i === tutorialStep ? 'bg-indigo-500' : 'bg-slate-200')
-                    }))
-                  ),
-                  React.createElement("div", { className: "flex gap-2" },
-                    tutorialStep > 0 && React.createElement("button", { "aria-label": __alloT('stem.molecule.back', "Back"),
-                      onClick: () => upd('tutorialStep', tutorialStep - 1),
-                      className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]"
-                    }, __alloT('stem.molecule.back_2', "← Back")),
-                    tutorialStep < 4
-                      ? React.createElement("button", { "aria-label": __alloT('stem.molecule.next_3', "Next"),
-                          onClick: advanceTutorial,
-                          className: "transition-colors px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-500 text-white hover:bg-indigo-600 active:scale-[0.97]"
-                        }, __alloT('stem.molecule.next_4', "Next →"))
-                      : React.createElement("button", { "aria-label": __alloT('stem.molecule.start_exploring', "Start Exploring!"),
-                          onClick: dismissTutorial,
-                          className: "transition-colors px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-600 active:scale-[0.97]"
-                        }, __alloT('stem.molecule.start_exploring_2', "✅ Start Exploring!"))
-                  )
-                )
-              )
-            )
+            !tutorialDismissed && React.createElement(MoleculeTutorialDialog, {
+              React: React,
+              step: tutorialStep,
+              icons: ['🔬', '⚗️', '🧱', '🗂️', '🔥'],
+              titles: ['Welcome to Molecule Lab!', 'Compound Creator', 'Build Mode', 'Periodic Table', 'Reaction Simulator'],
+              descriptions: [
+                'Explore chemistry through 5 interactive modes. View molecules, create compounds, build structures, study elements, and balance reactions!',
+                'Select elements from the grid to craft real compounds. Discover all 32 recipes to earn the Master Chemist challenge!',
+                'Place atoms on the canvas and draw bonds between them. Select a bond to cycle single, double, and triple bonds. Try the Random Challenge!',
+                'Browse all 118 elements with animated Bohr models, electron configurations, and electronegativity values. Test yourself with the Element Quiz!',
+                'Adjust coefficients to balance chemical equations. Match atom counts on both sides. Ten reactions range from easy to hard, with research points for each!'
+              ],
+              stepLabel: __alloT('stem.molecule.step', 'Step'),
+              ofLabel: __alloT('stem.molecule.of', 'of'),
+              dismissLabel: __alloT('stem.molecule.dismiss_tutorial', 'Dismiss Tutorial'),
+              backLabel: __alloT('stem.molecule.back', 'Back'),
+              nextLabel: __alloT('stem.molecule.next_3', 'Next'),
+              startLabel: __alloT('stem.molecule.start_exploring', 'Start Exploring!'),
+              onBack: function() { upd('tutorialStep', tutorialStep - 1); },
+              onNext: advanceTutorial,
+              onDismiss: dismissTutorial
+            })
           )
       })();
 
