@@ -5847,7 +5847,7 @@ const d = labToolData.solarSystem || {};
           );
         })
       ),
-      h('svg', { width: '100%', height: 180, viewBox: '0 0 280 180', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+      h('svg', { role: 'img', 'aria-label': __alloT('stem.solarsystem.kepler_inquiry_orbit_visualization', 'Kepler inquiry orbit visualization'), width: '100%', height: 180, viewBox: '0 0 280 180', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
         h('ellipse', { cx: cx, cy: cy, rx: a, ry: b, fill: 'none', stroke: sm.color, strokeWidth: 1.5 }),
         h('circle', { cx: cx + foc, cy: cy, r: 5, fill: '#fbbf24' }),
         h('text', { x: cx + foc + 8, y: cy - 6, fill: '#fbbf24', fontSize: 10, fontWeight: 700 }, __alloT('stem.solarsystem.sun', '☉ Sun')),
@@ -15645,7 +15645,7 @@ const d = labToolData.solarSystem || {};
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700 bg-slate-900' : 'border-slate-300 bg-slate-900') },
-                                          React.createElement('svg', { viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.stellar_evolution_timeline', "⭐ Stellar Evolution Timeline"), viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             [10, 50, 90, 130, 170, 200, 250, 290, 330, 370].map(function(sx, si) {
                                               var sy = (si * 53 + 17) % 200 + 10;
                                               var sr = 0.5 + (si % 4) * 0.4;
@@ -15720,7 +15720,7 @@ const d = labToolData.solarSystem || {};
                                       var visibleSide = Math.cos(rad) > 0 ? 'far' : 'near';
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700 bg-slate-900' : 'border-slate-300 bg-slate-900') },
-                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.moon_phase_dial', "🌙 Moon Phase Dial"), viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             [25, 60, 95, 130, 170, 210, 250, 290, 330, 370].map(function(sx, si) {
                                               var sy = (si * 41 + 13) % 240 + 5;
                                               return React.createElement('circle', { key: 'st' + si, cx: sx, cy: sy, r: 0.7, fill: '#fff', opacity: 0.6 });
@@ -15787,7 +15787,7 @@ const d = labToolData.solarSystem || {};
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700 bg-slate-900' : 'border-slate-300 bg-slate-900') },
-                                          React.createElement('svg', { viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.eclipse_theater', "☀ Eclipse Theater"), viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             [20, 60, 100, 140, 180, 220, 260, 300, 340, 380].map(function(sx, si) {
                                               var sy = (si * 47 + 11) % 200 + 10;
                                               return React.createElement('circle', { key: 'sk' + si, cx: sx, cy: sy, r: 0.7, fill: '#fff', opacity: 0.6 });
@@ -15867,7 +15867,7 @@ const d = labToolData.solarSystem || {};
                                       }
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #0a0a18 0%, #000000 70%, #0a1a0a 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.aurora_tuner', "✨ Aurora Tuner"), viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #0a0a18 0%, #000000 70%, #0a1a0a 100%)' } },
                                             [15, 50, 90, 130, 170, 210, 250, 290, 330, 370].map(function(sx, si) {
                                               var sy = (si * 31 + 7) % 180 + 5;
                                               return React.createElement('circle', { key: 'aurst' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.5 });
@@ -15926,7 +15926,7 @@ const d = labToolData.solarSystem || {};
                                       var ionEnd = { x: cx - Math.cos(rad) * ionL, y: cy };
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.comet_tail_builder', "☄ Comet Tail Builder"), viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             [15, 60, 110, 150, 190, 240, 280, 320, 370].map(function(sx, si) {
                                               var sy = (si * 37 + 13) % 200 + 10;
                                               return React.createElement('circle', { key: 'co' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.5 });
@@ -15994,7 +15994,7 @@ const d = labToolData.solarSystem || {};
                                       var massEarth = Math.pow(10, 6 + mass / 16).toFixed(1);
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.black_hole_visualizer', "⚫ Black Hole Visualizer"), viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             [20, 70, 110, 150, 200, 250, 290, 340, 380].map(function(sx, si) {
                                               var sy = (si * 41 + 13) % 220 + 5;
                                               return React.createElement('circle', { key: 'bhs' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.4 });
@@ -16060,7 +16060,7 @@ const d = labToolData.solarSystem || {};
                                       ];
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 320', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.orbital_speed_race', "🏁 Orbital Speed Race"), viewBox: '0 0 400 320', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             [25, 60, 110, 145, 195, 230, 280, 330, 370].map(function(sx, si) {
                                               var sy = (si * 41 + 11) % 300 + 5;
                                               return React.createElement('circle', { key: 'rcs' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.4 });
@@ -16207,7 +16207,7 @@ const d = labToolData.solarSystem || {};
                                       }
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.solar_cycle_visualizer', "☀ Solar Cycle Visualizer"), viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             [20, 70, 110, 160, 200, 250, 290, 340, 380].map(function(sx, si) {
                                               var sy = (si * 33 + 7) % 200 + 5;
                                               return React.createElement('circle', { key: 'sc' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.45 });
@@ -16284,7 +16284,7 @@ const d = labToolData.solarSystem || {};
                                       var starR = 8 + Math.log10(Math.max(Lstar, 0.1) * 10);
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.habitable_zone_calculator', "🌱 Habitable Zone Calculator"), viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             [25, 60, 120, 160, 220, 260, 320, 360].map(function(sx, si) {
                                               var sy = (si * 37 + 11) % 200 + 5;
                                               return React.createElement('circle', { key: 'hzst' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.4 });
@@ -16363,7 +16363,7 @@ const d = labToolData.solarSystem || {};
                                       oceanPath += 'Z';
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.tidal_forces_visualizer', "🌊 Tidal Forces Visualizer"), viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             [15, 60, 110, 160, 220, 290, 350].map(function(sx, si) {
                                               var sy = (si * 47 + 13) % 240 + 5;
                                               return React.createElement('circle', { key: 'tdst' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.45 });
@@ -16418,7 +16418,7 @@ const d = labToolData.solarSystem || {};
                                       var sunDir = -tilt;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.day_night_globe', "🌍 Day/Night Globe"), viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             [15, 60, 110, 160, 220, 280, 320, 370].map(function(sx, si) {
                                               var sy = (si * 39 + 7) % 240 + 5;
                                               return React.createElement('circle', { key: 'gst' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.4 });
@@ -16498,7 +16498,7 @@ const d = labToolData.solarSystem || {};
                                       var lpoints = [L1, L2, L3, L4, L5];
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 500 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.lagrange_points_lab', "⚖ Lagrange Points Lab"), viewBox: '0 0 500 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             [15, 60, 130, 200, 280, 360, 440].map(function(sx, si) {
                                               var sy = (si * 41 + 7) % 260 + 5;
                                               return React.createElement('circle', { key: 'last' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.4 });
@@ -16590,7 +16590,7 @@ const d = labToolData.solarSystem || {};
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 180', style: { width: '100%', display: 'block', background: '#000' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.spectroscopy_lab', "🌈 Spectroscopy Lab"), viewBox: '0 0 400 180', style: { width: '100%', display: 'block', background: '#000' } },
                                             React.createElement('defs', null,
                                               React.createElement('linearGradient', { id: 'spec', x1: '0%', x2: '100%' },
                                                 React.createElement('stop', { offset: '0%', stopColor: '#000' }),
@@ -16681,7 +16681,7 @@ const d = labToolData.solarSystem || {};
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: '#000' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.constellation_hunter', "✨ Constellation Hunter"), viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: '#000' } },
                                             new Array(60).fill(0).map(function(_, i) {
                                               var sx = (i * 67) % 400;
                                               var sy = (i * 41) % 260;
@@ -16739,7 +16739,7 @@ const d = labToolData.solarSystem || {};
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.trajectory_designer', "🛰 Trajectory Designer"), viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(40).fill(0).map(function(_, i) {
                                               var sx = (i * 53) % 500;
                                               var sy = (i * 31) % 200;
@@ -16813,7 +16813,7 @@ const d = labToolData.solarSystem || {};
                                       var cs = 30, ox = 50, oy = 10;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 350', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #1a0f0a 0%, #2a1810 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.mars_rover_pathfinder', "🚗 Mars Rover Pathfinder"), viewBox: '0 0 400 350', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #1a0f0a 0%, #2a1810 100%)' } },
                                             new Array(10).fill(0).map(function(_, y) {
                                               return new Array(10).fill(0).map(function(_, x) {
                                                 var t = terrain[y][x];
@@ -16882,7 +16882,7 @@ const d = labToolData.solarSystem || {};
                                       var cur = STEPS[step];
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #000000 0%, #0a0a18 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.cosmic_distance_ladder', "📏 Cosmic Distance Ladder"), viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #000000 0%, #0a0a18 100%)' } },
                                             new Array(60).fill(0).map(function(_, i) {
                                               var sx = (i * 41 + step * 7) % 400;
                                               var sy = (i * 31) % 280;
@@ -16946,7 +16946,7 @@ const d = labToolData.solarSystem || {};
                                       var fracOff = (lambdaObs - lambdaRest) / lambdaRest;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 230', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.doppler_shift_demo', "🚦 Doppler Shift Demo"), viewBox: '0 0 400 230', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(40).fill(0).map(function(_, i) {
                                               var sx = (i * 43) % 400;
                                               var sy = (i * 29) % 220;
@@ -17011,7 +17011,7 @@ const d = labToolData.solarSystem || {};
                                       var stateLabel = Tc < -50 ? '❄ Snowball — runaway freeze' : Tc < 0 ? '🧊 Frozen world' : Tc < 30 ? '🌍 Habitable range' : Tc < 80 ? '🔥 Hot — water near boiling' : '☄ Inferno';
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.planetary_albedo_lab', "❄ Planetary Albedo Lab"), viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(30).fill(0).map(function(_, i) {
                                               var sx = (i * 67) % 400;
                                               var sy = (i * 29) % 220;
@@ -17089,7 +17089,7 @@ const d = labToolData.solarSystem || {};
                                       var size = Math.pow(2, time);
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #1a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.big_bang_stretch', "💥 Big Bang Stretch"), viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #1a0a18 0%, #000000 100%)' } },
                                             new Array(50).fill(0).map(function(_, i) {
                                               var sx = ((i * 67 + time * 8) % 400);
                                               var sy = (i * 31) % 240 + 5;
@@ -17163,7 +17163,7 @@ const d = labToolData.solarSystem || {};
                                       }
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.asteroid_defender', "🎯 Asteroid Defender"), viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(40).fill(0).map(function(_, i) {
                                               var sx = (i * 41) % 400;
                                               var sy = (i * 23) % 260;
@@ -17258,7 +17258,7 @@ const d = labToolData.solarSystem || {};
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 300', style: { width: '100%', display: 'block', background: '#000' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.galaxy_spiral_map', "🌌 Galaxy Spiral Map"), viewBox: '0 0 400 300', style: { width: '100%', display: 'block', background: '#000' } },
                                             React.createElement('defs', null,
                                               React.createElement('radialGradient', { id: 'galCore' },
                                                 React.createElement('stop', { offset: '0%', stopColor: '#fff' }),
@@ -17315,7 +17315,7 @@ const d = labToolData.solarSystem || {};
                                       var detail = aperture < 5 ? 'fuzzy blob' : aperture < 12 ? 'cloud bands visible' : aperture < 30 ? 'storm details + moons' : 'fine cloud detail';
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.telescope_aperture_lab', "🔭 Telescope Aperture Lab"), viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(40).fill(0).map(function(_, i) {
                                               var sx = (i * 41) % 400;
                                               var sy = (i * 29) % 260;
@@ -17392,7 +17392,7 @@ const d = labToolData.solarSystem || {};
                                       function mapY(a) { return H - 20 - Math.min(H - 40, Math.log10(a + 1) * 70); }
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: '#000' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.atmospheric_layers', "🌫 Atmospheric Layers"), viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: '#000' } },
                                             layers.map(function(L, li) {
                                               var y1 = mapY(L.range[0]);
                                               var y2 = mapY(L.range[1] === 10000 ? 1000 : L.range[1]);
@@ -17473,7 +17473,7 @@ const d = labToolData.solarSystem || {};
                                       var illum = (1 + Math.cos(phaseAngle * Math.PI / 180)) / 2;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.phases_of_venus_galileo', "♀ Phases of Venus (Galileo)"), viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(30).fill(0).map(function(_, i) {
                                               var sx = (i * 41) % 400;
                                               var sy = (i * 31) % 250;
@@ -17548,7 +17548,7 @@ const d = labToolData.solarSystem || {};
                                       }
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 300', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.magnetic_field_visualizer', "🧲 Magnetic Field Visualizer"), viewBox: '0 0 400 300', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(40).fill(0).map(function(_, i) {
                                               var sx = (i * 41) % 400;
                                               var sy = (i * 27) % 290;
@@ -17631,7 +17631,7 @@ const d = labToolData.solarSystem || {};
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.solar_system_scale', "📐 Solar System Scale"), viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(40).fill(0).map(function(_, i) {
                                               var sx = (i * 43) % 400;
                                               var sy = (i * 31) % 280;
@@ -17696,7 +17696,7 @@ const d = labToolData.solarSystem || {};
                                       function reset() { upd('lander', { y: 30, vy: 0, fuel: 100, landed: false, crashed: false }); }
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #000 0%, #1a1a2e 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.lunar_lander_mini_game', "🛬 Lunar Lander Mini-Game"), viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #000 0%, #1a1a2e 100%)' } },
                                             new Array(40).fill(0).map(function(_, i) {
                                               var sx = (i * 47) % 400;
                                               var sy = (i * 31) % 180;
@@ -17760,7 +17760,7 @@ const d = labToolData.solarSystem || {};
                                       var W = 380, H = 30;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 200', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #000 0%, #0a0a18 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.light_year_walker', "⏱ Light-Year Walker"), viewBox: '0 0 400 200', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #000 0%, #0a0a18 100%)' } },
                                             new Array(60).fill(0).map(function(_, i) {
                                               var sx = (i * 41) % 400;
                                               var sy = (i * 23) % 180;
@@ -17831,7 +17831,7 @@ const d = labToolData.solarSystem || {};
                                       var noon = altAz(12);
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 30%, #1e40af 70%, #0a0a18 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.sun_path_across_latitudes', "☀ Sun Path Across Latitudes"), viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 30%, #1e40af 70%, #0a0a18 100%)' } },
                                             React.createElement('rect', { x: 0, y: 230, width: 400, height: 20, fill: '#6b7280' }),
                                             [['N', 200], ['NE', 270], ['E', 340], ['S', 200], ['W', 60], ['NW', 130]].slice(0, 3).map(function(c, i) {
                                               return React.createElement('text', { key: 'dir' + i, x: c[1], y: 245, textAnchor: 'middle', fill: '#fff', fontSize: 9 }, c[0]);
@@ -17900,7 +17900,7 @@ const d = labToolData.solarSystem || {};
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.habitable_moons', "🌙 Habitable Moons"), viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(40).fill(0).map(function(_, i) {
                                               var sx = (i * 41) % 400;
                                               var sy = (i * 23) % 270;
@@ -17968,7 +17968,7 @@ const d = labToolData.solarSystem || {};
                                       var marsColor = co2 < 30 ? '#b5452a' : co2 < 60 ? '#c97342' : trees < 30 ? '#9a4d33' : trees < 60 ? '#88663a' : '#3a7c3a';
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.mars_terraforming_lab', "🌱 Mars Terraforming Lab"), viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(30).fill(0).map(function(_, i) {
                                               var sx = (i * 41) % 400;
                                               var sy = (i * 31) % 230;
@@ -18041,7 +18041,7 @@ const d = labToolData.solarSystem || {};
                                       }
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: '#000' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.hubble_deep_field', "🔬 Hubble Deep Field"), viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: '#000' } },
                                             stars.map(function(s, si) {
                                               return React.createElement('circle', { key: 'hs' + si, cx: s.x, cy: s.y, r: s.r, fill: '#fff', opacity: 0.7 });
                                             }),
@@ -18106,7 +18106,7 @@ const d = labToolData.solarSystem || {};
                                       var color = tempColor(temp);
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.star_color_temperature', "🌟 Star Color + Temperature"), viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(40).fill(0).map(function(_, i) {
                                               var sx = (i * 41) % 400;
                                               var sy = (i * 31) % 280;
@@ -18168,7 +18168,7 @@ const d = labToolData.solarSystem || {};
                                       var rotSpeed = locked ? 0 : Math.max(0.1, 5 - lockTime / 20);
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.tidal_locking_simulator', "🔒 Tidal Locking Simulator"), viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(40).fill(0).map(function(_, i) {
                                               var sx = (i * 41) % 400;
                                               var sy = (i * 27) % 230;
@@ -18236,7 +18236,7 @@ const d = labToolData.solarSystem || {};
                                       var found = craters.filter(function(c) { return c.found; }).length;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 270', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #2a2a3e 0%, #1a1a2e 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.crater_counter', "🌑 Crater Counter"), viewBox: '0 0 400 270', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #2a2a3e 0%, #1a1a2e 100%)' } },
                                             React.createElement('rect', { x: 0, y: 0, width: 400, height: 270, fill: '#6b7280' }),
                                             new Array(50).fill(0).map(function(_, i) {
                                               var sx = (i * 53 + 17) % 400;
@@ -18299,7 +18299,7 @@ const d = labToolData.solarSystem || {};
                                       }
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.gravity_well_visualizer', "⚖ Gravity Well Visualizer"), viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(30).fill(0).map(function(_, i) {
                                               var sx = (i * 43) % 400;
                                               var sy = (i * 29) % 270;
@@ -18395,7 +18395,7 @@ const d = labToolData.solarSystem || {};
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.asteroid_composition', "🪨 Asteroid Composition"), viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(30).fill(0).map(function(_, i) {
                                               var sx = (i * 41) % 400;
                                               var sy = (i * 31) % 250;
@@ -18455,7 +18455,7 @@ const d = labToolData.solarSystem || {};
                                       }
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: '#000' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.cosmic_microwave_background', "📡 Cosmic Microwave Background"), viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: '#000' } },
                                             React.createElement('ellipse', { cx: 200, cy: 130, rx: 200, ry: 110, fill: '#0a0a18' }),
                                             pixels.map(function(p, pi) {
                                               var dx = p.x - 200, dy = p.y - 130;
@@ -18498,7 +18498,7 @@ const d = labToolData.solarSystem || {};
                                       var color = iceFrac > 80 ? '#f0f9ff' : iceFrac > 50 ? '#cbd5e1' : '#a16207';
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.saturn_ring_composer', "🪐 Saturn Ring Composer"), viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(40).fill(0).map(function(_, i) {
                                               var sx = (i * 41) % 400;
                                               var sy = (i * 27) % 240;
@@ -18556,7 +18556,7 @@ const d = labToolData.solarSystem || {};
                                       var verdict = !pl.atmo || pl.atmo === 'none' ? 'No atmosphere — sterile' : pl.surface === 'water' && pl.atmo === 'oxygen' ? '🌱 EARTH-LIKE — life possible!' : pl.atmo === 'co2' && pl.surface === 'rock' ? 'Hot Mars or cool Venus' : pl.atmo === 'methane' ? 'Titan-like (exotic life?)' : 'Strange world';
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.custom_planet_builder', "🪐 Custom Planet Builder"), viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(30).fill(0).map(function(_, i) {
                                               var sx = (i * 41) % 400;
                                               var sy = (i * 31) % 230;
@@ -18618,7 +18618,7 @@ const d = labToolData.solarSystem || {};
                                       var beamLen = 100;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.pulsar_beam_sweeper', "📡 Pulsar Beam Sweeper"), viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(40).fill(0).map(function(_, i) {
                                               var sx = (i * 41) % 400;
                                               var sy = (i * 29) % 250;
@@ -18681,7 +18681,7 @@ const d = labToolData.solarSystem || {};
                                       var stormLabel = speed > 700 ? 'EXTREME storm' : speed > 500 ? 'Strong solar wind' : speed > 350 ? 'Normal solar wind' : 'Quiet';
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 270', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.solar_wind_streamer', "💨 Solar Wind Streamer"), viewBox: '0 0 400 270', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(30).fill(0).map(function(_, i) {
                                               var sx = (i * 41) % 400;
                                               var sy = (i * 27) % 260;
@@ -18747,7 +18747,7 @@ const d = labToolData.solarSystem || {};
                                       var sunSide = Math.cos(rad) > -0.3;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.iss_orbital_position', "🛰 ISS Orbital Position"), viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(30).fill(0).map(function(_, i) {
                                               var sx = (i * 41) % 400;
                                               var sy = (i * 31) % 270;
@@ -18803,7 +18803,7 @@ const d = labToolData.solarSystem || {};
                                       var hpAU = 120;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 270', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.voyager_position_tracker', "🚀 Voyager Position Tracker"), viewBox: '0 0 400 270', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(30).fill(0).map(function(_, i) {
                                               var sx = (i * 41) % 400;
                                               var sy = (i * 29) % 260;
@@ -18858,7 +18858,7 @@ const d = labToolData.solarSystem || {};
                                       var mercX = 60 + (phase / 100) * 280;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: '#0a0a18' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.mercury_transit', "🌑 Mercury Transit"), viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: '#0a0a18' } },
                                             React.createElement('defs', null,
                                               React.createElement('radialGradient', { id: 'sunBig' },
                                                 React.createElement('stop', { offset: '0%', stopColor: '#fef9c3' }),
@@ -18913,7 +18913,7 @@ const d = labToolData.solarSystem || {};
                                       var rad = rotation * Math.PI / 180;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.foucault_pendulum', "🎯 Foucault Pendulum"), viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             React.createElement('circle', { cx: 200, cy: 150, r: 100, fill: 'none', stroke: '#475569', strokeWidth: 1 }),
                                             [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map(function(deg, di) {
                                               var r = deg * Math.PI / 180;
@@ -18968,7 +18968,7 @@ const d = labToolData.solarSystem || {};
                                       }
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.saturn_hexagon', "⬡ Saturn Hexagon"), viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             React.createElement('defs', null,
                                               React.createElement('radialGradient', { id: 'satC' },
                                                 React.createElement('stop', { offset: '0%', stopColor: '#fbbf24' }),
@@ -19018,7 +19018,7 @@ const d = labToolData.solarSystem || {};
                                       var shadowY = 180 - Math.cos(rad) * 30;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: hour > 6 && hour < 18 ? 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 60%, #dc2626 100%)' : 'linear-gradient(180deg, #0a0a18 0%, #1e1b4b 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.sundial_demo', "🕰 Sundial Demo"), viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: hour > 6 && hour < 18 ? 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 60%, #dc2626 100%)' : 'linear-gradient(180deg, #0a0a18 0%, #1e1b4b 100%)' } },
                                             React.createElement('rect', { x: 0, y: 180, width: 400, height: 70, fill: '#6b7280' }),
                                             hour > 6 && hour < 18 && React.createElement('circle', { cx: 200 + Math.sin(rad) * 130, cy: 180 - Math.cos(rad) * 60, r: 14, fill: '#fde047' }),
                                             hour > 6 && hour < 18 && React.createElement('circle', { cx: 200 + Math.sin(rad) * 130, cy: 180 - Math.cos(rad) * 60, r: 22, fill: '#fde047', opacity: 0.3 }),
@@ -19071,7 +19071,7 @@ const d = labToolData.solarSystem || {};
                                       ];
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: '#000' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.local_group_map', "🌐 Local Group Map"), viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: '#000' } },
                                             new Array(40).fill(0).map(function(_, i) {
                                               var sx = (i * 41) % 400;
                                               var sy = (i * 31) % 250;
@@ -19114,7 +19114,7 @@ const d = labToolData.solarSystem || {};
                                       var consequence = size < 1 ? 'Burns up in atmosphere' : size < 5 ? 'Local damage; broken windows' : size < 50 ? 'City destroyed; tsunamis' : size < 500 ? 'Continental devastation' : size < 2000 ? 'Mass extinction' : 'Sterilizing impact';
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.asteroid_impact_outcomes', "☄ Asteroid Impact Outcomes"), viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             React.createElement('rect', { x: 0, y: 160, width: 400, height: 80, fill: '#22c55e' }),
                                             React.createElement('rect', { x: 0, y: 155, width: 400, height: 5, fill: '#16a34a' }),
                                             React.createElement('circle', { cx: 200, cy: 160, r: Math.min(150, craterKm * 5), fill: 'none', stroke: '#dc2626', strokeWidth: 2, strokeDasharray: '5,3' }),
@@ -19163,7 +19163,7 @@ const d = labToolData.solarSystem || {};
                                       var size = d.cmeSize != null ? d.cmeSize : 50;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.coronal_mass_ejection', "⚡ Coronal Mass Ejection"), viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(20).fill(0).map(function(_, i) {
                                               var sx = (i * 53) % 400;
                                               var sy = (i * 41) % 230;
@@ -19235,7 +19235,7 @@ const d = labToolData.solarSystem || {};
                                       }
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.cepheid_variable_star', "💫 Cepheid Variable Star"), viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(30).fill(0).map(function(_, i) {
                                               var sx = (i * 43) % 400;
                                               var sy = (i * 31) % 230;
@@ -19290,7 +19290,7 @@ const d = labToolData.solarSystem || {};
                                       var orbitType = ecc < 0.5 ? 'Near-circular (planet-like)' : ecc < 0.85 ? 'Short-period comet' : ecc < 0.98 ? 'Long-period comet' : 'Near-parabolic (returns after millennia)';
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.comet_orbit_drawer', "☄ Comet Orbit Drawer"), viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(20).fill(0).map(function(_, i) {
                                               var sx = (i * 47) % 400;
                                               var sy = (i * 31) % 240;
@@ -19570,7 +19570,7 @@ const d = labToolData.solarSystem || {};
                                       ];
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 200', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #1e3a8a 0%, #1e40af 50%, #064e3b 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.time_zone_visualizer', "🕐 Time Zone Visualizer"), viewBox: '0 0 400 200', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #1e3a8a 0%, #1e40af 50%, #064e3b 100%)' } },
                                             React.createElement('rect', { x: 0, y: 100, width: 400, height: 100, fill: '#22c55e', opacity: 0.4 }),
                                             cities.map(function(c) {
                                               var localHour = ((hour + c.offset) + 24) % 24;
@@ -19663,7 +19663,7 @@ const d = labToolData.solarSystem || {};
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 180', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.earth_moon_true_scale', "📐 Earth-Moon True Scale"), viewBox: '0 0 400 180', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             new Array(30).fill(0).map(function(_, i) {
                                               var sx = (i * 41) % 400;
                                               var sy = (i * 23) % 170;
@@ -19714,7 +19714,7 @@ const d = labToolData.solarSystem || {};
                                       var maxHr = 80;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.day_length_comparison', "⏰ Day Length Comparison"), viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             planets.map(function(p, pi) {
                                               var y = 35 + pi * 25;
                                               var w = Math.min(280, Math.log10(p.hr) * 100);
@@ -19754,7 +19754,7 @@ const d = labToolData.solarSystem || {};
                                       var inMaine = lat > 40 && lat < 50 && lon > -75 && lon < -65;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #1e3a8a 0%, #064e3b 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.eclipse_path_maker', "🗺 Eclipse Path Maker"), viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #1e3a8a 0%, #064e3b 100%)' } },
                                             React.createElement('ellipse', { cx: 200, cy: 110, rx: 180, ry: 100, fill: '#22c55e', opacity: 0.4 }),
                                             React.createElement('path', { d: 'M 80 80 Q 200 90 320 130', stroke: '#000', strokeWidth: 14, fill: 'none', opacity: 0.6 }),
                                             React.createElement('path', { d: 'M 80 80 Q 200 90 320 130', stroke: '#fbbf24', strokeWidth: 5, fill: 'none' }),
@@ -19950,7 +19950,7 @@ const d = labToolData.solarSystem || {};
                                       var category = mass < 0.5 ? 'M dwarf (cool, long-lived)' : mass < 1.4 ? 'Sun-like or slightly larger' : mass < 8 ? 'A/B star (massive, hot)' : 'O/B supergiant (very brief)';
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 180', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.star_lifespan_calculator', "⏳ Star Lifespan Calculator"), viewBox: '0 0 400 180', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             React.createElement('text', { x: 200, y: 50, textAnchor: 'middle', fill: '#fff', fontSize: 14, fontWeight: 'bold' }, category),
                                             React.createElement('text', { x: 200, y: 100, textAnchor: 'middle', fill: '#fde047', fontSize: 28, fontWeight: 'bold' }, lifeStr),
                                             React.createElement('text', { x: 200, y: 130, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, mass + ' solar masses'),
@@ -20247,7 +20247,7 @@ const d = labToolData.solarSystem || {};
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 200', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, ' + sel.bg + ' 0%, #000 80%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.auroras_across_solar_system', "🌈 Auroras Across Solar System"), viewBox: '0 0 400 200', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, ' + sel.bg + ' 0%, #000 80%)' } },
                                             new Array(30).fill(0).map(function(_, i) {
                                               return React.createElement('circle', { key: 'aast' + i, cx: (i * 41) % 400, cy: (i * 23) % 190, r: 0.5, fill: '#fff', opacity: 0.6 });
                                             }),
@@ -20334,7 +20334,7 @@ const d = labToolData.solarSystem || {};
                                       ];
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 320', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.star_magnitude_scale', "✨ Star Magnitude Scale"), viewBox: '0 0 400 320', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             STARS.map(function(s, si) {
                                               var y = 35 + si * 24;
                                               var brightness = Math.max(2, 30 - s.mag - 3);
@@ -20459,7 +20459,7 @@ const d = labToolData.solarSystem || {};
                                       }
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.space_debris_tracker', "🛰 Space Debris Tracker"), viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             React.createElement('circle', { cx: 200, cy: 220, r: 60, fill: '#1e40af' }),
                                             React.createElement('ellipse', { cx: 195, cy: 215, rx: 15, ry: 8, fill: '#22c55e' }),
                                             React.createElement('ellipse', { cx: 210, cy: 225, rx: 12, ry: 6, fill: '#22c55e' }),
@@ -20687,7 +20687,7 @@ const d = labToolData.solarSystem || {};
                                       ];
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.cosmic_speeds_chart', "⚡ Cosmic Speeds Chart"), viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             SP.map(function(s, si) {
                                               var y = 30 + si * 22;
                                               var w = Math.min(280, Math.log10(s.kms * 1000 + 1) * 35);
@@ -20731,7 +20731,7 @@ const d = labToolData.solarSystem || {};
                                       ];
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #1a0a1a 0%, #000000 100%)' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.star_forming_region', "✨ Star Forming Region"), viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #1a0a1a 0%, #000000 100%)' } },
                                             stage <= 1 && React.createElement('ellipse', { cx: 200, cy: 120, rx: 130 - stage * 20, ry: 60 - stage * 10, fill: '#7c2d12', opacity: 0.5 }),
                                             stage <= 2 && React.createElement('ellipse', { cx: 200, cy: 120, rx: 100, ry: 50, fill: '#1c1917', opacity: 0.7 }),
                                             stage >= 2 && [-30, 0, 30, -10, 10].map(function(off, i) {
@@ -21072,7 +21072,7 @@ const d = labToolData.solarSystem || {};
                                       var cur = N[idx % N.length];
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 200', style: { width: '100%', display: 'block', background: '#000' } },
+                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.famous_nebulae', "☁ Famous Nebulae"), viewBox: '0 0 400 200', style: { width: '100%', display: 'block', background: '#000' } },
                                             new Array(40).fill(0).map(function(_, i) {
                                               return React.createElement('circle', { key: 'nst' + i, cx: (i * 41) % 400, cy: (i * 23) % 190, r: 0.5, fill: '#fff', opacity: 0.5 });
                                             }),
