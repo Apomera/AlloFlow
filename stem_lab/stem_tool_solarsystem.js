@@ -163,6 +163,51 @@ const d = labToolData.solarSystem || {};
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, solarSystem: { ...prev.solarSystem, [key]: val } }));
           const updMulti = (obj) => setLabToolData(prev => ({ ...prev, solarSystem: { ...prev.solarSystem, ...obj } }));
 
+          // WCAG 2.1.1 / 2.4.3: the first-visit tutorial is a real modal with
+          // render-synchronized initial focus, containment, Escape, and focus return.
+          const solarBackButtonRef = React.useRef(null);
+          const tutorialDialogRef = React.useRef(null);
+          const tutorialTitleRef = React.useRef(null);
+          const tutorialReturnFocusRef = React.useRef(null);
+          React.useEffect(function() {
+            if (d.tutorialDismissed || typeof document === "undefined") return;
+            var dialog = tutorialDialogRef.current;
+            var title = tutorialTitleRef.current;
+            if (!dialog || !title) return;
+            var active = document.activeElement;
+            tutorialReturnFocusRef.current = active && active !== document.body && !dialog.contains(active) ? active : null;
+            title.focus();
+            return function() {
+              var target = tutorialReturnFocusRef.current;
+              if (!target || !target.isConnected) target = solarBackButtonRef.current;
+              if (target && target.isConnected && typeof target.focus === "function") target.focus();
+              tutorialReturnFocusRef.current = null;
+            };
+          }, [d.tutorialDismissed]);
+
+          function handleTutorialKeyDown(event) {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              event.stopPropagation();
+              upd("tutorialDismissed", true);
+              return;
+            }
+            if (event.key !== "Tab") return;
+            var dialog = tutorialDialogRef.current;
+            if (!dialog) return;
+            var focusable = Array.prototype.slice.call(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+            if (!focusable.length) { event.preventDefault(); tutorialTitleRef.current.focus(); return; }
+            var first = focusable[0];
+            var last = focusable[focusable.length - 1];
+            if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog || document.activeElement === tutorialTitleRef.current)) {
+              event.preventDefault();
+              last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+              event.preventDefault();
+              first.focus();
+            }
+          }
+
           // --- Research Points & Challenges ---
           var researchPoints = d.researchPoints || 0;
           var totalRP = d.totalRP || 0;
@@ -2118,7 +2163,7 @@ const d = labToolData.solarSystem || {};
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 rounded-lg transition-colors " + (isDark ? 'hover:bg-slate-700' : 'hover:bg-slate-100'), 'aria-label': __alloT('stem.solarsystem.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: isDark ? "text-slate-200" : "text-slate-600" })),
+              React.createElement("button", { ref: solarBackButtonRef, type: "button", onClick: () => setStemLabTool(null), className: "p-1.5 rounded-lg transition-colors " + (isDark ? 'hover:bg-slate-700' : 'hover:bg-slate-100'), 'aria-label': __alloT('stem.solarsystem.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: isDark ? "text-slate-200" : "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold " + (isDark ? 'text-slate-100' : 'text-slate-800') }, __alloT('stem.solarsystem.solar_system_explorer', "\uD83C\uDF0D Solar System Explorer")),
 
@@ -21609,14 +21654,21 @@ const d = labToolData.solarSystem || {};
 
               // === TUTORIAL OVERLAY (first visit) ===
               !d.tutorialDismissed && React.createElement("div", {
-                className: "fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50",
+                className: "fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4",
+                ref: tutorialDialogRef,
+                "data-solarsystem-tutorial": true,
+                role: "dialog",
+                "aria-modal": "true",
+                "aria-labelledby": "solar-system-tutorial-title",
+                "aria-describedby": "solar-system-tutorial-description",
+                onKeyDown: handleTutorialKeyDown,
                 onClick: function(e) { if (e.target === e.currentTarget) upd('tutorialDismissed', true); }
               },
-                React.createElement("div", { className: "rounded-2xl p-6 max-w-md shadow-2xl mx-4 " + (isDark ? 'bg-slate-800 border border-slate-700' : 'bg-white') },
+                React.createElement("div", { className: "rounded-2xl p-6 max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto shadow-2xl " + (isDark ? 'bg-slate-800 border border-slate-700' : 'bg-white') },
                   React.createElement("div", { className: "text-center mb-4" },
-                    React.createElement("div", { className: "text-4xl mb-2" }, "\u2600\uFE0F\uD83C\uDF0D\uD83D\uDE80"),
-                    React.createElement("h2", { className: "text-lg font-black " + (isDark ? 'text-slate-100' : 'text-slate-800') }, __alloT('stem.solarsystem.welcome_to_solar_system_explorer', "Welcome to Solar System Explorer!")),
-                    React.createElement("p", { className: "text-sm mt-1 " + (isDark ? 'text-slate-200' : 'text-slate-600') }, __alloT('stem.solarsystem.your_interactive_guide_to_our_cosmic_n', "Your interactive guide to our cosmic neighborhood"))
+                    React.createElement("div", { "aria-hidden": "true", className: "text-4xl mb-2" }, "\u2600\uFE0F\uD83C\uDF0D\uD83D\uDE80"),
+                    React.createElement("h2", { ref: tutorialTitleRef, id: "solar-system-tutorial-title", tabIndex: -1, className: "text-lg font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded " + (isDark ? 'text-slate-100' : 'text-slate-800') }, __alloT('stem.solarsystem.welcome_to_solar_system_explorer', "Welcome to Solar System Explorer!")),
+                    React.createElement("p", { id: "solar-system-tutorial-description", className: "text-sm mt-1 " + (isDark ? 'text-slate-200' : 'text-slate-600') }, __alloT('stem.solarsystem.your_interactive_guide_to_our_cosmic_n', "Your interactive guide to our cosmic neighborhood"))
                   ),
                   React.createElement("div", { className: "space-y-2 text-xs " + (isDark ? 'text-slate-300' : 'text-slate-600') },
                     [
@@ -21628,14 +21680,14 @@ const d = labToolData.solarSystem || {};
                       { icon: '\uD83E\uDDD1\u200D\uD83D\uDE80', text: __alloT('stem.solarsystem.ask_the_ai_space_tutor_any_question_ab', 'Ask the AI Space Tutor any question about the cosmos') }
                     ].map(function(step, si) {
                       return React.createElement("div", { key: si, className: "flex items-center gap-2" },
-                        React.createElement("span", { className: "text-lg" }, step.icon),
+                        React.createElement("span", { "aria-hidden": "true", className: "text-lg" }, step.icon),
                         React.createElement("span", null, step.text)
                       );
                     })
                   ),
-                  React.createElement("button", { "aria-label": __alloT('stem.solarsystem.start_exploring', "Start Exploring!"),
+                  React.createElement("button", { type: "button", "aria-label": __alloT('stem.solarsystem.start_exploring', "Start Exploring!"),
                     onClick: function() { upd('tutorialDismissed', true); playBeep(); },
-                    className: "mt-4 w-full py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 shadow-lg"
+                    className: "mt-4 w-full min-h-[44px] py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                   }, __alloT('stem.solarsystem.start_exploring_2', "\uD83D\uDE80 Start Exploring!"))
                 )
               ),
