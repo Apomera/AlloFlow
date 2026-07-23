@@ -3783,11 +3783,11 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
-                  React.createElement('th', { className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, __alloT('stem.molecule.name', 'Name')),
-                  React.createElement('th', { className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, __alloT('stem.molecule.formula', 'Formula')),
-                  React.createElement('th', { className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, 'Ka/Kb'),
-                  React.createElement('th', { className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, __alloT('stem.molecule.strength', 'Strength')),
-                  React.createElement('th', { className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, __alloT('stem.molecule.notes', 'Notes'))
+                  React.createElement('th', { scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, __alloT('stem.molecule.name', 'Name')),
+                  React.createElement('th', { scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, __alloT('stem.molecule.formula', 'Formula')),
+                  React.createElement('th', { scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, 'Ka/Kb'),
+                  React.createElement('th', { scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, __alloT('stem.molecule.strength', 'Strength')),
+                  React.createElement('th', { scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, __alloT('stem.molecule.notes', 'Notes'))
                 )
               ),
               React.createElement('tbody', null,
@@ -4143,7 +4143,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Phase', 'Shape', 'Volume', 'Density', 'Particles', 'Examples'].map(function(h, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, h);
+                    return React.createElement('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, h);
                   })
                 )
               ),
@@ -4943,7 +4943,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Half-reaction', 'E° (V)', 'Notes'].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5008,7 +5008,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Structure', 'Coord #', 'Packing %', 'Example', 'Notes'].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5070,7 +5070,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Gas', '%', 'Notes'].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5111,7 +5111,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Isotope', 'Half-life (decay)', 'Use'].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5250,7 +5250,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Product', 'Annual volume', 'Use', 'Notes'].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5303,7 +5303,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Color', 'Compound', 'Source', 'Notes'].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5366,7 +5366,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Compound', 'Formula', 'Source', 'Notes'].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5474,7 +5474,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 React.createElement('thead', null,
                   React.createElement('tr', { className: 'bg-slate-100' },
                     ['Rule', 'Soluble?', 'Exceptions', 'Notes'].map(function(hh, i) {
-                      return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                      return React.createElement('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                     })
                   )
                 ),
@@ -5497,7 +5497,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Compound', 'Solubility', 'Notes'].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5524,7 +5524,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Compound', 'Formula', 'MW', 'Notes'].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5632,7 +5632,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['pH', 'Substance', 'Notes'].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5659,7 +5659,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Food', 'Calories', 'Protein', 'Notes'].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5687,7 +5687,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Substance', 'Melting pt', 'Boiling pt', 'Notes'].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5890,7 +5890,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Z', 'Sym', 'Name', 'Mass', 'Category', 'Notes'].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5920,7 +5920,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Mineral', 'Formula', 'Mohs', 'Notes'].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5948,7 +5948,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Drug', 'Formula', 'Class', 'Use'].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -6298,7 +6298,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Total e- pairs', 'Bonding', 'Geometry', 'Angle', 'Example'].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { scope: 'col', key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
