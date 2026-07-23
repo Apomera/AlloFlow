@@ -15418,7 +15418,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
 
             h('div', { style: cardStyle() },
               h('div', { style: { background: '#0a0f1e', borderRadius: 12, padding: 16, position: 'relative', overflow: 'hidden' } },
-                h('svg', { width: '100%', height: 280, viewBox: '0 0 400 280', 'aria-label': __alloT('stem.cephalopodlab.counter_illumination_simulation', 'Counter-illumination simulation'), style: { display: 'block' } },
+                h('svg', { width: '100%', height: 280, viewBox: '0 0 400 280', role: 'img', 'aria-label': __alloT('stem.cephalopodlab.counter_illumination_accessible_summary', 'Counter-illumination simulation') + ': downwelling light ' + depth + ' percent, ventral photophore intensity ' + belly + ' percent, match ' + matchScore + ' percent. ' + matchVerdict.label, style: { display: 'block' } },
                   h('defs', null,
                     h('linearGradient', { id: 'surfaceLight', x1: 0, y1: 0, x2: 0, y2: 1 },
                       h('stop', { offset: '0%', stopColor: 'rgba(135,206,235,' + (depth / 100 * 0.7) + ')' }),
@@ -15560,7 +15560,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', null,
                 h('div', { style: { fontSize: 10, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } },
                   __alloT('stem.cephalopodlab.click_a_region', '🔍 Click a region')),
-                h('svg', { width: '100%', height: 320, viewBox: '60 30 280 260', 'aria-label': __alloT('stem.cephalopodlab.octopus_anatomy_diagram', 'Octopus anatomy diagram'),
+                h('svg', { width: '100%', height: 320, viewBox: '60 30 280 260', role: 'img', 'aria-label': __alloT('stem.cephalopodlab.octopus_anatomy_accessible_summary', 'Octopus anatomy diagram') + '. Selected region: ' + highlighted.name + '. Use the All regions buttons below to explore.',
                   style: { background: 'rgba(15,23,42,0.5)', borderRadius: 12, border: '1px solid rgba(100,116,139,0.3)' } },
                   // Mantle (large oval, top)
                   h('ellipse', { cx: 200, cy: 65, rx: 50, ry: 38, fill: 'rgba(251,146,60,0.15)', stroke: '#fb923c', strokeWidth: 1.5 }),
@@ -15819,7 +15819,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.500_million_years_of_cephalopod_histor', '⏳ 500 million years of cephalopod history')),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.65, marginBottom: 12 } },
                 __alloT('stem.cephalopodlab.click_an_era_to_explore_width_of_each_', 'Click an era to explore. Width of each band is proportional to its duration in millions of years.')),
-              h('svg', { width: '100%', height: 110, viewBox: '0 0 1000 110',
+              h('svg', { width: '100%', height: 110, viewBox: '0 0 1000 110', role: 'img',
+                'aria-label': __alloT('stem.cephalopodlab.evolutionary_timeline_accessible_summary', 'Cephalopod evolutionary timeline from 538 million years ago to present') + '. Selected era: ' + era.name + ', ' + era.startMya + ' to ' + era.endMya + ' million years ago. Use the All eras buttons below to explore.',
                 preserveAspectRatio: 'none',
                 style: { borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
                 // Era bands — width proportional to (start - end) / 538 total
@@ -17470,7 +17471,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             'You are the octopus. Pick a background. Adjust your skin\'s brightness, hue, and pattern coarseness. The red predator-eye fades as you become harder to detect. There is no score number, no "right answer," and no reveal button. Sweep the sliders. Notice when detection drops fast and when it does not. Type what you discover.'),
           // Background + octopus visualization
           h('div', { className: 'mb-3 rounded border border-slate-200 overflow-hidden' },
-            h('svg', { viewBox: '0 0 320 140', className: 'w-full h-36 block' },
+            h('svg', { viewBox: '0 0 320 140', role: 'img', 'aria-label': __alloT('stem.cephalopodlab.camouflage_visualization_accessible_summary', 'Camouflage visualization') + ': substrate ' + sub.label + ', brightness ' + st.brightness + ' percent, hue ' + st.hue + ' percent, coarseness ' + st.coarseness + ' percent, ' + (detection < 30 ? 'hidden' : 'spotted') + '.', className: 'w-full h-36 block' },
               // Background fill
               h('rect', { x: 0, y: 0, width: 320, height: 140, fill: sub.color }),
               // Pattern dots (more dots = coarser pattern)
