@@ -4069,7 +4069,7 @@ const d = labToolData.solarSystem || {};
       btn(paused ? "\u25b6 Play" : "\u23f8 Pause", false, function() { upd("orr_paused", !paused); }),
       h("label", { style: { fontSize: "12px", color: fg } }, "Speed: "),
       h("input", {
-        type: "range", min: "0.1", max: "50", step: "0.1",
+        type: "range", min: "0.1", max: "50", step: "0.1", "aria-label": "Speed",
         className: "orr-slider",
         value: speed,
         onChange: function(ev) { upd("orr_speed", parseFloat(ev.target.value)); },
@@ -4256,7 +4256,7 @@ const d = labToolData.solarSystem || {};
       h("div", { style: { display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center", marginBottom: "8px" } },
         h("label", { style: { fontSize: "13px", color: fg } }, "Eccentricity: "),
         h("input", {
-          type: "range", min: "0", max: "0.98", step: "0.001", className: "orr-slider",
+          type: "range", min: "0", max: "0.98", step: "0.001", className: "orr-slider", "aria-label": "Eccentricity",
           value: ecc,
           onChange: function(ev) { upd("orr_k1e", parseFloat(ev.target.value)); },
           style: { width: "200px" }
@@ -4534,7 +4534,7 @@ const d = labToolData.solarSystem || {};
       h("div", { style: { display: "flex", flexWrap: "wrap", gap: "12px", alignItems: "center", marginBottom: "8px" } },
         h("label", { style: { fontSize: "13px", color: fg } }, "Eccentricity: "),
         h("input", {
-          type: "range", min: "0.01", max: "0.95", step: "0.01", className: "orr-slider",
+          type: "range", min: "0.01", max: "0.95", step: "0.01", className: "orr-slider", "aria-label": "Eccentricity",
           value: ecc,
           onChange: function(ev) { upd("orr_k2e", parseFloat(ev.target.value)); },
           style: { width: "150px" }
@@ -4542,7 +4542,7 @@ const d = labToolData.solarSystem || {};
         h("span", { style: { fontSize: "13px", color: mutedFg } }, fmt(ecc, 2)),
         h("label", { style: { fontSize: "13px", color: fg, marginLeft: "16px" } }, "Sectors: "),
         h("input", {
-          type: "range", min: "3", max: "12", step: "1", className: "orr-slider",
+          type: "range", min: "3", max: "12", step: "1", className: "orr-slider", "aria-label": "Sectors",
           value: nSectors,
           onChange: function(ev) { upd("orr_k2s", parseInt(ev.target.value)); },
           style: { width: "100px" }
@@ -4840,7 +4840,7 @@ const d = labToolData.solarSystem || {};
         h("div", { key: "ecc-row", style: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" } },
           h("label", { style: { fontSize: "13px", color: fg, minWidth: "100px" } }, "Eccentricity:"),
           h("input", {
-            type: "range", min: "0", max: "0.99", step: "0.001", className: "orr-slider",
+            type: "range", min: "0", max: "0.99", step: "0.001", className: "orr-slider", "aria-label": "Eccentricity",
             value: ecc,
             onChange: function(ev) { upd("orr_wse", parseFloat(ev.target.value)); },
             style: { width: "200px" }
@@ -4850,7 +4850,7 @@ const d = labToolData.solarSystem || {};
         h("div", { key: "sma-row", style: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" } },
           h("label", { style: { fontSize: "13px", color: fg, minWidth: "100px" } }, __alloT('stem.solarsystem.semi_major_au', "Semi-major (AU):")),
           h("input", {
-            type: "range", min: "0.05", max: "80", step: "0.01", className: "orr-slider",
+            type: "range", min: "0.05", max: "80", step: "0.01", className: "orr-slider", "aria-label": __alloT('stem.solarsystem.semi_major_au', "Semi-major (AU)"),
             value: sma,
             onChange: function(ev) { upd("orr_wsa", parseFloat(ev.target.value)); },
             style: { width: "200px" }
@@ -5433,6 +5433,7 @@ const d = labToolData.solarSystem || {};
         h("input", {
           type: "number",
           step: "any",
+          "aria-label": liveCh.q + " (" + liveCh.unit + ")",
           className: "orr-input",
           value: liveAns[liveIdx] || "",
           onChange: function(ev) {
@@ -5543,6 +5544,7 @@ const d = labToolData.solarSystem || {};
           h("input", {
             type: "number",
             step: "any",
+            "aria-label": prob.q + " (" + prob.unit + ")",
             className: "orr-input",
             value: ch_ans[idx] || "",
             onChange: function(ev) {
@@ -5882,8 +5884,8 @@ const d = labToolData.solarSystem || {};
       iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
         iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · a' + e.a + ' e' + e.e + ' M' + e.m + ' → T=' + e.p + 'yr'); })
       ),
-      h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.solarsystem.your_hypothesis_which_slider_has_more_', 'Your hypothesis (which slider has more effect on PERIOD vs SHAPE?)')),
-      h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.solarsystem.e_g_e_only_changes_shape_period_is_det', 'e.g., e only changes shape — period is determined by a and mass alone...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+      h('label', { htmlFor: 'solar-kepler-hypothesis', style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.solarsystem.your_hypothesis_which_slider_has_more_', 'Your hypothesis (which slider has more effect on PERIOD vs SHAPE?)')),
+      h('textarea', { id: 'solar-kepler-hypothesis', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.solarsystem.e_g_e_only_changes_shape_period_is_det', 'e.g., e only changes shape — period is determined by a and mass alone...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
       !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.solarsystem.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
       iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
         h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, __alloT('stem.solarsystem.open_questions_no_answer_key', 'Open questions (no answer key)')),
@@ -5898,7 +5900,10 @@ const d = labToolData.solarSystem || {};
         h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
         h('span', null, __alloT('stem.solarsystem.i_can_explain_why_this_a_e_m_combinati', 'I can explain why this a/e/M combination yields this orbital class.'))
       ),
-      iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.solarsystem.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+      iq.understood && h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6 } },
+        h('span', { style: { display: 'block', marginBottom: 4 } }, __alloT('stem.solarsystem.explain_in_your_own_words', 'Explain in your own words')),
+        h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.solarsystem.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } })
+      ),
       h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.solarsystem.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. T = √(a³/M) per Kepler III with M in solar masses, a in AU, T in years. Vis-viva used for v at perihelion / aphelion.'))
     );
   }
@@ -8338,10 +8343,9 @@ const d = labToolData.solarSystem || {};
                   },
                     React.createElement("span", { className: "text-[11px] text-white/70 font-bold" }, __alloT('stem.solarsystem.high', "\u2B06 High")),
                     React.createElement("input", {
-                      type: "range", min: "0", max: "100", value: (d._descentProbeY || 0) * 100,
+                      type: "range", min: "0", max: "100", value: (d._descentProbeY || 0) * 100, "aria-label": __alloT('stem.solarsystem.descent_depth_slider', "Descent depth slider"),
                       onChange: function(e) { upd('_descentProbeY', parseInt(e.target.value) / 100); },
                       className: "flex-1 accent-indigo-400",
-                      "aria-label": __alloT('stem.solarsystem.descent_depth_slider', "Descent depth slider"),
                       style: { height: '6px' }
                     }),
                     React.createElement("span", { className: "text-[11px] text-white/70 font-bold" }, __alloT('stem.solarsystem.deep', "\u2B07 Deep"))
@@ -15660,7 +15664,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.time', 'Time')),
-                                          React.createElement('input', { type: 'range', min: 0, max: 100, value: phase, onChange: function(e) { upd('stellarPhase', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.time', 'Time'), type: 'range', min: 0, max: 100, value: phase, onChange: function(e) { upd('stellarPhase', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-8 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, phase + '%')
                                         ),
                                         React.createElement('div', { className: 'mt-2 grid grid-cols-2 gap-1 text-[10px]' },
@@ -15735,7 +15739,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.orbit', 'Orbit')),
-                                          React.createElement('input', { type: 'range', min: 0, max: 360, value: pos, onChange: function(e) { upd('moonPhasePos', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.orbit', 'Orbit'), type: 'range', min: 0, max: 360, value: pos, onChange: function(e) { upd('moonPhasePos', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-10 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, pos + '°')
                                         ),
                                         React.createElement('div', { className: 'mt-2 grid grid-cols-4 gap-1' },
@@ -15811,7 +15815,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-14 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.alignment', 'Alignment')),
-                                          React.createElement('input', { type: 'range', min: 0, max: 100, value: alignment, onChange: function(e) { upd('eclipseAlign', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.alignment', 'Alignment'), type: 'range', min: 0, max: 100, value: alignment, onChange: function(e) { upd('eclipseAlign', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('button', { onClick: function() { upd('eclipseAlign', 50); }, className: 'text-[10px] font-bold px-2 py-0.5 rounded ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, __alloT('stem.solarsystem.center', 'Center'))
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -15880,7 +15884,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: 0, max: s.max, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 0, max: s.max, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + s.unit)
                                             );
                                           })
@@ -15947,7 +15951,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-32 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: 0, max: s.max, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 0, max: s.max, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
                                             );
                                           })
@@ -16012,7 +16016,7 @@ const d = labToolData.solarSystem || {};
                                           [{ label: __alloT('stem.solarsystem.mass', 'Mass'), val: mass, key: 'bhMass', unit: '' }, { label: __alloT('stem.solarsystem.spin', 'Spin'), val: spin, key: 'bhSpin', unit: '%' }].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + s.unit)
                                             );
                                           })
@@ -16077,7 +16081,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.earth_years', 'Earth years')),
-                                          React.createElement('input', { type: 'range', min: 0, max: 24, step: 0.05, value: t, onChange: function(e) { upd('raceTime', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.earth_years', 'Earth years'), type: 'range', min: 0, max: 24, step: 0.05, value: t, onChange: function(e) { upd('raceTime', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, t.toFixed(2))
                                         ),
                                         React.createElement('div', { className: 'flex gap-1 mt-1' },
@@ -16230,7 +16234,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.cycle_year', 'Cycle year')),
-                                          React.createElement('input', { type: 'range', min: 0, max: 11, step: 0.1, value: year, onChange: function(e) { upd('sunCycleYear', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.cycle_year', 'Cycle year'), type: 'range', min: 0, max: 11, step: 0.1, value: year, onChange: function(e) { upd('sunCycleYear', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, year.toFixed(1))
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -16300,7 +16304,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-32 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: 0.05, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 0.05, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val.toFixed(2))
                                             );
                                           })
@@ -16373,7 +16377,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-28 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
                                             );
                                           })
@@ -16445,7 +16449,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-28 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '°')
                                             );
                                           })
@@ -16960,7 +16964,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.velocity_km_s', 'Velocity (km/s)')),
-                                          React.createElement('input', { type: 'range', min: -50000, max: 50000, step: 100, value: vel, onChange: function(e) { upd('dopplerVel', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.velocity_km_s', 'Velocity (km/s)'), type: 'range', min: -50000, max: 50000, step: 100, value: vel, onChange: function(e) { upd('dopplerVel', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, vel.toLocaleString())
                                         ),
                                         React.createElement('div', { className: 'mt-1 grid grid-cols-3 gap-1' },
@@ -17033,7 +17037,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-24 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '%')
                                             );
                                           })
@@ -17104,7 +17108,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.time_2', 'Time')),
-                                          React.createElement('input', { type: 'range', min: 0, max: 10, step: 0.05, value: time, onChange: function(e) { upd('bbTime', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.time_2', 'Time'), type: 'range', min: 0, max: 10, step: 0.05, value: time, onChange: function(e) { upd('bbTime', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, time.toFixed(1))
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -17269,7 +17273,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         (type === 'spiral' || type === 'barred') && React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.rotate', 'Rotate')),
-                                          React.createElement('input', { type: 'range', min: 0, max: 360, value: rotation, onChange: function(e) { upd('galRot', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.rotate', 'Rotate'), type: 'range', min: 0, max: 360, value: rotation, onChange: function(e) { upd('galRot', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, rotation + '°')
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -17334,7 +17338,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-24 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
                                             );
                                           })
@@ -17409,7 +17413,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.altitude_2', 'Altitude')),
-                                          React.createElement('input', { type: 'range', min: 0, max: 700, step: 1, value: alt, onChange: function(e) { upd('atmAlt', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.altitude_2', 'Altitude'), type: 'range', min: 0, max: 700, step: 1, value: alt, onChange: function(e) { upd('atmAlt', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, alt + 'km')
                                         ),
                                         React.createElement('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-[10px]' },
@@ -17492,7 +17496,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.orbit_2', 'Orbit')),
-                                          React.createElement('input', { type: 'range', min: 0, max: 360, value: ang, onChange: function(e) { upd('phVAng', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.orbit_2', 'Orbit'), type: 'range', min: 0, max: 360, value: ang, onChange: function(e) { upd('phVAng', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, ang + '°')
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -17569,7 +17573,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-24 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '%')
                                             );
                                           })
@@ -17840,7 +17844,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
                                             );
                                           })
@@ -17985,7 +17989,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-32 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '%')
                                             );
                                           })
@@ -18048,7 +18052,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.zoom', 'Zoom')),
-                                          React.createElement('input', { type: 'range', min: 0.5, max: 4, step: 0.1, value: zoom, onChange: function(e) { upd('hdfZoom', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.zoom', 'Zoom'), type: 'range', min: 0.5, max: 4, step: 0.1, value: zoom, onChange: function(e) { upd('hdfZoom', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, zoom.toFixed(1) + '×')
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -18120,7 +18124,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.temperature', 'Temperature')),
-                                          React.createElement('input', { type: 'range', min: 2500, max: 40000, step: 100, value: temp, onChange: function(e) { upd('starTemp', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.temperature', 'Temperature'), type: 'range', min: 2500, max: 40000, step: 100, value: temp, onChange: function(e) { upd('starTemp', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, temp + ' K')
                                         ),
                                         React.createElement('div', { className: 'mt-1 grid grid-cols-7 gap-1' },
@@ -18180,7 +18184,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: 5, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 5, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
                                             );
                                           })
@@ -18325,7 +18329,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-24 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: 5, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 5, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
                                             );
                                           })
@@ -18456,7 +18460,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.contrast', 'Contrast')),
-                                          React.createElement('input', { type: 'range', min: 0, max: 100, value: contrast, onChange: function(e) { upd('cmbContrast', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.contrast', 'Contrast'), type: 'range', min: 0, max: 100, value: contrast, onChange: function(e) { upd('cmbContrast', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, contrast + '%')
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -18511,7 +18515,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '%')
                                             );
                                           })
@@ -18632,7 +18636,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: 0, max: s.max, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 0, max: s.max, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '°')
                                             );
                                           })
@@ -18700,7 +18704,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
                                             );
                                           })
@@ -18761,7 +18765,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.orbit_3', 'Orbit')),
-                                          React.createElement('input', { type: 'range', min: 0, max: 360, value: orb, onChange: function(e) { upd('issOrbit', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.orbit_3', 'Orbit'), type: 'range', min: 0, max: 360, value: orb, onChange: function(e) { upd('issOrbit', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, orb + '°')
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -18818,7 +18822,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.year', 'Year')),
-                                          React.createElement('input', { type: 'range', min: 1977, max: 2050, value: year, onChange: function(e) { upd('voyYear', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.year', 'Year'), type: 'range', min: 1977, max: 2050, value: year, onChange: function(e) { upd('voyYear', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, year)
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -18870,7 +18874,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.time_3', 'Time')),
-                                          React.createElement('input', { type: 'range', min: 0, max: 100, value: phase, onChange: function(e) { upd('transPhase', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.time_3', 'Time'), type: 'range', min: 0, max: 100, value: phase, onChange: function(e) { upd('transPhase', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, phase + '%')
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -18921,7 +18925,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-24 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
                                             );
                                           })
@@ -18975,7 +18979,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.rotation', 'Rotation')),
-                                          React.createElement('input', { type: 'range', min: 0, max: 360, value: rot, onChange: function(e) { upd('hexRot', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.rotation', 'Rotation'), type: 'range', min: 0, max: 360, value: rot, onChange: function(e) { upd('hexRot', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, rot + '°')
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -19021,7 +19025,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.hour', 'Hour')),
-                                          React.createElement('input', { type: 'range', min: 6, max: 18, step: 0.25, value: hour, onChange: function(e) { upd('sdHour', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.hour', 'Hour'), type: 'range', min: 6, max: 18, step: 0.25, value: hour, onChange: function(e) { upd('sdHour', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, hour.toFixed(1))
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -19118,7 +19122,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.size_m', 'Size (m)')),
-                                          React.createElement('input', { type: 'range', min: 0.5, max: 5000, step: 0.5, value: size, onChange: function(e) { upd('impSize', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.size_m', 'Size (m)'), type: 'range', min: 0.5, max: 5000, step: 0.5, value: size, onChange: function(e) { upd('impSize', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, size + 'm')
                                         ),
                                         React.createElement('div', { className: 'mt-1 grid grid-cols-4 gap-1' },
@@ -19183,7 +19187,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-28 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '%')
                                             );
                                           })
@@ -19245,7 +19249,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: 0.5, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 0.5, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
                                             );
                                           })
@@ -19297,7 +19301,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.eccentricity_2', 'Eccentricity')),
-                                          React.createElement('input', { type: 'range', min: 0, max: 0.99, step: 0.01, value: ecc, onChange: function(e) { upd('cobEcc', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.eccentricity_2', 'Eccentricity'), type: 'range', min: 0, max: 0.99, step: 0.01, value: ecc, onChange: function(e) { upd('cobEcc', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, ecc.toFixed(2))
                                         ),
                                         React.createElement('div', { className: 'mt-1 grid grid-cols-4 gap-1' },
@@ -19574,7 +19578,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.utc_hour', 'UTC Hour')),
-                                          React.createElement('input', { type: 'range', min: 0, max: 23, step: 0.5, value: hour, onChange: function(e) { upd('tzHour', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.utc_hour', 'UTC Hour'), type: 'range', min: 0, max: 23, step: 0.5, value: hour, onChange: function(e) { upd('tzHour', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, hour + ':00')
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -19759,7 +19763,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: s.min, max: s.max, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: s.min, max: s.max, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '°')
                                             );
                                           })
@@ -19859,7 +19863,7 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-32 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
                                             );
                                           })
@@ -19948,7 +19952,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.mass_3', 'Mass')),
-                                          React.createElement('input', { type: 'range', min: 0.1, max: 50, step: 0.1, value: mass, onChange: function(e) { upd('sltMass', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.mass_3', 'Mass'), type: 'range', min: 0.1, max: 50, step: 0.1, value: mass, onChange: function(e) { upd('sltMass', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, mass + ' M☉')
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -20460,7 +20464,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.altitude_3', 'Altitude')),
-                                          React.createElement('input', { type: 'range', min: 300, max: 36000, value: alt, onChange: function(e) { upd('junkAlt', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.altitude_3', 'Altitude'), type: 'range', min: 300, max: 36000, value: alt, onChange: function(e) { upd('junkAlt', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-16 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, alt + ' km')
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -21739,19 +21743,19 @@ const d = labToolData.solarSystem || {};
                   sel && React.createElement("div", { className: "rounded-lg p-3 border space-y-2 " + (isDark ? 'bg-amber-900/15 border-amber-700/40' : 'bg-amber-50 border-amber-200') },
                     React.createElement("div", { className: "text-[11px] font-bold " + (isDark ? 'text-amber-300' : 'text-amber-800') }, "\uD83D\uDCDD New Entry: " + sel.name),
                     React.createElement("div", null,
-                      React.createElement("label", { className: "text-[11px] font-bold text-amber-600 block mb-0.5" }, __alloT('stem.solarsystem.what_i_predicted', "What I predicted:")),
+                      React.createElement("label", { htmlFor: 'journal-predict', className: "text-[11px] font-bold text-amber-600 block mb-0.5" }, __alloT('stem.solarsystem.what_i_predicted', "What I predicted:")),
                       React.createElement("textarea", { id: 'journal-predict', rows: 2, placeholder: __alloT('stem.solarsystem.before_exploring_i_thought', "Before exploring, I thought..."), className: "w-full text-[11px] p-2 rounded border border-amber-600 resize-none", style: { fontSize: '11px' } })
                     ),
                     React.createElement("div", null,
-                      React.createElement("label", { className: "text-[11px] font-bold text-amber-600 block mb-0.5" }, __alloT('stem.solarsystem.what_i_observed', "What I observed:")),
+                      React.createElement("label", { htmlFor: 'journal-observe', className: "text-[11px] font-bold text-amber-600 block mb-0.5" }, __alloT('stem.solarsystem.what_i_observed', "What I observed:")),
                       React.createElement("textarea", { id: 'journal-observe', rows: 2, placeholder: __alloT('stem.solarsystem.i_noticed_that', "I noticed that..."), className: "w-full text-[11px] p-2 rounded border border-amber-600 resize-none", style: { fontSize: '11px' } })
                     ),
                     React.createElement("div", null,
-                      React.createElement("label", { className: "text-[11px] font-bold text-amber-600 block mb-0.5" }, __alloT('stem.solarsystem.what_surprised_me', "What surprised me:")),
+                      React.createElement("label", { htmlFor: 'journal-surprise', className: "text-[11px] font-bold text-amber-600 block mb-0.5" }, __alloT('stem.solarsystem.what_surprised_me', "What surprised me:")),
                       React.createElement("textarea", { id: 'journal-surprise', rows: 1, placeholder: __alloT('stem.solarsystem.i_was_surprised_that', "I was surprised that..."), className: "w-full text-[11px] p-2 rounded border border-amber-600 resize-none", style: { fontSize: '11px' } })
                     ),
                     React.createElement("div", null,
-                      React.createElement("label", { className: "text-[11px] font-bold text-amber-600 block mb-0.5" }, __alloT('stem.solarsystem.one_question_i_still_have', "One question I still have:")),
+                      React.createElement("label", { htmlFor: 'journal-question', className: "text-[11px] font-bold text-amber-600 block mb-0.5" }, __alloT('stem.solarsystem.one_question_i_still_have', "One question I still have:")),
                       React.createElement("textarea", { id: 'journal-question', rows: 1, placeholder: __alloT('stem.solarsystem.i_wonder', "I wonder..."), className: "w-full text-[11px] p-2 rounded border border-amber-600 resize-none", style: { fontSize: '11px' } })
                     ),
                     React.createElement("button", {
