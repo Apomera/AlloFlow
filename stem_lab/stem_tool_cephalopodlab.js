@@ -447,6 +447,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       bioluxSymbiosisHour: 0,              // 0-24 hour cycle for Vibrio fischeri demo
       // Day in the Life (Hard Mode) state — integrated hunter/hunted day
       dayActive: false,
+      dayAbandonConfirmOpen: false,
       daySpeciesId: null,
       dayEncountersDone: 0,
       dayCalories: 100,
@@ -500,6 +501,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
+      var dayAbandonTriggerRef = React.useRef(null);
+      var dayAbandonDialogRef = React.useRef(null);
+      var dayAbandonCancelRef = React.useRef(null);
+      var dayAbandonAppRef = React.useRef(null);
       var labToolData = ctx.toolData || {};
       var setLabToolData = ctx.setToolData;
       var awardXP = function(n) { if (ctx.awardXP) ctx.awardXP('cephalopodLab', n); };
@@ -513,6 +518,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           next.lastUpdated = todayISO();
           return Object.assign({}, prev, { cephalopodLab: next });
         });
+      }
+      function restoreDayAbandonFocus(trigger) {
+        setTimeout(function() {
+          if (trigger && trigger.isConnected && typeof trigger.focus === 'function') trigger.focus();
+          else if (dayAbandonAppRef.current && typeof dayAbandonAppRef.current.focus === 'function') dayAbandonAppRef.current.focus();
+        }, 0);
+      }
+
+      function closeDayAbandonConfirmation(abandon) {
+        var trigger = dayAbandonTriggerRef.current;
+        setCL(abandon ? { dayAbandonConfirmOpen: false, dayActive: false, dayEnded: null } : { dayAbandonConfirmOpen: false });
+        restoreDayAbandonFocus(trigger);
+      }
+
+      function handleDayAbandonDialogKeyDown(event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          closeDayAbandonConfirmation(false);
+          return;
+        }
+        if (event.key !== 'Tab' || !dayAbandonDialogRef.current || typeof document === 'undefined') return;
+        var focusable = dayAbandonDialogRef.current.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+        if (!focusable.length) { event.preventDefault(); return; }
+        var first = focusable[0], last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+
+      function renderDayAbandonConfirmation() {
+        if (!d.dayAbandonConfirmOpen) return null;
+        return h('div', { style: { position: 'fixed', inset: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(0,0,0,0.76)' } },
+          h('div', {
+            ref: dayAbandonDialogRef,
+            role: 'alertdialog',
+            'aria-modal': 'true',
+            'aria-labelledby': 'cephalopod-day-abandon-title',
+            'aria-describedby': 'cephalopod-day-abandon-message',
+            onKeyDown: handleDayAbandonDialogKeyDown,
+            style: { width: 'min(100%, 460px)', padding: 20, borderRadius: 12, border: '2px solid #fca5a5', background: '#111827', color: '#f1f5f9', boxShadow: '0 18px 55px rgba(0,0,0,0.72)' }
+          },
+            h('h2', { id: 'cephalopod-day-abandon-title', style: { margin: '0 0 10px', color: '#fecaca', fontSize: 20 } }, __alloT('stem.cephalopodlab.abandon_day_confirmation_title', 'Abandon this day?')),
+            h('p', { id: 'cephalopod-day-abandon-message', style: { margin: '0 0 18px', color: '#cbd5e1', lineHeight: 1.55 } }, __alloT('stem.cephalopodlab.abandon_day_confirmation_message', 'Your current day progress will be lost.')),
+            h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' } },
+              h('button', { type: 'button', ref: dayAbandonCancelRef, autoFocus: true, onClick: function() { closeDayAbandonConfirmation(false); }, style: { minWidth: 100, padding: '9px 14px', borderRadius: 8, border: '1px solid #64748b', background: '#1e293b', color: '#f1f5f9', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.cephalopodlab.cancel', 'Cancel')),
+              h('button', { type: 'button', onClick: function() { closeDayAbandonConfirmation(true); }, style: { minWidth: 120, padding: '9px 14px', borderRadius: 8, border: '1px solid #ef4444', background: '#b91c1c', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.cephalopodlab.confirm_abandon_day', 'Abandon day'))
+            )
+          )
+        );
       }
       var section = d.activeSection || 'hub';
       function setSection(s) {
@@ -14661,6 +14715,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var enc = generateEncounter(speciesId);
         setCL({
           dayActive: true,
+          dayAbandonConfirmOpen: false,
           daySpeciesId: speciesId,
           dayEncountersDone: 0,
           dayCalories: 100,
@@ -14885,7 +14940,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               }))) : null,
 
           h('div', { style: { display: 'flex', justifyContent: 'center', marginTop: 8 } },
-            h('button', { onClick: function() { if (confirm('Abandon this day? Your progress will be lost.')) setCL({ dayActive: false, dayEnded: null }); },
+            h('button', { type: 'button', ref: dayAbandonTriggerRef, onClick: function() { setCL({ dayAbandonConfirmOpen: true }); },
               style: { padding: '8px 16px', background: 'transparent', color: '#fca5a5',
                 border: '1px solid rgba(220,38,38,0.4)', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' } },
               __alloT('stem.cephalopodlab.abandon_day', '✕ Abandon day')))
@@ -20441,10 +20496,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       else if (section === 'resources') content = renderResources();
       else content = renderHub();
 
-      return h('div', { style: rootStyle, role: 'region', 'aria-label': __alloT('stem.cephalopodlab.cephalopod_lab_2', 'Cephalopod Lab') },
+      return h('div', { ref: dayAbandonAppRef, tabIndex: -1, style: rootStyle, role: 'region', 'aria-label': __alloT('stem.cephalopodlab.cephalopod_lab_2', 'Cephalopod Lab') },
         renderHeader(),
         renderTabs(),
-        h('div', { style: { padding: 20 } }, content)
+        h('div', { style: { padding: 20 } }, content),
+        renderDayAbandonConfirmation()
       );
     }
   });
