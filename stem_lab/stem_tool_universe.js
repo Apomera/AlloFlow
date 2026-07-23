@@ -2015,7 +2015,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                React.createElement("span", { className: "text-xs font-bold text-violet-700" }, "\u23F3 Cosmic Timeline"),
+                React.createElement("label", { id: "universe-cosmic-timeline-label", htmlFor: "universe-cosmic-time", className: "text-xs font-bold text-violet-700" }, "\u23F3 Cosmic Timeline"),
 
                 React.createElement("span", { className: "ml-auto text-[11px] font-bold text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full" }, formatCosmicTimeLabel(cosmicTime))
 
@@ -2027,9 +2027,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                 React.createElement("input", {
 
-                  type: "range", min: 0, max: UNIVERSE_FUTURE_PREVIEW_GYR, step: 0.01, value: cosmicTime,
+                  id: "universe-cosmic-time", type: "range", min: 0, max: UNIVERSE_FUTURE_PREVIEW_GYR, step: 0.01, value: cosmicTime,
 
-                  'aria-label': 'Cosmic time in billion years',
+                  'aria-labelledby': 'universe-cosmic-timeline-label',
 
                   onChange: function (e) { var val = parseFloat(e.target.value); upd("cosmicTime", val); var cv = document.querySelector('[data-universe-canvas]'); if (cv) cv.dataset.time = String(val); },
 
@@ -3362,7 +3362,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     React.createElement("input", { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                     React.createElement("span", null, 'I can explain why this distance and \u03A9 mix yields this redshift / fate.')
                   ),
-                  iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                  iq.understood && React.createElement("div", { className: "mb-1" },
+                    React.createElement("label", { htmlFor: "universe-cosmology-explanation", className: "block text-[10px] font-bold mb-1" }, "Your explanation"),
+                    React.createElement("p", { id: "universe-cosmology-explanation-hint", className: "text-[10px] opacity-75 mb-1" }, "Explain how the selected distance and density mix leads to this redshift and fate."),
+                    React.createElement("textarea", { id: "universe-cosmology-explanation", 'aria-describedby': "universe-cosmology-explanation-hint", value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: "w-full p-1.5 rounded text-[10px]", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } })
+                  ),
                   React.createElement("p", { className: "m-0 text-[10px] italic opacity-60" }, 'Inquiry widget \u2014 no score, no reveal, no answer dump. Look-back time uses linear approximation t \u2248 d/c (valid for low z; for z>0.3 a full \u039BCDM integration is needed). Fate label ignores spatial curvature (assumes \u03A9_total = 1) and dark-energy equation of state (assumes w = -1, cosmological constant); see open questions for what those simplifications cost. Hubble tension between Planck (~67) and local SH0ES (~73) measurements remains unresolved as of 2026.')
                 );
               })()
