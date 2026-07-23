@@ -456,13 +456,17 @@
     var THREE = window.THREE;
     var eng = { disposed: false };
     var cnv = document.createElement('canvas');
+    // The labelled viewport container owns the WebGL alternative and keyboard mode.
+    cnv.setAttribute('aria-hidden', 'true');
     cnv.style.width = '100%'; cnv.style.height = '100%'; cnv.style.display = 'block';
     container.appendChild(cnv);
     var renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     var scene = new THREE.Scene();
     // subtle vertical-gradient sky (deep blue up top → near-black below) for depth
-    var bgCanvas = document.createElement('canvas'); bgCanvas.width = 4; bgCanvas.height = 256;
+    var bgCanvas = document.createElement('canvas');
+    // Internal texture buffer: it conveys no content beyond the described viewport.
+    bgCanvas.setAttribute('aria-hidden', 'true'); bgCanvas.width = 4; bgCanvas.height = 256;
     var bgCtx = bgCanvas.getContext('2d');
     if (bgCtx) { var bgGrad = bgCtx.createLinearGradient(0, 0, 0, 256); bgGrad.addColorStop(0, '#13243f'); bgGrad.addColorStop(0.45, '#0a1322'); bgGrad.addColorStop(1, '#06080f'); bgCtx.fillStyle = bgGrad; bgCtx.fillRect(0, 0, 4, 256); }
     var bgTex = new THREE.CanvasTexture(bgCanvas);
