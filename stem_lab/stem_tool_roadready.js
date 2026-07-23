@@ -23167,11 +23167,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid ' + (d.lastJournal ? '#10b981' : '#334155'), background: d.lastJournal ? 'rgba(16,185,129,0.15)' : 'rgba(15,23,42,0.5)', color: d.lastJournal ? '#10b981' : '#475569', fontSize: '12px', fontWeight: 700, cursor: d.lastJournal ? 'pointer' : 'not-allowed' }
               }, __alloT('stem.roadready.export_journal', '📓 Export Journal')),
               h('label', {
-                style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #60a5fa', background: 'rgba(96,165,250,0.15)', color: '#60a5fa', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'inline-block' }
+                style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #60a5fa', background: 'rgba(96,165,250,0.15)', color: '#60a5fa', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start', gap: '6px' }
               }, __alloT('stem.roadready.load_progress', '📥 Load Progress'),
                 h('input', {
-                  type: 'file', accept: 'application/json,.json',
-                  style: { display: 'none' },
+                  id: 'rr-load-progress-file', type: 'file', accept: 'application/json,.json',
+                  'aria-label': __alloT('stem.roadready.load_progress_file', 'Load RoadReady progress file'),
+                  style: { display: 'block', maxWidth: '240px', fontSize: '11px', color: 'inherit', cursor: 'pointer' },
                   onChange: function(e) {
                     var file = e.target.files && e.target.files[0];
                     if (!file) return;
@@ -23373,8 +23374,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }, d.rideshareMode ? '🚕 Start Driving (Rideshare)' : '🌎 Start Exploring'),
           // Seed input
           h('div', { style: { marginTop: '10px', display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center' } },
-            h('label', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, __alloT('stem.roadready.world_seed', 'World Seed:')),
-            h('input', { type: 'number', value: d.worldSeed || '', placeholder: __alloT('stem.roadready.random', 'Random'),
+            h('label', { htmlFor: 'rr-world-seed', style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, __alloT('stem.roadready.world_seed', 'World Seed:')),
+            h('input', { id: 'rr-world-seed', type: 'number', value: d.worldSeed || '', placeholder: __alloT('stem.roadready.random', 'Random'),
               onChange: function(e) { upd('worldSeed', e.target.value ? parseInt(e.target.value, 10) : null); },
               style: { width: '100px', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', color: '#fff', fontSize: '12px', fontFamily: 'monospace', textAlign: 'center' }
             }),
@@ -28067,22 +28068,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { fontSize: '11px', color: '#a7f3d0', fontWeight: 700, textTransform: 'uppercase', marginBottom: '10px' } }, __alloT('stem.roadready.your_dates_stored_on_your_device_only', 'Your Dates (stored on your device only)')),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', fontSize: '11px' } },
               h('div', null,
-                h('label', { style: { display: 'block', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '4px' } }, __alloT('stem.roadready.birth_date', 'Birth date')),
-                h('input', { type: 'date', value: gdlBirth,
+                h('label', { htmlFor: 'rr-gdl-birth-date', style: { display: 'block', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '4px' } }, __alloT('stem.roadready.birth_date', 'Birth date')),
+                h('input', { id: 'rr-gdl-birth-date', type: 'date', value: gdlBirth,
                   onChange: function(e) { upd('gdlBirthDate', e.target.value); },
                   style: { width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', color: '#fff', fontSize: '12px' }
                 })
               ),
               h('div', null,
-                h('label', { style: { display: 'block', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '4px' } }, __alloT('stem.roadready.permit_issued', 'Permit issued')),
-                h('input', { type: 'date', value: gdlPermit,
+                h('label', { htmlFor: 'rr-gdl-permit-date', style: { display: 'block', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '4px' } }, __alloT('stem.roadready.permit_issued', 'Permit issued')),
+                h('input', { id: 'rr-gdl-permit-date', type: 'date', value: gdlPermit,
                   onChange: function(e) { upd('gdlPermitDate', e.target.value); },
                   style: { width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', color: '#fff', fontSize: '12px' }
                 })
               ),
               h('div', null,
-                h('label', { style: { display: 'block', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '4px' } }, __alloT('stem.roadready.intermediate_license_2', 'Intermediate license')),
-                h('input', { type: 'date', value: gdlIntermediate,
+                h('label', { htmlFor: 'rr-gdl-intermediate-date', style: { display: 'block', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '4px' } }, __alloT('stem.roadready.intermediate_license_2', 'Intermediate license')),
+                h('input', { id: 'rr-gdl-intermediate-date', type: 'date', value: gdlIntermediate,
                   onChange: function(e) { upd('gdlIntermediateDate', e.target.value); },
                   style: { width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', color: '#fff', fontSize: '12px' }
                 })
@@ -29566,8 +29567,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             ),
             // Custom color input
             h('div', { style: { marginTop: '10px', display: 'flex', alignItems: 'center', gap: '8px' } },
-              h('label', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, 'Custom:'),
-              h('input', { type: 'color', value: curColor,
+              h('label', { htmlFor: 'rr-custom-car-color', style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, __alloT('stem.roadready.custom_car_color', 'Custom car color:')),
+              h('input', { id: 'rr-custom-car-color', type: 'color', value: curColor,
                 onChange: function(e) { upd('carColor', e.target.value); },
                 style: { width: '40px', height: '28px', border: 'none', background: 'transparent', cursor: 'pointer' }
               }),
@@ -30274,7 +30275,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   h('td', { style: { padding: '4px 6px', border: '1px solid #cbd5e1' } }, o.st));
               }))
             ),
-            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.roadready.hypothesis_free_text_why_does_kinetic_', 'Hypothesis (free text): Why does kinetic energy grow with v² but only linearly with mass?'),
+            h('label', { htmlFor: 'rr-braking-hypothesis', style: { display: 'block', fontSize: 12, fontWeight: 'bold', color: '#0c4a6e', marginBottom: 4 } },
+              __alloT('stem.roadready.braking_hypothesis_label', 'Hypothesis: Why does kinetic energy grow with speed squared but only linearly with mass?')),
+            h('textarea', { id: 'rr-braking-hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.roadready.hypothesis_free_text_why_does_kinetic_', 'Hypothesis (free text): Why does kinetic energy grow with v² but only linearly with mass?'),
               style: { width: '100%', minHeight: 60, padding: 6, border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 10 }, rows: 3 }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.roadready.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
             iq.stuckRevealed && h('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 4, fontSize: 11, color: '#475569', marginBottom: 10 } },
@@ -30286,7 +30289,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { padding: 10, background: '#ecfdf5', border: '1px solid #86efac', borderRadius: 4 } },
               h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#059669', cursor: 'pointer' } },
                 h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), __alloT('stem.roadready.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.roadready.explain_why_does_v_dominate_stopping_d', 'Explain: why does v² dominate stopping distance? What surprised you about grade?'),
+              iq.understood && h('label', { htmlFor: 'rr-braking-explanation', style: { display: 'block', fontSize: 12, fontWeight: 'bold', color: '#059669', marginTop: 8 } },
+                __alloT('stem.roadready.braking_explanation_label', 'Explain why speed dominates stopping distance and what surprised you about grade.')),
+              iq.understood && h('textarea', { id: 'rr-braking-explanation', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.roadready.explain_why_does_v_dominate_stopping_d', 'Explain: why does v² dominate stopping distance? What surprised you about grade?'),
                 style: { width: '100%', minHeight: 80, padding: 6, border: '1px solid #86efac', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 4 })),
             h('div', { style: { marginTop: 10, padding: 8, background: '#f1f5f9', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#64748b' } },
               __alloT('stem.roadready.design_note_discrete_4_state_braking_m', 'Design note: discrete 4-state braking marker; SVG force/energy diagram; no safety score — by design.'))
