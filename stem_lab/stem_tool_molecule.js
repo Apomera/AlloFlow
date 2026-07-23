@@ -1877,7 +1877,8 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               // Canvas workspace
 
               React.createElement("svg", {
-
+                role: "group",
+                "aria-label": "Molecule builder workspace with " + (d.buildAtoms || []).length + " atoms and " + (d.buildBonds || []).length + " bonds. Tab to atoms; use arrow keys to move and Enter or Space to select atoms for a bond.",
                 viewBox: "0 0 " + W + " " + H,
 
                 className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border-2 border-dashed border-slate-300 cursor-crosshair",
@@ -4538,7 +4539,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
           var isPolar = opt.polarity === 'polar';
           var isInt = opt.polarity === 'intermediate';
           // Simple cartoon: central atoms with delta+/delta- when polar; uniform when nonpolar
-          return React.createElement('svg', { viewBox: '0 0 240 80', className: 'w-full h-20 bg-slate-50 rounded border border-slate-200' },
+          return React.createElement('svg', { viewBox: '0 0 240 80', role: 'img', 'aria-label': opt.label + ' polarity diagram: ' + opt.polarity + ', dipole ' + opt.dipole + ' debye.', className: 'w-full h-20 bg-slate-50 rounded border border-slate-200' },
             React.createElement('circle', { cx: 80, cy: 40, r: 18, fill: isPolar ? '#fde68a' : (isInt ? '#fcd34d' : '#cbd5e1') }),
             React.createElement('circle', { cx: 160, cy: 40, r: 14, fill: isPolar ? '#bfdbfe' : (isInt ? '#bfdbfe' : '#cbd5e1') }),
             React.createElement('line', { x1: 95, y1: 40, x2: 147, y2: 40, stroke: '#475569', strokeWidth: 3 }),
