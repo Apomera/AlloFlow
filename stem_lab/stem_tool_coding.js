@@ -1414,7 +1414,7 @@
 
           function handleImportJSON() {
             var input = document.createElement('input');
-            input.type = 'file'; input.accept = '.json';
+            input.type = 'file'; input.accept = '.json'; input.setAttribute('aria-label', 'Choose a coding program JSON file to import');
             input.onchange = function(e) {
               var file = e.target.files[0];
               if (!file) return;
@@ -1998,8 +1998,8 @@
                 iq.log.length > 0 && React.createElement("div", { className: "p-1.5 rounded text-[9px] font-mono mb-2", style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
                   iq.log.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' · n' + e.n + ' ld' + e.ld + ' ' + e.ds + ' rec' + e.rec + ' → ' + e.ops + ' ops'); })
                 ),
-                React.createElement("label", { className: "block text-[10px] font-bold opacity-85 mb-1" }, t('stem.coding.your_hypothesis_which_change_buys_the_', 'Your hypothesis (which change buys the biggest speedup — smaller n, fewer loops, or different data structure?)')),
-                React.createElement("textarea", { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.coding.e_g_swapping_array_scan_for_hash_looku', 'e.g., swapping array scan for hash lookup drops outer-loop cost by a factor of n...'), className: "w-full p-1.5 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                React.createElement("label", { htmlFor: "coding-complexity-hypothesis", className: "block text-[10px] font-bold opacity-85 mb-1" }, t('stem.coding.your_hypothesis_which_change_buys_the_', 'Your hypothesis (which change buys the biggest speedup — smaller n, fewer loops, or different data structure?)')),
+                React.createElement("textarea", { id: "coding-complexity-hypothesis", value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.coding.e_g_swapping_array_scan_for_hash_looku', 'e.g., swapping array scan for hash lookup drops outer-loop cost by a factor of n...'), className: "w-full p-1.5 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
                 !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, className: "px-2 py-1 rounded text-[10px] font-bold mb-2", style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.coding.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
                 iq.stuckRevealed && React.createElement("div", { className: "p-2 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
                   React.createElement("div", { className: "font-bold mb-1", style: { color: sm.color } }, t('stem.coding.open_questions_no_answer_key', 'Open questions (no answer key)')),
@@ -2014,7 +2014,11 @@
                   React.createElement("input", { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                   React.createElement("span", null, t('stem.coding.i_can_explain_why_this_combination_of_', 'I can explain why this combination of n, depth, data structure, and recursion lands here.'))
                 ),
-                iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.coding.explain_in_your_own_words', 'Explain in your own words...'), className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                iq.understood && React.createElement("div", { className: "mb-1" },
+                  React.createElement("label", { htmlFor: "coding-complexity-explanation", className: "block text-[10px] font-bold mb-1" }, t('stem.coding.your_explanation', 'Your explanation')),
+                  React.createElement("p", { id: "coding-complexity-explanation-hint", className: "text-[10px] opacity-75 mb-1" }, t('stem.coding.explanation_hint', 'Explain how the selected input size, loop depth, data structure, and recursion produce this complexity.')),
+                  React.createElement("textarea", { id: "coding-complexity-explanation", 'aria-describedby': "coding-complexity-explanation-hint", value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.coding.explain_in_your_own_words', 'Explain in your own words...'), className: "w-full p-1.5 rounded text-[10px]", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } })
+                ),
                 React.createElement("p", { className: "m-0 text-[9px] italic opacity-60" }, t('stem.coding.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Ops counts are illustrative pedagogical estimates assuming ~1 GHz effective throughput; real performance depends on cache, branch prediction, JIT, and constants in front of the Big-O term.'))
               );
             })(),
@@ -2134,12 +2138,11 @@
                   (show3D ? "bg-teal-700 text-white" : "bg-white/15 text-white hover:bg-white/25")
               }, show3D ? "\u{1F310} 3D" : "\u{1F4D0} 2D"),
               // Turtle Skin selector
-              React.createElement("select", {
+              React.createElement("select", { 'aria-label': t('stem.coding.turtle_skin_2', 'Turtle skin'),
                 value: turtleSkin,
                 onChange: function(e) { upd('turtleSkin', e.target.value); },
                 title: t('stem.coding.turtle_skin', 'Turtle Skin'),
-                'aria-label': t('stem.coding.turtle_skin_2', 'Turtle skin'),
-                className: "px-1.5 py-1 rounded-lg bg-indigo-900/50 text-white text-xs border border-indigo-400/30 cursor-pointer"
+                className: "min-h-11 px-1.5 py-2 rounded-lg bg-indigo-900/50 text-white text-xs border border-indigo-400/30 cursor-pointer"
               },
                 TURTLE_SKINS.map(function(sk) {
                   return React.createElement("option", { key: sk.emoji, value: sk.emoji }, sk.emoji + ' ' + sk.label);
@@ -2483,7 +2486,7 @@
                           type: "number", value: b[def.param] || def.defaultVal,
                           'aria-label': (def.label || b.type) + ' parameter',
                           onChange: function (e) { updateBlockParam(idx, def.param, parseInt(e.target.value) || def.defaultVal); },
-                          className: "w-12 px-1 py-0.5 rounded text-xs bg-white/20 text-white text-center",
+                          className: "w-12 min-h-6 px-1 py-0.5 rounded text-xs bg-white/20 text-white text-center",
                           style: { appearance: 'textfield' }
                         }),
                         // Goto dual param editor (x, y)
@@ -2518,7 +2521,7 @@
                             type: "text", value: b.varName || 'size',
                             'aria-label': t('stem.coding.variable_name', 'Variable name'),
                             onChange: function (e) { updateBlockParam(idx, 'varName', e.target.value || 'size'); },
-                            className: "w-12 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
+                            className: "w-12 min-h-6 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             placeholder: "name"
                           }),
                           React.createElement("span", { className: "text-[11px] text-white/60" }, "="),
@@ -2526,7 +2529,7 @@
                             type: "number", value: b.varValue != null ? b.varValue : 50,
                             'aria-label': t('stem.coding.variable_value', 'Variable value'),
                             onChange: function (e) { updateBlockParam(idx, 'varValue', parseFloat(e.target.value) || 0); },
-                            className: "w-12 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
+                            className: "w-12 min-h-6 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
                           })
                         ),
@@ -2536,14 +2539,15 @@
                             type: "text", value: b.varName || 'size',
                             'aria-label': t('stem.coding.variable_name_to_change', 'Variable name to change'),
                             onChange: function (e) { updateBlockParam(idx, 'varName', e.target.value || 'size'); },
-                            className: "w-12 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
+                            className: "w-12 min-h-6 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             placeholder: "name"
                           }),
                           React.createElement("span", { className: "text-[11px] text-white/60" }, "+="),
                           React.createElement("input", {
                             type: "number", value: b.varDelta != null ? b.varDelta : 10,
+                            'aria-label': t('stem.coding.variable_amount_to_add', 'Amount to add to variable'),
                             onChange: function (e) { updateBlockParam(idx, 'varDelta', parseFloat(e.target.value) || 0); },
-                            className: "w-12 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
+                            className: "w-12 min-h-6 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
                           })
                         ),
@@ -2552,7 +2556,7 @@
                           type: "text", value: b.condition || 'x > 250',
                           'aria-label': t('stem.coding.if_else_condition', 'If-else condition'),
                           onChange: function (e) { updateBlockParam(idx, 'condition', e.target.value); },
-                          className: "w-24 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center font-mono",
+                          className: "w-24 min-h-6 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center font-mono",
                           placeholder: t('stem.coding.x_250', "x > 250")
                         }),
                         // Move / Remove buttons
@@ -2799,14 +2803,12 @@
                 React.createElement("h4", { className: "text-xs font-bold text-slate-200 mb-2 flex items-center gap-1" },
                   React.createElement("span", null, "⏱️"), " Timeline (" + timelineFrames.length + " frames)"
                 ),
-                React.createElement("input", {
-                  type: "range",
+                React.createElement("input", { type: "range", 'aria-label': t('stem.coding.animation_timeline_position', 'Animation timeline position'),
                   min: 0,
                   max: Math.max(0, timelineFrames.length - 1),
                   value: timelinePos >= 0 ? timelinePos : 0,
-                  'aria-label': t('stem.coding.animation_timeline_position', 'Animation timeline position'),
                   onChange: function(e) { seekTimeline(parseInt(e.target.value)); },
-                  className: "w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-indigo-500",
+                  className: "w-full h-6 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-indigo-500",
                   style: { accentColor: '#6366f1' }
                 }),
                 React.createElement("div", { className: "flex justify-between text-[11px] text-slate-300 mt-1" },
