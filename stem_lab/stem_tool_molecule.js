@@ -599,6 +599,8 @@ window.StemLab = window.StemLab || {
 
             var createTextSprite = function(text) {
               var canvas = document.createElement('canvas');
+              // Internal WebGL text texture; the visible viewport owns the alternative.
+              canvas.setAttribute('aria-hidden', 'true');
               canvas.width = 96;
               canvas.height = 96;
               var ctx = canvas.getContext('2d');
@@ -1597,8 +1599,10 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 ? React.createElement("div", { className: "relative w-full rounded-xl overflow-hidden border", style: { height: "320px", background: "radial-gradient(circle at 50% 42%, rgba(30,64,175,0.34), rgba(15,23,42,0.72) 38%, #020617 78%)", borderColor: "rgba(30,41,59,0.95)", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -42px 80px rgba(2,6,23,0.72), 0 18px 38px rgba(15,23,42,0.22)" } },
                     React.createElement("canvas", {
                       ref: webglCanvasRef,
+                      role: "img",
+                      "aria-label": "3D molecular model of " + (d.formula || "the selected molecule") + ". A Reset View button follows.",
                       className: "w-full h-full",
-                      style: { display: 'block', outline: 'none', background: 'transparent' }
+                      style: { display: 'block', background: 'transparent' }
                     }),
                     React.createElement("div", {
                       "aria-hidden": "true",
@@ -2527,6 +2531,10 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       React.createElement("div", { className: "flex items-start gap-3" },
 
                         React.createElement("canvas", { width: 220, height: 220,
+
+                          role: "img",
+
+                          "aria-label": "Bohr model of " + (d.selectedElement.name || d.selectedElement.s || "the selected element") + ": nucleus with " + d.selectedElement.n + " protons and approximately " + Math.max(0, Math.round(d.selectedElement.mass || (d.selectedElement.n * 2.15)) - d.selectedElement.n) + " neutrons; " + d.selectedElement.n + " electrons arranged as " + getElectronConfig(d.selectedElement.n) + ".",
 
                           className: "rounded-xl border border-slate-400 bg-slate-900 flex-shrink-0",
 
