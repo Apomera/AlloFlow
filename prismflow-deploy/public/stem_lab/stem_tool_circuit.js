@@ -1308,6 +1308,7 @@ window.StemLab = window.StemLab || {
 
               // Transparent HTML5 canvas overlay for short circuit particles
               isShort && h('canvas', {
+                'aria-hidden': 'true',
                 ref: function(canvas) {
                   if (!canvas) {
                     if (typeof window !== 'undefined' && window._circuitCanvasCleanup) window._circuitCanvasCleanup();
