@@ -18502,6 +18502,35 @@
   ];
 
 
+  // Count-up display for the optional speed challenge. This is a component so
+  // its interval has React lifecycle cleanup and never imposes a response limit.
+  var ChemBalanceElapsedTimer = function(props) {
+    var React = props.React;
+    var h = React.createElement;
+    var nowState = React.useState(Date.now());
+    var now = nowState[0];
+    var setNow = nowState[1];
+    React.useEffect(function() {
+      if (!props.running) return undefined;
+      var intervalId = window.setInterval(function() { setNow(Date.now()); }, 1000);
+      return function() { window.clearInterval(intervalId); };
+    }, [props.running, props.startedAt]);
+    var elapsedMs = Math.max(0, Number(props.elapsedBeforeMs) || 0);
+    if (props.running && props.startedAt) elapsedMs += Math.max(0, now - props.startedAt);
+    var totalSeconds = Math.floor(elapsedMs / 1000);
+    var minutes = Math.floor(totalSeconds / 60);
+    var seconds = totalSeconds % 60;
+    var stateLabel = props.running ? 'running' : 'paused';
+    return h('time', {
+      role: 'timer',
+      'aria-live': 'off',
+      'aria-atomic': 'true',
+      'aria-label': 'Speed challenge timer ' + stateLabel + ': ' + totalSeconds + ' seconds elapsed',
+      dateTime: 'PT' + totalSeconds + 'S',
+      className: 'text-xs font-mono font-bold text-amber-700'
+    }, '\u23F1 ' + minutes + ':' + String(seconds).padStart(2, '0'));
+  };
+
   // REGISTER TOOL
   // ═══════════════════════════════════════════════════════════
   window.StemLab.registerTool('chemBalance', {
@@ -18636,6 +18665,13 @@
         var coeffs = (d.coefficients || []).slice(0, numSlots);
         while (coeffs.length < numSlots) coeffs.push(1);
         var showHints = d.showHints || false;
+        var getTimerElapsedMs = function() {
+          var elapsedMs = Math.max(0, Number(d.timerElapsedMs) || 0);
+          if (d.timerActive && !d.timerPaused && d.timerStart) {
+            elapsedMs += Math.max(0, Date.now() - d.timerStart);
+          }
+          return elapsedMs;
+        };
 
         var eqParts = preset.eq.split('\u2192');
         var leftCompounds = eqParts[0].split('+').map(function(s) { return s.trim(); });
@@ -18681,7 +18717,7 @@
             upd('streak', newStreak);
             upd('feedback', { correct: true, msg: atLowest ? ('\u2705 Balanced! ' + (newStreak > 1 ? '\uD83D\uDD25 ' + newStreak + ' in a row!' : 'Great job!')) : '\u2705 Atoms balance! Now try the lowest whole-number coefficients.' });
             var speedTime = Infinity;
-            if (d.timerActive && d.timerStart) speedTime = (Date.now() - d.timerStart) / 1000;
+            if (d.timerActive) speedTime = getTimerElapsedMs() / 1000;
             var newBest = speedTime < ext.speedBest ? speedTime : ext.speedBest;
             updExt({ equationsBalanced: ext.equationsBalanced + 1, speedBest: newBest });
             checkBadges();
@@ -19111,10 +19147,47 @@
               ),
               d.feedback && h('p', { className: 'mt-3 text-sm font-bold ' + (d.feedback.correct ? 'text-emerald-600' : 'text-red-600') }, d.feedback.msg)
             ),
-            // Timer
-            h('div', { className: 'mt-3 flex items-center gap-3' },
-              h('button', { onClick: function() { if (d.timerActive) { updMulti({ timerActive: false, timerEnd: null }); } else { var arr = []; for (var ri = 0; ri < numSlots; ri++) arr.push(1); updMulti({ timerActive: true, timerStart: Date.now(), coefficients: arr, feedback: null }); } }, className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (d.timerActive ? 'bg-red-100 text-red-600 border border-red-600' : 'transition-colors bg-amber-100 text-amber-700 border border-amber-600 hover:bg-amber-200') }, d.timerActive ? '\u23F9 Stop' : '\u23F1 Speed Challenge'),
-              d.timerActive && d.timerStart && h('span', { className: 'text-xs font-mono font-bold text-amber-700' }, '\u23F1 ' + ((Date.now() - d.timerStart) / 1000).toFixed(0) + 's')
+            // Optional count-up challenge: no deadline, and elapsed time excludes pauses.
+            h('div', { role: 'group', 'aria-label': __alloT('stem.chembalance.speed_challenge_controls', 'Speed challenge timer controls'), className: 'mt-3 flex items-center gap-3 flex-wrap' },
+              !d.timerActive && h('button', {
+                type: 'button',
+                onClick: function() {
+                  var arr = [];
+                  for (var ri = 0; ri < numSlots; ri++) arr.push(1);
+                  updMulti({ timerActive: true, timerPaused: false, timerStart: Date.now(), timerElapsedMs: 0, coefficients: arr, feedback: null });
+                  if (announceToSR) announceToSR('Speed challenge started. There is no time limit, and you can pause at any time.');
+                },
+                className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-700 border border-amber-600 hover:bg-amber-200'
+              }, __alloT('stem.chembalance.start_speed_challenge', '\u23F1 Start speed challenge')),
+              d.timerActive && h('button', {
+                type: 'button',
+                onClick: function() {
+                  if (d.timerPaused) {
+                    updMulti({ timerPaused: false, timerStart: Date.now() });
+                    if (announceToSR) announceToSR('Speed challenge timer resumed.');
+                  } else {
+                    updMulti({ timerPaused: true, timerStart: null, timerElapsedMs: getTimerElapsedMs() });
+                    if (announceToSR) announceToSR('Speed challenge timer paused.');
+                  }
+                },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold border ' + (d.timerPaused ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-amber-100 text-amber-700 border-amber-600')
+              }, d.timerPaused ? __alloT('stem.chembalance.resume_timer', '\u25B6 Resume timer') : __alloT('stem.chembalance.pause_timer', '\u23F8 Pause timer')),
+              d.timerActive && h('button', {
+                type: 'button',
+                onClick: function() {
+                  var finalElapsedMs = getTimerElapsedMs();
+                  updMulti({ timerActive: false, timerPaused: false, timerStart: null, timerElapsedMs: finalElapsedMs });
+                  if (announceToSR) announceToSR('Speed challenge ended after ' + Math.floor(finalElapsedMs / 1000) + ' seconds.');
+                },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-red-100 text-red-700 border border-red-600'
+              }, __alloT('stem.chembalance.end_speed_challenge', '\u23F9 End challenge')),
+              d.timerActive && h(ChemBalanceElapsedTimer, {
+                React: React,
+                running: !d.timerPaused,
+                startedAt: d.timerStart,
+                elapsedBeforeMs: d.timerElapsedMs
+              }),
+              d.timerActive && h('span', { role: 'status', className: 'text-xs font-bold text-slate-600' }, d.timerPaused ? __alloT('stem.chembalance.timer_paused', 'Paused') : __alloT('stem.chembalance.timer_running', 'Running'))
             )
           ),
 
@@ -19505,14 +19578,25 @@
                     var nk = isCorrect ? chalStreak + 1 : 0;
                     if (isCorrect) { chemSound('correct'); if (nk >= 3) chemSound('streak'); awardXP('chalQ_' + chalDiff + '_' + chalIdx, nk >= 3 ? 15 : 10, 'Chem Challenge'); updExt({ quizCorrect: ext.quizCorrect + 1 }); checkBadges(); } else { chemSound('wrong'); }
                     updMulti({ _chalScore: ns, _chalStreak: nk, _chalFeedback: isCorrect ? '\u2705 ' + chalQuestions[chalIdx].explain : '\u274C ' + chalQuestions[chalIdx].explain });
-                    setTimeout(function() {
-                      if (chalIdx + 1 < chalQuestions.length) { updMulti({ _chalIdx: chalIdx + 1, _chalFeedback: null }); }
-                      else { updMulti({ _chalFeedback: '\uD83C\uDFC6 Complete! ' + ns + '/' + chalQuestions.length }); }
-                    }, 2000);
                   }, className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' + (chalFeedback ? (i === chalQuestions[chalIdx].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-lime-600 hover:bg-lime-50') }, opt);
                 })
               ),
-              chalFeedback && h('p', { className: 'mt-2 text-[11px] font-bold ' + (chalFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, chalFeedback)
+              chalFeedback && h('div', { className: 'mt-3' },
+                h('p', { role: 'status', className: 'text-[11px] font-bold ' + (chalFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, chalFeedback),
+                h('button', {
+                  type: 'button',
+                  onClick: function() {
+                    if (chalIdx + 1 < chalQuestions.length) {
+                      updMulti({ _chalIdx: chalIdx + 1, _chalFeedback: null });
+                      if (announceToSR) announceToSR('Next chemistry challenge question.');
+                    } else {
+                      updMulti({ _chalIdx: chalQuestions.length, _chalFeedback: null });
+                      if (announceToSR) announceToSR('Chemistry challenge complete.');
+                    }
+                  },
+                  className: 'mt-2 px-4 py-2 text-xs font-bold text-white bg-lime-600 rounded-lg hover:bg-lime-700'
+                }, chalIdx + 1 < chalQuestions.length ? __alloT('stem.chembalance.next_question', 'Next question') : __alloT('stem.chembalance.finish_challenge', 'Finish challenge'))
+              )
             ) : h('div', { className: 'text-center bg-lime-50 rounded-xl border border-lime-200 p-4' },
               h('p', { className: 'text-2xl mb-1' }, '\uD83C\uDFC6'),
               h('p', { className: 'text-sm font-bold text-lime-700' }, 'Challenge Complete! ' + chalScore + '/' + chalQuestions.length),
@@ -19561,15 +19645,33 @@
                       if (ok) { chemSound('correct'); nEHP = Math.max(0, battleEnemyHP - bq.dmg); nScore++; } else { chemSound('damage'); nHP = Math.max(0, battleHP - 15); }
                       var fb = ok ? '\u2705 Hit! -' + bq.dmg + ' HP!' : '\u274C -15 HP! Answer: ' + bq.a[bq.correct];
                       updMulti({ _battleEnemyHP: nEHP, _battleHP: nHP, _battleScore: nScore, _battleFeedback: fb });
-                      setTimeout(function() {
-                        if (nEHP <= 0) { chemSound('victory'); updExt({ battleWon: true }); checkBadges(); updMulti({ _battleActive: false, _battleResult: 'won', _battleFeedback: null }); awardXP('battleWin', 30, 'Element Battle'); }
-                        else if (nHP <= 0) { chemSound('damage'); updMulti({ _battleActive: false, _battleResult: 'lost', _battleFeedback: null }); }
-                        else { updMulti({ _battleRound: battleRound + 1, _battleFeedback: null }); }
-                      }, 1500);
                     }, className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' + (battleFeedback ? (i === BATTLE_QS[battleRound].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-600 hover:bg-red-50') }, opt);
                   })
                 ),
-                battleFeedback && h('p', { className: 'mt-2 text-xs font-bold text-center ' + (battleFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, battleFeedback)
+                battleFeedback && h('div', { className: 'mt-3 text-center' },
+                  h('p', { role: 'status', className: 'text-xs font-bold ' + (battleFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, battleFeedback),
+                  h('button', {
+                    type: 'button',
+                    onClick: function() {
+                      if (battleEnemyHP <= 0) {
+                        chemSound('victory');
+                        updExt({ battleWon: true });
+                        checkBadges();
+                        updMulti({ _battleActive: false, _battleResult: 'won', _battleFeedback: null });
+                        awardXP('battleWin', 30, 'Element Battle');
+                        if (announceToSR) announceToSR('Element battle won.');
+                      } else if (battleHP <= 0) {
+                        chemSound('damage');
+                        updMulti({ _battleActive: false, _battleResult: 'lost', _battleFeedback: null });
+                        if (announceToSR) announceToSR('Element battle complete.');
+                      } else {
+                        updMulti({ _battleRound: battleRound + 1, _battleFeedback: null });
+                        if (announceToSR) announceToSR('Next element battle round.');
+                      }
+                    },
+                    className: 'mt-2 px-4 py-2 text-xs font-bold text-white bg-red-600 rounded-lg hover:bg-red-700'
+                  }, battleEnemyHP <= 0 ? __alloT('stem.chembalance.finish_battle', 'Finish battle') : battleHP <= 0 ? __alloT('stem.chembalance.view_battle_result', 'View result') : __alloT('stem.chembalance.next_battle_round', 'Next round'))
+                )
               )
             ),
             battleResult && h('div', { className: 'text-center bg-gradient-to-r ' + (battleResult === 'won' ? 'from-emerald-50 to-teal-50 border-emerald-200' : 'from-red-50 to-orange-50 border-red-200') + ' rounded-xl border p-6' },
