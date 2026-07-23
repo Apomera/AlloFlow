@@ -4607,7 +4607,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     var heightVariation = (bi * 37) % 5;  // 0..4 px taller
                     var bookH = 22 + heightVariation;
                     var rotation = ((bi * 17) % 7) - 3;  // -3 to +3 degrees
-                    return h('svg', { key: bi, width: 16, height: bookH + 4,
+                    return h('svg', { key: bi, width: 16, height: bookH + 4, 'aria-hidden': 'true', focusable: 'false',
                       viewBox: '0 0 16 ' + (bookH + 4),
                       style: {
                         transition: 'opacity 0.2s ease', opacity: 0.95,
@@ -9269,7 +9269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             style: { display: 'inline-block', verticalAlign: 'middle', marginRight: 8, flexShrink: 0 } };
           if (kind === 'museum') {
             // Greek-temple building
-            return h('svg', common,
+            return h('svg', Object.assign({ 'aria-hidden': 'true', focusable: 'false' }, common),
               h('polygon', { points: '8,1 1,5 15,5', fill: stroke, opacity: 0.85 }),
               h('rect', { x: 1, y: 5, width: 14, height: 1, fill: stroke }),
               h('rect', { x: 2, y: 6, width: 1.5, height: 7, fill: stroke }),
@@ -9281,7 +9281,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           }
           if (kind === 'book') {
             // Open book
-            return h('svg', common,
+            return h('svg', Object.assign({ 'aria-hidden': 'true', focusable: 'false' }, common),
               h('path', { d: 'M 1 3 L 8 4 L 15 3 L 15 13 L 8 14 L 1 13 Z', fill: 'none', stroke: stroke, strokeWidth: 1 }),
               h('line', { x1: 8, y1: 4, x2: 8, y2: 14, stroke: stroke, strokeWidth: 0.6 }),
               h('line', { x1: 3, y1: 6, x2: 7, y2: 6.3, stroke: stroke, strokeWidth: 0.4 }),
@@ -9294,7 +9294,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           }
           if (kind === 'scroll') {
             // Rolled scroll / parchment with text lines
-            return h('svg', common,
+            return h('svg', Object.assign({ 'aria-hidden': 'true', focusable: 'false' }, common),
               h('rect', { x: 2, y: 3, width: 11, height: 10, fill: T.parchment, stroke: stroke, strokeWidth: 0.8 }),
               h('rect', { x: 1, y: 2, width: 2, height: 12, fill: stroke, opacity: 0.7, rx: 1 }),
               h('rect', { x: 13, y: 2, width: 2, height: 12, fill: stroke, opacity: 0.7, rx: 1 }),
@@ -9304,7 +9304,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             );
           }
           // Default: globe (website)
-          return h('svg', common,
+          return h('svg', Object.assign({ 'aria-hidden': 'true', focusable: 'false' }, common),
             h('circle', { cx: 8, cy: 8, r: 6, fill: 'none', stroke: stroke, strokeWidth: 1 }),
             h('ellipse', { cx: 8, cy: 8, rx: 3, ry: 6, fill: 'none', stroke: stroke, strokeWidth: 0.6 }),
             h('line', { x1: 2, y1: 8, x2: 14, y2: 8, stroke: stroke, strokeWidth: 0.6 }),
@@ -10519,7 +10519,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               h('div', { style: { fontSize: 14, color: T.dim, marginBottom: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } },
                 '1 printed sheet → ' + fold.folds + ' fold' + (fold.folds === 1 ? '' : 's') + ' → ' + fold.pagesPerSheet + ' pages'),
               // SVG: visual fold diagram
-              h('svg', { viewBox: '0 0 320 180', style: { maxWidth: 360, width: '100%', height: 'auto', display: 'block', margin: '0 auto' } },
+              h('svg', { viewBox: '0 0 320 180', role: 'img', 'aria-label': __alloT('stem.printingpress.fold_diagram_accessible_label', 'Fold-to-size diagram for') + ' ' + fold.name + ': ' + fold.folds + ' fold' + (fold.folds === 1 ? '' : 's') + ' turn one printed sheet into ' + fold.pagesPerSheet + ' pages.', style: { maxWidth: 360, width: '100%', height: 'auto', display: 'block', margin: '0 auto' } },
                 // Original full sheet
                 h('rect', { x: 10, y: 30, width: 100, height: 120, fill: '#f5f1e6', stroke: T.accent, strokeWidth: 2 }),
                 h('text', { x: 60, y: 18, textAnchor: 'middle', fontSize: 11, fill: T.text, fontFamily: 'Georgia, serif' }, __alloT('stem.printingpress.1_sheet', '1 sheet')),
@@ -12327,7 +12327,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             h('text', { key: 't2', x: canvasW - 5, y: y0 + letterH * (1 - xH) + 4, fontSize: 8, fill: T.dim, textAnchor: 'end', fontFamily: 'ui-monospace, monospace' }, 'x'),
             h('text', { key: 't3', x: canvasW - 5, y: y0 + letterH - 2, fontSize: 8, fill: T.dim, textAnchor: 'end', fontFamily: 'ui-monospace, monospace' }, 'base')
           ];
-          return h('svg', { viewBox: '0 0 ' + canvasW + ' ' + canvasH, style: { background: '#f5f1e6', borderRadius: 8, maxWidth: 380, width: '100%', height: 'auto' } },
+          return h('svg', { viewBox: '0 0 ' + canvasW + ' ' + canvasH, role: 'img', 'aria-label': __alloT('stem.printingpress.custom_letter_preview_accessible_label', 'Custom letter M preview') + ': x-height ' + tfXHeight + ' out of 100, weight ' + tfWeight + ' out of 100, stroke contrast ' + tfContrast + ' out of 100, ' + tfSerif + ' serifs, and width ' + tfWidth + ' out of 100.', style: { background: '#f5f1e6', borderRadius: 8, maxWidth: 380, width: '100%', height: 'auto' } },
             guides.concat(paths)
           );
         }
@@ -12367,7 +12367,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             sectionHeader('🦴', 'The parts of a letter'),
             // SVG diagram of an annotated letter
             h('div', { style: { background: '#f5f1e6', borderRadius: 10, padding: 16, marginBottom: 14 } },
-              h('svg', { viewBox: '0 0 420 240', style: { width: '100%', maxWidth: 500, height: 'auto', display: 'block', margin: '0 auto' } },
+              h('svg', { viewBox: '0 0 420 240', role: 'img', 'aria-label': __alloT('stem.printingpress.letter_anatomy_diagram_accessible_label', 'Annotated word type showing the ascender on t, descenders on y and p, x-height on e, cap-height, baseline, and descender line.'), style: { width: '100%', maxWidth: 500, height: 'auto', display: 'block', margin: '0 auto' } },
                 // Horizontal guides
                 h('line', { x1: 30, y1: 60, x2: 380, y2: 60, stroke: '#888', strokeDasharray: '3,2' }),
                 h('line', { x1: 30, y1: 100, x2: 380, y2: 100, stroke: '#888', strokeDasharray: '3,2' }),
