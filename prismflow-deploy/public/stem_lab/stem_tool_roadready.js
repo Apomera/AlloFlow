@@ -29132,18 +29132,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   h('li', null, __alloT('stem.roadready.count_after_front_car_passes_a_fixed_p', 'Count after front car passes a fixed point'))
                 ),
                 h('h3', { style: { fontSize: '13px', fontWeight: 900, margin: '0 0 6px 0', borderBottom: '1px solid #000' } }, __alloT('stem.roadready.stopping_distance_typical', 'STOPPING DISTANCE (typical)')),
-                h('table', { style: { width: '100%', fontSize: '10px', borderCollapse: 'collapse' } },
+                h('table', { 'aria-label': __alloT('stem.roadready.stopping_distance_table_label', 'Typical stopping distance by road condition'), style: { width: '100%', fontSize: '10px', borderCollapse: 'collapse' } },
                   h('thead', null, h('tr', null,
-                    h('th', { style: { borderBottom: '1px solid #000', padding: '2px 4px', textAlign: 'left' } }, __alloT('stem.roadready.speed', 'Speed')),
-                    h('th', { style: { borderBottom: '1px solid #000', padding: '2px 4px', textAlign: 'right' } }, 'Dry'),
-                    h('th', { style: { borderBottom: '1px solid #000', padding: '2px 4px', textAlign: 'right' } }, 'Wet'),
-                    h('th', { style: { borderBottom: '1px solid #000', padding: '2px 4px', textAlign: 'right' } }, 'Ice')
+                    h('th', { scope: 'col', style: { borderBottom: '1px solid #000', padding: '2px 4px', textAlign: 'left' } }, __alloT('stem.roadready.speed', 'Speed')),
+                    h('th', { scope: 'col', style: { borderBottom: '1px solid #000', padding: '2px 4px', textAlign: 'right' } }, 'Dry'),
+                    h('th', { scope: 'col', style: { borderBottom: '1px solid #000', padding: '2px 4px', textAlign: 'right' } }, 'Wet'),
+                    h('th', { scope: 'col', style: { borderBottom: '1px solid #000', padding: '2px 4px', textAlign: 'right' } }, 'Ice')
                   )),
                   h('tbody', null,
-                    h('tr', null, h('td', null, __alloT('stem.roadready.25_mph', '25 mph')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.60_ft', '60 ft')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.95_ft', '95 ft')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.250_ft', '250 ft'))),
-                    h('tr', null, h('td', null, __alloT('stem.roadready.35_mph', '35 mph')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.105_ft', '105 ft')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.170_ft', '170 ft')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.470_ft', '470 ft'))),
-                    h('tr', null, h('td', null, __alloT('stem.roadready.55_mph', '55 mph')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.225_ft', '225 ft')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.385_ft', '385 ft')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.1100_ft', '1100 ft'))),
-                    h('tr', null, h('td', null, __alloT('stem.roadready.65_mph', '65 mph')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.295_ft', '295 ft')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.510_ft', '510 ft')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.1500_ft', '1500 ft')))
+                    h('tr', null, h('th', { scope: 'row', style: { textAlign: 'left', fontWeight: 700 } }, __alloT('stem.roadready.25_mph', '25 mph')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.60_ft', '60 ft')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.95_ft', '95 ft')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.250_ft', '250 ft'))),
+                    h('tr', null, h('th', { scope: 'row', style: { textAlign: 'left', fontWeight: 700 } }, __alloT('stem.roadready.35_mph', '35 mph')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.105_ft', '105 ft')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.170_ft', '170 ft')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.470_ft', '470 ft'))),
+                    h('tr', null, h('th', { scope: 'row', style: { textAlign: 'left', fontWeight: 700 } }, __alloT('stem.roadready.55_mph', '55 mph')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.225_ft', '225 ft')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.385_ft', '385 ft')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.1100_ft', '1100 ft'))),
+                    h('tr', null, h('th', { scope: 'row', style: { textAlign: 'left', fontWeight: 700 } }, __alloT('stem.roadready.65_mph', '65 mph')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.295_ft', '295 ft')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.510_ft', '510 ft')), h('td', { style: { textAlign: 'right' } }, __alloT('stem.roadready.1500_ft', '1500 ft')))
                   )
                 ),
                 h('div', { style: { fontSize: '9px', fontStyle: 'italic', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '2px' } }, __alloT('stem.roadready.1_5s_reaction_time_braking_doubles_eac', '1.5s reaction time. Braking doubles each ~20 mph.'))
@@ -29935,11 +29935,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { fontSize: '11px', color: '#ddd6fe' } }, __alloT('stem.roadready.mass_drag_area_mpg_why_these_numbers_m', 'Mass, drag, area, MPG — why these numbers matter'))
           ),
           h('div', { style: { overflowX: 'auto' } },
-            h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: '11px' } },
+            h('table', { 'aria-label': __alloT('stem.roadready.vehicle_science_comparison_table_label', 'Vehicle science comparison'), style: { width: '100%', borderCollapse: 'collapse', fontSize: '11px' } },
               h('thead', null,
                 h('tr', { style: { background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontWeight: 700, textTransform: 'uppercase', fontSize: '10px' } },
                   ['', 'Vehicle', 'Mass (kg)', 'Cd', 'A (m²)', 'Cd×A', 'City MPG', 'Hwy MPG', 'Type'].map(function(col, ci) {
-                    return h('th', { key: ci, style: { padding: '8px', textAlign: 'left', borderBottom: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } }, col);
+                    return h('th', { key: ci, scope: 'col', style: { padding: '8px', textAlign: 'left', borderBottom: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } }, col);
                   })
                 )
               ),
@@ -29947,7 +29947,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 VEHICLES.map(function(v) {
                   return h('tr', { key: v.id, style: { borderBottom: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))' } },
                     h('td', { style: { padding: '8px', fontSize: '18px' } }, v.icon),
-                    h('td', { style: { padding: '8px', fontWeight: 700, color: '#fff' } }, v.name),
+                    h('th', { scope: 'row', style: { padding: '8px', fontWeight: 700, color: '#fff', textAlign: 'left' } }, v.name),
                     h('td', { style: { padding: '8px', fontFamily: 'monospace' } }, v.mass),
                     h('td', { style: { padding: '8px', fontFamily: 'monospace', color: v.cd <= 0.26 ? '#4ade80' : v.cd <= 0.35 ? '#fbbf24' : '#ef4444' } }, v.cd),
                     h('td', { style: { padding: '8px', fontFamily: 'monospace' } }, v.area),
@@ -30261,9 +30261,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ m: iq.mass, s: iq.speed, d: iq.decel, g: iq.grade, sd: stopDist.toFixed(1), st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#e2e8f0', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.roadready.log', '📋 Log')),
               h('button', { onClick: function() { setIQ({ mass: 1500, speed: 50, decel: 7, grade: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: '#fff', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, __alloT('stem.roadready.reset_3', '↺ Reset'))
             ),
-            (iq.log || []).length > 0 && h('table', { style: { fontSize: 10, width: '100%', borderCollapse: 'collapse', color: '#475569', marginBottom: 10 } },
+            (iq.log || []).length > 0 && h('table', { 'aria-label': __alloT('stem.roadready.braking_experiment_log', 'Braking experiment log'), style: { fontSize: 10, width: '100%', borderCollapse: 'collapse', color: '#475569', marginBottom: 10 } },
               h('thead', null, h('tr', { style: { background: '#f1f5f9' } },
-                ['mass', 'kph', 'decel', 'grade°', 'stop m', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, style: { padding: '4px 6px', border: '1px solid #cbd5e1', textAlign: 'left' } }, c); }))),
+                ['mass', 'kph', 'decel', 'grade°', 'stop m', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', style: { padding: '4px 6px', border: '1px solid #cbd5e1', textAlign: 'left' } }, c); }))),
               h('tbody', null, iq.log.map(function(o, idx) {
                 return h('tr', { key: 'lr' + idx },
                   h('td', { style: { padding: '4px 6px', border: '1px solid #cbd5e1', fontFamily: 'monospace' } }, o.m),
@@ -30448,11 +30448,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // Results table
           h('div', { style: { overflowX: 'auto' } },
-            h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: '11px' } },
+            h('table', { 'aria-label': __alloT('stem.roadready.fuel_cost_comparison', 'Fuel cost comparison by vehicle'), style: { width: '100%', borderCollapse: 'collapse', fontSize: '11px' } },
               h('thead', null,
                 h('tr', { style: { background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontWeight: 700, fontSize: '10px' } },
                   ['', 'Vehicle', 'AVG MPG', 'GAL/yr', '$/year', '$/mile', 'vs Sedan'].map(function(col, ci) {
-                    return h('th', { key: ci, style: { padding: '8px', textAlign: 'left', borderBottom: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } }, col);
+                    return h('th', { key: ci, scope: 'col', style: { padding: '8px', textAlign: 'left', borderBottom: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } }, col);
                   })
                 )
               ),
@@ -30469,7 +30469,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var diff = costYr - sedanCost;
                   return h('tr', { key: v.id, style: { borderBottom: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))' } },
                     h('td', { style: { padding: '8px', fontSize: '16px' } }, v.icon),
-                    h('td', { style: { padding: '8px', fontWeight: 700, color: '#fff' } }, v.name),
+                    h('th', { scope: 'row', style: { padding: '8px', fontWeight: 700, color: '#fff', textAlign: 'left' } }, v.name),
                     h('td', { style: { padding: '8px', fontFamily: 'monospace' } }, avgMpg.toFixed(0) + (isEV ? 'e' : '')),
                     h('td', { style: { padding: '8px', fontFamily: 'monospace' } }, isEV ? kwhYr.toFixed(0) + ' kWh' : galYr.toFixed(0)),
                     h('td', { style: { padding: '8px', fontFamily: 'monospace', fontWeight: 700, color: costYr < sedanCost ? '#4ade80' : costYr > sedanCost * 1.2 ? '#ef4444' : '#fbbf24' } }, '$' + costYr.toFixed(0)),
@@ -31578,11 +31578,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // Comparison table
           h('div', { style: { overflowX: 'auto' } },
-            h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: '11px' } },
+            h('table', { 'aria-label': __alloT('stem.roadready.weather_impact_comparison', 'Weather impact comparison'), style: { width: '100%', borderCollapse: 'collapse', fontSize: '11px' } },
               h('thead', null,
                 h('tr', { style: { background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))', fontSize: '10px', fontWeight: 700, color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } },
                   ['Condition', 'μ (friction)', 'Stop Dist', 'vs Dry', 'Following', 'Visibility'].map(function(col, i) {
-                    return h('th', { key: i, style: { padding: '8px', textAlign: 'left', borderBottom: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } }, col);
+                    return h('th', { key: i, scope: 'col', style: { padding: '8px', textAlign: 'left', borderBottom: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } }, col);
                   })
                 )
               ),
@@ -31593,7 +31593,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var drySD = stoppingDistance(wcSpeed, 'clear', 1.5);
                   var ratio = sd.total_ft / drySD.total_ft;
                   return h('tr', { key: w.id, style: { borderBottom: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))' } },
-                    h('td', { style: { padding: '8px', fontWeight: 700, color: w.color } }, w.label),
+                    h('th', { scope: 'row', style: { padding: '8px', fontWeight: 700, color: w.color, textAlign: 'left' } }, w.label),
                     h('td', { style: { padding: '8px', fontFamily: 'monospace' } }, w.mu),
                     h('td', { style: { padding: '8px', fontFamily: 'monospace', fontWeight: 700, color: w.color } }, Math.round(sd.total_ft) + ' ft'),
                     h('td', { style: { padding: '8px', fontFamily: 'monospace', color: ratio > 2 ? '#ef4444' : ratio > 1.3 ? '#f59e0b' : '#4ade80' } }, ratio.toFixed(1) + '×'),
