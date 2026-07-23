@@ -17181,7 +17181,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('ellipse', { cx: 47, cy: 125, rx: 8, ry: 5, fill: '#22c55e' }),
                                             React.createElement('text', { x: 50, y: 170, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, __alloT('stem.solarsystem.earth_8', 'Earth')),
                                             asteroids.filter(function(a) { return a.alive; }).map(function(a) {
-                                              return React.createElement('g', { key: a.id, onClick: function() { blast(a.id); }, style: { cursor: 'crosshair' } },
+                                              return React.createElement('g', { key: a.id, role: 'button', tabIndex: 0, 'aria-label': __alloT('stem.solarsystem.destroy_asteroid', 'Destroy asteroid') + ' ' + a.id, onClick: function() { blast(a.id); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); blast(a.id); } }, style: { cursor: 'crosshair' } },
                                                 React.createElement('circle', { cx: a.x, cy: a.y, r: a.r * 2, fill: '#fbbf24', opacity: 0.2 }),
                                                 React.createElement('circle', { cx: a.x, cy: a.y, r: a.r, fill: '#92400e', stroke: '#fbbf24', strokeWidth: 1 }),
                                                 React.createElement('circle', { cx: a.x - a.r/3, cy: a.y - a.r/3, r: a.r/3, fill: '#451a03' }),
@@ -17193,6 +17193,7 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'mt-2 flex gap-1' },
+                                          React.createElement('button', { disabled: asteroids.filter(function(a) { return a.alive; }).length === 0, onClick: function() { var next = asteroids.filter(function(a) { return a.alive; })[0]; if (next) blast(next.id); }, className: 'transition-colors flex-1 px-3 py-1.5 rounded font-bold text-xs bg-amber-500 text-slate-950 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed' }, __alloT('stem.solarsystem.destroy_next_asteroid', 'Destroy next asteroid')),
                                           React.createElement('button', { onClick: function() { reset(); }, className: 'transition-colors flex-1 px-3 py-1.5 rounded font-bold text-xs bg-red-500 text-white hover:bg-red-600' }, __alloT('stem.solarsystem.new_wave', '🚀 New Wave')),
                                           React.createElement('div', { className: 'flex-1 text-center text-xs font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Hits: ' + earthHits + ' • Asteroids left: ' + asteroids.filter(function(a) { return a.alive; }).length)
                                         ),
@@ -18244,7 +18245,7 @@ const d = labToolData.solarSystem || {};
                                               return React.createElement('circle', { key: 'tx' + i, cx: sx, cy: sy, r: 1 + (i % 3), fill: '#4b5563', opacity: 0.7 });
                                             }),
                                             craters.map(function(c) {
-                                              return React.createElement('g', { key: c.id, onClick: function() { find(c.id); }, style: { cursor: 'crosshair' } },
+                                              return React.createElement('g', { key: c.id, role: 'button', tabIndex: 0, 'aria-disabled': c.found ? 'true' : undefined, 'aria-label': __alloT('stem.solarsystem.crater', 'Crater') + ' ' + c.id + (c.found ? ' — ' + __alloT('stem.solarsystem.found', 'found') : ''), onClick: function() { if (!c.found) find(c.id); }, onKeyDown: function(e) { if (!c.found && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); find(c.id); } }, style: { cursor: c.found ? 'default' : 'crosshair' } },
                                                 React.createElement('circle', { cx: c.x, cy: c.y, r: c.r, fill: '#374151', stroke: '#1f2937', strokeWidth: 1 }),
                                                 React.createElement('circle', { cx: c.x - c.r/4, cy: c.y - c.r/4, r: c.r * 0.3, fill: '#1f2937' }),
                                                 c.found && React.createElement('circle', { cx: c.x, cy: c.y, r: c.r + 2, fill: 'none', stroke: '#22c55e', strokeWidth: 2 })
@@ -18255,6 +18256,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-2 flex items-center gap-2' },
                                           React.createElement('div', { className: 'flex-1 text-center text-xs font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Found: ' + found + ' / ' + craters.length),
+                                          React.createElement('button', { disabled: found === craters.length, onClick: function() { var next = craters.filter(function(c) { return !c.found; })[0]; if (next) find(next.id); }, className: 'transition-colors px-3 py-1 rounded font-bold text-xs bg-amber-500 text-slate-950 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed' }, __alloT('stem.solarsystem.mark_next_crater', 'Mark next crater')),
                                           React.createElement('button', { onClick: function() { reset(); }, className: 'transition-colors px-3 py-1 rounded font-bold text-xs bg-slate-500 text-white hover:bg-slate-600' }, __alloT('stem.solarsystem.reset_3', 'Reset'))
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
