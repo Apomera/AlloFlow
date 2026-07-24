@@ -8,9 +8,9 @@ const { revisions, wave08WarningSnapshot } = require('../dev-tools/eppp_option_f
 
 const root = process.cwd();
 const sourcePath = path.join(root, 'test_prep', 'eppp_native_items.json');
-const deployPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_native_items.json');
+const deployPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_native_items.json');
 const catalogPath = path.join(root, 'test_prep', 'reference_catalog.json');
-const deployCatalogPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'reference_catalog.json');
+const deployCatalogPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'reference_catalog.json');
 const auditPath = path.join(root, 'test_prep', 'eppp_option_feedback_audit_wave_09.json');
 const diagnosticsPath = path.join(root, 'test_prep', 'eppp_option_feedback_diagnostics.json');
 const distractorDiagnosticsPath = path.join(root, 'test_prep', 'eppp_distractor_quality_diagnostics.json');

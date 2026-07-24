@@ -39,8 +39,8 @@ describe('shared-block sync gate', () => {
   });
   it('deploy mirrors match root copies', () => {
     const read = (f) => readFileSync(resolve(process.cwd(), f), 'utf-8').replace(/\r\n/g, '\n');
-    expect(read('prismflow-deploy/public/video_studio_module.js')).toBe(read('video_studio_module.js'));
-    expect(read('prismflow-deploy/public/video_studio/video_studio.html')).toBe(read('video_studio/video_studio.html'));
+    expect(read('desktop/web-app/public/video_studio_module.js')).toBe(read('video_studio_module.js'));
+    expect(read('desktop/web-app/public/video_studio/video_studio.html')).toBe(read('video_studio/video_studio.html'));
   });
   it('keeps the popup inline script syntactically valid', () => {
     const html = readFileSync(resolve(process.cwd(), 'video_studio/video_studio.html'), 'utf-8');
@@ -429,13 +429,13 @@ describe('Scene builder popup wiring', () => {
     // files — the whole ffmpeg-core.wasm froze the CDN 2026-07-03), stitched
     // at load time by resolveFfmpegWasmUrl() in video_studio.html.
     const pairs = [
-      ['video_studio/vendor/ffmpeg/ffmpeg/index.js', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/ffmpeg/index.js'],
-      ['video_studio/vendor/ffmpeg/ffmpeg/worker.js', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/ffmpeg/worker.js'],
-      ['video_studio/vendor/ffmpeg/core/ffmpeg-core.js', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/core/ffmpeg-core.js'],
-      ['video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.part0', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.part0'],
-      ['video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.part1', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.part1'],
-      ['video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.parts.json', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.parts.json'],
-      ['video_studio/vendor/ffmpeg/THIRD_PARTY_NOTICES.md', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/THIRD_PARTY_NOTICES.md'],
+      ['video_studio/vendor/ffmpeg/ffmpeg/index.js', 'desktop/web-app/public/video_studio/vendor/ffmpeg/ffmpeg/index.js'],
+      ['video_studio/vendor/ffmpeg/ffmpeg/worker.js', 'desktop/web-app/public/video_studio/vendor/ffmpeg/ffmpeg/worker.js'],
+      ['video_studio/vendor/ffmpeg/core/ffmpeg-core.js', 'desktop/web-app/public/video_studio/vendor/ffmpeg/core/ffmpeg-core.js'],
+      ['video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.part0', 'desktop/web-app/public/video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.part0'],
+      ['video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.part1', 'desktop/web-app/public/video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.part1'],
+      ['video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.parts.json', 'desktop/web-app/public/video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.parts.json'],
+      ['video_studio/vendor/ffmpeg/THIRD_PARTY_NOTICES.md', 'desktop/web-app/public/video_studio/vendor/ffmpeg/THIRD_PARTY_NOTICES.md'],
     ];
     pairs.forEach(([rootFile, deployFile]) => {
       const rootSize = statSync(resolve(process.cwd(), rootFile)).size;

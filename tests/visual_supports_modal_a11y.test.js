@@ -20,7 +20,7 @@ describe('visual supports modal accessibility', () => {
 
   it('uses a 24 pixel animation target and synchronized artifacts', () => {
     expect(source).toContain('width: 24, height: 24, padding: 0');
-    expect(fs.readFileSync('prismflow-deploy/src/view_visual_supports_modal_source.jsx', 'utf8')).toBe(source);
-    expect(fs.readFileSync('prismflow-deploy/public/view_visual_supports_modal_module.js', 'utf8')).toBe(fs.readFileSync('view_visual_supports_modal_module.js', 'utf8'));
+    expect(fs.readFileSync('desktop/web-app/src/view_visual_supports_modal_source.jsx', 'utf8')).toBe(source);
+    expect(fs.readFileSync('desktop/web-app/public/view_visual_supports_modal_module.js', 'utf8')).toBe(fs.readFileSync('view_visual_supports_modal_module.js', 'utf8'));
   });
 });

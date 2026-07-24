@@ -72,7 +72,7 @@ describe('EPPP 1,500-question curation release', () => {
 
   it('publishes matching source and deployment curation records with no pending items', () => {
     const curation = read('test_prep/eppp_legacy/curation_1500.json');
-    const deployed = read('prismflow-deploy/public/test_prep/eppp_legacy/curation_1500.json');
+    const deployed = read('desktop/web-app/public/test_prep/eppp_legacy/curation_1500.json');
 
     expect(curation.summary).toMatchObject({
       targetItems: 1500,

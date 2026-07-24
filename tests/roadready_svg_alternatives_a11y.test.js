@@ -7,7 +7,7 @@ import {
 } from './helpers/stem_widgets_smoke_harness.js';
 
 const SOURCE = 'stem_lab/stem_tool_roadready.js';
-const DEPLOY = 'prismflow-deploy/public/stem_lab/stem_tool_roadready.js';
+const DEPLOY = 'desktop/web-app/public/stem_lab/stem_tool_roadready.js';
 
 const DRIVING_STATS = {
   safetyScore: 88,

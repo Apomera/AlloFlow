@@ -14,7 +14,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = process.cwd();
-const MODULES = path.join(ROOT, 'prismflow-deploy', 'node_modules');
+const MODULES = path.join(ROOT, 'desktop/web-app', 'node_modules');
 const QUIET = process.argv.includes('--quiet');
 const WRITE_IDX = process.argv.indexOf('--write');
 const REPORT_PATH = WRITE_IDX >= 0 && process.argv[WRITE_IDX + 1]

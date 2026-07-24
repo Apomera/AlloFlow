@@ -16,7 +16,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'view_gemini_bridge_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_gemini_bridge_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'view_gemini_bridge_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'view_gemini_bridge_module.js');
 const TMP = path.join(ROOT, '_tmp_view_gemini_bridge_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) { console.error('[ViewGeminiBridge] Source not found'); process.exit(1); }

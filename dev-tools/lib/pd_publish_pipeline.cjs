@@ -744,8 +744,8 @@ function regularRuntimeFile(filePath) {
 
 function buildRuntimeBinding(root, checks) {
   const definitions = [
-    { id: 'pd-core', sourcePath: 'pd_core_module.js', deployPath: 'prismflow-deploy/public/pd_core_module.js' },
-    { id: 'pd-catalog-renderer', sourcePath: 'catalog_module.js', deployPath: 'prismflow-deploy/public/catalog_module.js' },
+    { id: 'pd-core', sourcePath: 'pd_core_module.js', deployPath: 'desktop/web-app/public/pd_core_module.js' },
+    { id: 'pd-catalog-renderer', sourcePath: 'catalog_module.js', deployPath: 'desktop/web-app/public/catalog_module.js' },
   ];
   const components = definitions.map((definition) => {
     const source = regularRuntimeFile(path.join(root, definition.sourcePath));
@@ -773,9 +773,9 @@ function buildRuntimeBinding(root, checks) {
   });
 
   const stylePaths = [
-    'prismflow-deploy/src/index.css',
-    'prismflow-deploy/tailwind.config.js',
-    'prismflow-deploy/package.json',
+    'desktop/web-app/src/index.css',
+    'desktop/web-app/tailwind.config.js',
+    'desktop/web-app/package.json',
   ];
   const runtimeAvailable = components.some((component) => component.sourceDigest || component.deployDigest);
   const styleInputs = stylePaths.map((stylePath, index) => {

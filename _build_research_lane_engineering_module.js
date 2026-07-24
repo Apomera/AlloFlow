@@ -5,7 +5,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'research_lane_engineering_source.jsx');
 const OUTPUT = path.join(ROOT, 'research_lane_engineering_module.js');
-const MIRROR = path.join(ROOT, 'prismflow-deploy', 'public', 'research_lane_engineering_module.js');
+const MIRROR = path.join(ROOT, 'desktop/web-app', 'public', 'research_lane_engineering_module.js');
 
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
 

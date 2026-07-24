@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 const read = (path) => readFileSync(resolve(process.cwd(), path), 'utf8');
 const source = read('view_renderers_source.jsx');
 const built = read('view_renderers_module.js');
-const deployed = read('prismflow-deploy/public/view_renderers_module.js');
+const deployed = read('desktop/web-app/public/view_renderers_module.js');
 
 describe('View Renderers WCAG safeguards', () => {
   it('keeps generated artifacts synchronized', () => {

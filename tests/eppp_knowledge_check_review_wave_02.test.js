@@ -39,5 +39,5 @@ describe('EPPP knowledge-check source-review wave 02', () => {
     expect(byId.get('knowledge-check-e77404777e6e9eb3').rationale).toContain('not proof of maltreatment'); expect(byId.get('knowledge-check-d618789af58acc09').rationale).toContain('does not say every adolescent lacks reasoning capacity');
     expect(byId.get('knowledge-check-52708d9f28539b52').rationale).toContain('double-blind? is not a universal solution');
   });
-  it('keeps source and deployment catalog copies synchronized', () => { expect(read('prismflow-deploy/public/test_prep/eppp_learning_library.json')).toEqual(catalog); expect(read('prismflow-deploy/public/test_prep/eppp_learning_library_qa.json')).toEqual(read('test_prep/eppp_learning_library_qa.json')); });
+  it('keeps source and deployment catalog copies synchronized', () => { expect(read('desktop/web-app/public/test_prep/eppp_learning_library.json')).toEqual(catalog); expect(read('desktop/web-app/public/test_prep/eppp_learning_library_qa.json')).toEqual(read('test_prep/eppp_learning_library_qa.json')); });
 });

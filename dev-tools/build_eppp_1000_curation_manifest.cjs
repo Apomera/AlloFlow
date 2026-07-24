@@ -6,7 +6,7 @@ const root=path.resolve(__dirname,'..');
 const qa=JSON.parse(fs.readFileSync(path.join(root,'test_prep','eppp_native_qa.json'),'utf8'));
 const bank=JSON.parse(fs.readFileSync(path.join(root,'test_prep','eppp_native_items.json'),'utf8'));
 const audit=JSON.parse(fs.readFileSync(path.join(root,'test_prep','eppp_native_expansion_1000_audit.json'),'utf8'));
-const outputRoots=[path.join(root,'test_prep','eppp_legacy'),path.join(root,'prismflow-deploy','public','test_prep','eppp_legacy')];
+const outputRoots=[path.join(root,'test_prep','eppp_legacy'),path.join(root,'desktop/web-app','public','test_prep','eppp_legacy')];
 if(bank.length!==1000||qa.summary.totalItems!==1000||qa.summary.passedItems!==1000||qa.summary.status!=='pass')throw new Error('The 1,000-question curation record requires a fully passing 1,000-item bank.');
 const expanded=bank.filter(x=>x.expansionBatch==='native-501-1000');
 if(expanded.length!==500||audit.summary.addedItems!==500||audit.items.length!==500)throw new Error('The expansion audit must cover exactly the added 500 items.');

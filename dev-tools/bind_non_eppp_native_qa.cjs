@@ -7,7 +7,7 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 const sourceDir = path.join(root, 'test_prep');
-const deployDir = path.join(root, 'prismflow-deploy', 'public', 'test_prep');
+const deployDir = path.join(root, 'desktop/web-app', 'public', 'test_prep');
 const reviewedAt = '2026-07-18';
 const sha256 = (value) => crypto.createHash('sha256').update(value).digest('hex');
 const retryableWriteCodes = new Set(['UNKNOWN', 'EBUSY', 'EPERM']);

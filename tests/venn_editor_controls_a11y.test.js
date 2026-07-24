@@ -25,7 +25,7 @@ describe('Venn editor control semantics', () => {
   });
 
   it('keeps generated renderer modules synchronized', () => {
-    expect(readFileSync('prismflow-deploy/public/view_renderers_module.js', 'utf8'))
+    expect(readFileSync('desktop/web-app/public/view_renderers_module.js', 'utf8'))
       .toBe(readFileSync('view_renderers_module.js', 'utf8'));
   });
 });

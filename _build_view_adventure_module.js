@@ -94,5 +94,5 @@ const moduleSrc = `/**
 `;
 
 fs.writeFileSync('view_adventure_module.js', moduleSrc);
-fs.writeFileSync('prismflow-deploy/public/view_adventure_module.js', moduleSrc);
+fs.writeFileSync('desktop/web-app/public/view_adventure_module.js', moduleSrc);
 console.log('Wrote view_adventure_module.js (' + moduleSrc.length + ' bytes)');

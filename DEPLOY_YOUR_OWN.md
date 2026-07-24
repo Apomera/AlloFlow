@@ -19,7 +19,7 @@ Prerequisites: Node.js 18 or newer for the web build, a Google account, and the 
 npm install -g firebase-tools
 firebase login
 git clone https://github.com/Apomera/AlloFlow.git
-cd AlloFlow/prismflow-deploy
+cd AlloFlow/desktop/web-app
 npm install
 cp .env.example .env
 ```
@@ -55,7 +55,7 @@ npm run build
 firebase deploy --only hosting
 ```
 
-The default [firebase.json](./prismflow-deploy/firebase.json) contains no Functions source, Function rewrites, or Firestore rule deployment. A plain `firebase deploy` is therefore also hosting-only.
+The default [firebase.json](./desktop/web-app/firebase.json) contains no Functions source, Function rewrites, or Firestore rule deployment. A plain `firebase deploy` is therefore also hosting-only.
 
 In this mode:
 
@@ -133,7 +133,7 @@ App Check reduces off-app abuse; it is not authorization. Security Rules protect
 
 ```bash
 git pull origin main
-cd prismflow-deploy
+cd desktop/web-app
 npm install
 npm run build
 firebase deploy --only hosting

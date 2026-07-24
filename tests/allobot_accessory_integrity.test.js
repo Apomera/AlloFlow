@@ -27,7 +27,7 @@ const read = (p) => fs.readFileSync(path.join(root, p), 'utf8');
 
 const SRC = read('allobot_source.jsx');
 const MOD = read('allobot_module.js');
-const PUB = read('prismflow-deploy/public/allobot_module.js');
+const PUB = read('desktop/web-app/public/allobot_module.js');
 const ANTI = read('AlloFlowANTI.txt');
 
 // Accessory keys the bot can actually display: everything getBotAccessoryInternal

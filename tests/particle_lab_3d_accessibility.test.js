@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 
 const TOOL_PATHS = [
   'stem_lab/stem_tool_particlelab3d.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_particlelab3d.js',
+  'desktop/web-app/public/stem_lab/stem_tool_particlelab3d.js',
 ];
 
 describe('Particle Lab 3D interaction surface accessibility contract', () => {
@@ -147,7 +147,7 @@ describe('STEM Lab Three.js loading — single canonical path (sweep)', () => {
 describe('STEM Lab host 3D loader resilience (stem_lab_module.js)', () => {
   const MODULE_PATHS = [
     'stem_lab/stem_lab_module.js',
-    'prismflow-deploy/public/stem_lab/stem_lab_module.js',
+    'desktop/web-app/public/stem_lab/stem_lab_module.js',
   ];
 
   it('exposes a shared resilient script loader on the StemLab registry', () => {

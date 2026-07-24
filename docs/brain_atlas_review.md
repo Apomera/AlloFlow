@@ -4,7 +4,7 @@ _Generated 2026-06-15 via a 32-agent review workflow (map -> 8-dimension analysi
 
 > **Historical review snapshot, not current open-bug status (2026-07-09):** This June review is preserved for its evidence trail and neuroscience/accuracy concerns. Later code and QA work may have changed individual findings; verify against current `stem_lab/stem_tool_brainatlas.js`, mirrors, tests, and a11y/visual reports before treating an item as open.
 
-**Target:** `stem_lab/stem_tool_brainatlas.js` (~4663 lines, hand-maintained; `build.js` mirrors root → `prismflow-deploy/public/` at deploy). Deploy is HELD — this is analysis only.
+**Target:** `stem_lab/stem_tool_brainatlas.js` (~4663 lines, hand-maintained; `build.js` mirrors root → `desktop/web-app/public/` at deploy). Deploy is HELD — this is analysis only.
 
 **Bottom line:** This is the most scientifically careful tool in the STEM Lab. The clinical neuroanatomy is, view after view, *correct at USMLE depth* — and verified as such. There is **one hard factual error** (cerebellum neuron fraction), **a small cluster of localizationism/overclaim string-edits** (dopamine, insula, angular/supramarginal, ACC, gamma, callosum maturation, alpha-wave pop-neuro, plus two pharm/timeline nits), and **three structural problems that matter more than any single fact**: an **ungated AI tutor** (house-norm violation), **two dead quest hooks** that can never complete, and **no golden-master test** for a 4663-line file. Do **not** manufacture an accuracy crisis here — the accuracy fixes are a tidy, low-risk string batch. The real work is governance + safety net + audience fit.
 
@@ -126,7 +126,7 @@ The scaffolding is real and commendable, but four fixable gaps:
 
 ## 5. Prioritized roadmap
 
-All edits respect: deploy is HELD; root file is hand-maintained and mirrored to `prismflow-deploy/public/` by `build.js` at deploy; gated-AI + integrity norms; no mutating agent fan-out — apply directly, `node --check` after, re-baseline golden masters deliberately.
+All edits respect: deploy is HELD; root file is hand-maintained and mirrored to `desktop/web-app/public/` by `build.js` at deploy; gated-AI + integrity norms; no mutating agent fan-out — apply directly, `node --check` after, re-baseline golden masters deliberately.
 
 ### Quick wins (S)
 
@@ -165,7 +165,7 @@ All edits respect: deploy is HELD; root file is hand-maintained and mirrored to 
 2. **QW-1 applied** to the root file: A1-A5 (factually-wrong) + B1-B9 (overclaim hedges) — and **explicitly NOT** the §3c rejected items (GABA ~40%, insula "disgust" stays). `node --check` clean.
 3. **QW-2 applied:** the one-clause honesty instruction in the AI prompt (L4547-4549), 2-3-sentence cap preserved.
 4. **Golden-master assertions added & re-baselined deliberately** (`vitest -u`, eyeball the diff): cerebellum `fn` matches `/~?80%|four-fifths/` and not `/50% of brain/`; alpha desc has no "subconscious"; gamma desc contains a hedge token. The diff is exactly the ~14 intended strings + 3 alpha copies — nothing else moves.
-5. Verified against **real bytes** before/after (not assumed); root-only (deploy held — `build.js` mirrors to `prismflow-deploy/public/` at the next deploy, not now); concurrent-session check on the shared tree before committing your files by path.
+5. Verified against **real bytes** before/after (not assumed); root-only (deploy held — `build.js` mirrors to `desktop/web-app/public/` at the next deploy, not now); concurrent-session check on the shared tree before committing your files by path.
 
 **Out of scope for this slice (next slices):** BB-2 (AI gating — needs the live `ctx` flag confirmed), QW-3/QW-4 (quest + a11y, independent), BB-3/BB-4 (UDL tier, EEG buttons, same-view distractors).
 

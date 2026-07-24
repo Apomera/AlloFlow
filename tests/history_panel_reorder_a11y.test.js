@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 const root = process.cwd();
 const source = readFileSync(resolve(root, 'view_history_panel_source.jsx'), 'utf8');
 const built = readFileSync(resolve(root, 'view_history_panel_module.js'), 'utf8');
-const deployed = readFileSync(resolve(root, 'prismflow-deploy/public/view_history_panel_module.js'), 'utf8');
+const deployed = readFileSync(resolve(root, 'desktop/web-app/public/view_history_panel_module.js'), 'utf8');
 
 describe('HistoryPanel pointer-independent resource controls', () => {
   it('exposes a named list with a dedicated pointer and keyboard reorder handle', () => {

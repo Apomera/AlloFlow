@@ -47,7 +47,7 @@
                                           },
                              "adapterPaths":  [
                                                   "alphafold_explorer/alphafold_explorer.html",
-                                                  "prismflow-deploy/public/alphafold_explorer/alphafold_explorer.html"
+                                                  "desktop/web-app/public/alphafold_explorer/alphafold_explorer.html"
                                               ],
                              "captureFixturePath":  "dev-tools/fixtures/tool-integrations/alphafold.capture.json",
                              "sdkRequired":  true
@@ -100,7 +100,7 @@
                                           },
                              "adapterPaths":  [
                                                   "text_inquiry/text_inquiry.html",
-                                                  "prismflow-deploy/public/text_inquiry/text_inquiry.html"
+                                                  "desktop/web-app/public/text_inquiry/text_inquiry.html"
                                               ],
                              "captureFixturePath":  "dev-tools/fixtures/tool-integrations/text_inquiry.capture.json",
                              "sdkRequired":  true
@@ -110,7 +110,7 @@
                 "version":  "1.0.0",
                 "paths":  [
                               "tool_integration_sdk.js",
-                              "prismflow-deploy/public/tool_integration_sdk.js"
+                              "desktop/web-app/public/tool_integration_sdk.js"
                           ],
                 "documentationPath":  "docs/tool_integration_sdk.md",
                 "templateContractPath":  "docs/tool-integration-template/contract.json",
@@ -125,11 +125,11 @@
                                  "sourceUrl":  "https://github.com/spencermountain/compromise",
                                  "assetPaths":  [
                                                     "vendor/compromise/compromise.js",
-                                                    "prismflow-deploy/public/vendor/compromise/compromise.js"
+                                                    "desktop/web-app/public/vendor/compromise/compromise.js"
                                                 ],
                                  "licensePaths":  [
                                                       "vendor/compromise/LICENSE",
-                                                      "prismflow-deploy/public/vendor/compromise/LICENSE"
+                                                      "desktop/web-app/public/vendor/compromise/LICENSE"
                                                   ]
                              }
                          ],
@@ -137,7 +137,7 @@
                              "version":  "1.0.0",
                              "paths":  [
                                            "annotation_inquiry_bridge.js",
-                                           "prismflow-deploy/public/annotation_inquiry_bridge.js"
+                                           "desktop/web-app/public/annotation_inquiry_bridge.js"
                                        ]
                          },
     "evidenceGraph":  {
@@ -145,7 +145,7 @@
                           "schemaVersion":  1,
                           "paths":  [
                                         "research_evidence_graph.js",
-                                        "prismflow-deploy/public/research_evidence_graph.js"
+                                        "desktop/web-app/public/research_evidence_graph.js"
                                     ],
                           "documentationPath":  "docs/evidence_graph_and_interoperability.md",
                           "standards":  [

@@ -13,7 +13,7 @@ import { resolve } from 'node:path';
 import { setupBehaviorLens } from './helpers/behavior_lens_harness.js';
 
 const require = createRequire(import.meta.url);
-const md = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const md = resolve(process.cwd(), 'desktop/web-app/node_modules');
 let React, ReactDOMClient, act, BehaviorLens, root, host;
 
 beforeAll(() => {

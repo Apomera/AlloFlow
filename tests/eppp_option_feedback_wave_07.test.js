@@ -4,9 +4,9 @@ import { describe, expect, it } from 'vitest';
 
 const root = process.cwd();
 const sourcePath = path.join(root, 'test_prep', 'eppp_native_items.json');
-const deployPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_native_items.json');
+const deployPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_native_items.json');
 const catalogPath = path.join(root, 'test_prep', 'reference_catalog.json');
-const deployCatalogPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'reference_catalog.json');
+const deployCatalogPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'reference_catalog.json');
 const auditPath = path.join(root, 'test_prep', 'eppp_option_feedback_audit_wave_07.json');
 const diagnosticsPath = path.join(root, 'test_prep', 'eppp_option_feedback_diagnostics.json');
 const ids = [

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const PATHS = [
   'stem_lab/stem_tool_platetectonics.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_platetectonics.js',
+  'desktop/web-app/public/stem_lab/stem_tool_platetectonics.js',
 ];
 
 describe('Plate Tectonics boundary evidence simulator', () => {

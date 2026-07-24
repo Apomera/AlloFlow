@@ -16,7 +16,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'module_scope_extras_source.jsx');
 const OUTPUT = path.join(ROOT, 'module_scope_extras_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'module_scope_extras_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'module_scope_extras_module.js');
 const TMP = path.join(ROOT, '_tmp_module_scope_extras_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) {
@@ -107,7 +107,7 @@ try {
     }
     fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) {
-    console.warn('[ModuleScopeExtras] Could not sync to prismflow-deploy/public/:', e.message);
+    console.warn('[ModuleScopeExtras] Could not sync to desktop/web-app/public/:', e.message);
 }
 
 try {

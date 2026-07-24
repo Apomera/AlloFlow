@@ -7,7 +7,7 @@ const read = (file) => readFileSync(resolve(process.cwd(), file), 'utf8');
 describe('read-aloud artifact host integration', () => {
   it('loads the contract, shared audio preparer, and private Persona runtime in both hosts', () => {
     const root = read('AlloFlowANTI.txt');
-    const deploy = read('prismflow-deploy/src/AlloFlowANTI.txt');
+    const deploy = read('desktop/web-app/src/AlloFlowANTI.txt');
     // Hash-agnostic + single-form (2026-07-20): ?v pins are content hashes
     // that change per rebuild, and the deploy-side './' relative rewrite was
     // normalized away — both hosts carry the CDN form and runtime
@@ -39,7 +39,7 @@ describe('read-aloud artifact host integration', () => {
     ['persona-transcript', 'persona-reflection', 'persona-summary', 'persona-session', 'persona-session-read-aloud']
       .forEach((type) => expect(host).toContain("'" + type + "'"));
 
-    for (const file of ['personas_source.jsx', 'personas_module.js', 'prismflow-deploy/public/personas_module.js']) {
+    for (const file of ['personas_source.jsx', 'personas_module.js', 'desktop/web-app/public/personas_module.js']) {
       const source = read(file);
       expect(source).toContain('chatHistory: _chatHistory');
       expect(source).toContain('savedDialogue: _savedDialogue');

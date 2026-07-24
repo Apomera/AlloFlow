@@ -2,7 +2,7 @@
 _Spec v2 — 2026-07-11. Status: **BUILT + unit-tested (17 tests green), LOCAL/UNCOMMITTED.** Canvas smoke pending._
 
 ## Build status (2026-07-11)
-- Implemented in `timeline_studio_module.js` (+ synced `prismflow-deploy/public/` copy, byte-identical).
+- Implemented in `timeline_studio_module.js` (+ synced `desktop/web-app/public/` copy, byte-identical).
 - Helpers exposed on `window.AlloModules.TimelineStudioHelpers` for tests/reuse.
 - Tests: `tests/timeline_topic_mode.test.js` — 17 pass (attachSourcesToEvents incl.
   missing/partial/null supports + dedupe + omitted-startIndex; coerceTimeline
@@ -117,6 +117,6 @@ coerceTimeline(...) → render with per-event badges
 - Canvas smoke: French Revolution topic; verify badges, footer sources, paste-mode regression.
 
 ## Files touched
-- `timeline_studio_module.js` (+ its `prismflow-deploy/public/` copy — keep in sync; module is hand-maintained JS, no build script)
+- `timeline_studio_module.js` (+ its `desktop/web-app/public/` copy — keep in sync; module is hand-maintained JS, no build script)
 - `ui_strings.js` + lang packs for new strings (i18n wave later; English fallbacks day 1)
 - No changes to `timeline_revision_*` or `content_engine_*`.

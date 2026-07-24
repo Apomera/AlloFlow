@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const ROCKS_PATHS = [
   'stem_lab/stem_tool_rocks.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_rocks.js',
+  'desktop/web-app/public/stem_lab/stem_tool_rocks.js',
 ];
 
 describe('rocks canvas animation loops', () => {

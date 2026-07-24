@@ -70,7 +70,7 @@ jobs:
           cache: 'npm'
       - run: npm install --no-audit --no-fund
       - name: Install React 18 for the Adventure browser harness
-        run: npm install --no-audit --no-fund --no-save --prefix prismflow-deploy react@^18.2.0 react-dom@^18.2.0
+        run: npm install --no-audit --no-fund --no-save --prefix desktop/web-app react@^18.2.0 react-dom@^18.2.0
       - name: Install Playwright Chromium
         run: npx playwright install chromium
       - name: Run deterministic Adventure journeys
@@ -92,10 +92,10 @@ jobs:
           cache: 'npm'
       - run: npm install --no-audit --no-fund
       # The golden-master harnesses render with REAL React 18 resolved from
-      # prismflow-deploy/node_modules (git-ignored, not populated by the root
+      # desktop/web-app/node_modules (git-ignored, not populated by the root
       # install). Install just react + react-dom there so the harnesses load.
       - name: Install React 18 for golden-master harnesses
-        run: npm install --no-audit --no-fund --no-save --prefix prismflow-deploy react@^18.2.0 react-dom@^18.2.0
+        run: npm install --no-audit --no-fund --no-save --prefix desktop/web-app react@^18.2.0 react-dom@^18.2.0
       - name: npm test (golden masters + unit suites)
         run: npm test
 

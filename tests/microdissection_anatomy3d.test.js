@@ -4,11 +4,11 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 
 const CELL_PATHS = [
   'stem_lab/stem_tool_cell.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_cell.js',
+  'desktop/web-app/public/stem_lab/stem_tool_cell.js',
 ];
 const ANATOMY_PATHS = [
   'stem_lab/stem_tool_anatomy.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_anatomy.js',
+  'desktop/web-app/public/stem_lab/stem_tool_anatomy.js',
 ];
 
 beforeEach(() => resetStemLab());

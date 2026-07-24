@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const source = readFileSync('word_sounds_setup_source.jsx', 'utf8');
 const built = readFileSync('word_sounds_setup_module.js', 'utf8');
-const deployed = readFileSync('prismflow-deploy/public/word_sounds_setup_module.js', 'utf8');
+const deployed = readFileSync('desktop/web-app/public/word_sounds_setup_module.js', 'utf8');
 
 describe('Word Sounds setup review regeneration errors', () => {
   it('renders an indexed persistent alert associated with the triggering button', () => {

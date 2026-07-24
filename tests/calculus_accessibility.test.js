@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const sourcePath = path.join(process.cwd(), 'stem_lab', 'stem_tool_calculus.js');
-const publicPath = path.join(process.cwd(), 'prismflow-deploy', 'public', 'stem_lab', 'stem_tool_calculus.js');
+const publicPath = path.join(process.cwd(), 'desktop/web-app', 'public', 'stem_lab', 'stem_tool_calculus.js');
 
 beforeEach(() => resetStemLab());
 

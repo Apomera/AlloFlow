@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 // dev-tools/update_lang_manifest.cjs
 // Scans lang/*.js and (re)writes lang/manifest.json so the fuzzy matcher
-// knows what packs exist. Also mirrors to prismflow-deploy/public/lang/.
+// knows what packs exist. Also mirrors to desktop/web-app/public/lang/.
 
 const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const LANG_DIR = path.join(ROOT, 'lang');
-const DEPLOY_LANG_DIR = path.join(ROOT, 'prismflow-deploy', 'public', 'lang');
+const DEPLOY_LANG_DIR = path.join(ROOT, 'desktop/web-app', 'public', 'lang');
 
 function slugToDisplay(slug) {
   // Convert "spanish_latin_america" -> "Spanish (Latin America)" using a

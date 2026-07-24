@@ -36,6 +36,6 @@ describe('Shared confirmation dialog accessibility', () => {
   });
 
   it('synchronizes the deployable module', () => {
-    expect(fs.readFileSync('prismflow-deploy/public/view_confirm_dialog_module.js', 'utf8')).toBe(fs.readFileSync('view_confirm_dialog_module.js', 'utf8'));
+    expect(fs.readFileSync('desktop/web-app/public/view_confirm_dialog_module.js', 'utf8')).toBe(fs.readFileSync('view_confirm_dialog_module.js', 'utf8'));
   });
 });

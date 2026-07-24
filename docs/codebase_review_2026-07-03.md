@@ -24,7 +24,7 @@ Because this is a very large, actively dirty workspace, the counts below are cur
 | Physical code files | 1,886 | `.js`, `.jsx`, `.mjs`, `.cjs`, `.ts`, `.tsx`, `.html`, `.css`, `.ps1`, `.sh`, `.py`, `.rules`. |
 | Physical code lines | ~5.69M | Inflated by generated modules and deploy/public mirrors. |
 | Exact-hash unique code | 1,499 hashes / ~4.07M lines | Removes byte-identical duplicates only. Generated source/module pairs still count because compiled output differs. |
-| Canonical-ish source cut | 1,250 files / ~2.70M lines | Excludes `prismflow-deploy` mirrors and root `_module.js` files when a matching `_source.jsx` exists. |
+| Canonical-ish source cut | 1,250 files / ~2.70M lines | Excludes `desktop/web-app` mirrors and root `_module.js` files when a matching `_source.jsx` exists. |
 | STEM tool files | 111 | `stem_lab/stem_tool_*.js` on disk. Static scan finds 116 unique `window.StemLab.registerTool(...)` IDs because a few files export aliases or paired tools. |
 | SEL tool files | 70 | `sel_hub/sel_tool_*.js`; one registered ID per file. |
 | Top-level build modules | 151 | `MODULES` entries in `build.js`; includes 4 Open Groove/Music Studio entries. |
@@ -40,7 +40,7 @@ For a file-level size artifact, see [code_size_inventory_2026-07-03.csv](code_si
 
 ### 1. Gemini Canvas forces a single-artifact host
 
-The main app is still centered on `AlloFlowANTI.txt`, compiled to `prismflow-deploy/src/App.jsx`. That looks strange until you remember the primary distribution target: Gemini Canvas. Canvas wants a self-contained artifact and injects platform services, so the host keeps state, role gates, language context, module loading, AI bridges, and runtime shims in one place.
+The main app is still centered on `AlloFlowANTI.txt`, compiled to `desktop/web-app/src/App.jsx`. That looks strange until you remember the primary distribution target: Gemini Canvas. Canvas wants a self-contained artifact and injects platform services, so the host keeps state, role gates, language context, module loading, AI bridges, and runtime shims in one place.
 
 The design cost is a large container. The benefit is very low-friction distribution: a teacher can open one artifact and use a whole toolkit without a district SaaS install.
 
@@ -52,7 +52,7 @@ The feature set is too large to ship as one eager bundle. The codebase uses a hu
 - `loadModule(name, url)` lazy-loads large top-level modules.
 - STEM and SEL tools self-register through `window.StemLab.registerTool` and `window.SelHub.registerTool`.
 - Root `*_source.jsx` files compile to IIFE `*_module.js` CDN modules.
-- `build.js` copies managed modules into `prismflow-deploy/public` and rewrites deploy URLs.
+- `build.js` copies managed modules into `desktop/web-app/public` and rewrites deploy URLs.
 
 This is why there are so many public mirrors and generated files. They are not accidental; they are part of a Canvas plus CDN deployment model.
 

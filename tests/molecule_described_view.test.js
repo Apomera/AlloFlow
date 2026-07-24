@@ -97,7 +97,7 @@ describe('shelf UI wiring (companion window)', () => {
 
 describe('mirror parity', () => {
   it('deploy mirrors match source', () => {
-    expect(readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/molecule_shelf/molecule_shelf.html'), 'utf8')).toBe(shelf);
-    expect(readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/stem_lab/stem_tool_moleculeshelf.js'), 'utf8')).toBe(opener);
+    expect(readFileSync(resolve(process.cwd(), 'desktop/web-app/public/molecule_shelf/molecule_shelf.html'), 'utf8')).toBe(shelf);
+    expect(readFileSync(resolve(process.cwd(), 'desktop/web-app/public/stem_lab/stem_tool_moleculeshelf.js'), 'utf8')).toBe(opener);
   });
 });

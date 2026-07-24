@@ -74,6 +74,6 @@ describe('Learning Lab Emotion + Grounding accessibility', () => {
   it('updates discovery copy and keeps the deployed mirror identical', () => {
     expect(source).toContain("desc: 'Private check-in + optional adaptable grounding tools'");
     expect(source).toContain('Private emotion check-in with optional paced breathing and adaptable grounding prompts.');
-    expect(source).toBe(read('prismflow-deploy/public/stem_lab/stem_tool_learning_lab.js'));
+    expect(source).toBe(read('desktop/web-app/public/stem_lab/stem_tool_learning_lab.js'));
   });
 });

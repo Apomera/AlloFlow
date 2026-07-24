@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 const read = (path) => readFileSync(resolve(process.cwd(), path), 'utf8');
 const source = read('story_forge_source.jsx');
 const built = read('story_forge_module.js');
-const deployed = read('prismflow-deploy/public/story_forge_module.js');
+const deployed = read('desktop/web-app/public/story_forge_module.js');
 
 describe('Story Forge WCAG focus and motion safeguards', () => {
   it('keeps generated artifacts synchronized', () => {

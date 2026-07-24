@@ -14,7 +14,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'view_export_preview_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_export_preview_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'view_export_preview_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'view_export_preview_module.js');
 const TMP = path.join(ROOT, '_tmp_view_export_preview_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) { console.error('[ViewExportPreview] Source not found'); process.exit(1); }

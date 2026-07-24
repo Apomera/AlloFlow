@@ -19,7 +19,7 @@ describe('application shell accessibility remediation', () => {
     expect(app).toContain('<div role="status" aria-live="polite" aria-atomic="true" className="fixed bottom-4');
     expect(bot).toContain("<aside aria-label={t('bot.assistant_landmark') || 'AlloBot assistant'}>");
     const builder = fs.readFileSync('_build_allobot_module.js', 'utf8');
-    expect(builder).toContain("prismflow-deploy', 'public', 'allobot_module.js");
+    expect(builder).toContain("desktop/web-app', 'public', 'allobot_module.js");
   });
   it('uses AA contrast for the AI settings reset button', () => {
     expect(modal).toContain('bg-slate-200 text-slate-700 px-4 py-2.5');

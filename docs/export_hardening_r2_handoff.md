@@ -17,9 +17,9 @@ AlloFlow is a privacy-first education/accessibility tool. It exports a lesson or
 
 ### Build / mirror architecture (important, non-obvious)
 
-- The `view_*_source.jsx` files are **Babel-compiled** into `view_*_module.js` (JSX → `React.createElement`, comments stripped, non-ASCII written as `\uXXXX` escape text). This is done by an **external watcher that was NOT running** during my session, so **I hand-mirrored every edit** from source → `_module.js` → `prismflow-deploy/public/*_module.js`. **A key review task is confirming the hand-mirrored module matches the source semantically** (see §2).
-- `export_handlers_module.js` and `liblouis_braille_loader.js` are **hand-written** (no `.jsx` source). They are edited directly and copied to `prismflow-deploy/public/`.
-- The `prismflow-deploy/public/` copies are what the CDN serves. Root + public copies must stay byte-identical for the module files.
+- The `view_*_source.jsx` files are **Babel-compiled** into `view_*_module.js` (JSX → `React.createElement`, comments stripped, non-ASCII written as `\uXXXX` escape text). This is done by an **external watcher that was NOT running** during my session, so **I hand-mirrored every edit** from source → `_module.js` → `desktop/web-app/public/*_module.js`. **A key review task is confirming the hand-mirrored module matches the source semantically** (see §2).
+- `export_handlers_module.js` and `liblouis_braille_loader.js` are **hand-written** (no `.jsx` source). They are edited directly and copied to `desktop/web-app/public/`.
+- The `desktop/web-app/public/` copies are what the CDN serves. Root + public copies must stay byte-identical for the module files.
 
 ### How to see exactly what changed
 
@@ -112,12 +112,12 @@ Because the compiler watcher was off, I translated each source edit into the com
 
 ```
 # braille canonical is identical root vs public mirror:
-diff liblouis_braille_loader.js prismflow-deploy/public/liblouis_braille_loader.js   # expect no diff
+diff liblouis_braille_loader.js desktop/web-app/public/liblouis_braille_loader.js   # expect no diff
 
 # each view module == its public mirror:
-diff view_pdf_audit_module.js      prismflow-deploy/public/view_pdf_audit_module.js
-diff view_export_preview_module.js prismflow-deploy/public/view_export_preview_module.js
-diff export_handlers_module.js     prismflow-deploy/public/export_handlers_module.js
+diff view_pdf_audit_module.js      desktop/web-app/public/view_pdf_audit_module.js
+diff view_export_preview_module.js desktop/web-app/public/view_export_preview_module.js
+diff export_handlers_module.js     desktop/web-app/public/export_handlers_module.js
 ```
 
 (All expected to be identical; the tests assert some of these.) The higher-value check is **semantic**: read the DETAILS handler, the ePub xmlns guard, the popup escaping, and the braille flow in the `_module.js` and confirm they do the same thing as the `_source.jsx`. `node --check` passed on every module, but that only proves syntax, not that my hand-translation preserved behavior.

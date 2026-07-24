@@ -38,7 +38,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const require = createRequire(import.meta.url);
-const MODULES_DIR = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
 
 export const React = require(resolve(MODULES_DIR, 'react'));
 export const ReactDOMServer = require(resolve(MODULES_DIR, 'react-dom/server'));

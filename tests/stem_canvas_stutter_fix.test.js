@@ -21,13 +21,13 @@ import { readFileSync } from 'node:fs';
 
 const DNA_PATHS = [
   'stem_lab/stem_tool_dna.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_dna.js',
-  'prismflow-deploy/public/stem_tool_dna.js',
+  'desktop/web-app/public/stem_lab/stem_tool_dna.js',
+  'desktop/web-app/public/stem_tool_dna.js',
 ];
 const ECO_PATHS = [
   'stem_lab/stem_tool_ecosystem.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_ecosystem.js',
-  'prismflow-deploy/public/stem_tool_ecosystem.js',
+  'desktop/web-app/public/stem_lab/stem_tool_ecosystem.js',
+  'desktop/web-app/public/stem_tool_ecosystem.js',
 ];
 const read = (p) => readFileSync(p, 'utf8');
 

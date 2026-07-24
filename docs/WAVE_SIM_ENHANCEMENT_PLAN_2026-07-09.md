@@ -21,7 +21,7 @@ audio, and drag paths need eyes-on). Pre-existing golden failures for flightSim/
 molecule/physics/spaceExplorer belong to other sessions — do not rebaseline them.
 
 Source of truth: `stem_lab/stem_tool_wave.js` (3,740 lines, ~299 KB).
-Deploy copy: `prismflow-deploy/public/stem_lab/stem_tool_wave.js` (byte-identical as of 2026-07-03) — keep both in sync on every edit.
+Deploy copy: `desktop/web-app/public/stem_lab/stem_tool_wave.js` (byte-identical as of 2026-07-03) — keep both in sync on every edit.
 Golden coverage: `tests/stem_sim_tools_golden.test.js:147` (mount mode).
 
 ## What the tool is today
@@ -85,7 +85,7 @@ Golden coverage: `tests/stem_sim_tools_golden.test.js:147` (mount mode).
 - Run `stem_sim_tools_golden` (mount) — do NOT `vitest -u` the whole suite (rebaseline trap).
 - Add pure tests: DFT harmonic magnitudes (sine→[1,0,0…], square→odd 1/n), superposition sum equals component sum (post-B0.1–B0.3), Doppler f′ formulas, standing-hunt `isHarmonic` detection.
 - Gates: `check_render_refs`, `check_free_vars`, `check_lang_json` (after B4.1).
-- Sync BOTH copies (root `stem_lab/` + `prismflow-deploy/public/stem_lab/`); pathspec-only commits (shared tree, concurrent sessions); deploy.sh in background with ≥600000ms timeout, never `| tail`.
+- Sync BOTH copies (root `stem_lab/` + `desktop/web-app/public/stem_lab/`); pathspec-only commits (shared tree, concurrent sessions); deploy.sh in background with ≥600000ms timeout, never `| tail`.
 
 ## Suggested sequencing
 

@@ -27,7 +27,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'teacher_source.jsx');
 const OUTPUT = path.join(ROOT, 'teacher_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'teacher_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'teacher_module.js');
 const TMP = path.join(ROOT, '_tmp_teacher_entry.jsx');
 const TMP_COMPILED = TMP + '.compiled.js';
 

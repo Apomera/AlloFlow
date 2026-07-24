@@ -6,7 +6,7 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 const sourcePath = path.join(root, 'test_prep', 'eppp_native_items.json');
-const deployPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_native_items.json');
+const deployPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_native_items.json');
 const auditPath = path.join(__dirname, 'eppp_key_alignment_wave_02_audit.json');
 const auditMarkdownPath = path.join(__dirname, 'eppp_key_alignment_wave_02_audit.md');
 const reviewedAt = '2026-07-16';

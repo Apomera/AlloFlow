@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import { resolve } from 'node:path';
 
 const sourceDir = resolve(process.cwd(), 'test_prep');
-const deployDir = resolve(process.cwd(), 'prismflow-deploy/public/test_prep');
+const deployDir = resolve(process.cwd(), 'desktop/web-app/public/test_prep');
 const catalogText = fs.readFileSync(resolve(sourceDir, 'reference_catalog.json'), 'utf8');
 const catalog = JSON.parse(catalogText);
 

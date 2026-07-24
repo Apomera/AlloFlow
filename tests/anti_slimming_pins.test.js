@@ -8,7 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const HOSTS = ['AlloFlowANTI.txt', 'prismflow-deploy/src/AlloFlowANTI.txt', 'prismflow-deploy/src/App.jsx'];
+const HOSTS = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx'];
 const read = (file) => fs.readFileSync(path.join(ROOT, file), 'utf8');
 
 // Family → expected minimum wrapper call sites using the shared builder.

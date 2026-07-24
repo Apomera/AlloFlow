@@ -18,7 +18,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'adventure_source.jsx');
 const OUTPUT = path.join(ROOT, 'adventure_module.js');
-const DEPLOY_OUTPUT = path.join(ROOT, 'prismflow-deploy', 'public', 'adventure_module.js');
+const DEPLOY_OUTPUT = path.join(ROOT, 'desktop/web-app', 'public', 'adventure_module.js');
 const CHECK_ONLY = process.argv.includes('--check');
 
 function fail(message) {

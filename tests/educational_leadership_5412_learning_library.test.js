@@ -59,6 +59,6 @@ describe('Praxis Educational Leadership 5412 native learning library', () => {
     expect(qa.summary).toMatchObject({ chapters: 12, sections: 48, knowledgeChecks: 60, flashcards: 75, memoryAids: 20, findings: [], status: 'pass' });
     expect(qa.standard.limitation).toContain('not ETS or NPBEA approval');
     expect(qa.standard.limitation).toContain('an emergency directive');
-    for (const name of ['educational_leadership_5412_learning_library.json', 'educational_leadership_5412_learning_library_qa.json', 'educational_leadership_5412_learning_library_qa.md']) expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
+    for (const name of ['educational_leadership_5412_learning_library.json', 'educational_leadership_5412_learning_library_qa.json', 'educational_leadership_5412_learning_library_qa.md']) expect(read('desktop/web-app/public/test_prep/' + name)).toBe(read('test_prep/' + name));
   });
 });

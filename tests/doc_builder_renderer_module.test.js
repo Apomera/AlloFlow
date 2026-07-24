@@ -49,7 +49,7 @@ describe('dedicated document-block renderer module', () => {
     const pipeline = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
     const source = readFileSync(resolve(process.cwd(), 'doc_builder_renderer_source.jsx'), 'utf8');
     const module = readFileSync(resolve(process.cwd(), 'doc_builder_renderer_module.js'), 'utf8');
-    const deployed = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/doc_builder_renderer_module.js'), 'utf8');
+    const deployed = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/doc_builder_renderer_module.js'), 'utf8');
 
     expect(pipeline).toContain('_rendererModule.createRenderer({');
     expect(pipeline).not.toContain('return blocks.map((block, blockIdx) => {');

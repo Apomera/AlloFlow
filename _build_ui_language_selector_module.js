@@ -19,7 +19,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'ui_language_selector_source.jsx');
 const OUTPUT = path.join(ROOT, 'ui_language_selector_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'ui_language_selector_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'ui_language_selector_module.js');
 const TMP = path.join(ROOT, '_tmp_ui_language_selector_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) {
@@ -94,7 +94,7 @@ try {
     }
     fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) {
-    console.warn('[UiLanguageSelector] Could not sync to prismflow-deploy/public/:', e.message);
+    console.warn('[UiLanguageSelector] Could not sync to desktop/web-app/public/:', e.message);
 }
 
 try {

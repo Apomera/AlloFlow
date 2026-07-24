@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const WATER_CYCLE_PATHS = [
   'stem_lab/stem_tool_watercycle.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_watercycle.js',
+  'desktop/web-app/public/stem_lab/stem_tool_watercycle.js',
 ];
 
 describe('water cycle canvas animation loop', () => {

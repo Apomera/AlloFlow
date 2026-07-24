@@ -3,7 +3,7 @@ import fs from 'node:fs';
 
 const source = fs.readFileSync('allobot_source.jsx', 'utf8');
 const moduleSource = fs.readFileSync('allobot_module.js', 'utf8');
-const publicModule = fs.readFileSync('prismflow-deploy/public/allobot_module.js', 'utf8');
+const publicModule = fs.readFileSync('desktop/web-app/public/allobot_module.js', 'utf8');
 
 describe('AlloBot reduced-motion accessibility', () => {
   it('honors both the operating-system preference and the app motion setting', () => {

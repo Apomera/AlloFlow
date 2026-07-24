@@ -8,7 +8,7 @@
  * 2. Compiles JSX → React.createElement via esbuild
  * 3. Wraps in IIFE with the pre-existing preamble (duplicate-load guard,
  *    lazy icon helpers, React hook aliases)
- * 4. Writes immersive_reader_module.js + syncs to prismflow-deploy/public/
+ * 4. Writes immersive_reader_module.js + syncs to desktop/web-app/public/
  *
  * The core transform lives in `buildImmersiveReaderModule(source)` and is
  * exported so build.js (COMPILE_PAIRS) uses the SAME builder — one canonical
@@ -23,7 +23,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'immersive_reader_source.jsx');
 const OUTPUT = path.join(ROOT, 'immersive_reader_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'immersive_reader_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'immersive_reader_module.js');
 
 /**
  * Pure(-ish) builder: JSX source string → full IIFE module string (LF endings).

@@ -11,7 +11,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'remediation_audio_source.jsx');
 const OUTPUT = path.join(ROOT, 'remediation_audio_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'remediation_audio_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'remediation_audio_module.js');
 
 if (!fs.existsSync(SOURCE)) {
     console.error('[RemediationAudio] Source not found:', SOURCE);
@@ -38,7 +38,7 @@ try {
     }
     fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) {
-    console.warn('[RemediationAudio] Could not sync to prismflow-deploy/public/:', e.message);
+    console.warn('[RemediationAudio] Could not sync to desktop/web-app/public/:', e.message);
 }
 
 try {

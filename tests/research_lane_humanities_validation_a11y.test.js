@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const source = readFileSync('research_lane_humanities_source.jsx', 'utf8');
 const built = readFileSync('research_lane_humanities_module.js', 'utf8');
-const deployed = readFileSync('prismflow-deploy/public/research_lane_humanities_module.js', 'utf8');
+const deployed = readFileSync('desktop/web-app/public/research_lane_humanities_module.js', 'utf8');
 
 describe('Humanities composition validation announcements', () => {
   it('routes all six validation failures into a persistent alert', () => {

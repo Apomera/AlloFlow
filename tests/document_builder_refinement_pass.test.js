@@ -7,10 +7,10 @@ const pipeline = readFileSync('doc_pipeline_source.jsx', 'utf8');
 const handlers = readFileSync('export_handlers_module.js', 'utf8');
 const gate = readFileSync('dev-tools/check_pipeline_tests.cjs', 'utf8');
 const viewModule = readFileSync('view_export_preview_module.js', 'utf8');
-const viewDeploy = readFileSync('prismflow-deploy/public/view_export_preview_module.js', 'utf8');
+const viewDeploy = readFileSync('desktop/web-app/public/view_export_preview_module.js', 'utf8');
 const pipelineModule = readFileSync('doc_pipeline_module.js', 'utf8');
-const pipelineDeploy = readFileSync('prismflow-deploy/public/doc_pipeline_module.js', 'utf8');
-const handlersDeploy = readFileSync('prismflow-deploy/public/export_handlers_module.js', 'utf8');
+const pipelineDeploy = readFileSync('desktop/web-app/public/doc_pipeline_module.js', 'utf8');
+const handlersDeploy = readFileSync('desktop/web-app/public/export_handlers_module.js', 'utf8');
 
 describe('Document Builder refinement pass', () => {
   it('captures the opener before moving focus into the dialog', () => {

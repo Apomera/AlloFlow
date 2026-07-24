@@ -142,9 +142,9 @@ The pack is **100% COMPLETE** — no continuation work required. Only follow-ups
    ```
 3. **Ship with the pre-commit pattern** (per [feedback_deploy_must_pre_commit.md](../memory/feedback_deploy_must_pre_commit.md)):
    ```bash
-   cp lang/portuguese_brazil.js prismflow-deploy/public/lang/portuguese_brazil.js && \
+   cp lang/portuguese_brazil.js desktop/web-app/public/lang/portuguese_brazil.js && \
    node dev-tools/update_lang_manifest.cjs && \
-   git add lang/portuguese_brazil.js prismflow-deploy/public/lang/portuguese_brazil.js lang/manifest.json prismflow-deploy/public/lang/manifest.json && \
+   git add lang/portuguese_brazil.js desktop/web-app/public/lang/portuguese_brazil.js lang/manifest.json desktop/web-app/public/lang/manifest.json && \
    git commit -m "lang: Portuguese (Brazil) +N keys (<reason>)" && \
    git push origin main
    ```

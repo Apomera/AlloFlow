@@ -2,7 +2,7 @@
 # (Pages or Workers assets, either CI) hard-fails any deploy containing a file
 # over 25 MiB — that class of file froze alloflow-cdn.pages.dev 2026-07-03→05.
 # This is the ROOT working copy of the same vendor tree as
-# prismflow-deploy/public/video_studio/vendor/ffmpeg/core/ (which carries the
+# desktop/web-app/public/video_studio/vendor/ffmpeg/core/ (which carries the
 # same scoped ignore). The file stays on local disk for mirror-sync and
 # desktop/Firebase packaging, which deploy from the working tree.
 # To restore on a fresh clone:

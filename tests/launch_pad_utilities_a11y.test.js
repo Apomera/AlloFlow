@@ -39,7 +39,7 @@ describe('Launch-pad language and setup utility accessibility', () => {
 
   it('keeps generated launch-pad modules synchronized', () => {
     const rootModule = fs.readFileSync('view_launch_pad_module.js', 'utf8');
-    expect(fs.readFileSync('prismflow-deploy/public/view_launch_pad_module.js', 'utf8')).toBe(rootModule);
+    expect(fs.readFileSync('desktop/web-app/public/view_launch_pad_module.js', 'utf8')).toBe(rootModule);
     expect(rootModule).toContain('launch-pad-language-list');
     expect(rootModule).toContain('aria-pressed');
     expect(rootModule).toContain('Requesting microphone access');

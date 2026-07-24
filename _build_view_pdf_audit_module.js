@@ -19,7 +19,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'view_pdf_audit_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_pdf_audit_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'view_pdf_audit_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'view_pdf_audit_module.js');
 const TMP = path.join(ROOT, '_tmp_view_pdf_audit_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) {
@@ -97,7 +97,7 @@ try {
     }
     fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) {
-    console.warn('[ViewPdfAudit] Could not sync to prismflow-deploy/public/:', e.message);
+    console.warn('[ViewPdfAudit] Could not sync to desktop/web-app/public/:', e.message);
 }
 
 try {

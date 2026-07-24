@@ -89,7 +89,7 @@ const pack = {
 
 const itemOutput = JSON.stringify(items, null, 2) + '\n';
 const packOutput = JSON.stringify(pack, null, 2) + '\n';
-for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')]) {
+for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'desktop/web-app', 'public', 'test_prep')]) {
   fs.mkdirSync(outputRoot, { recursive: true });
   fs.writeFileSync(path.join(outputRoot, 'school_psychologist_5403_items.json'), itemOutput, 'utf8');
   fs.writeFileSync(path.join(outputRoot, 'school_psychologist_5403_pack.json'), packOutput, 'utf8');

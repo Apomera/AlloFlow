@@ -25,7 +25,7 @@
  *      Indonesian = 'Bahasa Indonesia').
  *   2. Add a line to reading_library/languages.json.
  *   3. --plan then --fetch (incremental; only new books hit the network).
- *   4. Mirror reading_library/ into prismflow-deploy/public/reading_library/
+ *   4. Mirror reading_library/ into desktop/web-app/public/reading_library/
  *      (tests/reading_library.test.js asserts the sync), commit, deploy.
  */
 'use strict';

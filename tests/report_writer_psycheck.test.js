@@ -22,7 +22,7 @@ const require = createRequire(import.meta.url);
 
 let PC;
 beforeAll(() => {
-  const React = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react'));
+  const React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
   globalThis.React = window.React = React;
   try { loadAlloModule('report_writer_module.js'); } catch (e) { /* AlloPsycheck is set before any React-dependent code */ }
   PC = window.AlloPsycheck;

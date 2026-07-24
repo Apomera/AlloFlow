@@ -9,7 +9,7 @@ import { loadAlloModule } from './setup.js';
 const require = createRequire(import.meta.url);
 const ROOT = resolve(process.cwd());
 const LIB = path.join(ROOT, 'reading_library');
-const MODULES = resolve(ROOT, 'prismflow-deploy/node_modules');
+const MODULES = resolve(ROOT, 'desktop/web-app/node_modules');
 const index = JSON.parse(fs.readFileSync(path.join(LIB, 'index.json'), 'utf8'));
 const books = index.books;
 const openStax = books.filter((book) => book.sourceId === 'openstax');

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const source = readFileSync('view_misc_panels_source.jsx', 'utf8');
 const built = readFileSync('view_misc_panels_module.js', 'utf8');
-const deployed = readFileSync('prismflow-deploy/public/view_misc_panels_module.js', 'utf8');
+const deployed = readFileSync('desktop/web-app/public/view_misc_panels_module.js', 'utf8');
 
 describe('PDF workbench refinement prompt accessibility', () => {
   it('uses the shared contained prompt instead of a native browser prompt', () => {

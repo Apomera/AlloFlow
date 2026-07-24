@@ -4,12 +4,12 @@ import { resolve } from 'node:path';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const FILE = 'stem_lab/stem_tool_lifeskills.js';
-const PUBLIC_FILE = 'prismflow-deploy/public/stem_lab/stem_tool_lifeskills.js';
-const PUBLIC_ROOT_FILE = 'prismflow-deploy/public/stem_tool_lifeskills.js';
+const PUBLIC_FILE = 'desktop/web-app/public/stem_lab/stem_tool_lifeskills.js';
+const PUBLIC_ROOT_FILE = 'desktop/web-app/public/stem_tool_lifeskills.js';
 const MODULE_FILES = [
   'stem_lab/stem_lab_module.js',
-  'prismflow-deploy/public/stem_lab/stem_lab_module.js',
-  'prismflow-deploy/public/stem_lab_module.js',
+  'desktop/web-app/public/stem_lab/stem_lab_module.js',
+  'desktop/web-app/public/stem_lab_module.js',
 ];
 const BUILD_FILE = 'build.js';
 const TOOL_ID = 'lifeSkills';

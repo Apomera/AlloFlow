@@ -37,7 +37,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const MODS = path.join(ROOT, 'prismflow-deploy', 'node_modules');
+const MODS = path.join(ROOT, 'desktop/web-app', 'node_modules');
 const espree = require(path.join(MODS, 'espree'));
 const eslintScope = require(path.join(MODS, 'eslint-scope'));
 

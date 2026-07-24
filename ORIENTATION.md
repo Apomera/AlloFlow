@@ -43,7 +43,7 @@ Hard-won across many entries. The short version:
 
 ## Working patterns Aaron has confirmed (do these)
 
-- **Commit coherent, verified changes** with descriptive messages. Mirror `lang/*.js` to `prismflow-deploy/public/lang/*.js` for translation work; deployment and cache behavior depend on the configured host.
+- **Commit coherent, verified changes** with descriptive messages. Mirror `lang/*.js` to `desktop/web-app/public/lang/*.js` for translation work; deployment and cache behavior depend on the configured host.
 - **Use TodoWrite when work is multi-step**, but don't ritualize it for trivial tasks.
 - **Stay in VS Code for now.** Antigravity 2.0 (May 19, 2026) dropped VS Code extension support. The Claude Code extension cannot run there.
 - **For language packs:** hand-translation for primary languages (Vietnamese, Spanish, French). The CLI batch tool is for greenfield languages with `GEMINI_API_KEY` set. Don't run the batch tool over already-translated packs — it overwrites.

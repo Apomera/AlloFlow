@@ -6,7 +6,7 @@ const path=require('path');
 const crypto=require('crypto');
 const root=path.resolve(__dirname,'..');
 const sourceDir=path.join(root,'test_prep');
-const deployDir=path.join(root,'prismflow-deploy','public','test_prep');
+const deployDir=path.join(root,'desktop/web-app','public','test_prep');
 const auditName='test_prep_assistant_review_2026-07-16.json';
 const mdName='test_prep_assistant_review_2026-07-16.md';
 const sha=value=>crypto.createHash('sha256').update(value).digest('hex');

@@ -22,7 +22,7 @@ describe('Shared formatted-text link accessibility', () => {
 
   it('keeps generated Phase N modules synchronized', () => {
     const rootModule = fs.readFileSync('phase_n_misc_helpers_module.js', 'utf8');
-    expect(fs.readFileSync('prismflow-deploy/public/phase_n_misc_helpers_module.js', 'utf8')).toBe(rootModule);
+    expect(fs.readFileSync('desktop/web-app/public/phase_n_misc_helpers_module.js', 'utf8')).toBe(rootModule);
     expect(rootModule).not.toContain('role: "dialog"');
     expect(rootModule).not.toContain('"aria-modal": "true"');
     expect(rootModule.match(/underline decoration-2 underline-offset-2/g)).toHaveLength(2);

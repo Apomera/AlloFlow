@@ -223,7 +223,7 @@ describe('ReadAloudArtifactContract validation and transport safety', () => {
 
   it('keeps generated and deployed modules byte-identical', () => {
     const built = read('read_aloud_artifact_contract_module.js');
-    const deployed = read('prismflow-deploy/public/read_aloud_artifact_contract_module.js');
+    const deployed = read('desktop/web-app/public/read_aloud_artifact_contract_module.js');
     expect(deployed).toBe(built);
     expect(built).toContain('ReadAloudArtifactContractModule');
     expect(createHash('sha256').update(built).digest('hex')).toHaveLength(64);

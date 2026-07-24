@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const SOURCE_FILE = 'stem_lab/stem_tool_calculus.js';
-const PUBLIC_FILE = 'prismflow-deploy/public/stem_lab/stem_tool_calculus.js';
+const PUBLIC_FILE = 'desktop/web-app/public/stem_lab/stem_tool_calculus.js';
 
 function read(path) {
   return readFileSync(path, 'utf8');

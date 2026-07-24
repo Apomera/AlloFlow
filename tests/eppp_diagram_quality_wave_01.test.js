@@ -81,7 +81,7 @@ describe('EPPP diagram quality review wave 01', () => {
       'test_prep/eppp_diagram_review_wave_01.json',
       'test_prep/eppp_diagram_review_wave_01.md',
     ]) {
-      expect(read(`prismflow-deploy/public/${relativePath}`)).toBe(read(relativePath));
+      expect(read(`desktop/web-app/public/${relativePath}`)).toBe(read(relativePath));
     }
     const builder = read('_build_test_prep_hub_module.js');
     expect(builder).toContain("const DIAGRAM_QUALITY_WAVE_01_SCRIPT = path.join(ROOT, 'dev-tools', 'repair_eppp_diagram_quality_wave_01.cjs');");

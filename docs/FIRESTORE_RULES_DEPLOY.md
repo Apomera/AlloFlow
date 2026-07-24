@@ -31,8 +31,8 @@ AlloFlow runs against **two different Firebase backends** depending on surface
    there.** Access control on that surface is Google's platform policy (apps are namespaced under
    `artifacts/{appId}/…` with platform-issued auth). Nothing for you to do — and nothing you
    *can* do — at the database layer for Canvas.
-2. **prismflow-deploy (the public demo site)** — uses the owned project **`prismflow-911fe`**
-   (see `prismflow-deploy/.env`). **This is where these rules deploy**, at
+2. **desktop/web-app (the public demo site)** — uses the owned project **`prismflow-911fe`**
+   (see `desktop/web-app/.env`). **This is where these rules deploy**, at
    [console.firebase.google.com](https://console.firebase.google.com) → project `prismflow-911fe`
    → Firestore Database → Rules. Whatever rules it has today are whatever was set when the
    project was created (possibly open "test mode").
@@ -102,7 +102,7 @@ without touching real data, if you want to poke at it before the two-device test
   storage partition), the teacher loses host rights on that session — in practice you'd just
   start a new session, which is what a reload forces today anyway.
 - **Gemini Canvas is unaffected by this deploy** — it runs on Google's own injected project (see
-  the "which Firebase" section above), so test the rules on the prismflow-deploy site, not in
+  the "which Firebase" section above), so test the rules on the desktop/web-app site, not in
   Canvas. Canvas behavior stays exactly as it is today.
 - **Not covered by this deploy:** App Check (separate, see proposal §3 — do rules first),
   TURN (§4), and the two accepted soft spots: `session_assets` is authed-write and

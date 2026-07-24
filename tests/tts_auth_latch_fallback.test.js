@@ -167,8 +167,8 @@ describe('Edit-Audio regenerate pathway pins (3-host)', () => {
   });
 
   it('mirrors stay byte-identical (App.jsx quest-map drift healed 2026-07-20)', () => {
-    expect(readFileSync(resolve(process.cwd(), 'prismflow-deploy/src/AlloFlowANTI.txt'), 'utf8')).toBe(anti);
-    expect(readFileSync(resolve(process.cwd(), 'prismflow-deploy/src/App.jsx'), 'utf8')).toBe(anti);
+    expect(readFileSync(resolve(process.cwd(), 'desktop/web-app/src/AlloFlowANTI.txt'), 'utf8')).toBe(anti);
+    expect(readFileSync(resolve(process.cwd(), 'desktop/web-app/src/App.jsx'), 'utf8')).toBe(anti);
   });
 
   it('the BUILT tts module ships the latch skip + voice mapping', () => {

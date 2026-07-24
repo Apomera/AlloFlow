@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const TITRATION_PATHS = [
   'stem_lab/stem_tool_titration.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_titration.js',
+  'desktop/web-app/public/stem_lab/stem_tool_titration.js',
 ];
 
 describe('titration animation canvas loop', () => {

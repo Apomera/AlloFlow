@@ -90,6 +90,6 @@ describe('Praxis Reading Specialist 5302 diagnostic bank', () => {
     expect(qa.blueprint).toMatchObject({ officialQuestionCount: 97, selectedResponseCount: 95, constructedResponseCount: 2, timeMinutes: 150, categories: { 'curriculum-instruction': { questions: 47, percentage: 37 }, assessment: { questions: 29, percentage: 23 }, 'professional-leadership': { questions: 19, percentage: 15 }, application: { questions: 2, percentage: 25, responseType: 'constructed-response' } } });
     expect(qa.diagnosticBatch).toMatchObject({ batchCount: 5, batchSize: 100, categories: { 'curriculum-instruction': 49, assessment: 31, 'professional-leadership': 20 } });
     expect(qa.standard.limitation).toContain('independent reading-specialist validation');
-    for (const name of ['reading_specialist_5302_items.json', 'reading_specialist_5302_pack.json', 'reading_specialist_5302_native_qa.json', 'reading_specialist_5302_native_qa.md']) expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
+    for (const name of ['reading_specialist_5302_items.json', 'reading_specialist_5302_pack.json', 'reading_specialist_5302_native_qa.json', 'reading_specialist_5302_native_qa.md']) expect(read('desktop/web-app/public/test_prep/' + name)).toBe(read('test_prep/' + name));
   }, 20000);
 });

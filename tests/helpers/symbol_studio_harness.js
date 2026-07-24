@@ -11,7 +11,7 @@
 // live module:
 //   * load symbol_studio_module.js into the vitest+jsdom window via the same
 //     `new Function(src)()` trick as tests/setup.js, with REAL React (from
-//     prismflow-deploy/node_modules) so the component can render.
+//     desktop/web-app/node_modules) so the component can render.
 //   * render with renderToStaticMarkup — exercises the RENDER phase (including
 //     the crash-prone hook dependency arrays) but skips useEffect, so there is
 //     no MutationObserver / audio / network / timer nondeterminism.
@@ -32,7 +32,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const require = createRequire(import.meta.url);
-const MODULES_DIR = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
 
 // Real React 18 + its SSR renderer (react-dom resolves its own react from the
 // same dir, so element identity matches React below).

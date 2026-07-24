@@ -137,11 +137,11 @@ describe('ParaPro 1755 diagnostic bank', () => {
 
   it('publishes a passing QA report and exact deploy mirrors', () => {
     const rootPack = fs.readFileSync(resolve(process.cwd(), 'test_prep/parapro_pack.json'), 'utf8');
-    const deployPack = fs.readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/test_prep/parapro_pack.json'), 'utf8');
+    const deployPack = fs.readFileSync(resolve(process.cwd(), 'desktop/web-app/public/test_prep/parapro_pack.json'), 'utf8');
     const rootQa = fs.readFileSync(resolve(process.cwd(), 'test_prep/parapro_native_qa.json'), 'utf8');
-    const deployQa = fs.readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/test_prep/parapro_native_qa.json'), 'utf8');
+    const deployQa = fs.readFileSync(resolve(process.cwd(), 'desktop/web-app/public/test_prep/parapro_native_qa.json'), 'utf8');
     const rootQaMarkdown = fs.readFileSync(resolve(process.cwd(), 'test_prep/parapro_native_qa.md'), 'utf8');
-    const deployQaMarkdown = fs.readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/test_prep/parapro_native_qa.md'), 'utf8');
+    const deployQaMarkdown = fs.readFileSync(resolve(process.cwd(), 'desktop/web-app/public/test_prep/parapro_native_qa.md'), 'utf8');
     const currentPack = JSON.parse(rootPack);
     const report = JSON.parse(rootQa);
 

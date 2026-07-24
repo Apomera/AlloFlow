@@ -56,7 +56,7 @@ const report = {
   summary: { ...library.summary, findings, status },
 };
 const markdown = `# Praxis PLT K–6 (5622) learning-library QA\n\nGenerated: ${generatedAt}\n\n- Status: **${status.toUpperCase()}**\n- Chapters: ${library.summary.chapters}\n- Sections: ${library.summary.sections}\n- Knowledge checks: ${library.summary.knowledgeChecks}\n- Flashcards: ${library.summary.flashcards}\n- Memory aids: ${library.summary.memoryAids}\n- Case-analysis workshops: ${library.summary.constructedResponseWorkshops}\n\n> ${report.standard.limitation}\n`;
-for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')]) {
+for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'desktop/web-app', 'public', 'test_prep')]) {
   fs.mkdirSync(outputRoot, { recursive: true });
   fs.writeFileSync(path.join(outputRoot, 'plt_k6_5622_learning_library_qa.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
   fs.writeFileSync(path.join(outputRoot, 'plt_k6_5622_learning_library_qa.md'), markdown, 'utf8');

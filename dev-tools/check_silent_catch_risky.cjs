@@ -77,14 +77,14 @@ const CLEANUP_PATTERNS = [
 // defaults rather than crash. Recognise this pattern explicitly.
 const GRACEFUL_RESTORE_PATTERN = /JSON\.parse\s*\(\s*(?:localStorage|sessionStorage)\.getItem\s*\(|JSON\.parse\s*\(\s*safeGetItem\s*\(|JSON\.parse\s*\(\s*(?:raw|saved|stored)\s*\)/;
 
-// Files we should scan: js/jsx in root + sel_hub + stem_lab + prismflow-deploy/src.
-// Skip node_modules, prismflow-deploy/build (it mirrors), prismflow-deploy/public
+// Files we should scan: js/jsx in root + sel_hub + stem_lab + desktop/web-app/src.
+// Skip node_modules, desktop/web-app/build (it mirrors), desktop/web-app/public
 // (mirror of root), _archive, dev-tools (audit tools themselves).
 const SCAN_DIRS = [
   { dir: ROOT, recursive: false },
   { dir: path.join(ROOT, 'sel_hub'), recursive: false },
   { dir: path.join(ROOT, 'stem_lab'), recursive: false },
-  { dir: path.join(ROOT, 'prismflow-deploy', 'src'), recursive: false },
+  { dir: path.join(ROOT, 'desktop/web-app', 'src'), recursive: false },
 ];
 function listFiles() {
   const all = [];

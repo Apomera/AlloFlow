@@ -80,7 +80,7 @@ describe('student-facing accessibility contracts', () => {
 
   it('the inline student live-session lobby has dark and high-contrast branches', () => {
     const host = read('AlloFlowANTI.txt');
-    const deployHost = read('prismflow-deploy/src/AlloFlowANTI.txt');
+    const deployHost = read('desktop/web-app/src/AlloFlowANTI.txt');
     [host, deployHost].forEach((src) => {
       expect(src).toContain('const studentLobbyStyles = useMemo');
       expect(src).toContain("theme === 'contrast'");
@@ -97,7 +97,7 @@ describe('student-facing accessibility contracts', () => {
       'view_student_save_adventure_module.js',
       'view_socratic_chat_module.js',
     ].forEach((file) => {
-      expect(read(file)).toBe(read(`prismflow-deploy/public/${file}`));
+      expect(read(file)).toBe(read(`desktop/web-app/public/${file}`));
     });
   });
 
@@ -109,8 +109,8 @@ describe('student-facing accessibility contracts', () => {
     // every copy's ?v= stamp must equal the sha256-8 of the module bytes ON DISK, so a
     // module edit without a loader restamp (stale cache-buster) fails here.
     const host = read('AlloFlowANTI.txt');
-    const deployHost = read('prismflow-deploy/src/AlloFlowANTI.txt');
-    const deployApp = read('prismflow-deploy/src/App.jsx');
+    const deployHost = read('desktop/web-app/src/AlloFlowANTI.txt');
+    const deployApp = read('desktop/web-app/src/App.jsx');
     [
       'student_interaction_module.js',
       'view_student_join_panel_module.js',

@@ -8,7 +8,7 @@ import {
 
 const SOURCE = 'stem_lab/stem_tool_chembalance.js';
 const DEPLOY =
-  'prismflow-deploy/public/stem_lab/stem_tool_chembalance.js';
+  'desktop/web-app/public/stem_lab/stem_tool_chembalance.js';
 
 function renderSubtool(subtool, data = {}) {
   const container = document.createElement('div');

@@ -275,7 +275,7 @@ describe('EPPP native learning-library catalog', () => {
   });
 
   it('keeps native catalog and QA deployment copies synchronized', () => {
-    expect(read('prismflow-deploy/public/test_prep/eppp_learning_library.json')).toEqual(catalog);
-    expect(read('prismflow-deploy/public/test_prep/eppp_learning_library_qa.json')).toEqual(qa);
+    expect(read('desktop/web-app/public/test_prep/eppp_learning_library.json')).toEqual(catalog);
+    expect(read('desktop/web-app/public/test_prep/eppp_learning_library_qa.json')).toEqual(qa);
   });
 });

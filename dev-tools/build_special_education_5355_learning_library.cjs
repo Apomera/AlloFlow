@@ -160,7 +160,7 @@ if (chapters.length !== 12 || library.summary.sections !== 48 || library.summary
 const output = JSON.stringify(library, null, 2) + '\n';
 for (const target of [
   path.join(root, 'test_prep', 'special_education_5355_learning_library.json'),
-  path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'special_education_5355_learning_library.json'),
+  path.join(root, 'desktop/web-app', 'public', 'test_prep', 'special_education_5355_learning_library.json'),
 ]) {
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.writeFileSync(target, output, 'utf8');

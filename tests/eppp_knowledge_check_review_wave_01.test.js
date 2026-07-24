@@ -103,7 +103,7 @@ describe('EPPP knowledge-check source-review wave 01', () => {
   });
 
   it('keeps source and deployment catalog copies synchronized', () => {
-    expect(read('prismflow-deploy/public/test_prep/eppp_learning_library.json')).toEqual(catalog);
-    expect(read('prismflow-deploy/public/test_prep/eppp_learning_library_qa.json')).toEqual(read('test_prep/eppp_learning_library_qa.json'));
+    expect(read('desktop/web-app/public/test_prep/eppp_learning_library.json')).toEqual(catalog);
+    expect(read('desktop/web-app/public/test_prep/eppp_learning_library_qa.json')).toEqual(read('test_prep/eppp_learning_library_qa.json'));
   });
 });

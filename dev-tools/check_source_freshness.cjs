@@ -22,7 +22,7 @@
 //
 // What this check covers:
 //   - All paired files at root (`*_source.jsx` ↔ `*_module.js`)
-//   - The monolith pair (`AlloFlowANTI.txt` ↔ `prismflow-deploy/src/App.jsx`)
+//   - The monolith pair (`AlloFlowANTI.txt` ↔ `desktop/web-app/src/App.jsx`)
 //
 // Usage:
 //   node dev-tools/check_source_freshness.cjs
@@ -70,7 +70,7 @@ function listPairs() {
   }
   // Monolith pair
   const monolithSrc = path.join(ROOT, 'AlloFlowANTI.txt');
-  const monolithCompiled = path.join(ROOT, 'prismflow-deploy', 'src', 'App.jsx');
+  const monolithCompiled = path.join(ROOT, 'desktop/web-app', 'src', 'App.jsx');
   if (fs.existsSync(monolithSrc) && fs.existsSync(monolithCompiled)) {
     pairs.push({
       label: 'AlloFlowANTI → App.jsx',

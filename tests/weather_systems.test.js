@@ -1598,7 +1598,7 @@ describe('Weather Systems geographic map loader resilience', () => {
   const { resolve } = require('node:path');
   const PATHS = [
     'stem_lab/stem_tool_weathersystems.js',
-    'prismflow-deploy/public/stem_lab/stem_tool_weathersystems.js',
+    'desktop/web-app/public/stem_lab/stem_tool_weathersystems.js',
   ];
 
   it('tries multiple CDNs with a timeout instead of a single point of failure', () => {

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const SOURCE = 'stem_lab/stem_tool_solarsystem.js';
-const MIRROR = 'prismflow-deploy/public/stem_lab/stem_tool_solarsystem.js';
+const MIRROR = 'desktop/web-app/public/stem_lab/stem_tool_solarsystem.js';
 const noop = () => {};
 
 describe('Solar System first-visit tutorial dialog', () => {

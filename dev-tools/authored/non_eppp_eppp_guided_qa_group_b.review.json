@@ -456,7 +456,7 @@
       ],
       "referenceCatalog": "byte-identical",
       "hubModule": "byte-identical",
-      "comparison": "Exact byte equality between test_prep/source hub artifacts and prismflow-deploy/public mirrors."
+      "comparison": "Exact byte equality between test_prep/source hub artifacts and desktop/web-app/public mirrors."
     }
   },
   "manualPriorityFindings": {

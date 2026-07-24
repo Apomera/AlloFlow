@@ -6,7 +6,7 @@
  *
  * 1. Reads allo_data_source.jsx (pure-data — no JSX, no React).
  * 2. Wraps in IIFE with duplicate-load guard.
- * 3. Writes allo_data_module.js + syncs to prismflow-deploy/public/.
+ * 3. Writes allo_data_module.js + syncs to desktop/web-app/public/.
  * 4. Syntax-checks output with `node -c`.
  *
  * No Babel/esbuild compilation needed — the source is plain ES syntax.
@@ -19,7 +19,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'allo_data_source.jsx');
 const OUTPUT = path.join(ROOT, 'allo_data_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'allo_data_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'allo_data_module.js');
 
 if (!fs.existsSync(SOURCE)) {
     console.error('[AlloData] Source not found:', SOURCE);
@@ -46,7 +46,7 @@ try {
     }
     fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) {
-    console.warn('[AlloData] Could not sync to prismflow-deploy/public/:', e.message);
+    console.warn('[AlloData] Could not sync to desktop/web-app/public/:', e.message);
 }
 
 // Syntax check — the source is plain JS, so `node -c` is applicable.

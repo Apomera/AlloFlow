@@ -6,7 +6,7 @@ const src = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 const headerFiles = [
   'view_header_source.jsx',
   'view_header_module.js',
-  'prismflow-deploy/public/view_header_module.js',
+  'desktop/web-app/public/view_header_module.js',
 ].map((file) => [file, readFileSync(resolve(process.cwd(), file), 'utf8')]);
 
 describe('Canvas shell live-session controls', () => {

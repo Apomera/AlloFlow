@@ -64,8 +64,8 @@ a district-owned host, persistence, TLS, or remote/multi-room access.
 ## Build order (next sessions)
 1. **In-app LAN adapter** — **SHIPPED/APPLIED**. Runtime half shipped
    2026-07-05 (including the `/api/lan-docs/{key}` asset bridge); app half is
-   applied in `AlloFlowANTI.txt`, `prismflow-deploy/src/AlloFlowANTI.txt`, and
-   `prismflow-deploy/src/App.jsx`. `desktop/app-adapter/` is now the reference
+   applied in `AlloFlowANTI.txt`, `desktop/web-app/src/AlloFlowANTI.txt`, and
+   `desktop/web-app/src/App.jsx`. `desktop/app-adapter/` is now the reference
    snippet, harness, and recovery guide.
 2. Extract `schoolbox-server` from the runtime (share-listener code path + store
    interface); smoke test = existing `--smoke` asserts run against the container.

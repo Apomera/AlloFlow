@@ -21,7 +21,7 @@ style commits).
 3. **`AlloFlowANTI.txt` is shared-hot.** Before editing: `git diff AlloFlowANTI.txt` — if another
    agent's uncommitted hunk is present, stage ONLY your hunk (`git apply --cached` of your own diff,
    or the hash-object/update-index technique in memory `project_sd_offer_modal_debounce`).
-   `prismflow-deploy/src/App.jsx` + `src/AlloFlowANTI.txt` are GENERATED from it (build.js) — never
+   `desktop/web-app/src/App.jsx` + `src/AlloFlowANTI.txt` are GENERATED from it (build.js) — never
    hand-edit those; the pre-commit hook enforces pair parity.
 4. **Generated pairs:** `*_source.jsx` → run its `_build_*_module.js` → commit source+module together.
 5. **Before building on HEAD, verify no sweep hit Lumen:**

@@ -1542,7 +1542,7 @@ function GlossaryPanel(props) {
   return (
               <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                 <div className="p-3 border-b border-slate-100" data-help-key="tour-glossary-settings">
-                    <div className="grid grid-cols-3 gap-2 mb-3">
+                    <div className="grid grid-cols-2 gap-2 mb-3">
                         <div data-help-key="glossary_tier2_count">
                             <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center">
                                 {t('glossary.tier2')}
@@ -1571,12 +1571,12 @@ function GlossaryPanel(props) {
                                 className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-sky-300 focus:ring focus:ring-sky-200 p-1"
                             />
                         </div>
-                        <div data-help-key="glossary_definition_level">
+                        <div className="col-span-2" data-help-key="glossary_definition_level">
                             <label className="block text-xs text-slate-600 mb-1 font-medium">{t('glossary.def_level')}</label>
                             <select aria-label={t('common.selection')}
                                 value={glossaryDefinitionLevel}
                                 onChange={(e) => setGlossaryDefinitionLevel(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-sky-300 focus:ring focus:ring-sky-200 p-1"
+                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-sky-300 focus:ring focus:ring-sky-200 py-1.5 pl-2 pr-8"
                             >
                                 <option value="Same as Source Text">{t('glossary.def_options.source')}</option>
                                 <option value="Same as Global Level">{t('glossary.def_options.global')} ({gradeLevel})</option>

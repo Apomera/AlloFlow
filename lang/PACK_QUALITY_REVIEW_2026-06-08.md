@@ -1,6 +1,6 @@
 # Language Pack Quality Review — 2026-06-08
 
-> **Status note, July 9, 2026:** This review covered the earlier 56-pack set. The repo currently has 63 `lang/*.js` pack files mirrored to `prismflow-deploy/public/lang/`; verify newer packs separately before treating this as full-current coverage.
+> **Status note, July 9, 2026:** This review covered the earlier 56-pack set. The repo currently has 63 `lang/*.js` pack files mirrored to `desktop/web-app/public/lang/`; verify newer packs separately before treating this as full-current coverage.
 
 Multi-agent native-quality review of all 56 packs (workflow wf_2561df8f-65b, 55 agents, 2.1M tokens, 123 web searches). Web-search-backed for 18 lower-resource packs. Reviewed ~40 highest-visibility keys per pack (common.* buttons, alerts/confirms, launch_pad hero, sidebar onboarding, 2 tour bodies, 3 pdf_audit tooltips).
 

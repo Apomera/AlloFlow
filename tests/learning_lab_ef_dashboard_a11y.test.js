@@ -57,6 +57,6 @@ describe('Learning Lab Executive Function Reflection accessibility', () => {
     expect(dashboard.match(/setData\(Object\.assign\(\{\}, data,/g)).toHaveLength(2);
     expect(source).toContain("desc: 'Optional context-dependent reflection across 8 dimensions'");
     expect(source).toContain('Optional context-dependent self-reflection across eight dimensions with adaptable strategy ideas.');
-    expect(source).toBe(read('prismflow-deploy/public/stem_lab/stem_tool_learning_lab.js'));
+    expect(source).toBe(read('desktop/web-app/public/stem_lab/stem_tool_learning_lab.js'));
   });
 });

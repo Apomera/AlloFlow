@@ -12,7 +12,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = process.cwd();
-const MODULES = path.join(ROOT, 'prismflow-deploy', 'node_modules');
+const MODULES = path.join(ROOT, 'desktop/web-app', 'node_modules');
 const JSON_PATH = path.join(ROOT, 'a11y-audit', 'sel_hub_wcag_audit.json');
 const MD_PATH = path.join(ROOT, 'a11y-audit', 'sel_hub_wcag_audit.md');
 const QUIET = process.argv.includes('--quiet');

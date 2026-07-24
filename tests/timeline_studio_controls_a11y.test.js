@@ -36,6 +36,6 @@ describe('Timeline Studio control accessibility', () => {
   });
 
   it('keeps the deployment copy synchronized', () => {
-    expect(fs.readFileSync('prismflow-deploy/public/timeline_studio_module.js', 'utf8')).toBe(source);
+    expect(fs.readFileSync('desktop/web-app/public/timeline_studio_module.js', 'utf8')).toBe(source);
   });
 });

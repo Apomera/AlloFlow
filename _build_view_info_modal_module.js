@@ -10,7 +10,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'view_info_modal_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_info_modal_module.js');
-const PUBLIC_OUTPUT = path.join(ROOT, 'prismflow-deploy', 'public', 'view_info_modal_module.js');
+const PUBLIC_OUTPUT = path.join(ROOT, 'desktop/web-app', 'public', 'view_info_modal_module.js');
 const TMP = path.join(ROOT, '_tmp_info_modal_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }

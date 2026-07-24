@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const root = path.resolve(import.meta.dirname, '..');
 const sourcePath = path.join(root, 'stem_lab', 'stem_tool_solarsystem.js');
-const deployPath = path.join(root, 'prismflow-deploy', 'public', 'stem_lab', 'stem_tool_solarsystem.js');
+const deployPath = path.join(root, 'desktop/web-app', 'public', 'stem_lab', 'stem_tool_solarsystem.js');
 const source = fs.readFileSync(sourcePath, 'utf8');
 
 describe('Solar System focus appearance and slider targets', () => {

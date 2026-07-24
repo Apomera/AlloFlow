@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 
 const source = readFileSync(resolve(process.cwd(), 'view_misc_panels_source.jsx'), 'utf8');
 const built = readFileSync(resolve(process.cwd(), 'view_misc_panels_module.js'), 'utf8');
-const deployed = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/view_misc_panels_module.js'), 'utf8');
+const deployed = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/view_misc_panels_module.js'), 'utf8');
 
 describe('Misc Panels dialog accessibility', () => {
   it('keeps generated and deployed artifacts synchronized', () => {

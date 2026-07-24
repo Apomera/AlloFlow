@@ -30,7 +30,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const require = createRequire(import.meta.url);
-const MODULES_DIR = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
 
 // Real React 18 + its SSR renderer (react-dom resolves its own react from the
 // same directory, so element identity is consistent with React below).

@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const root = process.cwd();
 const source = fs.readFileSync(path.join(root, 'poet_tree_module.js'), 'utf8');
-const mirror = fs.readFileSync(path.join(root, 'prismflow-deploy/public/poet_tree_module.js'), 'utf8');
+const mirror = fs.readFileSync(path.join(root, 'desktop/web-app/public/poet_tree_module.js'), 'utf8');
 
 describe('Poet Tree focus visibility', () => {
   it('keeps source and deploy mirror byte-identical', () => {

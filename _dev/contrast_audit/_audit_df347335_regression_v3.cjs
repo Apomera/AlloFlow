@@ -99,7 +99,7 @@ for (const file of files) {
 const triage = {}; // file -> [{currentLine, after, beforeCandidate, bg, confidence, inDiff, snippet}]
 
 for (const file of files) {
-  if (CANONICAL_ONLY && file.startsWith('prismflow-deploy/')) continue;
+  if (CANONICAL_ONLY && file.startsWith('desktop/web-app/')) continue;
   let content;
   try { content = fs.readFileSync(file, 'utf8'); } catch { continue; }
   const lines = content.split('\n');

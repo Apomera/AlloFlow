@@ -62,7 +62,7 @@ const QUIET = args.includes('--quiet');
 
 function log(s) { if (!QUIET) console.log(s); }
 
-// Find every *_module.js in root (not in prismflow-deploy mirrors — those
+// Find every *_module.js in root (not in desktop/web-app mirrors — those
 // are deploy copies that we'd just double-report)
 const modules = fs.readdirSync(ROOT)
   .filter(f => /_module\.js$/.test(f))

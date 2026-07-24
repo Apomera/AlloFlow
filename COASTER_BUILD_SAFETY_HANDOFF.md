@@ -8,7 +8,7 @@ Finish and commit the CoasterLab enhancement batch that adds genuine build-from-
 
 The complete implementation is already present and syntax-valid in:
 
-- `prismflow-deploy/public/stem_lab/stem_tool_coasterlab.js`
+- `desktop/web-app/public/stem_lab/stem_tool_coasterlab.js`
 
 The expanded tests are already present in:
 
@@ -45,7 +45,7 @@ Do not reimplement the features. Copy the deployment source over the canonical s
 From the repository root, copy:
 
 ```powershell
-Copy-Item -LiteralPath 'prismflow-deploy\public\stem_lab\stem_tool_coasterlab.js' `
+Copy-Item -LiteralPath 'desktop/web-app\public\stem_lab\stem_tool_coasterlab.js' `
   -Destination 'stem_lab\stem_tool_coasterlab.js' -Force
 ```
 
@@ -53,10 +53,10 @@ Then verify:
 
 ```powershell
 node -c stem_lab\stem_tool_coasterlab.js
-node -c prismflow-deploy\public\stem_lab\stem_tool_coasterlab.js
+node -c desktop/web-app\public\stem_lab\stem_tool_coasterlab.js
 Get-FileHash -Algorithm SHA256 -LiteralPath `
   stem_lab\stem_tool_coasterlab.js, `
-  prismflow-deploy\public\stem_lab\stem_tool_coasterlab.js
+  desktop/web-app\public\stem_lab\stem_tool_coasterlab.js
 ```
 
 Expected enhanced-source SHA-256:
@@ -85,7 +85,7 @@ Run:
 npx vitest run tests/coaster_lab_tool.test.js
 git diff --check -- `
   stem_lab/stem_tool_coasterlab.js `
-  prismflow-deploy/public/stem_lab/stem_tool_coasterlab.js `
+  desktop/web-app/public/stem_lab/stem_tool_coasterlab.js `
   tests/coaster_lab_tool.test.js
 ```
 
@@ -96,7 +96,7 @@ Expected focused result: **54/54 tests passing**.
 Commit only these three files:
 
 - `stem_lab/stem_tool_coasterlab.js`
-- `prismflow-deploy/public/stem_lab/stem_tool_coasterlab.js`
+- `desktop/web-app/public/stem_lab/stem_tool_coasterlab.js`
 - `tests/coaster_lab_tool.test.js`
 
 Suggested message:

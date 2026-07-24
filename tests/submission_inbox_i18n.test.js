@@ -13,7 +13,7 @@ import { readFileSync } from 'node:fs';
 import { loadAlloModule } from './setup.js';
 
 const require = createRequire(import.meta.url);
-const md = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const md = resolve(process.cwd(), 'desktop/web-app/node_modules');
 let React, ReactDOMClient, act, SubmissionInbox, root, host;
 
 beforeAll(() => {

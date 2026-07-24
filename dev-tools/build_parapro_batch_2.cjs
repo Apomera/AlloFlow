@@ -97,7 +97,7 @@ if (answerCounts.some((count) => count !== 25)) throw new Error('Batch 2 answer 
 const output = JSON.stringify(items, null, 2) + '\n';
 for (const target of [
   path.join(root, 'test_prep', 'parapro_batch_2_items.json'),
-  path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'parapro_batch_2_items.json'),
+  path.join(root, 'desktop/web-app', 'public', 'test_prep', 'parapro_batch_2_items.json'),
 ]) {
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.writeFileSync(target, output, 'utf8');

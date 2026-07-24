@@ -80,5 +80,5 @@ const library = {
 
 if (chapters.length !== 12 || library.summary.sections !== 48 || library.summary.knowledgeChecks !== 60 || flashcards.length !== 75 || memoryAids.length !== 20 || constructedResponseWorkshops.length !== 8) throw new Error('The ESOL library counts must be 12 chapters, 48 sections, 60 checks, 75 flashcards, 20 memory aids, and 8 workshops.');
 const output = JSON.stringify(library, null, 2) + '\n';
-for (const target of [path.join(root, 'test_prep', 'esol_5362_learning_library.json'), path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'esol_5362_learning_library.json')]) { fs.mkdirSync(path.dirname(target), { recursive: true }); fs.writeFileSync(target, output, 'utf8'); }
+for (const target of [path.join(root, 'test_prep', 'esol_5362_learning_library.json'), path.join(root, 'desktop/web-app', 'public', 'test_prep', 'esol_5362_learning_library.json')]) { fs.mkdirSync(path.dirname(target), { recursive: true }); fs.writeFileSync(target, output, 'utf8'); }
 console.log('Built Praxis ESOL 5362 learning library: 12 chapters, 48 sections, 60 checks, 75 flashcards, 20 memory aids, and 8 applied workshops.');

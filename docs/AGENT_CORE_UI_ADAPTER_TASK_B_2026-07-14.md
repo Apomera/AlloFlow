@@ -20,7 +20,7 @@ The live Auto-Fill path now crosses the versioned Agent Core boundary without ch
 - `build.js` now manages and copies `agent_core_contracts_module.js`, `agent_core_blueprint_service_module.js`, and `agent_core_ui_adapter_module.js`.
 - Canvas source loads the three modules from the AlloFlow CDN before UDL Chat. Firebase-owned sources load the same three files locally.
 - The three Agent Core public mirrors and the generated UDL Chat public mirror match their root modules byte-for-byte.
-- `prismflow-deploy/src/App.jsx` and its ANTI backup contain the same Task B changes; their only file-level difference is the existing line-ending convention.
+- `desktop/web-app/src/App.jsx` and its ANTI backup contain the same Task B changes; their only file-level difference is the existing line-ending convention.
 - The broad `node build.js --mode=dev` generator was intentionally not run because it would overwrite unrelated dirty-tree work. The established `_build_udl_chat_module.js` builder was run for UDL Chat only.
 
 ## Verification

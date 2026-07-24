@@ -214,7 +214,7 @@ const DEFAULT_CONFIG = {
     mode: process.env.ALLOFLOW_DESKTOP_APP_MODE || 'auto',
     autoStart: true,
     managed: true,
-    cwd: 'prismflow-deploy',
+    cwd: 'desktop/web-app',
     command: 'npm',
     args: ['run', 'start'],
     port: 3000,

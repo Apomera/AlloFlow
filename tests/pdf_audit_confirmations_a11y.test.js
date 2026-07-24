@@ -44,7 +44,7 @@ describe('PDF Audit confirmation accessibility', () => {
   });
 
   it('keeps the deploy module synchronized', () => {
-    expect(readFileSync('prismflow-deploy/public/view_pdf_audit_module.js', 'utf8'))
+    expect(readFileSync('desktop/web-app/public/view_pdf_audit_module.js', 'utf8'))
       .toBe(readFileSync('view_pdf_audit_module.js', 'utf8'));
   });
 });

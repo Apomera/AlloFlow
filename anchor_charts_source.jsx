@@ -531,7 +531,7 @@ const AnchorChartView = React.memo((props) => {
   // Drag-and-drop reorder state. dragSrcIdx = the section being dragged;
   // dragOverIdx = the section currently hovered as the drop target. Used to
   // render visual feedback (opacity + drop-line). Touch devices work via the
-  // drag-drop-touch polyfill already loaded in prismflow-deploy/public/index.html.
+  // drag-drop-touch polyfill already loaded in desktop/web-app/public/index.html.
   const [dragSrcIdx, setDragSrcIdx] = React.useState(-1);
   const [dragOverIdx, setDragOverIdx] = React.useState(-1);
 

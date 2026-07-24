@@ -30,10 +30,10 @@ const require = createRequire(import.meta.url);
 
 let SAI;
 beforeAll(() => {
-  const React = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react'));
-  const ReactDOMServer = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react-dom/server'));
+  const React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
+  const ReactDOMServer = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom/server'));
   globalThis.React = window.React = React;
-  try { window.ReactDOM = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react-dom')); } catch (e) {}
+  try { window.ReactDOM = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom')); } catch (e) {}
   loadAlloModule('student_analytics_module.js');
   const Panel = window.AlloModules.StudentAnalytics;
   // Render once to execute the component body and populate the test seam. The

@@ -21,8 +21,8 @@ const require = createRequire(import.meta.url);
 
 let CS, I, React, ReactDOMServer;
 beforeAll(() => {
-  React = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react'));
-  ReactDOMServer = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react-dom/server'));
+  React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
+  ReactDOMServer = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom/server'));
   globalThis.React = window.React = React;
   loadAlloModule('cinematic_studio_module.js');
   CS = window.AlloModules.CinematicStudio;

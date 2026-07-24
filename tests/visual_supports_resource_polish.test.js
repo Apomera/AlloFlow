@@ -36,8 +36,8 @@ describe('Visual Supports resource polish', () => {
   });
 
   it('keeps generated and deployed artifacts synchronized', () => {
-    expect(readFileSync('prismflow-deploy/src/view_visual_supports_modal_source.jsx', 'utf8')).toBe(viewer);
-    expect(readFileSync('prismflow-deploy/public/view_visual_supports_modal_module.js', 'utf8')).toBe(readFileSync('view_visual_supports_modal_module.js', 'utf8'));
-    expect(readFileSync('prismflow-deploy/public/visual_panel_module.js', 'utf8')).toBe(readFileSync('visual_panel_module.js', 'utf8'));
+    expect(readFileSync('desktop/web-app/src/view_visual_supports_modal_source.jsx', 'utf8')).toBe(viewer);
+    expect(readFileSync('desktop/web-app/public/view_visual_supports_modal_module.js', 'utf8')).toBe(readFileSync('view_visual_supports_modal_module.js', 'utf8'));
+    expect(readFileSync('desktop/web-app/public/visual_panel_module.js', 'utf8')).toBe(readFileSync('visual_panel_module.js', 'utf8'));
   });
 });

@@ -11,8 +11,8 @@ const path = require('path');
 const ROOT = __dirname;
 const REPO = path.join(ROOT, '..');
 const DESTINATIONS = [
-  path.join(REPO, 'prismflow-deploy', 'public', 'reading_library'),
-  path.join(REPO, 'prismflow-deploy', 'build', 'reading_library')
+  path.join(REPO, 'desktop/web-app', 'public', 'reading_library'),
+  path.join(REPO, 'desktop/web-app', 'build', 'reading_library')
 ];
 const index = JSON.parse(fs.readFileSync(path.join(ROOT, 'index.json'), 'utf8'));
 const cards = JSON.parse(fs.readFileSync(path.join(ROOT, 'index_cards.json'), 'utf8'));
@@ -37,8 +37,8 @@ for (const destination of DESTINATIONS) {
 }
 
 for (const destination of [
-  path.join(REPO, 'prismflow-deploy', 'public', 'reading_library_module.js'),
-  path.join(REPO, 'prismflow-deploy', 'build', 'reading_library_module.js')
+  path.join(REPO, 'desktop/web-app', 'public', 'reading_library_module.js'),
+  path.join(REPO, 'desktop/web-app', 'build', 'reading_library_module.js')
 ]) {
   fs.copyFileSync(path.join(REPO, 'reading_library_module.js'), destination);
   console.log('Synchronized ' + path.relative(REPO, destination));

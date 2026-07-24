@@ -11,7 +11,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'phase_k_helpers_source.jsx');
 const OUTPUT = path.join(ROOT, 'phase_k_helpers_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'phase_k_helpers_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'phase_k_helpers_module.js');
 const TMP = path.join(ROOT, '_tmp_phase_k_entry.jsx');
 const TMP_COMPILED = TMP + '.compiled.js';
 

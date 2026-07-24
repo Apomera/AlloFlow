@@ -17,9 +17,9 @@ It runs a 10-step pipeline: a **pre-flight render gate** (Step 0.6 — runs
 `check_render_refs`, `check_keyless_map`, `check_stem_render`, `check_sel_render`,
 `check_module_render`, `check_aria_handler`; the same blockers as
 `npm run verify:gate`), then commit → push → `build.js --mode=prod --force` →
-mirror link files → `npm run build` (prismflow-deploy) → stamp SW →
+mirror link files → `npm run build` (desktop/web-app) → stamp SW →
 `firebase deploy` → Codeberg mirror → **post-deploy verification** against
-Firebase (`prismflow-911fe.web.app`) and the Cloudflare CDN
+an explicitly configured district Firebase project and the Cloudflare CDN
 (`alloflow-cdn.pages.dev`).
 
 Run `npm run verify:gate` yourself first if you want to catch render-crash
@@ -31,7 +31,7 @@ regressions before committing. The manual steps below are the fallback.
 # Full deploy from scratch (from repo root):
 git push origin main
 node build.js --mode=prod
-cd prismflow-deploy
+cd desktop/web-app
 npm run build
 node -e "const fs=require('fs');const ts=Date.now();const f='build/sw.js';let c=fs.readFileSync(f,'utf-8');c=c.replace('__BUILD_TS__',String(ts));fs.writeFileSync(f,c,'utf-8');console.log('SW stamped:',ts)"
 npx firebase deploy --only hosting
@@ -54,7 +54,7 @@ node build.js --mode=prod
 **What it does:**
 - Auto-detects latest git hash
 - Reads `AlloFlowANTI.txt` (the source of truth)
-- Writes `prismflow-deploy/src/App.jsx`, rewriting `pluginCdnBase` + module URLs
+- Writes `desktop/web-app/src/App.jsx`, rewriting `pluginCdnBase` + module URLs
   to the hashless Cloudflare base (`alloflow-cdn.pages.dev/<file>`) and stamping
   a `?v=<short-hash>` cache-buster
 - Logs the hash for verification
@@ -63,7 +63,7 @@ node build.js --mode=prod
 
 ### 3. Production build
 ```bash
-cd prismflow-deploy
+cd desktop/web-app
 npm run build
 ```
 **Verify:** Exit code 0, no compilation errors
@@ -100,7 +100,7 @@ npx firebase deploy --only hosting
 
 ## Important Notes
 - **Source of truth**: `AlloFlowANTI.txt` → everything flows from this
-- **Never edit** `prismflow-deploy/src/App.jsx` directly — it's generated
+- **Never edit** `desktop/web-app/src/App.jsx` directly — it's generated
 - **CDN modules** (stem_lab, word_sounds, etc.) are served hashless from
   Cloudflare Pages (`alloflow-cdn.pages.dev`); pushing to `main` triggers a
   Cloudflare rebuild (~1-2 min). A `?v=<short-hash>` query param busts caches.

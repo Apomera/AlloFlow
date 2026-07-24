@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 const root = path.resolve(import.meta.dirname, '..');
 const sourceDir = path.join(root, 'test_prep');
-const deployDir = path.join(root, 'prismflow-deploy', 'public', 'test_prep');
+const deployDir = path.join(root, 'desktop/web-app', 'public', 'test_prep');
 const reportName = 'non_eppp_eppp_guided_qa_2026-07-18.json';
 
 function readJson(file) {

@@ -301,7 +301,7 @@ const markdown = `# EPPP flashcard review wave ${waveNumber}\n\n` +
   `\n\n## Named sources\n\n` + [...distinctSources.values()].map((entry) => `- [${entry.title}](${entry.url}) — ${entry.organization}. ${entry.credibility}`).join('\n') +
   `\n\n## Reviewed cards\n\n` + items.map((item) => `### ${item.sequence}. ${item.front}\n\n${item.back}\n\nDisposition: ${item.contentDisposition}\n\nSource: [${item.sourceDetails[0].title}](${item.sourceDetails[0].url}) (${item.sourceDetails[0].organization})\n\n${item.revisionApplied ? `Revision: ${item.revisionReason}\n\n` : ''}Review note: ${item.reviewNote}`).join('\n\n');
 
-for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')]) {
+for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'desktop/web-app', 'public', 'test_prep')]) {
   fs.mkdirSync(outputRoot, { recursive: true });
   fs.writeFileSync(path.join(outputRoot, outputName), JSON.stringify(report, null, 2) + '\n');
   fs.writeFileSync(path.join(outputRoot, markdownName), markdown + '\n');

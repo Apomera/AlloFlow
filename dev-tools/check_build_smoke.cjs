@@ -2,7 +2,7 @@
 // check_build_smoke.cjs — Smoke test: `node build.js --mode=dev` produces parseable JSX.
 //
 // Why this exists:
-//   build.js transforms AlloFlowANTI.txt → prismflow-deploy/src/App.jsx by
+//   build.js transforms AlloFlowANTI.txt → desktop/web-app/src/App.jsx by
 //   rewriting loadModule() URLs from CDN to local paths. If the build output
 //   has any syntax errors (broken regex substitution, mangled string, dropped
 //   brace), the deploy will fail at React's parse step in the browser.
@@ -12,7 +12,7 @@
 //
 // What it does:
 //   1. Run `node build.js --mode=dev` in a temp directory (so we don't touch
-//      the real prismflow-deploy/src/App.jsx)
+//      the real desktop/web-app/src/App.jsx)
 //   2. Parse the output with @babel/parser (JSX-aware)
 //   3. Report parse success/failure
 //
@@ -39,7 +39,7 @@ const QUIET = args.includes('--quiet');
 // EXISTING App.jsx (assumed to be the current build output) and additionally
 // run a dry-run if build.js supports --dry-run.
 
-const APP_JSX = path.join(ROOT, 'prismflow-deploy', 'src', 'App.jsx');
+const APP_JSX = path.join(ROOT, 'desktop/web-app', 'src', 'App.jsx');
 const BUILD_SCRIPT = path.join(ROOT, 'build.js');
 
 if (!fs.existsSync(APP_JSX)) {

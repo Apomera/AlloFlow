@@ -11,8 +11,8 @@ const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'research_hub_source.jsx');
 const EVIDENCE_GRAPH = path.join(ROOT, 'research_evidence_graph.js');
 const OUTPUT = path.join(ROOT, 'research_hub_module.js');
-const MIRROR = path.join(ROOT, 'prismflow-deploy', 'public', 'research_hub_module.js');
-const GRAPH_MIRROR = path.join(ROOT, 'prismflow-deploy', 'public', 'research_evidence_graph.js');
+const MIRROR = path.join(ROOT, 'desktop/web-app', 'public', 'research_hub_module.js');
+const GRAPH_MIRROR = path.join(ROOT, 'desktop/web-app', 'public', 'research_evidence_graph.js');
 const TMP_SOURCE = path.join(ROOT, '_tmp_research_hub_entry.jsx');
 const TMP_COMPILED = TMP_SOURCE + '.compiled.js';
 

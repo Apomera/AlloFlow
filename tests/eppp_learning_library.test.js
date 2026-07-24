@@ -104,6 +104,6 @@ describe('EPPP learning-library shared interactions', () => {
   });
 
   it('keeps the deployed renderer byte-identical', () => {
-    expect(read('prismflow-deploy/public/test_prep/eppp_legacy/js/textbook_renderer.js')).toBe(source);
+    expect(read('desktop/web-app/public/test_prep/eppp_legacy/js/textbook_renderer.js')).toBe(source);
   });
 });

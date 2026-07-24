@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const source = readFileSync('teacher_source.jsx', 'utf8');
 const built = readFileSync('teacher_module.js', 'utf8');
-const deployed = readFileSync('prismflow-deploy/public/teacher_module.js', 'utf8');
+const deployed = readFileSync('desktop/web-app/public/teacher_module.js', 'utf8');
 
 describe('Teacher offline-submission setup errors', () => {
   it('routes both setup failures into the focus-managed submission alert dialog', () => {

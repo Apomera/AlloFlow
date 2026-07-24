@@ -89,7 +89,7 @@ describe('language packs follow their English sources', () => {
       const adaHeading = pack.split('\n').find((l) => l.includes('"wcag_strong"')) || '';
       if (adaHeading.includes('WCAG')) expect(adaHeading).toContain('WCAG 2.1');
       // Mirror parity
-      const mirror = read(`prismflow-deploy/public/lang/${packName}.js`);
+      const mirror = read(`desktop/web-app/public/lang/${packName}.js`);
       expect(mirror).toBe(pack);
     }
   });

@@ -33,7 +33,7 @@ function listSourceFiles(dir) {
   const out = [];
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     if (e.isDirectory()) {
-      if (['node_modules','dist','_archive','prismflow-deploy','graphify-out',
+      if (['node_modules','dist','_archive','desktop/web-app','graphify-out',
            '.git','docker','tts-server','website','pilot','examples',
            'tests','test_data','a11y-audit','dev-tools','src',
            'my-video','sel_hub','stem_lab','Lesson JSONs','Phoneme library',

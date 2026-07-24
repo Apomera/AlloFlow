@@ -249,7 +249,7 @@ That document is the source of truth for the semantic intent behind each new Eng
 
 Before finalizing a translation, translators should open the in-app UI and view each string in its rendered context. Recommended path:
 
-1. Launch the AlloFlow tool (Gemini Canvas or `prismflow-deploy` mirror).
+1. Launch the AlloFlow tool (Gemini Canvas or `desktop/web-app` mirror).
 2. Switch the UI language to the target locale.
 3. Open the **Word Sounds** module.
 4. Locate each label:

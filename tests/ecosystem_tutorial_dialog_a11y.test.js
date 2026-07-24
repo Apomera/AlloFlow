@@ -11,7 +11,7 @@ import {
 
 const rootDir = path.resolve(import.meta.dirname, '..');
 const sourcePath = path.join(rootDir, 'stem_lab', 'stem_tool_ecosystem.js');
-const deployPath = path.join(rootDir, 'prismflow-deploy', 'public', 'stem_lab', 'stem_tool_ecosystem.js');
+const deployPath = path.join(rootDir, 'desktop/web-app', 'public', 'stem_lab', 'stem_tool_ecosystem.js');
 const source = fs.readFileSync(sourcePath, 'utf8');
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;

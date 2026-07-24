@@ -11,8 +11,8 @@ let createRoot;
 let ReportWriter;
 
 beforeAll(() => {
-  React = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react'));
-  ({ createRoot } = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react-dom/client')));
+  React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
+  ({ createRoot } = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom/client')));
   globalThis.React = window.React = React;
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   loadAlloModule('report_writer_module.js');

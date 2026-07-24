@@ -5,7 +5,7 @@ const path = require('path');
 const root = path.resolve(__dirname, '..');
 const sourceDir = path.join(root, 'test_prep');
 const output = path.join(sourceDir, 'reference_catalog.json');
-const deployOutput = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'reference_catalog.json');
+const deployOutput = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'reference_catalog.json');
 const decodeEntityCodePoint = (value, radix) => { const code = Number.parseInt(value, radix); return Number.isInteger(code) && code >= 0 && code <= 0x10ffff ? String.fromCodePoint(code) : ''; };
 const namedHtmlEntities = Object.freeze({ nbsp: ' ', amp: '&', quot: '"', apos: "'", lsquo: "'", rsquo: "'", ldquo: '"', rdquo: '"', ndash: '–', mdash: '—', hellip: '…', lt: '<', gt: '>', copy: '©', reg: '®' });
 const cleanText = (value) => String(value || '').replace(/<[^>]+>/g, ' ').replace(/&#x([0-9a-f]+);/gi, (_match, code) => decodeEntityCodePoint(code, 16)).replace(/&#(\d+);/g, (_match, code) => decodeEntityCodePoint(code, 10)).replace(/&([a-z]+);/gi, (match, name) => Object.prototype.hasOwnProperty.call(namedHtmlEntities, name.toLowerCase()) ? namedHtmlEntities[name.toLowerCase()] : match).replace(/\s+/g, ' ').trim();

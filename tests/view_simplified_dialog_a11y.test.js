@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 
 const source = readFileSync(resolve(process.cwd(), 'view_simplified_source.jsx'), 'utf8');
 const built = readFileSync(resolve(process.cwd(), 'view_simplified_module.js'), 'utf8');
-const deployed = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/view_simplified_module.js'), 'utf8');
+const deployed = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/view_simplified_module.js'), 'utf8');
 
 describe('Simplified View layered accessibility', () => {
   it('keeps built and deployed modules synchronized', () => {

@@ -55,7 +55,7 @@ The file is a flat JSON object with nested sections:
 ## Propagating new strings to the 56 language packs
 
 `ui_strings.js` is the **English master**. There are 56 pre-built translation
-packs in `lang/*.js` (mirrored to `prismflow-deploy/public/lang/`) that must
+packs in `lang/*.js` (mirrored to `desktop/web-app/public/lang/`) that must
 gain any key you add here, or non-English users see English fallback. The
 toolchain (see `dev-tools/i18n/README.md` and `lang/README.md` for full detail):
 

@@ -52,7 +52,7 @@ describe('Global level-up modal accessibility', () => {
 
   it('keeps generated global level-up modules synchronized', () => {
     const rootModule = fs.readFileSync('view_global_level_up_module.js', 'utf8');
-    expect(fs.readFileSync('prismflow-deploy/public/view_global_level_up_module.js', 'utf8')).toBe(rootModule);
+    expect(fs.readFileSync('desktop/web-app/public/view_global_level_up_module.js', 'utf8')).toBe(rootModule);
     expect(rootModule).toContain('role: "dialog"');
     expect(rootModule).toContain('role: "progressbar"');
     expect(rootModule).toContain('"aria-label": t("feedback.continue_learning")');

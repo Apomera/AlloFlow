@@ -18,7 +18,7 @@ const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 const SOURCE = 'stem_lab/stem_tool_printingpress.js';
-const DEPLOY = 'prismflow-deploy/public/stem_lab/stem_tool_printingpress.js';
+const DEPLOY = 'desktop/web-app/public/stem_lab/stem_tool_printingpress.js';
 
 function findButton(host, text) {
   return Array.from(host.querySelectorAll('button')).find(

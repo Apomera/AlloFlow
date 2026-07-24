@@ -34,7 +34,7 @@ export GEMINI_API_KEY=...            # optional — see key auto-discovery below
 ```
 
 **Key auto-discovery:** if `GEMINI_API_KEY` isn't set, the connector looks in the file at
-`ALLOFLOW_MCP_ENV_PATH`, then in the repo's gitignored `prismflow-deploy/.env.maintainer-demo`
+`ALLOFLOW_MCP_ENV_PATH`, then in the repo's gitignored `desktop/web-app/.env.maintainer-demo`
 (keys `GEMINI_API_KEY` / `REACT_APP_GEMINI_API_KEY` / `REACT_APP_API_KEY`). The key value is
 never logged or returned by tools — `remediation_capabilities` reports only its source label.
 ⚠ 2026-07-16: the key currently in the maintainer file was **disabled by Google as leaked**

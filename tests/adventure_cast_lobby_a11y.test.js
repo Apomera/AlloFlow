@@ -18,7 +18,7 @@ describe('adventure cast lobby accessibility', () => {
 
   it('synchronizes the semantic controls to both deployed module copies', () => {
     const rootModule = fs.readFileSync('adventure_module.js', 'utf8');
-    const publicModule = fs.readFileSync('prismflow-deploy/public/adventure_module.js', 'utf8');
+    const publicModule = fs.readFileSync('desktop/web-app/public/adventure_module.js', 'utf8');
     expect(rootModule).toContain('Edit character appearance');
     expect(publicModule).toBe(rootModule);
   });
@@ -42,8 +42,8 @@ describe('adventure shop accessibility', () => {
 
   it('keeps authoritative and deploy copies synchronized', () => {
     const rootModule = fs.readFileSync('adventure_module.js', 'utf8');
-    expect(fs.readFileSync('prismflow-deploy/src/adventure_source.jsx', 'utf8')).toBe(source);
-    expect(fs.readFileSync('prismflow-deploy/public/adventure_module.js', 'utf8')).toBe(rootModule);
+    expect(fs.readFileSync('desktop/web-app/src/adventure_source.jsx', 'utf8')).toBe(source);
+    expect(fs.readFileSync('desktop/web-app/public/adventure_module.js', 'utf8')).toBe(rootModule);
     expect(rootModule).toContain('useFocusTrap(shopRef, true, onClose)');
     expect(rootModule).not.toContain('role: "button", tabIndex: 0, className: "bg-slate-900 border-4 border-indigo-500');
   });
@@ -70,9 +70,9 @@ describe('adventure dice overlay accessibility', () => {
     const strings = fs.readFileSync('ui_strings.js', 'utf8');
     const rootModule = fs.readFileSync('adventure_module.js', 'utf8');
     expect(strings).toContain('"dice_roll_result": "Dice roll result: {result}"');
-    expect(fs.readFileSync('prismflow-deploy/public/ui_strings.js', 'utf8')).toBe(strings);
-    expect(fs.readFileSync('prismflow-deploy/src/adventure_source.jsx', 'utf8')).toBe(source);
-    expect(fs.readFileSync('prismflow-deploy/public/adventure_module.js', 'utf8')).toBe(rootModule);
+    expect(fs.readFileSync('desktop/web-app/public/ui_strings.js', 'utf8')).toBe(strings);
+    expect(fs.readFileSync('desktop/web-app/src/adventure_source.jsx', 'utf8')).toBe(source);
+    expect(fs.readFileSync('desktop/web-app/public/adventure_module.js', 'utf8')).toBe(rootModule);
     expect(rootModule).toContain('useFocusTrap(diceRef, true, onComplete)');
   });
 });
@@ -103,8 +103,8 @@ describe('adventure mission report accessibility', () => {
 
   it('keeps Mission Report source and deploy modules synchronized', () => {
     const rootModule = fs.readFileSync('adventure_module.js', 'utf8');
-    expect(fs.readFileSync('prismflow-deploy/src/adventure_source.jsx', 'utf8')).toBe(source);
-    expect(fs.readFileSync('prismflow-deploy/public/adventure_module.js', 'utf8')).toBe(rootModule);
+    expect(fs.readFileSync('desktop/web-app/src/adventure_source.jsx', 'utf8')).toBe(source);
+    expect(fs.readFileSync('desktop/web-app/public/adventure_module.js', 'utf8')).toBe(rootModule);
     expect(rootModule).toContain('useFocusTrap(reportRef, true, onClose)');
     expect(rootModule).toContain('role: "progressbar"');
   });
@@ -149,8 +149,8 @@ describe('adventure cast lobby modal accessibility', () => {
 
   it('keeps Cast Lobby source and deploy modules synchronized', () => {
     const rootModule = fs.readFileSync('adventure_module.js', 'utf8');
-    expect(fs.readFileSync('prismflow-deploy/src/adventure_source.jsx', 'utf8')).toBe(source);
-    expect(fs.readFileSync('prismflow-deploy/public/adventure_module.js', 'utf8')).toBe(rootModule);
+    expect(fs.readFileSync('desktop/web-app/src/adventure_source.jsx', 'utf8')).toBe(source);
+    expect(fs.readFileSync('desktop/web-app/public/adventure_module.js', 'utf8')).toBe(rootModule);
     expect(rootModule).toContain('useFocusTrap(castRef, true)');
     expect(rootModule).toContain('"aria-labelledby": "adventure-cast-lobby-title"');
   });
@@ -182,8 +182,8 @@ describe('adventure cast lobby secondary controls accessibility', () => {
 
   it('keeps the second Cast Lobby pass synchronized to deployment artifacts', () => {
     const rootModule = fs.readFileSync('adventure_module.js', 'utf8');
-    expect(fs.readFileSync('prismflow-deploy/src/adventure_source.jsx', 'utf8')).toBe(source);
-    expect(fs.readFileSync('prismflow-deploy/public/adventure_module.js', 'utf8')).toBe(rootModule);
+    expect(fs.readFileSync('desktop/web-app/src/adventure_source.jsx', 'utf8')).toBe(source);
+    expect(fs.readFileSync('desktop/web-app/public/adventure_module.js', 'utf8')).toBe(rootModule);
     expect(rootModule).toContain('Apply portrait refinement');
     expect(rootModule).toContain('min-h-11 px-3 py-2 bg-sky-50 text-sky-700');
   });

@@ -17,7 +17,7 @@
 //   This check is definitive and false-positive-free: it re-runs the EXACT esbuild
 //   invocation the _build_research_*_module.js scripts use, into a temp file, then
 //   compares the bytes against BOTH the committed root module and the
-//   prismflow-deploy/public mirror. Any delta = the committed artifact does not
+//   desktop/web-app/public mirror. Any delta = the committed artifact does not
 //   match what the canonical source compiles to → fix forward in source + rebuild.
 //
 // Usage:
@@ -80,7 +80,7 @@ const clean = [];
 for (const base of TARGETS) {
   const sourcePath = path.join(ROOT, base + '_source.jsx');
   const rootModule = path.join(ROOT, base + '_module.js');
-  const mirror = path.join(ROOT, 'prismflow-deploy', 'public', base + '_module.js');
+  const mirror = path.join(ROOT, 'desktop/web-app', 'public', base + '_module.js');
 
   if (!fs.existsSync(sourcePath)) { console.error('Source not found: ' + sourcePath); process.exit(2); }
   if (!fs.existsSync(rootModule)) { console.error('Module not found: ' + rootModule); process.exit(2); }
@@ -104,10 +104,10 @@ for (const base of TARGETS) {
   if (fs.existsSync(mirror)) {
     const mirrorActual = fs.readFileSync(mirror, 'utf-8');
     if (mirrorActual !== expected) {
-      issues.push({ where: 'prismflow-deploy/public/' + base + '_module.js', delta: mirrorActual.length - expected.length });
+      issues.push({ where: 'desktop/web-app/public/' + base + '_module.js', delta: mirrorActual.length - expected.length });
     }
   } else {
-    issues.push({ where: 'prismflow-deploy/public/' + base + '_module.js', delta: null, missing: true });
+    issues.push({ where: 'desktop/web-app/public/' + base + '_module.js', delta: null, missing: true });
   }
 
   if (issues.length) drifts.push({ base, issues });

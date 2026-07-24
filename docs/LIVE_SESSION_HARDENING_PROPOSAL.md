@@ -16,7 +16,7 @@ session-code entropy — plus the client-side mitigations already shipped and th
 **Two backends (correction, verified 2026-07-01):** on **Gemini Canvas** the platform injects
 `__firebase_config` — a *Google-managed* project we cannot configure (no console, no rules
 deploy; platform policy governs it; per-app `artifacts/{appId}` namespacing). Outside Canvas, the
-prismflow-deploy demo uses the *owned* project **`prismflow-911fe`** (`prismflow-deploy/.env`) —
+desktop/web-app demo uses the *owned* project **`prismflow-911fe`** (`desktop/web-app/.env`) —
 everything in §2/§3 applies to that project, and to whatever owned project hosts the classroom
 phase. The classroom phase should run on an owned project regardless: a platform-managed backend
 offers no DPA, retention control, or auditability for a district.
@@ -210,7 +210,7 @@ all (blocks scripted abuse/enumeration from non-app clients).
   App Check attestation inside a sandboxed third-party iframe is exactly where reCAPTCHA
   integrations get flaky. Run it in *monitoring* mode and check the Canvas surface passes before
   ever enforcing. If Canvas can't attest, App Check may only be enforceable on the
-  prismflow-deploy surface — document whichever outcome the test shows.
+  desktop/web-app surface — document whichever outcome the test shows.
 
 ## 4. TURN relay for school networks
 

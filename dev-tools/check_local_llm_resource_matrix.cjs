@@ -28,7 +28,7 @@ const LIVE_MODEL = modelArg ? modelArg.slice('--model='.length) : 'local-model';
 const TARGET_FILES = {
   source: path.join(ROOT, 'generate_dispatcher_source.jsx'),
   module: path.join(ROOT, 'generate_dispatcher_module.js'),
-  public: path.join(ROOT, 'prismflow-deploy', 'public', 'generate_dispatcher_module.js'),
+  public: path.join(ROOT, 'desktop/web-app', 'public', 'generate_dispatcher_module.js'),
 };
 const DEFAULT_TARGETS = LIVE ? ['module'] : ['source', 'module', 'public'];
 const TARGET_NAMES = targetArg

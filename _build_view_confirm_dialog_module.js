@@ -10,7 +10,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'view_confirm_dialog_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_confirm_dialog_module.js');
-const PUBLIC_OUTPUT = path.join(ROOT, 'prismflow-deploy', 'public', 'view_confirm_dialog_module.js');
+const PUBLIC_OUTPUT = path.join(ROOT, 'desktop/web-app', 'public', 'view_confirm_dialog_module.js');
 const TMP = path.join(ROOT, '_tmp_confirm_dialog_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }

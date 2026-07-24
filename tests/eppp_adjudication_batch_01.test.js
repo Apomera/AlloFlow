@@ -33,7 +33,7 @@ describe('EPPP claim-level adjudication batch 01', () => {
 
   it('uses full source names, stable URLs, credibility explanations, and matching deployment artifacts', () => {
     const report = read('test_prep/eppp_legacy/adjudication_batch_01.json');
-    const deployed = read('prismflow-deploy/public/test_prep/eppp_legacy/adjudication_batch_01.json');
+    const deployed = read('desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_01.json');
     for (const item of report.items) {
       expect(item.revisedItem.sourceDetails.length).toBeGreaterThan(0);
       for (const source of item.revisedItem.sourceDetails) {

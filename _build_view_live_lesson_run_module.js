@@ -6,7 +6,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'view_live_lesson_run_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_live_lesson_run_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'view_live_lesson_run_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'view_live_lesson_run_module.js');
 const TMP = path.join(ROOT, '_tmp_live_lesson_run_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) {

@@ -9,7 +9,7 @@ const pltSpecs = require('./plt_grade_band_qa.config.cjs');
 
 const root = path.resolve(__dirname, '..');
 const sourceDir = path.join(root, 'test_prep');
-const deployDir = path.join(root, 'prismflow-deploy', 'public', 'test_prep');
+const deployDir = path.join(root, 'desktop/web-app', 'public', 'test_prep');
 const outputPath = path.join(__dirname, 'authored', 'non_eppp_eppp_guided_qa_group_a.review.json');
 const reviewedAt = '2026-07-18';
 const reviewer = 'OpenAI Codex independent EPPP-guided review';
@@ -676,7 +676,7 @@ const report = {
   },
   scope: {
     sourceRoot: 'test_prep',
-    deployMirrorRoot: 'prismflow-deploy/public/test_prep',
+    deployMirrorRoot: 'desktop/web-app/public/test_prep',
     artifactSuffixesReviewedPerPack: artifactSuffixes,
     exactPackStems: packSpecs.map((spec) => spec.stem),
     totals: {

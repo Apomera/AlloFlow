@@ -3,7 +3,7 @@ import fs from 'node:fs';
 
 const source = fs.readFileSync('visual_panel_source.jsx', 'utf8');
 const moduleSource = fs.readFileSync('visual_panel_module.js', 'utf8');
-const publicModule = fs.readFileSync('prismflow-deploy/public/visual_panel_module.js', 'utf8');
+const publicModule = fs.readFileSync('desktop/web-app/public/visual_panel_module.js', 'utf8');
 
 describe('Visual Panel WCAG controls', () => {
   it('preserves native focus indicators on every editable field', () => {

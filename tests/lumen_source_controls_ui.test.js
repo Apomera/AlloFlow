@@ -6,7 +6,7 @@ import * as EvidenceMod from '../stem_lab/stem_lumen_evidence.js';
 import * as StudyMod from '../stem_lab/stem_lumen_study.js';
 
 const require = createRequire(import.meta.url);
-const modulesDir = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const modulesDir = resolve(process.cwd(), 'desktop/web-app/node_modules');
 const React = require(resolve(modulesDir, 'react'));
 const ReactDOMClient = require(resolve(modulesDir, 'react-dom/client'));
 const { act } = require(resolve(modulesDir, 'react-dom/test-utils'));

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const source = readFileSync('view_sidebar_panels_source.jsx', 'utf8');
 const built = readFileSync('view_sidebar_panels_module.js', 'utf8');
-const deployed = readFileSync('prismflow-deploy/public/view_sidebar_panels_module.js', 'utf8');
+const deployed = readFileSync('desktop/web-app/public/view_sidebar_panels_module.js', 'utf8');
 
 describe('Sidebar Panels WCAG 2.2 controls', () => {
   it('retains visible focus and explicit non-submit button behavior', () => {

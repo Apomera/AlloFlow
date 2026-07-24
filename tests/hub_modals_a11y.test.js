@@ -23,7 +23,7 @@ describe.each(surfaces)('%s modal accessibility', (_name, sourcePath, modulePath
     expect(source).toContain('previousFocus.isConnected');
   });
   it('synchronizes its public module', () => {
-    expect(fs.readFileSync(`prismflow-deploy/public/${modulePath}`, 'utf8')).toBe(fs.readFileSync(modulePath, 'utf8'));
+    expect(fs.readFileSync(`desktop/web-app/public/${modulePath}`, 'utf8')).toBe(fs.readFileSync(modulePath, 'utf8'));
   });
 });
 

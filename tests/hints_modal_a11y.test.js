@@ -47,6 +47,6 @@ describe('Hints modal accessibility', () => {
   });
 
   it('synchronizes the deployable module', () => {
-    expect(fs.readFileSync('prismflow-deploy/public/view_hints_modal_module.js', 'utf8')).toBe(fs.readFileSync('view_hints_modal_module.js', 'utf8'));
+    expect(fs.readFileSync('desktop/web-app/public/view_hints_modal_module.js', 'utf8')).toBe(fs.readFileSync('view_hints_modal_module.js', 'utf8'));
   });
 });

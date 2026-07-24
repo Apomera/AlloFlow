@@ -5,7 +5,7 @@ const fs=require('fs');
 const path=require('path');
 const root=path.resolve(__dirname,'..');
 const sourceDir=path.join(root,'test_prep');
-const deployDir=path.join(root,'prismflow-deploy','public','test_prep');
+const deployDir=path.join(root,'desktop/web-app','public','test_prep');
 const waitBuffer=new Int32Array(new SharedArrayBuffer(4));
 function writeGeneratedFile(file,data){let error;for(let attempt=1;attempt<=8;attempt++){try{fs.writeFileSync(file,data);return}catch(caught){error=caught;if(attempt<8)Atomics.wait(waitBuffer,0,0,150*attempt)}}throw error}
 

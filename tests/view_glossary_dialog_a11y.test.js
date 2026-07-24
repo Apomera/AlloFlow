@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 
 const source = readFileSync(resolve(process.cwd(), 'view_glossary_source.jsx'), 'utf8');
 const built = readFileSync(resolve(process.cwd(), 'view_glossary_module.js'), 'utf8');
-const deployed = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/view_glossary_module.js'), 'utf8');
+const deployed = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/view_glossary_module.js'), 'utf8');
 
 describe('Glossary layered dialog accessibility', () => {
   it('keeps the generated and deployed modules synchronized', () => {

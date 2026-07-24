@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
 const require = createRequire(import.meta.url);
-const modulesDir = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const modulesDir = resolve(process.cwd(), 'desktop/web-app/node_modules');
 const source = readFileSync('view_spotlight_tour_source.jsx', 'utf8');
 const hostSource = readFileSync('AlloFlowANTI.txt', 'utf8');
 let React;
@@ -56,7 +56,7 @@ describe('Spotlight Help accessibility contract', () => {
     expect(source).not.toContain('__alloFocusTrapStack');
     expect(hostSource).toContain("if (e.key === 'Escape' && isHelpMode)");
     expect(hostSource).toContain('if (isSpotlightMode) { setIsSpotlightMode(false); }');
-    expect(readFileSync('prismflow-deploy/public/view_spotlight_tour_module.js', 'utf8'))
+    expect(readFileSync('desktop/web-app/public/view_spotlight_tour_module.js', 'utf8'))
       .toBe(readFileSync('view_spotlight_tour_module.js', 'utf8'));
   });
 

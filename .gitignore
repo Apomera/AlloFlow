@@ -11,14 +11,14 @@ _archive/
 _dev_scratch/
 
 # Security: Never commit build artifacts (they contain baked-in API keys)
-prismflow-deploy/build/
-prismflow-deploy/.firebase/
+desktop/web-app/build/
+desktop/web-app/.firebase/
 
 # Security: Never commit environment files with secrets
-prismflow-deploy/.env
-prismflow-deploy/.env.local
-prismflow-deploy/.env.production
-prismflow-deploy/.env.maintainer-demo
+desktop/web-app/.env
+desktop/web-app/.env.local
+desktop/web-app/.env.production
+desktop/web-app/.env.maintainer-demo
 *.env.local
 
 # Security: Never commit API key files
@@ -28,7 +28,7 @@ api key.txt
 *.secret
 
 # Security: CSE API key config — deployed to Firebase only, never committed
-prismflow-deploy/public/cse-config.json
+desktop/web-app/public/cse-config.json
 cse-config.json
 
 # Large media files (too large for GitHub and for Cloudflare Pages 25 MiB cap)
@@ -83,19 +83,19 @@ pilot/
 
 # Monolith backup files (kept locally, source of truth is AlloFlowANTI.txt)
 AlloFlowANTI_backup*.txt
-prismflow-deploy/src/AlloFlowANTI_backup*.txt
+desktop/web-app/src/AlloFlowANTI_backup*.txt
 
 # Build/deploy logs
-prismflow-deploy/_build_log.txt
-prismflow-deploy/_deploy_log.txt
-prismflow-deploy/_npm_log.txt
+desktop/web-app/_build_log.txt
+desktop/web-app/_deploy_log.txt
+desktop/web-app/_npm_log.txt
 
 # One-off fix/extract scripts (not part of the build pipeline)
 _fix_*.ps1
 _fix_*.js
 extract_*.ps1
-prismflow-deploy/public/stem_lab/_fix_*.js
-prismflow-deploy/public/stem_lab/extract_*.ps1
+desktop/web-app/public/stem_lab/_fix_*.js
+desktop/web-app/public/stem_lab/extract_*.ps1
 stem_lab/_build_p*.py
 
 # Marketing / non-code docs

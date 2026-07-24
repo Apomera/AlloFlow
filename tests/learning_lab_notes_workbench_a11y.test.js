@@ -79,6 +79,6 @@ describe('Learning Lab Notes Workbench accessibility', () => {
     expect(notes).toContain('Use, rename, or leave fields blank based on what helps you.');
     expect(notes).toContain('does not assess note quality or guarantee learning');
     expect(notes).not.toContain('active-processing magic');
-    expect(source).toBe(read('prismflow-deploy/public/stem_lab/stem_tool_learning_lab.js'));
+    expect(source).toBe(read('desktop/web-app/public/stem_lab/stem_tool_learning_lab.js'));
   });
 });

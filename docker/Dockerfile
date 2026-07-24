@@ -14,11 +14,11 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy the deploy project (package.json first for layer caching)
-COPY prismflow-deploy/package*.json ./
+COPY desktop/web-app/package*.json ./
 RUN npm ci --production=false
 
-# Copy prismflow-deploy source
-COPY prismflow-deploy/ ./
+# Copy desktop/web-app source
+COPY desktop/web-app/ ./
 
 # Copy the build script and monolith source
 COPY build.js ./build.js

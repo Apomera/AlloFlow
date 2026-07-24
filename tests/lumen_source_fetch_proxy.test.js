@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import fs from 'node:fs';
 
 const require = createRequire(import.meta.url);
-const Fetch = require('../prismflow-deploy/functions/web_source_fetch.js');
+const Fetch = require('../desktop/web-app/functions/web_source_fetch.js');
 
 function readableHtml(label = 'Evidence article') {
   return `<!doctype html><html><head><title>${label} &amp; Research</title></head><body><nav>Skip this menu</nav><main><h1>${label}</h1><p>This public educational page contains enough meaningful readable source text for Lumen to preserve evidence passages, cite exact excerpts, and answer later questions without relying on the search-result preview.</p><p>It includes a second paragraph so the extraction result represents the complete article body.</p></main><script>window.secret = true;</script></body></html>`;
@@ -103,7 +103,7 @@ describe('Lumen first-party source fetch network boundary', () => {
   });
 
   it('keeps the cloud and desktop safety cores byte-identical', () => {
-    const cloud = fs.readFileSync('prismflow-deploy/functions/web_source_fetch.js');
+    const cloud = fs.readFileSync('desktop/web-app/functions/web_source_fetch.js');
     const desktop = fs.readFileSync('desktop/runtime/web-source-fetch.cjs');
     expect(desktop.equals(cloud)).toBe(true);
   });

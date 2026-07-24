@@ -24,7 +24,7 @@ const USER_AGENT = 'AlloFlow OpenStax accessibility mirror (noncommercial educat
 function loadJsdom() {
   const candidates = [
     path.join(ROOT, '..', 'node_modules'),
-    path.join(ROOT, '..', 'prismflow-deploy', 'node_modules')
+    path.join(ROOT, '..', 'desktop/web-app', 'node_modules')
   ];
   return require(require.resolve('jsdom', { paths: candidates })).JSDOM;
 }

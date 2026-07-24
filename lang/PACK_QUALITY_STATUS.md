@@ -1,6 +1,6 @@
 # Language Pack Quality Status
 
-> **Status note, July 9, 2026:** This log documents the major 56-pack quality wave. The repo currently has 63 `lang/*.js` pack files mirrored to `prismflow-deploy/public/lang/`; run the current i18n verification tools before applying the 56-pack quality summary to newer packs or the PPS cluster.
+> **Status note, July 9, 2026:** This log documents the major 56-pack quality wave. The repo currently has 63 `lang/*.js` pack files mirrored to `desktop/web-app/public/lang/`; run the current i18n verification tools before applying the 56-pack quality summary to newer packs or the PPS cluster.
 
 **Last updated:** 2026-06-20 (June i18n wave — see entry below)
 

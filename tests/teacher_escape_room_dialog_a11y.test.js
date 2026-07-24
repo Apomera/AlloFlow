@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 
-const paths = ['teacher_source.jsx', 'teacher_module.js', 'prismflow-deploy/public/teacher_module.js'];
+const paths = ['teacher_source.jsx', 'teacher_module.js', 'desktop/web-app/public/teacher_module.js'];
 const files = paths.map(path => [path, fs.readFileSync(path, 'utf8')]);
 
 describe('Escape Room teacher end-game dialog accessibility', () => {

@@ -96,6 +96,6 @@ describe('Praxis Educational Leadership 5412 diagnostic bank', () => {
     expect(qa.blueprint).toMatchObject({ officialQuestionCount: 120, timeMinutes: 165, selectedResponse: true, categories: { 'strategic-leadership': { questions: 20, percentage: 17 }, 'instructional-leadership': { questions: 27, percentage: 23 }, 'climate-cultural-leadership': { questions: 22, percentage: 18 }, 'ethical-leadership': { questions: 19, percentage: 16 }, 'organizational-leadership': { questions: 16, percentage: 13 }, 'community-engagement-leadership': { questions: 16, percentage: 13 } } });
     expect(qa.diagnosticBatch).toMatchObject({ batchCount: 5, batchSize: 100, categories: { 'strategic-leadership': 17, 'instructional-leadership': 23, 'climate-cultural-leadership': 18, 'ethical-leadership': 16, 'organizational-leadership': 13, 'community-engagement-leadership': 13 } });
     expect(qa.standard.limitation).toContain('independent practicing-school-leader validation');
-    for (const name of ['educational_leadership_5412_items.json', 'educational_leadership_5412_pack.json', 'educational_leadership_5412_native_qa.json', 'educational_leadership_5412_native_qa.md']) expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
+    for (const name of ['educational_leadership_5412_items.json', 'educational_leadership_5412_pack.json', 'educational_leadership_5412_native_qa.json', 'educational_leadership_5412_native_qa.md']) expect(read('desktop/web-app/public/test_prep/' + name)).toBe(read('test_prep/' + name));
   }, 20000);
 });

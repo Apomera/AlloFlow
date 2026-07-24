@@ -32,7 +32,7 @@
  *   node reading_library/import_bloom_books.js --fetch --langs so,ymm
  *   node reading_library/import_bloom_books.js --fetch --dry-run
  *
- * Requires jsdom from prismflow-deploy/node_modules (dev dependency of the
+ * Requires jsdom from desktop/web-app/node_modules (dev dependency of the
  * test harness; this is a build-side script, never shipped).
  */
 'use strict';
@@ -246,7 +246,7 @@ function copyrightHolder(meta) {
 let JSDOM = null;
 function loadJsdom() {
   if (JSDOM) return JSDOM;
-  const jsdomPath = path.join(ROOT, '..', 'prismflow-deploy', 'node_modules', 'jsdom');
+  const jsdomPath = path.join(ROOT, '..', 'desktop/web-app', 'node_modules', 'jsdom');
   ({ JSDOM } = require(jsdomPath));
   return JSDOM;
 }

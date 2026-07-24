@@ -58,7 +58,7 @@ for (const stem of REMAINING) {
     console.log(`    ${(e.stderr ? e.stderr.toString() : e.message).slice(0, 500)}`);
     failures.push(`${stem}: migrator error`);
     fs.copyFileSync(deployedSave, moduleFile);
-    fs.copyFileSync(deployedSave, `prismflow-deploy/public/${moduleFile}`);
+    fs.copyFileSync(deployedSave, `desktop/web-app/public/${moduleFile}`);
     continue;
   }
 
@@ -87,7 +87,7 @@ for (const stem of REMAINING) {
     console.log(`  FAIL: semantic match failed${normErr ? ' (parse error: ' + normErr + ')' : ''}`);
     // Restore deployed
     fs.copyFileSync(deployedSave, moduleFile);
-    fs.copyFileSync(deployedSave, `prismflow-deploy/public/${moduleFile}`);
+    fs.copyFileSync(deployedSave, `desktop/web-app/public/${moduleFile}`);
     // Remove the new source + build script so state is clean for next attempt
     if (fs.existsSync(`view_${stem}_source.jsx`)) fs.unlinkSync(`view_${stem}_source.jsx`);
     if (fs.existsSync(`_build_view_${stem}_module.js`)) fs.unlinkSync(`_build_view_${stem}_module.js`);

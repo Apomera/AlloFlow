@@ -55,5 +55,5 @@ const moduleSrc = `/**
 `;
 
 fs.writeFileSync('view_image_module.js', moduleSrc);
-fs.writeFileSync('prismflow-deploy/public/view_image_module.js', moduleSrc);
+fs.writeFileSync('desktop/web-app/public/view_image_module.js', moduleSrc);
 console.log('Wrote view_image_module.js (' + moduleSrc.length + ' bytes)');

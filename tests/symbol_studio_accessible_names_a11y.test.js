@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const root = process.cwd();
 const source = fs.readFileSync(path.join(root, 'symbol_studio_module.js'), 'utf8');
-const mirror = fs.readFileSync(path.join(root, 'prismflow-deploy/public/symbol_studio_module.js'), 'utf8');
+const mirror = fs.readFileSync(path.join(root, 'desktop/web-app/public/symbol_studio_module.js'), 'utf8');
 
 describe('Symbol Studio accessible control names', () => {
   it('keeps the deploy mirror byte-identical', () => {

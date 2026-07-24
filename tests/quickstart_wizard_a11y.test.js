@@ -71,6 +71,6 @@ describe('Quick Start wizard accessibility', () => {
   });
 
   it('synchronizes the deployable module', () => {
-    expect(fs.readFileSync('prismflow-deploy/public/quickstart_module.js', 'utf8')).toBe(moduleText);
+    expect(fs.readFileSync('desktop/web-app/public/quickstart_module.js', 'utf8')).toBe(moduleText);
   });
 });

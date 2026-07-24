@@ -23,7 +23,7 @@ describe('Adventure cast-review establishing shot', () => {
 
   it('keeps the generated handler module and deployed copy synchronized', () => {
     expect(handlersModule).toContain('Adventure establishing shot failed');
-    expect(readFileSync('prismflow-deploy/public/adventure_handlers_module.js', 'utf8')).toBe(handlersModule);
+    expect(readFileSync('desktop/web-app/public/adventure_handlers_module.js', 'utf8')).toBe(handlersModule);
   });
 });
 
@@ -66,7 +66,7 @@ describe('Gemini-gated cast reference sheet', () => {
 
   it('keeps the generated session module and deployed copy synchronized', () => {
     expect(sessionModule).toContain('createAdventureReferenceSheet');
-    expect(readFileSync('prismflow-deploy/public/adventure_session_handlers_module.js', 'utf8')).toBe(sessionModule);
+    expect(readFileSync('desktop/web-app/public/adventure_session_handlers_module.js', 'utf8')).toBe(sessionModule);
   });
 });
 
@@ -96,7 +96,7 @@ describe('Adventure perceived-latency polish', () => {
 
   it('keeps the generated Adventure view and deployed copy synchronized', () => {
     expect(viewModule).toContain('Polishing scene details');
-    expect(readFileSync('prismflow-deploy/public/view_adventure_module.js', 'utf8')).toBe(viewModule);
+    expect(readFileSync('desktop/web-app/public/view_adventure_module.js', 'utf8')).toBe(viewModule);
   });
 });
 

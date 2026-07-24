@@ -16,7 +16,7 @@
 //       test can't see. This is the strong guarantee that surfaces actually flip.
 //
 // Skips the render layer where React/jsdom aren't installed (CI lanes without
-// prismflow-deploy/node_modules); the static layer always runs.
+// desktop/web-app/node_modules); the static layer always runs.
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -108,7 +108,7 @@ const DARK_SURFACE_HEXES = ['#0f172a', '#1e293b', '#111827', '#0b1220', '#020617
 const SURFACE_HEXES = ['#f0fdf4', '#ecfdf5', '#d1fae5', '#dcfce7', '#eff6ff', '#dbeafe', '#e0e7ff', '#fef3c7', '#fffbeb', '#fef9c3', '#fff8f0', '#fef2f2', '#fee2e2', '#faf5ff', '#f5f3ff', '#ede9fe', '#f8fafc', '#f1f5f9', '#fafafa'];
 
 const require = createRequire(import.meta.url);
-const MODULES = resolve(process.cwd(), 'prismflow-deploy', 'node_modules');
+const MODULES = resolve(process.cwd(), 'desktop/web-app', 'node_modules');
 let React, RDS, depsOk = true;
 try {
   React = require(resolve(MODULES, 'react'));

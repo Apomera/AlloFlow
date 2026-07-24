@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const ROOT = __dirname;
 const stringsFile = path.join(ROOT, 'ui_strings.js');
-const mirrorStringsFile = path.join(ROOT, 'prismflow-deploy', 'public', 'ui_strings.js');
+const mirrorStringsFile = path.join(ROOT, 'desktop/web-app', 'public', 'ui_strings.js');
 
 const data = JSON.parse(fs.readFileSync(stringsFile, 'utf-8'));
 

@@ -353,7 +353,7 @@ describe('Test Prep Hub host contract', () => {
     expect(build).toContain("filename: 'test_prep_hub_module.js'");
 
     const legacyIndex = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/index.html'), 'utf8');
-    const deployedLegacyIndex = fs.readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/test_prep/eppp_legacy/index.html'), 'utf8');
+    const deployedLegacyIndex = fs.readFileSync(resolve(process.cwd(), 'desktop/web-app/public/test_prep/eppp_legacy/index.html'), 'utf8');
     expect(legacyIndex).not.toMatch(/js\/auth\.js/i);
     expect(fs.existsSync(resolve(process.cwd(), 'test_prep/eppp_legacy/js/auth.js'))).toBe(false);
     const legacyApp = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/js/app.js'), 'utf8');
@@ -361,7 +361,7 @@ describe('Test Prep Hub host contract', () => {
     expect(legacyIndex).toContain('alloflow_embed.js');
     const legacyBridge = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/alloflow_embed.js'), 'utf8');
     const legacyEmbedCss = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/alloflow_embed.css'), 'utf8');
-    const deployedLegacyEmbedCss = fs.readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/test_prep/eppp_legacy/alloflow_embed.css'), 'utf8');
+    const deployedLegacyEmbedCss = fs.readFileSync(resolve(process.cwd(), 'desktop/web-app/public/test_prep/eppp_legacy/alloflow_embed.css'), 'utf8');
     expect(legacyBridge).toContain('not official EPPP equating');
     expect(legacyBridge).not.toContain('legacy workspace');
     expect(legacyIndex).toContain('AlloFlow Study Suite');

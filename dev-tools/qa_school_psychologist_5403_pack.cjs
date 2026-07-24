@@ -111,7 +111,7 @@ const report = {
 };
 const markdown = `# Praxis School Psychologist (5403) QA report\n\nGenerated: ${generatedAt}\n\n## Result\n\n- Status: **${status.toUpperCase()}**\n- Items: ${reports.length}\n- Passed: ${passedItems}\n- Review required: ${reports.length - passedItems}\n- Diagnostic batches: 2 x 100\n- Optional timed simulation: 125 questions / 125 minutes\n\n> ${report.standard.limitation}\n`;
 
-for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')]) {
+for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'desktop/web-app', 'public', 'test_prep')]) {
   fs.mkdirSync(outputRoot, { recursive: true });
   fs.writeFileSync(path.join(outputRoot, 'school_psychologist_5403_native_qa.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
   fs.writeFileSync(path.join(outputRoot, 'school_psychologist_5403_native_qa.md'), markdown, 'utf8');

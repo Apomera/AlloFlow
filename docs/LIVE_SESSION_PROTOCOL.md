@@ -432,7 +432,7 @@ network-blocked-path test for the export fallback.
 
 - `concept_pictionary_source.jsx` is the source; always rebuild via
   `node _build_concept_pictionary_module.js` (also syncs prismflow mirror).
-  `live_polling_module.js` is hand-maintained — copy to `prismflow-deploy/public/` after editing.
+  `live_polling_module.js` is hand-maintained — copy to `desktop/web-app/public/` after editing.
 - Any new session-doc field: add to `SESSION_TIER1_LEAVES` **with a justification comment**, or
   keep it out of Firestore entirely.
 - Any new teardown path: emit a terminal event (§2.3 invariant).

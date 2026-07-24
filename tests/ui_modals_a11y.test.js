@@ -44,6 +44,6 @@ describe('Shared UI modal accessibility', () => {
     for (const name of ['StudentQuizOverlay', 'TeacherGate', 'RoleSelectionModal', 'StudentEntryModal', 'StudentWelcomeModal']) {
       expect(moduleText).toContain(`window.AlloModules.${name} = ${name}`);
     }
-    expect(fs.readFileSync('prismflow-deploy/public/ui_modals_module.js', 'utf8')).toBe(moduleText);
+    expect(fs.readFileSync('desktop/web-app/public/ui_modals_module.js', 'utf8')).toBe(moduleText);
   });
 });

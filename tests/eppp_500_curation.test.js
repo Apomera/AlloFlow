@@ -30,7 +30,7 @@ describe('EPPP 500-question curation milestone', () => {
     expect(bank).toHaveLength(1500);
     expect(bank.slice(0, 500).every((item) => passedIds.has(item.id))).toBe(true);
     const source = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/curation_500.json'), 'utf8');
-    const deployed = fs.readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/test_prep/eppp_legacy/curation_500.json'), 'utf8');
+    const deployed = fs.readFileSync(resolve(process.cwd(), 'desktop/web-app/public/test_prep/eppp_legacy/curation_500.json'), 'utf8');
     const markdown = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/curation_500.md'), 'utf8');
     expect(deployed).toBe(source);
     expect(markdown).toContain('Selection is not approval');

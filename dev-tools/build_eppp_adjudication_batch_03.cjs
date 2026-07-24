@@ -6,7 +6,7 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 const sourceRoot = path.join(root, 'test_prep', 'eppp_legacy');
-const deployRoot = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_legacy');
+const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy');
 const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
 const docket = readJson(path.join(sourceRoot, 'next_review_docket.json'));
 const priorIds = new Set(['01', '02'].flatMap((batch) => readJson(path.join(sourceRoot, `adjudication_batch_${batch}.json`)).items.map((item) => item.legacyId)));

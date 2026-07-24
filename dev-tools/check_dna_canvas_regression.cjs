@@ -6,8 +6,8 @@ const path = require('path');
 const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
-const REACT_UMD = path.join(ROOT, 'prismflow-deploy', 'node_modules', 'react', 'umd', 'react.development.js');
-const REACT_DOM_UMD = path.join(ROOT, 'prismflow-deploy', 'node_modules', 'react-dom', 'umd', 'react-dom.development.js');
+const REACT_UMD = path.join(ROOT, 'desktop/web-app', 'node_modules', 'react', 'umd', 'react.development.js');
+const REACT_DOM_UMD = path.join(ROOT, 'desktop/web-app', 'node_modules', 'react-dom', 'umd', 'react-dom.development.js');
 const DNA_TOOL = path.join(ROOT, 'stem_lab', 'stem_tool_dna.js');
 
 async function setDNA(page, state) {

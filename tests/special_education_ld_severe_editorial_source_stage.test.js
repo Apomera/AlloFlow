@@ -74,7 +74,7 @@ describe('LD 5383 and Severe/Profound 5547 source and final-release editorial in
         '_learning_library_qa.json',
         '_learning_library_qa.md',
       ]) {
-        expect(read(`prismflow-deploy/public/test_prep/${suite.stem}${suffix}`)).toBe(read(`test_prep/${suite.stem}${suffix}`));
+        expect(read(`desktop/web-app/public/test_prep/${suite.stem}${suffix}`)).toBe(read(`test_prep/${suite.stem}${suffix}`));
       }
     });
   }

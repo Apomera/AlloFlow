@@ -3,7 +3,7 @@ import fs from 'node:fs';
 
 const source = fs.readFileSync('view_adventure_source.jsx', 'utf8');
 const moduleSource = fs.readFileSync('view_adventure_module.js', 'utf8');
-const publicModule = fs.readFileSync('prismflow-deploy/public/view_adventure_module.js', 'utf8');
+const publicModule = fs.readFileSync('desktop/web-app/public/view_adventure_module.js', 'utf8');
 
 describe('Adventure View WCAG focus behavior', () => {
   it('retains setup focus rings without suppressing the native outline', () => {

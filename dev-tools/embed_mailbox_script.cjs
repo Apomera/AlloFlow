@@ -6,7 +6,7 @@
  * tests/mailbox_session_bridge.test.js pins the embedded copy byte-identical to
  * Code.gs (three-copy sync). Any Code.gs edit MUST be followed by this tool +
  * `node build.js --mode=prod --force` so the prismflow pair regenerates.
- * Also mirrors Code.gs to prismflow-deploy/public/apps_script/session_mailbox/.
+ * Also mirrors Code.gs to desktop/web-app/public/apps_script/session_mailbox/.
  */
 'use strict';
 const fs = require('fs');
@@ -14,7 +14,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const ANTI = path.join(ROOT, 'AlloFlowANTI.txt');
 const GS = path.join(ROOT, 'apps_script', 'session_mailbox', 'Code.gs');
-const GS_PUB = path.join(ROOT, 'prismflow-deploy', 'public', 'apps_script', 'session_mailbox', 'Code.gs');
+const GS_PUB = path.join(ROOT, 'desktop/web-app', 'public', 'apps_script', 'session_mailbox', 'Code.gs');
 
 const gs = fs.readFileSync(GS, 'utf8');
 let anti = fs.readFileSync(ANTI, 'utf8');
@@ -40,6 +40,6 @@ if (before === fresh) {
 }
 if (fs.readFileSync(GS_PUB, 'utf8') !== gs) {
   fs.writeFileSync(GS_PUB, gs);
-  console.log('embed_mailbox_script: mirrored Code.gs to prismflow-deploy/public.');
+  console.log('embed_mailbox_script: mirrored Code.gs to desktop/web-app/public.');
 }
 console.log('Remember: node build.js --mode=prod --force to regenerate the App.jsx pair.');

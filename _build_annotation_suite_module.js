@@ -13,7 +13,7 @@ const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'annotation_suite_source.jsx');
 const INQUIRY_BRIDGE = path.join(ROOT, 'annotation_inquiry_bridge.js');
 const OUTPUT = path.join(ROOT, 'annotation_suite_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'annotation_suite_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'annotation_suite_module.js');
 const TMP = path.join(ROOT, '_tmp_annotation_suite_entry.jsx');
 const TMP_COMPILED = TMP + '.compiled.js';
 

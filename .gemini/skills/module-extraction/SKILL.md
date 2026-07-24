@@ -167,9 +167,9 @@ var Download = lucide.Download || function() { return null; };
 ### Step 5: Deploy
 
 Follow the `/deploy` workflow:
-1. Copy module to `prismflow-deploy/public/`
+1. Copy module to `desktop/web-app/public/`
 2. `node build.js --mode=prod`
-3. `npm run build` (in `prismflow-deploy/`)
+3. `npm run build` (in `desktop/web-app/`)
 4. Stamp service worker
 5. `npx firebase deploy --only hosting`
 6. Git commit + push (for CDN cache busting)

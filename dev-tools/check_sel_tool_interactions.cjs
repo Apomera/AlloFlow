@@ -13,7 +13,7 @@ const path = require('path');
 
 const ROOT = process.cwd();
 const SEL_DIR = path.join(ROOT, 'sel_hub');
-const MODULES = path.join(ROOT, 'prismflow-deploy', 'node_modules');
+const MODULES = path.join(ROOT, 'desktop/web-app', 'node_modules');
 const REPORT_JSON = path.join(ROOT, 'a11y-audit', 'sel_tool_interaction_qa.json');
 const REPORT_MD = path.join(ROOT, 'a11y-audit', 'sel_tool_interaction_qa.md');
 const QUIET = process.argv.includes('--quiet');

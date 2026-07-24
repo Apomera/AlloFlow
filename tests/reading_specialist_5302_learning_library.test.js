@@ -78,6 +78,6 @@ describe('Praxis Reading Specialist 5302 native learning library', () => {
     expect(qa.summary).toMatchObject({ chapters: 12, sections: 48, knowledgeChecks: 60, flashcards: 75, memoryAids: 20, constructedResponseWorkshops: 6, findings: [], status: 'pass' });
     expect(qa.standard.limitation).toContain('not ETS or ILA approval');
     expect(qa.standard.limitation).toContain('official constructed-response scoring');
-    for (const name of ['reading_specialist_5302_learning_library.json', 'reading_specialist_5302_learning_library_qa.json', 'reading_specialist_5302_learning_library_qa.md']) expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
+    for (const name of ['reading_specialist_5302_learning_library.json', 'reading_specialist_5302_learning_library_qa.json', 'reading_specialist_5302_learning_library_qa.md']) expect(read('desktop/web-app/public/test_prep/' + name)).toBe(read('test_prep/' + name));
   });
 });

@@ -693,7 +693,7 @@ const pack = {
 const serialized = `${JSON.stringify(pack, null, 2)}\n`;
 const outputs = [
   path.join(root, 'test_prep', 'eppp_2027_preview_pack.json'),
-  path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_2027_preview_pack.json'),
+  path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_2027_preview_pack.json'),
 ];
 for (const output of outputs) {
   fs.mkdirSync(path.dirname(output), { recursive: true });

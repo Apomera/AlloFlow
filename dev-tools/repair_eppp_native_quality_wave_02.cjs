@@ -6,8 +6,8 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 const sourcePath = path.join(root, 'test_prep', 'eppp_native_items.json');
-const deployPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_native_items.json');
-const outputRoots = [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')];
+const deployPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_native_items.json');
+const outputRoots = [path.join(root, 'test_prep'), path.join(root, 'desktop/web-app', 'public', 'test_prep')];
 const auditName = 'eppp_native_quality_audit_wave_02';
 const reviewedAt = '2026-07-15';
 const paddedPrefix = 'Under the conditions in the question, the best response is ';

@@ -62,7 +62,7 @@ describe('Praxis School Counselor 5422 native learning library', () => {
     expect(qa.summary).toMatchObject({ chapters: 12, sections: 48, knowledgeChecks: 60, flashcards: 75, memoryAids: 20, findings: [], status: 'pass' });
     expect(qa.standard.limitation).toContain('not ETS or ASCA approval');
     for (const name of ['school_counselor_5422_learning_library.json', 'school_counselor_5422_learning_library_qa.json', 'school_counselor_5422_learning_library_qa.md']) {
-      expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
+      expect(read('desktop/web-app/public/test_prep/' + name)).toBe(read('test_prep/' + name));
     }
   });
 });

@@ -88,7 +88,7 @@ Only once Phases 0-3 are solid AND the pipeline is confirmed as the priority. Ex
 
 ## Per-phase verification protocol
 
-1. `node _build_doc_pipeline_module.js` (auto-syncs to prismflow-deploy/public).
+1. `node _build_doc_pipeline_module.js` (auto-syncs to desktop/web-app/public).
 2. `git diff --stat` + eyeball the built-module diff for unexpected changes.
 3. `npm test` (vitest) green.
 4. Run ONE real document (a scanned PDF, a Spanish worksheet, a complex-table doc) through the live app; confirm the Conformance Report + Audit Report render identically (scores, split tiles, integrity, reliability rows).

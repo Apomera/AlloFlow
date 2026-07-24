@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const UNIT_CONVERT_PATHS = [
   'stem_lab/stem_tool_unitconvert.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_unitconvert.js',
+  'desktop/web-app/public/stem_lab/stem_tool_unitconvert.js',
 ];
 
 describe('unit converter metric-prefix canvas loop', () => {

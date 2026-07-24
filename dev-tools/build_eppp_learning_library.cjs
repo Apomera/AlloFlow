@@ -9,7 +9,7 @@ const { buildDiagramCatalog } = require('./eppp_diagram_catalog.cjs');
 
 const root = path.resolve(__dirname, '..');
 const legacyRoot = path.join(root, 'test_prep', 'eppp_legacy');
-const deployRoot = path.join(root, 'prismflow-deploy', 'public', 'test_prep');
+const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep');
 const html = fs.readFileSync(path.join(legacyRoot, 'index.html'), 'utf8');
 const scriptPaths = Array.from(html.matchAll(/<script\s+src=["']([^"']+\.js)(?:\?[^"']*)?["']/gi), (match) => match[1]);
 const windowObject = {};

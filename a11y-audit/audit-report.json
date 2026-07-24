@@ -119,9 +119,9 @@
         "sel_hub\\sel_tool_selfadvocacy.js",
         "sel_hub\\sel_tool_sociallab.js",
         "sel_hub\\sel_tool_upstander.js",
-        "prismflow-deploy\\src\\doc_pipeline_module_public_copy.js",
-        "prismflow-deploy\\src\\games_source.jsx",
-        "prismflow-deploy\\src\\view_visual_supports_modal_source.jsx"
+        "desktop/web-app\\src\\doc_pipeline_module_public_copy.js",
+        "desktop/web-app\\src\\games_source.jsx",
+        "desktop/web-app\\src\\view_visual_supports_modal_source.jsx"
       ]
     },
     {
@@ -200,11 +200,11 @@
         "stem_lab\\stem_tool_volume.js",
         "stem_lab\\stem_tool_wave.js",
         "sel_hub\\sel_tool_howl.js",
-        "prismflow-deploy\\src\\AlloFlowANTI.txt",
-        "prismflow-deploy\\src\\App.jsx",
-        "prismflow-deploy\\src\\content_engine_source.jsx",
-        "prismflow-deploy\\src\\doc_pipeline_module_public_copy.js",
-        "prismflow-deploy\\src\\view_visual_supports_modal_source.jsx"
+        "desktop/web-app\\src\\AlloFlowANTI.txt",
+        "desktop/web-app\\src\\App.jsx",
+        "desktop/web-app\\src\\content_engine_source.jsx",
+        "desktop/web-app\\src\\doc_pipeline_module_public_copy.js",
+        "desktop/web-app\\src\\view_visual_supports_modal_source.jsx"
       ]
     },
     {
@@ -365,12 +365,12 @@
         "stem_lab\\stem_tool_weldlab.js",
         "stem_lab\\stem_tool_worldbuilder.js",
         "sel_hub\\sel_tool_cultureexplorer.js",
-        "prismflow-deploy\\src\\adventure_source.jsx",
-        "prismflow-deploy\\src\\AlloFlowANTI.txt",
-        "prismflow-deploy\\src\\App.jsx",
-        "prismflow-deploy\\src\\games_source.jsx",
-        "prismflow-deploy\\src\\teacher_module.js",
-        "prismflow-deploy\\src\\teacher_source.jsx"
+        "desktop/web-app\\src\\adventure_source.jsx",
+        "desktop/web-app\\src\\AlloFlowANTI.txt",
+        "desktop/web-app\\src\\App.jsx",
+        "desktop/web-app\\src\\games_source.jsx",
+        "desktop/web-app\\src\\teacher_module.js",
+        "desktop/web-app\\src\\teacher_source.jsx"
       ]
     },
     {
@@ -442,12 +442,12 @@
         "stem_lab\\stem_tool_molecule.js",
         "stem_lab\\stem_tool_solarsystem.js",
         "stem_lab\\stem_tool_universe.js",
-        "prismflow-deploy\\src\\adventure_source.jsx",
-        "prismflow-deploy\\src\\AlloFlowANTI.txt",
-        "prismflow-deploy\\src\\App.jsx",
-        "prismflow-deploy\\src\\games_source.jsx",
-        "prismflow-deploy\\src\\teacher_module.js",
-        "prismflow-deploy\\src\\teacher_source.jsx"
+        "desktop/web-app\\src\\adventure_source.jsx",
+        "desktop/web-app\\src\\AlloFlowANTI.txt",
+        "desktop/web-app\\src\\App.jsx",
+        "desktop/web-app\\src\\games_source.jsx",
+        "desktop/web-app\\src\\teacher_module.js",
+        "desktop/web-app\\src\\teacher_source.jsx"
       ]
     },
     {
@@ -499,7 +499,7 @@
         "stem_lab\\stem_tool_statslab.js",
         "stem_lab\\stem_tool_titration.js",
         "stem_lab\\stem_tool_universe.js",
-        "prismflow-deploy\\src\\adventure_source.jsx"
+        "desktop/web-app\\src\\adventure_source.jsx"
       ]
     },
     {
@@ -665,8 +665,8 @@
         "sel_hub\\sel_tool_transitions.js",
         "sel_hub\\sel_tool_upstander.js",
         "sel_hub\\sel_tool_zones.js",
-        "prismflow-deploy\\src\\AlloFlowANTI.txt",
-        "prismflow-deploy\\src\\App.jsx"
+        "desktop/web-app\\src\\AlloFlowANTI.txt",
+        "desktop/web-app\\src\\App.jsx"
       ]
     },
     {
@@ -679,8 +679,8 @@
         "AlloFlowANTI.txt",
         "research_lane_scientific_module.js",
         "stem_lab\\stem_tool_nutritionlab.js",
-        "prismflow-deploy\\src\\AlloFlowANTI.txt",
-        "prismflow-deploy\\src\\App.jsx"
+        "desktop/web-app\\src\\AlloFlowANTI.txt",
+        "desktop/web-app\\src\\App.jsx"
       ]
     },
     {
@@ -738,9 +738,9 @@
         "sel_hub\\sel_tool_crisiscompanion.js",
         "sel_hub\\sel_tool_execfunction.js",
         "sel_hub\\sel_tool_selfadvocacy.js",
-        "prismflow-deploy\\src\\AlloFlowANTI.txt",
-        "prismflow-deploy\\src\\App.jsx",
-        "prismflow-deploy\\src\\teacher_source.jsx"
+        "desktop/web-app\\src\\AlloFlowANTI.txt",
+        "desktop/web-app\\src\\App.jsx",
+        "desktop/web-app\\src\\teacher_source.jsx"
       ]
     },
     {
@@ -819,7 +819,7 @@
         "sel_hub\\sel_tool_mindfulness.js",
         "sel_hub\\sel_tool_strengths.js",
         "sel_hub\\sel_tool_zones.js",
-        "prismflow-deploy\\src\\teacher_module.js"
+        "desktop/web-app\\src\\teacher_module.js"
       ]
     },
     {
@@ -860,7 +860,7 @@
         "stem_lab\\stem_tool_geo.js",
         "stem_lab\\stem_tool_logiclab.js",
         "stem_lab\\stem_tool_manipulatives.js",
-        "prismflow-deploy\\src\\games_source.jsx"
+        "desktop/web-app\\src\\games_source.jsx"
       ]
     },
     {
@@ -1042,8 +1042,8 @@
         "stem_lab\\stem_tool_platetectonics.js",
         "stem_lab\\stem_tool_worldbuilder.js",
         "sel_hub\\sel_tool_selfadvocacy.js",
-        "prismflow-deploy\\src\\teacher_module.js",
-        "prismflow-deploy\\src\\teacher_source.jsx"
+        "desktop/web-app\\src\\teacher_module.js",
+        "desktop/web-app\\src\\teacher_source.jsx"
       ]
     }
   ],
@@ -35549,7 +35549,7 @@
       "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association."
     },
     {
-      "file": "prismflow-deploy\\src\\adventure_source.jsx",
+      "file": "desktop/web-app\\src\\adventure_source.jsx",
       "line": 94,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35559,7 +35559,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\adventure_source.jsx",
+      "file": "desktop/web-app\\src\\adventure_source.jsx",
       "line": 404,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35569,7 +35569,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\adventure_source.jsx",
+      "file": "desktop/web-app\\src\\adventure_source.jsx",
       "line": 589,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35579,7 +35579,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\adventure_source.jsx",
+      "file": "desktop/web-app\\src\\adventure_source.jsx",
       "line": 827,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35589,7 +35589,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\adventure_source.jsx",
+      "file": "desktop/web-app\\src\\adventure_source.jsx",
       "line": 898,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35599,7 +35599,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\adventure_source.jsx",
+      "file": "desktop/web-app\\src\\adventure_source.jsx",
       "line": 28,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -35609,7 +35609,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\adventure_source.jsx",
+      "file": "desktop/web-app\\src\\adventure_source.jsx",
       "line": 644,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -35619,7 +35619,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\adventure_source.jsx",
+      "file": "desktop/web-app\\src\\adventure_source.jsx",
       "line": 689,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -35629,7 +35629,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\adventure_source.jsx",
+      "file": "desktop/web-app\\src\\adventure_source.jsx",
       "line": 814,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -35639,7 +35639,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\adventure_source.jsx",
+      "file": "desktop/web-app\\src\\adventure_source.jsx",
       "line": null,
       "checkId": "TIMER-001",
       "name": "Timer without pause mechanism",
@@ -35649,7 +35649,7 @@
       "fix": "Add Pause/Resume button and teacher-configurable extended time option."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 19552,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
@@ -35659,7 +35659,7 @@
       "fix": "Add role=\"img\" (or \"application\" if interactive) and a descriptive aria-label."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 24097,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
@@ -35669,7 +35669,7 @@
       "fix": "Add role=\"img\" (or \"application\" if interactive) and a descriptive aria-label."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 10126,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
@@ -35679,7 +35679,7 @@
       "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 11350,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
@@ -35689,7 +35689,7 @@
       "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 15558,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
@@ -35699,7 +35699,7 @@
       "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 38769,
       "checkId": "COLOR-001",
       "name": "Low contrast text color on dark background",
@@ -35709,7 +35709,7 @@
       "fix": "Use #cbd5e1 (slate-300) minimum on dark backgrounds, #64748b minimum on light backgrounds."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 11243,
       "checkId": "CONFIRM-001",
       "name": "window.confirm() for data operations",
@@ -35719,7 +35719,7 @@
       "fix": "Replace with custom accessible modal with focus management."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 14238,
       "checkId": "CONFIRM-001",
       "name": "window.confirm() for data operations",
@@ -35729,7 +35729,7 @@
       "fix": "Replace with custom accessible modal with focus management."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 15020,
       "checkId": "CONFIRM-001",
       "name": "window.confirm() for data operations",
@@ -35739,7 +35739,7 @@
       "fix": "Replace with custom accessible modal with focus management."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 23854,
       "checkId": "CONFIRM-001",
       "name": "window.confirm() for data operations",
@@ -35749,7 +35749,7 @@
       "fix": "Replace with custom accessible modal with focus management."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 3320,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35759,7 +35759,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 3598,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35769,7 +35769,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 3612,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35779,7 +35779,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 5311,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35789,7 +35789,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 5389,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35799,7 +35799,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 32879,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35809,7 +35809,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 33738,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35819,7 +35819,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 33739,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35829,7 +35829,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 33740,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35839,7 +35839,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 33887,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35849,7 +35849,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 33943,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35859,7 +35859,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 34641,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35869,7 +35869,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 34659,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35879,7 +35879,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 34675,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35889,7 +35889,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 34725,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35899,7 +35899,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 34786,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35909,7 +35909,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 35072,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35919,7 +35919,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 35074,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35929,7 +35929,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 35077,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35939,7 +35939,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 35098,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35949,7 +35949,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 35123,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35959,7 +35959,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 35838,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35969,7 +35969,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 35887,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35979,7 +35979,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 35888,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35989,7 +35989,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 35948,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -35999,7 +35999,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 35968,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36009,7 +36009,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 36198,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36019,7 +36019,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 37344,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36029,7 +36029,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 3646,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36039,7 +36039,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 4422,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36049,7 +36049,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 5457,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36059,7 +36059,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 5533,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36069,7 +36069,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 5548,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36079,7 +36079,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 5562,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36089,7 +36089,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 5570,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36099,7 +36099,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 5576,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36109,7 +36109,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 35302,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36119,7 +36119,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\AlloFlowANTI.txt",
+      "file": "desktop/web-app\\src\\AlloFlowANTI.txt",
       "line": 36159,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36129,7 +36129,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 19552,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
@@ -36139,7 +36139,7 @@
       "fix": "Add role=\"img\" (or \"application\" if interactive) and a descriptive aria-label."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 24097,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
@@ -36149,7 +36149,7 @@
       "fix": "Add role=\"img\" (or \"application\" if interactive) and a descriptive aria-label."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 10126,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
@@ -36159,7 +36159,7 @@
       "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 11350,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
@@ -36169,7 +36169,7 @@
       "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 15558,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
@@ -36179,7 +36179,7 @@
       "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 38769,
       "checkId": "COLOR-001",
       "name": "Low contrast text color on dark background",
@@ -36189,7 +36189,7 @@
       "fix": "Use #cbd5e1 (slate-300) minimum on dark backgrounds, #64748b minimum on light backgrounds."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 11243,
       "checkId": "CONFIRM-001",
       "name": "window.confirm() for data operations",
@@ -36199,7 +36199,7 @@
       "fix": "Replace with custom accessible modal with focus management."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 14238,
       "checkId": "CONFIRM-001",
       "name": "window.confirm() for data operations",
@@ -36209,7 +36209,7 @@
       "fix": "Replace with custom accessible modal with focus management."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 15020,
       "checkId": "CONFIRM-001",
       "name": "window.confirm() for data operations",
@@ -36219,7 +36219,7 @@
       "fix": "Replace with custom accessible modal with focus management."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 23854,
       "checkId": "CONFIRM-001",
       "name": "window.confirm() for data operations",
@@ -36229,7 +36229,7 @@
       "fix": "Replace with custom accessible modal with focus management."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 3320,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36239,7 +36239,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 3598,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36249,7 +36249,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 3612,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36259,7 +36259,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 5311,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36269,7 +36269,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 5389,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36279,7 +36279,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 32879,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36289,7 +36289,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 33738,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36299,7 +36299,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 33739,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36309,7 +36309,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 33740,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36319,7 +36319,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 33887,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36329,7 +36329,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 33943,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36339,7 +36339,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 34641,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36349,7 +36349,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 34659,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36359,7 +36359,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 34675,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36369,7 +36369,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 34725,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36379,7 +36379,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 34786,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36389,7 +36389,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 35072,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36399,7 +36399,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 35074,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36409,7 +36409,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 35077,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36419,7 +36419,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 35098,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36429,7 +36429,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 35123,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36439,7 +36439,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 35838,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36449,7 +36449,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 35887,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36459,7 +36459,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 35888,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36469,7 +36469,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 35948,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36479,7 +36479,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 35968,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36489,7 +36489,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 36198,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36499,7 +36499,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 37344,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36509,7 +36509,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 3646,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36519,7 +36519,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 4422,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36529,7 +36529,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 5457,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36539,7 +36539,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 5533,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36549,7 +36549,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 5548,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36559,7 +36559,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 5562,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36569,7 +36569,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 5570,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36579,7 +36579,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 5576,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36589,7 +36589,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 35302,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36599,7 +36599,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\App.jsx",
+      "file": "desktop/web-app\\src\\App.jsx",
       "line": 36159,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36609,7 +36609,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\content_engine_source.jsx",
+      "file": "desktop/web-app\\src\\content_engine_source.jsx",
       "line": 1546,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
@@ -36619,7 +36619,7 @@
       "fix": "Add role=\"img\" (or \"application\" if interactive) and a descriptive aria-label."
     },
     {
-      "file": "prismflow-deploy\\src\\doc_pipeline_module_public_copy.js",
+      "file": "desktop/web-app\\src\\doc_pipeline_module_public_copy.js",
       "line": 4698,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
@@ -36629,7 +36629,7 @@
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
     },
     {
-      "file": "prismflow-deploy\\src\\doc_pipeline_module_public_copy.js",
+      "file": "desktop/web-app\\src\\doc_pipeline_module_public_copy.js",
       "line": 2074,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
@@ -36639,7 +36639,7 @@
       "fix": "Add role=\"img\" (or \"application\" if interactive) and a descriptive aria-label."
     },
     {
-      "file": "prismflow-deploy\\src\\doc_pipeline_module_public_copy.js",
+      "file": "desktop/web-app\\src\\doc_pipeline_module_public_copy.js",
       "line": 2116,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
@@ -36649,7 +36649,7 @@
       "fix": "Add role=\"img\" (or \"application\" if interactive) and a descriptive aria-label."
     },
     {
-      "file": "prismflow-deploy\\src\\doc_pipeline_module_public_copy.js",
+      "file": "desktop/web-app\\src\\doc_pipeline_module_public_copy.js",
       "line": 2143,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
@@ -36659,7 +36659,7 @@
       "fix": "Add role=\"img\" (or \"application\" if interactive) and a descriptive aria-label."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 796,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
@@ -36669,7 +36669,7 @@
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 1361,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
@@ -36679,7 +36679,7 @@
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 1997,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
@@ -36689,7 +36689,7 @@
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 2432,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
@@ -36699,7 +36699,7 @@
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 2907,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
@@ -36709,7 +36709,7 @@
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 3332,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
@@ -36719,7 +36719,7 @@
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 3657,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
@@ -36729,7 +36729,7 @@
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 4216,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
@@ -36739,7 +36739,7 @@
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 5004,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
@@ -36749,7 +36749,7 @@
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 5514,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
@@ -36759,7 +36759,7 @@
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 5539,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
@@ -36769,7 +36769,7 @@
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 5570,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
@@ -36779,7 +36779,7 @@
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 5583,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
@@ -36789,7 +36789,7 @@
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 6308,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
@@ -36799,7 +36799,7 @@
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 122,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36809,7 +36809,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 952,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36819,7 +36819,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 2040,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36829,7 +36829,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 2139,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36839,7 +36839,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 4312,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36849,7 +36849,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 4351,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36859,7 +36859,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 4384,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36869,7 +36869,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 5359,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36879,7 +36879,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 5450,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36889,7 +36889,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 5892,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -36899,7 +36899,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 385,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36909,7 +36909,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 579,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -36919,7 +36919,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 1457,
       "checkId": "DRAGDROP-001",
       "name": "Drag-and-drop without keyboard alternative",
@@ -36929,7 +36929,7 @@
       "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 3281,
       "checkId": "DRAGDROP-001",
       "name": "Drag-and-drop without keyboard alternative",
@@ -36939,7 +36939,7 @@
       "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 3639,
       "checkId": "DRAGDROP-001",
       "name": "Drag-and-drop without keyboard alternative",
@@ -36949,7 +36949,7 @@
       "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 5580,
       "checkId": "DRAGDROP-001",
       "name": "Drag-and-drop without keyboard alternative",
@@ -36959,7 +36959,7 @@
       "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 5581,
       "checkId": "DRAGDROP-001",
       "name": "Drag-and-drop without keyboard alternative",
@@ -36969,7 +36969,7 @@
       "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
     },
     {
-      "file": "prismflow-deploy\\src\\games_source.jsx",
+      "file": "desktop/web-app\\src\\games_source.jsx",
       "line": 6267,
       "checkId": "DRAGDROP-001",
       "name": "Drag-and-drop without keyboard alternative",
@@ -36979,7 +36979,7 @@
       "fix": "Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_module.js",
+      "file": "desktop/web-app\\src\\teacher_module.js",
       "line": 438,
       "checkId": "SVG-001",
       "name": "SVG element without accessible name",
@@ -36989,7 +36989,7 @@
       "fix": "Add role=\"img\" and aria-label describing the visualization."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_module.js",
+      "file": "desktop/web-app\\src\\teacher_module.js",
       "line": 480,
       "checkId": "SVG-001",
       "name": "SVG element without accessible name",
@@ -36999,7 +36999,7 @@
       "fix": "Add role=\"img\" and aria-label describing the visualization."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_module.js",
+      "file": "desktop/web-app\\src\\teacher_module.js",
       "line": 1633,
       "checkId": "SVG-001",
       "name": "SVG element without accessible name",
@@ -37009,7 +37009,7 @@
       "fix": "Add role=\"img\" and aria-label describing the visualization."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_module.js",
+      "file": "desktop/web-app\\src\\teacher_module.js",
       "line": 674,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37019,7 +37019,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_module.js",
+      "file": "desktop/web-app\\src\\teacher_module.js",
       "line": 677,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37029,7 +37029,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_module.js",
+      "file": "desktop/web-app\\src\\teacher_module.js",
       "line": 683,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37039,7 +37039,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_module.js",
+      "file": "desktop/web-app\\src\\teacher_module.js",
       "line": 686,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37049,7 +37049,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_module.js",
+      "file": "desktop/web-app\\src\\teacher_module.js",
       "line": 918,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37059,7 +37059,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_module.js",
+      "file": "desktop/web-app\\src\\teacher_module.js",
       "line": 990,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37069,7 +37069,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_module.js",
+      "file": "desktop/web-app\\src\\teacher_module.js",
       "line": 1506,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37079,7 +37079,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_module.js",
+      "file": "desktop/web-app\\src\\teacher_module.js",
       "line": 1518,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37089,7 +37089,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_module.js",
+      "file": "desktop/web-app\\src\\teacher_module.js",
       "line": 1534,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37099,7 +37099,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_module.js",
+      "file": "desktop/web-app\\src\\teacher_module.js",
       "line": 2332,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -37109,7 +37109,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_module.js",
+      "file": "desktop/web-app\\src\\teacher_module.js",
       "line": null,
       "checkId": "TABS-001",
       "name": "Tab interface without ARIA tab roles",
@@ -37119,7 +37119,7 @@
       "fix": "Add role=\"tablist\" to container, role=\"tab\" + aria-selected to buttons, role=\"tabpanel\" to content."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 81,
       "checkId": "CONFIRM-001",
       "name": "window.confirm() for data operations",
@@ -37129,7 +37129,7 @@
       "fix": "Replace with custom accessible modal with focus management."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 749,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37139,7 +37139,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 759,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37149,7 +37149,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 782,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37159,7 +37159,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 830,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37169,7 +37169,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 834,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37179,7 +37179,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 1213,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37189,7 +37189,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 1313,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37199,7 +37199,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 1851,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37209,7 +37209,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 2180,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37219,7 +37219,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 2209,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37229,7 +37229,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 2216,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37239,7 +37239,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 2218,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37249,7 +37249,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 2246,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37259,7 +37259,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 3271,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
@@ -37269,7 +37269,7 @@
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce)."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 582,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -37279,7 +37279,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 747,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -37289,7 +37289,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 757,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -37299,7 +37299,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 779,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -37309,7 +37309,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 800,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -37319,7 +37319,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 892,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -37329,7 +37329,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 1212,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -37339,7 +37339,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 1376,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -37349,7 +37349,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": 4621,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
@@ -37359,7 +37359,7 @@
       "fix": "Add role=\"dialog\", aria-modal=\"true\", aria-labelledby, focus trap, and Escape key handler."
     },
     {
-      "file": "prismflow-deploy\\src\\teacher_source.jsx",
+      "file": "desktop/web-app\\src\\teacher_source.jsx",
       "line": null,
       "checkId": "TABS-001",
       "name": "Tab interface without ARIA tab roles",
@@ -37369,7 +37369,7 @@
       "fix": "Add role=\"tablist\" to container, role=\"tab\" + aria-selected to buttons, role=\"tabpanel\" to content."
     },
     {
-      "file": "prismflow-deploy\\src\\view_visual_supports_modal_source.jsx",
+      "file": "desktop/web-app\\src\\view_visual_supports_modal_source.jsx",
       "line": 183,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
@@ -37379,7 +37379,7 @@
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
     },
     {
-      "file": "prismflow-deploy\\src\\view_visual_supports_modal_source.jsx",
+      "file": "desktop/web-app\\src\\view_visual_supports_modal_source.jsx",
       "line": 45,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",

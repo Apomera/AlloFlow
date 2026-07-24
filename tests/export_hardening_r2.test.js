@@ -13,7 +13,7 @@ const viewAudit = R('view_pdf_audit_source.jsx');
 const viewAuditMod = R('view_pdf_audit_module.js');
 const viewPreview = R('view_export_preview_source.jsx');
 const loaderRoot = R('liblouis_braille_loader.js');
-const loaderMirror = R('prismflow-deploy/public/liblouis_braille_loader.js');
+const loaderMirror = R('desktop/web-app/public/liblouis_braille_loader.js');
 const exportHandlers = R('export_handlers_module.js');
 const exportSource = R('export_source.jsx');
 const exportModule = R('export_module.js');
@@ -193,7 +193,7 @@ describe('audio export — partial-failure is disclosed, never a silent gap (R2 
   });
 
   it('the module and its public mirror stay in sync', () => {
-    expect(exportHandlers).toBe(R('prismflow-deploy/public/export_handlers_module.js'));
+    expect(exportHandlers).toBe(R('desktop/web-app/public/export_handlers_module.js'));
   });
 });
 

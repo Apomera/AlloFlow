@@ -37,7 +37,7 @@ describe('exported document dialog accessibility', () => {
 
   it('keeps generated root and public modules in parity', () => {
     const built = read('doc_pipeline_module.js');
-    const publicBuilt = read('prismflow-deploy/public/doc_pipeline_module.js');
+    const publicBuilt = read('desktop/web-app/public/doc_pipeline_module.js');
     expect(built).toBe(publicBuilt);
     expect(built).toContain('window.__alloflowPrompt = function (options)');
     expect(built).not.toContain("prompt('Enter your name or nickname so your teacher knows this is yours:')");

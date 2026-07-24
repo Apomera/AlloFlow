@@ -8,7 +8,7 @@
  * 2. Compiles JSX → React.createElement via esbuild
  * 3. Wraps in IIFE with the runtime preamble (a11y CSS, live region, hook +
  *    icon aliases, shared utility shims)
- * 4. Writes student_interaction_module.js + syncs to prismflow-deploy/public/
+ * 4. Writes student_interaction_module.js + syncs to desktop/web-app/public/
  *
  * Onboarded May 2026 to retire the dual-edit risk that bit other source/module
  * pairs in this repo (per memory: pair-drift hook caught games_source.jsx
@@ -23,7 +23,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'student_interaction_source.jsx');
 const OUTPUT = path.join(ROOT, 'student_interaction_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'student_interaction_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'student_interaction_module.js');
 const TMP = path.join(ROOT, '_tmp_student_interaction_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) {

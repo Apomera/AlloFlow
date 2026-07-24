@@ -17,7 +17,7 @@ import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
 const require = createRequire(import.meta.url);
-const MODULES_DIR = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
 
 let PhaseK;
 
@@ -182,6 +182,6 @@ describe('source pins', () => {
   });
 
   it('built module and its deployed mirror agree', () => {
-    expect(readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/phase_k_helpers_module.js'), 'utf8')).toBe(mod);
+    expect(readFileSync(resolve(process.cwd(), 'desktop/web-app/public/phase_k_helpers_module.js'), 'utf8')).toBe(mod);
   });
 });

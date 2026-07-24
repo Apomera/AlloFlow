@@ -75,7 +75,7 @@ describe('EPPP native content QA gate', () => {
 
   it('keeps the QA artifact reproducible and deployment-identical', () => {
     const source = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_native_qa.json'), 'utf8');
-    const deployed = fs.readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/test_prep/eppp_native_qa.json'), 'utf8');
+    const deployed = fs.readFileSync(resolve(process.cwd(), 'desktop/web-app/public/test_prep/eppp_native_qa.json'), 'utf8');
     const builder = fs.readFileSync(resolve(process.cwd(), '_build_test_prep_hub_module.js'), 'utf8');
 
     expect(deployed).toBe(source);

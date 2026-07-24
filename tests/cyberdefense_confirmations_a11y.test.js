@@ -49,6 +49,6 @@ describe('Cyber Defense confirmation accessibility', () => {
   });
 
   it('keeps the deploy mirror identical', () => {
-    expect(source).toBe(read('prismflow-deploy/public/stem_lab/stem_tool_cyberdefense.js'));
+    expect(source).toBe(read('desktop/web-app/public/stem_lab/stem_tool_cyberdefense.js'));
   });
 });

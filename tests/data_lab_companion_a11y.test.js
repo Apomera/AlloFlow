@@ -5,8 +5,8 @@ import { chromium } from 'playwright';
 
 const root = process.cwd();
 const source = fs.readFileSync(path.join(root, 'data_lab/data_lab.html'), 'utf8');
-const deployed = fs.readFileSync(path.join(root, 'prismflow-deploy/public/data_lab/data_lab.html'), 'utf8');
-const axeSource = fs.readFileSync(path.join(root, 'prismflow-deploy/node_modules/axe-core/axe.min.js'), 'utf8');
+const deployed = fs.readFileSync(path.join(root, 'desktop/web-app/public/data_lab/data_lab.html'), 'utf8');
+const axeSource = fs.readFileSync(path.join(root, 'desktop/web-app/node_modules/axe-core/axe.min.js'), 'utf8');
 const staticPage = source.replace(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/gi, '');
 const interactivePage = source
   .replace('<head>', '<head><base href="http://data-lab.test/data_lab/">')

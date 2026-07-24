@@ -5,7 +5,7 @@
  *
  * Mirrors _build_view_submission_inbox_module.js: esbuild JSX → createElement,
  * IIFE wrapper with a11y CSS + live region, writes seating_chart_module.js +
- * syncs to prismflow-deploy/public/.
+ * syncs to desktop/web-app/public/.
  */
 const { execSync } = require('child_process');
 const fs = require('fs');
@@ -14,7 +14,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'seating_chart_source.jsx');
 const OUTPUT = path.join(ROOT, 'seating_chart_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'seating_chart_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'seating_chart_module.js');
 const TMP = path.join(ROOT, '_tmp_seating_chart_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
@@ -126,6 +126,6 @@ try {
     fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
     console.log(`Synced to ${DEPLOY_OUT}`);
 } catch (e) {
-    console.warn('[SeatingChart] Could not sync to prismflow-deploy/public/:', e.message);
+    console.warn('[SeatingChart] Could not sync to desktop/web-app/public/:', e.message);
 }
 console.log(`Built ${OUTPUT} (${outputCode.split('\n').length} lines)`);

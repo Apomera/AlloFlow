@@ -146,7 +146,7 @@ const postExpansionQaPaths = [
   specialEducationLearningDisabilities5383QaPath, specialEducationSevereProfound5547QaPath,
 ];
 const outputPath = path.join(root, 'test_prep_hub_module.js');
-const deployOutputPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep_hub_module.js');
+const deployOutputPath = path.join(root, 'desktop/web-app', 'public', 'test_prep_hub_module.js');
 const tempEntryPath = path.join(root, '_tmp_test_prep_hub_release_entry.jsx');
 const compiledPath = tempEntryPath + '.compiled.js';
 const registrationMarker = 'registerTestPrepPack(EPPP_PART_ONE_SCAFFOLD);';

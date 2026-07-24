@@ -8,14 +8,14 @@ const { reviewedAt, reviewWave, revisions } = require('./eppp_native_quality_wav
 
 const root = path.resolve(__dirname, '..');
 const sourcePath = path.join(root, 'test_prep', 'eppp_native_items.json');
-const deployPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_native_items.json');
+const deployPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_native_items.json');
 const catalogPath = path.join(root, 'test_prep', 'reference_catalog.json');
-const deployCatalogPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'reference_catalog.json');
+const deployCatalogPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'reference_catalog.json');
 const actionDocketPath = path.join(root, 'test_prep', 'eppp_distractor_action_docket.json');
 const diagnosticsPath = path.join(root, 'test_prep', 'eppp_distractor_quality_diagnostics.json');
 const outputRoots = [
   path.join(root, 'test_prep'),
-  path.join(root, 'prismflow-deploy', 'public', 'test_prep'),
+  path.join(root, 'desktop/web-app', 'public', 'test_prep'),
 ];
 const diagnosticsScript = path.join(root, 'dev-tools', 'audit_eppp_distractor_quality.cjs');
 const outputBasename = 'eppp_native_quality_audit_wave_07';

@@ -21,8 +21,8 @@ const require = createRequire(import.meta.url);
 let React, ReactDOMServer, StoryForge, FK;
 
 beforeAll(() => {
-  React = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react'));
-  ReactDOMServer = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react-dom/server'));
+  React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
+  ReactDOMServer = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom/server'));
   globalThis.React = window.React = React;
   window.AlloIcons = new Proxy({}, { get: () => () => null });
   loadAlloModule('story_forge_module.js');

@@ -5,7 +5,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 
 const root = path.resolve(import.meta.dirname, '..');
 const sourcePath = path.join(root, 'stem_lab', 'stem_tool_chembalance.js');
-const deployPath = path.join(root, 'prismflow-deploy', 'public', 'stem_lab', 'stem_tool_chembalance.js');
+const deployPath = path.join(root, 'desktop/web-app', 'public', 'stem_lab', 'stem_tool_chembalance.js');
 
 describe('ChemBalance timing accessibility', () => {
   const source = fs.readFileSync(sourcePath, 'utf8');

@@ -15,12 +15,12 @@ Three build items for Adventure Mode's consistent-characters feature. Decisions 
 
 ## 1. Architecture you must respect
 
-- `AlloFlowANTI.txt` = canonical app source (41k lines, JSX in a .txt). `prismflow-deploy/src/App.jsx` is GENERATED — never edit it, never run `node build.js` yourself (deploy.sh does prod builds; dev-mode builds downgrade student loaders).
+- `AlloFlowANTI.txt` = canonical app source (41k lines, JSX in a .txt). `desktop/web-app/src/App.jsx` is GENERATED — never edit it, never run `node build.js` yourself (deploy.sh does prod builds; dev-mode builds downgrade student loaders).
 - CDN modules are **generated**: edit `<name>_source.jsx`, then run `node _build_<name>_module.js`. NEVER hand-edit `*_module.js` for these. Relevant here:
   - `adventure_source.jsx` → `_build_adventure_module.js` → `adventure_module.js` (cast lobby UI, `handlePortraitFileChange` at ~line 849).
   - `adventure_handlers_source.jsx` → `_build_adventure_handlers_module.js` (adventure start flow; character setup ~lines 200–420).
   - `adventure_session_handlers_source.jsx` → `_build_adventure_session_handlers_module.js` (scene image generation, `generateAdventureImage`; consistency pass in module output ~line 655–671: `protagonist?.portrait` → `callGeminiImageEdit(consistencyPrompt, currentBase64, targetWidth, targetQual, portraitBase64)`).
-  - Builders also sync a copy to `prismflow-deploy/public/` — commit both.
+  - Builders also sync a copy to `desktop/web-app/public/` — commit both.
 - Modules receive a `deps` object constructed in ANTI (handlers deps built around ANTI line ~27644; wrapper for `generateAdventureImage` at ANTI ~27583). Adding NEW keys to the deps object literal is safe; changing existing wrapper function ARITY is checked by `dev-tools/check_wrapper_contracts.cjs` — keep both sides in sync if you must touch arity (prefer not to).
 - After edits: `node --check <built module>` + full gate battery (§6).
 
@@ -79,7 +79,7 @@ node dev-tools/check_build_smoke.cjs
 
 ## 8. Definition of done
 
-1. All three items implemented in the SOURCE files, modules rebuilt via their `_build_*.js`, `prismflow-deploy/public/` copies updated, `node --check` clean on built modules.
+1. All three items implemented in the SOURCE files, modules rebuilt via their `_build_*.js`, `desktop/web-app/public/` copies updated, `node --check` clean on built modules.
 2. New + existing adventure tests green; full gate battery green; ANTI build smoke green.
 3. `docs/DATA_PRIVACY_POSTURE.md` updated (Item 1).
 4. One pathspec commit; default `adventureConsistentCharacters: false` UNCHANGED (verify ANTI ~line 6912 still `false`).

@@ -16,7 +16,7 @@ import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
 const require = createRequire(import.meta.url);
-const MODULES_DIR = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
 const ROOT = resolve(process.cwd());
 const LIB_DIR = path.join(ROOT, 'reading_library');
 

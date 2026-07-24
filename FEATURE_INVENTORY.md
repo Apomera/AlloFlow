@@ -29,7 +29,7 @@
 
 **Generated:** 2026-05-09 (headline counts last reconciled June 20, 2026 — see §13.12 for the running delta table; the dated entries in §3–§12 are point-in-time snapshots)
 **Codebase scale:** July 3, 2026 local review found ~5.69M physical code lines including generated/deploy mirrors, ~4.07M exact-hash unique code lines, and ~2.70M canonical-ish source lines after excluding deploy mirrors and generated root module pairs. See the current audit note above for caveats.
-**Monolith size:** ~31K deployed lines (`prismflow-deploy/src/App.jsx`, ~1.7 MB) with `AlloFlowANTI.txt` remaining the Gemini Canvas orchestration source.
+**Monolith size:** ~31K deployed lines (`desktop/web-app/src/App.jsx`, ~1.7 MB) with `AlloFlowANTI.txt` remaining the Gemini Canvas orchestration source.
 **Inventory scope:** 720+ grouped and granular entries in this evolving catalog; do not treat this taxonomy count as a count of distinct shipped tools
 - ~95 monolith-level features across 16 categories + 25 deep-dive subsections (§3.17–§3.41)
 - **126 STEM Lab tool files / 127 registered STEM plugin IDs** across math, science, engineering, ecology, life skills, creative, strategy, technology, speech/music, and applied simulation domains. The registered-ID count is higher than the file count because some files preserve aliases or export paired IDs.
@@ -261,7 +261,7 @@ Underlying data: `WORD_SOUNDS_STRINGS`, `WORD_FAMILY_PRESETS`, `SOUND_MATCH_POOL
 | **Bookmarklet Audit Queue** | Teachers install a bookmarklet on their browser that captures URLs they want to audit; queued URLs surface in AlloFlow for processing. | Bookmarklet sends URLs → Sidebar → Bookmarklet Audit Queue panel | Teacher | Inline at AlloFlowANTI.txt:20144 + LMS bookmarklet endpoint at L2380 |
 | **Error Reporter** | In-app error capture + one-click bug report. Hidden by default; surfaces a small fixed-position red "⚠ N errors" badge in bottom-right after first capture. Solves the "users in Canvas/LMS embed can't access browser DevTools" problem. | Auto-surfaces only after errors occur | All | `error_reporter_module.js` |
 | **Voice Input (system-wide)** | Speech-to-text input usable across many features (lesson source, brainstorm, persona chat, Bridge mode). Uses Web Speech API + Gemini fallback. | Microphone icon on text inputs throughout app | All | `voice_module.js` (`window.AlloFlowVoice`) |
-| **LTI 1.3 LMS Integration (full)** | Full LTI 1.3 OIDC launch flow — AlloFlow can be installed in Canvas / Schoology / Brightspace / Moodle / D2L as an LTI tool with proper SSO + course/assignment/role context. UI surfaces a context banner on launch showing course + assignment. Backend: `ltiLogin` / `ltiLaunch` / `ltiSession` Firebase functions. | Configure in LMS admin → AlloFlow appears as an LTI tool; user clicks → auto-launched into context | Teacher, Student | Inline UI at AlloFlowANTI.txt:20240; backend at `prismflow-deploy/functions/index.js:183-374` |
+| **LTI 1.3 LMS Integration (full)** | Full LTI 1.3 OIDC launch flow — AlloFlow can be installed in Canvas / Schoology / Brightspace / Moodle / D2L as an LTI tool with proper SSO + course/assignment/role context. UI surfaces a context banner on launch showing course + assignment. Backend: `ltiLogin` / `ltiLaunch` / `ltiSession` Firebase functions. | Configure in LMS admin → AlloFlow appears as an LTI tool; user clicks → auto-launched into context | Teacher, Student | Inline UI at AlloFlowANTI.txt:20240; backend at `desktop/web-app/functions/index.js:183-374` |
 | **Class Roster Management** | Persistent cohort with student data: names, group assignments, XP totals, per-student profile (language, ttsSpeed, karaoke mode, communication mode). Persisted to `alloflow_roster_key` in localStorage; synced to Firestore for live sessions. | Teacher mode → Roster panel; auto-syncs in live sessions | Teacher | Inline AlloFlowANTI.txt:4675+; integrates with Group Session Modal |
 | **Group Management (within Live Sessions)** | Create/delete student groups, assign students to groups, assign per-group resources (a different lesson item per group). Each group has its own profile: language preference, TTS speed, karaoke mode, visual density, communication mode (verbal / AAC), simplification level, DOK level. | Live Session → Group Session Modal | Teacher | Inline handlers `handleCreateGroup`, `handleAssignStudent`, `handleSetGroupResource`, `handleDeleteGroup`; data structure at AlloFlowANTI.txt:13442 |
 | **Educator Hub launcher modal** | Dedicated launcher modal with card grid for educator-specific tools: BehaviorLens, ReportWriter, Symbol Studio, Print Export, AccessibilityLab. Different visual treatment from the SEL/STEM Hub modals to signal "professional clinical tools." | Header → Educator Tools button (teacher mode) | Teacher, Coach, Specialist | Inline at AlloFlowANTI.txt:25929-25970; gates on `showEducatorHub` |
@@ -333,7 +333,7 @@ Discoverability: surfaced contextually within Quiz mode (game variants), Adventu
 
 ### 3.20 Server-side Firebase Functions (12 endpoints)
 
-AlloFlow has a **full backend** in `prismflow-deploy/functions/index.js`, deployed as Firebase Cloud Functions. This is significantly more infrastructure than typical AI ed-tech competitors:
+AlloFlow has a **full backend** in `desktop/web-app/functions/index.js`, deployed as Firebase Cloud Functions. This is significantly more infrastructure than typical AI ed-tech competitors:
 
 | Endpoint | Purpose |
 |---|---|
@@ -1207,7 +1207,7 @@ Five latent bugs surfaced by extraction work and fixed:
   - **Fallback:** jsdelivr/GitHub raw (kept for redundancy in case Cloudflare is unreachable)
   - 25 MiB per-file cap on Cloudflare Pages; m4a / mp4 / onnx assets are gitignored and not served via CDN
   - All module files git-pinned at commit hashes for reproducibility (deploy.sh rewrites `loadModule('X', 'https://.../X_module.js')` URLs to include the commit hash)
-- **Build pipeline:** `prismflow-deploy/public/*` files are auto-synced from repo-root sources by a `build.js` watcher; edit ROOT files only (deploy mirrors get silently overwritten within seconds otherwise)
+- **Build pipeline:** `desktop/web-app/public/*` files are auto-synced from repo-root sources by a `build.js` watcher; edit ROOT files only (deploy mirrors get silently overwritten within seconds otherwise)
 
 ---
 

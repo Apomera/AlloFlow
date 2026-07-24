@@ -94,6 +94,6 @@ describe('Praxis Audiology 5343 diagnostic bank', () => {
     expect(qa.blueprint).toMatchObject({ officialQuestionCount: 120, timeMinutes: 120, selectedResponse: true, categories: { 'foundations-audiology': { questions: 24 }, 'prevention-screening': { questions: 12 }, assessment: { questions: 42 }, intervention: { questions: 30 }, 'professional-ethical': { questions: 12 } } });
     expect(qa.diagnosticBatch).toMatchObject({ batchCount: 5, batchSize: 100, categories: { 'foundations-audiology': 20, 'prevention-screening': 10, assessment: 35, intervention: 25, 'professional-ethical': 10 } });
     expect(qa.standard.limitation).toContain('independent licensed-audiologist validation');
-    for (const name of ['audiology_5343_items.json', 'audiology_5343_pack.json', 'audiology_5343_native_qa.json', 'audiology_5343_native_qa.md']) expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
+    for (const name of ['audiology_5343_items.json', 'audiology_5343_pack.json', 'audiology_5343_native_qa.json', 'audiology_5343_native_qa.md']) expect(read('desktop/web-app/public/test_prep/' + name)).toBe(read('test_prep/' + name));
   }, 20000);
 });

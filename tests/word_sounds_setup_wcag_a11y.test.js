@@ -3,7 +3,7 @@ import fs from 'node:fs';
 
 const source = fs.readFileSync('word_sounds_setup_source.jsx', 'utf8');
 const moduleSource = fs.readFileSync('word_sounds_setup_module.js', 'utf8');
-const publicModule = fs.readFileSync('prismflow-deploy/public/word_sounds_setup_module.js', 'utf8');
+const publicModule = fs.readFileSync('desktop/web-app/public/word_sounds_setup_module.js', 'utf8');
 
 describe('Word Sounds Setup WCAG interaction behavior', () => {
   it('provides keyboard alternatives for each draggable workflow', () => {

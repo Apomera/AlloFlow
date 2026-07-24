@@ -6,7 +6,7 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 const runtimeRoot = path.join(root, 'test_prep', 'eppp_legacy');
-const deployRoot = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_legacy');
+const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy');
 const audit = JSON.parse(fs.readFileSync(path.join(runtimeRoot, 'content_audit.json'), 'utf8'));
 const nativeQa = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', 'eppp_native_qa.json'), 'utf8'));
 

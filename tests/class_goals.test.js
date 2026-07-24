@@ -18,7 +18,7 @@ let M;
 const ANTI = readFileSync('AlloFlowANTI.txt', 'utf8');
 
 beforeAll(() => {
-  const React = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react'));
+  const React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
   globalThis.React = window.React = React;
   window.AlloIcons = new Proxy({}, { get: () => () => null });
   loadAlloModule('allohaven_module.js');
@@ -56,7 +56,7 @@ describe('student side: group_goal through the real ledger', () => {
   });
 
   it('root module and public mirror are byte-identical', () => {
-    expect(readFileSync('prismflow-deploy/public/allohaven_module.js', 'utf8'))
+    expect(readFileSync('desktop/web-app/public/allohaven_module.js', 'utf8'))
       .toBe(readFileSync('allohaven_module.js', 'utf8'));
   });
 });

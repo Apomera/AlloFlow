@@ -5,7 +5,7 @@
  *
  * (1) ASSET SIZE — Cloudflare hard-fails ANY deploy (classic Pages or Workers
  *     assets) containing a file over 25 MiB. The 30.7 MiB ffmpeg-core.wasm,
- *     swept into git by deploy.sh Step 6's `git add prismflow-deploy/public/`,
+ *     swept into git by deploy.sh Step 6's `git add desktop/web-app/public/`,
  *     killed every CDN build for days. Classic Pages does NOT honor
  *     .assetsignore, so a tracked oversized file ANYWHERE in the repo is fatal
  *     even when "excluded". We therefore check what a clone would contain:

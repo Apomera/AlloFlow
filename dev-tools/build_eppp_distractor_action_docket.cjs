@@ -10,7 +10,7 @@ const diagnosticsPath = path.join(root, 'test_prep', 'eppp_distractor_quality_di
 const adjudicationPath = path.join(root, 'test_prep', 'eppp_distractor_review_wave_01.json');
 const outputRoots = [
   path.join(root, 'test_prep'),
-  path.join(root, 'prismflow-deploy', 'public', 'test_prep'),
+  path.join(root, 'desktop/web-app', 'public', 'test_prep'),
 ];
 const outputBasename = 'eppp_distractor_action_docket';
 const generatedAt = '2026-07-22';

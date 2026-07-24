@@ -33,7 +33,7 @@ describe('Header popover semantics and dismissal', () => {
   });
 
   it('keeps generated Header modules synchronized', () => {
-    expect(readFileSync('prismflow-deploy/public/view_header_module.js', 'utf8'))
+    expect(readFileSync('desktop/web-app/public/view_header_module.js', 'utf8'))
       .toBe(readFileSync('view_header_module.js', 'utf8'));
   });
 });

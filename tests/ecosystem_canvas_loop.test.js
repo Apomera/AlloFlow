@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const ECOSYSTEM_PATHS = [
   'stem_lab/stem_tool_ecosystem.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_ecosystem.js',
+  'desktop/web-app/public/stem_lab/stem_tool_ecosystem.js',
 ];
 
 describe('ecosystem canvas animation loop', () => {

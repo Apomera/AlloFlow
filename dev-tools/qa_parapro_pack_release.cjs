@@ -206,7 +206,7 @@ ${diagnosticBatches.map((batch) => `| ${batch.batchNumber} | ${batch.categories.
 ${reports.map((item) => `| ${item.id} | ${item.domainId} | ${item.blueprintRole} | ${item.qaStatus} | ${item.references.length} |`).join('\n')}
 `;
 
-for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')]) {
+for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'desktop/web-app', 'public', 'test_prep')]) {
   fs.mkdirSync(outputRoot, { recursive: true });
   writeGeneratedFile(path.join(outputRoot, 'parapro_pack.json'), JSON.stringify(packForWrite, null, 2) + '\n', 'utf8');
   if (!expandedSourceMode) {

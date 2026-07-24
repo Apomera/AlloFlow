@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const MOLECULE_PATHS = [
   'stem_lab/stem_tool_molecule.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_molecule.js',
+  'desktop/web-app/public/stem_lab/stem_tool_molecule.js',
 ];
 
 describe('molecule Bohr canvas animation loop', () => {

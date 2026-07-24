@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 const read = (path) => readFileSync(resolve(process.cwd(), path), 'utf8');
 const source = read('games_source.jsx');
 const built = read('games_module.js');
-const deployed = read('prismflow-deploy/public/games_module.js');
+const deployed = read('desktop/web-app/public/games_module.js');
 
 describe('Games systemic WCAG safeguards', () => {
   it('keeps generated artifacts synchronized', () => {

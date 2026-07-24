@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import { resolve } from 'node:path';
 
 const sourcePath = resolve(process.cwd(), 'test_prep/eppp_2027_preview_pack.json');
-const deployPath = resolve(process.cwd(), 'prismflow-deploy/public/test_prep/eppp_2027_preview_pack.json');
+const deployPath = resolve(process.cwd(), 'desktop/web-app/public/test_prep/eppp_2027_preview_pack.json');
 const reportPath = resolve(process.cwd(), 'test_prep/eppp_2027_preview_qa.json');
 const pack = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
 const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
@@ -191,7 +191,7 @@ describe('Integrated EPPP 2027 Preview data pack', () => {
     expect(report.items.every((item) => item.qaStatus === 'pass' && item.checks.every((check) => check.status === 'pass'))).toBe(true);
     expect(pack).toMatchObject(expectedBlueprintMetadata);
     expect(fs.readFileSync(deployPath, 'utf8')).toBe(fs.readFileSync(sourcePath, 'utf8'));
-    expect(fs.readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/test_prep/eppp_2027_preview_qa.json'), 'utf8')).toBe(fs.readFileSync(reportPath, 'utf8'));
-    expect(fs.readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/test_prep/eppp_2027_preview_qa.md'), 'utf8')).toBe(fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_2027_preview_qa.md'), 'utf8'));
+    expect(fs.readFileSync(resolve(process.cwd(), 'desktop/web-app/public/test_prep/eppp_2027_preview_qa.json'), 'utf8')).toBe(fs.readFileSync(reportPath, 'utf8'));
+    expect(fs.readFileSync(resolve(process.cwd(), 'desktop/web-app/public/test_prep/eppp_2027_preview_qa.md'), 'utf8')).toBe(fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_2027_preview_qa.md'), 'utf8'));
   });
 });

@@ -4,7 +4,7 @@
  *
  * 1. Reads prompts_library_source.jsx (pure JS — no JSX, no React).
  * 2. Wraps in IIFE with duplicate-load guard.
- * 3. Writes prompts_library_module.js + syncs to prismflow-deploy/public/.
+ * 3. Writes prompts_library_module.js + syncs to desktop/web-app/public/.
  * 4. Syntax-checks output with `node -c`.
  *
  * Mirrors _build_allo_data_module.js — the source is plain ES syntax so no
@@ -18,7 +18,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'prompts_library_source.jsx');
 const OUTPUT = path.join(ROOT, 'prompts_library_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'prompts_library_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'prompts_library_module.js');
 
 if (!fs.existsSync(SOURCE)) {
     console.error('[PromptsLibrary] Source not found:', SOURCE);
@@ -55,7 +55,7 @@ try {
     }
     fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) {
-    console.warn('[PromptsLibrary] Could not sync to prismflow-deploy/public/:', e.message);
+    console.warn('[PromptsLibrary] Could not sync to desktop/web-app/public/:', e.message);
 }
 
 // Syntax check — the source is plain JS, so `node -c` is applicable.

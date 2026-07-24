@@ -3,7 +3,7 @@ import fs from 'node:fs';
 
 const builder = fs.readFileSync('desktop/scripts/build-desktop-web.cjs', 'utf8');
 const sourceWorker = fs.readFileSync('app/sw.js', 'utf8');
-const deployWorker = fs.readFileSync('prismflow-deploy/public/app/sw.js', 'utf8');
+const deployWorker = fs.readFileSync('desktop/web-app/public/app/sw.js', 'utf8');
 
 const rootShellPattern = /cache\.(?:add|match|put)\(\s*['"]\/index\.html['"]/;
 

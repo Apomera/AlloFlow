@@ -8,7 +8,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
-const mirror = readFileSync(resolve(process.cwd(), 'prismflow-deploy/src/AlloFlowANTI.txt'), 'utf8');
+const mirror = readFileSync(resolve(process.cwd(), 'desktop/web-app/src/AlloFlowANTI.txt'), 'utf8');
 
 // ── eval-slice the REAL helpers (same anchors the objectives suite uses) ──────
 const start = anti.indexOf('function _alloNormalizeDirectionsData(');
@@ -181,7 +181,7 @@ describe('wiring: the map is a way to MOVE, and it stays accessible', () => {
 });
 
 describe('mirror parity', () => {
-  it('prismflow-deploy/src mirror carries the identical feature', () => {
+  it('desktop/web-app/src mirror carries the identical feature', () => {
     expect(mirror).toBe(anti);
   });
 });

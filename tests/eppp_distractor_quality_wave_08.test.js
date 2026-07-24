@@ -4,16 +4,16 @@ import { describe, expect, it } from 'vitest';
 
 const root = process.cwd();
 const sourcePath = path.join(root, 'test_prep', 'eppp_native_items.json');
-const deployPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_native_items.json');
+const deployPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_native_items.json');
 const catalogPath = path.join(root, 'test_prep', 'reference_catalog.json');
-const deployCatalogPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'reference_catalog.json');
+const deployCatalogPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'reference_catalog.json');
 const auditPath = path.join(root, 'test_prep', 'eppp_native_quality_audit_wave_08.json');
 const diagnosticsPath = path.join(root, 'test_prep', 'eppp_distractor_quality_diagnostics.json');
 const feedbackPath = path.join(root, 'test_prep', 'eppp_option_feedback_diagnostics.json');
 const qaPath = path.join(root, 'test_prep', 'eppp_native_qa.json');
 const qaScriptPath = path.join(root, 'dev-tools', 'qa_eppp_native_pack.cjs');
 const runtimePath = path.join(root, 'test_prep_hub_module.js');
-const deployRuntimePath = path.join(root, 'prismflow-deploy', 'public', 'test_prep_hub_module.js');
+const deployRuntimePath = path.join(root, 'desktop/web-app', 'public', 'test_prep_hub_module.js');
 const ids = [
   'eppp-b027-intervention-3',
   'eppp-v2-assessment-037',

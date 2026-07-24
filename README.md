@@ -258,7 +258,7 @@ AlloFlow uses a **Hub-and-Spoke architecture** — a single orchestrator compone
 
 ```bash
 # Cloud deployment (Firebase)
-cd prismflow-deploy
+cd desktop/web-app
 npm install
 npm run build
 firebase deploy

@@ -9,7 +9,7 @@ const workspaceRoot = path.resolve(__dirname, '..');
 const sourceRoot = path.resolve(process.argv[2] || 'C:\\Users\\cabba\\OneDrive\\Desktop\\EPPP prep');
 const outputRoots = [
   path.join(workspaceRoot, 'test_prep', 'eppp_legacy'),
-  path.join(workspaceRoot, 'prismflow-deploy', 'public', 'test_prep', 'eppp_legacy'),
+  path.join(workspaceRoot, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy'),
 ];
 const runtimeEntries = ['index.html', 'favicon.svg', 'README.md', 'LICENSE', 'css', 'js'];
 

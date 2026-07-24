@@ -6,7 +6,7 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 const sourceRoot = path.join(root, 'test_prep', 'eppp_legacy');
-const deployRoot = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_legacy');
+const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy');
 const docket = JSON.parse(fs.readFileSync(path.join(sourceRoot, 'next_review_docket.json'), 'utf8'));
 const prior = JSON.parse(fs.readFileSync(path.join(sourceRoot, 'adjudication_batch_01.json'), 'utf8'));
 

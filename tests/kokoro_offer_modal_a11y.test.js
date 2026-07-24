@@ -40,6 +40,6 @@ describe('Kokoro offer modal accessibility', () => {
   });
 
   it('synchronizes the deployable module', () => {
-    expect(fs.readFileSync('prismflow-deploy/public/view_kokoro_offer_modal_module.js', 'utf8')).toBe(fs.readFileSync('view_kokoro_offer_modal_module.js', 'utf8'));
+    expect(fs.readFileSync('desktop/web-app/public/view_kokoro_offer_modal_module.js', 'utf8')).toBe(fs.readFileSync('view_kokoro_offer_modal_module.js', 'utf8'));
   });
 });

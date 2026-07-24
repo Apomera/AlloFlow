@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const ANATOMY_PATHS = [
   'stem_lab/stem_tool_anatomy.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_anatomy.js',
+  'desktop/web-app/public/stem_lab/stem_tool_anatomy.js',
 ];
 
 describe('anatomy canvas animation loop', () => {

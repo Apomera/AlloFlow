@@ -53,5 +53,5 @@ const moduleSrc = `/**
 `;
 
 fs.writeFileSync('view_word_sounds_preview_module.js', moduleSrc);
-fs.writeFileSync('prismflow-deploy/public/view_word_sounds_preview_module.js', moduleSrc);
+fs.writeFileSync('desktop/web-app/public/view_word_sounds_preview_module.js', moduleSrc);
 console.log('Wrote view_word_sounds_preview_module.js (' + moduleSrc.length + ' bytes)');

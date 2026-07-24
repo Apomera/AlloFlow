@@ -33,7 +33,7 @@ describe('Pass the EPPP legacy-bank audit', () => {
 
   it('keeps development and deployment reports identical and reproducible', () => {
     const source = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/content_audit.json'), 'utf8');
-    const deployed = fs.readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/test_prep/eppp_legacy/content_audit.json'), 'utf8');
+    const deployed = fs.readFileSync(resolve(process.cwd(), 'desktop/web-app/public/test_prep/eppp_legacy/content_audit.json'), 'utf8');
     const importer = fs.readFileSync(resolve(process.cwd(), 'dev-tools/import_eppp_legacy.cjs'), 'utf8');
 
     expect(deployed).toBe(source);

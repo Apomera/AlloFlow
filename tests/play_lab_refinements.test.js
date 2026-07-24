@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const FILE = 'stem_lab/stem_tool_playlab.js';
-const PUBLIC_FILE = 'prismflow-deploy/public/stem_lab/stem_tool_playlab.js';
+const PUBLIC_FILE = 'desktop/web-app/public/stem_lab/stem_tool_playlab.js';
 const TOOL_ID = 'playlab';
 
 function loadPlayLab() {

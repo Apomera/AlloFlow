@@ -60,7 +60,7 @@ describe('Praxis Special Education 5355 native learning library', () => {
     expect(qa.summary).toMatchObject({ chapters: 12, sections: 48, knowledgeChecks: 60, flashcards: 75, memoryAids: 20, findings: [], status: 'pass' });
     expect(qa.standard.limitation).toContain('not ETS approval');
     for (const name of ['special_education_5355_learning_library.json', 'special_education_5355_learning_library_qa.json', 'special_education_5355_learning_library_qa.md']) {
-      expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
+      expect(read('desktop/web-app/public/test_prep/' + name)).toBe(read('test_prep/' + name));
     }
   });
 });

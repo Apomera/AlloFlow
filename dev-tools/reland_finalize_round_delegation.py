@@ -5,7 +5,7 @@
 # twice by a concurrent session force-re-landing its own ANTI hunks from a stale base, so
 # it waits for a QUIET WINDOW. To land it:
 #   1. Confirm no other session is writing AlloFlowANTI.txt.
-#   2. python dev-tools/reland_finalize_round_delegation.py AlloFlowANTI.txt prismflow-deploy/src/AlloFlowANTI.txt
+#   2. python dev-tools/reland_finalize_round_delegation.py AlloFlowANTI.txt desktop/web-app/src/AlloFlowANTI.txt
 #   3. Replace tests/auto_continue_canonical_verification.test.js + tests/batch_q_honesty_fixes.test.js
 #      with the .hold copies next to this script (they repoint the moved pins at the reducer).
 #   4. npx vitest run tests/finalize_round_reducer.test.js tests/auto_continue_canonical_verification.test.js tests/batch_q_honesty_fixes.test.js

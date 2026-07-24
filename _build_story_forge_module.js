@@ -10,7 +10,7 @@
  *    - duplicate-load guard (window.__storyForgeModuleLoaded)
  *    - React hook aliases (useState/useEffect/useRef/useCallback/useMemo/useReducer)
  *    - Lucide icon lazy-shims (resolved from window.AlloIcons)
- * 4. Writes story_forge_module.js + syncs to prismflow-deploy/public/
+ * 4. Writes story_forge_module.js + syncs to desktop/web-app/public/
  *
  * Source file already contains the focus-CSS IIFE and sfAnnounce helper inline; those
  * stay nested inside the outer IIFE in the compiled output. Functionally identical to
@@ -24,7 +24,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'story_forge_source.jsx');
 const OUTPUT = path.join(ROOT, 'story_forge_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'story_forge_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'story_forge_module.js');
 const TMP = path.join(ROOT, '_tmp_story_forge_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) {

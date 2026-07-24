@@ -7,7 +7,7 @@
  * 1. Reads key_concept_map_source.jsx
  * 2. Compiles JSX -> React.createElement via esbuild
  * 3. Wraps in IIFE with duplicate-load guard + React alias preamble
- * 4. Writes key_concept_map_module.js + syncs to prismflow-deploy/public/
+ * 4. Writes key_concept_map_module.js + syncs to desktop/web-app/public/
  * 5. Syntax-checks the output
  */
 
@@ -18,7 +18,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'key_concept_map_source.jsx');
 const OUTPUT = path.join(ROOT, 'key_concept_map_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'key_concept_map_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'key_concept_map_module.js');
 const TMP = path.join(ROOT, '_tmp_key_concept_map_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) {
@@ -80,7 +80,7 @@ try {
     }
     fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) {
-    console.warn('[KeyConceptMap] Could not sync to prismflow-deploy/public/:', e.message);
+    console.warn('[KeyConceptMap] Could not sync to desktop/web-app/public/:', e.message);
 }
 
 // Syntax check

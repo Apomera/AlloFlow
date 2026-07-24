@@ -23,6 +23,6 @@ describe('Guided full-lesson dialog accessibility', () => {
   });
 
   it('synchronizes the deployable module', () => {
-    expect(fs.readFileSync('prismflow-deploy/public/view_guided_mode_banner_module.js', 'utf8')).toBe(fs.readFileSync('view_guided_mode_banner_module.js', 'utf8'));
+    expect(fs.readFileSync('desktop/web-app/public/view_guided_mode_banner_module.js', 'utf8')).toBe(fs.readFileSync('view_guided_mode_banner_module.js', 'utf8'));
   });
 });

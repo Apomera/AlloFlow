@@ -10,7 +10,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'phase_n_misc_helpers_source.jsx');
 const OUTPUT = path.join(ROOT, 'phase_n_misc_helpers_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'phase_n_misc_helpers_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'phase_n_misc_helpers_module.js');
 const TMP = path.join(ROOT, '_tmp_phase_n_entry.jsx');
 const TMP_COMPILED = TMP + '.compiled.js';
 

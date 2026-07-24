@@ -7,7 +7,7 @@ const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 const sourcePath = path.join(process.cwd(), 'stem_lab', 'stem_tool_applab.js');
-const publicPath = path.join(process.cwd(), 'prismflow-deploy', 'public', 'stem_lab', 'stem_tool_applab.js');
+const publicPath = path.join(process.cwd(), 'desktop/web-app', 'public', 'stem_lab', 'stem_tool_applab.js');
 
 function channel(value) {
   value /= 255;

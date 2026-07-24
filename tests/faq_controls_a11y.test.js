@@ -19,7 +19,7 @@ describe('FAQ keyboard and control semantics', () => {
   it('provides a visible 32 pixel focus target for answer expansion', () => {
     expect(source).toContain('w-8 h-8 inline-flex items-center justify-center');
     expect(source).toContain('focus:ring-2 focus:ring-cyan-500');
-    expect(fs.readFileSync('prismflow-deploy/public/view_faq_module.js', 'utf8')).toBe(fs.readFileSync('view_faq_module.js', 'utf8'));
+    expect(fs.readFileSync('desktop/web-app/public/view_faq_module.js', 'utf8')).toBe(fs.readFileSync('view_faq_module.js', 'utf8'));
   });
 
   it('announces FAQ audio loading with a motion-safe busy status', () => {

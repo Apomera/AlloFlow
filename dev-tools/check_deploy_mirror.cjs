@@ -1,16 +1,16 @@
 #!/usr/bin/env node
-// check_deploy_mirror.cjs — Verify prismflow-deploy/public/*_module.js mirrors match root.
+// check_deploy_mirror.cjs — Verify desktop/web-app/public/*_module.js mirrors match root.
 //
 // Why this exists:
 //   AlloFlow ships CDN modules from two locations:
 //     1. Root `*_module.js` (canonical, edited by humans/build scripts)
-//     2. `prismflow-deploy/public/*_module.js` (mirror, served by Firebase Hosting)
+//     2. `desktop/web-app/public/*_module.js` (mirror, served by Firebase Hosting)
 //
 //   The mirror is supposed to be a byte-identical copy. When edits land at
 //   root but the mirror isn't refreshed, the deployed app serves the OLD
 //   module — bugs marked "fixed" in source come back in production.
 //
-//   This check verifies every root `*_module.js` matches its `prismflow-deploy/public/`
+//   This check verifies every root `*_module.js` matches its `desktop/web-app/public/`
 //   counterpart byte-for-byte. Files at root that DON'T have a mirror are
 //   reported informationally (might be intentional — not every CDN module
 //   needs to be in the deploy public dir).
@@ -31,14 +31,14 @@ const path = require('path');
 const crypto = require('crypto');
 
 const ROOT = path.resolve(__dirname, '..');
-const PUBLIC_DIR = path.join(ROOT, 'prismflow-deploy', 'public');
+const PUBLIC_DIR = path.join(ROOT, 'desktop/web-app', 'public');
 
 const args = process.argv.slice(2);
 const VERBOSE = args.includes('--verbose');
 const QUIET = args.includes('--quiet');
 
 if (!fs.existsSync(PUBLIC_DIR)) {
-  console.error('prismflow-deploy/public/ not found at ' + PUBLIC_DIR);
+  console.error('desktop/web-app/public/ not found at ' + PUBLIC_DIR);
   process.exit(2);
 }
 
@@ -77,7 +77,7 @@ for (const cand of candidates) {
   const rootPath = path.join(ROOT, cand.relRoot);
   const publicPath = path.join(PUBLIC_DIR, cand.relPublic);
   if (!fs.existsSync(publicPath)) {
-    missingMirrors.push({ root: cand.relRoot, public: 'prismflow-deploy/public/' + cand.relPublic });
+    missingMirrors.push({ root: cand.relRoot, public: 'desktop/web-app/public/' + cand.relPublic });
     continue;
   }
   const rootContent = fs.readFileSync(rootPath, 'utf-8');
@@ -122,7 +122,7 @@ if (drifts.length > 0) {
     console.log('      root:    ' + d.rootSize + ' bytes  (sha256: ' + d.rootHash + ')');
     console.log('      public:  ' + d.publicSize + ' bytes  (sha256: ' + d.publicHash + ')');
     console.log('      Δ size:  ' + sizeArrow + ' bytes (root vs public)');
-    console.log('      Fix:     cp ' + d.relRoot + ' prismflow-deploy/public/' + d.relPublic);
+    console.log('      Fix:     cp ' + d.relRoot + ' desktop/web-app/public/' + d.relPublic);
     console.log('');
   }
 }

@@ -209,6 +209,6 @@ describe('PersonaSessionArtifact private persistence and owner export', () => {
     expect(source).not.toMatch(/\blocalStorage\b|\bsessionStorage\b|\bindexedDB\b/);
     expect(source).not.toMatch(/StudentArtifactStore\s*\.|setHistory\s*\(/);
     expect(read('persona_session_artifact_module.js'))
-      .toBe(read('prismflow-deploy/public/persona_session_artifact_module.js'));
+      .toBe(read('desktop/web-app/public/persona_session_artifact_module.js'));
   });
 });

@@ -134,7 +134,7 @@ describe('PLT grade-band pack credential integrity', () => {
       expect(qa.summary.libraryIntegrity).toMatchObject({ negativeGates: 'pass' });
       for (const suffix of artifactSuffixes) {
         const name = key + suffix;
-        expect(read(`prismflow-deploy/public/test_prep/${name}`)).toBe(read(`test_prep/${name}`));
+        expect(read(`desktop/web-app/public/test_prep/${name}`)).toBe(read(`test_prep/${name}`));
       }
     }
   });

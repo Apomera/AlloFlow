@@ -14,7 +14,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'text_pipeline_helpers_source.jsx');
 const OUTPUT = path.join(ROOT, 'text_pipeline_helpers_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'text_pipeline_helpers_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'text_pipeline_helpers_module.js');
 
 if (!fs.existsSync(SOURCE)) {
   console.error('[TextPipelineHelpers] Source not found:', SOURCE);
@@ -49,7 +49,7 @@ try {
   }
   fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) {
-  console.warn('[TextPipelineHelpers] Could not sync to prismflow-deploy/public/:', e.message);
+  console.warn('[TextPipelineHelpers] Could not sync to desktop/web-app/public/:', e.message);
 }
 
 try {

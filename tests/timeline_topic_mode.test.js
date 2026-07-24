@@ -13,7 +13,7 @@ let H; // TimelineStudioHelpers
 
 beforeAll(() => {
   // timeline_studio_module.js hard-returns unless window.React exists.
-  const React = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react'));
+  const React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
   globalThis.React = window.React = React;
   loadAlloModule('timeline_revision_module.js');
   loadAlloModule('timeline_studio_module.js');

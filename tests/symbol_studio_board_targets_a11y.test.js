@@ -36,6 +36,6 @@ describe('Symbol Studio Board Builder target and action accessibility', () => {
   });
 
   it('keeps the deploy mirror identical', () => {
-    expect(source).toBe(read('prismflow-deploy/public/symbol_studio_module.js'));
+    expect(source).toBe(read('desktop/web-app/public/symbol_studio_module.js'));
   });
 });

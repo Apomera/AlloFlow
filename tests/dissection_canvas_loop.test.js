@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const DISSECTION_PATHS = [
   'stem_lab/stem_tool_dissection.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_dissection.js',
+  'desktop/web-app/public/stem_lab/stem_tool_dissection.js',
 ];
 
 describe('dissection canvas animation loop', () => {

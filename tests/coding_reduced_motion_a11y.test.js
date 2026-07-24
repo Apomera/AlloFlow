@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const sourcePath = path.join(process.cwd(), 'stem_lab', 'stem_tool_coding.js');
-const publicPath = path.join(process.cwd(), 'prismflow-deploy', 'public', 'stem_lab', 'stem_tool_coding.js');
+const publicPath = path.join(process.cwd(), 'desktop/web-app', 'public', 'stem_lab', 'stem_tool_coding.js');
 const originalMatchMedia = window.matchMedia;
 
 function renderCoding(reducedMotion) {

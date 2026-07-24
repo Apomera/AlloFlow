@@ -8,13 +8,13 @@ const { revisions, reviewWave } = require('./eppp_native_quality_wave_07_data.cj
 const root = path.resolve(__dirname, '..');
 const bankPaths = [
   path.join(root, 'test_prep', 'eppp_native_items.json'),
-  path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_native_items.json'),
+  path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_native_items.json'),
 ];
 const selectedIds = new Set(revisions.map((revision) => revision.id));
 const revisionById = new Map(revisions.map((revision) => [revision.id, revision]));
 const catalogPaths = [
   path.join(root, 'test_prep', 'reference_catalog.json'),
-  path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'reference_catalog.json'),
+  path.join(root, 'desktop/web-app', 'public', 'test_prep', 'reference_catalog.json'),
 ];
 
 function writeFileWithRetry(filePath, contents) {

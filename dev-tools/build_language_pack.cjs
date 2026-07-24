@@ -6,7 +6,7 @@
 // Mirrors the runtime translateChunk logic in AlloFlowANTI.txt so output
 // matches what users would get if they generated live.
 //
-// Output: lang/<locale_slug>.js (and mirrored to prismflow-deploy/public/lang/)
+// Output: lang/<locale_slug>.js (and mirrored to desktop/web-app/public/lang/)
 // AlloFlow's runtime first checks GitHub /lang/<slug>.js — if a pack exists
 // there, NO API call is made when a user picks that language. Result: faster
 // load, zero per-user API cost, consistent translations across all users.
@@ -65,7 +65,7 @@ const UI_STRINGS_PATH = path.join(ROOT, 'ui_strings.js');
 const HELP_STRINGS_PATH = path.join(ROOT, 'help_strings.js');
 const GLOSSARY_PATH = path.join(ROOT, 'translation_glossary.js');
 const LANG_DIR = path.join(ROOT, 'lang');
-const DEPLOY_LANG_DIR = path.join(ROOT, 'prismflow-deploy', 'public', 'lang');
+const DEPLOY_LANG_DIR = path.join(ROOT, 'desktop/web-app', 'public', 'lang');
 
 if (!fs.existsSync(LANG_DIR)) fs.mkdirSync(LANG_DIR, { recursive: true });
 if (!fs.existsSync(DEPLOY_LANG_DIR)) fs.mkdirSync(DEPLOY_LANG_DIR, { recursive: true });
@@ -375,7 +375,7 @@ async function main() {
   const pack = unflattenObject(accumulated);
   const json = JSON.stringify(pack, null, 2);
 
-  // Write to lang/ + prismflow-deploy/public/lang/
+  // Write to lang/ + desktop/web-app/public/lang/
   fs.writeFileSync(outPath, json);
   fs.writeFileSync(deployOutPath, json);
 

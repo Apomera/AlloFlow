@@ -114,8 +114,8 @@ console.log(importerFile + ' records normalized-content integrity');
 
 const moduleFiles = [
   'reading_library_module.js',
-  'prismflow-deploy/public/reading_library_module.js',
-  'prismflow-deploy/build/reading_library_module.js'
+  'desktop/web-app/public/reading_library_module.js',
+  'desktop/web-app/build/reading_library_module.js'
 ];
 for (const moduleFile of moduleFiles) {
   let source = fs.readFileSync(moduleFile, 'utf8');

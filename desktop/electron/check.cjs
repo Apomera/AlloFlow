@@ -9,7 +9,7 @@ const files = [
   path.join(__dirname, 'main.cjs'),
   path.join(__dirname, 'preload.cjs'),
   path.join(__dirname, 'security.cjs'),
-  path.join(__dirname, '..', '..', 'prismflow-deploy', 'public', 'alloflow_desktop_bridge.js'),
+  path.join(__dirname, '..', '..', 'desktop/web-app', 'public', 'alloflow_desktop_bridge.js'),
   path.join(__dirname, '..', 'runtime', 'alloflow-desktop-runtime.cjs'),
   path.join(__dirname, '..', 'runtime', 'web-source-fetch.cjs'),
   path.join(__dirname, '..', 'command-center', 'command-center.js'),
@@ -63,7 +63,7 @@ for (const requiredBridgeBoundary of [
     throw new Error('Command-center app bridge boundary is missing: ' + requiredBridgeBoundary);
   }
 }
-const appBridgeSource = fs.readFileSync(path.join(__dirname, '..', '..', 'prismflow-deploy', 'public', 'alloflow_desktop_bridge.js'), 'utf8');
+const appBridgeSource = fs.readFileSync(path.join(__dirname, '..', '..', 'desktop/web-app', 'public', 'alloflow_desktop_bridge.js'), 'utf8');
 const bridgeActions = Array.from(appBridgeSource.matchAll(/action === '([^']+)'/g), (match) => match[1]).sort();
 if (JSON.stringify(bridgeActions) !== JSON.stringify(['config.apply', 'kokoro.download', 'kokoro.test', 'sd.download', 'status.get'])) {
   throw new Error('Isolated app bridge exposes an unexpected capability set: ' + bridgeActions.join(', '));

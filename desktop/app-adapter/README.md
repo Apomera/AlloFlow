@@ -3,11 +3,11 @@
 Status: **applied to the canonical app source and smoke-tested**. The adapter
 was originally staged here on 2026-07-05 because another agent held
 `AlloFlowANTI.txt`, then later landed in `AlloFlowANTI.txt`,
-`prismflow-deploy/src/AlloFlowANTI.txt`, and `prismflow-deploy/src/App.jsx`.
+`desktop/web-app/src/AlloFlowANTI.txt`, and `desktop/web-app/src/App.jsx`.
 Keep this folder as the reference snippet, harness, and recovery path if a
 future regeneration wipes the app-side bridge.
 
-> **Current-verification note (2026-07-09):** Treat this folder as a recovery/reference copy, not the source of truth. Before changing or reusing it, verify the current LAN bridge in `AlloFlowANTI.txt`, `prismflow-deploy/src/AlloFlowANTI.txt`, `prismflow-deploy/src/App.jsx`, and `desktop/runtime/alloflow-desktop-runtime.cjs`.
+> **Current-verification note (2026-07-09):** Treat this folder as a recovery/reference copy, not the source of truth. Before changing or reusing it, verify the current LAN bridge in `AlloFlowANTI.txt`, `desktop/web-app/src/AlloFlowANTI.txt`, `desktop/web-app/src/App.jsx`, and `desktop/runtime/alloflow-desktop-runtime.cjs`.
 
 ## What this is
 
@@ -36,8 +36,8 @@ swap happens at the bindings they receive as props / window mirrors.
 First confirm the adapter markers are still present in all three source copies:
 
 - `AlloFlowANTI.txt`
-- `prismflow-deploy/src/AlloFlowANTI.txt`
-- `prismflow-deploy/src/App.jsx`
+- `desktop/web-app/src/AlloFlowANTI.txt`
+- `desktop/web-app/src/App.jsx`
 
 Expected markers:
 
@@ -57,7 +57,7 @@ If a future generated-file pass removes the adapter, recover it this way:
    `        onAuthStateChanged = s.onAuthStateChanged;`, add:
    `        _applyLanSessionAdapter(); // LAN adapter must outrank whichever backend just landed`
 4. Byte-copy root `AlloFlowANTI.txt` to
-   `prismflow-deploy/src/AlloFlowANTI.txt` and `prismflow-deploy/src/App.jsx`.
+   `desktop/web-app/src/AlloFlowANTI.txt` and `desktop/web-app/src/App.jsx`.
    They must stay identical. Do not hand-edit `App.jsx` independently.
 5. Validate:
    - `node desktop/app-adapter/lan_adapter_harness.cjs`

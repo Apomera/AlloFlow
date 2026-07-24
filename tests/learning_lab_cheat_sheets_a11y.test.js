@@ -100,6 +100,6 @@ describe('Learning Lab Personal Reference Sheet Builder accessibility', () => {
     expect(source).toContain("label: 'Personal Reference Sheet Builder'");
     expect(source).toContain("desc: 'Create and edit personal reference sheets'");
     expect(source).toContain("'Create and edit personal reference sheets for topics you choose.'");
-    expect(source).toBe(read('prismflow-deploy/public/stem_lab/stem_tool_learning_lab.js'));
+    expect(source).toBe(read('desktop/web-app/public/stem_lab/stem_tool_learning_lab.js'));
   });
 });

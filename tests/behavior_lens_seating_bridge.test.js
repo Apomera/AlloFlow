@@ -11,7 +11,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 
 const SRC = readFileSync('behavior_lens_module.js', 'utf8');
-const MIRROR = readFileSync('prismflow-deploy/public/behavior_lens_module.js', 'utf8');
+const MIRROR = readFileSync('desktop/web-app/public/behavior_lens_module.js', 'utf8');
 
 describe('BehaviorLens seating bridge contract', () => {
   it('mirror is a byte-copy of the root module', () => {

@@ -101,7 +101,7 @@ describe('ItemCorrection module', () => {
 
   it('the root module and the deploy mirror are byte-identical', () => {
     const root = readFileSync(resolve(process.cwd(), 'item_correction_module.js'), 'utf8');
-    const mirror = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/item_correction_module.js'), 'utf8');
+    const mirror = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/item_correction_module.js'), 'utf8');
     expect(mirror).toBe(root);
   });
 });

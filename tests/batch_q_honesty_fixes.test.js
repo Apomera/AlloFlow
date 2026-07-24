@@ -10,7 +10,7 @@ const read = (name) => readFileSync(resolve(process.cwd(), name), 'utf8');
 const pipe = read('doc_pipeline_source.jsx');
 const view = read('view_pdf_audit_source.jsx');
 const host = read('AlloFlowANTI.txt') + read('misc_handlers_source.jsx'); // 2026-07-20: runAutoFixLoop lives in MiscHandlers
-const hostMirror = read('prismflow-deploy/src/AlloFlowANTI.txt') + read('misc_handlers_source.jsx'); // 2026-07-20: runAutoFixLoop lives in MiscHandlers
+const hostMirror = read('desktop/web-app/src/AlloFlowANTI.txt') + read('misc_handlers_source.jsx'); // 2026-07-20: runAutoFixLoop lives in MiscHandlers
 const module_ = read('doc_pipeline_module.js');
 const occurrences = (text, needle) => text.split(needle).length - 1;
 

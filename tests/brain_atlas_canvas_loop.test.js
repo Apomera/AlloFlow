@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const BRAIN_ATLAS_PATHS = [
   'stem_lab/stem_tool_brainatlas.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_brainatlas.js',
+  'desktop/web-app/public/stem_lab/stem_tool_brainatlas.js',
 ];
 
 describe('brain atlas canvas loops', () => {

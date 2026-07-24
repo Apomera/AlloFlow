@@ -16,7 +16,7 @@ import { loadAlloModule } from './setup.js';
 const require = createRequire(import.meta.url);
 let H, MP;
 beforeAll(() => {
-  const React = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react'));
+  const React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
   globalThis.React = window.React = React;
   window.AlloIcons = new Proxy({}, { get: () => () => null });
   loadAlloModule('allohaven_module.js');

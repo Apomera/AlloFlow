@@ -3,7 +3,7 @@ import fs from 'node:fs';
 
 const source = fs.readFileSync('view_persona_chat_source.jsx', 'utf8');
 const moduleSource = fs.readFileSync('view_persona_chat_module.js', 'utf8');
-const publicModule = fs.readFileSync('prismflow-deploy/public/view_persona_chat_module.js', 'utf8');
+const publicModule = fs.readFileSync('desktop/web-app/public/view_persona_chat_module.js', 'utf8');
 
 const countMatches = (pattern) => (source.match(pattern) || []).length;
 

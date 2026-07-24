@@ -10,7 +10,7 @@ import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
 const require = createRequire(import.meta.url);
-const modulesDir = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const modulesDir = resolve(process.cwd(), 'desktop/web-app/node_modules');
 let React, ReactDOMClient, act, axe, Lingua, root, host;
 
 const AXE_OPTIONS = {

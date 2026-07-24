@@ -27,5 +27,5 @@ ${result.code}
 `;
 
 fs.writeFileSync('persona_ui_module.js', moduleSource);
-fs.writeFileSync('prismflow-deploy/public/persona_ui_module.js', moduleSource);
+fs.writeFileSync('desktop/web-app/public/persona_ui_module.js', moduleSource);
 console.log(`Wrote Persona UI modules (${moduleSource.length} bytes)`);

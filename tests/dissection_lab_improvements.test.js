@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 
 const DISSECTION_PATHS = [
   'stem_lab/stem_tool_dissection.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_dissection.js',
+  'desktop/web-app/public/stem_lab/stem_tool_dissection.js',
 ];
 
 describe('dissection improvement contracts', () => {

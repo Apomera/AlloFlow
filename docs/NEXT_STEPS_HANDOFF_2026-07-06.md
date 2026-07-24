@@ -40,7 +40,7 @@ The desktop app (School Box pillar) reached **0.2.7** today: local text generati
 **Remaining build**: one shared adapter (suggest `window.__alloDictate`): MediaRecorder → 16k WAV (lift `_audioBase64ToWav16k` from `fluency_module.js`) → POST `/api/asr/transcribe` (same-origin proxy, already shipped) when `/api/asr/status` says running → else browser SR fallback. Push-to-talk semantics (transcribe on stop) — don't fake interim results. Then migrate call sites one at a time, gates green each step. **Done when**: desktop dictation works keyless in all 13 places with the ASR tile on; web unchanged when whisper absent.
 
 ### 2. Installer pipeline hardening (small, prevents a repeat)
-`desktop/scripts/build-desktop-web.cjs` should fail loudly (or auto-run the prod build) when `prismflow-deploy/src/App.jsx` is older than `AlloFlowANTI.txt` — today that gap silently shipped a bundle without an ANTI fix. Also add a marker check to `verify-desktop-artifacts.cjs`.
+`desktop/scripts/build-desktop-web.cjs` should fail loudly (or auto-run the prod build) when `desktop/web-app/src/App.jsx` is older than `AlloFlowANTI.txt` — today that gap silently shipped a bundle without an ANTI fix. Also add a marker check to `verify-desktop-artifacts.cjs`.
 
 ### 3. AlloStudio: Canvas smoke, then compose-from-prompt
 The teacher-only agent (review-first edits, image requests, batch undo, preflight delta) is live but **unsmoked in Canvas**. Smoke first. Then the flagship: "Start with AI…" on the template picker — blank doc + one agent request through the existing plan-review panel (`object.add`/`image.request` machinery already shipped; see `project_allostudio_and_builder_crop` memory and `docs/studio_design.md` v0.4).

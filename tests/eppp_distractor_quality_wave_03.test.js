@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 const root = process.cwd();
 const sourceBank = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', 'eppp_native_items.json'), 'utf8'));
-const deployBank = JSON.parse(fs.readFileSync(path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_native_items.json'), 'utf8'));
+const deployBank = JSON.parse(fs.readFileSync(path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_native_items.json'), 'utf8'));
 const targetId = 'eppp-b006-biological-2';
 
 describe('EPPP distractor quality wave 03', () => {

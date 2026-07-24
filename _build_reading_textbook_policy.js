@@ -13,7 +13,7 @@ const path = require('path');
 const ROOT = __dirname;
 const TARGETS = [
   path.join(ROOT, 'reading_library_module.js'),
-  path.join(ROOT, 'prismflow-deploy', 'public', 'reading_library_module.js')
+  path.join(ROOT, 'desktop/web-app', 'public', 'reading_library_module.js')
 ];
 
 function replaceOnce(source, before, after, label) {

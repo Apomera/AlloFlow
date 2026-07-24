@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const require = createRequire(import.meta.url);
-const modulesDir = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const modulesDir = resolve(process.cwd(), 'desktop/web-app/node_modules');
 const source = readFileSync('view_pdf_audit_source.jsx', 'utf8');
 let axe;
 let opener;
@@ -51,7 +51,7 @@ describe('PDF Document Builder confirmation accessibility', () => {
     expect(helper).toContain("if (event.key !== 'Tab') return");
     expect(helper).toContain('cancel.focus()');
     expect(helper).toContain('if (createdStyle) { try { style.remove(); }');
-    expect(readFileSync('prismflow-deploy/public/view_pdf_audit_module.js', 'utf8'))
+    expect(readFileSync('desktop/web-app/public/view_pdf_audit_module.js', 'utf8'))
       .toBe(readFileSync('view_pdf_audit_module.js', 'utf8'));
   });
 

@@ -11,7 +11,7 @@
 //   2. Translation key coverage (t() and HELP_STRINGS)
 //   3. Tool registry contract (StemLab + SelHub registerTool schemas)
 //   4. Source/module pair drift
-//   5. Source-pair drift (root vs prismflow-deploy/src/)
+//   5. Source-pair drift (root vs desktop/web-app/src/)
 //   6. Pipeline integrity (_docPipeline.X UI calls vs exports)
 //
 // Categories NOT run by default (slow, optional):
@@ -76,7 +76,7 @@ const checks = [
   {
     name: 'Source-pair drift',
     cmd: ['node', 'dev-tools/check_source_pair_drift.js'],
-    description: 'Root *_source.jsx vs prismflow-deploy/src/ duplicates',
+    description: 'Root *_source.jsx vs desktop/web-app/src/ duplicates',
   },
   {
     name: 'Research Hub rebuild-diff',
@@ -167,7 +167,7 @@ const checks = [
   {
     name: 'Deploy mirror sync',
     cmd: ['node', 'dev-tools/check_deploy_mirror.cjs', '--quiet'],
-    description: 'Root *_module.js matches prismflow-deploy/public/ mirror',
+    description: 'Root *_module.js matches desktop/web-app/public/ mirror',
   },
   {
     name: 'Sample lesson smoke',

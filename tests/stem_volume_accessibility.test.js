@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const sourcePath = resolve(process.cwd(), 'stem_lab/stem_tool_volume.js');
-const publicPath = resolve(process.cwd(), 'prismflow-deploy/public/stem_lab/stem_tool_volume.js');
+const publicPath = resolve(process.cwd(), 'desktop/web-app/public/stem_lab/stem_tool_volume.js');
 const source = () => readFileSync(sourcePath, 'utf8');
 
 describe('Volume Lab accessibility', () => {

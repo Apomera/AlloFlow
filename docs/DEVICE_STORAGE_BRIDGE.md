@@ -96,5 +96,5 @@ loadModule line.
 ## Files
 
 - `storage_bridge.html` — bridge + review UI (repo root, CDN-served)
-- `allo_device_storage_module.js` — adapter (repo root + prismflow-deploy/public mirror)
+- `allo_device_storage_module.js` — adapter (repo root + desktop/web-app/public mirror)
 - `tests/device_storage_bridge.test.js` — protocol contract + memory-backend tests

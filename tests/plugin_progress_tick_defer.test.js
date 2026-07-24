@@ -23,8 +23,8 @@ function pluginChangedHandler(src) {
 }
 
 const cases = [
-  ['stem_lab/stem_lab_module.js', 'prismflow-deploy/public/stem_lab/stem_lab_module.js'],
-  ['sel_hub/sel_hub_module.js', 'prismflow-deploy/public/sel_hub/sel_hub_module.js'],
+  ['stem_lab/stem_lab_module.js', 'desktop/web-app/public/stem_lab/stem_lab_module.js'],
+  ['sel_hub/sel_hub_module.js', 'desktop/web-app/public/sel_hub/sel_hub_module.js'],
 ];
 
 describe('allo-plugins-changed tick is deferred out of render', () => {

@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 
 const SOURCE_FILE = 'stem_lab/stem_tool_geosandbox.js';
-const PUBLIC_FILE = 'prismflow-deploy/public/stem_lab/stem_tool_geosandbox.js';
+const PUBLIC_FILE = 'desktop/web-app/public/stem_lab/stem_tool_geosandbox.js';
 const IMMERSIVE_SOURCE_FILE = 'immersive_geometry/immersive_geometry.html';
-const IMMERSIVE_PUBLIC_FILE = 'prismflow-deploy/public/immersive_geometry/immersive_geometry.html';
+const IMMERSIVE_PUBLIC_FILE = 'desktop/web-app/public/immersive_geometry/immersive_geometry.html';
 
 function read(path) {
   return readFileSync(path, 'utf8');

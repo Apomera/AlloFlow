@@ -25,7 +25,7 @@ describe('Word Sounds lesson-plan pointer-independent reordering', () => {
   });
 
   it('keeps the root and deployed generated modules synchronized', () => {
-    expect(readFileSync('prismflow-deploy/public/word_sounds_setup_module.js', 'utf8'))
+    expect(readFileSync('desktop/web-app/public/word_sounds_setup_module.js', 'utf8'))
       .toBe(readFileSync('word_sounds_setup_module.js', 'utf8'));
   });
 });

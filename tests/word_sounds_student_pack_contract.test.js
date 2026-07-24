@@ -15,7 +15,7 @@ import { setupWordSounds, ACTIVITIES } from './helpers/word_sounds_harness.js';
 import { studentProps, installCanvasStub } from './helpers/word_sounds_pack_fixture.js';
 
 const require = createRequire(import.meta.url);
-const MODULES_DIR = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
 
 let React, ReactDOMClient, act, WordSoundsModal;
 

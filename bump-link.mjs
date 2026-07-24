@@ -9,8 +9,8 @@
 // --force skips URL regex validation AND the git-cleanliness check.
 //
 // On success, this script:
-//   1. Overwrites prismflow-deploy/public/release.json with the new release.
-//   2. Prepends a new entry to prismflow-deploy/public/releases.json.
+//   1. Overwrites desktop/web-app/public/release.json with the new release.
+//   2. Prepends a new entry to desktop/web-app/public/releases.json.
 //   3. Rewrites the FALLBACK_CANVAS_URL constant in launch.html.
 //   4. Rewrites the data-version-label element in index.html (warning-only).
 //
@@ -25,13 +25,13 @@ import path from "node:path";
 // ---------- constants -------------------------------------------------------
 
 const REPO_ROOT = "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated";
-const DEPLOY_DIR = path.posix.join(REPO_ROOT, "prismflow-deploy");
+const DEPLOY_DIR = path.posix.join(REPO_ROOT, "desktop/web-app");
 const PUBLIC_DIR = path.posix.join(DEPLOY_DIR, "public");
 
 // Canonical source-of-truth files live at the repo root (where index.html,
 // calculator.html, features.html live) — these are what GitHub Pages serves
 // at apomera.github.io/AlloFlow/. They are also mirrored to PUBLIC_DIR at
-// deploy time so Firebase (which serves prismflow-deploy/build/) sees them
+// deploy time so Firebase (which serves desktop/web-app/build/) sees them
 // after the React build copies public/ → build/.
 const RELEASE_JSON = path.posix.join(REPO_ROOT, "release.json");
 const RELEASES_JSON = path.posix.join(REPO_ROOT, "releases.json");
@@ -129,11 +129,11 @@ function parseArgv(argv) {
 // ---------- preflight -------------------------------------------------------
 
 function checkGitClean(force) {
-  // Refuses if AlloFlowANTI.txt or anything under prismflow-deploy/ is dirty.
+  // Refuses if AlloFlowANTI.txt or anything under desktop/web-app/ is dirty.
   let out;
   try {
     out = execSync(
-      `git -C "${REPO_ROOT}" status --porcelain -- AlloFlowANTI.txt prismflow-deploy/`,
+      `git -C "${REPO_ROOT}" status --porcelain -- AlloFlowANTI.txt desktop/web-app/`,
       { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }
     );
   } catch (e) {
@@ -351,7 +351,7 @@ async function main() {
   info(`  release id  : ${id}`);
   info(`  notes       : ${notes.length > 80 ? notes.slice(0, 77) + "..." : notes}`);
   info("");
-  info("Next: cd prismflow-deploy && ./deploy.sh");
+  info("Next: cd desktop/web-app && ./deploy.sh");
 }
 
 main().catch((e) => {

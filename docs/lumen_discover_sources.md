@@ -51,7 +51,7 @@ The UI permits twelve web searches per open session with a one-second repeat coo
 
 The same byte-identical safety core is used by:
 
-- `prismflow-deploy/functions/web_source_fetch.js`, exported through the authenticated Firebase `sourceFetchProxy` Function.
+- `desktop/web-app/functions/web_source_fetch.js`, exported through the authenticated Firebase `sourceFetchProxy` Function.
 - `desktop/runtime/web-source-fetch.cjs`, exposed only to the bundled desktop app through the private loopback runtime.
 
 For every initial URL and redirect hop, the importer:

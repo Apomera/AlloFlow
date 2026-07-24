@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 const read = (path) => readFileSync(resolve(process.cwd(), path), 'utf8');
 const source = read('test_prep_hub_source.jsx');
 const built = read('test_prep_hub_module.js');
-const deployed = read('prismflow-deploy/public/test_prep_hub_module.js');
+const deployed = read('desktop/web-app/public/test_prep_hub_module.js');
 
 describe('Test Prep Hub WCAG focus and timing safeguards', () => {
   it('keeps generated artifacts synchronized', () => {

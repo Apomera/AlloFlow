@@ -3,7 +3,7 @@
 //   `let onAuthStateChanged = (auth, cb) => _fbOnAuthStateChanged(auth, cb);`
 // (the end of the let-bound Firestore passthroughs), plus ONE extra line inside
 // _upgradeAIBackend — see desktop/app-adapter/README.md. Apply to the canonical
-// AlloFlowANTI.txt and byte-copy to both prismflow-deploy/src mirrors.
+// AlloFlowANTI.txt and byte-copy to both desktop/web-app/src mirrors.
 //
 // WHY THIS EXISTS: Desktop/School Box classrooms run live sessions WITHOUT any
 // cloud. The desktop runtime (desktop/runtime/alloflow-desktop-runtime.cjs)

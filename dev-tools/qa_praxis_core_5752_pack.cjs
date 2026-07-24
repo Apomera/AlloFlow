@@ -146,7 +146,7 @@ const report = {
   findings, items: itemReports,
 };
 const markdown = `# Praxis Core Combined (5752) QA report\n\nGenerated: ${generatedAt}\n\n## Result\n\n- Status: **${status.toUpperCase()}**\n- Items: ${itemReports.length}\n- Passed: ${passedItems}\n- Review required: ${itemReports.length - passedItems}\n- Diagnostic banks: 2 x 100\n- Selected-response simulation: 152 questions / 215 minutes\n- Official combined timed sections represented: 152 selected responses + 2 essays / 275 minutes\n\n> ${report.standard.limitation}\n`;
-for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')]) {
+for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'desktop/web-app', 'public', 'test_prep')]) {
   fs.mkdirSync(outputRoot, { recursive: true });
   writeGeneratedFile(path.join(outputRoot, 'praxis_core_5752_native_qa.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
   writeGeneratedFile(path.join(outputRoot, 'praxis_core_5752_native_qa.md'), markdown, 'utf8');

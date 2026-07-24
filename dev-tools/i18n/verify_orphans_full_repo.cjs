@@ -21,7 +21,7 @@ const OUT_KEPT = path.join(__dirname, 'orphan_verified_kept.json');
 const IGNORE = [
   /[\\/]node_modules[\\/]/,
   /[\\/]\.git[\\/]/,
-  /[\\/]prismflow-deploy[\\/]/,        // mirror, not source
+  /[\\/]desktop/web-app[\\/]/,        // mirror, not source
   /[\\/]coverage[\\/]/,
   /[\\/]dist[\\/]/,
   /[\\/]lang[\\/]/,                    // lang packs themselves contain the keys; not a "reference"

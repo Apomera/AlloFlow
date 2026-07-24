@@ -94,12 +94,12 @@ describe('EPPP flashcard review wave 02', () => {
       'eppp_learning_library_qa.json',
     ]) {
       const source = readText(`test_prep/${name}`);
-      expect(readText(`prismflow-deploy/public/test_prep/${name}`)).toBe(source);
+      expect(readText(`desktop/web-app/public/test_prep/${name}`)).toBe(source);
       expect(source).not.toMatch(/Content QA passed/i);
     }
 
     for (const name of ['content_inventory.json', 'content_inventory.md']) {
-      expect(readText(`prismflow-deploy/public/test_prep/eppp_legacy/${name}`)).toBe(readText(`test_prep/eppp_legacy/${name}`));
+      expect(readText(`desktop/web-app/public/test_prep/eppp_legacy/${name}`)).toBe(readText(`test_prep/eppp_legacy/${name}`));
     }
   });
 });

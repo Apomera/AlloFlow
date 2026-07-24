@@ -6,7 +6,7 @@ const { execFileSync } = require('child_process');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'quickstart_source.jsx');
 const OUTPUT = path.join(ROOT, 'quickstart_module.js');
-const PUBLIC_OUTPUT = path.join(ROOT, 'prismflow-deploy', 'public', 'quickstart_module.js');
+const PUBLIC_OUTPUT = path.join(ROOT, 'desktop/web-app', 'public', 'quickstart_module.js');
 const source = fs.readFileSync(SOURCE, 'utf8');
 const compiled = babel.transformSync(source, {
   plugins: [['@babel/plugin-transform-react-jsx', { useBuiltIns: false }]], babelrc: false, configFile: false,

@@ -49,5 +49,5 @@ const moduleSrc = `/**
 `;
 
 fs.writeFileSync('view_analysis_module.js', moduleSrc);
-fs.writeFileSync('prismflow-deploy/public/view_analysis_module.js', moduleSrc);
+fs.writeFileSync('desktop/web-app/public/view_analysis_module.js', moduleSrc);
 console.log('Wrote view_analysis_module.js (' + moduleSrc.length + ' bytes)');

@@ -79,7 +79,7 @@ describe('EPPP learning-library inventory and full-review program', () => {
   it('regenerates identical development and deployment artifacts', () => {
     for (const name of ['content_inventory.json', 'review_ledger.json', 'curation_500.json', 'curation_1000.json', 'curation_1500.json']) {
       const source = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy', name), 'utf8');
-      const deployed = fs.readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/test_prep/eppp_legacy', name), 'utf8');
+      const deployed = fs.readFileSync(resolve(process.cwd(), 'desktop/web-app/public/test_prep/eppp_legacy', name), 'utf8');
       expect(deployed).toBe(source);
     }
     const importer = fs.readFileSync(resolve(process.cwd(), 'dev-tools/import_eppp_legacy.cjs'), 'utf8');

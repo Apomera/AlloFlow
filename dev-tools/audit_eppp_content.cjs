@@ -8,7 +8,7 @@ const vm = require('vm');
 
 const workspaceRoot = path.resolve(__dirname, '..');
 const runtimeRoot = path.join(workspaceRoot, 'test_prep', 'eppp_legacy');
-const deployRoot = path.join(workspaceRoot, 'prismflow-deploy', 'public', 'test_prep', 'eppp_legacy');
+const deployRoot = path.join(workspaceRoot, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy');
 const indexPath = path.join(runtimeRoot, 'index.html');
 
 function canonicalText(value) {

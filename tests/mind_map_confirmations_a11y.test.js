@@ -34,6 +34,6 @@ describe('Throughline confirmation accessibility', () => {
   });
 
   it('keeps the deploy mirror identical', () => {
-    expect(source).toBe(read('prismflow-deploy/public/mind_map_module.js'));
+    expect(source).toBe(read('desktop/web-app/public/mind_map_module.js'));
   });
 });

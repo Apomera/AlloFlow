@@ -49,7 +49,7 @@ describe('Adventure scene, artwork, and playback accessibility', () => {
 
   it('keeps generated Adventure modules synchronized', () => {
     const rootModule = fs.readFileSync('view_adventure_module.js', 'utf8');
-    expect(fs.readFileSync('prismflow-deploy/public/view_adventure_module.js', 'utf8')).toBe(rootModule);
+    expect(fs.readFileSync('desktop/web-app/public/view_adventure_module.js', 'utf8')).toBe(rootModule);
     expect(rootModule).toContain('role: "button"');
     expect(rootModule).toContain('"aria-pressed": isActive');
     expect(rootModule).not.toContain('"aria-controls": `sentence-'); // inline speaker buttons removed 2026-07-16 (other aria-controls, e.g. the inventory disclosure, are legit)

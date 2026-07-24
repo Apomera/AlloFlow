@@ -24,7 +24,7 @@ const crypto = require('crypto');
 const { hasLargeFixedWidth } = require('./stem_visual_overflow_heuristic.cjs');
 
 const ROOT = process.cwd();
-const MODULES = path.join(ROOT, 'prismflow-deploy', 'node_modules');
+const MODULES = path.join(ROOT, 'desktop/web-app', 'node_modules');
 const QUIET = process.argv.includes('--quiet');
 const GATE = process.argv.includes('--gate');
 const WRITE_IDX = process.argv.indexOf('--write');
@@ -678,8 +678,8 @@ function loadTools() {
 
 function collectSync(files) {
   const sourceDir = path.join(ROOT, 'stem_lab');
-  const publicDir = path.join(ROOT, 'prismflow-deploy', 'public', 'stem_lab');
-  const buildDir = path.join(ROOT, 'prismflow-deploy', 'build', 'stem_lab');
+  const publicDir = path.join(ROOT, 'desktop/web-app', 'public', 'stem_lab');
+  const buildDir = path.join(ROOT, 'desktop/web-app', 'build', 'stem_lab');
   const monitored = new Set(EXPECTED_MARKERS.map(function (m) { return m.file; }));
   return files.map(function (file) {
     const source = path.join(sourceDir, file);

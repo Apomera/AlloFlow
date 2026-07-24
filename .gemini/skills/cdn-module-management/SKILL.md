@@ -49,12 +49,12 @@ The canonical deploy is a single command from the repo root:
 ./deploy.sh "fix: description of module change"
 ```
 This commits, pushes to `main`, runs `build.js --mode=prod --force` (which
-rewrites CDN URLs + mirrors module files into `prismflow-deploy/public/`),
+rewrites CDN URLs + mirrors module files into `desktop/web-app/public/`),
 builds the React shell, stamps the service worker, deploys to Firebase, and
 runs post-deploy verification against Firebase + the Cloudflare CDN.
 
 If you must run steps manually, the order is: commit → push → `node build.js
---mode=prod` → `npm run build` (in `prismflow-deploy/`) → stamp SW → `firebase
+--mode=prod` → `npm run build` (in `desktop/web-app/`) → stamp SW → `firebase
 deploy`. Commit before build so the `?v=<short-hash>` cache-buster is correct.
 
 ## Cache Invalidation
@@ -67,7 +67,7 @@ deploy`. Commit before build so the `?v=<short-hash>` cache-buster is correct.
   fresh `__BUILD_TS__` to force an update.
 
 ## Common Gotchas
-- **Never edit `prismflow-deploy/public/*.js` directly** — `build.js` overwrites
+- **Never edit `desktop/web-app/public/*.js` directly** — `build.js` overwrites
   the mirror from the committed root copies on every prod build.
 - **Module registration**: each module must assign `window.AlloModules.<Name> =
   ...` (a component or `{ render, ... }`) at the end of its IIFE.

@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
 const require = createRequire(import.meta.url);
-const modulesDir = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const modulesDir = resolve(process.cwd(), 'desktop/web-app/node_modules');
 const escapeXml = (value) => String(value == null ? '' : value).replace(/[<>&'\"]/g, (char) => ({
   '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '\"': '&quot;',
 }[char]));
@@ -219,9 +219,9 @@ describe('Adventure narrated Storybook artifact export', () => {
   });
 
   it('keeps generated export and modal modules byte-identical to deploy mirrors', () => {
-    expect(readFileSync('prismflow-deploy/public/export_module.js', 'utf8'))
+    expect(readFileSync('desktop/web-app/public/export_module.js', 'utf8'))
       .toBe(readFileSync('export_module.js', 'utf8'));
-    expect(readFileSync('prismflow-deploy/public/view_storybook_export_modal_module.js', 'utf8'))
+    expect(readFileSync('desktop/web-app/public/view_storybook_export_modal_module.js', 'utf8'))
       .toBe(readFileSync('view_storybook_export_modal_module.js', 'utf8'));
   });
 });

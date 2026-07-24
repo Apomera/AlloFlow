@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const source = readFileSync('view_pdf_audit_source.jsx', 'utf8');
 const built = readFileSync('view_pdf_audit_module.js', 'utf8');
-const deployed = readFileSync('prismflow-deploy/public/view_pdf_audit_module.js', 'utf8');
+const deployed = readFileSync('desktop/web-app/public/view_pdf_audit_module.js', 'utf8');
 const nativePromptPattern = /(?<![\w.])(?:window\.)?prompt\s*\(/;
 
 describe('PDF audit text-entry dialogs', () => {

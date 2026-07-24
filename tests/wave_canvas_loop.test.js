@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const WAVE_PATHS = [
   'stem_lab/stem_tool_wave.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_wave.js',
+  'desktop/web-app/public/stem_lab/stem_tool_wave.js',
 ];
 
 describe('wave canvas animation loop', () => {

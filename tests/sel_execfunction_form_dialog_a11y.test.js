@@ -51,6 +51,6 @@ describe('Executive Function form dialog accessibility', () => {
   });
 
   it('keeps the deployed mirror identical', () => {
-    expect(source).toBe(read('prismflow-deploy/public/sel_hub/sel_tool_execfunction.js'));
+    expect(source).toBe(read('desktop/web-app/public/sel_hub/sel_tool_execfunction.js'));
   });
 });

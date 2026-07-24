@@ -10,7 +10,7 @@
 // HOW IT WORKS (zero changes to the live module — read-only):
 //   * load word_sounds_module.js into the vitest+jsdom window (the same
 //     `new Function(src)()` trick as tests/setup.js), but with REAL React
-//     (from prismflow-deploy/node_modules) so the component can render.
+//     (from desktop/web-app/node_modules) so the component can render.
 //   * the module references ~70 ambient globals at production runtime (lucide
 //     icons, a few data tables, firebase handles, helper fns). They are injected
 //     by the host page there; here we stub them so the IIFE loads and renders.
@@ -33,7 +33,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const require = createRequire(import.meta.url);
-const MODULES_DIR = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
 
 // Real React 18 + its SSR renderer. react-dom resolves its own `react` from the
 // same directory, so element identity is consistent with `React` below.

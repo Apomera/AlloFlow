@@ -91,7 +91,7 @@ const files = [
   ROOT + '/AlloFlowANTI.txt',
   ...listFiles(path.join(ROOT, 'stem_lab'), f => f.endsWith('.js') && !f.startsWith('_')),
   ...listFiles(path.join(ROOT, 'sel_hub'), f => f.endsWith('.js') && !f.startsWith('_')),
-  ...listFiles(path.join(ROOT, 'prismflow-deploy', 'functions'), f => f.endsWith('.js') && !f.startsWith('_')),
+  ...listFiles(path.join(ROOT, 'desktop/web-app', 'functions'), f => f.endsWith('.js') && !f.startsWith('_')),
 ];
 
 const findings = [];

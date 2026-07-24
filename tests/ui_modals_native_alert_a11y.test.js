@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const source = readFileSync('ui_modals_source.jsx', 'utf8');
 const built = readFileSync('ui_modals_module.js', 'utf8');
-const deployed = readFileSync('prismflow-deploy/public/ui_modals_module.js', 'utf8');
+const deployed = readFileSync('desktop/web-app/public/ui_modals_module.js', 'utf8');
 
 describe('Shared UI modal error announcements', () => {
   it('renders quiz submission failures persistently and clears stale failures on retry', () => {

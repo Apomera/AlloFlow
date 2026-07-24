@@ -4,8 +4,8 @@
 const fs = require("fs");
 const path = require("path");
 const root = path.resolve(__dirname, "..");
-const functions = fs.readFileSync(path.join(root, "prismflow-deploy/functions/index.js"), "utf8");
-const optional = fs.readFileSync(path.join(root, "prismflow-deploy/firebase.functions.json"), "utf8");
+const functions = fs.readFileSync(path.join(root, "desktop/web-app/functions/index.js"), "utf8");
+const optional = fs.readFileSync(path.join(root, "desktop/web-app/firebase.functions.json"), "utf8");
 const client = fs.readFileSync(path.join(root, "AlloFlowANTI.txt"), "utf8");
 const forbidden = ["exports.ltiLogin", "exports.ltiLaunch", "exports.ltiSession", '"function": "ltiLogin"', '"function": "ltiLaunch"', '"function": "ltiSession"'];
 const failures = forbidden.filter((token) => functions.includes(token) || optional.includes(token));

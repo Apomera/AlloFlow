@@ -489,7 +489,7 @@ Refactor handleExecuteBlueprint (phase_o_misc_handlers_source.jsx:462) →
 
 | Logical change | Files |
 |---|---|
-| Module (setup/proposal editor/queue renderer) | `mind_map_module.js` **+** `prismflow-deploy/public/mind_map_module.js` (mirror) |
+| Module (setup/proposal editor/queue renderer) | `mind_map_module.js` **+** `desktop/web-app/public/mind_map_module.js` (mirror) |
 | Host driver + `executeOneBlueprint` refactor + mount props | `phase_o_misc_handlers_source.jsx` → regenerated `phase_o_misc_handlers_module.js` (+ mirror); `AlloFlowANTI.txt` (canonical) → `App.jsx` artifacts |
 
 `AlloFlowANTI.txt` is canonical (App.jsx files are generated). **Stay entirely off `doc_pipeline`** (concurrent agent owns it). `*_module.js` generated files are often DRIFTED from `*_source.jsx` — if a single-module rebuild's diff isn't minimal, revert and hand-edit the one site in source + generated + mirror.
@@ -561,7 +561,7 @@ Refactor handleExecuteBlueprint (phase_o_misc_handlers_source.jsx:462) →
 
 ## 8. Implementation Plan
 
-Ordered, buildable steps. Files: `mind_map_module.js` (+ `prismflow-deploy/public/` mirror), host handler in `phase_o_misc_handlers_source.jsx` (→ regenerated `_module.js` + mirror), mount props in `AlloFlowANTI.txt` (canonical; App.jsx artifacts regenerate). **Stay off `doc_pipeline`.**
+Ordered, buildable steps. Files: `mind_map_module.js` (+ `desktop/web-app/public/` mirror), host handler in `phase_o_misc_handlers_source.jsx` (→ regenerated `_module.js` + mirror), mount props in `AlloFlowANTI.txt` (canonical; App.jsx artifacts regenerate). **Stay off `doc_pipeline`.**
 
 **Step 0 — Throughline golden master (MANDATORY FIRST).**
 Write `tests/throughline_golden.test.js` (SSR characterization), same playbook as Symbol Studio / Behavior Lens. Pin the v1 render across themes + the empty/planned-node states. **No feature code until this is green.**

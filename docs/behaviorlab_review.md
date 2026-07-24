@@ -4,7 +4,7 @@ _Generated 2026-06-15 via a 27-agent review workflow (map -> 8-dimension analysi
 
 > **Historical review snapshot, not current open-bug status (2026-07-09):** This June review is preserved for its evidence trail and ethical analysis. Later code and QA work may have changed individual findings; verify against current `stem_lab/stem_tool_behaviorlab.js`, mirrors, tests, and a11y/visual reports before treating an item as open.
 
-**Target:** `stem_lab/stem_tool_behaviorlab.js` (~6,095 lines, hand-maintained; build.js mirrors root → `prismflow-deploy/public/` at deploy)
+**Target:** `stem_lab/stem_tool_behaviorlab.js` (~6,095 lines, hand-maintained; build.js mirrors root → `desktop/web-app/public/` at deploy)
 **Audience:** Aaron (school psychologist; FBA + behavior intervention daily practice; navigates the ABA/neurodiversity tension professionally)
 **Status:** Deploy HELD. This is analysis only. Every line ref below was re-verified against working-tree bytes.
 
@@ -182,7 +182,7 @@ This is the single best next thing because: (a) it retires the one *live* integr
 - You have personally red-penned the line-844 and aversives wording (no AI-authored ethics copy ships unreviewed).
 - `node --check stem_lab/stem_tool_behaviorlab.js` clean.
 - **Golden-master step:** run the existing `stem_tool_golden.test.js` + smoke test — intro digest **must be unchanged** (sha 58da9f91; all edits are behind toggles, so this is the confirming check that scope held). Then **add a source-content invariant** asserting the contested-status framing string is present at the timeline (so a future edit can't silently revert the hedge). Re-baseline only if the invariant test is the only diff.
-- Diff is minimal (root only — `build.js --compile` regenerates the mirror at deploy; do **not** hand-edit `prismflow-deploy/public/`).
+- Diff is minimal (root only — `build.js --compile` regenerates the mirror at deploy; do **not** hand-edit `desktop/web-app/public/`).
 - Held-deploy note: the currently-deployed mirror is stale and predates `BEYOND_ABA` — so the *next* deploy is what makes both the critique and these hedges live together. Flag that to whoever runs the held deploy.
 
 **Defer to a second slice:** QW-2/QW-3/QW-4 (aria-label + AI gating + competence disclaimer) — each independently shippable, but keep the ethics batch clean and reviewable on its own so your red-pen pass isn't entangled with code-logic changes.

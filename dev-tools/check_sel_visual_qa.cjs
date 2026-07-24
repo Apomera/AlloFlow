@@ -13,9 +13,9 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = process.cwd();
-const PUBLIC = path.join(ROOT, 'prismflow-deploy', 'public');
+const PUBLIC = path.join(ROOT, 'desktop/web-app', 'public');
 const SEL_DIR = path.join(PUBLIC, 'sel_hub');
-const MODULES = path.join(ROOT, 'prismflow-deploy', 'node_modules');
+const MODULES = path.join(ROOT, 'desktop/web-app', 'node_modules');
 const REPORT_JSON = path.join(ROOT, 'a11y-audit', 'sel_visual_qa.json');
 const REPORT_MD = path.join(ROOT, 'a11y-audit', 'sel_visual_qa.md');
 const SHOT_DIR = path.join(ROOT, 'a11y-audit', 'sel_visual_qa');

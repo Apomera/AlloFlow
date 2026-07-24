@@ -1,7 +1,7 @@
 # Dependencies and build artifacts
 node_modules/
-prismflow-deploy/node_modules/
-prismflow-deploy/build/
+desktop/web-app/node_modules/
+desktop/web-app/build/
 
 # Large data files (not needed in container)
 *.m4a

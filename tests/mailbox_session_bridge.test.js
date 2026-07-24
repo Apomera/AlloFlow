@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
 const gsSource = fs.readFileSync(path.join(ROOT, 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
-const publicMailboxSource = fs.readFileSync(path.join(ROOT, 'prismflow-deploy', 'public', 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
+const publicMailboxSource = fs.readFileSync(path.join(ROOT, 'desktop/web-app', 'public', 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
 
 function sliceBetween(source, startMarker, endMarker) {
     const start = source.indexOf(startMarker);
@@ -500,8 +500,8 @@ describe('mailbox session bridge (real ANTI block against real Code.gs)', () => 
 describe('three-copy sync pins (Phase C sections)', () => {
     const copies = [
         anti,
-        fs.readFileSync(path.join(ROOT, 'prismflow-deploy', 'src', 'AlloFlowANTI.txt'), 'utf8'),
-        fs.readFileSync(path.join(ROOT, 'prismflow-deploy', 'src', 'App.jsx'), 'utf8'),
+        fs.readFileSync(path.join(ROOT, 'desktop/web-app', 'src', 'AlloFlowANTI.txt'), 'utf8'),
+        fs.readFileSync(path.join(ROOT, 'desktop/web-app', 'src', 'App.jsx'), 'utf8'),
     ].map(source => source.replace(/\r\n/g, '\n'));
     it('the bridge block and the unified wiring are identical in all three copies', () => {
         const sections = source => [
@@ -649,8 +649,8 @@ describe('mailbox live-resource parity: durable packRef self-heal', () => {
 
     const NEW_COPIES = [
         anti,
-        fs.readFileSync(path.join(ROOT, 'prismflow-deploy', 'src', 'AlloFlowANTI.txt'), 'utf8'),
-        fs.readFileSync(path.join(ROOT, 'prismflow-deploy', 'src', 'App.jsx'), 'utf8'),
+        fs.readFileSync(path.join(ROOT, 'desktop/web-app', 'src', 'AlloFlowANTI.txt'), 'utf8'),
+        fs.readFileSync(path.join(ROOT, 'desktop/web-app', 'src', 'App.jsx'), 'utf8'),
     ];
 
     it('every copy hosts the whole pack + advertises packRef, and students getpack-heal', () => {

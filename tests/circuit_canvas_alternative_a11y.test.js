@@ -5,7 +5,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 
 const root = path.resolve(import.meta.dirname, '..');
 const sourcePath = path.join(root, 'stem_lab', 'stem_tool_circuit.js');
-const deployPath = path.join(root, 'prismflow-deploy', 'public', 'stem_lab', 'stem_tool_circuit.js');
+const deployPath = path.join(root, 'desktop/web-app', 'public', 'stem_lab', 'stem_tool_circuit.js');
 const source = fs.readFileSync(sourcePath, 'utf8');
 
 describe('Circuit Lab short-circuit canvas alternative', () => {

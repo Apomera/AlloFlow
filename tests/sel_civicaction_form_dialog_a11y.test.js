@@ -48,6 +48,6 @@ describe('Civic Action form dialog accessibility', () => {
   });
 
   it('keeps the deployed mirror identical', () => {
-    expect(source).toBe(read('prismflow-deploy/public/sel_hub/sel_tool_civicaction.js'));
+    expect(source).toBe(read('desktop/web-app/public/sel_hub/sel_tool_civicaction.js'));
   });
 });

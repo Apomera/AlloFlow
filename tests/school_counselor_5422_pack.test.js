@@ -158,7 +158,7 @@ describe('Praxis School Counselor 5422 diagnostic bank', () => {
     expect(qa.diagnosticBatch.batches).toHaveLength(2);
     expect(qa.standard.limitation).toContain('psychometric calibration');
     for (const name of ['school_counselor_5422_items.json', 'school_counselor_5422_pack.json', 'school_counselor_5422_native_qa.json', 'school_counselor_5422_native_qa.md']) {
-      expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
+      expect(read('desktop/web-app/public/test_prep/' + name)).toBe(read('test_prep/' + name));
     }
   }, 20000);
 });

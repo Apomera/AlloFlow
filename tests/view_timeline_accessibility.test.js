@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 
 const sourcePath = resolve(process.cwd(), 'view_timeline_source.jsx');
 const modulePath = resolve(process.cwd(), 'view_timeline_module.js');
-const publicPath = resolve(process.cwd(), 'prismflow-deploy/public/view_timeline_module.js');
+const publicPath = resolve(process.cwd(), 'desktop/web-app/public/view_timeline_module.js');
 const source = () => readFileSync(sourcePath, 'utf8');
 const moduleText = () => readFileSync(modulePath, 'utf8');
 

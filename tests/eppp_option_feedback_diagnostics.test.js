@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 const root = process.cwd();
 const sourcePath = path.join(root, 'test_prep', 'eppp_option_feedback_diagnostics.json');
-const deployPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_option_feedback_diagnostics.json');
+const deployPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_option_feedback_diagnostics.json');
 
 describe('EPPP incorrect-option feedback diagnostics', () => {
   it('mirrors a complete, warning-only all-bank audit', () => {

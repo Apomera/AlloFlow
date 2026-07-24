@@ -50,6 +50,6 @@ describe('Brand Settings editor accessibility', () => {
   });
 
   it('synchronizes the deployable module', () => {
-    expect(fs.readFileSync('prismflow-deploy/public/brand_profile_editor_module.js', 'utf8')).toBe(fs.readFileSync('brand_profile_editor_module.js', 'utf8'));
+    expect(fs.readFileSync('desktop/web-app/public/brand_profile_editor_module.js', 'utf8')).toBe(fs.readFileSync('brand_profile_editor_module.js', 'utf8'));
   });
 });

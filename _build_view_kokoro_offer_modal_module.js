@@ -15,7 +15,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'view_kokoro_offer_modal_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_kokoro_offer_modal_module.js');
-const PUBLIC_OUTPUT = path.join(ROOT, 'prismflow-deploy', 'public', 'view_kokoro_offer_modal_module.js');
+const PUBLIC_OUTPUT = path.join(ROOT, 'desktop/web-app', 'public', 'view_kokoro_offer_modal_module.js');
 const TMP = path.join(ROOT, '_tmp_kokoro_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) {

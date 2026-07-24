@@ -6,7 +6,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'adventure_handlers_source.jsx');
 const OUTPUT = path.join(ROOT, 'adventure_handlers_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'adventure_handlers_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'adventure_handlers_module.js');
 
 const source = fs.readFileSync(SOURCE, 'utf-8');
 

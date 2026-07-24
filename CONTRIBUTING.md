@@ -104,7 +104,7 @@ var stemToolModules = [
 ];
 ```
 
-3. **Do not** hand-edit `prismflow-deploy/src/App.jsx` — `build.js` regenerates it from `AlloFlowANTI.txt` on every build. Just edit the monolith.
+3. **Do not** hand-edit `desktop/web-app/src/App.jsx` — `build.js` regenerates it from `AlloFlowANTI.txt` on every build. Just edit the monolith.
 
 4. **No CDN-URL editing needed.** The loader prefixes each filename with `pluginCdnBase`, which `build.js --mode=prod` rewrites to the hashless Cloudflare base (`https://alloflow-cdn.pages.dev/`). Commit the new plugin file so it ships — see [CDN Modules](#4-cdn-module-resolution) below.
 
@@ -155,7 +155,7 @@ In Canvas mode, `apiKey` is intentionally empty (`""`). Canvas's proxy intercept
 ## 6. Development Workflow
 
 1. **Fork & clone** the repository.
-2. **Deploy:** the canonical one-shot is `./deploy.sh "message"` from the repo root (it runs the pre-flight render-crash gate, commits/pushes, builds, deploys to Firebase, and verifies against the Cloudflare CDN). For a manual Firebase build, `cd prismflow-deploy && npm install && npm run build && firebase deploy`.
+2. **Deploy:** the canonical one-shot is `./deploy.sh "message"` from the repo root (it runs the pre-flight render-crash gate, commits/pushes, builds, deploys to Firebase, and verifies against the Cloudflare CDN). For a manual Firebase build, `cd desktop/web-app && npm install && npm run build && firebase deploy`.
 3. For Desktop local testing, use `npm.cmd run desktop:check`, `npm.cmd run desktop:smoke`, and `npm.cmd run desktop` from the repo root. Use `docker-compose up -d` only when testing the optional School Box Server stack.
 4. If testing service worker cache changes in Chrome, disable QUIC: `chrome://flags/#enable-quic` → Disabled → Relaunch.
 5. For AI backend changes, verify the selected provider path: built-in Desktop engine, LM Studio, Ollama (`http://localhost:11434`), LocalAI, Gemini, or custom endpoint as appropriate.

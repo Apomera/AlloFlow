@@ -29,6 +29,6 @@ describe('Adventure modal accessibility', () => {
   });
 
   it('synchronizes the deployable module', () => {
-    expect(fs.readFileSync('prismflow-deploy/public/view_adventure_module.js', 'utf8')).toBe(fs.readFileSync('view_adventure_module.js', 'utf8'));
+    expect(fs.readFileSync('desktop/web-app/public/view_adventure_module.js', 'utf8')).toBe(fs.readFileSync('view_adventure_module.js', 'utf8'));
   });
 });

@@ -108,7 +108,7 @@ describe('Praxis Special Education: Foundational Knowledge 5355 diagnostic bank'
     expect(qa.diagnosticBatch.batches).toHaveLength(2);
     expect(qa.standard.limitation).toContain('psychometric calibration');
     for (const name of ['special_education_5355_items.json', 'special_education_5355_pack.json', 'special_education_5355_native_qa.json', 'special_education_5355_native_qa.md']) {
-      expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
+      expect(read('desktop/web-app/public/test_prep/' + name)).toBe(read('test_prep/' + name));
     }
   }, 20000);
 });

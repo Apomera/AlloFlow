@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const sourcePath = resolve(process.cwd(), 'sel_hub/sel_tool_careconstellations.js');
-const publicPath = resolve(process.cwd(), 'prismflow-deploy/public/sel_hub/sel_tool_careconstellations.js');
+const publicPath = resolve(process.cwd(), 'desktop/web-app/public/sel_hub/sel_tool_careconstellations.js');
 const source = () => readFileSync(sourcePath, 'utf8');
 
 describe('Care Constellations reflection labels', () => {

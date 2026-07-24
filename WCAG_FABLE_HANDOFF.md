@@ -83,7 +83,7 @@ The most recently completed section, Personal Reference Sheet Builder, passed:
 Its exact committed files were:
 
 - `stem_lab/stem_tool_learning_lab.js`
-- `prismflow-deploy/public/stem_lab/stem_tool_learning_lab.js`
+- `desktop/web-app/public/stem_lab/stem_tool_learning_lab.js`
 - `tests/learning_lab_cheat_sheets_a11y.test.js`
 - `tests/learning_lab_cheat_sheets_render_a11y.test.js`
 
@@ -186,7 +186,7 @@ Both issues surfaced last session are now FIXED:
 
 ## Session notes (2026-07-22, Fable — fourteenth continuation) — TWO CROSS-CUTTING DEBTS CLOSED
 
-- **CDN verification RESOLVED**: the live artifact at `https://alloflow-cdn.pages.dev/stem_lab/stem_tool_learning_lab.js` hashes to `D6BD6176…` == commit `deb110ec2` (Achievement Wall). The deployed bundle therefore INCLUDES the P0 free-focusById fix, the UTC-date fixes, and everything through 26 audit sections. Only the sections after `deb110ec2` await the next batch deploy (Aaron batches deploys by design). Verify method: `curl.exe -sL` the URL, `Get-FileHash`, match against `git show <commit>:prismflow-deploy/public/...` candidates.
+- **CDN verification RESOLVED**: the live artifact at `https://alloflow-cdn.pages.dev/stem_lab/stem_tool_learning_lab.js` hashes to `D6BD6176…` == commit `deb110ec2` (Achievement Wall). The deployed bundle therefore INCLUDES the P0 free-focusById fix, the UTC-date fixes, and everything through 26 audit sections. Only the sections after `deb110ec2` await the next batch deploy (Aaron batches deploys by design). Verify method: `curl.exe -sL` the URL, `Get-FileHash`, match against `git show <commit>:desktop/web-app/public/...` candidates.
 - **Timer-focus class COMPLETE** `ba6e1f784`: codemodded all 32 remaining convertible sites (31 components + GoalTracker's `focusGoalView` + 4 selectText variants incl. Script Library / Accommodation Request) to the render-synchronized pendingFocus pattern. The mass-conversion effect deliberately has NO deps array (runs every render) so pending focus lands regardless of which local state change produced the target. **Exactly 2 timer-focus sites remain, both legitimate and now PINNED by the focus-binding gate test**: the shell's `focusCurrentView` (target persists across renders) and the render-error catch path (hooks impossible there). Gate 2,330/2,330; six converted components have rendered focus assertions that passed.
 
 ## Goal status
@@ -240,7 +240,7 @@ Only consider removal when the lock is zero bytes, older than three minutes, unc
 
 ## Testing and audit conventions established so far
 
-- Keep root and `prismflow-deploy/public` Learning Lab mirrors byte-identical.
+- Keep root and `desktop/web-app/public` Learning Lab mirrors byte-identical.
 - Pair static/source-contract tests with real rendered jsdom interaction tests.
 - Use native controls and explicit submit behavior.
 - Avoid autofocus; move focus only after a user action or validation failure.

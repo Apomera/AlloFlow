@@ -24,6 +24,6 @@ describe('Student Analytics probe confirmations accessibility', () => {
   });
 
   it('keeps the deploy mirror identical', () => {
-    expect(source).toBe(read('prismflow-deploy/public/student_analytics_module.js'));
+    expect(source).toBe(read('desktop/web-app/public/student_analytics_module.js'));
   });
 });

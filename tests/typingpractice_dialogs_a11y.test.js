@@ -55,6 +55,6 @@ describe('Typing Practice decision and print-message accessibility', () => {
   });
 
   it('keeps the deploy mirror identical', () => {
-    expect(source).toBe(read('prismflow-deploy/public/stem_lab/stem_tool_typingpractice.js'));
+    expect(source).toBe(read('desktop/web-app/public/stem_lab/stem_tool_typingpractice.js'));
   });
 });

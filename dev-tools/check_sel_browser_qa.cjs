@@ -14,8 +14,8 @@ const path = require('path');
 
 const ROOT = process.cwd();
 const SEL_DIR = path.join(ROOT, 'sel_hub');
-const PUBLIC = path.join(ROOT, 'prismflow-deploy', 'public');
-const MODULES = path.join(ROOT, 'prismflow-deploy', 'node_modules');
+const PUBLIC = path.join(ROOT, 'desktop/web-app', 'public');
+const MODULES = path.join(ROOT, 'desktop/web-app', 'node_modules');
 const REPORT_JSON = path.join(ROOT, 'a11y-audit', 'sel_hub_browser_qa.json');
 const REPORT_MD = path.join(ROOT, 'a11y-audit', 'sel_hub_browser_qa.md');
 const QUIET = process.argv.includes('--quiet');

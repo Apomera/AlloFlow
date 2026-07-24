@@ -4,17 +4,17 @@ import { resolve } from 'node:path';
 import { TextDecoder, TextEncoder } from 'node:util';
 
 const rootSource = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
-const mirrorSource = readFileSync(resolve(process.cwd(), 'prismflow-deploy/src/AlloFlowANTI.txt'), 'utf8');
-const appSource = readFileSync(resolve(process.cwd(), 'prismflow-deploy/src/App.jsx'), 'utf8');
+const mirrorSource = readFileSync(resolve(process.cwd(), 'desktop/web-app/src/AlloFlowANTI.txt'), 'utf8');
+const appSource = readFileSync(resolve(process.cwd(), 'desktop/web-app/src/App.jsx'), 'utf8');
 const phaseOSource = readFileSync(resolve(process.cwd(), 'phase_o_misc_handlers_source.jsx'), 'utf8');
 const phaseOModule = readFileSync(resolve(process.cwd(), 'phase_o_misc_handlers_module.js'), 'utf8');
-const phaseOPublicModule = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/phase_o_misc_handlers_module.js'), 'utf8');
+const phaseOPublicModule = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/phase_o_misc_handlers_module.js'), 'utf8');
 const sessionModalSource = readFileSync(resolve(process.cwd(), 'view_session_modal_source.jsx'), 'utf8');
 const sessionModalModule = readFileSync(resolve(process.cwd(), 'view_session_modal_module.js'), 'utf8');
-const sessionModalPublicModule = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/view_session_modal_module.js'), 'utf8');
+const sessionModalPublicModule = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/view_session_modal_module.js'), 'utf8');
 const headerSource = readFileSync(resolve(process.cwd(), 'view_header_source.jsx'), 'utf8');
 const headerModule = readFileSync(resolve(process.cwd(), 'view_header_module.js'), 'utf8');
-const headerPublicModule = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/view_header_module.js'), 'utf8');
+const headerPublicModule = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/view_header_module.js'), 'utf8');
 
 function sliceBetween(source, startMarker, endMarker) {
   const start = source.indexOf(startMarker);
@@ -347,7 +347,7 @@ describe('Prismflow demo isolation', () => {
     const productionFiles = [
       'lms_bookmarklet.js',
       'garden_demo.html',
-      'prismflow-deploy/postbuild.js',
+      'desktop/web-app/postbuild.js',
       'stem_lab/stem_tool_printingpress.js',
       'ui_strings.js',
       'deploy.sh',
@@ -373,7 +373,7 @@ describe('Prismflow demo isolation', () => {
 });
 describe('Cloudflare student shell build wiring', () => {
   it('keeps the committed /app artifact split, precached, and Cloudflare-sized', () => {
-    const shellDir = resolve(process.cwd(), 'prismflow-deploy/public/app');
+    const shellDir = resolve(process.cwd(), 'desktop/web-app/public/app');
     const cdnShellDir = resolve(process.cwd(), 'app');
     const indexPath = resolve(shellDir, 'index.html');
     const index = readFileSync(indexPath, 'utf8');
@@ -413,11 +413,11 @@ describe('Cloudflare student shell build wiring', () => {
     expect(files.some((file) => /alloflow_intro_(teacher|family)\.mp4$/.test(file))).toBe(false);
   });
   it('publishes the postbuild shell automatically and excludes the oversized asset tree', () => {
-    const packageJson = JSON.parse(readFileSync(resolve(process.cwd(), 'prismflow-deploy/package.json'), 'utf8'));
+    const packageJson = JSON.parse(readFileSync(resolve(process.cwd(), 'desktop/web-app/package.json'), 'utf8'));
     const buildScript = readFileSync(resolve(process.cwd(), 'build.js'), 'utf8');
 
     expect(packageJson.scripts.build).toContain('node ../build.js --copy-student-shell');
-    expect(buildScript).toContain("const STUDENT_SHELL_PUBLIC_DIR = path.join(ROOT, 'prismflow-deploy', 'public', 'app')");
+    expect(buildScript).toContain("const STUDENT_SHELL_PUBLIC_DIR = path.join(ROOT, 'desktop/web-app', 'public', 'app')");
     expect(buildScript).toContain("const STUDENT_SHELL_CDN_DIR = path.join(ROOT, 'app')");
     expect(buildScript).toContain("'index.html'");
     expect(buildScript).toContain("'static'");

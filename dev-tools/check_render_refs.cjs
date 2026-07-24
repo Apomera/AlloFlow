@@ -57,11 +57,11 @@ const ROOT = path.resolve(__dirname, '..');
 const acorn = require(path.join(ROOT, 'node_modules', 'acorn'));
 // eslint-scope lives in the CRA app's node_modules, not root.
 let eslintScope;
-for (const base of [path.join(ROOT, 'node_modules'), path.join(ROOT, 'prismflow-deploy', 'node_modules')]) {
+for (const base of [path.join(ROOT, 'node_modules'), path.join(ROOT, 'desktop/web-app', 'node_modules')]) {
   try { eslintScope = require(path.join(base, 'eslint-scope')); break; } catch (_) {}
 }
 if (!eslintScope) {
-  console.error('check_render_refs: eslint-scope not found (root or prismflow-deploy node_modules). Skipping.');
+  console.error('check_render_refs: eslint-scope not found (root or desktop/web-app node_modules). Skipping.');
   process.exit(0); // don't block deploy on a missing dev dep
 }
 

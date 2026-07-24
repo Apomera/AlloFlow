@@ -21,7 +21,7 @@ If you're looking for the *WCAG axe-core test suite*, that lives in [`a11y-audit
 | **Run unit tests** | `npm test` | varies | Vitest unit tests in `tests/` |
 | **Build a pre-baked language pack** | `npm run build:lang -- --lang="Spanish (Latin America)"` | 30-90 sec | Generates `lang/<slug>.js`. Once committed, runtime users get the language without making any API calls. Requires `GEMINI_API_KEY` env var or `--api-key=` flag. Add `--dry-run` to validate the pipeline without spending tokens. Add `--resume` to retry failed chunks. Mirrors the runtime translateChunk DNT + glossary logic. |
 
-**Especially valuable in multi-chat workflows:** `verify:mirror` and `verify:source-pair` catch the case where one chat edits a source file but doesn't sync to `prismflow-deploy/public/` (or to the `prismflow-deploy/src/` source duplicate). Run `npm run verify` after a parallel chat lands changes to surface drift before deploying.
+**Especially valuable in multi-chat workflows:** `verify:mirror` and `verify:source-pair` catch the case where one chat edits a source file but doesn't sync to `desktop/web-app/public/` (or to the `desktop/web-app/src/` source duplicate). Run `npm run verify` after a parallel chat lands changes to surface drift before deploying.
 
 Individual checks (also runnable in isolation):
 
@@ -31,10 +31,10 @@ npm run verify:registry:runtime   # runtime: actually load modules in chromium a
 npm run verify:translations       # t() and HELP_STRINGS keys all defined
 npm run verify:tools              # StemLab + SelHub registerTool schemas
 npm run verify:pair-drift         # source.jsx ↔ module.js declaration diff
-npm run verify:source-pair        # root vs prismflow-deploy/src/ source dup drift
+npm run verify:source-pair        # root vs desktop/web-app/src/ source dup drift
 npm run verify:pipeline           # _docPipeline.X UI calls all map to exports
 npm run verify:build              # AlloFlowANTI.txt + App.jsx parse cleanly as JSX
-npm run verify:mirror             # root *_module.js matches prismflow-deploy/public/
+npm run verify:mirror             # root *_module.js matches desktop/web-app/public/
 npm run verify:lessons            # examples/*.json parse + valid history shape
 npm run verify:css                # stray backticks inside CSS template literals (bug class memory)
 npm run verify:gemini             # callGemini(htmlPrompt, jsonMode=true) misuse
@@ -75,7 +75,7 @@ Declaration-level diff between every `*_source.jsx` ↔ `*_module.js` pair. Catc
 Verifies every `_docPipeline.X` call in the UI maps to an actual export in `doc_pipeline_source.jsx` + `doc_pipeline_module.js`. Catches the "Multi-session + Tier 2/2.5/3 silently dropped" bug class from earlier sessions where a commit accidentally removed pipeline exports.
 
 ### `check_source_pair_drift.js`
-Verifies root `*_source.jsx` matches its `prismflow-deploy/src/` duplicate (where applicable). After the April 2026 reconciliation, root is canonical and the duplicates must stay byte-identical. Pre-commit hook material against the dual-edit bug class.
+Verifies root `*_source.jsx` matches its `desktop/web-app/src/` duplicate (where applicable). After the April 2026 reconciliation, root is canonical and the duplicates must stay byte-identical. Pre-commit hook material against the dual-edit bug class.
 
 ### `check_tool_registry.cjs` (NEW — May 10)
 Verifies every `StemLab.registerTool(id, config)` and `SelHub.registerTool(id, config)` call provides the required schema fields (`label, icon, desc, color, category, render`). Catches tools that use legacy field names (`title` instead of `label`, `description` instead of `desc`) — those tiles render with fallback values (id-as-name, generic tooltip, no theme color).

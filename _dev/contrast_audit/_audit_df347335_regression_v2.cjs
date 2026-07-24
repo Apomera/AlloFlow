@@ -98,7 +98,7 @@ const files = execSync(`git show --name-only ${COMMIT}`, { encoding: 'utf8' })
 const triage = {}; // file -> [{currentLine, before, after, snippet, bgContext}]
 
 for (const file of files) {
-  if (CANONICAL_ONLY && file.startsWith('prismflow-deploy/')) continue;
+  if (CANONICAL_ONLY && file.startsWith('desktop/web-app/')) continue;
 
   // Get unified diff for this file from the commit, with no context (we walk hunks ourselves)
   let diff;
@@ -243,7 +243,7 @@ const totalHits = Object.values(triage).reduce((s, arr) => s + arr.length, 0);
 console.log('═══════════════════════════════════════════════════════════════════');
 console.log(' df347335 CONTRAST REGRESSION SWEEP — v2 (diff-aware)');
 console.log('═══════════════════════════════════════════════════════════════════');
-console.log(` Mode: ${CANONICAL_ONLY ? 'canonical-only (prismflow-deploy/ excluded)' : 'all files'}`);
+console.log(` Mode: ${CANONICAL_ONLY ? 'canonical-only (desktop/web-app/ excluded)' : 'all files'}`);
 console.log(` Files with confirmed regressions: ${sortedFiles.length}`);
 console.log(` Total confirmed regressions: ${totalHits}`);
 console.log('───────────────────────────────────────────────────────────────────');

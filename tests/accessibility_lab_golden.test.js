@@ -11,12 +11,12 @@ import { loadAlloModule } from './setup.js';
 const require = createRequire(import.meta.url);
 let A, ReactLib, ReactDOMClient;
 beforeAll(() => {
-  ReactLib = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react'));
-  ReactDOMClient = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react-dom/client'));
+  ReactLib = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
+  ReactDOMClient = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom/client'));
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   globalThis.React = window.React = ReactLib;
   // The module early-returns unless window.ReactDOM.createPortal exists.
-  window.ReactDOM = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react-dom'));
+  window.ReactDOM = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom'));
   window.AlloIcons = new Proxy({}, { get: () => () => null });
   loadAlloModule('accessibility_lab_module.js');
   A = window.AlloModules.AccessibilityLabInternals;

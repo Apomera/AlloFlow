@@ -14,7 +14,7 @@ beforeAll(() => {
 describe('TutorialCompiler deployment', () => {
   it('keeps the inactive CDN copy byte-identical for future lazy activation', () => {
     const read = (file) => readFileSync(resolve(process.cwd(), file), 'utf8');
-    expect(read('prismflow-deploy/public/tutorial_compiler_module.js')).toBe(read('tutorial_compiler_module.js'));
+    expect(read('desktop/web-app/public/tutorial_compiler_module.js')).toBe(read('tutorial_compiler_module.js'));
   });
 });
 

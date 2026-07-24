@@ -5,7 +5,7 @@
 // window.__alloPdIntent deep-link flag opens the modal straight to the PD tab.
 //
 // catalog_module.js is a browser IIFE (window.AlloModules.CommunityCatalog). We
-// load it the proven harness way — real React 18 from prismflow-deploy, eval the
+// load it the proven harness way — real React 18 from desktop/web-app, eval the
 // source against a sandbox window, then renderToStaticMarkup. Static render
 // exercises the RENDER phase only (no useEffect), so no fetch/script-injection
 // happens — each tab shows its loading state, which is exactly the marker we
@@ -18,7 +18,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const require = createRequire(import.meta.url);
-const MODULES_DIR = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
 const React = require(resolve(MODULES_DIR, 'react'));
 const ReactDOMServer = require(resolve(MODULES_DIR, 'react-dom/server'));
 

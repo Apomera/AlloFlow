@@ -7,7 +7,7 @@ const { clean, normalize, parseChoiceReasons } = require('./eppp_editorial_suppo
 
 const root = path.resolve(__dirname, '..');
 const sourcePath = path.join(root, 'test_prep', 'eppp_native_items.json');
-const deployPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_native_items.json');
+const deployPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_native_items.json');
 const auditPath = path.join(__dirname, 'eppp_option_feedback_wave_01_audit.json');
 const auditMarkdownPath = path.join(__dirname, 'eppp_option_feedback_wave_01_audit.md');
 const legacyAuditPath = path.join(root, 'test_prep', 'eppp_legacy', 'content_audit.json');

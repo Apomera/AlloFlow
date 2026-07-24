@@ -280,13 +280,13 @@ describe('Area & Perimeter Lab', () => {
 
   it('is wired into the host catalog, plugin allowlist, lazy loader, and deployment mirrors', () => {
     const host = fs.readFileSync('stem_lab/stem_lab_module.js', 'utf8');
-    const deployedHost = fs.readFileSync('prismflow-deploy/public/stem_lab/stem_lab_module.js', 'utf8');
+    const deployedHost = fs.readFileSync('desktop/web-app/public/stem_lab/stem_lab_module.js', 'utf8');
     const app = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
     expect(host).toContain("id: 'areaPerimeter'");
     expect(host).toContain('areaPerimeter: true');
     expect(deployedHost).toBe(host);
     expect(app).toContain("'stem_lab/stem_tool_areaperimeter.js'");
-    expect(fs.readFileSync('prismflow-deploy/public/stem_lab/stem_tool_areaperimeter.js', 'utf8')).toBe(fs.readFileSync(FILE, 'utf8'));
+    expect(fs.readFileSync('desktop/web-app/public/stem_lab/stem_tool_areaperimeter.js', 'utf8')).toBe(fs.readFileSync(FILE, 'utf8'));
     expect(fs.readFileSync(FILE, 'utf8')).not.toContain('.find.indexOf(t(');
     expect(fs.readFileSync(FILE, 'utf8')).not.toMatch(/(?:fontSize|flex):\s*t\(/);
   });

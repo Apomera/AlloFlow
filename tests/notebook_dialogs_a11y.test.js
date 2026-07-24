@@ -32,6 +32,6 @@ describe('Notebook and note insights dialog accessibility', () => {
   });
 
   it('synchronizes the deployable module', () => {
-    expect(fs.readFileSync('prismflow-deploy/public/note_taking_templates_module.js', 'utf8')).toBe(fs.readFileSync('note_taking_templates_module.js', 'utf8'));
+    expect(fs.readFileSync('desktop/web-app/public/note_taking_templates_module.js', 'utf8')).toBe(fs.readFileSync('note_taking_templates_module.js', 'utf8'));
   });
 });

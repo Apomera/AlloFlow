@@ -8,14 +8,14 @@ const CHECK = process.argv.includes('--check');
 const compromisePackage = JSON.parse(fs.readFileSync(path.join(ROOT, 'node_modules', 'compromise', 'package.json'), 'utf8'));
 if (compromisePackage.version !== '14.15.1' || compromisePackage.license !== 'MIT') throw new Error('Text Inquiry requires compromise 14.15.1 under the MIT license.');
 const copies = [
-  ['tool_integration_sdk.js', 'prismflow-deploy/public/tool_integration_sdk.js'],
-  ['annotation_inquiry_bridge.js', 'prismflow-deploy/public/annotation_inquiry_bridge.js'],
-  ['text_inquiry/text_inquiry.html', 'prismflow-deploy/public/text_inquiry/text_inquiry.html'],
-  ['text_inquiry/text_inquiry_core.js', 'prismflow-deploy/public/text_inquiry/text_inquiry_core.js'],
+  ['tool_integration_sdk.js', 'desktop/web-app/public/tool_integration_sdk.js'],
+  ['annotation_inquiry_bridge.js', 'desktop/web-app/public/annotation_inquiry_bridge.js'],
+  ['text_inquiry/text_inquiry.html', 'desktop/web-app/public/text_inquiry/text_inquiry.html'],
+  ['text_inquiry/text_inquiry_core.js', 'desktop/web-app/public/text_inquiry/text_inquiry_core.js'],
   ['node_modules/compromise/builds/compromise.js', 'vendor/compromise/compromise.js'],
-  ['node_modules/compromise/builds/compromise.js', 'prismflow-deploy/public/vendor/compromise/compromise.js'],
+  ['node_modules/compromise/builds/compromise.js', 'desktop/web-app/public/vendor/compromise/compromise.js'],
   ['node_modules/compromise/LICENSE', 'vendor/compromise/LICENSE'],
-  ['node_modules/compromise/LICENSE', 'prismflow-deploy/public/vendor/compromise/LICENSE']
+  ['node_modules/compromise/LICENSE', 'desktop/web-app/public/vendor/compromise/LICENSE']
 ];
 function digest(file) { return crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'); }
 let drift = false;

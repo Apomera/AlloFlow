@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
 const require = createRequire(import.meta.url);
-const modulesDir = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const modulesDir = resolve(process.cwd(), 'desktop/web-app/node_modules');
 const promptSource = readFileSync('view_prompt_dialog_source.jsx', 'utf8');
 const rendererSource = readFileSync('view_renderers_source.jsx', 'utf8');
 let React;
@@ -93,9 +93,9 @@ afterEach(() => {
 
 describe('shared PromptDialog and Frayer refinement accessibility', () => {
   it('keeps shared prompt and Frayer generated artifacts synchronized', () => {
-    expect(readFileSync('prismflow-deploy/public/view_prompt_dialog_module.js', 'utf8'))
+    expect(readFileSync('desktop/web-app/public/view_prompt_dialog_module.js', 'utf8'))
       .toBe(readFileSync('view_prompt_dialog_module.js', 'utf8'));
-    expect(readFileSync('prismflow-deploy/public/view_renderers_module.js', 'utf8'))
+    expect(readFileSync('desktop/web-app/public/view_renderers_module.js', 'utf8'))
       .toBe(readFileSync('view_renderers_module.js', 'utf8'));
   });
 

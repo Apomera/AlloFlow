@@ -12,7 +12,7 @@ import axe from 'axe-core';
 import { JSDOM } from 'jsdom';
 
 const require = createRequire(import.meta.url);
-const modulesDir = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const modulesDir = resolve(process.cwd(), 'desktop/web-app/node_modules');
 const React = require(resolve(modulesDir, 'react'));
 const ReactDOMServer = require(resolve(modulesDir, 'react-dom/server'));
 const PublishPipeline = require(resolve(process.cwd(), 'dev-tools/lib/pd_publish_pipeline.cjs'));

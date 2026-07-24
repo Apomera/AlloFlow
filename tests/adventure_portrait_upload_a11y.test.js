@@ -52,8 +52,8 @@ describe('Adventure Cast Lobby portrait upload validation', () => {
     expect(source).toContain("disabled={isPortraitSanitizing} aria-describedby={isPortraitSanitizing ? 'adventure-portrait-sanitizing-status' : undefined}");
   });
   it('keeps authoritative and deployed source/module copies synchronized', () => {
-    expect(readFileSync('prismflow-deploy/src/adventure_source.jsx', 'utf8')).toBe(source);
-    expect(readFileSync('prismflow-deploy/public/adventure_module.js', 'utf8'))
+    expect(readFileSync('desktop/web-app/src/adventure_source.jsx', 'utf8')).toBe(source);
+    expect(readFileSync('desktop/web-app/public/adventure_module.js', 'utf8'))
       .toBe(readFileSync('adventure_module.js', 'utf8'));
   });
 });

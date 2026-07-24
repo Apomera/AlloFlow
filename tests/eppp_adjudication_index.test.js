@@ -36,7 +36,7 @@ describe('EPPP cumulative adjudication index', () => {
   });
 
   it('keeps deployment artifacts identical to source artifacts', () => {
-    expect(read('prismflow-deploy/public/test_prep/eppp_legacy/adjudication_index.json')).toEqual(read('test_prep/eppp_legacy/adjudication_index.json'));
-    expect(fs.readFileSync(resolve(root, 'prismflow-deploy/public/test_prep/eppp_legacy/adjudication_index.md'), 'utf8')).toBe(fs.readFileSync(resolve(root, 'test_prep/eppp_legacy/adjudication_index.md'), 'utf8'));
+    expect(read('desktop/web-app/public/test_prep/eppp_legacy/adjudication_index.json')).toEqual(read('test_prep/eppp_legacy/adjudication_index.json'));
+    expect(fs.readFileSync(resolve(root, 'desktop/web-app/public/test_prep/eppp_legacy/adjudication_index.md'), 'utf8')).toBe(fs.readFileSync(resolve(root, 'test_prep/eppp_legacy/adjudication_index.md'), 'utf8'));
   });
 });

@@ -3,7 +3,7 @@ import fs from 'node:fs';
 
 const source = fs.readFileSync('misc_components_source.jsx', 'utf8');
 const moduleSource = fs.readFileSync('misc_components_module.js', 'utf8');
-const publicModule = fs.readFileSync('prismflow-deploy/public/misc_components_module.js', 'utf8');
+const publicModule = fs.readFileSync('desktop/web-app/public/misc_components_module.js', 'utf8');
 
 describe('Misc Components WCAG behavior', () => {
   it('honors both app and operating-system reduced-motion preferences', () => {

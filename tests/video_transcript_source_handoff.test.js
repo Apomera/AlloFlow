@@ -4,7 +4,7 @@ import { resolve } from 'path';
 
 const hostFiles = [
   ['main host', readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8')],
-  ['deploy host', readFileSync(resolve(process.cwd(), 'prismflow-deploy/src/AlloFlowANTI.txt'), 'utf8')],
+  ['deploy host', readFileSync(resolve(process.cwd(), 'desktop/web-app/src/AlloFlowANTI.txt'), 'utf8')],
 ];
 
 describe('Video Studio transcript handoff into Source', () => {

@@ -24,7 +24,7 @@ describe('AlloHaven validation notification accessibility', () => {
   });
 
   it('keeps the deploy mirror identical', () => {
-    expect(source).toBe(read('prismflow-deploy/public/allohaven_module.js'));
+    expect(source).toBe(read('desktop/web-app/public/allohaven_module.js'));
   });
 });
 

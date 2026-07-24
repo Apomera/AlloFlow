@@ -55,7 +55,7 @@ describe('exported learner annotation clear confirmation', () => {
     expect(source).toContain('.alloflow-anno-confirm-btn { min-height: 44px;');
     expect(source).toContain("document.addEventListener('click', async function (e) {");
     expect(source).toContain('var shouldClear = await askAnnotationConfirmation({');
-    expect(readFileSync('prismflow-deploy/public/doc_pipeline_module.js', 'utf8'))
+    expect(readFileSync('desktop/web-app/public/doc_pipeline_module.js', 'utf8'))
       .toBe(readFileSync('doc_pipeline_module.js', 'utf8'));
   });
 

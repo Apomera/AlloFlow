@@ -15,7 +15,7 @@ The quantitative implementation remains in `stem_lab/stem_tool_lumen.js`. Source
 - `stem_lab/stem_lumen_evidence.js` — pure schema, passage chunking, deterministic lexical retrieval, prompt construction, response validation, staleness, migrations, and durable project storage.
 - `stem_lab/stem_lumen_documents.js` — local document routing, deterministic extractor adapter, provenance construction, EPUB spine reader, and fail-closed import rules.
 - `stem_lab/stem_lumen_study.js` — React Study Sources experience and provider-neutral orchestration.
-- `prismflow-deploy/functions/web_source_fetch.js` and `desktop/runtime/web-source-fetch.cjs` — byte-identical DNS-pinned, redirect-revalidating public-page import boundary.
+- `desktop/web-app/functions/web_source_fetch.js` and `desktop/runtime/web-source-fetch.cjs` — byte-identical DNS-pinned, redirect-revalidating public-page import boundary.
 - `docs/lumen_discover_sources.md` — web discovery, candidate/import boundary, privacy disclosure and acceptance contract.
 - `docs/lumen_deep_dive_2026-07-16.md` — current NotebookLM comparison, product assessment, and prioritized improvement roadmap.
 

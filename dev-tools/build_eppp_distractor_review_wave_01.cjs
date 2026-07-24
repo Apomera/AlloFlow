@@ -10,7 +10,7 @@ const bankPath = path.join(root, 'test_prep', 'eppp_native_items.json');
 const diagnosticsPath = path.join(root, 'test_prep', 'eppp_distractor_quality_diagnostics.json');
 const outputRoots = [
   path.join(root, 'test_prep'),
-  path.join(root, 'prismflow-deploy', 'public', 'test_prep'),
+  path.join(root, 'desktop/web-app', 'public', 'test_prep'),
 ];
 const outputBasename = 'eppp_distractor_review_wave_01';
 const expectedDiagnostic = 'semantic-concept-duplicate-candidate';

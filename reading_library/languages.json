@@ -6,7 +6,7 @@
     "then add a line here ('language' must match StoryWeaver's facet name",
     "EXACTLY — e.g. Swahili is 'Kiswahili', Chinese is 'Chinese (Simplified)',",
     "Indonesian is 'Bahasa Indonesia'), run --plan then --fetch, mirror",
-    "reading_library/ into prismflow-deploy/public/, commit, deploy.",
+    "reading_library/ into desktop/web-app/public/, commit, deploy.",
     "perLevel = how many books to keep per StoryWeaver level (1-4).",
     "Planning is merge-not-replace: raising counts only ADDS books; books",
     "already in curation.json stay forever (saved lessons reference slugs).",

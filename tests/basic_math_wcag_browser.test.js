@@ -9,7 +9,7 @@ import {
 } from './helpers/stem_widgets_smoke_harness.js';
 
 const root = process.cwd();
-const axeSource = fs.readFileSync(path.join(root, 'prismflow-deploy/node_modules/axe-core/axe.min.js'), 'utf8');
+const axeSource = fs.readFileSync(path.join(root, 'desktop/web-app/node_modules/axe-core/axe.min.js'), 'utf8');
 const cssDirectory = path.join(root, 'app/static/css');
 const cssFile = fs.readdirSync(cssDirectory).find((file) => /^main\.[a-z0-9]+\.css$/i.test(file));
 if (!cssFile) throw new Error('Compiled application stylesheet was not found.');

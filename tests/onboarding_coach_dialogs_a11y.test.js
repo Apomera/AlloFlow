@@ -35,6 +35,6 @@ describe('Onboarding coach dialog accessibility', () => {
 
   it('provides a 24 CSS pixel Start over target and deploy parity', () => {
     expect(source).toContain("padding: '2px 0', minHeight: '24px'");
-    expect(fs.readFileSync('prismflow-deploy/public/onboarding_coach_module.js', 'utf8')).toBe(fs.readFileSync('onboarding_coach_module.js', 'utf8'));
+    expect(fs.readFileSync('desktop/web-app/public/onboarding_coach_module.js', 'utf8')).toBe(fs.readFileSync('onboarding_coach_module.js', 'utf8'));
   });
 });

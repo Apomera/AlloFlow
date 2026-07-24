@@ -361,7 +361,7 @@ describe('AlloBot plan recovery wiring', () => {
     expect(app).toContain('_pendingBotPlanRef.current = null;');
   });
   it('keeps AI command discovery single-flight and suppresses stale results in both app sources', () => {
-    for (const path of ['AlloFlowANTI.txt', 'prismflow-deploy/src/App.jsx', 'prismflow-deploy/src/AlloFlowANTI.txt']) {
+    for (const path of ['AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx', 'desktop/web-app/src/AlloFlowANTI.txt']) {
       // 2026-07-20: the planning layer lives ONCE in UdlChat (udl_chat_source),
       // shared by every host — assert host + module together.
       const app = readFileSync(path, 'utf-8') + readFileSync('udl_chat_source.jsx', 'utf-8');
@@ -374,7 +374,7 @@ describe('AlloBot plan recovery wiring', () => {
     }
   });
   it('cancels pending AI command discovery when AlloBot closes or unmounts', () => {
-    for (const path of ['AlloFlowANTI.txt', 'prismflow-deploy/src/App.jsx', 'prismflow-deploy/src/AlloFlowANTI.txt']) {
+    for (const path of ['AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx', 'desktop/web-app/src/AlloFlowANTI.txt']) {
       // 2026-07-20: the planning layer lives ONCE in UdlChat (udl_chat_source),
       // shared by every host — assert host + module together.
       const app = readFileSync(path, 'utf-8') + readFileSync('udl_chat_source.jsx', 'utf-8');

@@ -25,7 +25,7 @@ const require = createRequire(import.meta.url);
 let M;
 beforeAll(() => {
   // Math Fluency components reference React; install the real one before the IIFE runs.
-  const React = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react'));
+  const React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
   globalThis.React = React;
   window.React = React;
   loadAlloModule('math_fluency_module.js');

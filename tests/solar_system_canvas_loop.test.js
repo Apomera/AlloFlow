@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const SOLAR_SYSTEM_PATHS = [
   'stem_lab/stem_tool_solarsystem.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_solarsystem.js',
+  'desktop/web-app/public/stem_lab/stem_tool_solarsystem.js',
 ];
 
 describe('solar system main 3D canvas loop', () => {

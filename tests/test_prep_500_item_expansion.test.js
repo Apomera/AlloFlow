@@ -5,7 +5,7 @@ import path from 'node:path';
 
 const root = path.resolve(import.meta.dirname, '..');
 const sourceDir = path.join(root, 'test_prep');
-const deployDir = path.join(root, 'prismflow-deploy', 'public', 'test_prep');
+const deployDir = path.join(root, 'desktop/web-app', 'public', 'test_prep');
 
 const expectedFiles = [
   'audiology_5343',

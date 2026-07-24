@@ -6,7 +6,7 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 const sourceRoot = path.join(root, 'test_prep', 'eppp_legacy');
-const deployRoot = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_legacy');
+const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy');
 const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
 const batchNumbers = fs.readdirSync(sourceRoot)
   .map((file) => file.match(/^adjudication_batch_(\d{2})\.json$/)?.[1])

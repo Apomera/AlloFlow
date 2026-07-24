@@ -10,22 +10,22 @@ const failures = [];
 let checkCount = 0;
 const check = (condition, message) => { checkCount += 1; if (!condition) failures.push(message); };
 
-const defaultConfig = json("prismflow-deploy/firebase.json");
-const functionsConfig = json("prismflow-deploy/firebase.functions.json");
-const liveConfig = json("prismflow-deploy/firebase.live-sessions.json");
+const defaultConfig = json("desktop/web-app/firebase.json");
+const functionsConfig = json("desktop/web-app/firebase.functions.json");
+const liveConfig = json("desktop/web-app/firebase.live-sessions.json");
 const indexes = json("firestore.indexes.json");
-const functions = read("prismflow-deploy/functions/index.js");
-const sourceFetch = read("prismflow-deploy/functions/web_source_fetch.js");
+const functions = read("desktop/web-app/functions/index.js");
+const sourceFetch = read("desktop/web-app/functions/web_source_fetch.js");
 const desktopSourceFetch = read("desktop/runtime/web-source-fetch.cjs");
 const lumen = read("stem_lab/stem_lumen_study.js");
 const ai = read("ai_backend_module.js");
 const app = read("AlloFlowANTI.txt");
-const env = read("prismflow-deploy/.env.example");
+const env = read("desktop/web-app/.env.example");
 const rules = read("firestore.rules");
 const guide = read("DEPLOY_YOUR_OWN.md");
 
-check(read("prismflow-deploy/firestore.rules") === rules, "deploy Firestore rules mirror must match canonical rules");
-check(read("prismflow-deploy/firestore.indexes.json") === read("firestore.indexes.json"), "deploy Firestore indexes mirror must match canonical indexes");
+check(read("desktop/web-app/firestore.rules") === rules, "deploy Firestore rules mirror must match canonical rules");
+check(read("desktop/web-app/firestore.indexes.json") === read("firestore.indexes.json"), "deploy Firestore indexes mirror must match canonical indexes");
 
 check(!defaultConfig.functions, "default firebase.json must not deploy Functions");
 check(!(defaultConfig.hosting.rewrites || []).some((rule) => rule.function), "default hosting must not contain Function rewrites");

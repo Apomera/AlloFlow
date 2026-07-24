@@ -11,7 +11,7 @@
 
 ## ⚠️ Coordination note
 
-This is a **plan, not a patch** — no diffs, so it won't collide with in-flight pipeline edits. Multiple Claude sessions share one tree: check `git status`/`log`/`origin` before any commit; stage only your own files by path; follow the existing build/verify discipline (edit `*_source.jsx` → rebuild module → sync `prismflow-deploy` mirror → `node --check` → run golden masters → `verify_all`). The benchmark below is **additive test/eval code** (new files under `tests/` and/or `dev-tools/`); it should not change remediation behavior. The inline-audit section (Part B) *does* touch the pipeline — treat it as a separate, later change and coordinate before implementing.
+This is a **plan, not a patch** — no diffs, so it won't collide with in-flight pipeline edits. Multiple Claude sessions share one tree: check `git status`/`log`/`origin` before any commit; stage only your own files by path; follow the existing build/verify discipline (edit `*_source.jsx` → rebuild module → sync `desktop/web-app` mirror → `node --check` → run golden masters → `verify_all`). The benchmark below is **additive test/eval code** (new files under `tests/` and/or `dev-tools/`); it should not change remediation behavior. The inline-audit section (Part B) *does* touch the pipeline — treat it as a separate, later change and coordinate before implementing.
 
 ---
 

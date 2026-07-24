@@ -31,7 +31,7 @@ describe('Word Sounds review-row actions', () => {
   it('uses the select native role and synchronizes generated module copies', () => {
     expect(source).toContain("<select aria-label={`${t('common.selection')}: ${word.targetWord || word.word}`}");
     expect(source).not.toContain('role="dialog" onClick={(e) => e.stopPropagation()}');
-    expect(readFileSync('prismflow-deploy/public/word_sounds_setup_module.js', 'utf8'))
+    expect(readFileSync('desktop/web-app/public/word_sounds_setup_module.js', 'utf8'))
       .toBe(readFileSync('word_sounds_setup_module.js', 'utf8'));
   });
 });

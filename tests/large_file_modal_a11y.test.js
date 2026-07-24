@@ -55,6 +55,6 @@ describe('Large-file transcription modal accessibility', () => {
   });
 
   it('synchronizes the deployable module', () => {
-    expect(fs.readFileSync('prismflow-deploy/public/large_file_module.js', 'utf8')).toBe(fs.readFileSync('large_file_module.js', 'utf8'));
+    expect(fs.readFileSync('desktop/web-app/public/large_file_module.js', 'utf8')).toBe(fs.readFileSync('large_file_module.js', 'utf8'));
   });
 });

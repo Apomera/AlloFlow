@@ -17,7 +17,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'allobot_source.jsx');
 const OUTPUT = path.join(ROOT, 'allobot_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'allobot_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'allobot_module.js');
 const TMP = path.join(ROOT, '_tmp_allobot_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) {

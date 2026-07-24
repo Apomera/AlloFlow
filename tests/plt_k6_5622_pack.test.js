@@ -102,6 +102,6 @@ describe('Praxis PLT K–6 5622 diagnostic bank', () => {
     expect(qa.diagnosticBatch).toMatchObject({ batchCount: 5, batchSize: 100, categories: { 'students-as-learners': 30, 'instructional-process': 30, assessment: 20, 'professional-development-leadership-community': 20 } });
     expect(qa.standard.limitation).toContain('independent practicing K–6 educator validation');
     expect(qa.standard.limitation).toContain('official constructed-response scoring');
-    for (const name of ['plt_k6_5622_items.json', 'plt_k6_5622_pack.json', 'plt_k6_5622_native_qa.json', 'plt_k6_5622_native_qa.md']) expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
+    for (const name of ['plt_k6_5622_items.json', 'plt_k6_5622_pack.json', 'plt_k6_5622_native_qa.json', 'plt_k6_5622_native_qa.md']) expect(read('desktop/web-app/public/test_prep/' + name)).toBe(read('test_prep/' + name));
   }, 20000);
 }, 20000);

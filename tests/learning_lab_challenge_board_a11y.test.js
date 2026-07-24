@@ -95,6 +95,6 @@ describe('Learning Lab Challenge Board accessibility', () => {
   it('preserves unrelated section data and mirror parity', () => {
     expect(board).toContain('setData(Object.assign({}, data, { challenges:');
     expect(board).not.toContain('setData({ challenges:');
-    expect(source).toBe(read('prismflow-deploy/public/stem_lab/stem_tool_learning_lab.js'));
+    expect(source).toBe(read('desktop/web-app/public/stem_lab/stem_tool_learning_lab.js'));
   });
 });

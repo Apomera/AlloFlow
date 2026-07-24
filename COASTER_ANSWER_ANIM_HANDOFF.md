@@ -12,11 +12,11 @@ Both must respect reduced motion. This is the only change. Physics and AI questi
 
 ## Files (IMPORTANT: two byte-identical copies)
 - **Canonical:** `stem_lab/stem_tool_coasterlab.js`
-- **CDN mirror (what the live app loads):** `prismflow-deploy/public/stem_lab/stem_tool_coasterlab.js`
+- **CDN mirror (what the live app loads):** `desktop/web-app/public/stem_lab/stem_tool_coasterlab.js`
 
 Make every edit in BOTH files, or edit the canonical file then copy it over the mirror:
 ```bash
-cp stem_lab/stem_tool_coasterlab.js prismflow-deploy/public/stem_lab/stem_tool_coasterlab.js
+cp stem_lab/stem_tool_coasterlab.js desktop/web-app/public/stem_lab/stem_tool_coasterlab.js
 ```
 A test enforces they are byte-identical (`tests/coaster_lab_tool.test.js` → "root and mirror copies are byte-identical").
 
@@ -144,8 +144,8 @@ it.each(TOOL_PATHS)('%s: a correct answer reveals the number + a reduced-motion-
 ## Verify (run all four; all must pass)
 ```bash
 node -c stem_lab/stem_tool_coasterlab.js          # syntax
-node -c prismflow-deploy/public/stem_lab/stem_tool_coasterlab.js
-diff -q stem_lab/stem_tool_coasterlab.js prismflow-deploy/public/stem_lab/stem_tool_coasterlab.js   # must be identical
+node -c desktop/web-app/public/stem_lab/stem_tool_coasterlab.js
+diff -q stem_lab/stem_tool_coasterlab.js desktop/web-app/public/stem_lab/stem_tool_coasterlab.js   # must be identical
 npx vitest run tests/coaster_lab_tool.test.js     # expect ~38 passing
 node dev-tools/check_render_refs.cjs --quiet       # render gate, exit 0
 ```
@@ -154,7 +154,7 @@ node dev-tools/check_render_refs.cjs --quiet       # render gate, exit 0
 ```bash
 git commit -m "feat(coasterLab): correct-answer payoff — reveal the diagram number + spark burst" -- \
   stem_lab/stem_tool_coasterlab.js \
-  prismflow-deploy/public/stem_lab/stem_tool_coasterlab.js \
+  desktop/web-app/public/stem_lab/stem_tool_coasterlab.js \
   tests/coaster_lab_tool.test.js
 ```
 If `.git/index.lock` exists, wait a few seconds and retry (a concurrent session is mid-commit). After committing, confirm your change is at HEAD:

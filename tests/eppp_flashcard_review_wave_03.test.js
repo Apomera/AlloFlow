@@ -88,11 +88,11 @@ describe('EPPP flashcard review wave 03', () => {
   it('keeps source and deployment companions identical without internal QA slogans', () => {
     for (const name of ['eppp_flashcard_review_wave_03.json', 'eppp_flashcard_review_wave_03.md', 'eppp_learning_library.json', 'eppp_learning_library_qa.json']) {
       const source = text(`test_prep/${name}`);
-      expect(text(`prismflow-deploy/public/test_prep/${name}`)).toBe(source);
+      expect(text(`desktop/web-app/public/test_prep/${name}`)).toBe(source);
       expect(source).not.toMatch(/Content QA passed/i);
     }
     for (const name of ['content_inventory.json', 'content_inventory.md']) {
-      expect(text(`prismflow-deploy/public/test_prep/eppp_legacy/${name}`)).toBe(text(`test_prep/eppp_legacy/${name}`));
+      expect(text(`desktop/web-app/public/test_prep/eppp_legacy/${name}`)).toBe(text(`test_prep/eppp_legacy/${name}`));
     }
   });
 });

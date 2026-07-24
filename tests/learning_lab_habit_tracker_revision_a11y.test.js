@@ -123,6 +123,6 @@ describe('Learning Lab Habit Tracker revised accessibility', () => {
   });
 
   it('keeps the deployed mirror identical', () => {
-    expect(source).toBe(read('prismflow-deploy/public/stem_lab/stem_tool_learning_lab.js'));
+    expect(source).toBe(read('desktop/web-app/public/stem_lab/stem_tool_learning_lab.js'));
   });
 });

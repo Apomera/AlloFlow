@@ -113,7 +113,7 @@ function build(config) {
   library.summary.sourceReviewedConstructedResponseWorkshops = library.constructedResponseWorkshops.length;
 
   assertLibrary(library, config);
-  for (const output of [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')]) {
+  for (const output of [path.join(root, 'test_prep'), path.join(root, 'desktop/web-app', 'public', 'test_prep')]) {
     fs.mkdirSync(output, { recursive: true });
     fs.writeFileSync(path.join(output, config.outputName), `${JSON.stringify(library, null, 2)}\n`);
   }

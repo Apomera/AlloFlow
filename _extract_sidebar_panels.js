@@ -20,7 +20,7 @@
  *   - view_sidebar_panels_source.jsx              (one component per panel)
  *   - _build_view_sidebar_panels_module.js        (esbuild wrapper)
  *   - view_sidebar_panels_module.js               (compiled CDN module)
- *   - prismflow-deploy/public/view_sidebar_panels_module.js  (synced)
+ *   - desktop/web-app/public/view_sidebar_panels_module.js  (synced)
  *   - AlloFlowANTI.txt                            (panels replaced with React.createElement calls)
  *   - build.js                                    (MODULES array updated)
  *
@@ -49,7 +49,7 @@ const SOURCE_FILE = path.join(ROOT, 'AlloFlowANTI.txt');
 const SOURCE_JSX = path.join(ROOT, 'view_sidebar_panels_source.jsx');
 const BUILD_SCRIPT = path.join(ROOT, '_build_view_sidebar_panels_module.js');
 const MODULE_OUT = path.join(ROOT, 'view_sidebar_panels_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'view_sidebar_panels_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'view_sidebar_panels_module.js');
 const BUILD_JS = path.join(ROOT, 'build.js');
 const VERIFY_TOOL = path.join(ROOT, 'dev-tools', 'verify_view_props.cjs');
 const SCOPE_TOOL = path.join(ROOT, 'dev-tools', 'enumerate_block_scope_aware.js');
@@ -323,7 +323,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'view_sidebar_panels_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_sidebar_panels_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'view_sidebar_panels_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'view_sidebar_panels_module.js');
 const TMP = path.join(ROOT, '_tmp_view_sidebar_panels_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) { console.error('[ViewSidebarPanels] Source not found'); process.exit(1); }
@@ -523,5 +523,5 @@ if (verifierFailures > 0) {
 console.log('✓ All ' + auto.length + ' components verified clean.');
 console.log('\nReady to deploy:');
 console.log('  git add view_sidebar_panels_module.js view_sidebar_panels_source.jsx _build_view_sidebar_panels_module.js \\');
-console.log('          prismflow-deploy/public/view_sidebar_panels_module.js AlloFlowANTI.txt build.js');
+console.log('          desktop/web-app/public/view_sidebar_panels_module.js AlloFlowANTI.txt build.js');
 console.log('  bash deploy.sh "Round 8: extract ' + auto.length + ' sidebar tool panels (-' + (auto.reduce((s,p)=>s+p.lines,0) - auto.length * 12) + ' lines)"');

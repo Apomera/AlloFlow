@@ -207,7 +207,7 @@ describe('Research Hub modal accessibility', () => {
   });
 
   it('synchronizes the deployable module', () => {
-    expect(fs.readFileSync('prismflow-deploy/public/research_hub_module.js', 'utf8')).toBe(fs.readFileSync('research_hub_module.js', 'utf8'));
+    expect(fs.readFileSync('desktop/web-app/public/research_hub_module.js', 'utf8')).toBe(fs.readFileSync('research_hub_module.js', 'utf8'));
     const compiled = fs.readFileSync('research_hub_module.js', 'utf8');
     expect(compiled).not.toMatch(/^export default/m);
     expect(compiled).toContain('AlloFlowResearchEvidenceGraph');

@@ -3,7 +3,7 @@ import fs from 'node:fs';
 
 const source = fs.readFileSync('view_simplified_source.jsx', 'utf8');
 const moduleSource = fs.readFileSync('view_simplified_module.js', 'utf8');
-const publicModule = fs.readFileSync('prismflow-deploy/public/view_simplified_module.js', 'utf8');
+const publicModule = fs.readFileSync('desktop/web-app/public/view_simplified_module.js', 'utf8');
 
 describe('Simplified View WCAG controls', () => {
   it('gives every interactive word a strong keyboard focus indicator', () => {

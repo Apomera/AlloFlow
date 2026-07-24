@@ -4,7 +4,7 @@
 
 _Generated 2026-06-14 via a 26-agent review workflow (map → 8-dimension analysis → adversarial verification → synthesis). Findings grounded in real line numbers; the adversarial pass corrected several dimension overclaims. Cross-checked by hand on the two load-bearing claims (no-eval interpreter; ungated AI)._
 
-**File:** `stem_lab/stem_tool_coding.js` (~2858 lines, hand-maintained; `build.js` mirrors root → `prismflow-deploy/public/` + `build/` at deploy). Edit the root file only.
+**File:** `stem_lab/stem_tool_coding.js` (~2858 lines, hand-maintained; `build.js` mirrors root → `desktop/web-app/public/` + `build/` at deploy). Edit the root file only.
 
 ---
 

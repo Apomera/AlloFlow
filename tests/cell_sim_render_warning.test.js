@@ -3,7 +3,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 
 const CELL_RENDER_PATHS = [
   'stem_lab/stem_tool_cell.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_cell.js',
+  'desktop/web-app/public/stem_lab/stem_tool_cell.js',
 ];
 
 describe('cell simulator render warnings', () => {

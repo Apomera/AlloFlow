@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
-const mirror = readFileSync(resolve(process.cwd(), 'prismflow-deploy/src/AlloFlowANTI.txt'), 'utf8');
+const mirror = readFileSync(resolve(process.cwd(), 'desktop/web-app/src/AlloFlowANTI.txt'), 'utf8');
 
 describe('take-home: teacher side', () => {
   it("Send home broadcasts kind:'takehome' on the existing mailbox down-channel", () => {
@@ -103,7 +103,7 @@ describe('take-home: student side', () => {
 });
 
 describe('take-home: mirror parity', () => {
-  it('prismflow-deploy/src mirror carries the identical feature', () => {
+  it('desktop/web-app/src mirror carries the identical feature', () => {
     expect(mirror).toBe(anti);
   });
 });

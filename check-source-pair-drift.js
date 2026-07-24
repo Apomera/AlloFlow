@@ -2,8 +2,8 @@
 /**
  * Source-pair drift guard.
  *
- * Some source.jsx files exist in two places (root + prismflow-deploy/src/)
- * because the prismflow-deploy React app used to import from its own src/.
+ * Some source.jsx files exist in two places (root + desktop/web-app/src/)
+ * because the desktop/web-app React app used to import from its own src/.
  * After the April 2026 reconciliation, root is canonical for all pairs and
  * the dup copies must stay byte-identical. This script enforces that.
  *
@@ -23,11 +23,11 @@ const path = require('path');
 const ROOT = __dirname;
 
 // Root file → dup file mappings. Keep this list current if more source.jsx
-// files get duplicated into prismflow-deploy/src/.
+// files get duplicated into desktop/web-app/src/.
 const PAIRS = [
-  { root: 'games_source.jsx',          dup: 'prismflow-deploy/src/games_source.jsx' },
-  { root: 'adventure_source.jsx',      dup: 'prismflow-deploy/src/adventure_source.jsx' },
-  { root: 'content_engine_source.jsx', dup: 'prismflow-deploy/src/content_engine_source.jsx' },
+  { root: 'games_source.jsx',          dup: 'desktop/web-app/src/games_source.jsx' },
+  { root: 'adventure_source.jsx',      dup: 'desktop/web-app/src/adventure_source.jsx' },
+  { root: 'content_engine_source.jsx', dup: 'desktop/web-app/src/content_engine_source.jsx' },
 ];
 
 const args = process.argv.slice(2);

@@ -11,7 +11,7 @@ half-extracted into deps-injected module functions:
 | Behavior | Where it lives today | Coupling |
 |---|---|---|
 | Blueprint creation (`autoConfigureSettings`) | `phase_k_helpers_source.jsx:1696` (module: `phase_k_helpers_module.js`); ANTI delegates to it | deps-injected; needs only `callGemini`, `cleanJson`, `setGenerationStep`, `addToast`, `t`, `warnLog`, `history` from the giant deps bag |
-| Blueprint revision (`modifyBlueprintWithAI`) | still inline in `AlloFlowANTI.txt:29199` (and `prismflow-deploy/src/App.jsx`) | closure over `callGemini`/`cleanJson` only; contains a pure `normalizeBlueprintPlan` worth mirroring |
+| Blueprint revision (`modifyBlueprintWithAI`) | still inline in `AlloFlowANTI.txt:29199` (and `desktop/web-app/src/App.jsx`) | closure over `callGemini`/`cleanJson` only; contains a pure `normalizeBlueprintPlan` worth mirroring |
 | Plan normalization (`getBlueprintResourcePlan`) | `phase_o_misc_handlers_source.jsx:499` | pure |
 | Execution (`handleExecuteBlueprint` → `executeOneBlueprint`) | `phase_o_misc_handlers_source.jsx:563` | deps-injected; drives `handleGenerate` per plan item |
 | Command/plan kernel (`PLAN_CONTRACTS`, `getCommandContract`, `validatePlan`, `runPlan`) | `allo_commands_source.jsx:348–853` | already headless-testable (see `tests/allo_commands_plan.test.js`) |

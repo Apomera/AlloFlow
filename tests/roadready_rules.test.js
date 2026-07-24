@@ -4,13 +4,13 @@ import { resolve } from 'path';
 
 const ROADREADY_FILES = [
   'stem_lab/stem_tool_roadready.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_roadready.js',
-  'prismflow-deploy/public/stem_tool_roadready.js',
+  'desktop/web-app/public/stem_lab/stem_tool_roadready.js',
+  'desktop/web-app/public/stem_tool_roadready.js',
 ];
 
 const ROADREADY_UI_STRING_FILES = [
   'ui_strings.js',
-  'prismflow-deploy/public/ui_strings.js',
+  'desktop/web-app/public/ui_strings.js',
 ];
 
 function readRoadReady(relPath) {

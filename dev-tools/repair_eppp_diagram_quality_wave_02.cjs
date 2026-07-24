@@ -9,9 +9,9 @@ const { reviewWave, reviewDate, corrections } = require('./eppp_diagram_quality_
 const root = path.resolve(__dirname, '..');
 const legacyRoot = path.join(root, 'test_prep', 'eppp_legacy');
 const sourcePath = path.join(legacyRoot, 'js', 'textbook_diagrams.js');
-const deployPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_legacy', 'js', 'textbook_diagrams.js');
+const deployPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy', 'js', 'textbook_diagrams.js');
 const artifactName = 'eppp_diagram_review_wave_02';
-const artifactRoots = [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')];
+const artifactRoots = [path.join(root, 'test_prep'), path.join(root, 'desktop/web-app', 'public', 'test_prep')];
 
 function writeFileWithRetry(filePath, contents) {
   let lastError;

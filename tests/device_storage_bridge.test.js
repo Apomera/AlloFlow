@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 
 const moduleSrc = readFileSync(resolve(process.cwd(), 'allo_device_storage_module.js'), 'utf8');
 const bridgeSrc = readFileSync(resolve(process.cwd(), 'storage_bridge.html'), 'utf8');
-const mirrorSrc = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/allo_device_storage_module.js'), 'utf8');
+const mirrorSrc = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/allo_device_storage_module.js'), 'utf8');
 
 describe('device storage bridge — file contracts', () => {
   it('keeps the root module and the deploy mirror byte-identical', () => {
@@ -71,7 +71,7 @@ describe('device storage bridge — file contracts', () => {
   it('wires persona interview resume through the bridge', () => {
     const viewSource = readFileSync(resolve(process.cwd(), 'view_persona_chat_source.jsx'), 'utf8');
     const viewModule = readFileSync(resolve(process.cwd(), 'view_persona_chat_module.js'), 'utf8');
-    const viewDeployed = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/view_persona_chat_module.js'), 'utf8');
+    const viewDeployed = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/view_persona_chat_module.js'), 'utf8');
     expect(viewDeployed).toBe(viewModule);
     for (const src of [viewSource, viewModule]) {
       expect(src).toContain("'persona_sessions'");
@@ -86,7 +86,7 @@ describe('device storage bridge — file contracts', () => {
   it('mirrors the app-wide storageDB autosave layer through the bridge in Canvas', () => {
     const upSource = readFileSync(resolve(process.cwd(), 'utils_pure_source.jsx'), 'utf8');
     const upModule = readFileSync(resolve(process.cwd(), 'utils_pure_module.js'), 'utf8');
-    const upDeployed = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/utils_pure_module.js'), 'utf8');
+    const upDeployed = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/utils_pure_module.js'), 'utf8');
     expect(upDeployed).toBe(upModule);
     for (const src of [upSource, upModule]) {
       expect(src).toContain('_dsBridgeWanted');
@@ -152,7 +152,7 @@ describe('device storage bridge — file contracts', () => {
     expect(moduleSrc).toContain('__openProbePanel');
     const tuSource = readFileSync(resolve(process.cwd(), 'text_utility_helpers_source.jsx'), 'utf8');
     const tuModule = readFileSync(resolve(process.cwd(), 'text_utility_helpers_module.js'), 'utf8');
-    const tuDeployed = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/text_utility_helpers_module.js'), 'utf8');
+    const tuDeployed = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/text_utility_helpers_module.js'), 'utf8');
     for (const src of [tuSource, tuModule]) {
       expect(src).toContain('__alloOpenDeviceStorageProbe');
       expect(src).toContain('__alloDeviceStorageProbeArmed');

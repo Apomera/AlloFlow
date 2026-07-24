@@ -126,7 +126,7 @@ describe('one-click remediation re-entry guard', () => {
 
     for (const path of [
       'doc_pipeline_module.js',
-      'prismflow-deploy/public/doc_pipeline_module.js',
+      'desktop/web-app/public/doc_pipeline_module.js',
     ]) {
       const generated = readFileSync(resolve(root, path), 'utf8');
       expect(generated).toContain('RemediationAlreadyRunningError');
@@ -134,7 +134,7 @@ describe('one-click remediation re-entry guard', () => {
     }
     for (const path of [
       'view_pdf_audit_module.js',
-      'prismflow-deploy/public/view_pdf_audit_module.js',
+      'desktop/web-app/public/view_pdf_audit_module.js',
     ]) {
       const generated = readFileSync(resolve(root, path), 'utf8');
       expect(generated).toContain('duplicate starts are disabled');

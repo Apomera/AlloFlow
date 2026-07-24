@@ -535,7 +535,7 @@
   },
   "scope": {
     "sourceRoot": "test_prep",
-    "deployMirrorRoot": "prismflow-deploy/public/test_prep",
+    "deployMirrorRoot": "desktop/web-app/public/test_prep",
     "artifactSuffixesReviewedPerPack": [
       "_pack.json",
       "_items.json",

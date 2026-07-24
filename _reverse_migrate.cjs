@@ -132,7 +132,7 @@ const moduleSrc = ${'`'}${jsdoc.trimEnd()}
 ${'`'};
 
 fs.writeFileSync('${moduleFile}', moduleSrc);
-fs.writeFileSync('prismflow-deploy/public/${moduleFile}', moduleSrc);
+fs.writeFileSync('desktop/web-app/public/${moduleFile}', moduleSrc);
 console.log('Wrote ${moduleFile} (' + moduleSrc.length + ' bytes)');
 `;
 
@@ -148,7 +148,7 @@ try {
 } catch (e) {
   console.error('Build failed; restoring');
   fs.copyFileSync(deployedBackup, moduleFile);
-  fs.copyFileSync(deployedBackup, `prismflow-deploy/public/${moduleFile}`);
+  fs.copyFileSync(deployedBackup, `desktop/web-app/public/${moduleFile}`);
   process.exit(1);
 }
 
@@ -169,7 +169,7 @@ if (rebuilt.equals(deployed)) {
 
   // RESTORE deployed pending review
   fs.copyFileSync(deployedBackup, moduleFile);
-  fs.copyFileSync(deployedBackup, `prismflow-deploy/public/${moduleFile}`);
+  fs.copyFileSync(deployedBackup, `desktop/web-app/public/${moduleFile}`);
   console.log('  → Restored deployed file (no live change)');
 }
 

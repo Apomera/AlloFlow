@@ -6,7 +6,7 @@ import {
 } from './helpers/stem_widgets_smoke_harness.js';
 
 const SOURCE = 'stem_lab/stem_tool_printingpress.js';
-const DEPLOY = 'prismflow-deploy/public/stem_lab/stem_tool_printingpress.js';
+const DEPLOY = 'desktop/web-app/public/stem_lab/stem_tool_printingpress.js';
 
 beforeEach(() => {
   resetStemLab();

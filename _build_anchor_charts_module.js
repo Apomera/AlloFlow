@@ -6,7 +6,7 @@
  *
  * Mirrors _build_note_taking_templates_module.js. Compiles JSX → React.createElement
  * via esbuild, wraps in IIFE with a11y CSS + hand-drawn-font CDN link + React
- * aliases, writes anchor_charts_module.js + syncs to prismflow-deploy/public/.
+ * aliases, writes anchor_charts_module.js + syncs to desktop/web-app/public/.
  *
  * Per architectural directive: Anchor Charts lives as a standalone CDN module,
  * NOT inline in AlloFlowANTI.txt.
@@ -19,7 +19,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'anchor_charts_source.jsx');
 const OUTPUT = path.join(ROOT, 'anchor_charts_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'anchor_charts_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'anchor_charts_module.js');
 const TMP = path.join(ROOT, '_tmp_anchor_charts_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) {
@@ -157,7 +157,7 @@ try {
     }
     fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) {
-    console.warn('[AnchorCharts] Could not sync to prismflow-deploy/public/:', e.message);
+    console.warn('[AnchorCharts] Could not sync to desktop/web-app/public/:', e.message);
 }
 const lineCount = outputCode.split('\n').length;
 console.log(`[AnchorCharts] Built ${OUTPUT} (${lineCount} lines)`);

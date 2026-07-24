@@ -317,7 +317,7 @@ describe('EPPP diagram template and placement catalog', () => {
     }));
     expect(inventory.diagramInventory.templates).toEqual(catalog.diagrams);
     expect(inventory.diagramInventory.placements).toEqual(catalog.diagramPlacements);
-    expect(read('prismflow-deploy/public/test_prep/eppp_learning_library.json')).toEqual(catalog);
-    expect(read('prismflow-deploy/public/test_prep/eppp_legacy/content_inventory.json')).toEqual(inventory);
+    expect(read('desktop/web-app/public/test_prep/eppp_learning_library.json')).toEqual(catalog);
+    expect(read('desktop/web-app/public/test_prep/eppp_legacy/content_inventory.json')).toEqual(inventory);
   });
 });

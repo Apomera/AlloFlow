@@ -67,6 +67,6 @@ describe('Praxis ESOL 5362 diagnostic bank', () => {
     const qa = JSON.parse(read('test_prep/esol_5362_native_qa.json'));
     expect(qa.summary).toMatchObject({ totalItems: 500, passedItems: 500, diagnosticBanks: 5, bankSize: 100, simulationItems: 120, findings: [], status: 'pass' });
     expect(qa.standard.limitation).toContain('psychometric validation remain pending');
-    for (const name of ['esol_5362_items.json', 'esol_5362_pack.json', 'esol_5362_native_qa.json', 'esol_5362_native_qa.md']) expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
+    for (const name of ['esol_5362_items.json', 'esol_5362_pack.json', 'esol_5362_native_qa.json', 'esol_5362_native_qa.md']) expect(read('desktop/web-app/public/test_prep/' + name)).toBe(read('test_prep/' + name));
   }, 20000);
 });

@@ -28,7 +28,7 @@ describe('Info modal feature-guide navigation', () => {
   });
 
   it('keeps root and deployed generated modules synchronized', () => {
-    expect(readFileSync('prismflow-deploy/public/view_info_modal_module.js', 'utf8'))
+    expect(readFileSync('desktop/web-app/public/view_info_modal_module.js', 'utf8'))
       .toBe(readFileSync('view_info_modal_module.js', 'utf8'));
   });
 

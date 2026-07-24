@@ -53,7 +53,7 @@ The repository has MANY uncommitted changes belonging to other active work. Befo
 
 - NEVER run `git reset`, `git checkout --`, `git stash`, `git clean`, or a bare `git add -A` / `git commit -a`.
 - Commit ONLY with explicit pathspecs: `git add <your files> && git commit -m "..." -- <same files>`.
-- Do not touch `AlloFlowANTI.txt`, `prismflow-deploy/`, built `*_module.js` files you didn't author, or anything you didn't change.
+- Do not touch `AlloFlowANTI.txt`, `desktop/web-app/`, built `*_module.js` files you didn't author, or anything you didn't change.
 - The three `agent_core_*_module.js` files are HAND-WRITTEN (no `_source.jsx`, no build step) — edit them directly. Everything else with a `*_source.jsx` twin is generated; don't hand-edit generated output.
 - Do not push or deploy. Everything stays local for the maintainer (Aaron) to review.
 

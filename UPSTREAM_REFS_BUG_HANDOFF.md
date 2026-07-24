@@ -155,7 +155,7 @@ Breakdown of why this is safer than my earlier reverted simplified-pipeline stri
 - **[content_engine_source.jsx:910](content_engine_source.jsx#L910)** — the broken strip regex to replace
 - **[content_engine_source.jsx:921](content_engine_source.jsx#L921)** — `generateBibliographyString` call that already produces the correct app-owned refs (this part is fine; nothing to change here)
 
-**Source-module sync:** `content_engine_source.jsx` compiles to `content_engine_module.js` (CDN file). Also mirror edits to `prismflow-deploy/src/content_engine_source.jsx` per the pre-commit drift guard at `dev-tools/check_source_pair_drift.js`.
+**Source-module sync:** `content_engine_source.jsx` compiles to `content_engine_module.js` (CDN file). Also mirror edits to `desktop/web-app/src/content_engine_source.jsx` per the pre-commit drift guard at `dev-tools/check_source_pair_drift.js`.
 
 ## Verification plan for next session
 

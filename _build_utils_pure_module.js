@@ -6,7 +6,7 @@
  *
  * 1. Reads utils_pure_source.jsx (pure JS — no JSX, no React components).
  * 2. Wraps in IIFE with duplicate-load guard.
- * 3. Writes utils_pure_module.js + syncs to prismflow-deploy/public/.
+ * 3. Writes utils_pure_module.js + syncs to desktop/web-app/public/.
  * 4. Syntax-checks output with `node -c`.
  *
  * No Babel/esbuild compilation needed — the source is plain ES syntax.
@@ -19,7 +19,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'utils_pure_source.jsx');
 const OUTPUT = path.join(ROOT, 'utils_pure_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'utils_pure_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'utils_pure_module.js');
 
 if (!fs.existsSync(SOURCE)) {
     console.error('[UtilsPure] Source not found:', SOURCE);
@@ -46,7 +46,7 @@ try {
     }
     fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) {
-    console.warn('[UtilsPure] Could not sync to prismflow-deploy/public/:', e.message);
+    console.warn('[UtilsPure] Could not sync to desktop/web-app/public/:', e.message);
 }
 
 // Syntax check

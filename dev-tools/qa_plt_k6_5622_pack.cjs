@@ -110,7 +110,7 @@ const report = {
   findings, items: itemReports,
 };
 const markdown = `# Praxis PLT K–6 (5622) QA report\n\nGenerated: ${generatedAt}\n\n## Result\n\n- Status: **${status.toUpperCase()}**\n- Items: ${itemReports.length}\n- Passed: ${passedItems}\n- Review required: ${itemReports.length - passedItems}\n- Diagnostic batches: 2 x 100\n- Selected-response pacing simulation: 70 questions / 70 minutes\n- Official full test represented: 70 selected responses + 4 constructed responses / 120 minutes\n\n> ${report.standard.limitation}\n`;
-for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')]) {
+for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'desktop/web-app', 'public', 'test_prep')]) {
   fs.mkdirSync(outputRoot, { recursive: true });
   fs.writeFileSync(path.join(outputRoot, 'plt_k6_5622_native_qa.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
   fs.writeFileSync(path.join(outputRoot, 'plt_k6_5622_native_qa.md'), markdown, 'utf8');

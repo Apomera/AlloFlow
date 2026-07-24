@@ -27,7 +27,7 @@ Focused Vitest coverage lives in:
 The source and deployment mirror are expected to remain byte-identical:
 
 - `stem_lab/stem_tool_dissection.js`
-- `prismflow-deploy/public/stem_lab/stem_tool_dissection.js`
+- `desktop/web-app/public/stem_lab/stem_tool_dissection.js`
 
 ## Remaining subject-matter review
 

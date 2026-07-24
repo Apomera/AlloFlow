@@ -64,7 +64,7 @@ const report = {
 };
 const markdown = `# ParaPro learning library QA report\n\nGenerated: ${generatedAt}\n\n## Result\n\n- Status: **${status.toUpperCase()}**\n- Chapters: ${library.summary.chapters}\n- Sections: ${library.summary.sections}\n- Knowledge checks: ${library.summary.knowledgeChecks}\n- Flashcards: ${library.summary.flashcards}\n- Memory aids: ${library.summary.memoryAids}\n\n> ${report.standard.limitation}\n\n## Chapter matrix\n\n| Chapter | Domain | Sections | Checks | Sources |\n| --- | --- | ---: | ---: | ---: |\n${report.chapters.map((chapter) => `| ${chapter.title} | ${chapter.domainId} | ${chapter.sections} | ${chapter.knowledgeChecks} | ${chapter.references} |`).join('\n')}\n`;
 
-for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')]) {
+for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'desktop/web-app', 'public', 'test_prep')]) {
   fs.mkdirSync(outputRoot, { recursive: true });
   fs.writeFileSync(path.join(outputRoot, 'parapro_learning_library_qa.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
   fs.writeFileSync(path.join(outputRoot, 'parapro_learning_library_qa.md'), markdown, 'utf8');

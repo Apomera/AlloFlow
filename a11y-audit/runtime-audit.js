@@ -389,7 +389,7 @@ async function main() {
     console.error('Audit failed:', err.message);
     if (err.message.includes('net::ERR_CONNECTION_REFUSED')) {
       console.error(`\nCould not connect to ${url}`);
-      console.error('Make sure the dev server is running: cd prismflow-deploy && npm start');
+      console.error('Make sure the dev server is running: cd desktop/web-app && npm start');
     }
     process.exit(1);
   } finally {

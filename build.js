@@ -2,7 +2,7 @@
 /**
  * AlloFlow Build Script
  * 
- * Transforms AlloFlowANTI.txt → prismflow-deploy/src/App.jsx
+ * Transforms AlloFlowANTI.txt → desktop/web-app/src/App.jsx
  * with automatic CDN hash management.
  *
  * Usage:
@@ -15,7 +15,7 @@
  *   1. Reads AlloFlowANTI.txt
  *   2. Finds all loadModule(...) CDN URLs
  *   3. Replaces them with local paths (dev) or hashed CDN URLs (prod)
- *   4. Writes the result to prismflow-deploy/src/App.jsx
+ *   4. Writes the result to desktop/web-app/src/App.jsx
  */
 
 const fs = require('fs');
@@ -44,10 +44,10 @@ if (!['dev', 'prod'].includes(mode)) {
 // ── Paths ───────────────────────────────────────────────────────
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'AlloFlowANTI.txt');
-const OUTPUT = path.join(ROOT, 'prismflow-deploy', 'src', 'App.jsx');
-const BACKUP = path.join(ROOT, 'prismflow-deploy', 'src', 'AlloFlowANTI.txt');
-const STUDENT_SHELL_BUILD_DIR = path.join(ROOT, 'prismflow-deploy', 'build');
-const STUDENT_SHELL_PUBLIC_DIR = path.join(ROOT, 'prismflow-deploy', 'public', 'app');
+const OUTPUT = path.join(ROOT, 'desktop/web-app', 'src', 'App.jsx');
+const BACKUP = path.join(ROOT, 'desktop/web-app', 'src', 'AlloFlowANTI.txt');
+const STUDENT_SHELL_BUILD_DIR = path.join(ROOT, 'desktop/web-app', 'build');
+const STUDENT_SHELL_PUBLIC_DIR = path.join(ROOT, 'desktop/web-app', 'public', 'app');
 const STUDENT_SHELL_CDN_DIR = path.join(ROOT, 'app');
 const STUDENT_SHELL_ENTRIES = [
     'index.html',
@@ -62,7 +62,7 @@ const CLOUDFLARE_MAX_FILE_BYTES = 25 * 1024 * 1024;
 function publishStudentShell() {
     const sourceIndex = path.join(STUDENT_SHELL_BUILD_DIR, 'index.html');
     if (!fs.existsSync(sourceIndex)) {
-        throw new Error('Compiled app not found. Run npm run build in prismflow-deploy first.');
+        throw new Error('Compiled app not found. Run npm run build in desktop/web-app first.');
     }
 
     const html = fs.readFileSync(sourceIndex, 'utf8');
@@ -637,7 +637,7 @@ const MODULES = [
     {
         // Shared ConceptGraph format + spine + adapters (acg/v1). No loadModule()
         // call in AlloFlowANTI.txt — Throughline lazy-loads it from the CDN at
-        // click time; this entry just gets it copied to prismflow-deploy/public.
+        // click time; this entry just gets it copied to desktop/web-app/public.
         name: 'ConceptGraphEngine',
         filename: 'concept_graph_engine_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1247,7 +1247,7 @@ const PLUGIN_FILES = [
 ];
 
 // Companion-window assets used by STEM Lab launchers. These are not JS modules,
-// so they must be copied as folders into prismflow-deploy/public for clean builds.
+// so they must be copied as folders into desktop/web-app/public for clean builds.
 const COMPANION_ASSET_DIRS = [
     'alphafold_explorer',
     'circuit_shelf',
@@ -1260,7 +1260,7 @@ const COMPANION_ASSET_DIRS = [
 // ── Source → Module compilation ─────────────────────────────────
 // Each pair below describes a *_source.jsx ↔ *_module.js mapping. The compiler
 // reads source, wraps it in the module's specific IIFE + registration, writes
-// the module file (+ copies to prismflow-deploy/public), and syntax-checks it.
+// the module file (+ copies to desktop/web-app/public), and syntax-checks it.
 //
 // Currently implemented for doc_pipeline only (source has no JSX — a simple
 // cat+wrap). JSX-bearing modules (games, teacher, etc.) need Babel and will
@@ -1294,7 +1294,7 @@ function simplePureCompilePair(name, fileBase, guardKey) {
         name,
         srcPath: path.join(ROOT, fileBase + '_source.jsx'),
         modPath: path.join(ROOT, fileBase + '_module.js'),
-        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', fileBase + '_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app', 'public', fileBase + '_module.js'),
         wrap(src) {
             return (
                 '(function(){"use strict";\n'
@@ -1313,7 +1313,7 @@ const COMPILE_PAIRS = [
         name: 'DocPipeline',
         srcPath: path.join(ROOT, 'doc_pipeline_source.jsx'),
         modPath: path.join(ROOT, 'doc_pipeline_module.js'),
-        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'doc_pipeline_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'doc_pipeline_module.js'),
         wrap(src) {
             // Idempotency guard + IIFE. Source.jsx already contains its own
             // window.AlloModules registration, so the footer only needs to close
@@ -1339,7 +1339,7 @@ const COMPILE_PAIRS = [
         name: 'PersonaUI',
         srcPath: path.join(ROOT, 'persona_ui_source.jsx'),
         modPath: path.join(ROOT, 'persona_ui_module.js'),
-        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'persona_ui_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'persona_ui_module.js'),
         wrap(src) {
             const compiled = compileJsx(src);
             return (
@@ -1361,7 +1361,7 @@ const COMPILE_PAIRS = [
         name: 'GeminiAPI',
         srcPath: path.join(ROOT, 'gemini_api_source.jsx'),
         modPath: path.join(ROOT, 'gemini_api_module.js'),
-        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'gemini_api_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'gemini_api_module.js'),
         wrap(src) {
             // gemini_api_source.jsx is PURE JS (no JSX). Running it through
             // compileJsx (Babel) re-printed the source into a different ~804-line
@@ -1391,7 +1391,7 @@ const COMPILE_PAIRS = [
         name: 'TTS',
         srcPath: path.join(ROOT, 'tts_source.jsx'),
         modPath: path.join(ROOT, 'tts_module.js'),
-        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'tts_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'tts_module.js'),
         wrap(src) {
             const compiled = compileJsx(src);
             return (
@@ -1415,7 +1415,7 @@ const COMPILE_PAIRS = [
         name: 'Personas',
         srcPath: path.join(ROOT, 'personas_source.jsx'),
         modPath: path.join(ROOT, 'personas_module.js'),
-        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'personas_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'personas_module.js'),
         wrap(src) {
             const compiled = compileJsx(src);
             return (
@@ -1440,7 +1440,7 @@ const COMPILE_PAIRS = [
         name: 'Export',
         srcPath: path.join(ROOT, 'export_source.jsx'),
         modPath: path.join(ROOT, 'export_module.js'),
-        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'export_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'export_module.js'),
         wrap(src) {
             const compiled = compileJsx(src);
             return (
@@ -1459,7 +1459,7 @@ const COMPILE_PAIRS = [
         name: 'BrandProfileEditor',
         srcPath: path.join(ROOT, 'brand_profile_editor_source.jsx'),
         modPath: path.join(ROOT, 'brand_profile_editor_module.js'),
-        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'brand_profile_editor_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'brand_profile_editor_module.js'),
         wrap(src) {
             const compiled = compileJsx(src);
             return (
@@ -1484,7 +1484,7 @@ const COMPILE_PAIRS = [
         name: 'ImmersiveReader',
         srcPath: path.join(ROOT, 'immersive_reader_source.jsx'),
         modPath: path.join(ROOT, 'immersive_reader_module.js'),
-        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'immersive_reader_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'immersive_reader_module.js'),
         wrap(src) {
             return require('./_build_immersive_reader_module.js').buildImmersiveReaderModule(src);
         },
@@ -1879,8 +1879,8 @@ if (dryRun) {
 
     // NOTE: SW stamping moved to postbuild.js (runs AFTER CRA build copies public/sw.js → build/sw.js)
 
-    // ── Auto-copy module files to prismflow-deploy/public/ ──
-    const PUBLIC_DIR = path.join(ROOT, 'prismflow-deploy', 'public');
+    // ── Auto-copy module files to desktop/web-app/public/ ──
+    const PUBLIC_DIR = path.join(ROOT, 'desktop/web-app', 'public');
     // Accessibility Lab uses a same-origin axe-core build first so audits work
     // offline and under restrictive content-security policies.
     const axeCoreSource = path.join(ROOT, 'node_modules', 'axe-core', 'axe.min.js');
@@ -1938,16 +1938,16 @@ if (dryRun) {
             assetDirCopyCount++;
         }
     });
-    console.log(`📦 Auto-copied ${copyCount} module/plugin files and ${assetDirCopyCount} companion asset folders to prismflow-deploy/public/`);
+    console.log(`📦 Auto-copied ${copyCount} module/plugin files and ${assetDirCopyCount} companion asset folders to desktop/web-app/public/`);
 
     // Show next steps
     console.log('\n── Next Steps ──');
     if (mode === 'dev') {
-        console.log('  Run: cd prismflow-deploy && npm start');
+        console.log('  Run: cd desktop/web-app && npm start');
         console.log('  ⚠️  Make sure stem_lab_module.js and word_sounds_module.js');
-        console.log('     are available in prismflow-deploy/public/ or served locally.');
+        console.log('     are available in desktop/web-app/public/ or served locally.');
     } else {
-        console.log('  1. cd prismflow-deploy && npm run build');
+        console.log('  1. cd desktop/web-app && npm run build');
         console.log('  2. npx firebase deploy --only hosting');
         console.log(`  3. Commit updated AlloFlowANTI.txt with hash @${gitHash}`);
     }

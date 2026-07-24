@@ -59,7 +59,7 @@ describe('Adventure saved-game and setup accessibility', () => {
 
   it('keeps generated Adventure modules synchronized', () => {
     const rootModule = fs.readFileSync('view_adventure_module.js', 'utf8');
-    expect(fs.readFileSync('prismflow-deploy/public/view_adventure_module.js', 'utf8')).toBe(rootModule);
+    expect(fs.readFileSync('desktop/web-app/public/view_adventure_module.js', 'utf8')).toBe(rootModule);
     expect(rootModule).toContain('"aria-labelledby": "adventure-setup-core-heading"');
     expect(rootModule).toContain('id: "adventure-setup-input-mode"');
     expect(rootModule).toContain('"aria-busy": adventureState.isLoading');

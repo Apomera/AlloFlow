@@ -7,7 +7,7 @@ const { spawnSync } = require('child_process');
 
 const DESKTOP_ROOT = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(DESKTOP_ROOT, '..');
-const APP_ROOT = path.join(REPO_ROOT, 'prismflow-deploy');
+const APP_ROOT = path.join(REPO_ROOT, 'desktop/web-app');
 const APP_BUILD = path.join(APP_ROOT, 'build');
 const DESKTOP_APP_BUILD = path.join(DESKTOP_ROOT, 'app-build');
 const GOOGLE_API_KEY_PATTERN = /AIza[0-9A-Za-z_-]{20,}/g;
@@ -94,7 +94,7 @@ function patchDesktopHtml(rootDir) {
 
 function main() {
   if (!fs.existsSync(path.join(APP_ROOT, 'package.json'))) {
-    throw new Error('prismflow-deploy/package.json was not found.');
+    throw new Error('desktop/web-app/package.json was not found.');
   }
 
   const env = {
@@ -105,7 +105,7 @@ function main() {
     // The monolith's lint debt (injection-contract globals like __app_id) is
     // baselined and gated by AlloFlow's own dev-tools checks; CRA's ESLint
     // pass must not re-litigate it. Locally this came from the UNTRACKED
-    // prismflow-deploy/.env — bake it in so CI builds behave identically.
+    // desktop/web-app/.env — bake it in so CI builds behave identically.
     DISABLE_ESLINT_PLUGIN: 'true',
     ESLINT_NO_DEV_ERRORS: 'true',
     PUBLIC_URL: '.',
@@ -123,7 +123,7 @@ function main() {
 
   const reactScripts = path.join(APP_ROOT, 'node_modules', 'react-scripts', 'bin', 'react-scripts.js');
   if (!fs.existsSync(reactScripts)) {
-    throw new Error('react-scripts is not installed in prismflow-deploy/node_modules.');
+    throw new Error('react-scripts is not installed in desktop/web-app/node_modules.');
   }
 
   const buildResult = spawnSync(process.execPath, [reactScripts, 'build'], {

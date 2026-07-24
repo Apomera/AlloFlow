@@ -50,8 +50,8 @@ describe('adventure persistent HUD accessibility', () => {
     expect(source).toContain('if (prev.name !== next.name) return false');
     expect(source).toContain('if (prev.description !== next.description) return false');
     const rootModule = fs.readFileSync('adventure_module.js', 'utf8');
-    expect(fs.readFileSync('prismflow-deploy/src/adventure_source.jsx', 'utf8')).toBe(source);
-    expect(fs.readFileSync('prismflow-deploy/public/adventure_module.js', 'utf8')).toBe(rootModule);
+    expect(fs.readFileSync('desktop/web-app/src/adventure_source.jsx', 'utf8')).toBe(source);
+    expect(fs.readFileSync('desktop/web-app/public/adventure_module.js', 'utf8')).toBe(rootModule);
     expect(rootModule).toContain('role: "progressbar"');
     expect(rootModule).toContain('setDismissedTooltip(idx)');
   });

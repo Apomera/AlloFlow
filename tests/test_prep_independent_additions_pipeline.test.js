@@ -24,7 +24,7 @@ describe('manifest-backed independent test-prep additions', () => {
       'utf8',
     ));
     const targets = Object.keys(manifest.packs).sort().flatMap((stem) =>
-      ['test_prep', 'prismflow-deploy/public/test_prep'].flatMap((dir) =>
+      ['test_prep', 'desktop/web-app/public/test_prep'].flatMap((dir) =>
         [`${dir}/${stem}_pack.json`, `${dir}/${stem}_items.json`],
       ),
     );

@@ -46,7 +46,7 @@
       "Bash(grep -n '^};$\\\\|^}$\\\\|^}\\);$\\\\|^\\);\\\\|^};')",
       "Bash(ls \"/c/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/stem_lab/\"*anatomy*)",
       "Bash(node -e \"try { require\\(''c:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/sel_hub/sel_tool_decisions.js''\\); } catch\\(e\\) { if \\(e instanceof SyntaxError\\) { console.error\\(''SYNTAX ERROR:'', e.message\\); process.exit\\(1\\); } else { console.log\\(''Syntax OK \\(runtime error expected without browser\\)''\\); } }\")",
-      "Bash(ls \"/c/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/prismflow-deploy/src/\"*anatomy*)",
+      "Bash(ls \"/c/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/desktop/web-app/src/\"*anatomy*)",
       "Bash(python _enhance_universe3.py)",
       "Bash(node _build_word_sounds_setup_module.js)",
       "Bash(python _enhance_universe4.py)",

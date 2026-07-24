@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const root = process.cwd();
 const source = fs.readFileSync(path.join(root, 'student_analytics_module.js'), 'utf8');
-const mirror = fs.readFileSync(path.join(root, 'prismflow-deploy/public/student_analytics_module.js'), 'utf8');
+const mirror = fs.readFileSync(path.join(root, 'desktop/web-app/public/student_analytics_module.js'), 'utf8');
 
 describe('Student Analytics Growth Trajectory table semantics', () => {
   it('keeps source and deploy mirror byte-identical', () => {

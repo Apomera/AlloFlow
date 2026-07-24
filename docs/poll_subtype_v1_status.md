@@ -121,7 +121,7 @@ The Async-B path can't ship without trigger isolation:
 ### Phase H — Feature flag + verification doc (DEFERRED)
 
 - Gate all Async-B code paths behind `window.__ALLO_ASYNC_B_ENABLED`.
-- Write a manual verification doc with prismflow-deploy steps (NOT
+- Write a manual verification doc with desktop/web-app steps (NOT
   Canvas — `isCanvas=true` short-circuits sync paths and would mask
   trigger-isolation bugs).
 
@@ -152,7 +152,7 @@ usable; that's not in V1.
 
 The working tree at commit time had unstaged changes from other
 sessions across `behavior_lens_module.js`, every `lang/*.js`, and
-several `prismflow-deploy/public/*` files. This commit stages ONLY
+several `desktop/web-app/public/*` files. This commit stages ONLY
 the files I touched via explicit pathspec — `git add` was given each
 file by name, no `git add -A`. There are 4 unpushed commits from prior
 work also present. **This commit is NOT pushed** — pushing would

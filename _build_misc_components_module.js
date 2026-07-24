@@ -16,7 +16,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'misc_components_source.jsx');
 const OUTPUT = path.join(ROOT, 'misc_components_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'misc_components_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'misc_components_module.js');
 const TMP = path.join(ROOT, '_tmp_misc_components_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) {
@@ -99,7 +99,7 @@ try {
     }
     fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) {
-    console.warn('[MiscComponents] Could not sync to prismflow-deploy/public/:', e.message);
+    console.warn('[MiscComponents] Could not sync to desktop/web-app/public/:', e.message);
 }
 
 try {

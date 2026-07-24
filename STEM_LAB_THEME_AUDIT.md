@@ -182,7 +182,7 @@ For each tool:
 1. Find every `background: '#0f172a'` (and variants) in inline styles
 2. Replace with the corresponding `var(--allo-stem-*)`
 3. Find every adjacent `color: '#e2e8f0'` / `color: '#f1f5f9'` text color and replace with `var(--allo-stem-text)`
-4. Mirror to `prismflow-deploy/public/stem_lab/`
+4. Mirror to `desktop/web-app/public/stem_lab/`
 5. Verify visually in each theme
 
 Realistic pace: ~10 tools per focused session. ~10 sessions to migrate all 104, but with strict prioritization (top-20 tools cover ~80% of occurrences), 2 sessions could get 80% coverage.

@@ -8,7 +8,7 @@
  *    - duplicate-load guard (sentinel: window.AlloModules.ViewRenderersModule)
  *    - React hook aliases (defensive, even though renderers don't call hooks)
  *    - Lucide icon aliases via _lazyIcon('Name') reading from window.AlloIcons
- * 4. Writes view_renderers_module.js + syncs to prismflow-deploy/public/.
+ * 4. Writes view_renderers_module.js + syncs to desktop/web-app/public/.
  *
  * Modeled on _build_immersive_reader_module.js (proven JSX-CDN pipeline).
  */
@@ -19,7 +19,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'view_renderers_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_renderers_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'view_renderers_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'view_renderers_module.js');
 const MONOLITH = path.join(ROOT, 'AlloFlowANTI.txt');
 const TMP = path.join(ROOT, '_tmp_view_renderers_entry.jsx');
 const TMP_COMPILED = TMP + '.compiled.js';

@@ -6,7 +6,7 @@ import { loadAlloModule } from './setup.js';
 
 const root = process.cwd();
 const require = createRequire(import.meta.url);
-const React = require(path.resolve(root, 'prismflow-deploy/node_modules/react'));
+const React = require(path.resolve(root, 'desktop/web-app/node_modules/react'));
 const appSource = fs.readFileSync(path.join(root, 'AlloFlowANTI.txt'), 'utf8');
 const phaseKSource = fs.readFileSync(path.join(root, 'phase_k_helpers_source.jsx'), 'utf8');
 const personaCoreSource = fs.readFileSync(path.join(root, 'personas_source.jsx'), 'utf8');

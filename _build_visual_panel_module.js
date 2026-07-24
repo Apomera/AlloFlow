@@ -25,7 +25,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'visual_panel_source.jsx');
 const OUTPUT = path.join(ROOT, 'visual_panel_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'visual_panel_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'visual_panel_module.js');
 const TMP = path.join(ROOT, '_tmp_visual_panel_entry.jsx');
 
 const args = process.argv.slice(2);
@@ -160,7 +160,7 @@ try {
     }
     fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) {
-    console.warn('[VisualPanel] Could not sync to prismflow-deploy/public/:', e.message);
+    console.warn('[VisualPanel] Could not sync to desktop/web-app/public/:', e.message);
 }
 const lineCount = outputCode.split('\n').length;
 console.log(`[VisualPanel] Built ${OUTPUT} (${lineCount} lines)`);

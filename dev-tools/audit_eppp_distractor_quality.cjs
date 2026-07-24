@@ -9,7 +9,7 @@ const root = path.resolve(__dirname, '..');
 const sourcePath = path.join(root, 'test_prep', 'eppp_native_items.json');
 const outputRoots = [
   path.join(root, 'test_prep'),
-  path.join(root, 'prismflow-deploy', 'public', 'test_prep'),
+  path.join(root, 'desktop/web-app', 'public', 'test_prep'),
 ];
 const reportBasename = 'eppp_distractor_quality_diagnostics';
 const analysisVersion = 'eppp-distractor-diagnostics-v1';

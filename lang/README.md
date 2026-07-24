@@ -8,7 +8,7 @@ matching the shape of `ui_strings.js` + the `help_mode.*` keys from
 ## Current coverage (July 2026)
 
 **63 pack files are present and mirrored** (`lang/*.js`,
-`prismflow-deploy/public/lang/`) — far beyond the priority tiers listed below.
+`desktop/web-app/public/lang/`) — far beyond the priority tiers listed below.
 The June quality logs cover the earlier 56-pack cleanup wave; newer packs and
 the PPS cluster should be checked with the current i18n tools before making the
 same quality claim.
@@ -43,7 +43,7 @@ When a user selects a language, the runtime in `AlloFlowANTI.txt` (the
    America)). It returns the canonical slug + a confidence score.
 
 2. **Try Cloudflare** at `https://alloflow-cdn.pages.dev/lang/<slug>.js`.
-   This is the primary CDN. Packs in `prismflow-deploy/public/lang/` auto-sync
+   This is the primary CDN. Packs in `desktop/web-app/public/lang/` auto-sync
    here on every deploy.
 
 3. **Fall back to GitHub raw** at
@@ -77,7 +77,7 @@ The script mirrors the runtime `translateChunk` pipeline byte-for-byte:
   URLs, hex colors, version tags
 - Domain-glossary preamble from `translation_glossary.js`
 - Placeholder-drift validation at the end
-- Writes to `lang/<slug>.js` and mirrors to `prismflow-deploy/public/lang/`
+- Writes to `lang/<slug>.js` and mirrors to `desktop/web-app/public/lang/`
 
 Expect 30 to 90 seconds per language on Flash, 2 to 5 minutes on Pro.
 
@@ -185,7 +185,7 @@ rather than getting re-translated differently in each chunk.
 ## Troubleshooting
 
 **Pack landed in `lang/` but Cloudflare still serves the old one**: the
-Cloudflare mirror updates from `prismflow-deploy/public/lang/` on deploy. Run
+Cloudflare mirror updates from `desktop/web-app/public/lang/` on deploy. Run
 `bash deploy.sh "lang: ..."` to push.
 
 **Placeholder drift warning during build**: rare, but if `{placeholders}`

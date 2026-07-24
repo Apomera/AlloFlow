@@ -124,7 +124,7 @@ new_string:
 ### Step 4 — Verify, mirror, manifest, commit, push (one-liner)
 
 ```bash
-node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('lang/french.js','utf8')); let n=0; function c(o){for(const k in o){if(typeof o[k]==='object'&&o[k]!==null)c(o[k]);else n++}} c(p); console.log('French keys:',n,'sections:',Object.keys(p).length);" && cp lang/french.js prismflow-deploy/public/lang/french.js && node dev-tools/update_lang_manifest.cjs && git add lang/french.js prismflow-deploy/public/lang/french.js lang/manifest.json prismflow-deploy/public/lang/manifest.json && git commit -m "lang: French +<N> keys (<total>, <sections>) - <section_name> COMPLETE" && git push origin main
+node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('lang/french.js','utf8')); let n=0; function c(o){for(const k in o){if(typeof o[k]==='object'&&o[k]!==null)c(o[k]);else n++}} c(p); console.log('French keys:',n,'sections:',Object.keys(p).length);" && cp lang/french.js desktop/web-app/public/lang/french.js && node dev-tools/update_lang_manifest.cjs && git add lang/french.js desktop/web-app/public/lang/french.js lang/manifest.json desktop/web-app/public/lang/manifest.json && git commit -m "lang: French +<N> keys (<total>, <sections>) - <section_name> COMPLETE" && git push origin main
 ```
 
 ## Translation register & conventions

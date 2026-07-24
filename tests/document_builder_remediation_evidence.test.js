@@ -9,7 +9,7 @@ import { resolve } from 'node:path';
 const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 const auditSrc = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
 const auditMod = readFileSync(resolve(process.cwd(), 'view_pdf_audit_module.js'), 'utf8');
-const auditDeploy = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/view_pdf_audit_module.js'), 'utf8');
+const auditDeploy = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/view_pdf_audit_module.js'), 'utf8');
 const golden = JSON.parse(readFileSync(resolve(process.cwd(), 'tests/fixtures/remediation_evidence_dossier.golden.json'), 'utf8'));
 
 const auditArtifacts = [

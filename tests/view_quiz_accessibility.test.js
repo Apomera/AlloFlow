@@ -5,7 +5,7 @@ import { spawnSync } from 'node:child_process';
 
 const sourcePath = resolve(process.cwd(), 'view_quiz_source.jsx');
 const modulePath = resolve(process.cwd(), 'view_quiz_module.js');
-const publicPath = resolve(process.cwd(), 'prismflow-deploy/public/view_quiz_module.js');
+const publicPath = resolve(process.cwd(), 'desktop/web-app/public/view_quiz_module.js');
 const source = () => readFileSync(sourcePath, 'utf8');
 
 describe('Quiz accessibility', () => {

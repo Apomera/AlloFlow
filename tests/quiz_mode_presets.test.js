@@ -177,7 +177,7 @@ describe('quiz modes as customizable presets', () => {
   });
   it('keeps rebuilt quiz modules identical to deployed copies', () => {
     for (const name of ['view_sidebar_panels_module.js', 'generate_dispatcher_module.js', 'quiz_mode_strategies.js']) {
-      expect(readFileSync(resolve(root, 'prismflow-deploy/public', name), 'utf8'))
+      expect(readFileSync(resolve(root, 'desktop/web-app/public', name), 'utf8'))
         .toBe(readFileSync(resolve(root, name), 'utf8'));
     }
   });

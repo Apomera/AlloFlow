@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 
 const source = readFileSync(resolve(process.cwd(), 'view_export_preview_source.jsx'), 'utf8');
 const moduleBuild = readFileSync(resolve(process.cwd(), 'view_export_preview_module.js'), 'utf8');
-const deployBuild = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/view_export_preview_module.js'), 'utf8');
+const deployBuild = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/view_export_preview_module.js'), 'utf8');
 
 describe('Document Builder UI accessibility refinements', () => {
   it('names the modal from its visible heading and restores focus to its opener', () => {

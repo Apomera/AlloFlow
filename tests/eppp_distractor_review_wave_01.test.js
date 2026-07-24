@@ -8,9 +8,9 @@ const bankPath = path.join(root, 'test_prep', 'eppp_native_items.json');
 const reviewScriptPath = path.join(root, 'dev-tools', 'build_eppp_distractor_review_wave_01.cjs');
 const docketScriptPath = path.join(root, 'dev-tools', 'build_eppp_distractor_action_docket.cjs');
 const reviewPath = path.join(root, 'test_prep', 'eppp_distractor_review_wave_01.json');
-const deployReviewPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_distractor_review_wave_01.json');
+const deployReviewPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_distractor_review_wave_01.json');
 const docketPath = path.join(root, 'test_prep', 'eppp_distractor_action_docket.json');
-const deployDocketPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_distractor_action_docket.json');
+const deployDocketPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_distractor_action_docket.json');
 const diagnosticsPath = path.join(root, 'test_prep', 'eppp_distractor_quality_diagnostics.json');
 const reviewedIds = [
   'eppp-v2-professional-040',

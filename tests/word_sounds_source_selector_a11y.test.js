@@ -29,7 +29,7 @@ describe('Word Sounds source selector keyboard behavior', () => {
   });
 
   it('synchronizes both generated module copies', () => {
-    expect(fs.readFileSync('prismflow-deploy/public/word_sounds_setup_module.js', 'utf8')).toBe(fs.readFileSync('word_sounds_setup_module.js', 'utf8'));
+    expect(fs.readFileSync('desktop/web-app/public/word_sounds_setup_module.js', 'utf8')).toBe(fs.readFileSync('word_sounds_setup_module.js', 'utf8'));
     expect(fs.readFileSync('_build_word_sounds_setup_module.js', 'utf8')).toContain('// WCAG 2.2 AA: Accessibility CSS');
   });
 

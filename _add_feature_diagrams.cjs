@@ -1,12 +1,12 @@
 // Add 14 missing top-level AlloFlow features to the About-modal catalog +
-// their inputs/outputs diagrams. Writes both root and prismflow-deploy mirror.
+// their inputs/outputs diagrams. Writes both root and desktop/web-app mirror.
 
 const fs = require('fs');
 const path = require('path');
 
 const ROOT = __dirname;
 const stringsFile = path.join(ROOT, 'ui_strings.js');
-const mirrorStringsFile = path.join(ROOT, 'prismflow-deploy', 'public', 'ui_strings.js');
+const mirrorStringsFile = path.join(ROOT, 'desktop/web-app', 'public', 'ui_strings.js');
 
 const data = JSON.parse(fs.readFileSync(stringsFile, 'utf-8'));
 

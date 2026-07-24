@@ -6,7 +6,7 @@
 
 This is the action list coming out of the 2026-06-09 SEL Hub review (30 findings) after this round of fixes. The review is essentially worked through: all 5 HIGH findings closed, Batches A & C done, the full a11y batch (A11Y‑1..8) done, integrity-copy lows done, and per-tool triage done. What's left is **your review of the safety/clinical/privacy-sensitive changes** and a handful of **decisions only you should make**.
 
-Mirrors (`prismflow-deploy/public/sel_hub/*`) are byte-identical for every change. Each fix has a guard test where applicable. Full vitest suite green (2617); `check_sel_render` 70/70.
+Mirrors (`desktop/web-app/public/sel_hub/*`) are byte-identical for every change. Each fix has a guard test where applicable. Full vitest suite green (2617); `check_sel_render` 70/70.
 
 How to use this: Section 1 = things I changed that touch safety/privacy/clinical surfaces — **please verify, then they're deploy-ready**. Section 2 = **decisions** that block further work. Section 3 = **deploy/infra actions** that need you (one touches the canonical `AlloFlowANTI.txt`). Section 4 = appendix (commit log + what's already shipped).
 
@@ -79,7 +79,7 @@ Badge popups now **announce to screen readers** (`be855cfe`, additive, done). Th
 `selfAdvocacy` ("Self-Advocacy **Studio**", 365 KB, no card) is a confirmed stale duplicate of the carded `advocacy` ("Self-Advocacy **Workshop**", 1.46 MB, same IEP/504/accommodations domain). My Station-Builder hardening already keeps the uncarded tool out of new Stations, so there's no user-facing harm in the interim. Full removal (one coherent change):
 1. `AlloFlowANTI.txt:4950` — remove the `sel_hub/sel_tool_selfadvocacy.js` script-load line (**canonical source — I don't edit this**).
 2. `build.js:949` — remove the same entry.
-3. Delete `sel_hub/sel_tool_selfadvocacy.js` + `prismflow-deploy/public/sel_hub/sel_tool_selfadvocacy.js`.
+3. Delete `sel_hub/sel_tool_selfadvocacy.js` + `desktop/web-app/public/sel_hub/sel_tool_selfadvocacy.js`.
 4. `sel_standards_alignment.js` — merge selfAdvocacy's data into `advocacy`: there's a top-level entry at `:448` alongside advocacy's `:430`, plus cross-refs at `:380`, `:485`, `:779`, `:970` (re-point to `advocacy`). This is a small domain-judgment merge.
 
 ### 3b. Standard SEL deploy mechanics

@@ -39,7 +39,7 @@ describe('EPPP next-500 editorial review docket', () => {
 
   it('records the current official blueprint, future transition, and an identical deploy artifact', () => {
     const docket = read('test_prep/eppp_legacy/next_review_docket.json');
-    const deployed = read('prismflow-deploy/public/test_prep/eppp_legacy/next_review_docket.json');
+    const deployed = read('desktop/web-app/public/test_prep/eppp_legacy/next_review_docket.json');
 
     expect(docket.blueprint).toMatchObject({ label: expect.stringContaining('2026–2027'), owner: expect.stringContaining('Association of State and Provincial Psychology Boards') });
     expect(docket.blueprint.officialUrl).toMatch(/^https:\/\/asppb\.net\//);

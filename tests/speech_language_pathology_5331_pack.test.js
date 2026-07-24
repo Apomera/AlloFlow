@@ -124,6 +124,6 @@ describe('Praxis Speech-Language Pathology 5331 diagnostic bank', () => {
     expect(qa.blueprint).toMatchObject({ officialQuestionCount: 132, timeMinutes: 150, selectedResponse: true, categories: { 'foundations-professional-practice': { questions: 44 }, 'screening-assessment-diagnosis': { questions: 44 }, 'treatment-planning-evaluation': { questions: 44 } } });
     expect(qa.diagnosticBatch).toMatchObject({ batchCount: 5, batchSize: 100, categories: { 'foundations-professional-practice': 34, 'screening-assessment-diagnosis': 33, 'treatment-planning-evaluation': 33 } });
     expect(qa.standard.limitation).toContain('independent licensed-SLP validation');
-    for (const name of ['speech_language_pathology_5331_items.json', 'speech_language_pathology_5331_pack.json', 'speech_language_pathology_5331_native_qa.json', 'speech_language_pathology_5331_native_qa.md']) expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
+    for (const name of ['speech_language_pathology_5331_items.json', 'speech_language_pathology_5331_pack.json', 'speech_language_pathology_5331_native_qa.json', 'speech_language_pathology_5331_native_qa.md']) expect(read('desktop/web-app/public/test_prep/' + name)).toBe(read('test_prep/' + name));
   }, 20000);
 });

@@ -3,7 +3,7 @@ import fs from 'node:fs';
 
 const renderer = fs.readFileSync('view_renderers_source.jsx', 'utf8');
 const builtRenderer = fs.readFileSync('view_renderers_module.js', 'utf8');
-const deployedRenderer = fs.readFileSync('prismflow-deploy/public/view_renderers_module.js', 'utf8');
+const deployedRenderer = fs.readFileSync('desktop/web-app/public/view_renderers_module.js', 'utf8');
 
 describe('flow topology presentation polish', () => {
   it('provides bounded zoom and fit-to-screen controls without distorting edge geometry', () => {

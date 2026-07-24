@@ -42,7 +42,7 @@ describe('Adventure active-turn accessibility', () => {
 
   it('keeps generated Adventure modules synchronized', () => {
     const rootModule = fs.readFileSync('view_adventure_module.js', 'utf8');
-    expect(fs.readFileSync('prismflow-deploy/public/view_adventure_module.js', 'utf8')).toBe(rootModule);
+    expect(fs.readFileSync('desktop/web-app/public/view_adventure_module.js', 'utf8')).toBe(rootModule);
     expect(rootModule).toContain('"aria-pressed": isDictationMode');
     expect(rootModule).toContain('disabled: !adventureTextInput.trim() || adventureState.isLoading');
     expect(rootModule).toContain('role: "alert"');

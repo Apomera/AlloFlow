@@ -4,7 +4,7 @@ import { resolve } from 'path';
 
 const hostFiles = [
   ['main host', 'AlloFlowANTI.txt'],
-  ['deploy host', 'prismflow-deploy/src/AlloFlowANTI.txt'],
+  ['deploy host', 'desktop/web-app/src/AlloFlowANTI.txt'],
 ];
 
 function loadWordSoundsHistoryUpdater(relativePath) {

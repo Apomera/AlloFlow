@@ -10,7 +10,7 @@
  *    - Lucide icon aliases via window.AlloIcons
  *    - LanguageContext from window
  * 4. Registers all game components on window.AlloModules.
- * 5. Writes games_module.js + syncs to prismflow-deploy/public/.
+ * 5. Writes games_module.js + syncs to desktop/web-app/public/.
  */
 const { execSync } = require('child_process');
 const fs = require('fs');
@@ -19,7 +19,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'games_source.jsx');
 const OUTPUT = path.join(ROOT, 'games_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'games_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'games_module.js');
 const MONOLITH = path.join(ROOT, 'AlloFlowANTI.txt');
 const TMP = path.join(ROOT, '_tmp_games_entry.jsx');
 const TMP_COMPILED = TMP + '.compiled.js';

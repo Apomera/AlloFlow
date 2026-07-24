@@ -43,7 +43,7 @@ describe('device storage probe accessibility', () => {
     expect(source).toContain("var btnCss = 'font:inherit;font-weight:600;min-height:44px;");
     expect(source).toContain("panel.setAttribute('aria-labelledby', 'allo-device-storage-probe-title')");
     expect(source).toContain("if (restoreFocus !== false && panelOpener");
-    expect(readFileSync('prismflow-deploy/public/allo_device_storage_module.js', 'utf8')).toBe(source);
+    expect(readFileSync('desktop/web-app/public/allo_device_storage_module.js', 'utf8')).toBe(source);
   });
 
   it('cancels safely, traps focus, restores focus, and erases only after explicit confirmation', async () => {

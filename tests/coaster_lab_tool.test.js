@@ -13,13 +13,13 @@ import { resolve } from 'node:path';
 import { loadTool, resetStemLab, React } from './helpers/stem_widgets_smoke_harness.js';
 
 const require = createRequire(import.meta.url);
-const MODULES_DIR = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
 const ReactDOMClient = require(resolve(MODULES_DIR, 'react-dom/client'));
 const { act } = require(resolve(MODULES_DIR, 'react-dom/test-utils'));
 
 const TOOL_PATHS = [
   'stem_lab/stem_tool_coasterlab.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_coasterlab.js',
+  'desktop/web-app/public/stem_lab/stem_tool_coasterlab.js',
 ];
 
 beforeEach(() => { resetStemLab(); });
@@ -850,8 +850,8 @@ describe('coaster lab — AI "any topic" Ride & Solve questions', () => {
 describe('coaster lab — wired into every load site', () => {
   it.each([
     'AlloFlowANTI.txt',
-    'prismflow-deploy/src/AlloFlowANTI.txt',
-    'prismflow-deploy/src/App.jsx',
+    'desktop/web-app/src/AlloFlowANTI.txt',
+    'desktop/web-app/src/App.jsx',
     'build.js',
   ])('%s lists the coaster lab loader', (f) => {
     const src = readFileSync(resolve(process.cwd(), f), 'utf8');
@@ -860,7 +860,7 @@ describe('coaster lab — wired into every load site', () => {
 
   it.each([
     'stem_lab/stem_lab_module.js',
-    'prismflow-deploy/public/stem_lab/stem_lab_module.js',
+    'desktop/web-app/public/stem_lab/stem_lab_module.js',
   ])('%s carries the tile and plugin flag', (f) => {
     const src = readFileSync(resolve(process.cwd(), f), 'utf8');
     expect(src).toContain("// @tool coasterLab");

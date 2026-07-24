@@ -10,7 +10,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'onboarding_coach_source.jsx');
 const OUTPUT = path.join(ROOT, 'onboarding_coach_module.js');
-const MIRROR = path.join(ROOT, 'prismflow-deploy', 'public', 'onboarding_coach_module.js');
+const MIRROR = path.join(ROOT, 'desktop/web-app', 'public', 'onboarding_coach_module.js');
 const TMP = path.join(ROOT, '_tmp_onboarding_coach_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }

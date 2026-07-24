@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const childProcess = require('child_process');
 const root = process.cwd();
-const maintained = ['README.md','AdminBrief.md','AlloFlow Complete User Manual.md','architecture.md','FEATURE_INVENTORY.md','COMPETITOR_COMPARISON.md','CONTRIBUTING.md','ORIENTATION.md','DEPLOY_YOUR_OWN.md','SECURITY.md','VPAT-2.5-WCAG-AlloFlow.md','docs/README.md','docs/accessibility-manual-test-plan.md','docs/release-evidence-template.md','desktop/README.md','prismflow-deploy/README.md'];
+const maintained = ['README.md','AdminBrief.md','AlloFlow Complete User Manual.md','architecture.md','FEATURE_INVENTORY.md','COMPETITOR_COMPARISON.md','CONTRIBUTING.md','ORIENTATION.md','DEPLOY_YOUR_OWN.md','SECURITY.md','VPAT-2.5-WCAG-AlloFlow.md','docs/README.md','docs/accessibility-manual-test-plan.md','docs/release-evidence-template.md','desktop/README.md','desktop/web-app/README.md'];
 const errors = [];
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 for (const file of maintained) {

@@ -50,7 +50,7 @@ describe('Floating student-tools stack accessibility', () => {
   });
 
   it('keeps generated mirrors synchronized and passes the static audit', () => {
-    expect(fs.readFileSync('prismflow-deploy/public/view_fab_stack_module.js', 'utf8'))
+    expect(fs.readFileSync('desktop/web-app/public/view_fab_stack_module.js', 'utf8'))
       .toBe(fs.readFileSync('view_fab_stack_module.js', 'utf8'));
     const result = spawnSync(process.execPath, ['a11y-audit/static-audit.js', '--file', 'view_fab_stack_module.js'], {
       cwd: process.cwd(),

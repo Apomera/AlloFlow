@@ -21,7 +21,7 @@
  * Idempotent: books that already carry any page.img are skipped unless
  * --force. Run AFTER importers; the index carries no per-page fields, so no
  * index rebuild is needed — but the public mirror byte-parity test means the
- * changed book files must be copied to prismflow-deploy/public/reading_library.
+ * changed book files must be copied to desktop/web-app/public/reading_library.
  *
  * --repaginate additionally re-splits an illustrated book's pages so the page
  * count follows the ART DENSITY of the original edition (the illustrator
@@ -61,7 +61,7 @@ const CAPTION_MAX = 240;
 // uses; the reading_library folder has no package.json of its own.
 let JSDOM;
 function loadJsdom() {
-  const jsdomPath = path.join(ROOT, '..', 'prismflow-deploy', 'node_modules', 'jsdom');
+  const jsdomPath = path.join(ROOT, '..', 'desktop/web-app', 'node_modules', 'jsdom');
   ({ JSDOM } = require(jsdomPath));
 }
 
@@ -341,7 +341,7 @@ async function main() {
     await sleep(250);
   }
   console.log((dryRun ? '[DRY RUN] would touch ' : 'Wrote ') + booksTouched + ' books, ' + totalPlaced + ' page images total.');
-  console.log('Remember: copy changed book files to prismflow-deploy/public/reading_library/books/ (byte-parity test).');
+  console.log('Remember: copy changed book files to desktop/web-app/public/reading_library/books/ (byte-parity test).');
 }
 
 main()

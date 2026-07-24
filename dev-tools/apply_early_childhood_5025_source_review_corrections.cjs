@@ -6,7 +6,7 @@ const path = require('path');
 const { corrections, applySourceReviewCorrections } = require('./early_childhood_5025/source_review_corrections.cjs');
 
 const root = path.resolve(__dirname, '..');
-const roots = [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')];
+const roots = [path.join(root, 'test_prep'), path.join(root, 'desktop/web-app', 'public', 'test_prep')];
 
 function writeJson(file, value) {
   fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);

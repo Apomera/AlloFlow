@@ -6,11 +6,11 @@ const root = process.cwd();
 const read = (name) => fs.readFileSync(path.join(root, name), 'utf8');
 
 const launcher = read('stem_lab/stem_tool_datalab.js');
-const deployedLauncher = read('prismflow-deploy/public/stem_lab/stem_tool_datalab.js');
+const deployedLauncher = read('desktop/web-app/public/stem_lab/stem_tool_datalab.js');
 const companion = read('data_lab/data_lab.html');
-const deployedCompanion = read('prismflow-deploy/public/data_lab/data_lab.html');
+const deployedCompanion = read('desktop/web-app/public/data_lab/data_lab.html');
 const plugin = read('data_lab/tutor_plugin.html');
-const deployedPlugin = read('prismflow-deploy/public/data_lab/tutor_plugin.html');
+const deployedPlugin = read('desktop/web-app/public/data_lab/tutor_plugin.html');
 
 describe('Data Lab bridge security and resilience contracts', () => {
   it('keeps canonical companion assets synchronized with deployed copies', () => {

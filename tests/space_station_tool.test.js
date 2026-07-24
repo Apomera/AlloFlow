@@ -5,14 +5,14 @@ import { resolve } from 'node:path';
 import { loadTool, resetStemLab, React } from './helpers/stem_widgets_smoke_harness.js';
 
 const require = createRequire(import.meta.url);
-const MODULES_DIR = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
 const ReactDOMClient = require(resolve(MODULES_DIR, 'react-dom/client'));
 const { act } = require(resolve(MODULES_DIR, 'react-dom/test-utils'));
 const axe = require(resolve(MODULES_DIR, 'axe-core'));
 
 const TOOL_PATHS = [
   'stem_lab/stem_tool_spacestation.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_spacestation.js',
+  'desktop/web-app/public/stem_lab/stem_tool_spacestation.js',
 ];
 
 // jsdom shims: no canvas 2D context, no rAF (animation loops must never advance)
@@ -432,7 +432,7 @@ describe('space station tool', () => {
     expect(moduleSrc).toContain("id: 'spaceStation'");
     expect(moduleSrc).toContain('spaceStation: true');
 
-    ['AlloFlowANTI.txt', 'prismflow-deploy/src/AlloFlowANTI.txt', 'prismflow-deploy/src/App.jsx', 'build.js'].forEach((p) => {
+    ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx', 'build.js'].forEach((p) => {
       const src = readFileSync(p, 'utf8');
       expect(src, p + ' should load the space station tool').toContain("'stem_lab/stem_tool_spacestation.js'");
     });

@@ -116,7 +116,7 @@ describe('Praxis School Psychologist 5403 diagnostic bank', () => {
     expect(qa.diagnosticBatch).toMatchObject({ batchCount: 5, batchSize: 100, categories: { 'permeating-practices': 32, 'student-level-services': 23, 'systems-level-services': 20, foundations: 25 } });
     expect(qa.standard.limitation).toContain('psychometric calibration');
     for (const name of ['school_psychologist_5403_items.json', 'school_psychologist_5403_pack.json', 'school_psychologist_5403_native_qa.json', 'school_psychologist_5403_native_qa.md']) {
-      expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
+      expect(read('desktop/web-app/public/test_prep/' + name)).toBe(read('test_prep/' + name));
     }
   }, 20000);
 });

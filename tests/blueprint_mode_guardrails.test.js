@@ -7,30 +7,30 @@ const read = (file) => readFileSync(resolve(process.cwd(), file), 'utf8');
 const plannerFiles = [
   'phase_k_helpers_source.jsx',
   'phase_k_helpers_module.js',
-  'prismflow-deploy/public/phase_k_helpers_module.js',
+  'desktop/web-app/public/phase_k_helpers_module.js',
 ];
 
 const executorFiles = [
   'phase_o_misc_handlers_source.jsx',
   'phase_o_misc_handlers_module.js',
-  'prismflow-deploy/public/phase_o_misc_handlers_module.js',
+  'desktop/web-app/public/phase_o_misc_handlers_module.js',
 ];
 
 const chatFiles = [
   'udl_chat_source.jsx',
   'udl_chat_module.js',
-  'prismflow-deploy/public/udl_chat_module.js',
+  'desktop/web-app/public/udl_chat_module.js',
 ];
 
 const blueprintCardFiles = [
   'persona_ui_source.jsx',
   'persona_ui_module.js',
-  'prismflow-deploy/public/persona_ui_module.js',
+  'desktop/web-app/public/persona_ui_module.js',
 ];
 
 const hostBlueprintFiles = [
   'AlloFlowANTI.txt',
-  'prismflow-deploy/src/AlloFlowANTI.txt',
+  'desktop/web-app/src/AlloFlowANTI.txt',
 ];
 
 describe('blueprint mode guardrails', () => {

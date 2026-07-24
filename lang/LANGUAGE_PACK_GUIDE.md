@@ -28,7 +28,7 @@ When a user picks a language, the runtime block in `AlloFlowANTI.txt` (near the 
    - Common misspellings (`spanis` → Spanish, `mandarin chinese` → Chinese Simplified)
    - Locale-aware routing (`Spanish for Mexico` → Spanish Latin America, `Chinese for Taiwan` → Chinese Traditional)
    - Levenshtein fallback ≥0.7 similarity for anything that doesn't hit a direct alias
-2. **Try Cloudflare** at `https://alloflow-cdn.pages.dev/lang/<slug>.js`. This is the primary CDN, auto-synced from `prismflow-deploy/public/lang/` on every git push.
+2. **Try Cloudflare** at `https://alloflow-cdn.pages.dev/lang/<slug>.js`. This is the primary CDN, auto-synced from `desktop/web-app/public/lang/` on every git push.
 3. **Fall back to GitHub raw** at `https://raw.githubusercontent.com/Apomera/AlloFlow/main/lang/<slug>.js` if Cloudflare is slow.
 4. **Fall back to live `translateChunk`** (configured Gemini translation model + DNT masking + domain glossary) for anything without a pre-built pack.
 
@@ -38,14 +38,14 @@ When a user picks a language, the runtime block in `AlloFlowANTI.txt` (near the 
 
 ```
 lang/<slug>.js                        # canonical pack (this is what you edit)
-prismflow-deploy/public/lang/<slug>.js   # exact copy, served by Cloudflare
+desktop/web-app/public/lang/<slug>.js   # exact copy, served by Cloudflare
 lang/manifest.json                    # fuzzy matcher reads this to know what packs exist
-prismflow-deploy/public/lang/manifest.json   # Cloudflare-served copy of manifest
+desktop/web-app/public/lang/manifest.json   # Cloudflare-served copy of manifest
 ```
 
-The `prismflow-deploy/public/lang/` directory is the Cloudflare Pages publish root for the CDN. Files in this directory get served verbatim from `alloflow-cdn.pages.dev/lang/<slug>.js`. The repo's `lang/` directory is the canonical source — you always edit there and mirror via `cp`.
+The `desktop/web-app/public/lang/` directory is the Cloudflare Pages publish root for the CDN. Files in this directory get served verbatim from `alloflow-cdn.pages.dev/lang/<slug>.js`. The repo's `lang/` directory is the canonical source — you always edit there and mirror via `cp`.
 
-**Critical:** never edit only `prismflow-deploy/public/lang/<slug>.js` — the build watcher in `build.js` overwrites it from `lang/<slug>.js` on the next deploy. Edit `lang/<slug>.js` first, then `cp` to the deploy mirror.
+**Critical:** never edit only `desktop/web-app/public/lang/<slug>.js` — the build watcher in `build.js` overwrites it from `lang/<slug>.js` on the next deploy. Edit `lang/<slug>.js` first, then `cp` to the deploy mirror.
 
 ## 3. Slug naming convention
 
@@ -208,9 +208,9 @@ If parse fails, `git checkout lang/<slug>.js` to revert, fix the issue, re-Edit.
 **6. Mirror, manifest, commit, push:**
 
 ```bash
-cp lang/<slug>.js prismflow-deploy/public/lang/<slug>.js && \
+cp lang/<slug>.js desktop/web-app/public/lang/<slug>.js && \
 node dev-tools/update_lang_manifest.cjs && \
-git add lang/<slug>.js prismflow-deploy/public/lang/<slug>.js lang/manifest.json prismflow-deploy/public/lang/manifest.json && \
+git add lang/<slug>.js desktop/web-app/public/lang/<slug>.js lang/manifest.json desktop/web-app/public/lang/manifest.json && \
 git commit -m "lang: <Display Name> +75 keys (X total, Y% coverage) - <section> batch N/M" && \
 git push origin main
 ```
@@ -418,7 +418,7 @@ Threshold rule of thumb from Aaron's prior decisions: anything with **>3 PPS fam
 
 1. **Delegating to Task agents.** General-purpose Task agents reliably write dictionary-substitution scripts instead of doing actual LLM translation. Output is Spanglish for long passages. Documented in `memory/feedback_agents_take_shortcuts_on_translation.md`. **Never use sub-agents for translation work** — do it directly in chat or run the CLI.
 2. **Running CLI batch after hand-translating.** `npm run build:lang -- --lang="Spanish (Latin America)"` would overwrite the hand-translated pack with Flash output. Lower quality. Don't.
-3. **Editing only deploy mirror.** Edits to `prismflow-deploy/public/lang/<slug>.js` get overwritten on the next deploy by the build watcher copying from `lang/<slug>.js`. Always edit canonical first, mirror after.
+3. **Editing only deploy mirror.** Edits to `desktop/web-app/public/lang/<slug>.js` get overwritten on the next deploy by the build watcher copying from `lang/<slug>.js`. Always edit canonical first, mirror after.
 4. **Not updating the manifest.** If you commit a new pack without running `node dev-tools/update_lang_manifest.cjs`, the runtime matcher won't know it exists and will fall through to runtime translate. Always regenerate manifest before commit.
 5. **Translating DNT terms.** Breaking the DNT list breaks search alignment, breaks brand recognition, breaks placeholder substitution. Especially watch for: `BINGO` (looks translatable but it's a brand), `XP` (gaming term, don't translate), `RTI` / `MTSS` / `IEP` (legal/educational terms that translate differently per country and would confuse PPS-aligned content).
 6. **Mixing locale variants.** A "Spanish" pack with mixed Castilian and Latin American vocabulary creates inconsistency. Pick one variant per pack and stick with it.
@@ -457,9 +457,9 @@ node -e "const fs=require('fs'); const h=new Function('return '+fs.readFileSync(
 node -e "try { JSON.parse(require('fs').readFileSync('lang/<slug>.js','utf8')); console.log('OK'); } catch(e) { console.log('ERR:', e.message.slice(0,200)); }"
 
 # Mirror + manifest + commit + push (the standard per-batch ending):
-cp lang/<slug>.js prismflow-deploy/public/lang/<slug>.js && \
+cp lang/<slug>.js desktop/web-app/public/lang/<slug>.js && \
 node dev-tools/update_lang_manifest.cjs && \
-git add lang/<slug>.js prismflow-deploy/public/lang/<slug>.js lang/manifest.json prismflow-deploy/public/lang/manifest.json && \
+git add lang/<slug>.js desktop/web-app/public/lang/<slug>.js lang/manifest.json desktop/web-app/public/lang/manifest.json && \
 git commit -m "lang: <Display Name> +N keys (TOTAL total, X% coverage) - <section> batch M/N" && \
 git push origin main
 

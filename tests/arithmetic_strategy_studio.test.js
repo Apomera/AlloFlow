@@ -582,11 +582,11 @@ describe('Arithmetic Strategy Studio', () => {
   it('is wired into the host catalog, plugin allowlist, and lazy loader', () => {
     const host = fs.readFileSync('stem_lab/stem_lab_module.js', 'utf8');
     const app = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
-    const deployedHost = fs.readFileSync('prismflow-deploy/public/stem_lab/stem_lab_module.js', 'utf8');
+    const deployedHost = fs.readFileSync('desktop/web-app/public/stem_lab/stem_lab_module.js', 'utf8');
     expect(host).toContain("id: 'arithmeticStudio'");
     expect(host).toContain('arithmeticStudio: true');
     expect(deployedHost).toBe(host);
     expect(app).toContain("'stem_lab/stem_tool_arithmetic.js'");
-    expect(fs.readFileSync('prismflow-deploy/public/stem_lab/stem_tool_arithmetic.js', 'utf8')).toBe(fs.readFileSync(FILE, 'utf8'));
+    expect(fs.readFileSync('desktop/web-app/public/stem_lab/stem_tool_arithmetic.js', 'utf8')).toBe(fs.readFileSync(FILE, 'utf8'));
   });
 });

@@ -6,7 +6,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'audio_helpers_source.jsx');
 const OUTPUT = path.join(ROOT, 'audio_helpers_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'audio_helpers_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'audio_helpers_module.js');
 
 const source = fs.readFileSync(SOURCE, 'utf-8');
 

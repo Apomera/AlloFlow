@@ -10,7 +10,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'allo_commands_source.jsx');
 const OUTPUT = path.join(ROOT, 'allo_commands_module.js');
-const MIRROR = path.join(ROOT, 'prismflow-deploy', 'public', 'allo_commands_module.js');
+const MIRROR = path.join(ROOT, 'desktop/web-app', 'public', 'allo_commands_module.js');
 const TMP = path.join(ROOT, '_tmp_allo_commands_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }

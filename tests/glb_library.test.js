@@ -100,7 +100,7 @@ describe('GlbLibrary — real CC0 model entries (KayKit wave 1)', () => {
       expect(it.unitScale).toBeGreaterThan(0);
       const fs = require('node:fs');
       expect(fs.existsSync(it.glbUrl)).toBe(true);          // asset actually committed at repo root
-      expect(fs.existsSync('prismflow-deploy/public/' + it.glbUrl)).toBe(true);   // and mirrored
+      expect(fs.existsSync('desktop/web-app/public/' + it.glbUrl)).toBe(true);   // and mirrored
     });
   });
   it('resolveGlbUrl joins relative urls to a base and passes absolute/data urls through', () => {

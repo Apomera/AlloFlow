@@ -20,7 +20,7 @@ describe('EPPP 1,000-question curation and expansion audit', () => {
     expect(curation.batching).toMatchObject({ batchSize: 100, batches: 10 });
     for (const rel of ['eppp_legacy/curation_1000.json', 'eppp_native_expansion_1000_audit.json']) {
       const runtime = fs.readFileSync(resolve(process.cwd(), 'test_prep', rel), 'utf8');
-      const deployed = fs.readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/test_prep', rel), 'utf8');
+      const deployed = fs.readFileSync(resolve(process.cwd(), 'desktop/web-app/public/test_prep', rel), 'utf8');
       expect(deployed).toBe(runtime);
     }
   });

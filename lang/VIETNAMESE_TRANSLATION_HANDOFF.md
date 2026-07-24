@@ -42,7 +42,7 @@ Vietnamese joins Spanish (Latin America), French, Chinese (Simplified), Arabic, 
 ## File locations
 
 - Canonical: `lang/vietnamese.js`
-- Mirror: `prismflow-deploy/public/lang/vietnamese.js` (auto-served via Cloudflare CDN)
+- Mirror: `desktop/web-app/public/lang/vietnamese.js` (auto-served via Cloudflare CDN)
 - Slug: `vietnamese`
 - Display: "Vietnamese"
 - Matcher aliases: `vietnamese`, `tiếng việt`, `tieng viet` (in `language_matcher_module.js`)

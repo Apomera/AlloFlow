@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 
 const source = readFileSync(resolve(process.cwd(), 'story_forge_source.jsx'), 'utf8');
 const built = readFileSync(resolve(process.cwd(), 'story_forge_module.js'), 'utf8');
-const deployed = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/story_forge_module.js'), 'utf8');
+const deployed = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/story_forge_module.js'), 'utf8');
 
 describe('Story Forge export accessibility', () => {
   it('keeps built and deployed artifacts synchronized', () => {

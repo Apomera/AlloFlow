@@ -32,7 +32,7 @@ const traverse = traverseModule.default || traverseModule;
 const ROOT = path.resolve(__dirname, '..');
 const UI_FILES = [
   path.join(ROOT, 'AlloFlowANTI.txt'),
-  path.join(ROOT, 'prismflow-deploy', 'src', 'App.jsx'),
+  path.join(ROOT, 'desktop/web-app', 'src', 'App.jsx'),
 ];
 const PIPELINE_FILES = [
   path.join(ROOT, 'doc_pipeline_source.jsx'),

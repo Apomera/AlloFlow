@@ -62,7 +62,7 @@ describe('Praxis School Psychologist 5403 native learning library', () => {
     expect(qa.summary).toMatchObject({ chapters: 12, sections: 48, knowledgeChecks: 60, flashcards: 75, memoryAids: 20, findings: [], status: 'pass' });
     expect(qa.standard.limitation).toContain('not ETS or NASP approval');
     for (const name of ['school_psychologist_5403_learning_library.json', 'school_psychologist_5403_learning_library_qa.json', 'school_psychologist_5403_learning_library_qa.md']) {
-      expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
+      expect(read('desktop/web-app/public/test_prep/' + name)).toBe(read('test_prep/' + name));
     }
   });
 });

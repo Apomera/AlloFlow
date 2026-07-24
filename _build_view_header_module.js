@@ -5,7 +5,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'view_header_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_header_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'view_header_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'view_header_module.js');
 const TMP = path.join(ROOT, '_tmp_header_entry.jsx');
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
 const source = fs.readFileSync(SOURCE, 'utf-8');

@@ -80,12 +80,12 @@ Deliberately not imported, so you know these were choices:
 ## 3. Repo ground rules (the ones that bite)
 
 - **`AlloFlowANTI.txt` at the repo root is the canonical app source.**
-  `prismflow-deploy/src/App.jsx` and `prismflow-deploy/src/AlloFlowANTI.txt`
+  `desktop/web-app/src/App.jsx` and `desktop/web-app/src/AlloFlowANTI.txt`
   are byte-copies of it. Edit the root file, then copy it over both siblings.
   Anything edited only in App.jsx is destroyed on the next deploy.
 - **`view_*_module.js` files are hand-mirrored pairs.** Change the
   `*_source.jsx` and make the same change in the module, then byte-copy the
-  module to `prismflow-deploy/public/`. Same pattern for
+  module to `desktop/web-app/public/`. Same pattern for
   `doc_pipeline_source.jsx` / `doc_pipeline_module.js`,
   `ai_backend_module.js`, and `ui_strings.js`.
 - **Do not reintroduce `admin/` or `local-app/`.** They are your pre-upstream

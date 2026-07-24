@@ -10,7 +10,7 @@ const {
 
 const root = path.resolve(__dirname, '..');
 const sourceRoot = path.join(root, 'test_prep', 'eppp_legacy');
-const deployRoot = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_legacy');
+const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy');
 const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
 const audit = readJson(path.join(sourceRoot, 'content_audit.json'));
 const nativeQa = readJson(path.join(root, 'test_prep', 'eppp_native_qa.json'));

@@ -11,7 +11,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'view_sidebar_panels_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_sidebar_panels_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'view_sidebar_panels_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'view_sidebar_panels_module.js');
 const TMP = path.join(ROOT, '_tmp_view_sidebar_panels_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) { console.error('[ViewSidebarPanels] Source not found'); process.exit(1); }

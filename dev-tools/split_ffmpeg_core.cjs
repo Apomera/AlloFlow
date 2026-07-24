@@ -20,7 +20,7 @@ const crypto = require('crypto');
 const ROOT = path.join(__dirname, '..');
 const CORE_DIRS = [
   path.join(ROOT, 'video_studio', 'vendor', 'ffmpeg', 'core'),
-  path.join(ROOT, 'prismflow-deploy', 'public', 'video_studio', 'vendor', 'ffmpeg', 'core'),
+  path.join(ROOT, 'desktop/web-app', 'public', 'video_studio', 'vendor', 'ffmpeg', 'core'),
 ];
 const CHUNK_BYTES = 20 * 1024 * 1024; // 20 MiB — comfortable margin under Cloudflare's 25 MiB/file limit
 

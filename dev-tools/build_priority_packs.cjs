@@ -184,7 +184,7 @@ if (results.failed.length > 0) {
 }
 console.log('');
 console.log('Next: commit + push so Cloudflare serves the new packs.');
-console.log('  git add lang/ prismflow-deploy/public/lang/');
+console.log('  git add lang/ desktop/web-app/public/lang/');
 console.log('  git commit -m "lang: add ' + results.ok.length + ' priority packs"');
 console.log('  bash deploy.sh "lang: batch ' + TIER + ' (' + results.ok.length + ' packs)"');
 console.log('');

@@ -25,8 +25,8 @@ const path = require('path');
 const os = require('os');
 
 const ROOT = process.cwd();
-const PUBLIC = path.join(ROOT, 'prismflow-deploy', 'public');
-const MODULES = path.join(ROOT, 'prismflow-deploy', 'node_modules');
+const PUBLIC = path.join(ROOT, 'desktop/web-app', 'public');
+const MODULES = path.join(ROOT, 'desktop/web-app', 'node_modules');
 const AXE_PATH = path.join(ROOT, 'node_modules', 'axe-core', 'axe.min.js');
 const QUIET = process.argv.includes('--quiet');
 

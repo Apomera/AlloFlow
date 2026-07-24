@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const CELL_SIM_PATHS = [
   'stem_lab/stem_tool_cell.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_cell.js',
+  'desktop/web-app/public/stem_lab/stem_tool_cell.js',
 ];
 
 describe('cell simulator canvas ref stability', () => {

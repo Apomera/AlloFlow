@@ -22,7 +22,7 @@ const require = createRequire(import.meta.url);
 
 let M;
 beforeAll(() => {
-  const React = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react'));
+  const React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
   globalThis.React = window.React = React;
   loadAlloModule('dynamic_assessment_module.js');
   M = window.AlloModules.DynamicAssessment._meta;
@@ -34,7 +34,7 @@ describe('SSR render smoke — dialog shell, start screen, active phase, summary
   const STORAGE_KEY = 'alloflow_dynamic_assessment_v1';
   let RDS, DA;
   beforeAll(() => {
-    RDS = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react-dom/server'));
+    RDS = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom/server'));
     DA = window.AlloModules.DynamicAssessment;
   });
   const renderWith = (state) => {

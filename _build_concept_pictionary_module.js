@@ -6,7 +6,7 @@
  *
  * Mirrors _build_anchor_charts_module.js. Compiles JSX → React.createElement
  * via esbuild, wraps in IIFE with a11y CSS + React aliases, writes
- * concept_pictionary_module.js + syncs to prismflow-deploy/public/.
+ * concept_pictionary_module.js + syncs to desktop/web-app/public/.
  *
  * The module exposes:
  *   window.AlloModules.ConceptPictionary = {
@@ -23,7 +23,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'concept_pictionary_source.jsx');
 const OUTPUT = path.join(ROOT, 'concept_pictionary_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'concept_pictionary_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'concept_pictionary_module.js');
 const TMP = path.join(ROOT, '_tmp_concept_pictionary_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) {
@@ -166,7 +166,7 @@ try {
     }
     fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) {
-    console.warn('[ConceptPictionary] Could not sync to prismflow-deploy/public/:', e.message);
+    console.warn('[ConceptPictionary] Could not sync to desktop/web-app/public/:', e.message);
 }
 const lineCount = outputCode.split('\n').length;
 console.log(`[ConceptPictionary] Built ${OUTPUT} (${lineCount} lines)`);

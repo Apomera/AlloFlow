@@ -42,7 +42,7 @@ describe('Adventure ledger and inventory-detail dialog accessibility', () => {
 
   it('keeps generated Adventure modules synchronized', () => {
     const rootModule = fs.readFileSync('view_adventure_module.js', 'utf8');
-    expect(fs.readFileSync('prismflow-deploy/public/view_adventure_module.js', 'utf8')).toBe(rootModule);
+    expect(fs.readFileSync('desktop/web-app/public/view_adventure_module.js', 'utf8')).toBe(rootModule);
     expect(rootModule).toContain('"aria-describedby": "adventure-ledger-subtitle"');
     expect(rootModule).toContain('"aria-describedby": "adventure-inventory-item-description"');
     expect(rootModule).toContain('tabIndex: 0');

@@ -40,6 +40,6 @@ describe('Advocacy inline validation accessibility', () => {
   });
 
   it('keeps the deployed mirror identical', () => {
-    expect(source).toBe(read('prismflow-deploy/public/sel_hub/sel_tool_advocacy.js'));
+    expect(source).toBe(read('desktop/web-app/public/sel_hub/sel_tool_advocacy.js'));
   });
 });

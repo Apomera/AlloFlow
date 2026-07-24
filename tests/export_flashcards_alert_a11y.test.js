@@ -5,7 +5,7 @@ import { join } from 'node:path';
 const read = (path) => readFileSync(join(process.cwd(), path), 'utf8');
 const source = read('export_source.jsx');
 const built = read('export_module.js');
-const deployed = read('prismflow-deploy/public/export_module.js');
+const deployed = read('desktop/web-app/public/export_module.js');
 
 describe('flashcard translation export notifications', () => {
   it('uses non-blocking app notifications when translations are unavailable', () => {

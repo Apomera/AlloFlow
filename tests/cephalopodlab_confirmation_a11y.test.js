@@ -8,7 +8,7 @@ import {
 
 const SOURCE = 'stem_lab/stem_tool_cephalopodlab.js';
 const DEPLOY =
-  'prismflow-deploy/public/stem_lab/stem_tool_cephalopodlab.js';
+  'desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js';
 
 function renderConfirmation() {
   const container = document.createElement('div');

@@ -85,8 +85,8 @@ describe('ParaPro native learning library', () => {
       status: 'pass',
     });
     expect(qa.standard.limitation).toContain('not ETS approval');
-    expect(read('prismflow-deploy/public/test_prep/parapro_learning_library.json')).toBe(read('test_prep/parapro_learning_library.json'));
-    expect(read('prismflow-deploy/public/test_prep/parapro_learning_library_qa.json')).toBe(read('test_prep/parapro_learning_library_qa.json'));
-    expect(read('prismflow-deploy/public/test_prep/parapro_learning_library_qa.md')).toBe(read('test_prep/parapro_learning_library_qa.md'));
+    expect(read('desktop/web-app/public/test_prep/parapro_learning_library.json')).toBe(read('test_prep/parapro_learning_library.json'));
+    expect(read('desktop/web-app/public/test_prep/parapro_learning_library_qa.json')).toBe(read('test_prep/parapro_learning_library_qa.json'));
+    expect(read('desktop/web-app/public/test_prep/parapro_learning_library_qa.md')).toBe(read('test_prep/parapro_learning_library_qa.md'));
   });
 });

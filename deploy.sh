@@ -9,7 +9,7 @@
 #   1.  Commits staged changes (skips if nothing staged — useful for re-deploys)
 #   2.  Pushes source commit to origin (GitHub)
 #   3.  Runs `node build.js --mode=prod --force` (rewrites CDN hash refs)
-#   4.  Runs `npm run build` in prismflow-deploy/
+#   4.  Runs `npm run build` in desktop/web-app/
 #   5.  Runs `firebase deploy --only hosting`
 #   6.  Auto-commits the post-deploy hash refs (the mirror files)
 #   7.  Pushes the post-deploy commit to origin
@@ -54,7 +54,7 @@ Usage: ./deploy.sh "Commit message describing the source change"
 
 WORKFLOW:
   1. Stage the files you want to commit:
-       git add view_foo_module.js AlloFlowANTI.txt prismflow-deploy/...
+       git add view_foo_module.js AlloFlowANTI.txt desktop/web-app/...
   2. Run the script with your commit message:
        ./deploy.sh "Extract FooView into CDN module"
 
@@ -144,7 +144,7 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   if ! node dev-tools/gen_docsuite_theme.cjs --check; then
     echo "  ⚠ docsuite theme CSS stale — regenerating (the gate's own prescribed fix)…"
     node dev-tools/_apply_docsuite_theme.cjs
-    git add AlloFlowANTI.txt prismflow-deploy/src/AlloFlowANTI.txt prismflow-deploy/src/App.jsx 2>/dev/null || true
+    git add AlloFlowANTI.txt desktop/web-app/src/AlloFlowANTI.txt desktop/web-app/src/App.jsx 2>/dev/null || true
     node dev-tools/gen_docsuite_theme.cjs --check
   fi
   echo "  ✓ docsuite theme CSS current (new color utilities in scanned files regenerate the scoped remap — stale block = pastel-in-dark modals; self-healing since 2026-07-20)."
@@ -203,26 +203,26 @@ echo "  Expected pluginCdnVersion (from HEAD): @${BUILD_HASH}"
 node build.js --mode=prod --force
 echo "  ✓ build.js complete."
 
-# ── Step 3.5: Mirror link-distribution files into prismflow-deploy/public/ ──
+# ── Step 3.5: Mirror link-distribution files into desktop/web-app/public/ ──
 # The 4 link-distribution files (launch.html, changelog.html, release.json,
 # releases.json) live at the repo root as source-of-truth (served by GitHub
-# Pages). We copy them into prismflow-deploy/public/ so the React build picks
+# Pages). We copy them into desktop/web-app/public/ so the React build picks
 # them up and Firebase serves them too. cp -p preserves mtimes.
 echo ""
-echo "=== Step 3.5: Mirror link-distribution files to prismflow-deploy/public/ ==="
+echo "=== Step 3.5: Mirror link-distribution files to desktop/web-app/public/ ==="
 for f in launch.html changelog.html release.json releases.json; do
   if [[ -f "$f" ]]; then
-    cp -p "$f" "prismflow-deploy/public/$f"
+    cp -p "$f" "desktop/web-app/public/$f"
     echo "  ✓ mirrored $f"
   else
     echo "  ⚠ $f missing at repo root — skipping"
   fi
 done
 
-# ── Step 4: npm run build (prismflow-deploy) ──────────────────────
+# ── Step 4: npm run build (desktop/web-app) ──────────────────────
 echo ""
-echo "=== Step 4: npm run build (prismflow-deploy) ==="
-(cd prismflow-deploy && npm run build)
+echo "=== Step 4: npm run build (desktop/web-app) ==="
+(cd desktop/web-app && npm run build)
 echo "  ✓ npm build complete."
 
 # ── Step 5: Firebase deploy ────────────────────────────────────────
@@ -232,14 +232,14 @@ echo "  ✓ npm build complete."
 echo ""
 echo "=== Step 5: Firebase deploy ==="
 FIREBASE_DEPLOYED=0
-FIREBASE_PROJECT="${ALLOFLOW_FIREBASE_PROJECT:-$(node -e "try{const c=JSON.parse(require('fs').readFileSync('./prismflow-deploy/.firebaserc','utf8'));process.stdout.write(String(c.projects?.default||''))}catch(_){process.stdout.write('')}")}"
+FIREBASE_PROJECT="${ALLOFLOW_FIREBASE_PROJECT:-$(node -e "try{const c=JSON.parse(require('fs').readFileSync('./desktop/web-app/.firebaserc','utf8'));process.stdout.write(String(c.projects?.default||''))}catch(_){process.stdout.write('')}")}"
 if [[ "${SKIP_FIREBASE_DEPLOY:-0}" == "1" ]]; then
   echo "  Skipped via SKIP_FIREBASE_DEPLOY=1."
 elif [[ -z "$FIREBASE_PROJECT" || "$FIREBASE_PROJECT" == "YOUR_PROJECT_ID" ]]; then
   echo "  Skipped: no school-owned Firebase project is configured."
   echo "  Cloudflare /app/ remains the public student shell; the maintainer demo is never used as a fallback."
 else
-  (cd prismflow-deploy && npx firebase deploy --only hosting --project "$FIREBASE_PROJECT")
+  (cd desktop/web-app && npx firebase deploy --only hosting --project "$FIREBASE_PROJECT")
   FIREBASE_DEPLOYED=1
   FIREBASE_URL="${ALLOFLOW_FIREBASE_HOST_URL:-https://${FIREBASE_PROJECT}.web.app}"
   echo "  ✓ Firebase deploy complete ($FIREBASE_PROJECT)."
@@ -248,11 +248,11 @@ fi
 # ── Step 6: Post-deploy commit (hash refs in mirror files) ────────
 echo ""
 echo "=== Step 6: Post-deploy commit (CDN hash refs) ==="
-git add AlloFlowANTI.txt prismflow-deploy/src/AlloFlowANTI.txt prismflow-deploy/src/App.jsx 2>/dev/null || true
+git add AlloFlowANTI.txt desktop/web-app/src/AlloFlowANTI.txt desktop/web-app/src/App.jsx 2>/dev/null || true
 # Self-cleaning deploys: build.js auto-copies committed roots over the public
 # mirrors during Step 3; without this line those deterministic copies linger
 # as a dirty tree after every deploy.
-git add prismflow-deploy/public/ 2>/dev/null || true
+git add desktop/web-app/public/ 2>/dev/null || true
 # Cloudflare Pages serves the repository root, so the generated /app shell
 # must be committed there as well as in Firebase Hosting's public tree.
 git add app/ 2>/dev/null || true
@@ -306,7 +306,7 @@ fi
 # tells you whether the deploy is actually serving the bits you just built, and
 # surfaces issues you'd otherwise only find by hand-curling. Three checks:
 #   (1) Hash consistency  — root AlloFlowANTI.txt pluginCdnVersion == @BUILD_HASH
-#                            == the prismflow-deploy/src mirror, and is a real
+#                            == the desktop/web-app/src mirror, and is a real
 #                            commit. Catches build.js-didn't-rewrite / drift.   [HARD]
 #   (2) Firebase host      — verify an explicitly configured school-owned host, or confirm it was intentionally skipped.
 #   (3) CDN modules        — alloflow-cdn.pages.dev key modules → 200 (HARD) and
@@ -341,7 +341,7 @@ else
   # ── Check 1: hash consistency (local, deterministic) ──
   echo "  [1/3] Hash consistency…"
   ROOT_VER=$(grep -m1 "var pluginCdnVersion = " AlloFlowANTI.txt 2>/dev/null | sed -E "s/.*'([^']*)'.*/\1/")
-  MIRROR_VER=$(grep -m1 "var pluginCdnVersion = " prismflow-deploy/src/AlloFlowANTI.txt 2>/dev/null | sed -E "s/.*'([^']*)'.*/\1/")
+  MIRROR_VER=$(grep -m1 "var pluginCdnVersion = " desktop/web-app/src/AlloFlowANTI.txt 2>/dev/null | sed -E "s/.*'([^']*)'.*/\1/")
   if [[ -z "${ROOT_VER:-}" ]]; then
     pv_fail "could not read pluginCdnVersion from AlloFlowANTI.txt"
   else
@@ -351,7 +351,7 @@ else
       pv_fail "pluginCdnVersion @${ROOT_VER} != built hash @${BUILD_HASH} (build.js may not have rewritten refs)"
     fi
     if [[ "$MIRROR_VER" == "$ROOT_VER" ]]; then
-      pv_ok "prismflow-deploy/src mirror agrees (@${MIRROR_VER})"
+      pv_ok "desktop/web-app/src mirror agrees (@${MIRROR_VER})"
     else
       pv_fail "mirror pluginCdnVersion @${MIRROR_VER:-<empty>} != root @${ROOT_VER} (root/mirror drift)"
     fi

@@ -20,7 +20,7 @@
  *   1. Reads <name>_source.jsx
  *   2. Wraps in IIFE with duplicate-load guard
  *   3. Appends optional footer
- *   4. Writes <name>_module.js + syncs to prismflow-deploy/public/
+ *   4. Writes <name>_module.js + syncs to desktop/web-app/public/
  *   5. Syntax-checks the output
  */
 
@@ -32,7 +32,7 @@ function build({ name, guardKey, footer = '', logTag }) {
   const ROOT = __dirname;
   const SOURCE = path.join(ROOT, name + '_source.jsx');
   const OUTPUT = path.join(ROOT, name + '_module.js');
-  const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', name + '_module.js');
+  const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', name + '_module.js');
   const tag = logTag || name;
 
   if (!fs.existsSync(SOURCE)) {
@@ -56,7 +56,7 @@ ${footer ? footer.trim() + '\n' : ''}})();
     }
     fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
   } catch (e) {
-    console.warn('[' + tag + '] Could not sync to prismflow-deploy/public/:', e.message);
+    console.warn('[' + tag + '] Could not sync to desktop/web-app/public/:', e.message);
   }
 
   // Syntax check — catches unbalanced template literals / stray syntax

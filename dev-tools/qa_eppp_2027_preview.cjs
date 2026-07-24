@@ -6,14 +6,14 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 const sourcePackPath = path.join(root, 'test_prep', 'eppp_2027_preview_pack.json');
-const deployPackPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_2027_preview_pack.json');
+const deployPackPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_2027_preview_pack.json');
 const reportPaths = [
   path.join(root, 'test_prep', 'eppp_2027_preview_qa.json'),
-  path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_2027_preview_qa.json'),
+  path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_2027_preview_qa.json'),
 ];
 const markdownPaths = [
   path.join(root, 'test_prep', 'eppp_2027_preview_qa.md'),
-  path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_2027_preview_qa.md'),
+  path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_2027_preview_qa.md'),
 ];
 
 const blueprintUrl = 'https://asppb.net/future-eppp-content-areas-2027/';

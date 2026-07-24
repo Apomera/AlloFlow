@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const root = process.cwd();
 const source = fs.readFileSync(path.join(root, 'allohaven_module.js'), 'utf8');
-const mirror = fs.readFileSync(path.join(root, 'prismflow-deploy/public/allohaven_module.js'), 'utf8');
+const mirror = fs.readFileSync(path.join(root, 'desktop/web-app/public/allohaven_module.js'), 'utf8');
 
 describe('AlloHaven peer relationship table semantics', () => {
   it('keeps source and deploy mirror byte-identical', () => {

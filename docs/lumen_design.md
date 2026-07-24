@@ -366,7 +366,7 @@ Facts confirmed by reading the source (line numbers captured 2026-06-02; **re-pi
 - **`dataLayer`** (`src/dataLayer.js`): `onSessionSnapshot(appId, code, cb)` at `:255` subscribes to the **entire** session doc via `onSnapshot` (`:176`) with **no read-side auth/field scoping** → write-time mask is the only sound sharing model.
 - **`window.__alloUtils`** (`AlloFlowANTI.txt:1969–2206`) exposes only url/json/fluency helpers; RTI-tier / Modifiability-Index classifiers are **private closures** (not relevant to Lumen's bring-your-own posture, but confirms there is no shortcut stats API to borrow).
 - **`escHtml`** — the symbol_studio `printBook` escaping pattern (~`:16`) is the reuse target for the FERPA/XSS surface.
-- Module conventions: built from `lumen_source.jsx` → `lumen_module.js`; must add a catalog tile and mirror to `prismflow-deploy/public/`; pass the `verify_all.cjs` gate suite (render-refs, keyless-map, css-template-literals, eval, xss-surface, translation/lang-json, stem-tile-catalog, deploy-mirror, pair-drift) **plus** the new `check_lumen_floor.cjs`.
+- Module conventions: built from `lumen_source.jsx` → `lumen_module.js`; must add a catalog tile and mirror to `desktop/web-app/public/`; pass the `verify_all.cjs` gate suite (render-refs, keyless-map, css-template-literals, eval, xss-surface, translation/lang-json, stem-tile-catalog, deploy-mirror, pair-drift) **plus** the new `check_lumen_floor.cjs`.
 
 ---
 

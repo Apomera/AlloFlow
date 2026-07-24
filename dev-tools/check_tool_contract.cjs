@@ -52,7 +52,7 @@ const { CONTRACT } = require('./forge_contract_core.js');
 // render param vs. a shadowing local (e.g. `const ctx = canvas.getContext('2d')`),
 // so the ctx-surface check counts only the real plugin ctx.
 let eslintScope;
-for (const base of [path.join(ROOT, 'node_modules'), path.join(ROOT, 'prismflow-deploy', 'node_modules')]) {
+for (const base of [path.join(ROOT, 'node_modules'), path.join(ROOT, 'desktop/web-app', 'node_modules')]) {
   try { eslintScope = require(path.join(base, 'eslint-scope')); break; } catch (_) {}
 }
 

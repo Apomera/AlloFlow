@@ -21,7 +21,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = process.cwd();
-const MODULES_DIR = path.join(ROOT, 'prismflow-deploy', 'node_modules');
+const MODULES_DIR = path.join(ROOT, 'desktop/web-app', 'node_modules');
 const QUIET = process.argv.includes('--quiet');
 
 let JSDOM, React, RDS;

@@ -21,7 +21,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'word_sounds_setup_source.jsx');
 const OUTPUT = path.join(ROOT, 'word_sounds_setup_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'word_sounds_setup_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'word_sounds_setup_module.js');
 const TMP = path.join(ROOT, '_tmp_word_sounds_setup_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) {

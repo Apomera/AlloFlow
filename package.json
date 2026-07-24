@@ -84,7 +84,7 @@
                     "desktop:check":  "node desktop/runtime/alloflow-desktop-runtime.cjs --check",
                     "desktop:smoke":  "node desktop/runtime/alloflow-desktop-runtime.cjs --smoke --port 0",
                     "verify:firebase-security":  "node dev-tools/check_firebase_security.cjs",
-                    "verify:firestore-rules":  "cd prismflow-deploy \u0026\u0026 npm run test:firestore-rules",
+                    "verify:firestore-rules":  "cd desktop/web-app \u0026\u0026 npm run test:firestore-rules",
                     "test:research-integrations":  "vitest run tests/research_evidence_graph.test.js tests/research_hub_substrate_golden.test.js tests/research_hub_modal_a11y.test.js tests/tool_integration_sdk.test.js tests/text_inquiry_integration.test.js tests/text_inquiry_browser_runtime.test.js tests/annotation_inquiry_bridge.test.js --maxWorkers=1",
                     "verify:research-integrations":  "node dev-tools/check_tool_integration_contracts.cjs \u0026\u0026 npm run test:research-integrations"
                 },

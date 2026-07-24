@@ -4,7 +4,7 @@ const fs=require('fs'),path=require('path'),root=path.resolve(__dirname,'..');
 const waitBuffer=new Int32Array(new SharedArrayBuffer(4));
 function writeGeneratedFile(file,data){let error;for(let attempt=1;attempt<=8;attempt++){try{fs.writeFileSync(file,data);return}catch(caught){error=caught;if(attempt<8)Atomics.wait(waitBuffer,0,0,150*attempt)}}throw error}
 if(!process.argv.includes('--allow-legacy-collapse'))throw Error('Refusing to collapse canonical test-prep packs without --allow-legacy-collapse. Use only inside the guarded full rebuild pipeline.');
-const dirs=[path.join(root,'test_prep'),path.join(root,'prismflow-deploy','public','test_prep')];
+const dirs=[path.join(root,'test_prep'),path.join(root,'desktop/web-app','public','test_prep')];
 const sourceDir=dirs[0];let prepared=0;
 for(const packFile of fs.readdirSync(sourceDir).filter(name=>name.endsWith('_pack.json')).sort()){
   const pack=JSON.parse(fs.readFileSync(path.join(sourceDir,packFile),'utf8'));

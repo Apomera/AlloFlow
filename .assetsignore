@@ -2,14 +2,14 @@
 # (Cloudflare build runs `npx wrangler deploy` with assets directory "." = repo root;
 # wrangler reads this file from the assets root, .gitignore syntax.)
 #
-# WHY: Workers assets have a hard 25 MiB/file limit. prismflow-deploy/public/
+# WHY: Workers assets have a hard 25 MiB/file limit. desktop/web-app/public/
 # video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm is 30.7 MiB, which failed the
-# entire deploy and froze the CDN (2026-07-05). The prismflow-deploy/ tree is the
-# Firebase-hosted React app (served at prismflow-911fe.web.app, which has no such
+# entire deploy and froze the CDN (2026-07-05). The desktop/web-app/ tree is the
+# district-configured Firebase-hosted React app (which has no such
 # limit) - the CDN only serves REPO-ROOT module files, and nothing references
-# alloflow-cdn.pages.dev/prismflow-deploy/... or /desktop/... (verified by grep).
+# alloflow-cdn.pages.dev/desktop/web-app/... or /desktop/... (verified by grep).
 # node_modules exists in the build clone after npm ci and would waste most of the
 # 20,000-file assets budget.
 node_modules/
-prismflow-deploy/
+desktop/web-app/
 desktop/

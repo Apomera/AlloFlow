@@ -7,13 +7,13 @@ const read = (file) => readFileSync(resolve(process.cwd(), file), 'utf8');
 const plannerFiles = [
   'phase_k_helpers_source.jsx',
   'phase_k_helpers_module.js',
-  'prismflow-deploy/public/phase_k_helpers_module.js',
+  'desktop/web-app/public/phase_k_helpers_module.js',
 ];
 
 const fullPackFiles = [
   'generation_helpers_source.jsx',
   'generation_helpers_module.js',
-  'prismflow-deploy/public/generation_helpers_module.js',
+  'desktop/web-app/public/generation_helpers_module.js',
 ];
 
 describe('full-pack and blueprint lesson DNA guardrails', () => {

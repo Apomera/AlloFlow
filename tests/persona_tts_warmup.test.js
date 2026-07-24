@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import { loadAlloModule } from './setup.js';
 
 const require = createRequire(import.meta.url);
-const React = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react'));
+const React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
 let PhaseKHelpers;
 
 const splitTextToSentences = (text) => String(text).match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [];

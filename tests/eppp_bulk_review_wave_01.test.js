@@ -88,7 +88,7 @@ describe('EPPP bulk editorial review wave 01', () => {
       names.push(`bulk_review_wave_01_set_${suffix}.json`, `bulk_review_wave_01_set_${suffix}.md`);
     }
     for (const name of names) {
-      expect(readText(`prismflow-deploy/public/test_prep/eppp_legacy/${name}`)).toBe(readText(`test_prep/eppp_legacy/${name}`));
+      expect(readText(`desktop/web-app/public/test_prep/eppp_legacy/${name}`)).toBe(readText(`test_prep/eppp_legacy/${name}`));
     }
   });
 });

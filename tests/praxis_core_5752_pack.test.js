@@ -103,6 +103,6 @@ describe('Praxis Core Combined 5752 diagnostic bank', () => {
     expect(qa.blueprint).toMatchObject({ officialSelectedResponseCount: 152, officialEssayCount: 2, officialTotalTimeMinutes: 275, selectedResponseMinutes: 215 });
     expect(qa.diagnosticBatch).toMatchObject({ batchCount: 5, batchSize: 100, subjectAllocation: { reading: 37, writing: 26, mathematics: 37 } });
     expect(qa.standard.limitation).toContain('official essay scoring');
-    for (const name of ['praxis_core_5752_items.json', 'praxis_core_5752_pack.json', 'praxis_core_5752_native_qa.json', 'praxis_core_5752_native_qa.md']) expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
+    for (const name of ['praxis_core_5752_items.json', 'praxis_core_5752_pack.json', 'praxis_core_5752_native_qa.json', 'praxis_core_5752_native_qa.md']) expect(read('desktop/web-app/public/test_prep/' + name)).toBe(read('test_prep/' + name));
   }, 20000);
 });

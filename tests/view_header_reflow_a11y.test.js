@@ -21,6 +21,6 @@ describe('header narrow-viewport reflow', () => {
     expect(app).toContain('flex flex-wrap items-center justify-end gap-2 max-w-full min-w-0');
   });
   it('keeps the deployment mirror synchronized', () => {
-    expect(builder).toContain("prismflow-deploy', 'public', 'view_header_module.js");
+    expect(builder).toContain("desktop/web-app', 'public', 'view_header_module.js");
   });
 });

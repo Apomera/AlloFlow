@@ -78,6 +78,6 @@ describe('Praxis PLT K–6 5622 native learning library', () => {
     expect(qa.summary).toMatchObject({ chapters: 12, sections: 48, knowledgeChecks: 60, flashcards: 75, memoryAids: 20, constructedResponseWorkshops: 8, findings: [], status: 'pass' });
     expect(qa.standard.limitation).toContain('not ETS or CCSSO approval');
     expect(qa.standard.limitation).toContain('official constructed-response scoring');
-    for (const name of ['plt_k6_5622_learning_library.json', 'plt_k6_5622_learning_library_qa.json', 'plt_k6_5622_learning_library_qa.md']) expect(read('prismflow-deploy/public/test_prep/' + name)).toBe(read('test_prep/' + name));
+    for (const name of ['plt_k6_5622_learning_library.json', 'plt_k6_5622_learning_library_qa.json', 'plt_k6_5622_learning_library_qa.md']) expect(read('desktop/web-app/public/test_prep/' + name)).toBe(read('test_prep/' + name));
   });
 });

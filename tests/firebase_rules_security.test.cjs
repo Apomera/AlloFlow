@@ -7,14 +7,14 @@ const {
   initializeTestEnvironment,
   assertFails,
   assertSucceeds,
-} = require("../prismflow-deploy/node_modules/@firebase/rules-unit-testing");
+} = require("../desktop/web-app/node_modules/@firebase/rules-unit-testing");
 const {
   collection,
   doc,
   getDoc,
   getDocs,
   setDoc,
-} = require("../prismflow-deploy/node_modules/firebase/firestore");
+} = require("../desktop/web-app/node_modules/firebase/firestore");
 
 const projectId = "demo-alloflow";
 const emulator = String(process.env.FIRESTORE_EMULATOR_HOST || "").split(":");

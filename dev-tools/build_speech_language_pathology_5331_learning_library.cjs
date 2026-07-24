@@ -84,7 +84,7 @@ const library = {
 
 if (chapters.length !== 12 || library.summary.sections !== 48 || library.summary.knowledgeChecks !== 60 || flashcards.length !== 75 || memoryAids.length !== 20) throw new Error('The 5331 learning-library release counts must be 12 chapters, 48 sections, 60 checks, 75 flashcards, and 20 memory aids.');
 const output = JSON.stringify(library, null, 2) + '\n';
-for (const target of [path.join(root, 'test_prep', 'speech_language_pathology_5331_learning_library.json'), path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'speech_language_pathology_5331_learning_library.json')]) {
+for (const target of [path.join(root, 'test_prep', 'speech_language_pathology_5331_learning_library.json'), path.join(root, 'desktop/web-app', 'public', 'test_prep', 'speech_language_pathology_5331_learning_library.json')]) {
   fs.mkdirSync(path.dirname(target), { recursive: true });
   writeGeneratedFile(target, output, 'utf8');
 }

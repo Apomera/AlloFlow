@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const source = readFileSync('view_glossary_source.jsx', 'utf8');
 const built = readFileSync('view_glossary_module.js', 'utf8');
-const deployed = readFileSync('prismflow-deploy/public/view_glossary_module.js', 'utf8');
+const deployed = readFileSync('desktop/web-app/public/view_glossary_module.js', 'utf8');
 
 describe('Glossary WCAG 2.2 interaction safeguards', () => {
   it('preserves visible keyboard focus throughout the view', () => {

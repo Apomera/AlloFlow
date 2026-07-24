@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 
-const paths = ['games_source.jsx', 'games_module.js', 'prismflow-deploy/public/games_module.js'];
+const paths = ['games_source.jsx', 'games_module.js', 'desktop/web-app/public/games_module.js'];
 const files = paths.map(path => [path, fs.readFileSync(path, 'utf8')]);
 const source = files[0][1];
 const component = source.slice(source.indexOf('const VennGame ='), source.indexOf('const CauseEffectSortGame ='));

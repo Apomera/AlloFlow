@@ -30,7 +30,7 @@ payload small enough to run on school Chromebooks and inside Gemini Canvas.
 The current architecture is best understood as three layers:
 
 1. **Canvas host / orchestrator:** `AlloFlowANTI.txt`, compiled to
-   `prismflow-deploy/src/App.jsx`, owns state, role gates, AI bridges,
+   `desktop/web-app/src/App.jsx`, owns state, role gates, AI bridges,
    contexts, and routing.
 2. **Top-level modules:** `build.js` is the authoritative current module map, including Doc Pipeline, BehaviorLens, AlloHaven, Video Studio,
    AlloStudio, Open Groove Studio, Teacher, StoryForge, and view modules.
@@ -106,7 +106,7 @@ five overlapping phases:
 
 ## Core Container
 
-`AlloFlowANTI.txt` is the source of truth. `prismflow-deploy/src/App.jsx`
+`AlloFlowANTI.txt` is the source of truth. `desktop/web-app/src/App.jsx`
 is the compiled counterpart, kept in sync by `build.js`. Both files contain:
 
 - All React component logic for `AlloFlowContent`
@@ -354,7 +354,7 @@ This section covers the plugin *pattern* only.
 
 1. Create `stem_lab/stem_tool_yourname.js` following the template.
 2. Register the file in the `toolModules` array in both `AlloFlowANTI.txt`
-   and `prismflow-deploy/src/App.jsx`. (build.js handles deploy syncing.)
+   and `desktop/web-app/src/App.jsx`. (build.js handles deploy syncing.)
 3. Add the tile entry in `stem_lab_module.js` so the new tool appears in
    the launcher catalog.
 
@@ -501,11 +501,11 @@ Forty-plus verifier and audit scripts orchestrated by `dev-tools/verify_all.cjs`
 - `check_tool_registry.cjs` — STEM Lab + SEL Hub `registerTool` shapes
   valid
 - `check_source_pair_drift.js` — `AlloFlowANTI.txt` and
-  `prismflow-deploy/src/AlloFlowANTI.txt` byte-match
+  `desktop/web-app/src/AlloFlowANTI.txt` byte-match
 - `check_pipeline_integrity.js` — Document Builder `_docPipeline.X` UI
   calls match exports
 - `check_build_smoke.cjs` — `App.jsx` builds and bundles cleanly
-- `check_deploy_mirror.cjs` — root files match `prismflow-deploy/public/`
+- `check_deploy_mirror.cjs` — root files match `desktop/web-app/public/`
   mirrors
 - ...and 7 more: CORS, XSS, secret scan, npm audit, eval, plugin
   defensive guards, etc.
@@ -520,8 +520,8 @@ runtime checks. Many of these checks fail-fast in a git pre-commit hook.
 Single source of truth: `build.js --mode=prod` (or `--mode=dev`) reads
 `AlloFlowANTI.txt`, swaps every `loadModule(...)` URL for the Cloudflare
 Pages URL (`https://alloflow-cdn.pages.dev/<file>.js`) in prod or a local
-path (`./<file>.js`) in dev, and writes `prismflow-deploy/src/App.jsx`.
-Auto-copies module files to `prismflow-deploy/public/`. Prod URLs no
+path (`./<file>.js`) in dev, and writes `desktop/web-app/src/App.jsx`.
+Auto-copies module files to `desktop/web-app/public/`. Prod URLs no
 longer include a `@hash` suffix because Cloudflare Pages auto-invalidates
 by content on every push to main; the old jsdelivr-era hash-pin pattern
 is gone for managed modules (see "CDN Hosting" below).
@@ -537,7 +537,7 @@ The full deploy is a 9-step orchestrator at the repo root:
 2. **Push source to origin** — Cloudflare Pages auto-detects this push and
    starts its own build in parallel (~30-60 sec); see "CDN Hosting" below.
 3. **Run build.js** (regenerate `App.jsx` with Cloudflare Pages URLs)
-4. **npm run build** (CRA build to `prismflow-deploy/build/`)
+4. **npm run build** (CRA build to `desktop/web-app/build/`)
 5. **Optional district Firebase deploy** (only when a school-owned project is
    explicitly configured; otherwise the Cloudflare `/app/` shell is used)
 6. **Post-deploy commit** (mostly a no-op now that URLs don't include
@@ -609,7 +609,7 @@ the key server-side.
 ### 2. Firebase Hosting (cloud)
 
 ```bash
-cd prismflow-deploy
+cd desktop/web-app
 npm install
 npm run build
 firebase deploy
@@ -881,7 +881,7 @@ clinical impact.
 │   ├── verify_all.cjs            ← Orchestrator (14+ checks)
 │   ├── verify_*.cjs              ← Individual verifiers
 │   └── check_*.cjs               ← Individual checks
-├── prismflow-deploy/             ← Firebase deploy package
+├── desktop/web-app/             ← Firebase deploy package
 │   ├── src/App.jsx               ← Auto-generated from AlloFlowANTI.txt
 │   ├── src/AlloFlowANTI.txt      ← Mirror, kept in sync
 │   ├── public/*_module.js        ← Mirror of root modules

@@ -60,7 +60,7 @@ describe('Adventure standard and immersive toolbar accessibility', () => {
 
   it('keeps the generated deployment module synchronized', () => {
     const rootModule = fs.readFileSync('view_adventure_module.js', 'utf8');
-    expect(fs.readFileSync('prismflow-deploy/public/view_adventure_module.js', 'utf8')).toBe(rootModule);
+    expect(fs.readFileSync('desktop/web-app/public/view_adventure_module.js', 'utf8')).toBe(rootModule);
     expect(rootModule).toContain('role: "progressbar"');
     expect(rootModule).toContain('"aria-pressed": adventureAutoRead');
     expect(rootModule).toContain('"aria-controls": "adventure-immersive-inventory"');

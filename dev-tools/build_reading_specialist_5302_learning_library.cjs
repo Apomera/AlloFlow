@@ -87,7 +87,7 @@ const library = {
 
 if (chapters.length !== 12 || library.summary.sections !== 48 || library.summary.knowledgeChecks !== 60 || flashcards.length !== 75 || memoryAids.length !== 20 || constructedResponseWorkshops.length !== 6) throw new Error('The 5302 learning-library release counts must be 12 chapters, 48 sections, 60 checks, 75 flashcards, 20 memory aids, and 6 constructed-response workshops.');
 const output = JSON.stringify(library, null, 2) + '\n';
-for (const target of [path.join(root, 'test_prep', 'reading_specialist_5302_learning_library.json'), path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'reading_specialist_5302_learning_library.json')]) {
+for (const target of [path.join(root, 'test_prep', 'reading_specialist_5302_learning_library.json'), path.join(root, 'desktop/web-app', 'public', 'test_prep', 'reading_specialist_5302_learning_library.json')]) {
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.writeFileSync(target, output, 'utf8');
 }

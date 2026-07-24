@@ -14,7 +14,7 @@ const { auditCredentialRoleIntegrity } = require('./teaching_reading_5205/creden
 
 const root = path.resolve(__dirname, '..');
 const sourceDir = path.join(root, 'test_prep');
-const deployDir = path.join(root, 'prismflow-deploy', 'public', 'test_prep');
+const deployDir = path.join(root, 'desktop/web-app', 'public', 'test_prep');
 const outputPath = path.join(__dirname, 'authored', 'non_eppp_eppp_guided_qa_group_c.review.json');
 const reviewedAt = '2026-07-18';
 const reviewer = 'OpenAI Codex independent EPPP-guided review';

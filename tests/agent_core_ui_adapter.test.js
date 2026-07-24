@@ -76,8 +76,8 @@ describe('Agent Core UI adapter parity', () => {
     const chat = readFileSync(resolve(process.cwd(), 'udl_chat_source.jsx'), 'utf8');
     const hosts = [
       'AlloFlowANTI.txt',
-      'prismflow-deploy/src/App.jsx',
-      'prismflow-deploy/src/AlloFlowANTI.txt',
+      'desktop/web-app/src/App.jsx',
+      'desktop/web-app/src/AlloFlowANTI.txt',
     ].map((file) => readFileSync(resolve(process.cwd(), file), 'utf8'));
     expect(chat).toContain('_createAgentCoreLegacyDraft');
     expect(chat).toContain('_reviseAgentCoreLegacyBlueprint');

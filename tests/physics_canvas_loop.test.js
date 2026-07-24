@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const PHYSICS_PATHS = [
   'stem_lab/stem_tool_physics.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_physics.js',
+  'desktop/web-app/public/stem_lab/stem_tool_physics.js',
 ];
 
 describe('physics canvas animation loop', () => {

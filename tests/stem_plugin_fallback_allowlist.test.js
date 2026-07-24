@@ -43,7 +43,7 @@ describe('STEM plugin fallback allowlist', () => {
 
     for (const moduleRel of [
       'stem_lab/stem_lab_module.js',
-      'prismflow-deploy/public/stem_lab/stem_lab_module.js',
+      'desktop/web-app/public/stem_lab/stem_lab_module.js',
     ]) {
       const fallbackIds = collectFallbackIds(moduleRel);
       const missing = required.filter((id) => !fallbackIds.has(id));

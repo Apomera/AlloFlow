@@ -8,7 +8,7 @@ import {
 
 const SOURCE = 'stem_lab/stem_tool_assessmentliteracy.js';
 const DEPLOY =
-  'prismflow-deploy/public/stem_lab/stem_tool_assessmentliteracy.js';
+  'desktop/web-app/public/stem_lab/stem_tool_assessmentliteracy.js';
 
 beforeEach(() => {
   window.localStorage.clear();

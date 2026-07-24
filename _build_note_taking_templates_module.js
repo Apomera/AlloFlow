@@ -10,7 +10,7 @@
  * 2. Compiles JSX → React.createElement via esbuild
  * 3. Wraps in IIFE with the runtime preamble (a11y CSS, live region,
  *    React hook + icon aliases)
- * 4. Writes note_taking_templates_module.js + syncs to prismflow-deploy/public/
+ * 4. Writes note_taking_templates_module.js + syncs to desktop/web-app/public/
  *
  * Per architectural directive (memory: feedback_note_taking_templates_module.md):
  * Note-Taking Templates lives as a standalone CDN module, NOT inline in
@@ -24,7 +24,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'note_taking_templates_source.jsx');
 const OUTPUT = path.join(ROOT, 'note_taking_templates_module.js');
-const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'note_taking_templates_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'note_taking_templates_module.js');
 const TMP = path.join(ROOT, '_tmp_note_taking_templates_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) {
@@ -156,7 +156,7 @@ try {
     }
     fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) {
-    console.warn('[NoteTaking] Could not sync to prismflow-deploy/public/:', e.message);
+    console.warn('[NoteTaking] Could not sync to desktop/web-app/public/:', e.message);
 }
 const lineCount = outputCode.split('\n').length;
 console.log(`[NoteTaking] Built ${OUTPUT} (${lineCount} lines)`);

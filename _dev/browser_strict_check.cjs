@@ -32,7 +32,7 @@ const explicitFiles = args.filter(a => !a.startsWith('--'));
 
 // Default scan set: production-deployed JS surfaces.
 // Excludes: lang/ (data files, not executed in browser context the same way),
-// prismflow-deploy/ (mirror), node_modules/, _dev/, tests/.
+// desktop/web-app/ (mirror), node_modules/, _dev/, tests/.
 const DEFAULT_DIRS = ['stem_lab', 'sel_hub'];
 const DEFAULT_ROOT_FILES = (() => {
   if (!fs.existsSync('.')) return [];
@@ -53,7 +53,7 @@ function collectFiles() {
       for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
         const full = path.join(dir, entry.name);
         if (entry.isDirectory()) {
-          if (['node_modules', '_dev', 'tests', '.git', 'prismflow-deploy', '_archive', 'cloudflare-worker'].includes(entry.name)) continue;
+          if (['node_modules', '_dev', 'tests', '.git', 'desktop/web-app', '_archive', 'cloudflare-worker'].includes(entry.name)) continue;
           walk(full);
         } else if (entry.isFile() && entry.name.endsWith('.js')) {
           out.push(full);

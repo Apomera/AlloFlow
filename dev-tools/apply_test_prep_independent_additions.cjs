@@ -7,7 +7,7 @@ const crypto = require('crypto');
 
 const root = path.resolve(__dirname, '..');
 const sourceDir = path.join(root, 'test_prep');
-const deployDir = path.join(root, 'prismflow-deploy', 'public', 'test_prep');
+const deployDir = path.join(root, 'desktop/web-app', 'public', 'test_prep');
 const authoredDir = path.join(__dirname, 'authored');
 const manifestPath = path.join(authoredDir, 'test_prep_independent_additions_manifest.json');
 const waitBuffer = new Int32Array(new SharedArrayBuffer(4));

@@ -106,7 +106,7 @@ const report = {
   findings, items: itemReports,
 };
 const markdown = `# Praxis Educational Leadership (5412) QA report\n\nGenerated: ${generatedAt}\n\n## Result\n\n- Status: **${status.toUpperCase()}**\n- Items: ${itemReports.length}\n- Passed: ${passedItems}\n- Review required: ${itemReports.length - passedItems}\n- Diagnostic batches: 2 x 100\n- Optional simulation: 120 questions / 165 minutes\n\n> ${report.standard.limitation}\n`;
-for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')]) {
+for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'desktop/web-app', 'public', 'test_prep')]) {
   fs.mkdirSync(outputRoot, { recursive: true });
   fs.writeFileSync(path.join(outputRoot, 'educational_leadership_5412_native_qa.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
   fs.writeFileSync(path.join(outputRoot, 'educational_leadership_5412_native_qa.md'), markdown, 'utf8');

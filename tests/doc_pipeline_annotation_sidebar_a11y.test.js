@@ -65,7 +65,7 @@ describe('exported annotation sidebar accessibility', () => {
     expect(source).toContain('.alloflow-anno-item-body { appearance: none; flex: 1; min-width: 0; min-height: 44px;');
     expect(source).toContain('.alloflow-anno-item-del { background: transparent; border: 0; color: #6b7280; cursor: pointer; padding: 4px; border-radius: 6px; font-size: 11px; min-width: 44px; min-height: 44px;');
     expect(source).toContain('.alloflow-anno-item-body:focus-visible');
-    expect(readFileSync('prismflow-deploy/public/doc_pipeline_module.js', 'utf8'))
+    expect(readFileSync('desktop/web-app/public/doc_pipeline_module.js', 'utf8'))
       .toBe(readFileSync('doc_pipeline_module.js', 'utf8'));
   });
 

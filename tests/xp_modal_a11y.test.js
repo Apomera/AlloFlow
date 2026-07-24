@@ -49,6 +49,6 @@ describe('XP modal accessibility', () => {
   });
 
   it('synchronizes the deployable module', () => {
-    expect(fs.readFileSync('prismflow-deploy/public/view_xp_modal_module.js', 'utf8')).toBe(fs.readFileSync('view_xp_modal_module.js', 'utf8'));
+    expect(fs.readFileSync('desktop/web-app/public/view_xp_modal_module.js', 'utf8')).toBe(fs.readFileSync('view_xp_modal_module.js', 'utf8'));
   });
 });

@@ -681,7 +681,7 @@ describe('karaoke capture integration contracts', () => {
     ].forEach((file) => {
       expect(host).toContain(file + '?v=' + hash8(file));
       expect(build).toContain("'" + file + "'");
-      expect(read(file)).toBe(read('prismflow-deploy/public/' + file));
+      expect(read(file)).toBe(read('desktop/web-app/public/' + file));
     });
   });
 

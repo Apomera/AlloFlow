@@ -343,7 +343,7 @@ describe('Adventure Mode runtime regressions', () => {
   });
 
   it('executes the deterministic Adventure build check without rewriting outputs', () => {
-    const files = ['adventure_module.js', 'prismflow-deploy/public/adventure_module.js'];
+    const files = ['adventure_module.js', 'desktop/web-app/public/adventure_module.js'];
     const before = files.map((file) => fs.statSync(file).mtimeMs);
     const result = spawnSync(process.execPath, ['_build_adventure_module.js', '--check'], { encoding: 'utf8' });
     const after = files.map((file) => fs.statSync(file).mtimeMs);

@@ -29,7 +29,7 @@ describe('Glossary Health Check controls', () => {
   });
 
   it('keeps root and deployed generated modules synchronized', () => {
-    expect(readFileSync('prismflow-deploy/public/view_glossary_module.js', 'utf8'))
+    expect(readFileSync('desktop/web-app/public/view_glossary_module.js', 'utf8'))
       .toBe(readFileSync('view_glossary_module.js', 'utf8'));
   });
 });

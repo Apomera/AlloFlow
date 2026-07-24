@@ -178,17 +178,17 @@ const read = (file) => readFileSync(resolve(process.cwd(), file), 'utf8');
 const chatFiles = [
   'udl_chat_source.jsx',
   'udl_chat_module.js',
-  'prismflow-deploy/public/udl_chat_module.js',
+  'desktop/web-app/public/udl_chat_module.js',
 ];
 const modalFiles = [
   'view_misc_modals_source.jsx',
   'view_misc_modals_module.js',
-  'prismflow-deploy/public/view_misc_modals_module.js',
+  'desktop/web-app/public/view_misc_modals_module.js',
 ];
 const hostFiles = [
   'AlloFlowANTI.txt',
-  'prismflow-deploy/src/AlloFlowANTI.txt',
-  'prismflow-deploy/src/App.jsx',
+  'desktop/web-app/src/AlloFlowANTI.txt',
+  'desktop/web-app/src/App.jsx',
 ];
 
 describe('Step/Pack chooser copy-sync guardrails', () => {

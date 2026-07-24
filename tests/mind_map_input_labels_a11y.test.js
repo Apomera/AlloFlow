@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const root = process.cwd();
 const source = fs.readFileSync(path.join(root, 'mind_map_module.js'), 'utf8');
-const mirror = fs.readFileSync(path.join(root, 'prismflow-deploy/public/mind_map_module.js'), 'utf8');
+const mirror = fs.readFileSync(path.join(root, 'desktop/web-app/public/mind_map_module.js'), 'utf8');
 
 describe('Throughline programmatic input labels', () => {
   it('keeps source and deploy mirror byte-identical', () => {

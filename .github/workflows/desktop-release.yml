@@ -5,7 +5,7 @@ name: desktop-release
 # (NOT the repo root), the builder config is desktop/electron-builder.json
 # (tracked — the old root electron-builder.desktop.json never was, which is why
 # this workflow could not have succeeded before), and the web bundle build
-# needs prismflow-deploy/node_modules (react-scripts). The :ci package scripts
+# needs desktop/web-app/node_modules (react-scripts). The :ci package scripts
 # skip icon regeneration — desktop/build-resources/icon.ico is version-
 # controlled, and rebuilding it would need Playwright browsers on CI for no
 # benefit.
@@ -44,10 +44,10 @@ jobs:
           node-version: '24'
           cache: 'npm'
           cache-dependency-path: |
-            prismflow-deploy/package-lock.json
+            desktop/web-app/package-lock.json
             desktop/package-lock.json
       - name: Install web app dependencies (react-scripts for the bundle build)
-        working-directory: prismflow-deploy
+        working-directory: desktop/web-app
         run: npm ci --no-audit --no-fund
       - name: Install desktop dependencies (electron, electron-builder)
         working-directory: desktop
@@ -145,10 +145,10 @@ jobs:
           node-version: '24'
           cache: 'npm'
           cache-dependency-path: |
-            prismflow-deploy/package-lock.json
+            desktop/web-app/package-lock.json
             desktop/package-lock.json
       - name: Install web app dependencies (react-scripts for the bundle build)
-        working-directory: prismflow-deploy
+        working-directory: desktop/web-app
         run: npm ci --no-audit --no-fund
       - name: Install desktop dependencies (electron, electron-builder)
         working-directory: desktop

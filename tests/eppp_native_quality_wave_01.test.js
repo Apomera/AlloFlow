@@ -61,7 +61,7 @@ describe('EPPP native quality repair wave 01', () => {
 
   it('publishes exact source/deployment mirrors', () => {
     for (const name of ['eppp_native_items.json', 'eppp_native_quality_audit_wave_01.json', 'eppp_native_quality_audit_wave_01.md', 'eppp_native_qa.json', 'eppp_native_qa.md']) {
-      expect(read(`prismflow-deploy/public/test_prep/${name}`)).toBe(read(`test_prep/${name}`));
+      expect(read(`desktop/web-app/public/test_prep/${name}`)).toBe(read(`test_prep/${name}`));
     }
   });
 });

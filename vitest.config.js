@@ -19,7 +19,7 @@ export default defineConfig({
       reportsDirectory: './coverage',
       all: false,
       include: ['*_module.js', 'stem_lab/**/*.js', 'sel_hub/**/*.js'],
-      exclude: ['tests/**', 'node_modules/**', 'prismflow-deploy/**', '**/*_source.jsx', 'coverage/**'],
+      exclude: ['tests/**', 'node_modules/**', 'desktop/web-app/**', '**/*_source.jsx', 'coverage/**'],
       // KNOWN LIMITATION: most unit tests load CDN modules via the loadAlloModule
       // `new Function()` eval harness (tests/setup.js), and @vitest/coverage-v8 does
       // NOT instrument eval'd scripts — so those modules report ~0% even though they

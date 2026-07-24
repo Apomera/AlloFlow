@@ -185,9 +185,9 @@ Zero new host *functions* — only a wider prop contract on the existing `CDNMod
 
 ```
 [ ] AlloFlowANTI.txt                          gate block ~28119  +  launcher card  +  i18n strings
-[ ] prismflow-deploy/src/AlloFlowANTI.txt     same blocks
-[ ] prismflow-deploy/src/App.jsx              same blocks (built artifact)
-[ ] mind_map_module.js  ×3                     root + prismflow-deploy/public/ + prismflow-deploy/build/
+[ ] desktop/web-app/src/AlloFlowANTI.txt     same blocks
+[ ] desktop/web-app/src/App.jsx              same blocks (built artifact)
+[ ] mind_map_module.js  ×3                     root + desktop/web-app/public/ + desktop/web-app/build/
                                                → publish to alloflow-cdn.pages.dev (lazy loader AlloFlowANTI:4589)
 [ ] view_learning_hub_modal_source.jsx  + its 2 generated/mirror copies (launcher card text)
 ```
@@ -354,7 +354,7 @@ Ordered steps for an engineer **once Aaron green-lights a build**. The rename is
 - `importJSON` → detect a pack (`history[]`): if `unitLayout` present, render it (compat-warn on `minAppSchema` mismatch); else auto-layout (group by `item.unitId` if present). Confirm-before-replace (existing pattern at `mind_map_module.js:205`).
 - **No "Open whole unit in app" button in v1.**
 
-**Step 3 — Host gate (`AlloFlowANTI.txt` :28119; mirror to `prismflow-deploy/src/AlloFlowANTI.txt` and `prismflow-deploy/src/App.jsx`).**
+**Step 3 — Host gate (`AlloFlowANTI.txt` :28119; mirror to `desktop/web-app/src/AlloFlowANTI.txt` and `desktop/web-app/src/App.jsx`).**
 - Change `displayName="Mind Map"` → `"Throughline"`, `icon` → `🧭`.
 - Add v1 props from §4.1: `history`, `currentLesson`, `inLiveSession`, `onOpenLesson` (host-side wrapper). **Omit `onLoadUnit`** (export-only v1). **Keep `moduleKey="MindMap"`** — coupled to `window.AlloModules.MindMap`, `__alloLazyMindMap` at :4589, the CDN filename, and `setShowMindMap` at :4196-4197; renaming that chain is a separate, riskier refactor across CDN + 3 mirrors + lazy loader and is **not needed** to ship.
 
@@ -365,7 +365,7 @@ Ordered steps for an engineer **once Aaron green-lights a build**. The rename is
 
 **Step 6 — Gates.** `dev-tools/check_sample_lessons.cjs` is unaffected (`unitLayout` additive). Add an **optional** validator: every `unitLayout.nodes[].lessonId` resolves to a `history[]` id and every resolved `type` is renderable; **warn (don't fail)** on dangling/unsupported. Keep render-ref + lang-json gates green.
 
-**Step 7 — Build & mirror.** No new `build.js` wiring for the host gate (inline JSX compiled into App.jsx via the existing pipeline). For the module: update all three `mind_map_module.js` copies (root + `prismflow-deploy/public/` + `prismflow-deploy/build/`) and **publish to `alloflow-cdn.pages.dev`** — the host lazy-loads it on first open (AlloFlowANTI:4589), so the feature is not live until the CDN copy is published. Verify byte-consistency across the three host trees and three module copies.
+**Step 7 — Build & mirror.** No new `build.js` wiring for the host gate (inline JSX compiled into App.jsx via the existing pipeline). For the module: update all three `mind_map_module.js` copies (root + `desktop/web-app/public/` + `desktop/web-app/build/`) and **publish to `alloflow-cdn.pages.dev`** — the host lazy-loads it on first open (AlloFlowANTI:4589), so the feature is not live until the CDN copy is published. Verify byte-consistency across the three host trees and three module copies.
 
 ---
 

@@ -32,7 +32,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const FUNCTIONS = path.join(ROOT, 'prismflow-deploy', 'functions', 'index.js');
+const FUNCTIONS = path.join(ROOT, 'desktop/web-app', 'functions', 'index.js');
 
 const args = process.argv.slice(2);
 const VERBOSE = args.includes('--verbose');

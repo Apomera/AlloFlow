@@ -649,13 +649,13 @@ describe('Time & Schedule Lab', () => {
 
   it('is wired into the host catalog, plugin allowlist, lazy loader, and deployment mirrors', () => {
     const host = fs.readFileSync('stem_lab/stem_lab_module.js', 'utf8');
-    const deployedHost = fs.readFileSync('prismflow-deploy/public/stem_lab/stem_lab_module.js', 'utf8');
+    const deployedHost = fs.readFileSync('desktop/web-app/public/stem_lab/stem_lab_module.js', 'utf8');
     const app = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
     expect(host).toContain("id: 'timeSchedule'");
     expect(host).toContain('timeSchedule: true');
     expect(deployedHost).toBe(host);
     expect(app).toContain("'stem_lab/stem_tool_timeschedule.js'");
-    expect(fs.readFileSync('prismflow-deploy/public/stem_lab/stem_tool_timeschedule.js', 'utf8')).toBe(fs.readFileSync(FILE, 'utf8'));
+    expect(fs.readFileSync('desktop/web-app/public/stem_lab/stem_tool_timeschedule.js', 'utf8')).toBe(fs.readFileSync(FILE, 'utf8'));
     expect(fs.readFileSync(FILE, 'utf8')).toContain("selected ? 'text-white' : 'text-slate-700'");
     expect(fs.readFileSync(FILE, 'utf8')).toContain("text-indigo-700 font-bold");
   });

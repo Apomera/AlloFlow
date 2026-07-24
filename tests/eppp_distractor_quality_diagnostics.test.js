@@ -8,9 +8,9 @@ const root = process.cwd();
 const scriptPath = resolve(root, 'dev-tools/audit_eppp_distractor_quality.cjs');
 const sourceBankPath = resolve(root, 'test_prep/eppp_native_items.json');
 const sourceJsonPath = resolve(root, 'test_prep/eppp_distractor_quality_diagnostics.json');
-const deployJsonPath = resolve(root, 'prismflow-deploy/public/test_prep/eppp_distractor_quality_diagnostics.json');
+const deployJsonPath = resolve(root, 'desktop/web-app/public/test_prep/eppp_distractor_quality_diagnostics.json');
 const sourceMarkdownPath = resolve(root, 'test_prep/eppp_distractor_quality_diagnostics.md');
-const deployMarkdownPath = resolve(root, 'prismflow-deploy/public/test_prep/eppp_distractor_quality_diagnostics.md');
+const deployMarkdownPath = resolve(root, 'desktop/web-app/public/test_prep/eppp_distractor_quality_diagnostics.md');
 
 let bank;
 let report;

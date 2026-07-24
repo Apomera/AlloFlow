@@ -4,7 +4,7 @@ import fs from 'node:fs';
 const renderer = fs.readFileSync('view_renderers_source.jsx', 'utf8');
 const generator = fs.readFileSync('generate_dispatcher_source.jsx', 'utf8');
 const appSource = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
-const builtApp = fs.readFileSync('prismflow-deploy/src/App.jsx', 'utf8');
+const builtApp = fs.readFileSync('desktop/web-app/src/App.jsx', 'utf8');
 
 const normalizerStart = renderer.indexOf('const VISUAL_ORGANIZER_SECTION_SPECS');
 const normalizerEnd = renderer.indexOf('const FlowTopologyBoard', normalizerStart);

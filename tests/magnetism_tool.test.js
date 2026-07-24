@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { resetStemLab, loadTool, React } from './helpers/stem_widgets_smoke_harness.js';
 
 const require = createRequire(import.meta.url);
-const MODULES_DIR = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
 const ReactDOMClient = require(resolve(MODULES_DIR, 'react-dom/client'));
 const { act } = require(resolve(MODULES_DIR, 'react-dom/test-utils'));
 const axe = require(resolve(MODULES_DIR, 'axe-core'));
@@ -13,7 +13,7 @@ const axe = require(resolve(MODULES_DIR, 'axe-core'));
 // The root tool and its deploy mirror must stay byte-identical in behaviour.
 const TOOL_PATHS = [
   'stem_lab/stem_tool_magnetism.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_magnetism.js',
+  'desktop/web-app/public/stem_lab/stem_tool_magnetism.js',
 ];
 
 // Pure physics helpers come straight from module.exports (the guard lets the

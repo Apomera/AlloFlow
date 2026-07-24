@@ -67,7 +67,7 @@ describe('exported annotation note popover accessibility', () => {
     expect(source).toContain("pop.setAttribute('aria-describedby', 'alloflow-annotation-note-body')");
     expect(source).toContain("if (e.key === 'Escape' && notePopoverEl)");
     expect(source).toContain('closeNotePopover(true)');
-    expect(readFileSync('prismflow-deploy/public/doc_pipeline_module.js', 'utf8'))
+    expect(readFileSync('desktop/web-app/public/doc_pipeline_module.js', 'utf8'))
       .toBe(readFileSync('doc_pipeline_module.js', 'utf8'));
   });
 

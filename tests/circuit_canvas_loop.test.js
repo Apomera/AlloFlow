@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const CIRCUIT_PATHS = [
   'stem_lab/stem_tool_circuit.js',
-  'prismflow-deploy/public/stem_lab/stem_tool_circuit.js',
+  'desktop/web-app/public/stem_lab/stem_tool_circuit.js',
 ];
 
 describe('circuit short-circuit spark canvas loop', () => {

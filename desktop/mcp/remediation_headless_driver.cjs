@@ -109,7 +109,7 @@ function installChromium(onLog) {
 
 // ── Gemini key resolution ───────────────────────────────────────────────────
 // Order: GEMINI_API_KEY env var → the file at ALLOFLOW_MCP_ENV_PATH → the repo's
-// gitignored maintainer env file (prismflow-deploy/.env.maintainer-demo), reading
+// gitignored maintainer env file (desktop/web-app/.env.maintainer-demo), reading
 // GEMINI_API_KEY / REACT_APP_GEMINI_API_KEY / REACT_APP_API_KEY. The key VALUE is
 // never logged or returned by any tool — only its source label. Set
 // ALLOFLOW_MCP_NO_KEY_FILES=1 to disable the file fallbacks (the smoke test does,
@@ -129,7 +129,7 @@ function resolveGeminiApiKey() {
   if (process.env.ALLOFLOW_MCP_NO_KEY_FILES === '1') return { key: null, source: 'none' };
   const candidates = [];
   if (process.env.ALLOFLOW_MCP_ENV_PATH) candidates.push(path.resolve(process.env.ALLOFLOW_MCP_ENV_PATH));
-  candidates.push(path.join(REPO_ROOT, 'prismflow-deploy', '.env.maintainer-demo'));
+  candidates.push(path.join(REPO_ROOT, 'desktop/web-app', '.env.maintainer-demo'));
   for (const p of candidates) {
     const key = readKeyFromEnvFile(p);
     if (key) return { key, source: 'file:' + path.basename(p) };

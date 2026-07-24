@@ -139,7 +139,7 @@ describe('EPPP inline diagram quality review wave 03', () => {
       'test_prep/eppp_legacy/js/textbook_ch18.js',
       'test_prep/eppp_diagram_review_wave_03.json',
       'test_prep/eppp_diagram_review_wave_03.md',
-    ]) expect(read(`prismflow-deploy/public/${relativePath}`)).toBe(read(relativePath));
+    ]) expect(read(`desktop/web-app/public/${relativePath}`)).toBe(read(relativePath));
 
     const builder = read('_build_test_prep_hub_module.js');
     const wave02Call = 'node "${DIAGRAM_QUALITY_WAVE_02_SCRIPT}"';

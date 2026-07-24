@@ -6,7 +6,7 @@
 //      not re-run, so the manifest no longer reflects the source).
 //   B) every canonical cmd.*/palette.* key must exist (non-empty) in every canonical
 //      lang/*.js pack (catches: extracted but never translated+merged → English-only).
-//   C) prismflow-deploy/public/lang mirror — WARN only (secondary/demo surface).
+//   C) desktop/web-app/public/lang mirror — WARN only (secondary/demo surface).
 // Exit 1 on any A or B failure. Wire into verify_all + CI alongside check_lang_json.
 'use strict';
 const fs = require('fs');
@@ -15,7 +15,7 @@ const { extractFromSource, SRC, OUT } = require('./i18n/extract_cmd_keys.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const LANG = path.join(ROOT, 'lang');
-const MIRROR = path.join(ROOT, 'prismflow-deploy', 'public', 'lang');
+const MIRROR = path.join(ROOT, 'desktop/web-app', 'public', 'lang');
 const QUIET = process.argv.includes('--quiet');
 const info = (...a) => { if (!QUIET) console.log(...a); };
 let failed = false;
@@ -56,7 +56,7 @@ function checkDir(dir, label, hard) {
 
 info(`check_cmd_i18n: ${enKeys.length} canonical keys (${enKeys.filter((k) => k.startsWith('cmd.')).length} cmd + ${enKeys.filter((k) => k.startsWith('palette.')).length} palette)`);
 checkDir(LANG, 'lang', true);
-checkDir(MIRROR, 'mirror', false); // mirror = warn only; resync via: node dev-tools/i18n/merge_cmd_keys.cjs --lang-dir=prismflow-deploy/public/lang
+checkDir(MIRROR, 'mirror', false); // mirror = warn only; resync via: node dev-tools/i18n/merge_cmd_keys.cjs --lang-dir=desktop/web-app/public/lang
 
 if (!failed) info('✓ check_cmd_i18n: command palette i18n complete + manifest fresh.');
 else console.error('\nFix: (A) re-extract → `node dev-tools/i18n/extract_cmd_keys.cjs`; (B) translate the delta then `node dev-tools/i18n/merge_cmd_keys.cjs`. See the project_ctrlk_palette memory for the pipeline.');

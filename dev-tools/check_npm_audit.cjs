@@ -10,7 +10,7 @@
 //
 //   Two contexts to scan:
 //   1. Root package.json (dev tooling — Babel parser, Playwright, etc.)
-//   2. prismflow-deploy/functions/package.json (production runtime — jose,
+//   2. desktop/web-app/functions/package.json (production runtime — jose,
 //      firebase-admin, firebase-functions)
 //
 //   Production deps matter most. Dev deps are local-only.
@@ -42,7 +42,7 @@ const INCLUDE_MODERATE = args.includes('--include-moderate');
 
 const SCAN_LOCATIONS = [
   { label: 'root', cwd: ROOT, packageJson: path.join(ROOT, 'package.json') },
-  { label: 'prismflow-deploy/functions', cwd: path.join(ROOT, 'prismflow-deploy', 'functions'), packageJson: path.join(ROOT, 'prismflow-deploy', 'functions', 'package.json') },
+  { label: 'desktop/web-app/functions', cwd: path.join(ROOT, 'desktop/web-app', 'functions'), packageJson: path.join(ROOT, 'desktop/web-app', 'functions', 'package.json') },
 ];
 
 function runAudit(loc) {
@@ -115,11 +115,11 @@ if (blocking > 0) {
   console.log('');
   console.log('  Fix attempt:');
   console.log('     cd ' + path.relative(process.cwd(), ROOT) + ' && npm audit fix');
-  console.log('     cd ' + path.relative(process.cwd(), path.join(ROOT, 'prismflow-deploy', 'functions')) + ' && npm audit fix');
+  console.log('     cd ' + path.relative(process.cwd(), path.join(ROOT, 'desktop/web-app', 'functions')) + ' && npm audit fix');
   console.log('');
   console.log('  Manual review for non-fixable:');
   console.log('     npm audit                            # full list at root');
-  console.log('     cd prismflow-deploy/functions && npm audit');
+  console.log('     cd desktop/web-app/functions && npm audit');
   console.log('');
   console.log('  ❌ ' + blocking + ' blocking vulnerability(ies).');
 } else if (totalModerate > 0) {

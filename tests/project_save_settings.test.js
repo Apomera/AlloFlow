@@ -4,8 +4,8 @@ import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
 const require = createRequire(import.meta.url);
-const React = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react'));
-const ReactDOMServer = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react-dom/server'));
+const React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
+const ReactDOMServer = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom/server'));
 
 let PhaseKHelpers;
 let ProjectSettingsView;

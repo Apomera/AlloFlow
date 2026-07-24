@@ -40,6 +40,6 @@ describe('BehaviorLens hub tool-card accessibility', () => {
   });
 
   it('keeps the deploy mirror identical', () => {
-    expect(source).toBe(read('prismflow-deploy/public/behavior_lens_module.js'));
+    expect(source).toBe(read('desktop/web-app/public/behavior_lens_module.js'));
   });
 });

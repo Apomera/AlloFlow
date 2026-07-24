@@ -32,7 +32,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = process.cwd();
-const MODULES = path.join(ROOT, 'prismflow-deploy', 'node_modules');
+const MODULES = path.join(ROOT, 'desktop/web-app', 'node_modules');
 const QUIET = process.argv.includes('--quiet');
 
 let JSDOM, React, RDS;
@@ -41,7 +41,7 @@ try {
   React = require(path.join(MODULES, 'react'));
   RDS = require(path.join(MODULES, 'react-dom', 'server'));
 } catch (e) {
-  // No test deps (e.g. a CI lane without prismflow-deploy/node_modules). SKIP rather
+  // No test deps (e.g. a CI lane without desktop/web-app/node_modules). SKIP rather
   // than fail — best-effort where React+jsdom exist (locally + the test jobs).
   console.warn('[check_sel_render] SKIPPED — React/jsdom not found at ' + MODULES + ' (' + e.message + ')');
   process.exit(0);

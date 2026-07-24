@@ -86,9 +86,9 @@ new_string:
 
 ```bash
 node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('lang/spanish_latin_america.js','utf8')); function count(o,a){a=a||{n:0}; for(const k in o){const v=o[k]; if(typeof v==='object'&&v!==null)count(v,a); else a.n++} return a.n;} console.log('Spanish:',count(p),'keys • help_mode:',Object.keys(p.help_mode).length);" && \
-cp lang/spanish_latin_america.js prismflow-deploy/public/lang/spanish_latin_america.js && \
+cp lang/spanish_latin_america.js desktop/web-app/public/lang/spanish_latin_america.js && \
 node dev-tools/update_lang_manifest.cjs && \
-git add lang/spanish_latin_america.js prismflow-deploy/public/lang/spanish_latin_america.js lang/manifest.json prismflow-deploy/public/lang/manifest.json && \
+git add lang/spanish_latin_america.js desktop/web-app/public/lang/spanish_latin_america.js lang/manifest.json desktop/web-app/public/lang/manifest.json && \
 git commit -m "lang: Spanish +75 keys (X total, Y% coverage) - help_strings batch N/11" && \
 git push origin main
 ```

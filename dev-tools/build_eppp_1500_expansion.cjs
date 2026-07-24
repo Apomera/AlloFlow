@@ -9,7 +9,7 @@ const reservedReviewPaths=[
   path.join(root,'test_prep','eppp_legacy','bulk_review_wave_01.json'),
   path.join(root,'test_prep','eppp_legacy','adjudication_index.json'),
 ];
-const deployAudit=path.join(root,'prismflow-deploy','public','test_prep','eppp_native_expansion_1500_audit.json');
+const deployAudit=path.join(root,'desktop/web-app','public','test_prep','eppp_native_expansion_1500_audit.json');
 const reviewedAt='2026-07-14',batchId='native-1001-1500';
 const domains=[{number:1,id:'biological',quota:50},{number:2,id:'cognitive-affective',quota:65},{number:3,id:'social-cultural',quota:55},{number:4,id:'lifespan',quota:60},{number:5,id:'assessment',quota:80},{number:6,id:'intervention',quota:75},{number:7,id:'research',quota:35},{number:8,id:'professional',quota:80}];
 const stop=new Set('a an and are as at be because been being best by can client does for from had has have how in into is it its may most not of on or psychologist researcher should than that the their them then there these they this to under use used using was were what when which who why will with'.split(' '));

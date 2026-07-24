@@ -13,7 +13,7 @@
 
 Another agent (you) is actively working on the pipeline. This document is a **plan, not a patch** — it deliberately does **not** prescribe exact diffs, so it won't collide with in-flight edits. When you implement:
 - Multiple Claude sessions share **one** working tree. Check `git status` / `git log` / `origin` before any commit/push/deploy, and **stage only the files you changed by path**. Don't push others' unpushed commits, and don't let `deploy.sh` bundle WIP that isn't yours.
-- Edit the **`*_source.jsx`** file, then rebuild the `*_module.js` (and keep the `prismflow-deploy/public` mirror in sync) via the existing `_build_*.js` script. Run `node --check` on generated files and the relevant **golden-master** tests before considering anything done.
+- Edit the **`*_source.jsx`** file, then rebuild the `*_module.js` (and keep the `desktop/web-app/public` mirror in sync) via the existing `_build_*.js` script. Run `node --check` on generated files and the relevant **golden-master** tests before considering anything done.
 - This validation work is **additive and read-only with respect to the remediation logic** — it should not change how documents are fixed, only how the *result is independently checked and reported*.
 
 ---
