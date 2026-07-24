@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T17:07:52.417Z",
+  "generatedAt": "2026-07-23T16:44:06.403Z",
   "libraryId": "eppp-learning-library",
   "standard": {
     "checks": [
@@ -37,8 +37,12 @@
     "retainedReviewedFlashcards": 336,
     "retiredRedundantFlashcards": 79,
     "qaPassedMemoryAids": 0,
-    "sourceReviewedMemoryAids": 40,
-    "releasedMemoryAids": 40,
+    "qaPassedKnowledgeChecks": 0,
+    "sourceReviewedKnowledgeChecks": 32,
+    "releasedKnowledgeChecks": 32,
+    "reviewRequiredKnowledgeChecks": 77,
+    "sourceReviewedMemoryAids": 56,
+    "releasedMemoryAids": 56,
     "releasedFlashcards": 336,
     "editorialReviewedSourcePendingMemoryAids": 2
   },
@@ -48,6 +52,7 @@
     "Shared renderer accessibility controls are implemented. 22 of 58 learner-visible placements have source-review records; 36 placements still need concept and label review.",
     "58 learner-visible diagram placements are cataloged: 16 use shared templates and 42 are inline chapter diagrams. 10 shared templates are currently unused.",
     "415 of 415 flashcards have source-review records; 0 remain in first-pass review, and independent qualified expert validation is still pending.",
-    "79 source-reviewed duplicate flashcards are explicitly retired from future learner release rather than counted as distinct study targets."
+    "79 source-reviewed duplicate flashcards are explicitly retired from future learner release rather than counted as distinct study targets.",
+    "32 of 109 knowledge checks have source-review records and are released to their chapter payloads; 77 remain gated for review."
   ]
 }

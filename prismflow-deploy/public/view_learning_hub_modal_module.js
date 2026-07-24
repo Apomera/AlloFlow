@@ -109,6 +109,33 @@ function LearningHubModal(props) {
       return fallback;
     }
   };
+  const [textInquiryLaunchError, setTextInquiryLaunchError] = React.useState("");
+  const openTextInquiryStudio = () => {
+    let url = "https://alloflow-cdn.pages.dev/text_inquiry/text_inquiry.html?v=1";
+    try {
+      const loc = window.location || {};
+      const host = loc.hostname || "";
+      const pathname = loc.pathname || "";
+      const isLocalHost = /^(localhost|127\.0\.0\.1)$/i.test(host);
+      const isDesktopBundled = !!window._isDesktopBundledApp || isLocalHost && pathname.indexOf("/app/") === 0;
+      const isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
+      if (isDesktopBundled) url = new URL("text_inquiry/text_inquiry.html?v=1", loc.href).toString();
+      else if (isLocalHost || isAlloHosted) url = new URL("/text_inquiry/text_inquiry.html?v=1", loc.origin).toString();
+    } catch (_) {
+    }
+    let popup = null;
+    try {
+      popup = window.open(url, "alloflow-text-inquiry", "width=1320,height=900");
+    } catch (_) {
+      popup = null;
+    }
+    if (!popup) {
+      setTextInquiryLaunchError("The Text Inquiry Studio window was blocked. Allow pop-ups for this site, then try again.");
+      return;
+    }
+    setTextInquiryLaunchError("");
+    setShowLearningHub(false);
+  };
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4", style: { zIndex: 260 }, role: "presentation", onClick: () => setShowLearningHub(false) }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-8 focus:outline-none", style: { maxHeight: "90vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "learning-hub-title", "aria-describedby": "learning-hub-subtitle", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "learning-hub-title", className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F9E9}"), " ", t("learning_hub.title") || "Learning Tools"), /* @__PURE__ */ React.createElement("p", { id: "learning-hub-subtitle", className: "text-sm text-slate-600 mt-1" }, t("learning_hub.subtitle") || "Choose a tool to explore")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowLearningHub(false), className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl", "aria-label": t("learning_hub.close_aria") || "Close learning hub" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-4" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     setShowLearningHub(false);
     setShowStemLab(true);
@@ -139,7 +166,7 @@ function LearningHubModal(props) {
   }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl", "aria-hidden": "true" }, "\u{1F9ED}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-indigo-900" }, tr("learning_hub.test_prep_title", "Test Prep Hub")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-800 mt-1" }, tr("learning_hub.test_prep_desc", "Accessible practice packs for licensure, vocational, and professional exams")))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     setShowLearningHub(false);
     setShowLitLab(true);
-  }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl", "aria-hidden": "true" }, "\u{1F3AD}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-violet-800" }, t("learning_hub.litlab_title") || "LitLab"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-violet-600 mt-1" }, t("learning_hub.litlab_desc") || "Bring stories to life with character voices & literary analysis"))), setShowMindMap && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+  }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl", "aria-hidden": "true" }, "\u{1F3AD}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-violet-800" }, t("learning_hub.litlab_title") || "LitLab"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-violet-600 mt-1" }, t("learning_hub.litlab_desc") || "Bring stories to life with character voices & literary analysis"))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "learning_hub_text_inquiry_card", onClick: openTextInquiryStudio, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-fuchsia-50 to-cyan-50 border border-fuchsia-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center", "aria-describedby": textInquiryLaunchError ? "text-inquiry-launch-error" : void 0 }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl", "aria-hidden": "true" }, "\u{1F50E}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-fuchsia-900" }, "Text Inquiry Studio"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-fuchsia-800 mt-1" }, "Inspect frequency and concordance, then test an interpretation against exceptions and context."))), textInquiryLaunchError && /* @__PURE__ */ React.createElement("p", { id: "text-inquiry-launch-error", role: "alert", className: "sm:col-span-3 text-xs font-bold text-red-700 bg-red-50 border border-red-300 rounded-lg p-3" }, textInquiryLaunchError), "              ", setShowMindMap && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     setShowLearningHub(false);
     setShowMindMap(true);
   }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl", "aria-hidden": "true" }, "\u{1F9ED}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-amber-800" }, t("learning_hub.throughline_title") || "Throughline"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-700 mt-1" }, t("learning_hub.throughline_desc") || "Arrange your lessons into a spatial unit: teaching sequence, prerequisites, one exportable file"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {

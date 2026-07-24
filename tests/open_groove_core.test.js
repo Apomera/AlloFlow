@@ -354,6 +354,38 @@ describe('Open Groove project core', () => {
     expect(OG.ogBuildMusicXmlKeySignature(OG.ogCreateProject({ tonic: 'Gb', mode: 'major' }))).toMatchObject({ fifths: -6, mode: 'major', keyName: 'Gb Major' });
     expect(OG.ogBuildMusicXmlKeySignature(OG.ogCreateProject({ tonic: 'D', mode: 'dorian' }))).toMatchObject({ fifths: 0, mode: 'dorian', keyName: 'D Dorian' });
   });
+  it('builds VexFlow, MuseScore, and AI score bridge plans', () => {
+    const project = OG.ogCreateProject({ title: 'Class Score', tonic: 'C', mode: 'minor', ppq: 960 });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    OG.ogWriteNotationInput(project, pattern.id, synth.id, 'R:h [C4+E4]:q', { replace: true });
+
+    const vexModel = OG.ogBuildVexFlowNotationModel(project, pattern.id, {
+      trackId: synth.id,
+      runtime: { Vex: { Flow: { Renderer: function Renderer() {} } } }
+    });
+    expect(vexModel).toMatchObject({ engine: 'vexflow', available: true, rendererStatus: 'ready', noteCount: 2, restCount: 5, chordCount: 1 });
+    expect(vexModel.keySignature).toMatchObject({ fifths: -3, mode: 'minor' });
+    expect(vexModel.measures[0].elements.map((entry) => entry.type)).toEqual(['rest', 'chord', 'rest']);
+    expect(vexModel.measures[0].elements[0]).toMatchObject({ durationTicks: 1920, vexflow: { duration: 'hr' } });
+    expect(vexModel.measures[0].elements[1].vexflow.keys).toEqual(['c/4', 'e/4']);
+
+    const musePlan = OG.ogBuildMuseScoreBridgePlan(project, pattern.id, synth.id, {
+      museScoreAvailable: true,
+      includeXml: true,
+      fileBaseName: 'Class Score'
+    });
+    expect(musePlan).toMatchObject({ engine: 'musescore', status: 'ready', files: { musicxml: 'Class-Score.musicxml', pdf: 'Class-Score.pdf' } });
+    expect(musePlan.commands.some((command) => /MuseScore4\.exe/.test(command.command))).toBe(true);
+    expect(musePlan.musicXml).toContain('<key><fifths>-3</fifths><mode>minor</mode></key>');
+
+    const aiPlan = OG.ogBuildAudioToScoreAgentPlan(project, {
+      capabilities: { basicPitchInstalled: true },
+      license: 'User Owned'
+    });
+    expect(aiPlan).toMatchObject({ engine: 'basic-pitch', status: 'ready', rightsSafe: true });
+    expect(aiPlan.phases.map((phase) => phase.id)).toEqual(['ingest', 'rights', 'beat-map', 'transcribe', 'quantize', 'refine']);
+  });
   it('exports a clef-aware MusicXML sketch from notation events', () => {
     const project = OG.ogCreateProject();
     const pattern = project.patterns[0];

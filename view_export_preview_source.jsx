@@ -227,6 +227,7 @@ function ExportPreviewView(props) {
     t, theme,
     toggleA11yInspect, updateExportPreview,
     exportPreviewSource,
+    onExportSuccess,
   } = props;
   // BrandProfile inline integration — replaces the standalone Educator Hub tool.
   // Read the user's saved brand profiles so they can be picked as export themes
@@ -578,8 +579,9 @@ function ExportPreviewView(props) {
     anchor.click();
     anchor.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    try { if (typeof onExportSuccess === 'function') onExportSuccess({ kind: 'file', format: extension, fileName }); } catch (_) {}
     return fileName;
-  }, [getCleanBuilderDocument]);
+  }, [getCleanBuilderDocument, onExportSuccess]);
 
   const runPackageExport = React.useCallback(async (kind) => {
     if (altExportBusy) return;
@@ -599,10 +601,11 @@ function ExportPreviewView(props) {
         if (!clean) throw new Error('The editable preview is not ready.');
         await handler({ liveHtml: clean.html, liveTitle: clean.title });
       }
+      try { if (typeof onExportSuccess === 'function') onExportSuccess({ kind: 'package', format: kind }); } catch (_) {}
     }
     catch (error) { addToast && addToast(`${kind.toUpperCase()} export failed: ${error?.message || 'unknown error'}`, 'error'); }
     finally { if (mountedRef.current) setAltExportBusy(''); }
-  }, [altExportBusy, handleExportQTI, handleExportH5P, handleExportIMS, addToast, qtiAssessments, selectedQtiKey, h5pActivities, selectedH5PKey, getCleanBuilderDocument]);
+  }, [altExportBusy, handleExportQTI, handleExportH5P, handleExportIMS, addToast, qtiAssessments, selectedQtiKey, h5pActivities, selectedH5PKey, getCleanBuilderDocument, onExportSuccess]);
 
   const runOfficeExport = React.useCallback(async (format) => {
     if (altExportBusy) return;
@@ -632,13 +635,14 @@ function ExportPreviewView(props) {
     setExportActionBusy(true);
     try {
       await executeExportFromPreview();
+      try { if (typeof onExportSuccess === 'function') onExportSuccess({ kind: 'builder', format: exportPreviewMode }); } catch (_) {}
     } catch (error) {
       if (mountedRef.current) addToast && addToast('Export failed. The builder is still open so you can try again.', 'error');
     } finally {
       exportActionLockRef.current = false;
       if (mountedRef.current) setExportActionBusy(false);
     }
-  }, [executeExportFromPreview, runBuilderPreflight, exportPreviewMode, addToast]);
+  }, [executeExportFromPreview, runBuilderPreflight, exportPreviewMode, addToast, onExportSuccess]);
 
   const handleRadioGroupKeyDown = React.useCallback((e) => {
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) return;

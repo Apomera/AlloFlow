@@ -22,12 +22,13 @@
   "illustrators": [],
   "originalAuthors": [],
   "publisher": "OpenStax",
-  "license": "OpenStax Creative Commons / item-level license",
-  "licenseUrl": "https://openstax.org/license",
+  "license": "CC BY-NC-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
   "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/precalculus-2e"
+    "url": "https://openstax.org/details/books/precalculus-2e",
+    "attributionUrl": "https://openstax.org/details/books/precalculus-2e"
   },
   "cover": "https://upload.wikimedia.org/wikipedia/commons/d/df/Graph_of_function_of_2_variables.png",
   "audio": null,
@@ -51,5 +52,24 @@
   "stats": {
     "pages": 3,
     "words": 59
+  },
+  "usagePolicy": {
+    "access": "link-out",
+    "mirror": true,
+    "adapt": true,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": true,
+    "auditedAt": "2026-07-23",
+    "auditSource": "https://help.openstax.org/s/article/Licensing-information-of-OpenStax-textbooks",
+    "aiPermissionRequired": true,
+    "reason": "This book may not be used in the training of large language models or otherwise be ingested into large language models or generative AI offerings without OpenStax's permission.",
+    "aiRestrictionSource": "https://openstax.org/details/books/precalculus-2e"
+  },
+  "licenseAudit": {
+    "auditedAt": "2026-07-23",
+    "source": "https://help.openstax.org/s/article/Licensing-information-of-OpenStax-textbooks",
+    "note": "OpenStax attribution, noncommercial, and share-alike requirements apply to adaptations. Generative-AI ingestion requires OpenStax permission."
   }
 }

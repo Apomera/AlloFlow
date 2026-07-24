@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-19T17:48:50.926Z",
+  "generatedAt": "2026-07-23T17:24:35.849Z",
   "libraryId": "praxis-reading-specialist-5302-learning-library",
   "standard": {
     "label": "AlloFlow Praxis Reading Specialist 5302 learning-library source and editorial review v1",
@@ -202,7 +202,7 @@
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
     "sourceItemsSha256": "86f2f7405effae7db189ad13fc564db7c134b13160c1e38c5988c7a0479f73f4",
-    "learningLibrarySha256": "682dd93ac21ba0d0a12160635d6d48219517c6b732b60e4668219976e7ccd550",
+    "learningLibrarySha256": "aeaed38a8404e7c9d45544a81b0a2e9a0552e91e740af4dbfcd45926917276db",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

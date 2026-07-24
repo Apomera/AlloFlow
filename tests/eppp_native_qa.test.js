@@ -81,6 +81,6 @@ describe('EPPP native content QA gate', () => {
     expect(deployed).toBe(source);
     expect(fs.existsSync(resolve(process.cwd(), 'test_prep/eppp_native_qa.md'))).toBe(true);
     expect(builder).toContain('qa_eppp_native_pack.cjs');
-    expect(eppp.nativeQaUrl).toBe('./test_prep/eppp_native_qa.json');
+    expect(eppp.nativeQaUrl).toBe('https://alloflow-cdn.pages.dev/test_prep/eppp_native_qa.json');
   });
 });

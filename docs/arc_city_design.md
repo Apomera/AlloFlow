@@ -815,8 +815,63 @@ The fifth implementation pass turns the existing visual trails into an opt-in, d
 - Guided Preview calls the same pure collision helper as Fire. Predict Then Fire continues to hide both trajectory and outcome. Collision points receive a redundant marker, result text, screen-reader announcement, battle-log entry, and recap coaching.
 - Battle schema v5 migrates absent or invalid rules to **Visual only** and refuses Trail Walls in CPU matches, avoiding an asymmetric or opaque computer strategy.
 
-### 14.7 Deliberately deferred
+### 14.7 One-use Phase Pulse loadout
 
-The current release does not include voxel destruction, additional weapon loadouts, networking, or opaque/adaptive CPU difficulty. Those features can be evaluated after the compact deterministic mode has classroom evidence and performance telemetry.
+The sixth implementation pass adds a compact Worms-style resource decision without weakening the math contract:
+
+- Each player receives one **Phase Pulse** only when a fresh hot-seat Trail Walls match begins. Visual-only and CPU matches have no loadout controls or charges.
+- Phase Pulse bypasses only the Trail Walls collision overlay. `classifyShot` still determines walls, gates, slope requirements, misses, and relay capture from the authored function.
+- Firing consumes the charge on every resolved shot, including a miss, and resets that seat to the standard trail. Normalization rejects a persisted phase selection once its charge is spent.
+- Loadout selection appears alongside the active equation controls and is completely absent during protected handoff, so the next player's choice is not exposed before confirmation.
+- Phase shots use a bright solid trail in SVG and Three.js, plus explicit log, announcement, Fire-button, and recap language; color is never the only indicator.
+- Battle schema v6 grants one charge per player when migrating an existing Trail Walls match and zero charges everywhere else.
+
+### 14.8 Collision-aware preview fidelity
+
+The seventh implementation pass makes every guided preview visually agree with the result that Fire will adjudicate:
+
+- SVG and Three.js preview paths run the same base `classifyShot`, loadout selection, and Trail Walls collision sequence used by battle firing.
+- A standard preview stops at `result.killedAt`; it never draws the would-have-continued curve through an active light wall.
+- Predicted collisions receive a redundant red/white impact marker. The tactical board label and result readout name the blocking player and rounded collision coordinate.
+- An armed Phase Pulse previews the full unblocked base trajectory as a bright solid trail, matching the resolved phase shot rather than the standard dashed preview.
+- Predict Then Fire, CPU turns, completed matches, and protected handoffs still suppress the preview and predicted marker completely.
+
+### 14.9 Accessible post-match shot replay
+
+The eighth implementation pass turns stored battle trails into a deterministic learning review without adding animation or another simulation path:
+
+- Battle schema v7 persists a clamped replay index. A completed match opens on the winning shot, while migrated histories without a selection safely open on their newest stored trail.
+- Replay appears only after victory, so protected hot-seat handoff never exposes an incoming player's equation. Native **Previous shot** and **Next shot** buttons step through every bounded stored trail with disabled end states.
+- Each frame names its ordinal, player, circuit, authored equation, and text outcome in a polite atomic status region. Collision and Phase Pulse language comes from the same pure summary helper as the existing recap.
+- The SVG tactical board switches to the selected shot's shooter, lane geometry, and parameters, then overlays its exact bounded path and a redundant endpoint marker. Its accessible board label includes the replay frame.
+- The optional Three.js peer view receives the same persisted index, dims unselected history, and highlights the selected bounded trail and endpoint. It remains presentation-only.
+- Replay has no autoplay, timer, scrub animation, or new motion loop; every change is initiated by a native button.
+
+### 14.10 Replay revision comparison
+
+The ninth implementation pass turns replay navigation into an explicit compare-and-revise learning tool:
+
+- For each selected shot, a pure helper searches backward for the same player's latest attempt in the same circuit. Opponent shots and other lanes are deliberately excluded so the comparison remains mathematically meaningful.
+- The comparison reports only changed authored parameters, with fixed-step formatting and clear increased/decreased language. An unchanged equation is named rather than implying a revision.
+- Sine frequency coefficient `b` is translated back into learner-facing period, so a revision reads as (for example) **4 to 6 units per wave** instead of an inverse coefficient change.
+- The replay live region presents the comparable shot number, a structured parameter-change list, and the prior-versus-current outcome. First attempts explicitly say that no earlier comparable shot exists.
+- SVG draws the prior bounded trail as a gray dashed ghost beneath the selected white trail. The optional 3D peer uses the same derived comparison index, styling the prior trail distinctly while keeping all other history dim.
+- Comparison is derived from existing bounded history, requires no schema change, and adds no autoplay, telemetry, or second adjudication path.
+
+### 14.11 Responsive battle HUD and progressive setup
+
+The tenth implementation pass reduces first-screen density and establishes explicit narrow-screen and magnification contracts:
+
+- **Quick play remains immediate:** score, tactical board, current turn, target circuit, equation controls, and Fire stay in the primary flow. Opponent, arena, aim rule, Trail Walls, CPU strategy, and optional 3D move into a native collapsed **Match options** disclosure.
+- The disclosure summary has an accessible current-setup label, and the expanded panel repeats the full setup in text. Changing a rule updates that summary deterministically.
+- At 520px and below, the root forbids horizontal overflow, option buttons wrap into balanced rows, both relay cards become full-width, secondary text rises to a 12px floor, and lane controls become equal flexible targets.
+- Parameter grids use `minmax(0,1fr)` instead of fixed intrinsic minimums. The sine period selector becomes one column on narrow screens, preventing the label/select pair from forcing two-dimensional scrolling at a 320px-equivalent viewport.
+- Primary battle actions become a sticky, theme-token surface once reached during authoring. Battle actions and target-circuit controls meet a 44px mobile target floor; other option/replay controls meet 40px.
+- The tactical SVG removes its viewport-height cap on narrow screens, preserving the complete coordinate plane at browser zoom instead of cropping it vertically.
+- Dedicated render/CSS contracts cover native disclosure semantics, live setup summaries, responsive class hooks, shrink-safe grids, 320/360px breakpoints, touch targets, and sticky actions.
+
+### 14.12 Deliberately deferred
+
+The current release does not include voxel destruction, additional multi-weapon loadouts, networking, or opaque/adaptive CPU difficulty. Those features can be evaluated after the compact deterministic mode has classroom evidence and performance telemetry.
 
 *Sections 12 and 13 were added by a gap-fill pass after the dedicated CORE-MECHANICS design pass and the ACCESSIBILITY-UDL adversarial critique were dropped by two agents in the original run.*

@@ -1,6 +1,6 @@
 {
  "schema": "allo-reading-library-index@1",
- "generatedAt": "2026-07-16T20:11:38.514Z",
+ "generatedAt": "2026-07-23T20:30:13.778Z",
  "attribution": {
   "text": "Open reading materials from StoryWeaver and curated public/open education sources. Item-level licenses are shown on each text.",
   "url": "https://storyweaver.org.in",
@@ -10,7 +10,7 @@
   {
    "name": "English",
    "code": "en",
-   "count": 1706
+   "count": 1744
   },
   {
    "name": "Spanish",
@@ -303,7 +303,7 @@
    "count": 1
   }
  ],
- "cardsFile": "index_cards.json",
+ "cardsFile": "index_cards.wave10-new.json",
  "cardsCount": 895,
  "books": [
   {
@@ -52563,7 +52563,8 @@
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/books/biology-2e/pages/preface"
+    "url": "https://openstax.org/books/biology-2e/pages/preface",
+    "attributionUrl": "https://openstax.org/books/biology-2e/pages/1-introduction"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Biology_Labouratory%2C_St._Augustine_College_of_Education%2C_Akoka.jpg/960px-Biology_Labouratory%2C_St._Augustine_College_of_Education%2C_Akoka.jpg",
    "authors": [
@@ -53080,7 +53081,8 @@
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/books/astronomy-2e/pages/preface"
+    "url": "https://openstax.org/books/astronomy-2e/pages/preface",
+    "attributionUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg/960px-Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg",
    "authors": [
@@ -53116,7 +53118,8 @@
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/books/us-history/pages/1-introduction"
+    "url": "https://openstax.org/books/us-history/pages/1-introduction",
+    "attributionUrl": "https://openstax.org/books/us-history/pages/1-introduction"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Washington_Crossing_the_Delaware_by_Emanuel_Leutze%2C_MMA-NYC%2C_1851.jpg/960px-Washington_Crossing_the_Delaware_by_Emanuel_Leutze%2C_MMA-NYC%2C_1851.jpg",
    "authors": [
@@ -56288,12 +56291,13 @@
     "Matter",
     "Scientific modeling"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/chemistry-2e"
+    "url": "https://openstax.org/details/books/chemistry-2e",
+    "attributionUrl": "https://openstax.org/details/books/chemistry-2e"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Graduated_chemical_glassware_%28Alessandri_1895.1%29.png/960px-Graduated_chemical_glassware_%28Alessandri_1895.1%29.png",
    "authors": [
@@ -56322,12 +56326,13 @@
     "Motion",
     "Energy"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/college-physics-2e"
+    "url": "https://openstax.org/details/books/college-physics-2e",
+    "attributionUrl": "https://openstax.org/details/books/college-physics-2e"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Professor_louise_sherwood_mcdowell_in_wellesley_college_physics_lab_ca_1909-20.jpg/960px-Professor_louise_sherwood_mcdowell_in_wellesley_college_physics_lab_ca_1909-20.jpg",
    "authors": [
@@ -56356,12 +56361,13 @@
     "Textbooks",
     "Political science"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/american-government-3e"
+    "url": "https://openstax.org/details/books/american-government-3e",
+    "attributionUrl": "https://openstax.org/details/books/american-government-3e"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/b/bb/North-lawn-1987.jpg",
    "authors": [
@@ -56390,12 +56396,13 @@
     "Data literacy",
     "Markets"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/principles-economics-3e"
+    "url": "https://openstax.org/details/books/principles-economics-3e",
+    "attributionUrl": "https://openstax.org/details/books/principles-economics-3e"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Standard_Stock_and_Mining_Exchange_trading_floor%2C_Toronto.png/960px-Standard_Stock_and_Mining_Exchange_trading_floor%2C_Toronto.png",
    "authors": [
@@ -56424,12 +56431,13 @@
     "Learning",
     "Human behavior"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/psychology-2e"
+    "url": "https://openstax.org/details/books/psychology-2e",
+    "attributionUrl": "https://openstax.org/details/books/psychology-2e"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/c/c3/Chimpanzee_and_human_brain_scaled_to_the_same_size_Thomas_Henry_Huxley.png",
    "authors": [
@@ -56458,12 +56466,13 @@
     "Culture",
     "Social systems"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/introduction-sociology-3e"
+    "url": "https://openstax.org/details/books/introduction-sociology-3e",
+    "attributionUrl": "https://openstax.org/details/books/introduction-sociology-3e"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Crowd_on_Wall_Street_before_Trinity_Church%2C_New_York_City_LCCN93506590.jpg/960px-Crowd_on_Wall_Street_before_Trinity_Church%2C_New_York_City_LCCN93506590.jpg",
    "authors": [
@@ -56492,12 +56501,13 @@
     "Rhetoric",
     "Study guides"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/writing-guide"
+    "url": "https://openstax.org/details/books/writing-guide",
+    "attributionUrl": "https://openstax.org/details/books/writing-guide"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/The_Swan_Pen.png/960px-The_Swan_Pen.png",
    "authors": [
@@ -56526,12 +56536,13 @@
     "Logic",
     "Textbooks"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/introduction-philosophy"
+    "url": "https://openstax.org/details/books/introduction-philosophy",
+    "attributionUrl": "https://openstax.org/details/books/introduction-philosophy"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Le_Penseur_Mus%C3%A9e_Rodin_Paris_S.1295.jpg/960px-Le_Penseur_Mus%C3%A9e_Rodin_Paris_S.1295.jpg",
    "authors": [
@@ -56560,12 +56571,13 @@
     "Trigonometry",
     "Textbooks"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/algebra-and-trigonometry-2e"
+    "url": "https://openstax.org/details/books/algebra-and-trigonometry-2e",
+    "attributionUrl": "https://openstax.org/details/books/algebra-and-trigonometry-2e"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/DALL-E_-_Blackboard_drawing_of_anthropomorphic_rhinoceros_wearing_a_business_suit_scratching_his_head_and_looked_confused%2C_with_complicated_mathematic_matrices_multiplications_around_him.jpg/960px-thumbnail.jpg",
    "authors": [
@@ -56594,12 +56606,13 @@
     "Functions",
     "Textbooks"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/precalculus-2e"
+    "url": "https://openstax.org/details/books/precalculus-2e",
+    "attributionUrl": "https://openstax.org/details/books/precalculus-2e"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/d/df/Graph_of_function_of_2_variables.png",
    "authors": [
@@ -56628,12 +56641,13 @@
     "Probability",
     "Textbooks"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/introductory-statistics"
+    "url": "https://openstax.org/details/books/introductory-statistics",
+    "attributionUrl": "https://openstax.org/details/books/introductory-statistics"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/b/b0/Bell_Curve_Showing_100_Faces_to_Illustrate_Percentile_Rank.png",
    "authors": [
@@ -56662,12 +56676,13 @@
     "Health science",
     "Textbooks"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/anatomy-and-physiology-2e"
+    "url": "https://openstax.org/details/books/anatomy-and-physiology-2e",
+    "attributionUrl": "https://openstax.org/details/books/anatomy-and-physiology-2e"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/1/19/Pg_192_Human_Skeleton.jpg",
    "authors": [
@@ -57988,12 +58003,13 @@
     "Ancient history",
     "Medieval history"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/world-history-volume-1"
+    "url": "https://openstax.org/details/books/world-history-volume-1",
+    "attributionUrl": "https://openstax.org/details/books/world-history-volume-1"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/1482_Cosmographia_Germanus.JPG/960px-1482_Cosmographia_Germanus.JPG",
    "authors": [
@@ -58022,12 +58038,13 @@
     "Modern history",
     "Global studies"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/world-history-volume-2"
+    "url": "https://openstax.org/details/books/world-history-volume-2",
+    "attributionUrl": "https://openstax.org/details/books/world-history-volume-2"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Crystal_Palace_from_the_northeast_from_Dickinson%27s_Comprehensive_Pictures_of_the_Great_Exhibition_of_1851._1854.jpg/960px-Crystal_Palace_from_the_northeast_from_Dickinson%27s_Comprehensive_Pictures_of_the_Great_Exhibition_of_1851._1854.jpg",
    "authors": [
@@ -58056,12 +58073,13 @@
     "Functions",
     "Textbooks"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/calculus-volume-1"
+    "url": "https://openstax.org/details/books/calculus-volume-1",
+    "attributionUrl": "https://openstax.org/details/books/calculus-volume-1"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Pure-mathematics-formul%C3%A6-blackboard.jpg/960px-Pure-mathematics-formul%C3%A6-blackboard.jpg",
    "authors": [
@@ -58090,12 +58108,13 @@
     "Integration",
     "Series"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/calculus-volume-2"
+    "url": "https://openstax.org/details/books/calculus-volume-2",
+    "attributionUrl": "https://openstax.org/details/books/calculus-volume-2"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Pure-mathematics-formul%C3%A6-blackboard.jpg/960px-Pure-mathematics-formul%C3%A6-blackboard.jpg",
    "authors": [
@@ -58124,12 +58143,13 @@
     "Vectors",
     "Multivariable calculus"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/calculus-volume-3"
+    "url": "https://openstax.org/details/books/calculus-volume-3",
+    "attributionUrl": "https://openstax.org/details/books/calculus-volume-3"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/0/07/Vector_Field.png",
    "authors": [
@@ -58158,12 +58178,13 @@
     "Health science",
     "Textbooks"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/microbiology"
+    "url": "https://openstax.org/details/books/microbiology",
+    "attributionUrl": "https://openstax.org/details/books/microbiology"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/0/07/Proteus_mirabilis_petri.jpg",
    "authors": [
@@ -58192,12 +58213,13 @@
     "Molecules",
     "Textbooks"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/organic-chemistry"
+    "url": "https://openstax.org/details/books/organic-chemistry",
+    "attributionUrl": "https://openstax.org/details/books/organic-chemistry"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/4/48/Hardware-accelerated-molecular-modeling.png",
    "authors": [
@@ -58226,12 +58248,13 @@
     "Civics",
     "Textbooks"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/business-ethics"
+    "url": "https://openstax.org/details/books/business-ethics",
+    "attributionUrl": "https://openstax.org/details/books/business-ethics"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Business_agreement_handshake_at_coffee_shop.jpg/960px-Business_agreement_handshake_at_coffee_shop.jpg",
    "authors": [
@@ -58260,12 +58283,13 @@
     "Civics",
     "Textbooks"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/introduction-political-science"
+    "url": "https://openstax.org/details/books/introduction-political-science",
+    "attributionUrl": "https://openstax.org/details/books/introduction-political-science"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Urne_Ballot_box_r%C3%A9publique.jpg/960px-Urne_Ballot_box_r%C3%A9publique.jpg",
    "authors": [
@@ -58294,12 +58318,13 @@
     "Data literacy",
     "Textbooks"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/contemporary-mathematics"
+    "url": "https://openstax.org/details/books/contemporary-mathematics",
+    "attributionUrl": "https://openstax.org/details/books/contemporary-mathematics"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/7/70/Golden_spiral_in_rectanglesflip.png",
    "authors": [
@@ -58328,12 +58353,13 @@
     "Executive function",
     "Textbooks"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/college-success"
+    "url": "https://openstax.org/details/books/college-success",
+    "attributionUrl": "https://openstax.org/details/books/college-success"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Ohio_University_Lecture_Hall.jpg/960px-Ohio_University_Lecture_Hall.jpg",
    "authors": [
@@ -58362,12 +58388,13 @@
     "Leadership",
     "Textbooks"
    ],
-   "license": "OpenStax Creative Commons / item-level license",
-   "licenseUrl": "https://openstax.org/license",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
    "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/principles-management"
+    "url": "https://openstax.org/details/books/principles-management",
+    "attributionUrl": "https://openstax.org/details/books/principles-management"
    },
    "cover": "https://upload.wikimedia.org/wikipedia/commons/9/90/The_Principles_of_Scientific_Management%2C_title_page.jpg",
    "authors": [
@@ -75554,6 +75581,1418 @@
    "pageCount": 3,
    "wordCount": 56,
    "file": "books/bloom-card-dec2616b-untitled.json"
+  },
+  {
+   "slug": "openstax-biology-2e-chapter-1",
+   "title": "OpenStax Biology 2e · Chapter 1: The Study of Life",
+   "description": "An accessibility-ready mirror of the opening OpenStax Biology 2e chapter.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Biology",
+    "Scientific inquiry",
+    "Characteristics of life",
+    "Open textbooks"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/biology-2e/pages/1-introduction",
+    "attributionUrl": "https://openstax.org/books/biology-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Mary Ann Clark",
+    "Matthew Douglas",
+    "Jung Choi"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 8649,
+   "file": "books/openstax-biology-2e-chapter-1.json"
+  },
+  {
+   "slug": "openstax-astronomy-2e-chapter-1",
+   "title": "OpenStax Astronomy 2e · Chapter 1: Science and the Universe",
+   "description": "An accessibility-ready mirror of the opening OpenStax Astronomy 2e chapter.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Astronomy",
+    "Scientific inquiry",
+    "Scale of the universe",
+    "Open textbooks"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/astronomy-2e/pages/1-1-the-nature-of-astronomy",
+    "attributionUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Andrew Fraknoi",
+    "David Morrison",
+    "Sidney Wolff"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 7290,
+   "file": "books/openstax-astronomy-2e-chapter-1.json"
+  },
+  {
+   "slug": "openstax-us-history-chapter-1",
+   "title": "OpenStax U.S. History · Chapter 1: The Americas, Europe, and Africa Before 1492",
+   "description": "An accessibility-ready mirror of the opening OpenStax U.S. History chapter.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "U.S. history",
+    "Indigenous societies",
+    "European exploration",
+    "West Africa"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/us-history/pages/1-introduction",
+    "attributionUrl": "https://openstax.org/books/us-history/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "P. Scott Corbett",
+    "Volker Janssen",
+    "John M. Lund",
+    "Todd Pfannestiel",
+    "Sylvie Waskiewicz",
+    "Paul Vickery"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 4,
+   "wordCount": 9909,
+   "file": "books/openstax-us-history-chapter-1.json"
+  },
+  {
+   "slug": "ck12-biology-flexbooks-card",
+   "title": "CK-12 Biology FlexBooks",
+   "description": "A link-only discovery card for CK-12 biology textbooks and study resources.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "ck12",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "Biology",
+    "Life science",
+    "Cells",
+    "Genetics"
+   ],
+   "license": "CK-12 Curriculum Materials License · link-only catalog use",
+   "licenseUrl": "https://help.ck12.org/hc/en-us/articles/51042851054235-CK-12-Terms-of-Use",
+   "source": {
+    "id": "ck12",
+    "name": "CK-12",
+    "url": "https://www.ck12.org/flexbooks"
+   },
+   "cover": null,
+   "authors": [
+    "CK-12 Foundation"
+   ],
+   "illustrators": [],
+   "publisher": "CK-12 Foundation",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 61,
+   "file": "books/ck12-biology-flexbooks-card.json"
+  },
+  {
+   "slug": "ck12-chemistry-flexbooks-card",
+   "title": "CK-12 Chemistry FlexBooks",
+   "description": "A link-only discovery card for CK-12 chemistry textbooks and study resources.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "ck12",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "Chemistry",
+    "Matter",
+    "Chemical reactions",
+    "Stoichiometry"
+   ],
+   "license": "CK-12 Curriculum Materials License · link-only catalog use",
+   "licenseUrl": "https://help.ck12.org/hc/en-us/articles/51042851054235-CK-12-Terms-of-Use",
+   "source": {
+    "id": "ck12",
+    "name": "CK-12",
+    "url": "https://www.ck12.org/flexbooks"
+   },
+   "cover": null,
+   "authors": [
+    "CK-12 Foundation"
+   ],
+   "illustrators": [],
+   "publisher": "CK-12 Foundation",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 61,
+   "file": "books/ck12-chemistry-flexbooks-card.json"
+  },
+  {
+   "slug": "ck12-physics-flexbooks-card",
+   "title": "CK-12 Physics FlexBooks",
+   "description": "A link-only discovery card for CK-12 physics textbooks and study resources.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "ck12",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "Physics",
+    "Motion",
+    "Forces",
+    "Energy"
+   ],
+   "license": "CK-12 Curriculum Materials License · link-only catalog use",
+   "licenseUrl": "https://help.ck12.org/hc/en-us/articles/51042851054235-CK-12-Terms-of-Use",
+   "source": {
+    "id": "ck12",
+    "name": "CK-12",
+    "url": "https://www.ck12.org/flexbooks"
+   },
+   "cover": null,
+   "authors": [
+    "CK-12 Foundation"
+   ],
+   "illustrators": [],
+   "publisher": "CK-12 Foundation",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 62,
+   "file": "books/ck12-physics-flexbooks-card.json"
+  },
+  {
+   "slug": "ck12-earth-science-flexbooks-card",
+   "title": "CK-12 Earth Science FlexBooks",
+   "description": "A link-only discovery card for CK-12 Earth science textbooks and study resources.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "ck12",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "Earth science",
+    "Geology",
+    "Weather",
+    "Climate"
+   ],
+   "license": "CK-12 Curriculum Materials License · link-only catalog use",
+   "licenseUrl": "https://help.ck12.org/hc/en-us/articles/51042851054235-CK-12-Terms-of-Use",
+   "source": {
+    "id": "ck12",
+    "name": "CK-12",
+    "url": "https://www.ck12.org/flexbooks"
+   },
+   "cover": null,
+   "authors": [
+    "CK-12 Foundation"
+   ],
+   "illustrators": [],
+   "publisher": "CK-12 Foundation",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 61,
+   "file": "books/ck12-earth-science-flexbooks-card.json"
+  },
+  {
+   "slug": "ck12-life-science-flexbooks-card",
+   "title": "CK-12 Life Science FlexBooks",
+   "description": "A link-only discovery card for CK-12 middle-school life science resources.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "ck12",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "Life science",
+    "Ecology",
+    "Organisms",
+    "Middle school"
+   ],
+   "license": "CK-12 Curriculum Materials License · link-only catalog use",
+   "licenseUrl": "https://help.ck12.org/hc/en-us/articles/51042851054235-CK-12-Terms-of-Use",
+   "source": {
+    "id": "ck12",
+    "name": "CK-12",
+    "url": "https://www.ck12.org/flexbooks"
+   },
+   "cover": null,
+   "authors": [
+    "CK-12 Foundation"
+   ],
+   "illustrators": [],
+   "publisher": "CK-12 Foundation",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 57,
+   "file": "books/ck12-life-science-flexbooks-card.json"
+  },
+  {
+   "slug": "ck12-algebra-1-flexbooks-card",
+   "title": "CK-12 Algebra I FlexBooks",
+   "description": "A link-only discovery card for CK-12 Algebra I textbooks and study resources.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "ck12",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "Mathematics",
+    "Algebra",
+    "Equations",
+    "Functions"
+   ],
+   "license": "CK-12 Curriculum Materials License · link-only catalog use",
+   "licenseUrl": "https://help.ck12.org/hc/en-us/articles/51042851054235-CK-12-Terms-of-Use",
+   "source": {
+    "id": "ck12",
+    "name": "CK-12",
+    "url": "https://www.ck12.org/flexbooks"
+   },
+   "cover": null,
+   "authors": [
+    "CK-12 Foundation"
+   ],
+   "illustrators": [],
+   "publisher": "CK-12 Foundation",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 61,
+   "file": "books/ck12-algebra-1-flexbooks-card.json"
+  },
+  {
+   "slug": "ck12-geometry-flexbooks-card",
+   "title": "CK-12 Geometry FlexBooks",
+   "description": "A link-only discovery card for CK-12 geometry textbooks and study resources.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "ck12",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "Mathematics",
+    "Geometry",
+    "Proof",
+    "Measurement"
+   ],
+   "license": "CK-12 Curriculum Materials License · link-only catalog use",
+   "licenseUrl": "https://help.ck12.org/hc/en-us/articles/51042851054235-CK-12-Terms-of-Use",
+   "source": {
+    "id": "ck12",
+    "name": "CK-12",
+    "url": "https://www.ck12.org/flexbooks"
+   },
+   "cover": null,
+   "authors": [
+    "CK-12 Foundation"
+   ],
+   "illustrators": [],
+   "publisher": "CK-12 Foundation",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 59,
+   "file": "books/ck12-geometry-flexbooks-card.json"
+  },
+  {
+   "slug": "ck12-probability-statistics-flexbooks-card",
+   "title": "CK-12 Probability and Statistics FlexBooks",
+   "description": "A link-only discovery card for CK-12 probability and statistics resources.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "ck12",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "Mathematics",
+    "Statistics",
+    "Probability",
+    "Data literacy"
+   ],
+   "license": "CK-12 Curriculum Materials License · link-only catalog use",
+   "licenseUrl": "https://help.ck12.org/hc/en-us/articles/51042851054235-CK-12-Terms-of-Use",
+   "source": {
+    "id": "ck12",
+    "name": "CK-12",
+    "url": "https://www.ck12.org/flexbooks"
+   },
+   "cover": null,
+   "authors": [
+    "CK-12 Foundation"
+   ],
+   "illustrators": [],
+   "publisher": "CK-12 Foundation",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 62,
+   "file": "books/ck12-probability-statistics-flexbooks-card.json"
+  },
+  {
+   "slug": "openstax-biology-2e-chapter-2",
+   "title": "OpenStax Biology 2e · Chapter 2: The Chemical Foundation of Life",
+   "description": "An accessibility-ready mirror of OpenStax Biology 2e Chapter 2.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Biology",
+    "Chemistry of life",
+    "Atoms and molecules",
+    "Water and carbon"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/biology-2e/pages/2-introduction",
+    "attributionUrl": "https://openstax.org/books/biology-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Mary Ann Clark",
+    "Matthew Douglas",
+    "Jung Choi"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 4,
+   "wordCount": 13971,
+   "file": "books/openstax-biology-2e-chapter-2.json"
+  },
+  {
+   "slug": "openstax-astronomy-2e-chapter-2",
+   "title": "OpenStax Astronomy 2e · Chapter 2: Observing the Sky",
+   "description": "An accessibility-ready mirror of OpenStax Astronomy 2e Chapter 2.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Astronomy",
+    "Observing the sky",
+    "Ancient astronomy",
+    "Scientific revolution"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/astronomy-2e/pages/2-thinking-ahead",
+    "attributionUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Andrew Fraknoi",
+    "David Morrison",
+    "Sidney Wolff"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 5,
+   "wordCount": 16228,
+   "file": "books/openstax-astronomy-2e-chapter-2.json"
+  },
+  {
+   "slug": "openstax-us-history-chapter-2",
+   "title": "OpenStax U.S. History · Chapter 2: Early Globalization",
+   "description": "An accessibility-ready mirror of OpenStax U.S. History Chapter 2.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "U.S. history",
+    "Atlantic world",
+    "Colonization",
+    "Columbian Exchange"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/us-history/pages/2-introduction",
+    "attributionUrl": "https://openstax.org/books/us-history/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "P. Scott Corbett",
+    "Volker Janssen",
+    "John M. Lund",
+    "Todd Pfannestiel",
+    "Sylvie Waskiewicz",
+    "Paul Vickery"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 5,
+   "wordCount": 11648,
+   "file": "books/openstax-us-history-chapter-2.json"
+  },
+  {
+   "slug": "openstax-biology-2e-chapter-3",
+   "title": "OpenStax Biology 2e · Chapter 3: Biological Macromolecules",
+   "description": "An accessibility-ready mirror of OpenStax Biology 2e Chapter 3.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Biology",
+    "Macromolecules",
+    "Carbohydrates and lipids",
+    "Proteins and nucleic acids"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/biology-2e/pages/3-introduction",
+    "attributionUrl": "https://openstax.org/books/biology-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Mary Ann Clark",
+    "Matthew Douglas",
+    "Jung Choi"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 11093,
+   "file": "books/openstax-biology-2e-chapter-3.json"
+  },
+  {
+   "slug": "openstax-astronomy-2e-chapter-3",
+   "title": "OpenStax Astronomy 2e · Chapter 3: Orbits and Gravity",
+   "description": "An accessibility-ready mirror of OpenStax Astronomy 2e Chapter 3.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Astronomy",
+    "Planetary motion",
+    "Newtonian mechanics",
+    "Gravity and orbits"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/astronomy-2e/pages/3-thinking-ahead",
+    "attributionUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Andrew Fraknoi",
+    "David Morrison",
+    "Sidney Wolff"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 10945,
+   "file": "books/openstax-astronomy-2e-chapter-3.json"
+  },
+  {
+   "slug": "openstax-us-history-chapter-3",
+   "title": "OpenStax U.S. History · Chapter 3: Colonial Societies, 1500–1700",
+   "description": "An accessibility-ready mirror of OpenStax U.S. History Chapter 3.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "U.S. history",
+    "Colonial societies",
+    "European empires",
+    "Impact of colonization"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/us-history/pages/3-introduction",
+    "attributionUrl": "https://openstax.org/books/us-history/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "P. Scott Corbett",
+    "Volker Janssen",
+    "John M. Lund",
+    "Todd Pfannestiel",
+    "Sylvie Waskiewicz",
+    "Paul Vickery"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 5,
+   "wordCount": 12184,
+   "file": "books/openstax-us-history-chapter-3.json"
+  },
+  {
+   "slug": "openstax-biology-2e-chapter-4",
+   "title": "OpenStax Biology 2e · Chapter 4: Cell Structure",
+   "description": "An accessibility-ready mirror of OpenStax Biology 2e Chapter 4.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Biology",
+    "Cell structure",
+    "Prokaryotic and eukaryotic cells",
+    "Cellular systems"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/biology-2e/pages/4-introduction",
+    "attributionUrl": "https://openstax.org/books/biology-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Mary Ann Clark",
+    "Matthew Douglas",
+    "Jung Choi"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 11138,
+   "file": "books/openstax-biology-2e-chapter-4.json"
+  },
+  {
+   "slug": "openstax-astronomy-2e-chapter-4",
+   "title": "OpenStax Astronomy 2e · Chapter 4: Earth, Moon, and Sky",
+   "description": "An accessibility-ready mirror of OpenStax Astronomy 2e Chapter 4.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Astronomy",
+    "Earth and sky",
+    "Seasons and calendars",
+    "Moon phases and eclipses"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/astronomy-2e/pages/4-thinking-ahead",
+    "attributionUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Andrew Fraknoi",
+    "David Morrison",
+    "Sidney Wolff"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 16187,
+   "file": "books/openstax-astronomy-2e-chapter-4.json"
+  },
+  {
+   "slug": "openstax-us-history-chapter-4",
+   "title": "OpenStax U.S. History · Chapter 4: Rule Britannia! The English Empire, 1660–1763",
+   "description": "An accessibility-ready mirror of OpenStax U.S. History Chapter 4.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "U.S. history",
+    "British Empire",
+    "Colonial slavery and consumer culture",
+    "Great Awakening and imperial wars"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/us-history/pages/4-introduction",
+    "attributionUrl": "https://openstax.org/books/us-history/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "P. Scott Corbett",
+    "Volker Janssen",
+    "John M. Lund",
+    "Todd Pfannestiel",
+    "Sylvie Waskiewicz",
+    "Paul Vickery"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 10799,
+   "file": "books/openstax-us-history-chapter-4.json"
+  },
+  {
+   "slug": "openstax-biology-2e-chapter-5",
+   "title": "OpenStax Biology 2e · Chapter 5: Structure and Function of Plasma Membranes",
+   "description": "An accessibility-ready mirror of OpenStax Biology 2e Chapter 5.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Biology",
+    "Plasma membranes",
+    "Passive and active transport",
+    "Bulk transport"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/biology-2e/pages/5-introduction",
+    "attributionUrl": "https://openstax.org/books/biology-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Mary Ann Clark",
+    "Matthew Douglas",
+    "Jung Choi"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 5,
+   "wordCount": 10749,
+   "file": "books/openstax-biology-2e-chapter-5.json"
+  },
+  {
+   "slug": "openstax-astronomy-2e-chapter-5",
+   "title": "OpenStax Astronomy 2e · Chapter 5: Radiation and Spectra",
+   "description": "An accessibility-ready mirror of OpenStax Astronomy 2e Chapter 5.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Astronomy",
+    "Light and radiation",
+    "Electromagnetic spectrum",
+    "Spectroscopy and Doppler effect"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/astronomy-2e/pages/5-thinking-ahead",
+    "attributionUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Andrew Fraknoi",
+    "David Morrison",
+    "Sidney Wolff"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 16942,
+   "file": "books/openstax-astronomy-2e-chapter-5.json"
+  },
+  {
+   "slug": "openstax-us-history-chapter-5",
+   "title": "OpenStax U.S. History · Chapter 5: Imperial Reforms and Colonial Protests, 1763–1774",
+   "description": "An accessibility-ready mirror of OpenStax U.S. History Chapter 5.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "U.S. history",
+    "Imperial reform",
+    "Colonial protest",
+    "American identity"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/us-history/pages/5-introduction",
+    "attributionUrl": "https://openstax.org/books/us-history/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "P. Scott Corbett",
+    "Volker Janssen",
+    "John M. Lund",
+    "Todd Pfannestiel",
+    "Sylvie Waskiewicz",
+    "Paul Vickery"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 11952,
+   "file": "books/openstax-us-history-chapter-5.json"
+  },
+  {
+   "slug": "openstax-biology-2e-chapter-6",
+   "title": "OpenStax Biology 2e · Chapter 6: Metabolism",
+   "description": "An accessibility-ready mirror of OpenStax Biology 2e Chapter 6.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Biology",
+    "Energy and metabolism",
+    "Thermodynamics and ATP",
+    "Enzymes"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/biology-2e/pages/6-introduction",
+    "attributionUrl": "https://openstax.org/books/biology-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Mary Ann Clark",
+    "Matthew Douglas",
+    "Jung Choi"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 10080,
+   "file": "books/openstax-biology-2e-chapter-6.json"
+  },
+  {
+   "slug": "openstax-astronomy-2e-chapter-6",
+   "title": "OpenStax Astronomy 2e · Chapter 6: Astronomical Instruments",
+   "description": "An accessibility-ready mirror of OpenStax Astronomy 2e Chapter 6.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Astronomy",
+    "Telescopes",
+    "Astronomical detectors",
+    "Observatories and instrumentation"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/astronomy-2e/pages/6-thinking-ahead",
+    "attributionUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Andrew Fraknoi",
+    "David Morrison",
+    "Sidney Wolff"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 14983,
+   "file": "books/openstax-astronomy-2e-chapter-6.json"
+  },
+  {
+   "slug": "openstax-us-history-chapter-6",
+   "title": "OpenStax U.S. History · Chapter 6: America's War for Independence, 1775–1783",
+   "description": "An accessibility-ready mirror of OpenStax U.S. History Chapter 6.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "U.S. history",
+    "American Revolution",
+    "War for independence",
+    "Revolutionary identities"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/us-history/pages/6-introduction",
+    "attributionUrl": "https://openstax.org/books/us-history/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "P. Scott Corbett",
+    "Volker Janssen",
+    "John M. Lund",
+    "Todd Pfannestiel",
+    "Sylvie Waskiewicz",
+    "Paul Vickery"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 5,
+   "wordCount": 10415,
+   "file": "books/openstax-us-history-chapter-6.json"
+  },
+  {
+   "slug": "openstax-biology-2e-chapter-7",
+   "title": "OpenStax Biology 2e · Chapter 7: Cellular Respiration",
+   "description": "An accessibility-ready mirror of OpenStax Biology 2e Chapter 7.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Biology",
+    "Cellular respiration",
+    "Glycolysis and the citric acid cycle",
+    "Oxidative phosphorylation"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/biology-2e/pages/7-introduction",
+    "attributionUrl": "https://openstax.org/books/biology-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Mary Ann Clark",
+    "Matthew Douglas",
+    "Jung Choi"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 11551,
+   "file": "books/openstax-biology-2e-chapter-7.json"
+  },
+  {
+   "slug": "openstax-astronomy-2e-chapter-7",
+   "title": "OpenStax Astronomy 2e · Chapter 7: Other Worlds: An Introduction to the Solar System",
+   "description": "An accessibility-ready mirror of OpenStax Astronomy 2e Chapter 7.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Astronomy",
+    "Solar system",
+    "Planetary composition",
+    "Planetary formation and dating"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/astronomy-2e/pages/7-thinking-ahead",
+    "attributionUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Andrew Fraknoi",
+    "David Morrison",
+    "Sidney Wolff"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 5,
+   "wordCount": 10225,
+   "file": "books/openstax-astronomy-2e-chapter-7.json"
+  },
+  {
+   "slug": "openstax-us-history-chapter-7",
+   "title": "OpenStax U.S. History · Chapter 7: Creating Republican Governments, 1776–1790",
+   "description": "An accessibility-ready mirror of OpenStax U.S. History Chapter 7.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "U.S. history",
+    "Republican government",
+    "Constitutional Convention",
+    "Early American democracy"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/us-history/pages/7-introduction",
+    "attributionUrl": "https://openstax.org/books/us-history/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "P. Scott Corbett",
+    "Volker Janssen",
+    "John M. Lund",
+    "Todd Pfannestiel",
+    "Sylvie Waskiewicz",
+    "Paul Vickery"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 5,
+   "wordCount": 11287,
+   "file": "books/openstax-us-history-chapter-7.json"
+  },
+  {
+   "slug": "openstax-biology-2e-chapter-8",
+   "title": "OpenStax Biology 2e · Chapter 8: Photosynthesis",
+   "description": "An accessibility-ready mirror of OpenStax Biology 2e Chapter 8.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Biology",
+    "Photosynthesis",
+    "Light-dependent reactions",
+    "Organic molecule synthesis"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/biology-2e/pages/8-introduction",
+    "attributionUrl": "https://openstax.org/books/biology-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Mary Ann Clark",
+    "Matthew Douglas",
+    "Jung Choi"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 4,
+   "wordCount": 7160,
+   "file": "books/openstax-biology-2e-chapter-8.json"
+  },
+  {
+   "slug": "openstax-astronomy-2e-chapter-8",
+   "title": "OpenStax Astronomy 2e · Chapter 8: Earth as a Planet",
+   "description": "An accessibility-ready mirror of OpenStax Astronomy 2e Chapter 8.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Astronomy",
+    "Earth systems",
+    "Atmosphere and climate",
+    "Planetary evolution"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/astronomy-2e/pages/8-thinking-ahead",
+    "attributionUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Andrew Fraknoi",
+    "David Morrison",
+    "Sidney Wolff"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 13293,
+   "file": "books/openstax-astronomy-2e-chapter-8.json"
+  },
+  {
+   "slug": "openstax-us-history-chapter-8",
+   "title": "OpenStax U.S. History · Chapter 8: Growing Pains: The New Republic, 1790–1820",
+   "description": "An accessibility-ready mirror of OpenStax U.S. History Chapter 8.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "U.S. history",
+    "Early republic",
+    "Partisan politics",
+    "War of 1812"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/us-history/pages/8-introduction",
+    "attributionUrl": "https://openstax.org/books/us-history/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "P. Scott Corbett",
+    "Volker Janssen",
+    "John M. Lund",
+    "Todd Pfannestiel",
+    "Sylvie Waskiewicz",
+    "Paul Vickery"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 5,
+   "wordCount": 11455,
+   "file": "books/openstax-us-history-chapter-8.json"
+  },
+  {
+   "slug": "openstax-biology-2e-chapter-9",
+   "title": "OpenStax Biology 2e · Chapter 9: Cell Communication",
+   "description": "An accessibility-ready mirror of OpenStax Biology 2e Chapter 9.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Biology",
+    "Cell communication",
+    "Signal transduction",
+    "Cellular receptors"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/biology-2e/pages/9-introduction",
+    "attributionUrl": "https://openstax.org/books/biology-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Mary Ann Clark",
+    "Matthew Douglas",
+    "Jung Choi"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 5,
+   "wordCount": 8632,
+   "file": "books/openstax-biology-2e-chapter-9.json"
+  },
+  {
+   "slug": "openstax-astronomy-2e-chapter-9",
+   "title": "OpenStax Astronomy 2e · Chapter 9: Cratered Worlds",
+   "description": "An accessibility-ready mirror of OpenStax Astronomy 2e Chapter 9.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Astronomy",
+    "Moon",
+    "Impact craters",
+    "Mercury"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/astronomy-2e/pages/9-thinking-ahead",
+    "attributionUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Andrew Fraknoi",
+    "David Morrison",
+    "Sidney Wolff"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 9931,
+   "file": "books/openstax-astronomy-2e-chapter-9.json"
+  },
+  {
+   "slug": "openstax-us-history-chapter-9",
+   "title": "OpenStax U.S. History · Chapter 9: Industrial Transformation in the North, 1800–1850",
+   "description": "An accessibility-ready mirror of OpenStax U.S. History Chapter 9.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "U.S. history",
+    "Industrialization",
+    "Transportation revolution",
+    "Class divisions"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/us-history/pages/9-introduction",
+    "attributionUrl": "https://openstax.org/books/us-history/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "P. Scott Corbett",
+    "Volker Janssen",
+    "John M. Lund",
+    "Todd Pfannestiel",
+    "Sylvie Waskiewicz",
+    "Paul Vickery"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 5,
+   "wordCount": 11212,
+   "file": "books/openstax-us-history-chapter-9.json"
+  },
+  {
+   "slug": "openstax-biology-2e-chapter-10",
+   "title": "OpenStax Biology 2e · Chapter 10: Cell Reproduction",
+   "description": "An accessibility-ready mirror of OpenStax Biology 2e Chapter 10.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Biology",
+    "Cell division",
+    "Cell cycle",
+    "Cancer and cell-cycle control"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/biology-2e/pages/10-introduction",
+    "attributionUrl": "https://openstax.org/books/biology-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Mary Ann Clark",
+    "Matthew Douglas",
+    "Jung Choi"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 9427,
+   "file": "books/openstax-biology-2e-chapter-10.json"
+  },
+  {
+   "slug": "openstax-astronomy-2e-chapter-10",
+   "title": "OpenStax Astronomy 2e · Chapter 10: Earthlike Planets: Venus and Mars",
+   "description": "An accessibility-ready mirror of OpenStax Astronomy 2e Chapter 10.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "Astronomy",
+    "Venus",
+    "Mars",
+    "Planetary evolution"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/astronomy-2e/pages/10-thinking-ahead",
+    "attributionUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "Andrew Fraknoi",
+    "David Morrison",
+    "Sidney Wolff"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 17234,
+   "file": "books/openstax-astronomy-2e-chapter-10.json"
+  },
+  {
+   "slug": "openstax-us-history-chapter-10",
+   "title": "OpenStax U.S. History · Chapter 10: Jacksonian Democracy, 1820–1840",
+   "description": "An accessibility-ready mirror of OpenStax U.S. History Chapter 10.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "open-textbook-chapter",
+   "subjects": [
+    "U.S. history",
+    "Jacksonian democracy",
+    "Indian Removal",
+    "Majority rule"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/us-history/pages/10-introduction",
+    "attributionUrl": "https://openstax.org/books/us-history/pages/1-introduction"
+   },
+   "cover": null,
+   "authors": [
+    "P. Scott Corbett",
+    "Volker Janssen",
+    "John M. Lund",
+    "Todd Pfannestiel",
+    "Sylvie Waskiewicz",
+    "Paul Vickery"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax, Rice University",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 10314,
+   "file": "books/openstax-us-history-chapter-10.json"
   }
  ]
 }

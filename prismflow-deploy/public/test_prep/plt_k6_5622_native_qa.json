@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-19T17:49:12.413Z",
+  "generatedAt": "2026-07-23T17:25:02.281Z",
   "packId": "praxis-plt-k6-5622",
   "standard": {
     "label": "AlloFlow independent 5622 source, structure, feedback, originality, safety, and linkage QA v1",
@@ -921,7 +921,7 @@
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
     "sourceItemsSha256": "b7bbe263218d2d0c537c57033807537948067803c0f712a50b466743a754fd2a",
-    "learningLibrarySha256": "1f67f1660d1a996f6b532c0dc260934f7c351373de1a792ba9c22e1461dcb662",
+    "learningLibrarySha256": "3c48daa7a98fc5f43b3c1eed8207ec7811a7bc825bede03b1613cf7c42bb8903",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   },
   "expansion": {

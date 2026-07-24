@@ -1,6 +1,6 @@
 # ParaPro diagnostic-bank QA report
 
-Generated: 2026-07-19T17:48:49.398Z
+Generated: 2026-07-23T17:24:11.209Z
 
 Pack: ParaPro Assessment (1755) - 200 Source Questions + 300 Independent Practice Questions v0.7.0
 

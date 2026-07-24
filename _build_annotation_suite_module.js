@@ -11,17 +11,20 @@ const path = require('path');
 
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'annotation_suite_source.jsx');
+const INQUIRY_BRIDGE = path.join(ROOT, 'annotation_inquiry_bridge.js');
 const OUTPUT = path.join(ROOT, 'annotation_suite_module.js');
 const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'annotation_suite_module.js');
 const TMP = path.join(ROOT, '_tmp_annotation_suite_entry.jsx');
 const TMP_COMPILED = TMP + '.compiled.js';
 
-if (!fs.existsSync(SOURCE)) {
-  console.error('Source not found:', SOURCE);
-  process.exit(1);
+for (const requiredFile of [SOURCE, INQUIRY_BRIDGE]) {
+  if (!fs.existsSync(requiredFile)) {
+    console.error('Source not found:', requiredFile);
+    process.exit(1);
+  }
 }
 
-const source = fs.readFileSync(SOURCE, 'utf-8');
+const source = fs.readFileSync(INQUIRY_BRIDGE, 'utf-8') + '\n' + fs.readFileSync(SOURCE, 'utf-8');
 
 const entry = `
 /* global React */
@@ -43,6 +46,7 @@ try {
 
 const compiled = fs.readFileSync(TMP_COMPILED, 'utf-8')
   .replace(/\/\*.*global.*\*\/\n/g, '')
+  .replace(/\nexport default (require_[A-Za-z0-9_]+)\(\);?\s*$/, '\n$1();')
   .trim();
 
 try { fs.unlinkSync(TMP); } catch (_) {}

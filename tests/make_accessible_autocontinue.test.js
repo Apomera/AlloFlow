@@ -30,10 +30,22 @@ describe('Make Accessible — fix runs even when audit state has not propagated'
   });
 
   it('anti-drift: the handler captures the audit result and passes it to fixAndVerifyPdf', () => {
-    expect(viewSrc).toContain('_audit = await runPdfAccessibilityAudit(pendingPdfBase64);');
-    expect(viewSrc).toContain('auditResult: _audit || undefined');
-    // and the audit is guarded so an error no longer aborts the chain
-    expect(viewSrc).toMatch(/try \{ _audit = await runPdfAccessibilityAudit\(pendingPdfBase64\); if \(!_audit\) return; \}\s*\n\s*catch \(auditErr\)/);
+    expect(viewSrc).toContain('_audit = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name });');
+    expect(viewSrc).toContain('auditResult: _audit });');
+    expect(viewSrc).toContain('const _auditChooserSnapshot = pdfAuditResult;');
+    expect(viewSrc).toContain('setPdfAuditResult(_viewAuditFallbackResult(_auditChooserSnapshot, pendingPdfFile));');
+    expect(viewSrc).toContain('if (!_viewAuditCanStartRemediation(_audit))');
+    expect(viewSrc).not.toContain('auditResult: _audit || undefined');
+    expect(viewSrc).not.toContain('attempting remediation anyway');
+  });
+  it('fails closed when the initial audit is absent or explicitly unavailable', () => {
+    const start = viewSrc.indexOf('function _viewAuditCanStartRemediation');
+    const end = viewSrc.indexOf('function _viewAuditFallbackResult', start);
+    const canStart = new Function(viewSrc.slice(start, end) + '\nreturn _viewAuditCanStartRemediation;')();
+    expect(canStart(null)).toBe(false);
+    expect(canStart({ score: -1 })).toBe(false);
+    expect(canStart({ score: null, _coverageIncomplete: true })).toBe(true);
+    expect(canStart({ score: 0 })).toBe(true);
   });
   it('anti-drift: fixAndVerifyPdf prefers the passed auditResult over React state', () => {
     // Harness repair (2026-07-09): S1 snapshots audit state at run entry (_run.auditResult).

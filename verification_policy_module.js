@@ -14,6 +14,10 @@ function _alloDeriveVerificationState(input) {
   var _count = function (v) { return _finite(v) ? Math.max(0, Math.floor(v)) : null; };
 
   var aiStatus = 'unavailable';
+  var aiReviewCount = Array.isArray(ai && ai.issues)
+    ? ai.issues.filter(function (issue) { return !!(issue && issue.requiresManualReview === true); }).length
+    : 0;
+  if (aiReviewCount > 0) reasons.push('ai-manual-review:' + aiReviewCount);
   if (!_finite(ai && ai.score)) {
     reasons.push('ai-unavailable');
   } else {
@@ -24,6 +28,8 @@ function _alloDeriveVerificationState(input) {
       if (ai._partialAudit || ai.partial) reasons.push('ai-partial-audit');
       if (ai._scoreDegraded || ai.scoreDegraded) reasons.push('ai-score-degraded');
       if (ai.synthesized) reasons.push('ai-synthesized');
+    } else if (aiReviewCount > 0) {
+      aiStatus = 'complete-with-review';
     } else {
       aiStatus = 'complete';
     }
@@ -86,7 +92,7 @@ function _alloDeriveVerificationState(input) {
   // web audit (the ==='complete' success branches were dead code) and let a
   // zero-engines-ran result claim 'review-required' over 'unavailable'.
   // languageReviewRequired stays a genuine gate (a human confirms the language).
-  var reviewCount = axeReviewCount + eaReviewCount + (input.languageReviewRequired ? 1 : 0);
+  var reviewCount = aiReviewCount + axeReviewCount + eaReviewCount + (input.languageReviewRequired ? 1 : 0);
   var allComplete = aiStatus === 'complete' && axeStatus === 'complete' && eaStatus === 'complete';
   var allUnavailable = aiStatus === 'unavailable' && axeStatus === 'unavailable' && eaStatus === 'unavailable';
   var hasReviewEvidence = reviewCount > 0 || aiStatus === 'complete-with-review' || axeStatus === 'complete-with-review' || eaStatus === 'complete-with-review';

@@ -50,6 +50,14 @@ const expectedAfter = {
   choiceRestatementOptions: 1767,
   fullKeyEchoOptions: 1517,
 };
+const expectedCurrent = {
+  itemsWithWarnings: 1357,
+  incorrectOptionsWithWarnings: 3924,
+  insufficientDetailOptions: 1425,
+  genericTemplateOptions: 2420,
+  choiceRestatementOptions: 1722,
+  fullKeyEchoOptions: 1489,
+};
 const genericFeedbackPattern = /\b(?:is not best because|does not meet the defining condition or distinction|the supported response is|makes an absolute or unconditional claim|does not represent the best available answer)\b/i;
 const normalize = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 const wordCount = (value) => String(value || '').trim().split(/\s+/).filter(Boolean).length;
@@ -173,6 +181,6 @@ describe('EPPP incorrect-option explanation repair wave 11', () => {
     expect(wave11.ids).toEqual(ids);
     expect(diagnostics.mostRecentWave).toEqual(wave11);
     expect(diagnostics.latestReviewWave).toBe('eppp-option-feedback-wave-11');
-    expect(diagnostics.summary).toMatchObject(expectedAfter);
+    expect(diagnostics.summary).toMatchObject(expectedCurrent);
   });
 });

@@ -310,6 +310,22 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await expect(studio.locator('#demoTemplateSelect option')).toHaveCount(3);
   await expect(studio.locator('#demoOpeningTitle')).toHaveValue('Fractions in AlloFlow');
   await expect(studio.locator('#demoClosingCardChk')).toBeChecked();
+  const deletedTemplateName = await studio.locator('#demoTemplateName').inputValue();
+  await studio.locator('#demoTemplateDeleteBtn').click();
+  await expect(studio.locator('#demoStatus')).toContainText('Deleted tutorial template: ' + deletedTemplateName);
+  await expect(studio.locator('#demoTemplateSelect option')).toHaveCount(2);
+  await expect.poll(() => studio.evaluate(() => JSON.parse(localStorage.getItem('vs_demo_templates_v1') || '[]').length)).toBe(1);
+  await expect(studio.locator('#demoTemplateUndoDeleteBtn')).toBeVisible();
+  await expect(studio.locator('#demoTemplateUndoDeleteBtn')).toBeEnabled();
+  await expect(studio.locator('#demoTemplateUndoDeleteBtn')).toBeFocused();
+  await studio.locator('#demoTemplateUndoDeleteBtn').click();
+  await expect(studio.locator('#demoStatus')).toContainText('Restored tutorial template: ' + deletedTemplateName);
+  await expect(studio.locator('#demoTemplateSelect option')).toHaveCount(3);
+  await expect.poll(() => studio.evaluate(() => JSON.parse(localStorage.getItem('vs_demo_templates_v1') || '[]').length)).toBe(2);
+  await expect(studio.locator('#demoTemplateUndoDeleteBtn')).toBeHidden();
+  await expect(studio.locator('#demoTemplateSelect')).toBeFocused();
+  await expect(studio.locator('#demoTemplateName')).toHaveValue(deletedTemplateName);
+  await expect(studio.locator('#demoTemplateDeleteBtn')).toBeEnabled();
   await expect(studio.locator('#demoClosingText')).toHaveValue('Try the workflow yourself');
 
   await studio.locator('#demoAudioMode').selectOption('captions');

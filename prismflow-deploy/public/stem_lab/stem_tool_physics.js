@@ -87,6 +87,10 @@ window.StemLab = window.StemLab || {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
+      var isContrast = !!ctx.isContrast;
+      var isDark = !!ctx.isDark;
+      var themeSurface = isContrast ? '#000000' : (isDark ? '#0f172a' : '#f8fafc');
+      var themeInk = isContrast ? '#ffffff' : (isDark ? '#f8fafc' : '#0f172a');
       // i18n: __alloT(key, englishFallback) → ctx.t if available, else the English string.
       // Keys are stem.physics.<snake_case>; harvested by dev-tools/i18n/extract_stem_tool_en.cjs.
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
@@ -1963,7 +1967,7 @@ const d = labToolData.physics;
                 ? __alloT('stem.physics.next_one_controlled_change', 'Use one controlled change to improve your next target attempt.')
                 : __alloT('stem.physics.next_change_only_one', 'Change only angle, velocity, or gravity and compare the new trajectory.');
 
-          return React.createElement("div", { id: "physics-fs-outer", className: "max-w-5xl mx-auto animate-in fade-in duration-200", style: d.physFsMode ? { position: 'fixed', inset: 0, zIndex: 9998, width: '100vw', height: '100vh', maxWidth: '100vw', margin: 0, overflowY: 'auto', background: '#0f172a', padding: '10px' } : { position: 'relative' } },
+          return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme": isContrast ? "contrast" : (isDark ? "dark" : "light"), className: "max-w-5xl mx-auto animate-in fade-in duration-200", style: d.physFsMode ? { position: 'fixed', inset: 0, zIndex: 9998, width: '100vw', height: '100vh', maxWidth: '100vw', margin: 0, overflowY: 'auto', background: themeSurface, color: themeInk, padding: '10px' } : { position: 'relative', background: themeSurface, color: themeInk } },
 
 
             React.createElement("section", { "data-physics-command": "true", className: "mb-4 overflow-hidden rounded-2xl border border-cyan-300/40 bg-gradient-to-br from-slate-950 via-cyan-950 to-blue-950 text-white shadow-xl" },

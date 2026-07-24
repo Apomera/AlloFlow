@@ -10,6 +10,9 @@ const paddedChoiceText = 'Under the conditions in the question, the best respons
 const wordCount = (value) => String(value).trim().split(/\s+/).filter(Boolean).length;
 const supersedingReviewWaveById = new Map([
   ['eppp-v3-professional-030', 'eppp-native-quality-wave-06'],
+  ['eppp-v3-assessment-062', 'eppp-native-quality-wave-07'],
+  ['eppp-v3-intervention-069', 'eppp-native-quality-wave-07'],
+  ['eppp-v3-professional-041', 'eppp-native-quality-wave-09'],
 ]);
 
 describe('EPPP native quality repair wave 02', () => {

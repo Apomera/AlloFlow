@@ -41,6 +41,21 @@ describe('canonical remediation verification-state matrix', () => {
     });
   });
 
+  it('keeps a high AI score with an unclassified/manual issue out of complete and target-met state', () => {
+    const input = completeEvidence();
+    input.ai = {
+      score: 95,
+      issues: [{ ruleId: 'other', issue: 'Unclassified barrier.', requiresManualReview: true }],
+    };
+    const result = deriveVerificationState(input);
+    expect(result.verificationState).toBe('review-required');
+    expect(result.verificationCoverage.ai).toBe('complete-with-review');
+    expect(result.afterScoreVerified).toBe(false);
+    expect(result.requiresManualReview).toBe(true);
+    expect(result.reviewCount).toBe(1);
+    expect(result.reasons).toContain('ai-manual-review:1');
+  });
+
   it('requires review for axe incomplete rules without counting them as confirmed failures', () => {
     const input = completeEvidence();
     input.axe.totalIncomplete = 3;

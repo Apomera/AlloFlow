@@ -13,6 +13,8 @@ describe('EPPP native learning-library catalog', () => {
   it('catalogs the complete preserved learning library with stable unique IDs', () => {
     expect(catalog.summary).toMatchObject({ chapters: 49, sections: 278, diagrams: 25, diagramPlacements: 58, knowledgeChecks: 109, flashcards: 415, memoryAids: 255 });
     expect(new Set(catalog.chapters.map((item) => item.id)).size).toBe(49);
+    expect(catalog.knowledgeChecks).toHaveLength(109);
+    expect(new Set(catalog.knowledgeChecks.map((item) => item.id)).size).toBe(109);
     expect(new Set(catalog.flashcards.map((item) => item.id)).size).toBe(415);
     expect(new Set(catalog.memoryAids.map((item) => item.id)).size).toBe(255);
   });
@@ -37,10 +39,20 @@ describe('EPPP native learning-library catalog', () => {
     expect(catalog.flashcards.filter((card) => card.contentDisposition === 'retain-after-rewrite')).toHaveLength(336);
     expect(catalog.flashcards.filter((card) => card.contentDisposition === 'retire-redundant')).toHaveLength(79);
     expect(catalog.memoryAids.every((aid) => aid.title && aid.content && ['review-required', 'source-reviewed-editorial-pass', 'editorial-reviewed-source-pending'].includes(aid.reviewStatus))).toBe(true);
-    expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass')).toHaveLength(40);
+    expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass')).toHaveLength(56);
     expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'editorial-reviewed-source-pending')).toHaveLength(2);
-    expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'review-required')).toHaveLength(213);
-    expect(catalog.summary).toMatchObject({ releasedFlashcards: 336, releasedMemoryAids: 40 });
+    expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'review-required')).toHaveLength(197);
+    expect(catalog.summary).toMatchObject({
+      releasedFlashcards: 336,
+      releasedMemoryAids: 56,
+      qaPassedKnowledgeChecks: 0,
+      sourceReviewedKnowledgeChecks: 32,
+      releasedKnowledgeChecks: 32,
+      reviewRequiredKnowledgeChecks: 77,
+    });
+    expect(catalog.knowledgeChecks.filter((item) => item.reviewStatus === 'source-reviewed-editorial-pass')).toHaveLength(32);
+    expect(catalog.knowledgeChecks.filter((item) => item.reviewStatus === 'review-required')).toHaveLength(77);
+    expect(catalog.chapters.flatMap((chapter) => chapter.knowledgeChecks)).toHaveLength(32);
     expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass').every((aid) => aid.sourceDetails.length > 0 && aid.sourceDetails.every((source) => source.title && source.url && source.whyReputable))).toBe(true);
     expect(catalog.diagrams.every((diagram) => diagram.hasSvg && diagram.description)).toBe(true);
     expect(qa.status).toBe('review-in-progress');

@@ -35,10 +35,41 @@
   Roadmap: vendor a CODAP build into School Box for offline classrooms (MIT
   license permits it; the desktop runtime is the natural host).
 -->
+<script>
+(function () {
+  var requested = new URLSearchParams(window.location.search).get('theme');
+  var theme = requested === 'light' || requested === 'contrast' ? requested : 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+  document.documentElement.style.colorScheme = theme === 'light' ? 'light' : 'dark';
+})();
+</script>
 <style>
   :root {
     --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155;
     --text: #e2e8f0; --dim: #94a3b8; --accent: #4f46e5; --ok: #4ade80; --warn: #fbbf24;
+  }
+  :root[data-theme="light"] {
+    --bg: #f8fafc; --panel: #ffffff; --panel2: #f1f5f9; --stage: #e2e8f0;
+    --line: #64748b; --line2: #475569; --text: #0f172a; --dim: #475569;
+    --muted: #475569; --soft: #334155; --accent: #1d4ed8; --accent2: #4338ca;
+    --teal: #0f766e; --teal2: #115e59; --sky: #0369a1; --amber: #92400e;
+    --red: #b91c1c; --green: #047857; --violet: #6d28d9; --ok: #047857; --warn: #92400e;
+  }
+  :root[data-theme="contrast"] {
+    --bg: #000000; --panel: #000000; --panel2: #0a0a0a; --stage: #000000;
+    --line: #fbbf24; --line2: #ffff00; --text: #ffffff; --dim: #ffffff;
+    --muted: #ffffff; --soft: #ffffff; --accent: #fbbf24; --accent2: #fbbf24;
+    --teal: #00ffff; --teal2: #00ffff; --sky: #00ffff; --amber: #ffff00;
+    --red: #ff6b6b; --green: #00ff66; --violet: #ffff00; --ok: #00ff66; --warn: #ffff00;
+  }
+  :root[data-theme="contrast"] * { box-shadow: none !important; text-shadow: none !important; }
+  :root[data-theme="contrast"] button,
+  :root[data-theme="contrast"] input,
+  :root[data-theme="contrast"] select,
+  :root[data-theme="contrast"] textarea { border-color: var(--line) !important; }
+  :focus-visible { outline: 3px solid var(--line); outline-offset: 2px; }
+  @media (forced-colors: active) {
+    button, input, select, textarea, a { forced-color-adjust: auto; }
   }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }

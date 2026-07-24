@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-07",
+  "reviewedAt": "2026-07-22",
+  "reportType": "source-checked-native-item-repair",
+  "scope": "Deep-rewrite the first eight unreviewed items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.",
+  "challengeCriteria": [
+    "replace definition completion with application or analysis where difficulty warrants",
+    "use adjacent, instructionally plausible distractors without stacked absolute cues",
+    "avoid keyed lexical echoes that allow answer selection without construct knowledge",
+    "separate intentionally related coverage by decision, context, or cognitive demand",
+    "verify the key and rationale against an item-specific authoritative or peer-reviewed source",
+    "provide four substantive, option-specific explanations and preserve answer positions"
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 8,
+    "domainsCovered": 5,
+    "appliedOrAnalysisItems": 8,
+    "keyPositionsPreserved": 8,
+    "optionSpecificExplanations": 32,
+    "selectedItemsWithWarningsAfter": 0,
+    "selectedWarningIdsAfter": [],
+    "warningCountsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 185,
+      "asymmetricExtremeDistractorCandidates": 361,
+      "advancedDirectRecallCandidates": 27,
+      "semanticConceptDuplicatePairs": 313,
+      "semanticConceptDuplicateClusters": 133,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "warningCountsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 181,
+      "asymmetricExtremeDistractorCandidates": 361,
+      "advancedDirectRecallCandidates": 27,
+      "semanticConceptDuplicatePairs": 309,
+      "semanticConceptDuplicateClusters": 131,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-v2-intervention-020",
+      "domainId": "intervention",
+      "difficulty": "advanced",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-mentalizing-rupture-response",
+      "sourceCheck": "Bateman and Fonagy define mentalizing as thinking about mental states in oneself and others as distinct from, but capable of causing, actions; the revised scenario tests use of that stance during an interpersonal rupture.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "advanced-direct-recall",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-intervention-069",
+      "domainId": "intervention",
+      "difficulty": "intermediate",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-cpt-accommodation-application",
+      "sourceCheck": "The VA clinician guidance explicitly contrasts assimilation and over-accommodation with balanced accommodation and identifies development of accurate, balanced beliefs as a primary CPT goal.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b019-intervention-2",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-prolonged-exposure-objective-safety",
+      "sourceCheck": "VA guidance describes in-vivo work with feared or avoided but relatively safe stimuli; the revised item tests the safety distinction that must guide selection of an exposure exercise.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b018-cognitive-2",
+      "domainId": "cognitive-affective",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "cognitive-mood-congruent-versus-state-dependent-retrieval",
+      "sourceCheck": "Bower reports greater recall for experiences affectively congruent with the mood present during retrieval; the revised stem makes clear that matching mood at encoding is not required.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b020-assessment-1",
+      "domainId": "assessment",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "assessment-performance-based-versus-self-report-method",
+      "sourceCheck": "The R-PAS authors characterize the method as behavioral assessment with inkblot stimuli supported by standardized administration, coding, normative references, and interpretation guidance.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-assessment-062",
+      "domainId": "assessment",
+      "difficulty": "intermediate",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "assessment-sem-reliability-comparison",
+      "sourceCheck": "The joint Standards cover measurement precision, while College Board directly explains that SEM is inversely related to reliability; holding score dispersion constant makes the lower-reliability scale less precise.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b019-social-2",
+      "domainId": "social-cultural",
+      "difficulty": "foundation",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "social-just-world-threat-reduction-application",
+      "sourceCheck": "The review describes unjust events as threatening to just-world belief and documents strategies used to reduce that threat; the revised scenario tests deservingness attribution as one such response.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b025-biological-1",
+      "domainId": "biological",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "biological-dha-mechanism-versus-clinical-inference",
+      "sourceCheck": "The review supports DHA enrichment in brain phospholipids and PUFA roles in signaling, synaptic function, and inflammation while warning that translational studies often do not show clear clinical effects.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    }
+  ],
+  "limitations": [
+    "Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation."
+  ]
+}

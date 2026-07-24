@@ -538,10 +538,15 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                     <div className="mt-2 text-xs text-slate-600 space-y-1">
                       {typeof session.durationMinutes === 'number' && <p>Duration: {session.durationMinutes} min</p>}
                       {session.teacherNote && <p><span className="font-bold">Teacher note:</span> {session.teacherNote}</p>}
+                      {Array.isArray(session.liveActivities) && session.liveActivities.length > 0 && (
+                        <p><span className="font-bold">Live activity evidence:</span> {session.liveActivities.length} activit{session.liveActivities.length === 1 ? 'y' : 'ies'} · {session.liveActivities.reduce((sum, activity) => sum + (activity.submitted || 0), 0)} submissions · {session.liveActivities.reduce((sum, activity) => sum + (activity.revised || 0), 0)} revisions</p>
+                      )}
                       {Array.isArray(session.classGoals) && session.classGoals.length > 0 && (
                         <p><span className="font-bold">Class Goals met:</span> {session.classGoals.map(goal => `${goal.label} (${goal.mode === 'independent' ? goal.delivered + ' students' : '+' + goal.tokens + ' each, ' + goal.delivered + ' students'})`).join(' · ')}</p>
                       )}
-                      {Object.entries(session.participants || {}).map(([codename, record]) => <p key={codename}><span className="font-bold">{codename}</span>: {record.responseCount || 0} live response{record.responseCount === 1 ? '' : 's'}{record.groupId ? ` · group ${record.groupId}` : ''}</p>)}
+                      {Object.entries(session.participants || {}).map(([codename, record]) => (
+                        <p key={codename}><span className="font-bold">{codename}</span>: {record.responseCount || 0} quiz response{record.responseCount === 1 ? '' : 's'}{record.liveActivityCount ? ` · ${record.liveSubmissionCount || 0}/${record.liveActivityCount} activity submissions` : ''}{record.liveRevisionCount ? ` · ${record.liveRevisionCount} revision${record.liveRevisionCount === 1 ? '' : 's'}` : ''}{record.groupId ? ` · group ${record.groupId}` : ''}</p>
+                      ))}
                       {(session.unmatchedCodenames || []).length > 0 && <p className="text-rose-700"><span className="font-bold">Unmatched:</span> {session.unmatchedCodenames.join(', ')}</p>}
                     </div>
                   </details>

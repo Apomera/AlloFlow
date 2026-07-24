@@ -416,6 +416,114 @@
     return legacy;
   }
 
+  // ── CommandWorkflow ────────────────────────────────────────────────────
+
+  var COMMAND_WORKFLOW_AUDIENCES = ['teacher', 'student', 'independent', 'parent'];
+  var COMMAND_WORKFLOW_FAILURE_POLICIES = ['pause', 'stop'];
+  var COMMAND_WORKFLOW_KNOWN_FIELDS = ['schemaVersion', 'workflowId', 'kind', 'audience', 'steps', 'warnings', 'review', 'provenance'];
+  var COMMAND_WORKFLOW_STEP_FIELDS = ['stepId', 'commandId', 'params', 'why', 'onFailure'];
+  var COMMAND_ID_RE = /^[a-z0-9_:-]{1,80}$/;
+
+  function normalizeCommandParams(input, path, errors) {
+    if (input === undefined || input === null) return {};
+    if (!isPlainObject(input)) {
+      errors.push(err('bad-command-params', path, 'Command params must be a flat object.'));
+      return {};
+    }
+    var out = {};
+    var keys = Object.keys(input);
+    if (keys.length > 8) errors.push(err('too-many-command-params', path, 'Command params may contain at most 8 keys.'));
+    keys.slice(0, 8).forEach(function (key) {
+      if (!/^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/.test(key)) {
+        errors.push(err('bad-command-param-key', path + '.' + key, 'Command parameter names must be short identifiers.'));
+        return;
+      }
+      var value = input[key];
+      if (typeof value === 'string') out[key] = value.trim().slice(0, 200);
+      else if (typeof value === 'number' && isFinite(value)) out[key] = value;
+      else if (typeof value === 'boolean') out[key] = value;
+      else errors.push(err('bad-command-param-value', path + '.' + key, 'Command parameter values must be bounded strings, numbers, or booleans.'));
+    });
+    return out;
+  }
+
+  /**
+   * Validate + normalize a durable command workflow. This is deliberately a
+   * sibling to lesson Blueprints: it reuses versioning/review/provenance rules
+   * without inheriting resource-specific ordering or legacy conversion.
+   */
+  function validateCommandWorkflow(input, opts) {
+    var options = opts || {};
+    var knownCommandIds = Array.isArray(options.knownCommandIds) ? options.knownCommandIds : [];
+    var errors = [];
+    var warnings = [];
+    if (!isPlainObject(input)) return { ok: false, errors: [err('not-an-object', '', 'CommandWorkflow must be an object.')], warnings: [], value: null };
+    if (input.schemaVersion !== SCHEMA_VERSION) errors.push(err('unsupported-version', 'schemaVersion', 'Expected schemaVersion "' + SCHEMA_VERSION + '".'));
+    if (input.kind !== 'command-workflow') errors.push(err('bad-workflow-kind', 'kind', 'kind must be "command-workflow".'));
+    if (typeof input.workflowId !== 'string' || !input.workflowId.trim() || input.workflowId.length > 120) errors.push(err('missing-workflow-id', 'workflowId', 'workflowId is required and must be short.'));
+    if (COMMAND_WORKFLOW_AUDIENCES.indexOf(input.audience) === -1) errors.push(err('unknown-command-audience', 'audience', 'Unknown command workflow audience.'));
+    scanUnsafeFields(input, '', errors, 0);
+
+    var rawSteps = input.steps;
+    if (!Array.isArray(rawSteps)) errors.push(err('bad-workflow-steps', 'steps', 'steps must be a non-empty array.'));
+    else if (!rawSteps.length) errors.push(err('empty-workflow', 'steps', 'A command workflow needs at least one step.'));
+    else if (rawSteps.length > 8) errors.push(err('too-many-workflow-steps', 'steps', 'A command workflow may contain at most 8 steps.'));
+
+    var seenStepIds = {};
+    var steps = [];
+    (Array.isArray(rawSteps) ? rawSteps.slice(0, 8) : []).forEach(function (raw, index) {
+      var path = 'steps[' + index + ']';
+      if (!isPlainObject(raw)) { errors.push(err('bad-workflow-step', path, 'Each workflow step must be an object.')); return; }
+      var stepId = typeof raw.stepId === 'string' ? raw.stepId.trim() : '';
+      var commandId = typeof raw.commandId === 'string' ? raw.commandId.trim() : '';
+      if (!COMMAND_ID_RE.test(stepId)) errors.push(err('bad-step-id', path + '.stepId', 'stepId must be a short identifier.'));
+      else if (seenStepIds[stepId]) errors.push(err('duplicate-step-id', path + '.stepId', 'stepId must be unique.'));
+      else seenStepIds[stepId] = true;
+      if (!COMMAND_ID_RE.test(commandId)) errors.push(err('bad-command-id', path + '.commandId', 'commandId must be a short identifier.'));
+      else if (knownCommandIds.length && knownCommandIds.indexOf(commandId) === -1) errors.push(err('unknown-command', path + '.commandId', 'Unknown command "' + commandId + '".'));
+      var onFailure = raw.onFailure || 'pause';
+      if (COMMAND_WORKFLOW_FAILURE_POLICIES.indexOf(onFailure) === -1) errors.push(err('bad-failure-policy', path + '.onFailure', 'onFailure must be pause or stop.'));
+      Object.keys(raw).forEach(function (key) {
+        if (COMMAND_WORKFLOW_STEP_FIELDS.indexOf(key) === -1) warnings.push(err('unknown-field-dropped', path + '.' + key, 'Unknown workflow step field was dropped.'));
+      });
+      steps.push({
+        stepId: stepId,
+        commandId: commandId,
+        params: normalizeCommandParams(raw.params, path + '.params', errors),
+        why: typeof raw.why === 'string' ? raw.why.trim().slice(0, 120) : '',
+        onFailure: onFailure
+      });
+    });
+
+    var review = isPlainObject(input.review) ? input.review : { state: 'draft' };
+    if (REVIEW_STATES.indexOf(review.state) === -1) errors.push(err('unknown-review-state', 'review.state', 'review.state must be draft or approved.'));
+    var provenance = {};
+    if (input.provenance !== undefined) {
+      var provenanceReport = validateProvenance(input.provenance);
+      if (!provenanceReport.ok) errors = errors.concat(provenanceReport.errors.map(function (e) { return err(e.code, e.path ? 'provenance.' + e.path : 'provenance', e.message); }));
+      else provenance = provenanceReport.value;
+    }
+    Object.keys(input).forEach(function (key) {
+      if (COMMAND_WORKFLOW_KNOWN_FIELDS.indexOf(key) === -1) warnings.push(err('unknown-field-dropped', key, 'Unknown CommandWorkflow field was dropped.'));
+    });
+    if (errors.length) return { ok: false, errors: errors, warnings: warnings, value: null };
+    return {
+      ok: true,
+      errors: [],
+      warnings: warnings,
+      value: {
+        schemaVersion: SCHEMA_VERSION,
+        workflowId: input.workflowId.trim(),
+        kind: 'command-workflow',
+        audience: input.audience,
+        steps: steps,
+        warnings: Array.isArray(input.warnings) ? input.warnings.slice(0, 20) : [],
+        review: { state: review.state, reviewer: typeof review.reviewer === 'string' ? review.reviewer.slice(0, 200) : '' },
+        provenance: provenance
+      }
+    };
+  }
+
   // ── Job ────────────────────────────────────────────────────────────────
 
   function validateJob(input) {
@@ -564,12 +672,15 @@
     TOOL_CLASSIFICATION: TOOL_CLASSIFICATION,
     TOOL_NAME_RE: TOOL_NAME_RE,
     JOB_STATUSES: JOB_STATUSES,
+    COMMAND_WORKFLOW_AUDIENCES: COMMAND_WORKFLOW_AUDIENCES,
+    COMMAND_WORKFLOW_FAILURE_POLICIES: COMMAND_WORKFLOW_FAILURE_POLICIES,
     getToolClassification: getToolClassification,
     getMcpAnnotations: getMcpAnnotations,
     validateToolTable: validateToolTable,
     isDemoSafeTool: isDemoSafeTool,
     validateCapabilityManifest: validateCapabilityManifest,
     validateBlueprint: validateBlueprint,
+    validateCommandWorkflow: validateCommandWorkflow,
     normalizePlanItems: normalizePlanItems,
     requiredCapabilitiesForPlan: requiredCapabilitiesForPlan,
     fromLegacyConfig: fromLegacyConfig,

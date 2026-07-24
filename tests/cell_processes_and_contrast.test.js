@@ -38,8 +38,8 @@ describe('Cell simulator tooltip contrast and process diagrams', () => {
       expect(html).toContain('How the pathway unfolds');
       expect(html).toContain('Trace energy, membrane transport, photosynthesis, and protein shipping.');
       const source = readFileSync(filePath, 'utf8');
-      expect(source).toContain("modes: ['observe', 'interior', 'processes', 'play', 'quiz']");
-      expect(source).toContain("var allModes = ['observe','interior','processes','play','quiz'");
+      expect(source).toContain("modes: ['observe', 'interior', 'microdissection', 'processes', 'play', 'quiz']");
+      expect(source).toContain("var allModes = ['observe','interior','microdissection','processes','play','quiz'");
     });
   });
 

@@ -193,7 +193,7 @@ describe('Test Prep Hub render flow', () => {
       await mount({ callTTS, addToast });
       await clickButton('Open practice pack');
       const pack = Hub.listPacks().find((candidate) => candidate.id === 'workplace-safety-foundations-demo');
-      const expectedText = pack.items[0].prompt + '. ' + pack.items[0].choices.map((choice, index) => String.fromCharCode(65 + index) + ', ' + choice).join('. ');
+      const expectedText = Hub.questionSpeechText(pack.items[0], 0, pack.items.length);
 
       expect(findButton('Read question').getAttribute('aria-pressed')).toBe('false');
       await clickButton('Read question');
@@ -212,6 +212,101 @@ describe('Test Prep Hub render flow', () => {
       expect(findButton('Read question').getAttribute('aria-pressed')).toBe('false');
       expect(addToast).toHaveBeenCalledWith('Read-aloud stopped.', 'info');
     } finally {
+      restoreAudio();
+    }
+  });
+
+  it('prewarms three questions and accepts a spoken answer without microphone and narration overlap', async () => {
+    const audioInstances = [];
+    const AudioMock = vi.fn(function MockAudio(url) {
+      const audio = { src: url, play: vi.fn().mockResolvedValue(undefined), pause: vi.fn(), onplay: null, onended: null, onerror: null };
+      audioInstances.push(audio);
+      return audio;
+    });
+    const recognitionInstances = [];
+    function MockRecognition() {
+      this.start = vi.fn(() => { if (this.onstart) this.onstart(); });
+      this.abort = vi.fn();
+      this.stop = vi.fn();
+      recognitionInstances.push(this);
+    }
+    const restoreAudio = replaceWindowProperty('Audio', AudioMock);
+    const restoreRecognition = replaceWindowProperty('SpeechRecognition', MockRecognition);
+    const callTTS = vi.fn(async (text) => 'blob:' + text.slice(0, 30));
+
+    try {
+      await mount({ callTTS, selectedVoice: 'Kore' });
+      await clickButton('Open practice pack');
+      await clickButton('Hands-free mode');
+      const deadline = Date.now() + 3_000;
+      while ((callTTS.mock.calls.length < 4 || audioInstances.length < 1) && Date.now() < deadline) {
+        await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+      }
+      expect(callTTS).toHaveBeenCalledTimes(4);
+      const prewarmCalls = callTTS.mock.calls.filter((call) => call[3] && call[3].reason === 'test-prep-prewarm');
+      expect(prewarmCalls).toHaveLength(3);
+      expect(prewarmCalls.every((call) => call[1] === 'Kore' && call[3].priority === 'low' && call[3].maxRetries === 0)).toBe(true);
+      const foregroundCall = callTTS.mock.calls.find((call) => call[3] && call[3].reason === 'test-prep-playback');
+      expect(foregroundCall[3].signal).toBeTruthy();
+      expect(recognitionInstances).toHaveLength(0);
+      expect(host.textContent).toContain('Audio for the next three questions is prepared quietly');
+
+      await act(async () => { audioInstances[0].onended(); await new Promise((resolve) => setTimeout(resolve, 150)); });
+      expect(recognitionInstances).toHaveLength(1);
+      expect(recognitionInstances[0].start).toHaveBeenCalledTimes(1);
+      await act(async () => {
+        recognitionInstances[0].onresult({ results: [[{ transcript: 'choose option B' }]] });
+        await new Promise((resolve) => setTimeout(resolve, 30));
+      });
+      expect(host.querySelectorAll('input[type="radio"]')[1].checked).toBe(true);
+      expect(callTTS.mock.calls.at(-1)[0]).toContain('Selected B');
+      expect(recognitionInstances[0].abort).toHaveBeenCalledTimes(1);
+    } finally {
+      restoreRecognition();
+      restoreAudio();
+    }
+  });
+
+  it('routes a spoken clarification through the pre-answer guard and records assisted use', async () => {
+    const audioInstances = [];
+    const AudioMock = vi.fn(function MockAudio(url) {
+      const audio = { src: url, play: vi.fn().mockResolvedValue(undefined), pause: vi.fn(), onplay: null, onended: null, onerror: null };
+      audioInstances.push(audio);
+      return audio;
+    });
+    const recognitionInstances = [];
+    function MockRecognition() {
+      this.start = vi.fn(() => { if (this.onstart) this.onstart(); });
+      this.abort = vi.fn();
+      this.stop = vi.fn();
+      recognitionInstances.push(this);
+    }
+    const restoreAudio = replaceWindowProperty('Audio', AudioMock);
+    const restoreRecognition = replaceWindowProperty('SpeechRecognition', MockRecognition);
+    const callTTS = vi.fn(async (text) => 'blob:' + text.slice(0, 30));
+    const callGemini = vi.fn().mockResolvedValue('Approved means the procedure has been reviewed and authorized for this setting.');
+
+    try {
+      await mount({ callTTS, callGemini });
+      await clickButton('Open practice pack');
+      await clickButton('Hands-free mode');
+      const audioDeadline = Date.now() + 3_000;
+      while (audioInstances.length < 1 && Date.now() < audioDeadline) await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+      await act(async () => { audioInstances[0].onended(); await new Promise((resolve) => setTimeout(resolve, 150)); });
+      await act(async () => {
+        recognitionInstances[0].onresult({ results: [[{ transcript: 'ask what does approved mean' }]] });
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      });
+      await waitForText('Approved means the procedure has been reviewed', 2_000);
+      expect(callGemini).toHaveBeenCalledTimes(1);
+      expect(callGemini.mock.calls[0][0]).toContain('Clarify wording, vocabulary, or task directions only.');
+      expect(callGemini.mock.calls[0][0]).not.toContain('Complete the required training before operating unfamiliar equipment');
+      const session = JSON.parse(localStorage.getItem('alloflow_test_prep_session_v1'));
+      const pack = Hub.listPacks().find((candidate) => candidate.id === 'workplace-safety-foundations-demo');
+      expect(session.assistedItemIds).toEqual([pack.items[0].id]);
+      expect(host.textContent).toContain('AI clarification - assisted item');
+    } finally {
+      restoreRecognition();
       restoreAudio();
     }
   });
@@ -503,7 +598,7 @@ describe('Test Prep Hub render flow', () => {
 
     await clickButton('Memory aids');
     expect(host.textContent).toContain('Memory-aid library');
-    expect(host.textContent).toContain('Showing 40 of 40 released memory aids');
+    expect(host.textContent).toContain('Showing 56 of 56 released memory aids');
     await clickButton('Show aid');
     expect(findButton('Hide aid')).toBeTruthy();
     expect(host.textContent).toContain('Why this source is reputable:');

@@ -2,8 +2,11 @@
 // FERPA-by-design live polling via WebRTC peer-to-peer.
 //
 // Application data (poll prompts, student responses including free text,
-// codenames) flows browser-to-browser over RTCDataChannel and never persists
-// on any server. Only the WebRTC signaling handshake (SDP descriptions and
+// private teacher-reviewed feedback, codenames, and revision status) flows
+// browser-to-browser over RTCDataChannel and is not written to the live
+// session document. When the teacher explicitly generates AI feedback, the
+// bounded response + criteria (without uid or codename) are sent to the
+// teacher's configured AI provider. Only the WebRTC signaling handshake (SDP descriptions and
 // ICE candidates) briefly transits Firestore; signaling documents are deleted
 // as soon as the peer connection is `connected`.
 //
@@ -19,7 +22,8 @@
 //     onGuestLeft:      (uid) => ...,
 //   });
 //   await host.start();
-//   host.broadcastPoll({ id, type, prompt, options? });
+//   host.broadcastPoll({ id, type, prompt, options? }, optionalAudienceUids);
+//   host.sendFeedback(uid, pollId, reviewedFeedback);
 //   host.closePoll(pollId);
 //   host.stop();
 //
@@ -29,6 +33,7 @@
 //     codename: studentNickname,
 //     onPoll:        (poll) => ...,
 //     onPollClose:   ({ pollId }) => ...,
+//     onFeedback:    (reviewedFeedback) => ...,
 //     onConnected:   () => ...,
 //     onDisconnected: () => ...,
 //     onFailed:      () => ...,  // signaling timeout; UI should fall back to async
@@ -170,12 +175,144 @@
     const responses = Array.isArray(responseList) ? responseList : [];
     return responses.reduce((out, entry) => upsertPollResponse(out, entry), []);
   };
+  const WORD_CLOUD_MAX_LENGTH = 60;
+  const normalizeWordCloudTerm = (value) => {
+    let term = value == null ? '' : String(value);
+    try { if (typeof term.normalize === 'function') term = term.normalize('NFKC'); } catch (err) {}
+    term = term.replace(/\s+/g, ' ').trim();
+    term = term.replace(/^[\p{P}\p{S}]+|[\p{P}\p{S}]+$/gu, '').trim();
+    if (term.length > WORD_CLOUD_MAX_LENGTH) term = term.slice(0, WORD_CLOUD_MAX_LENGTH).trim();
+    return term;
+  };
+  const wordCloudTermKey = (value) => normalizeWordCloudTerm(value).toLowerCase();
+  const buildWordCloudItems = (responseList, moderationByKey) => {
+    const responses = uniqueResponsesForSummary(responseList);
+    const moderation = moderationByKey && typeof moderationByKey === 'object' ? moderationByKey : {};
+    const buckets = Object.create(null);
+    responses.forEach((entry) => {
+      const label = normalizeWordCloudTerm(entry && entry.response);
+      const key = wordCloudTermKey(label);
+      if (!key) return;
+      if (!buckets[key]) buckets[key] = { value: key, label: label, count: 0 };
+      buckets[key].count += 1;
+    });
+    return Object.keys(buckets).map((key) => {
+      const status = moderation[key] === 'approved' || moderation[key] === 'hidden'
+        ? moderation[key]
+        : 'pending';
+      return Object.assign({}, buckets[key], { status: status });
+    }).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  };
+  const FEEDBACK_RESPONSE_MAX_LENGTH = 2300;
+  const FEEDBACK_CRITERIA_MAX_LENGTH = 1200;
+  const FEEDBACK_TEXT_MAX_LENGTH = 1200;
+  const normalizeBoundedText = (value, maxLength) => {
+    let out = value == null ? '' : String(value);
+    try { if (typeof out.normalize === 'function') out = out.normalize('NFKC'); } catch (err) {}
+    out = out.replace(/\r\n?/g, '\n').trim();
+    return out.length > maxLength ? out.slice(0, maxLength).trim() : out;
+  };
+  const normalizeFeedbackResponseText = (value) => normalizeBoundedText(value, FEEDBACK_RESPONSE_MAX_LENGTH);
+  const normalizeFeedbackConfig = (poll) => {
+    const raw = poll && poll.feedback && typeof poll.feedback === 'object' ? poll.feedback : {};
+    const enabled = !!(poll && poll.type === 'freetext' && raw.enabled === true);
+    return {
+      enabled: enabled,
+      criteria: enabled ? normalizeBoundedText(raw.criteria, FEEDBACK_CRITERIA_MAX_LENGTH) : '',
+      maxAttempts: enabled ? clampInt(raw.maxAttempts, 2, 1, 2) : 1,
+    };
+  };
+  const isFeedbackPoll = (poll) => normalizeFeedbackConfig(poll).enabled;
+  const sanitizeFeedbackPacket = (packet, pollId) => {
+    const source = packet && typeof packet === 'object' ? packet : {};
+    const textValue = normalizeBoundedText(source.text, FEEDBACK_TEXT_MAX_LENGTH);
+    if (!textValue) return null;
+    const attempt = clampInt(source.attempt, 1, 1, 2);
+    return {
+      pollId: String(pollId || source.pollId || '').slice(0, 100),
+      feedbackId: String(source.feedbackId || ('feedback-' + Date.now())).slice(0, 120),
+      text: textValue,
+      attempt: attempt,
+      allowRevision: source.allowRevision === true && attempt < 2,
+      sentAt: Number.isFinite(Number(source.sentAt)) ? Number(source.sentAt) : Date.now(),
+    };
+  };
+  const upsertFeedbackResponse = (responseList, entry) => {
+    const list = Array.isArray(responseList) ? responseList.slice() : [];
+    if (!entry || !entry.uid) return list;
+    const attempt = clampInt(entry.attempt, 1, 1, 2);
+    const response = normalizeFeedbackResponseText(entry.response);
+    if (!response) return list;
+    const idx = list.findIndex((row) => row && row.uid === entry.uid);
+    const previous = idx >= 0 ? list[idx] : {};
+    const attempts = Array.isArray(previous.attempts)
+      ? previous.attempts.filter((item) => item && item.attempt !== attempt)
+      : [];
+    attempts.push({ attempt: attempt, response: response, timestamp: Number(entry.timestamp) || Date.now() });
+    attempts.sort((a, b) => a.attempt - b.attempt);
+    const next = Object.assign({}, previous, entry, {
+      response: response,
+      attempt: attempt,
+      timestamp: Number(entry.timestamp) || Date.now(),
+      attempts: attempts,
+    });
+    if (idx >= 0) list[idx] = next;
+    else list.push(next);
+    return list;
+  };
+  const resolveFeedbackAudienceUids = (guestList, roster, mode, targetId) => {
+    const guests = Array.isArray(guestList) ? guestList : [];
+    const rosterMap = roster && typeof roster === 'object' ? roster : {};
+    const seen = new Set();
+    return guests.reduce((out, guest) => {
+      const uid = guest && guest.uid ? String(guest.uid) : '';
+      if (!uid || seen.has(uid)) return out;
+      const included = mode === 'individual'
+        ? uid === String(targetId || '')
+        : mode === 'group'
+          ? !!(targetId && rosterMap[uid] && rosterMap[uid].groupId === targetId)
+          : true;
+      if (included) { seen.add(uid); out.push(uid); }
+      return out;
+    }, []);
+  };
+  const buildFeedbackPrompt = (input) => {
+    const source = input && typeof input === 'object' ? input : {};
+    const prompt = normalizeBoundedText(source.prompt, 1200);
+    const criteria = normalizeBoundedText(source.criteria, FEEDBACK_CRITERIA_MAX_LENGTH);
+    const response = normalizeFeedbackResponseText(source.response);
+    const previousResponse = normalizeFeedbackResponseText(source.previousResponse);
+    const attempt = clampInt(source.attempt, 1, 1, 2);
+    return [
+      'You are helping a teacher give private formative feedback to one student.',
+      'Write 2 short parts: (1) one specific strength grounded in the response, and (2) one concrete next step for revision.',
+      'Stay aligned to the teacher criteria. Do not assign a grade, diagnose the learner, infer identity, or add generic praise.',
+      'Keep the entire feedback under 110 words. Return feedback text only.',
+      '',
+      'PROMPT:',
+      prompt || '(not provided)',
+      '',
+      'TEACHER CRITERIA:',
+      criteria || 'Accuracy, clarity, and evidence from the lesson.',
+      '',
+      previousResponse && attempt > 1 ? 'PRIOR ATTEMPT:' : '',
+      previousResponse && attempt > 1 ? previousResponse : '',
+      previousResponse && attempt > 1 ? '' : '',
+      'STUDENT ATTEMPT ' + attempt + ':',
+      response,
+      previousResponse && attempt > 1 ? '' : '',
+      previousResponse && attempt > 1 ? 'Acknowledge one concrete improvement when the revision shows one; otherwise give the most important remaining next step.' : '',
+    ].filter(function (line, index, lines) {
+      return line !== '' || (index > 0 && lines[index - 1] !== '');
+    }).join('\n');
+  };
+
   const shouldApplyPollClose = (activePoll, payload) => {
     if (!activePoll) return true;
     const closeId = payload && payload.pollId;
     return !closeId || closeId === activePoll.id;
   };
-  const buildPollResultsSummary = (poll, responseList, guestCount) => {
+  const buildPollResultsSummary = (poll, responseList, guestCount, options) => {
     const responses = uniqueResponsesForSummary(responseList);
     const total = responses.length;
     const pct = (count) => total > 0 ? Math.round((count / total) * 100) : 0;
@@ -201,6 +338,20 @@
         const count = responses.filter((r) => String(r && r.response) === String(opt)).length;
         return { value: opt, label: String(opt), count: count, percent: pct(count) };
       });
+    } else if (poll && poll.type === 'wordcloud') {
+      const moderation = options && options.wordCloudModeration;
+      const terms = buildWordCloudItems(responses, moderation);
+      const approved = terms.filter((item) => item.status === 'approved');
+      summary.items = approved.map((item) => ({
+        value: item.value,
+        label: item.label,
+        count: item.count,
+        percent: pct(item.count)
+      }));
+      summary.wordCloud = true;
+      summary.approvedResponseCount = approved.reduce((sum, item) => sum + item.count, 0);
+      summary.pendingResponseCount = terms.filter((item) => item.status === 'pending').reduce((sum, item) => sum + item.count, 0);
+      summary.hiddenResponseCount = terms.filter((item) => item.status === 'hidden').reduce((sum, item) => sum + item.count, 0);
     } else {
       summary.items = [{ value: 'responses', label: 'Free-text responses received', count: total, percent: total > 0 ? 100 : 0 }];
       summary.freeTextSuppressed = true;
@@ -219,10 +370,12 @@
       this.sessionCode = config.sessionCode;
       this.onGuestConnected = config.onGuestConnected || (() => {});
       this.onResponse = config.onResponse || (() => {});
+      this.onResponseStatus = config.onResponseStatus || (() => {});
       this.onGuestLeft = config.onGuestLeft || (() => {});
       this.peers = new Map();
       this.collectionUnsub = null;
       this.activePoll = null;
+      this.activeAudienceUids = null;
       this._stopped = false;
       // Roster gate: when set (Set of uids), offers from unknown uids are
       // ignored. Defense-in-depth against drive-by connections to a guessed
@@ -235,6 +388,10 @@
 
     setAllowedUids(uids) {
       this._allowedUids = uids ? new Set(uids) : null;
+    }
+
+    _isUidInActiveAudience(uid) {
+      return !this.activeAudienceUids || this.activeAudienceUids.has(uid);
     }
 
     async start() {
@@ -293,7 +450,7 @@
           // poll overlay from before the drop; sending an id-less closePoll
           // clears it (shouldApplyPollClose treats a missing pollId as
           // "close whatever is showing").
-          if (this.activePoll) {
+          if (this.activePoll && this._isUidInActiveAudience(uid)) {
             try { dc.send(JSON.stringify({ type: 'poll', payload: this.activePoll })); } catch (err) {}
           } else {
             try { dc.send(JSON.stringify({ type: 'closePoll', payload: {} })); } catch (err) {}
@@ -303,7 +460,21 @@
           try {
             const parsed = JSON.parse(msg.data);
             if (parsed && parsed.type === 'response' && parsed.payload) {
-              this.onResponse(uid, codename, parsed.payload);
+              if (this.activePoll && parsed.payload.pollId === this.activePoll.id && this._isUidInActiveAudience(uid)) {
+                this.onResponse(uid, codename, parsed.payload);
+              }
+            } else if (parsed && parsed.type === 'responseStatus' && parsed.payload) {
+              if (this.activePoll && parsed.payload.pollId === this.activePoll.id && this._isUidInActiveAudience(uid)) {
+                const status = parsed.payload.status === 'submitted' || parsed.payload.status === 'editing'
+                  ? parsed.payload.status
+                  : 'drafting';
+                this.onResponseStatus(uid, codename, {
+                  pollId: parsed.payload.pollId,
+                  status: status,
+                  attempt: clampInt(parsed.payload.attempt, 1, 1, 2),
+                  timestamp: Number(parsed.payload.timestamp) || Date.now(),
+                });
+              }
             }
           } catch (err) {}
         };
@@ -337,13 +508,15 @@
       });
     }
 
-    broadcastPoll(poll) {
+    broadcastPoll(poll, audienceUids) {
       if (!poll || !poll.id) return;
       this.activePoll = poll;
+      this.activeAudienceUids = Array.isArray(audienceUids) ? new Set(audienceUids) : null;
       const msg = JSON.stringify({ type: 'poll', payload: poll });
-      this.peers.forEach((peer) => {
+      const clear = JSON.stringify({ type: 'closePoll', payload: {} });
+      this.peers.forEach((peer, uid) => {
         if (peer.dc && peer.dc.readyState === 'open') {
-          try { peer.dc.send(msg); } catch (err) {}
+          try { peer.dc.send(this._isUidInActiveAudience(uid) ? msg : clear); } catch (err) {}
         }
       });
     }
@@ -357,18 +530,34 @@
           try { peer.dc.send(msg); } catch (err) {}
         }
       });
-      if (this.activePoll && this.activePoll.id === idToClose) this.activePoll = null;
+      if (this.activePoll && this.activePoll.id === idToClose) {
+        this.activePoll = null;
+        this.activeAudienceUids = null;
+      }
     }
 
     broadcastPollResults(pollId, summary) {
       if (!pollId || !summary) return;
       const safeSummary = Object.assign({}, summary, { pollId: pollId });
       const msg = JSON.stringify({ type: 'pollResults', payload: safeSummary });
-      this.peers.forEach((peer) => {
-        if (peer.dc && peer.dc.readyState === 'open') {
+      this.peers.forEach((peer, uid) => {
+        if (peer.dc && peer.dc.readyState === 'open' && this._isUidInActiveAudience(uid)) {
           try { peer.dc.send(msg); } catch (err) {}
         }
       });
+    }
+
+    sendFeedback(uid, pollId, packet) {
+      if (!uid || !pollId || !this.activePoll || this.activePoll.id !== pollId || !this._isUidInActiveAudience(uid)) return false;
+      const peer = this.peers.get(uid);
+      const safePacket = sanitizeFeedbackPacket(packet, pollId);
+      if (!peer || !peer.dc || peer.dc.readyState !== 'open' || !safePacket) return false;
+      try {
+        peer.dc.send(JSON.stringify({ type: 'feedback', payload: safePacket }));
+        return true;
+      } catch (err) {
+        return false;
+      }
     }
 
     _cleanupPeer(uid) {
@@ -406,6 +595,7 @@
         }
       });
       this.activePoll = null;
+      this.activeAudienceUids = null;
       const teardown = () => {
         const uids = Array.from(this.peers.keys());
         uids.forEach((uid) => this._cleanupPeer(uid));
@@ -436,6 +626,7 @@
       this.onPoll = config.onPoll || (() => {});
       this.onPollClose = config.onPollClose || (() => {});
       this.onPollResults = config.onPollResults || (() => {});
+      this.onFeedback = config.onFeedback || (() => {});
       this.onConnected = config.onConnected || (() => {});
       this.onDisconnected = config.onDisconnected || (() => {});
       this.onFailed = config.onFailed || (() => {});
@@ -480,6 +671,10 @@
           if (parsed && parsed.type === 'poll') this.onPoll(parsed.payload);
           else if (parsed && parsed.type === 'closePoll') this.onPollClose(parsed.payload);
           else if (parsed && parsed.type === 'pollResults') this.onPollResults(parsed.payload);
+          else if (parsed && parsed.type === 'feedback') {
+            const packet = sanitizeFeedbackPacket(parsed.payload, parsed.payload && parsed.payload.pollId);
+            if (packet) this.onFeedback(packet);
+          }
           else if (parsed && parsed.type === 'hostClosed') this.onHostClosed(parsed.payload || {});
         } catch (err) {}
       };
@@ -530,7 +725,7 @@
       }, CONNECTION_TIMEOUT_MS);
     }
 
-    sendResponse(pollId, response) {
+    sendResponse(pollId, response, meta) {
       if (!this.dc || this.dc.readyState !== 'open') return false;
       const payload = {
         pollId: pollId,
@@ -538,11 +733,28 @@
         codename: this.codename,
         timestamp: Date.now(),
       };
+      if (meta && meta.attempt != null) payload.attempt = clampInt(meta.attempt, 1, 1, 2);
       try {
         this.dc.send(JSON.stringify({ type: 'response', payload: payload }));
         return true;
       } catch (err) {
         console.warn('[LivePolling guest] sendResponse failed:', err && err.message);
+        return false;
+      }
+    }
+
+    sendResponseStatus(pollId, status, attempt) {
+      if (!this.dc || this.dc.readyState !== 'open' || !pollId) return false;
+      const safeStatus = status === 'submitted' || status === 'editing' ? status : 'drafting';
+      try {
+        this.dc.send(JSON.stringify({ type: 'responseStatus', payload: {
+          pollId: pollId,
+          status: safeStatus,
+          attempt: clampInt(attempt, 1, 1, 2),
+          timestamp: Date.now(),
+        } }));
+        return true;
+      } catch (err) {
         return false;
       }
     }
@@ -647,11 +859,135 @@
     });
   }
 
+  const renderWordCloudItems = function (items, ariaLabel) {
+    const safeItems = Array.isArray(items) ? items.filter((item) => item && item.label) : [];
+    if (!safeItems.length) return null;
+    const maxCount = Math.max.apply(null, safeItems.map((item) => Number(item.count) || 1));
+    const colors = ['#1d4ed8', '#7c3aed', '#0f766e', '#be123c', '#b45309', '#0369a1'];
+    return ce('div', {
+      role: 'list',
+      'aria-label': ariaLabel || tr('Word cloud'),
+      style: { display: 'flex', alignItems: 'center', justifyContent: 'center', alignContent: 'center', flexWrap: 'wrap', gap: '0.45rem 0.8rem', minHeight: 110, padding: '0.8rem', background: 'white', border: '1px solid #dbeafe', borderRadius: 10 }
+    }, safeItems.map(function (item, index) {
+      const count = Math.max(1, Number(item.count) || 1);
+      const strength = count / maxCount;
+      const size = (0.88 + (strength * 1.45)).toFixed(2) + 'rem';
+      return ce('span', {
+        key: String(item.value || item.label || index),
+        role: 'listitem',
+        'aria-label': item.label + ': ' + count,
+        title: item.label + ' — ' + count,
+        style: { color: colors[index % colors.length], fontSize: size, fontWeight: strength >= 0.75 ? 850 : 700, lineHeight: 1.05, overflowWrap: 'anywhere' }
+      }, item.label, count > 1 ? ce('small', { 'aria-hidden': 'true', style: { marginLeft: 3, fontSize: '0.55em', opacity: 0.7 } }, '×' + count) : null);
+    }));
+  };
+
+  const FeedbackResponseGallery = !R ? null : function FeedbackResponseGallery(props) {
+    const participants = Array.isArray(props.participants) ? props.participants : [];
+    const resources = Array.isArray(props.resources) ? props.resources : [];
+    const feedbackByUid = props.feedbackByUid || {};
+    const busyByUid = props.busyByUid || {};
+    const submittedCount = participants.filter((item) => item.responseEntry).length;
+    const revisedCount = participants.filter((item) => item.responseEntry && item.responseEntry.attempts && item.responseEntry.attempts.length > 1).length;
+    const followUpResourceId = props.followUpResourceId || '';
+    return ce('div', { style: { marginTop: 10, padding: '0.7rem', background: 'rgba(255,255,255,0.88)', border: '1px solid #a5b4fc', borderRadius: 8 } },
+      ce('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 } },
+        ce('strong', { style: { color: '#312e81', fontSize: '0.8rem' } }, tr('Private feedback gallery')),
+        ce('span', { style: { color: '#475569', fontSize: '0.72rem' } }, submittedCount + '/' + participants.length + ' ' + tr('submitted') + (revisedCount ? ' · ' + revisedCount + ' ' + tr('revised') : '')),
+        ce('button', {
+          onClick: props.onGenerateAll,
+          disabled: submittedCount === 0 || !!props.bulkBusy,
+          style: { marginLeft: 'auto', padding: '0.35rem 0.65rem', borderRadius: 6, border: '1px solid #7c3aed', background: 'white', color: '#5b21b6', fontWeight: 800, fontSize: '0.72rem', cursor: submittedCount === 0 || props.bulkBusy ? 'default' : 'pointer', opacity: submittedCount === 0 ? 0.45 : 1 }
+        }, props.bulkBusy ? tr('Generating feedback…') : tr('Generate for submitted'))
+      ),
+      ce('p', { style: { margin: '0 0 8px 0', color: '#475569', fontSize: '0.72rem', lineHeight: 1.4 } },
+        tr('Responses remain private from classmates. Generating AI feedback sends the response and criteria—without the codename—to your configured AI provider. Review or edit every message before sending it to one student.')
+      ),
+      resources.length > 0 ? ce('label', { style: { display: 'block', color: '#475569', fontWeight: 700, fontSize: '0.72rem', marginBottom: 8 } },
+        tr('Optional follow-up resource'),
+        ce('select', {
+          value: followUpResourceId,
+          onChange: function (event) { props.onSetFollowUpResourceId(event.target.value); },
+          'aria-label': tr('Choose a follow-up resource'),
+          style: { display: 'block', width: '100%', marginTop: 3, padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: 6, background: 'white' }
+        },
+          ce('option', { value: '' }, tr('Choose a lesson resource…')),
+          resources.map(function (resource) {
+            return ce('option', { key: resource.id, value: resource.id }, resource.title || resource.label || resource.type || tr('Resource'));
+          })
+        )
+      ) : null,
+      ce('div', { role: 'list', 'aria-label': tr('Private student feedback responses'), style: { display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 430, overflow: 'auto' } },
+        participants.map(function (participant) {
+          const responseEntry = participant.responseEntry;
+          const attempts = responseEntry && Array.isArray(responseEntry.attempts) ? responseEntry.attempts : [];
+          const feedback = feedbackByUid[participant.uid] || {};
+          const busy = !!busyByUid[participant.uid];
+          const status = responseEntry ? (attempts.length > 1 ? tr('revised') : tr('submitted')) : tr(participant.status || 'waiting');
+          return ce('article', { key: participant.uid, role: 'listitem', style: { padding: '0.6rem', border: '1px solid #e2e8f0', borderRadius: 8, background: 'white' } },
+            ce('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 } },
+              ce('strong', { style: { color: '#0f172a', fontSize: '0.8rem' } }, participant.codename),
+              participant.groupName ? ce('span', { style: { color: '#6d28d9', background: '#f5f3ff', borderRadius: 999, padding: '0.08rem 0.4rem', fontSize: '0.65rem', fontWeight: 700 } }, participant.groupName) : null,
+              ce('span', { style: { marginLeft: 'auto', color: responseEntry ? '#166534' : '#64748b', fontSize: '0.7rem', fontWeight: 800 } }, status)
+            ),
+            attempts.length > 0 ? ce('div', { style: { display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 6 } },
+              attempts.map(function (attempt) {
+                return ce('div', { key: attempt.attempt, style: { padding: '0.45rem', background: attempt.attempt > 1 ? '#ecfdf5' : '#f8fafc', borderRadius: 6, color: '#1e293b', fontSize: '0.78rem', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } },
+                  ce('strong', { style: { display: 'block', color: attempt.attempt > 1 ? '#047857' : '#475569', fontSize: '0.66rem', textTransform: 'uppercase', marginBottom: 2 } }, tr('Attempt') + ' ' + attempt.attempt),
+                  attempt.response
+                );
+              })
+            ) : ce('p', { style: { margin: '0 0 5px 0', color: '#64748b', fontSize: '0.75rem', fontStyle: 'italic' } }, participant.status === 'drafting' || participant.status === 'editing' ? tr('Student is drafting…') : tr('Waiting for a response.')),
+            responseEntry ? ce('div', null,
+              ce('div', { style: { display: 'flex', gap: 6, alignItems: 'center', marginBottom: 5, flexWrap: 'wrap' } },
+                ce('button', {
+                  onClick: function () { props.onGenerate(participant.uid); },
+                  disabled: busy,
+                  style: { padding: '0.3rem 0.55rem', borderRadius: 6, border: '1px solid #7c3aed', background: 'white', color: '#5b21b6', fontWeight: 800, fontSize: '0.7rem', cursor: busy ? 'default' : 'pointer' }
+                }, busy ? tr('Generating…') : (feedback.draft ? tr('Regenerate feedback') : tr('Generate feedback'))),
+                feedback.status === 'sent' ? ce('span', { style: { color: '#047857', fontSize: '0.68rem', fontWeight: 800 } }, tr('Sent privately')) :
+                  feedback.status === 'error' ? ce('span', { style: { color: '#b91c1c', fontSize: '0.68rem', fontWeight: 700 } }, tr('Generation failed — try again')) : null
+              ),
+              feedback.draft != null ? ce('textarea', {
+                value: feedback.draft,
+                maxLength: FEEDBACK_TEXT_MAX_LENGTH,
+                onChange: function (event) { props.onDraftChange(participant.uid, event.target.value); },
+                'aria-label': tr('Feedback for') + ' ' + participant.codename,
+                rows: 3,
+                style: { width: '100%', boxSizing: 'border-box', padding: '0.45rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', fontSize: '0.76rem', marginBottom: 5 }
+              }) : null,
+              feedback.draft ? ce('button', {
+                onClick: function () { props.onSendFeedback(participant.uid); },
+                style: { padding: '0.35rem 0.6rem', borderRadius: 6, border: 'none', background: '#4f46e5', color: 'white', fontWeight: 800, fontSize: '0.7rem', cursor: 'pointer' }
+              }, feedback.status === 'sent' ? tr('Send updated feedback') : tr('Review complete — send privately')) : null,
+              followUpResourceId ? ce('div', { style: { display: 'flex', gap: 5, flexWrap: 'wrap', marginTop: 6 } },
+                typeof props.onSendToStudent === 'function' ? ce('button', {
+                  onClick: function () { props.onSendToStudent(participant.uid, followUpResourceId); },
+                  style: { padding: '0.3rem 0.55rem', borderRadius: 6, border: '1px solid #2563eb', background: '#eff6ff', color: '#1d4ed8', fontWeight: 800, fontSize: '0.68rem' }
+                }, tr('Send resource to student')) : null,
+                participant.groupId && typeof props.onSendToGroup === 'function' ? ce('button', {
+                  onClick: function () { props.onSendToGroup(participant.groupId, followUpResourceId); },
+                  style: { padding: '0.3rem 0.55rem', borderRadius: 6, border: '1px solid #7c3aed', background: '#f5f3ff', color: '#6d28d9', fontWeight: 800, fontSize: '0.68rem' }
+                }, tr('Send to') + ' ' + (participant.groupName || tr('group'))) : null
+              ) : null
+            ) : null
+          );
+        })
+      )
+    );
+  };
+
   const HostPanel = !R ? null : function HostPanel(props) {
     useLivePollingI18n();
     const sessionCode = props.sessionCode || '';
     const isOpen = !!props.isOpen;
     const onClose = props.onClose || (() => {});
+    const resources = Array.isArray(props.resources) ? props.resources : [];
+    const roster = props.roster && typeof props.roster === 'object' ? props.roster : {};
+    const sessionGroups = props.sessionGroups && typeof props.sessionGroups === 'object' ? props.sessionGroups : {};
+    const onSendToStudent = typeof props.onSendToStudent === 'function' ? props.onSendToStudent : null;
+    const onSendToGroup = typeof props.onSendToGroup === 'function' ? props.onSendToGroup : null;
+    const onActivitySnapshot = typeof props.onActivitySnapshot === 'function' ? props.onActivitySnapshot : null;
     const hostRef = R.useRef(null);
     const [guests, setGuests] = R.useState([]);
     const [responses, setResponses] = R.useState({});
@@ -671,10 +1007,24 @@
     // routingByPoll: { pollId: { uid: groupId } } — used both to suppress
     // duplicate routing on re-submission and to compute aggregates.
     const [routingByPoll, setRoutingByPoll] = R.useState({});
+    // Word-cloud terms are held locally until the teacher explicitly approves
+    // or hides them. Only approved anonymous aggregates are ever shared.
+    const [wordCloudModerationByPoll, setWordCloudModerationByPoll] = R.useState({});
+    const [feedbackEnabled, setFeedbackEnabled] = R.useState(false);
+    const [feedbackCriteria, setFeedbackCriteria] = R.useState('');
+    const [feedbackAudienceMode, setFeedbackAudienceMode] = R.useState('class');
+    const [feedbackAudienceId, setFeedbackAudienceId] = R.useState('');
+    const [activeParticipantUids, setActiveParticipantUids] = R.useState([]);
+    const [responseStatusByPoll, setResponseStatusByPoll] = R.useState({});
+    const [feedbackByPoll, setFeedbackByPoll] = R.useState({});
+    const [feedbackBusyByPoll, setFeedbackBusyByPoll] = R.useState({});
+    const [feedbackBulkBusy, setFeedbackBulkBusy] = R.useState(false);
+    const [followUpResourceId, setFollowUpResourceId] = R.useState('');
     // Refs keep onResponse's closure reading current state without
     // re-creating the host (which would tear down all peer connections).
     const activePollRef = R.useRef(null);
     const routingByPollRef = R.useRef({});
+    const lastActivitySnapshotRef = R.useRef(null);
     R.useEffect(function () { activePollRef.current = activePoll; }, [activePoll]);
     R.useEffect(function () { routingByPollRef.current = routingByPoll; }, [routingByPoll]);
 
@@ -692,6 +1042,10 @@
       if (typeof initialPoll.ratingLabels === 'string') setRatingLabels(initialPoll.ratingLabels);
       if (typeof initialPoll.options === 'string') setPollOptions(initialPoll.options);
       if (initialPoll.afterSubmitMode) setAfterSubmitMode(initialPoll.afterSubmitMode);
+      if (initialPoll.feedbackEnabled != null) setFeedbackEnabled(initialPoll.feedbackEnabled === true);
+      if (typeof initialPoll.feedbackCriteria === 'string') setFeedbackCriteria(initialPoll.feedbackCriteria);
+      if (initialPoll.feedbackAudienceMode) setFeedbackAudienceMode(initialPoll.feedbackAudienceMode);
+      if (typeof initialPoll.feedbackAudienceId === 'string') setFeedbackAudienceId(initialPoll.feedbackAudienceId);
     }, [isOpen, initialPoll]);
 
     R.useEffect(function () {
@@ -733,8 +1087,34 @@
           }
           setResponses(function (prev) {
             const next = Object.assign({}, prev);
-            const entry = { uid: uid, codename: codename, response: payload.response, timestamp: payload.timestamp, routedToGroupId: routedToGroupId };
-            next[payload.pollId] = upsertPollResponse(next[payload.pollId], entry);
+            const entry = { uid: uid, codename: codename, response: payload.response, timestamp: payload.timestamp, routedToGroupId: routedToGroupId, attempt: payload.attempt };
+            next[payload.pollId] = isFeedbackPoll(poll)
+              ? upsertFeedbackResponse(next[payload.pollId], entry)
+              : upsertPollResponse(next[payload.pollId], entry);
+            return next;
+          });
+          if (isFeedbackPoll(poll)) {
+            setResponseStatusByPoll(function (prev) {
+              const next = Object.assign({}, prev);
+              next[payload.pollId] = Object.assign({}, next[payload.pollId] || {}, { [uid]: 'submitted' });
+              return next;
+            });
+            if (clampInt(payload.attempt, 1, 1, 2) > 1) {
+              setFeedbackByPoll(function (prev) {
+                const next = Object.assign({}, prev);
+                const forPoll = Object.assign({}, next[payload.pollId] || {});
+                const prior = forPoll[uid] || {};
+                forPoll[uid] = Object.assign({}, prior, { draft: '', status: 'pending', attempt: 2 });
+                next[payload.pollId] = forPoll;
+                return next;
+              });
+            }
+          }
+        },
+        onResponseStatus: function (uid, codename, payload) {
+          setResponseStatusByPoll(function (prev) {
+            const next = Object.assign({}, prev);
+            next[payload.pollId] = Object.assign({}, next[payload.pollId] || {}, { [uid]: payload.status });
             return next;
           });
         },
@@ -818,31 +1198,50 @@
       const validRules = composerRules.filter(function (r) {
         return r && r.when && r.then && r.then.groupId;
       });
+      const startedAt = Date.now();
       const poll = {
-        id: 'poll-' + Date.now(),
+        id: 'poll-' + startedAt,
+        startedAt: startedAt,
         type: pollType,
         prompt: pollPrompt.trim(),
         options: pollType === 'mcq'
           ? pollOptions.split('\n').map(function (s) { return s.trim(); }).filter(Boolean)
           : null,
-        routingRules: validRules,
+        routingRules: (pollType === 'rating' || pollType === 'mcq') ? validRules : [],
         scale: pollType === 'rating' ? buildRatingScale(ratingMin, ratingMax, ratingLabels) : null,
-        afterSubmitMode: afterSubmitMode,
+        afterSubmitMode: pollType === 'freetext' && feedbackEnabled ? 'wait' : afterSubmitMode,
+        feedback: {
+          enabled: pollType === 'freetext' && feedbackEnabled,
+          criteria: normalizeBoundedText(feedbackCriteria, FEEDBACK_CRITERIA_MAX_LENGTH),
+          maxAttempts: 2,
+        },
       };
-      hostRef.current.broadcastPoll(poll);
+      const audienceUids = isFeedbackPoll(poll)
+        ? resolveFeedbackAudienceUids(guests, roster, feedbackAudienceMode, feedbackAudienceId)
+        : guests.map(function (guest) { return guest.uid; });
+      if (audienceUids.length === 0) return;
+      hostRef.current.broadcastPoll(poll, audienceUids);
+      setActiveParticipantUids(audienceUids);
       setActivePoll(poll);
       setResponses(function (prev) { const n = Object.assign({}, prev); n[poll.id] = []; return n; });
       setRoutingByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
+      setWordCloudModerationByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
+      setResponseStatusByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
+      setFeedbackByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
+      setFeedbackBusyByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
       setLastSharedResultsAt(null);
     };
     const closePoll = function () {
       if (!hostRef.current || !activePoll) return;
       hostRef.current.closePoll(activePoll.id);
       setActivePoll(null);
+      setActiveParticipantUids([]);
     };
     const shareResults = function () {
-      if (!hostRef.current || !activePoll) return;
-      const summary = buildPollResultsSummary(activePoll, uniqueResponsesForSummary(responses[activePoll.id] || []), guests.length);
+      if (!hostRef.current || !activePoll || isFeedbackPoll(activePoll)) return;
+      const summary = buildPollResultsSummary(activePoll, uniqueResponsesForSummary(responses[activePoll.id] || []), guests.length, {
+        wordCloudModeration: wordCloudModerationByPoll[activePoll.id] || {}
+      });
       hostRef.current.broadcastPollResults(activePoll.id, summary);
       setLastSharedResultsAt(Date.now());
     };
@@ -851,12 +1250,249 @@
       return g ? g.name : id;
     };
 
+    // Publish a bounded status/count snapshot to the presentation coordinator.
+    // The callback receives no prompt, response, codename, feedback, or routing
+    // rule content. The LiveLessonRun sanitizer is the second allowlist boundary.
+    R.useEffect(function () {
+      if (!onActivitySnapshot) return;
+      if (!isOpen || !activePoll) {
+        const prior = lastActivitySnapshotRef.current;
+        if (prior && prior.phase !== 'closed' && prior.phase !== 'revealed') {
+          const closed = Object.assign({}, prior, {
+            phase: 'closed',
+            updatedAt: Date.now(),
+            endedAt: Date.now(),
+          });
+          lastActivitySnapshotRef.current = closed;
+          onActivitySnapshot(closed);
+        }
+        return;
+      }
+
+      const audienceUids = activeParticipantUids.length
+        ? activeParticipantUids.slice()
+        : guests.map(function (guest) { return guest.uid; });
+      const responseEntries = uniqueResponsesForSummary(responses[activePoll.id] || []);
+      const feedbackConfig = normalizeFeedbackConfig(activePoll);
+      const responseStatuses = responseStatusByPoll[activePoll.id] || {};
+      const feedbackRecords = feedbackByPoll[activePoll.id] || {};
+      const participantStatus = {};
+      audienceUids.forEach(function (uid) {
+        const entry = responseEntries.find(function (item) { return item.uid === uid; });
+        if (entry && feedbackConfig.enabled && clampInt(entry.attempt, 1, 1, 2) > 1) {
+          participantStatus[uid] = 'revised';
+        } else if (entry) {
+          participantStatus[uid] = 'submitted';
+        } else {
+          const status = responseStatuses[uid];
+          participantStatus[uid] = status === 'drafting' || status === 'editing' ? 'working' : 'waiting';
+        }
+      });
+
+      const moderation = wordCloudModerationByPoll[activePoll.id] || {};
+      const wordCloudItems = activePoll.type === 'wordcloud'
+        ? buildWordCloudItems(responseEntries, moderation)
+        : [];
+      const moderationCounts = wordCloudItems.reduce(function (out, item) {
+        out[item.status] = (out[item.status] || 0) + item.count;
+        return out;
+      }, { approved: 0, hidden: 0, pending: 0 });
+      const feedbackSent = Object.values(feedbackRecords).filter(function (record) {
+        return record && record.status === 'sent';
+      }).length;
+      const submitted = Object.values(participantStatus).filter(function (status) {
+        return status === 'submitted' || status === 'revised';
+      }).length;
+      let phase = lastSharedResultsAt ? 'revealed' : 'collecting';
+      if (!lastSharedResultsAt && feedbackConfig.enabled && (feedbackSent > 0 || (audienceUids.length > 0 && submitted === audienceUids.length))) {
+        phase = 'review';
+      } else if (!lastSharedResultsAt && activePoll.type === 'wordcloud' && responseEntries.length > 0) {
+        phase = 'review';
+      }
+      const kind = feedbackConfig.enabled
+        ? 'feedback_response'
+        : activePoll.type === 'mcq'
+          ? 'multiple_choice'
+          : activePoll.type === 'freetext'
+            ? 'free_text'
+            : activePoll.type === 'wordcloud'
+              ? 'word_cloud'
+              : 'rating';
+      const snapshot = {
+        activityId: activePoll.id,
+        family: 'polling',
+        kind: kind,
+        phase: phase,
+        audienceUids: audienceUids,
+        participantStatus: participantStatus,
+        counts: {
+          connected: guests.filter(function (guest) { return audienceUids.indexOf(guest.uid) >= 0; }).length,
+          approved: moderationCounts.approved || 0,
+          hidden: moderationCounts.hidden || 0,
+          revealed: lastSharedResultsAt ? 1 : 0,
+          feedbackSent: feedbackSent,
+        },
+        startedAt: activePoll.startedAt || 0,
+        updatedAt: Date.now(),
+        endedAt: lastSharedResultsAt || 0,
+      };
+      lastActivitySnapshotRef.current = snapshot;
+      onActivitySnapshot(snapshot);
+    }, [isOpen, activePoll, activeParticipantUids, guests, responses, responseStatusByPoll, feedbackByPoll, wordCloudModerationByPoll, lastSharedResultsAt, onActivitySnapshot]);
+
     if (!isOpen) return null;
     const activeResponses = (activePoll && responses[activePoll.id]) || [];
     const uniqueActiveResponses = uniqueResponsesForSummary(activeResponses);
-    const responseGoal = Math.max(guests.length, uniqueActiveResponses.length, 1);
+    const activeFeedbackConfig = normalizeFeedbackConfig(activePoll);
+    const responseGoalBase = activeFeedbackConfig.enabled ? activeParticipantUids.length : guests.length;
+    const responseGoal = Math.max(responseGoalBase, uniqueActiveResponses.length, 1);
     const responsePercent = activePoll ? Math.min(100, Math.round((uniqueActiveResponses.length / responseGoal) * 100)) : 0;
-    const summaryForActive = activePoll ? buildPollResultsSummary(activePoll, uniqueActiveResponses, guests.length) : null;
+    const activeWordCloudModeration = activePoll ? (wordCloudModerationByPoll[activePoll.id] || {}) : {};
+    const wordCloudTermsForActive = activePoll && activePoll.type === 'wordcloud'
+      ? buildWordCloudItems(uniqueActiveResponses, activeWordCloudModeration)
+      : [];
+    const summaryForActive = activePoll ? buildPollResultsSummary(activePoll, uniqueActiveResponses, guests.length, {
+      wordCloudModeration: activeWordCloudModeration
+    }) : null;
+    const canShareActiveResults = !!(!activeFeedbackConfig.enabled && summaryForActive && (
+      activePoll.type === 'wordcloud'
+        ? summaryForActive.items.length > 0
+        : uniqueActiveResponses.length > 0
+    ));
+    const feedbackStatusForActive = activePoll ? (responseStatusByPoll[activePoll.id] || {}) : {};
+    const feedbackForActive = activePoll ? (feedbackByPoll[activePoll.id] || {}) : {};
+    const feedbackBusyForActive = activePoll ? (feedbackBusyByPoll[activePoll.id] || {}) : {};
+    const feedbackParticipants = activeFeedbackConfig.enabled ? activeParticipantUids.map(function (uid) {
+      const guest = guests.find(function (entry) { return entry.uid === uid; }) || {};
+      const rosterEntry = roster[uid] || {};
+      const groupId = rosterEntry.groupId || null;
+      const group = groupId && sessionGroups[groupId];
+      return {
+        uid: uid,
+        codename: guest.codename || rosterEntry.name || 'Student',
+        groupId: groupId,
+        groupName: group ? (group.name || groupId) : groupId,
+        status: feedbackStatusForActive[uid] || 'waiting',
+        responseEntry: activeResponses.find(function (entry) { return entry.uid === uid; }) || null,
+      };
+    }) : [];
+    const wordCloudStatusCounts = wordCloudTermsForActive.reduce(function (out, item) {
+      out[item.status] += item.count;
+      return out;
+    }, { pending: 0, approved: 0, hidden: 0 });
+    const setWordCloudTermStatus = function (key, status) {
+      if (!activePoll || activePoll.type !== 'wordcloud' || !key) return;
+      setWordCloudModerationByPoll(function (prev) {
+        const next = Object.assign({}, prev);
+        next[activePoll.id] = Object.assign({}, next[activePoll.id] || {}, { [key]: status });
+        return next;
+      });
+      setLastSharedResultsAt(null);
+    };
+    const approvePendingWordCloudTerms = function () {
+      if (!activePoll || activePoll.type !== 'wordcloud') return;
+      setWordCloudModerationByPoll(function (prev) {
+        const next = Object.assign({}, prev);
+        const forPoll = Object.assign({}, next[activePoll.id] || {});
+        wordCloudTermsForActive.forEach(function (item) {
+          if (item.status === 'pending') forPoll[item.value] = 'approved';
+        });
+        next[activePoll.id] = forPoll;
+        return next;
+      });
+      setLastSharedResultsAt(null);
+    };
+    const updateFeedbackRecordForPoll = function (pollId, uid, patch) {
+      if (!pollId || !uid) return;
+      setFeedbackByPoll(function (prev) {
+        const next = Object.assign({}, prev);
+        const forPoll = Object.assign({}, next[pollId] || {});
+        forPoll[uid] = Object.assign({}, forPoll[uid] || {}, patch);
+        next[pollId] = forPoll;
+        return next;
+      });
+    };
+    const updateFeedbackRecord = function (uid, patch) {
+      if (!activePoll) return;
+      updateFeedbackRecordForPoll(activePoll.id, uid, patch);
+    };
+    const setFeedbackBusy = function (uid, busy) {
+      if (!activePoll || !uid) return;
+      setFeedbackBusyByPoll(function (prev) {
+        const next = Object.assign({}, prev);
+        next[activePoll.id] = Object.assign({}, next[activePoll.id] || {}, { [uid]: !!busy });
+        return next;
+      });
+    };
+    const generateFeedbackForUid = async function (uid) {
+      if (!activePoll || !activeFeedbackConfig.enabled) return false;
+      const feedbackPollId = activePoll.id;
+      const entry = activeResponses.find(function (item) { return item.uid === uid; });
+      if (!entry) return false;
+      const generator = props.callGemini || ((typeof window !== 'undefined') && window.callGemini);
+      if (typeof generator !== 'function') {
+        updateFeedbackRecordForPoll(feedbackPollId, uid, { draft: '', status: 'error' });
+        return false;
+      }
+      setFeedbackBusy(uid, true);
+      try {
+        const prompt = buildFeedbackPrompt({
+          prompt: activePoll.prompt,
+          criteria: activeFeedbackConfig.criteria,
+          response: entry.response,
+          previousResponse: entry.attempts && entry.attempts.length > 1 ? entry.attempts[0].response : '',
+          attempt: entry.attempt || 1,
+        });
+        const generated = await generator(prompt, false);
+        const draft = normalizeBoundedText(generated, FEEDBACK_TEXT_MAX_LENGTH);
+        if (!draft) throw new Error('Empty feedback');
+        updateFeedbackRecordForPoll(feedbackPollId, uid, { draft: draft, status: 'draft', generatedAt: Date.now(), attempt: entry.attempt || 1 });
+        return true;
+      } catch (err) {
+        console.warn('[LivePolling HostPanel] feedback generation failed:', err && err.message);
+        updateFeedbackRecordForPoll(feedbackPollId, uid, { draft: '', status: 'error' });
+        return false;
+      } finally {
+        setFeedbackBusy(uid, false);
+      }
+    };
+    const generateAllFeedback = async function () {
+      if (feedbackBulkBusy) return;
+      setFeedbackBulkBusy(true);
+      try {
+        for (let i = 0; i < feedbackParticipants.length; i++) {
+          if (feedbackParticipants[i].responseEntry) await generateFeedbackForUid(feedbackParticipants[i].uid);
+        }
+      } finally {
+        setFeedbackBulkBusy(false);
+      }
+    };
+    const changeFeedbackDraft = function (uid, value) {
+      const draft = value == null ? '' : String(value).slice(0, FEEDBACK_TEXT_MAX_LENGTH);
+      updateFeedbackRecord(uid, { draft: draft, status: 'draft' });
+    };
+    const sendFeedbackToUid = function (uid) {
+      if (!activePoll || !hostRef.current) return;
+      const entry = activeResponses.find(function (item) { return item.uid === uid; });
+      const record = feedbackForActive[uid];
+      if (!entry || !record || !record.draft) return;
+      const attempt = clampInt(entry.attempt, 1, 1, activeFeedbackConfig.maxAttempts);
+      const sent = hostRef.current.sendFeedback(uid, activePoll.id, {
+        feedbackId: 'feedback-' + Date.now() + '-' + uid.slice(0, 12),
+        text: record.draft,
+        attempt: attempt,
+        allowRevision: attempt < activeFeedbackConfig.maxAttempts,
+      });
+      if (sent) updateFeedbackRecord(uid, { status: 'sent', sentAt: Date.now(), attempt: attempt });
+    };
+    const sessionGroupEntries = Object.keys(sessionGroups).map(function (id) {
+      return { id: id, name: (sessionGroups[id] && sessionGroups[id].name) || id };
+    });
+    const composerAudienceUids = pollType === 'freetext' && feedbackEnabled
+      ? resolveFeedbackAudienceUids(guests, roster, feedbackAudienceMode, feedbackAudienceId)
+      : guests.map(function (guest) { return guest.uid; });
+    const broadcastTargetCount = composerAudienceUids.length;
+    const broadcastDisabled = !pollPrompt.trim() || broadcastTargetCount === 0;
 
     return ce('div', {
       role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('Live Polling Host'),
@@ -873,15 +1509,52 @@
         ),
         ce('div', { style: { background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '0.75rem', marginBottom: '0.75rem' } },
           ce('h3', { style: { margin: '0 0 0.5rem 0', fontSize: '0.95rem' } }, tr('Create poll')),
-          ce('div', { style: { display: 'flex', gap: 8, marginBottom: 8 } },
-            ['rating', 'mcq', 'freetext'].map(function (t) {
+          ce('div', { style: { display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
+            ['rating', 'mcq', 'freetext', 'wordcloud'].map(function (t) {
               return ce('button', {
                 key: t, onClick: function () { setPollType(t); },
                 style: { padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid ' + (pollType === t ? '#1e3a8a' : '#cbd5e1'), background: pollType === t ? '#1e3a8a' : 'white', color: pollType === t ? 'white' : '#0f172a', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }
-              }, t === 'rating' ? tr('Rating 1–5') : t === 'mcq' ? tr('Multiple choice') : tr('Free text'));
+              }, t === 'rating' ? tr('Rating 1–5') : t === 'mcq' ? tr('Multiple choice') : t === 'wordcloud' ? tr('Word cloud') : tr('Free text'));
             })
           ),
           ce('input', { type: 'text', value: pollPrompt, onChange: function (e) { setPollPrompt(e.target.value); }, placeholder: tr('Poll prompt'), 'aria-label': tr('Poll prompt'), style: { width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: 6, marginBottom: 8, boxSizing: 'border-box' } }),
+          pollType === 'wordcloud' ? ce('p', { style: { margin: '0 0 8px 0', padding: '0.45rem 0.55rem', borderRadius: 6, background: '#fff7ed', color: '#9a3412', fontSize: '0.75rem', lineHeight: 1.4 } }, tr('Student terms stay on this teacher device until you approve them. Only approved anonymous totals can be revealed.')) : null,
+          pollType === 'freetext' ? ce('div', { style: { marginBottom: 8, padding: '0.55rem', border: '1px solid #c7d2fe', background: feedbackEnabled ? '#eef2ff' : 'white', borderRadius: 7 } },
+            ce('label', { style: { display: 'flex', alignItems: 'center', gap: 7, color: '#312e81', fontSize: '0.8rem', fontWeight: 800 } },
+              ce('input', { type: 'checkbox', checked: feedbackEnabled, onChange: function (event) { setFeedbackEnabled(event.target.checked); if (event.target.checked) setAfterSubmitMode('wait'); } }),
+              tr('Feedback + one revision attempt')
+            ),
+            feedbackEnabled ? ce('div', { style: { marginTop: 7, display: 'flex', flexDirection: 'column', gap: 7 } },
+              ce('label', { style: { color: '#475569', fontWeight: 700, fontSize: '0.72rem' } },
+                tr('Teacher criteria'),
+                ce('textarea', { value: feedbackCriteria, maxLength: FEEDBACK_CRITERIA_MAX_LENGTH, onChange: function (event) { setFeedbackCriteria(event.target.value); }, 'aria-label': tr('Feedback criteria'), rows: 3, placeholder: tr('What should strong responses demonstrate?'), style: { display: 'block', marginTop: 3, width: '100%', boxSizing: 'border-box', padding: '0.45rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', fontSize: '0.78rem' } })
+              ),
+              ce('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 7 } },
+                ce('label', { style: { color: '#475569', fontWeight: 700, fontSize: '0.72rem' } },
+                  tr('Audience'),
+                  ce('select', { value: feedbackAudienceMode, onChange: function (event) { setFeedbackAudienceMode(event.target.value); setFeedbackAudienceId(''); }, 'aria-label': tr('Feedback response audience'), style: { display: 'block', marginTop: 3, width: '100%', padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: 6, background: 'white' } },
+                    ce('option', { value: 'class' }, tr('Whole class')),
+                    ce('option', { value: 'group' }, tr('One group')),
+                    ce('option', { value: 'individual' }, tr('One student'))
+                  )
+                ),
+                feedbackAudienceMode === 'group' ? ce('label', { style: { color: '#475569', fontWeight: 700, fontSize: '0.72rem' } },
+                  tr('Group'),
+                  ce('select', { value: feedbackAudienceId, onChange: function (event) { setFeedbackAudienceId(event.target.value); }, 'aria-label': tr('Choose feedback group'), style: { display: 'block', marginTop: 3, width: '100%', padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: 6, background: 'white' } },
+                    ce('option', { value: '' }, tr('Choose group…')),
+                    sessionGroupEntries.map(function (group) { return ce('option', { key: group.id, value: group.id }, group.name); })
+                  )
+                ) : feedbackAudienceMode === 'individual' ? ce('label', { style: { color: '#475569', fontWeight: 700, fontSize: '0.72rem' } },
+                  tr('Student'),
+                  ce('select', { value: feedbackAudienceId, onChange: function (event) { setFeedbackAudienceId(event.target.value); }, 'aria-label': tr('Choose feedback student'), style: { display: 'block', marginTop: 3, width: '100%', padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: 6, background: 'white' } },
+                    ce('option', { value: '' }, tr('Choose student…')),
+                    guests.map(function (guest) { return ce('option', { key: guest.uid, value: guest.uid }, guest.codename); })
+                  )
+                ) : ce('p', { style: { margin: '20px 0 0 0', color: '#475569', fontSize: '0.7rem' } }, tr('All connected students'))
+              ),
+              ce('p', { style: { margin: 0, color: '#4f46e5', fontSize: '0.7rem', fontWeight: 700 } }, tr('Private drafting, teacher-reviewed feedback, and targeted follow-up resources.'))
+            ) : null
+          ) : null,
           pollType === 'rating' ? ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8, marginBottom: 8 } },
             ce('label', { style: { fontSize: '0.75rem', color: '#475569', fontWeight: 700 } }, tr('Scale starts'),
               ce('input', { type: 'number', value: ratingMin, min: 0, max: 19, onChange: function (e) { setRatingMin(clampInt(e.target.value, 1, 0, 19)); }, 'aria-label': tr('Rating scale minimum'), style: { display: 'block', marginTop: 3, width: '100%', padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: 6, boxSizing: 'border-box' } })
@@ -894,20 +1567,20 @@
             )
           ) : null,
           pollType === 'mcq' ? ce('textarea', { value: pollOptions, onChange: function (e) { setPollOptions(e.target.value); }, 'aria-label': tr('Choices (one per line)'), placeholder: tr('One choice per line'), rows: 4, style: { width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: 6, marginBottom: 8, boxSizing: 'border-box', fontFamily: 'inherit' } }) : null,
-          ce('label', { style: { display: 'block', fontSize: '0.75rem', color: '#475569', fontWeight: 700, marginBottom: 8 } }, tr('After a student submits'),
+          pollType === 'freetext' && feedbackEnabled ? ce('p', { style: { margin: '0 0 8px 0', color: '#475569', fontSize: '0.72rem' } }, tr('The response remains open while the teacher reviews and sends feedback.')) : ce('label', { style: { display: 'block', fontSize: '0.75rem', color: '#475569', fontWeight: 700, marginBottom: 8 } }, tr('After a student submits'),
             ce('select', { value: afterSubmitMode, onChange: function (e) { setAfterSubmitMode(e.target.value); }, 'aria-label': tr('After submit behavior'), style: { display: 'block', marginTop: 3, width: '100%', padding: '0.45rem', border: '1px solid #cbd5e1', borderRadius: 6, background: 'white', color: '#0f172a' } },
               ce('option', { value: 'dismiss' }, tr('Dismiss poll on their device')),
               ce('option', { value: 'wait' }, tr('Keep poll open until I close it'))
             )
           ),
           // ── Routing-rules expandable section ────────────────────────
-          pollType !== 'freetext' ? ce('div', { style: { marginBottom: 8 } },
+          (pollType === 'rating' || pollType === 'mcq') ? ce('div', { style: { marginBottom: 8 } },
             ce('button', {
               onClick: function () { setShowRoutingPanel(function (v) { return !v; }); },
               style: { background: 'none', border: 'none', color: '#1e3a8a', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }
             }, showRoutingPanel ? '▾' : '▸', ' ' + tr('Routing rules') + ' ', ce('span', { style: { fontWeight: 400, color: '#64748b' } }, '(' + composerRules.length + ' ' + (composerRules.length === 1 ? tr('rule') : tr('rules')) + ')'))
           ) : null,
-          (pollType !== 'freetext' && showRoutingPanel) ? ce('div', { style: { background: 'white', border: '1px dashed #c7d2fe', borderRadius: 6, padding: '0.6rem', marginBottom: 8 } },
+          ((pollType === 'rating' || pollType === 'mcq') && showRoutingPanel) ? ce('div', { style: { background: 'white', border: '1px dashed #c7d2fe', borderRadius: 6, padding: '0.6rem', marginBottom: 8 } },
             ce('p', { style: { fontSize: '0.75rem', color: '#475569', margin: '0 0 0.5rem 0', lineHeight: 1.4 } },
               tr('Auto-route students into groups based on their response. Use this for') + ' ',
               ce('strong', null, tr('choice')), ' ' + tr('(e.g., "Pirate Crew vs Space Crew") or') + ' ',
@@ -979,7 +1652,7 @@
               style: { marginTop: composerRules.length > 0 ? 6 : 0, padding: '0.35rem 0.7rem', borderRadius: 4, border: '1px dashed ' + (groups.length === 0 ? '#cbd5e1' : '#1e3a8a'), background: 'white', color: groups.length === 0 ? '#94a3b8' : '#1e3a8a', cursor: groups.length === 0 ? 'default' : 'pointer', fontWeight: 700, fontSize: '0.75rem' }
             }, tr('+ Add rule'))
           ) : null,
-          ce('button', { onClick: broadcast, disabled: !pollPrompt.trim() || guests.length === 0, style: { padding: '0.5rem 1rem', borderRadius: 6, border: 'none', background: !pollPrompt.trim() || guests.length === 0 ? '#cbd5e1' : '#1e3a8a', color: 'white', cursor: !pollPrompt.trim() || guests.length === 0 ? 'default' : 'pointer', fontWeight: 700 } }, tr('Broadcast to') + ' ' + guests.length + ' ' + (guests.length === 1 ? tr('guest') : tr('guests')))
+          ce('button', { onClick: broadcast, disabled: broadcastDisabled, style: { padding: '0.5rem 1rem', borderRadius: 6, border: 'none', background: broadcastDisabled ? '#cbd5e1' : '#1e3a8a', color: 'white', cursor: broadcastDisabled ? 'default' : 'pointer', fontWeight: 700 } }, tr('Broadcast to') + ' ' + broadcastTargetCount + ' ' + (broadcastTargetCount === 1 ? tr('guest') : tr('guests')))
         ),
         activePoll ? ce('div', { style: { border: '1px solid #c7d2fe', background: '#eef2ff', borderRadius: 8, padding: '0.75rem' } },
           ce('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
@@ -988,18 +1661,72 @@
               ce('div', { style: { fontWeight: 600, marginTop: 2 } }, activePoll.prompt)
             ),
             ce('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' } },
-              ce('button', { onClick: shareResults, disabled: uniqueActiveResponses.length === 0, style: { padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid ' + (uniqueActiveResponses.length === 0 ? '#cbd5e1' : '#2563eb'), background: 'white', color: uniqueActiveResponses.length === 0 ? '#94a3b8' : '#1d4ed8', cursor: uniqueActiveResponses.length === 0 ? 'default' : 'pointer', fontWeight: 700, fontSize: '0.8rem' } }, lastSharedResultsAt ? tr('Share updated results') : tr('Share anonymous results')),
+              !activeFeedbackConfig.enabled ? ce('button', { onClick: shareResults, disabled: !canShareActiveResults, style: { padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid ' + (!canShareActiveResults ? '#cbd5e1' : '#2563eb'), background: 'white', color: !canShareActiveResults ? '#94a3b8' : '#1d4ed8', cursor: !canShareActiveResults ? 'default' : 'pointer', fontWeight: 700, fontSize: '0.8rem' } }, activePoll.type === 'wordcloud' ? (lastSharedResultsAt ? tr('Reveal updated word cloud') : tr('Reveal approved word cloud')) : (lastSharedResultsAt ? tr('Share updated results') : tr('Share anonymous results'))) : null,
               ce('button', { onClick: closePoll, style: { padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid #b91c1c', background: 'white', color: '#b91c1c', cursor: 'pointer', fontWeight: 700, fontSize: '0.8rem' } }, tr('Close poll'))
             )
           ),
           ce('div', { style: { marginTop: '0.6rem', fontSize: '0.85rem' } },
-            ce('strong', null, uniqueActiveResponses.length), ' / ', guests.length, ' ' + tr('responded'),
+            ce('strong', null, uniqueActiveResponses.length), ' / ', responseGoalBase + ' ' + tr('responded'),
             lastSharedResultsAt ? ce('span', { style: { marginLeft: 8, color: '#1d4ed8', fontSize: '0.75rem', fontWeight: 700 } }, tr('Results shared')) : null
           ),
           ce('div', { style: { marginTop: 8, height: 8, borderRadius: 999, background: '#dbeafe', overflow: 'hidden' }, role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': responsePercent, 'aria-label': tr('Poll response progress') },
             ce('div', { style: { width: responsePercent + '%', height: '100%', background: responsePercent >= 100 ? '#16a34a' : '#2563eb', transition: 'width 180ms ease' } })
           ),
-          summaryForActive && summaryForActive.items && summaryForActive.items.length > 0 ? ce('div', { style: { marginTop: 10, background: 'rgba(255,255,255,0.72)', border: '1px solid #dbeafe', borderRadius: 8, padding: '0.55rem', display: 'flex', flexDirection: 'column', gap: 6 } },
+          activeFeedbackConfig.enabled ? ce(FeedbackResponseGallery, {
+            participants: feedbackParticipants,
+            feedbackByUid: feedbackForActive,
+            busyByUid: feedbackBusyForActive,
+            bulkBusy: feedbackBulkBusy,
+            resources: resources,
+            followUpResourceId: followUpResourceId,
+            onSetFollowUpResourceId: setFollowUpResourceId,
+            onGenerate: generateFeedbackForUid,
+            onGenerateAll: generateAllFeedback,
+            onDraftChange: changeFeedbackDraft,
+            onSendFeedback: sendFeedbackToUid,
+            onSendToStudent: onSendToStudent,
+            onSendToGroup: onSendToGroup,
+          }) : null,
+          activePoll.type === 'wordcloud' ? ce('div', { style: { marginTop: 10, background: 'rgba(255,255,255,0.82)', border: '1px solid #fed7aa', borderRadius: 8, padding: '0.65rem', display: 'flex', flexDirection: 'column', gap: 8 } },
+            ce('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+              ce('div', null,
+                ce('div', { style: { fontSize: '0.74rem', color: '#9a3412', fontWeight: 800, textTransform: 'uppercase' } }, tr('Teacher review')),
+                ce('div', { style: { marginTop: 2, fontSize: '0.75rem', color: '#475569' } }, tr('Hold, approve, or hide each normalized term before revealing the cloud.'))
+              ),
+              ce('button', {
+                onClick: approvePendingWordCloudTerms,
+                disabled: wordCloudStatusCounts.pending === 0,
+                style: { padding: '0.35rem 0.65rem', borderRadius: 6, border: '1px solid ' + (wordCloudStatusCounts.pending === 0 ? '#cbd5e1' : '#15803d'), background: 'white', color: wordCloudStatusCounts.pending === 0 ? '#94a3b8' : '#166534', cursor: wordCloudStatusCounts.pending === 0 ? 'default' : 'pointer', fontWeight: 800, fontSize: '0.75rem' }
+              }, tr('Approve all pending'))
+            ),
+            ce('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', fontSize: '0.72rem', fontWeight: 700 } },
+              ce('span', { style: { color: '#9a3412' } }, tr('Held:') + ' ' + wordCloudStatusCounts.pending),
+              ce('span', { style: { color: '#166534' } }, tr('Approved:') + ' ' + wordCloudStatusCounts.approved),
+              ce('span', { style: { color: '#64748b' } }, tr('Hidden:') + ' ' + wordCloudStatusCounts.hidden)
+            ),
+            summaryForActive.items.length > 0 ? renderWordCloudItems(summaryForActive.items, tr('Approved word cloud preview')) : ce('p', { style: { margin: 0, padding: '0.55rem', borderRadius: 6, background: '#f8fafc', color: '#64748b', fontSize: '0.78rem' } }, wordCloudTermsForActive.length > 0 ? tr('No terms are approved yet. Review the held terms below.') : tr('Waiting for student terms.')),
+            wordCloudTermsForActive.length > 0 ? ce('div', { role: 'list', 'aria-label': tr('Word cloud moderation'), style: { display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 230, overflow: 'auto' } },
+              wordCloudTermsForActive.map(function (item) {
+                return ce('div', { key: item.value, role: 'listitem', style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 8, alignItems: 'center', padding: '0.4rem 0.5rem', background: 'white', border: '1px solid #e2e8f0', borderRadius: 6 } },
+                  ce('span', { style: { minWidth: 0, overflowWrap: 'anywhere', fontSize: '0.82rem' } },
+                    ce('strong', null, item.label),
+                    ce('span', { style: { marginLeft: 6, color: '#64748b', fontSize: '0.72rem' } }, '×' + item.count)
+                  ),
+                  ce('select', {
+                    value: item.status,
+                    'aria-label': tr('Moderation for') + ' ' + item.label,
+                    onChange: function (e) { setWordCloudTermStatus(item.value, e.target.value); },
+                    style: { padding: '0.3rem 0.4rem', borderRadius: 5, border: '1px solid #cbd5e1', background: item.status === 'approved' ? '#dcfce7' : item.status === 'hidden' ? '#f1f5f9' : '#fff7ed', color: '#0f172a', fontSize: '0.75rem', fontWeight: 700 }
+                  },
+                    ce('option', { value: 'pending' }, tr('Hold')),
+                    ce('option', { value: 'approved' }, tr('Approve')),
+                    ce('option', { value: 'hidden' }, tr('Hide'))
+                  )
+                );
+              })
+            ) : null
+          ) : null,
+          !activeFeedbackConfig.enabled && activePoll.type !== 'wordcloud' && summaryForActive && summaryForActive.items && summaryForActive.items.length > 0 ? ce('div', { style: { marginTop: 10, background: 'rgba(255,255,255,0.72)', border: '1px solid #dbeafe', borderRadius: 8, padding: '0.55rem', display: 'flex', flexDirection: 'column', gap: 6 } },
             ce('div', { style: { fontSize: '0.74rem', color: '#1e3a8a', fontWeight: 800, textTransform: 'uppercase' } }, tr('Anonymous summary')),
             summaryForActive.items.map(function (item, i) {
               const pct = Math.max(0, Math.min(100, Number(item.percent) || 0));
@@ -1032,7 +1759,7 @@
                 );
               })()
             : null,
-          uniqueActiveResponses.length > 0 ? ce('ul', { style: { listStyle: 'none', padding: 0, margin: '0.5rem 0 0 0', maxHeight: 240, overflow: 'auto' } },
+          !activeFeedbackConfig.enabled && activePoll.type !== 'wordcloud' && uniqueActiveResponses.length > 0 ? ce('ul', { style: { listStyle: 'none', padding: 0, margin: '0.5rem 0 0 0', maxHeight: 240, overflow: 'auto' } },
             uniqueActiveResponses.map(function (r, i) {
               const display = typeof r.response === 'object' ? JSON.stringify(r.response) : String(r.response);
               return ce('li', { key: i, style: { padding: '0.4rem 0.6rem', background: 'white', borderRadius: 4, marginBottom: 4, fontSize: '0.85rem', borderLeft: '3px solid #1e3a8a', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } },
@@ -1067,6 +1794,11 @@
     const [sharedResults, setSharedResults] = R.useState(null);
     const [connectionState, setConnectionState] = R.useState('idle');
     const [submitNotice, setSubmitNotice] = R.useState(null);
+    const [studentFeedback, setStudentFeedback] = R.useState(null);
+    const [currentAttempt, setCurrentAttempt] = R.useState(1);
+    const [submittedResponse, setSubmittedResponse] = R.useState('');
+    const studentPollIdRef = R.useRef(null);
+    const statusSentRef = R.useRef('');
     // Auto-rejoin: bumping joinNonce re-runs the join effect with a fresh
     // PollingGuest (fresh offer/signaling doc). The host accepts re-offers,
     // so this is the student half of the reconnect story.
@@ -1105,17 +1837,49 @@
         sessionCode: sessionCode,
         userUid: userUid,
         codename: codename,
-        onPoll: function (p) { setActivePoll(p); setSharedResults(null); setSubmitted(false); setResponseValue(''); setSubmitNotice(null); },
+        onPoll: function (p) {
+          const samePoll = !!(p && studentPollIdRef.current === p.id);
+          studentPollIdRef.current = p && p.id;
+          setActivePoll(p);
+          setSharedResults(null);
+          if (!samePoll) {
+            setSubmitted(false);
+            setResponseValue('');
+            setSubmittedResponse('');
+            setStudentFeedback(null);
+            setCurrentAttempt(1);
+            statusSentRef.current = '';
+          }
+          setSubmitNotice(null);
+        },
         onPollClose: function (payload) {
           setActivePoll(function (current) {
             if (!shouldApplyPollClose(current, payload)) return current;
             setSubmitted(false);
             setResponseValue('');
+            setSubmittedResponse('');
+            setStudentFeedback(null);
+            setCurrentAttempt(1);
+            studentPollIdRef.current = null;
+            statusSentRef.current = '';
             setSubmitNotice(null);
             return null;
           });
         },
-        onPollResults: function (summary) { setSharedResults(summary); setActivePoll(null); setSubmitted(false); setResponseValue(''); setSubmitNotice(null); },
+        onPollResults: function (summary) {
+          setSharedResults(summary); setActivePoll(null); setSubmitted(false); setResponseValue('');
+          setSubmittedResponse(''); setStudentFeedback(null); setCurrentAttempt(1);
+          studentPollIdRef.current = null; statusSentRef.current = ''; setSubmitNotice(null);
+        },
+        onFeedback: function (packet) {
+          setActivePoll(function (current) {
+            if (current && current.id === packet.pollId && isFeedbackPoll(current)) {
+              setStudentFeedback(packet);
+              setSubmitted(true);
+            }
+            return current;
+          });
+        },
         onHostClosed: function () {
           // Terminal event: the teacher closed the polling panel. Force-clear
           // any active poll so the student is never left answering into a dead
@@ -1124,6 +1888,11 @@
           setActivePoll(null);
           setSubmitted(false);
           setResponseValue('');
+          setSubmittedResponse('');
+          setStudentFeedback(null);
+          setCurrentAttempt(1);
+          studentPollIdRef.current = null;
+          statusSentRef.current = '';
           setSubmitNotice(null);
           setConnectionState('reconnecting');
           scheduleRejoin();
@@ -1145,9 +1914,20 @@
       };
     }, [enabled, sessionCode, userUid, codename, joinNonce, hostNonce]);
 
+    R.useEffect(function () {
+      if (!activePoll || !isFeedbackPoll(activePoll) || submitted) return;
+      if (!normalizeFeedbackResponseText(responseValue)) return;
+      const key = activePoll.id + ':' + currentAttempt + ':drafting';
+      if (statusSentRef.current === key) return;
+      if (guestRef.current && guestRef.current.sendResponseStatus(activePoll.id, 'drafting', currentAttempt)) {
+        statusSentRef.current = key;
+      }
+    }, [activePoll, responseValue, submitted, currentAttempt, connectionState]);
+
     const renderResultsSummary = function (summary) {
       const items = Array.isArray(summary && summary.items) ? summary.items : [];
       const total = Number(summary && summary.totalResponses) || 0;
+      const sharedCount = summary && summary.wordCloud ? (Number(summary.approvedResponseCount) || 0) : total;
       return ce('div', {
         role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('Shared poll results'),
         style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
@@ -1155,8 +1935,11 @@
         ce('div', { style: { background: 'white', maxWidth: 560, width: '100%', borderRadius: 12, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' } },
           ce('div', { style: { fontSize: '0.75rem', color: '#1e3a8a', fontWeight: 800, textTransform: 'uppercase', marginBottom: 4 } }, tr('Anonymous class results')),
           ce('h2', { style: { margin: '0 0 0.4rem 0', fontSize: '1.1rem', color: '#0f172a' } }, (summary && summary.prompt) || tr('Poll results')),
-          ce('p', { style: { margin: '0 0 0.8rem 0', color: '#475569', fontSize: '0.85rem' } }, tr(total === 1 ? '{n} response shared by the teacher.' : '{n} responses shared by the teacher.', { n: total })),
-          items.length > 0 ? ce('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 10 } },
+          ce('p', { style: { margin: '0 0 0.8rem 0', color: '#475569', fontSize: '0.85rem' } }, tr(sharedCount === 1 ? '{n} response shared by the teacher.' : '{n} responses shared by the teacher.', { n: sharedCount })),
+          summary && summary.wordCloud ? ce('div', { style: { marginBottom: 10 } },
+            renderWordCloudItems(items, tr('Teacher-approved anonymous word cloud')),
+            ce('p', { style: { fontSize: '0.75rem', color: '#64748b', margin: '0.45rem 0 0 0' } }, tr('Only anonymous terms approved by the teacher are shown.'))
+          ) : items.length > 0 ? ce('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 10 } },
             items.map(function (item, i) {
               const percent = Math.max(0, Math.min(100, Number(item.percent) || 0));
               return ce('div', { key: String(item.value || item.label || i), style: { border: '1px solid #e2e8f0', borderRadius: 8, padding: '0.55rem' } },
@@ -1180,26 +1963,46 @@
     if (sharedResults) return renderResultsSummary(sharedResults);
     if (!activePoll) return null;
 
+    const feedbackConfig = normalizeFeedbackConfig(activePoll);
     const ratingScale = activePoll.type === 'rating' ? normalizeRatingScale(activePoll) : null;
     const ratingValues = ratingScale ? getRatingValues(ratingScale) : [];
-    const hasResponse = activePoll.type === 'rating' ? responseValue !== '' : !!String(responseValue || '').trim();
+    const hasResponse = activePoll.type === 'rating'
+      ? responseValue !== ''
+      : activePoll.type === 'wordcloud'
+        ? !!normalizeWordCloudTerm(responseValue)
+        : !!String(responseValue || '').trim();
     const canSubmit = !submitted && !!guestRef.current && hasResponse;
     const submit = function () {
       if (!canSubmit) return;
       let payload;
       if (activePoll.type === 'rating') payload = Number(responseValue);
+      else if (activePoll.type === 'wordcloud') payload = normalizeWordCloudTerm(responseValue);
       else if (activePoll.type === 'mcq') payload = String(responseValue);
+      else if (feedbackConfig.enabled) payload = normalizeFeedbackResponseText(responseValue);
       else payload = String(responseValue);
       if (activePoll.type === 'rating' && responseValue === '') return;
       if (activePoll.type !== 'rating' && !String(payload).trim()) return;
       const finishSubmitted = function () {
-        if (activePoll.afterSubmitMode === 'wait') setSubmitted(true);
-        else { setSubmitted(false); setResponseValue(''); setActivePoll(null); }
+        if (feedbackConfig.enabled || activePoll.afterSubmitMode === 'wait') setSubmitted(true);
+        else { setSubmitted(false); setResponseValue(''); setActivePoll(null); studentPollIdRef.current = null; }
       };
-      const sent = guestRef.current.sendResponse(activePoll.id, payload);
-      if (sent) { setSubmitNotice(null); finishSubmitted(); }
+      const sent = guestRef.current.sendResponse(activePoll.id, payload, feedbackConfig.enabled ? { attempt: currentAttempt } : null);
+      if (sent) {
+        if (feedbackConfig.enabled) {
+          setSubmittedResponse(payload);
+          setStudentFeedback(null);
+          guestRef.current.sendResponseStatus(activePoll.id, 'submitted', currentAttempt);
+          statusSentRef.current = activePoll.id + ':' + currentAttempt + ':submitted';
+        }
+        setSubmitNotice(null);
+        finishSubmitted();
+      }
       else if (connectionState === 'failed') {
         exportResponseForFallback(activePoll.id, payload, codename);
+        if (feedbackConfig.enabled) {
+          setSubmittedResponse(payload);
+          setSubmitNotice(tr('Your response was exported. A direct connection is required to receive private feedback and revise here.'));
+        }
         finishSubmitted();
       } else {
         // Channel dropped mid-poll: say so instead of silently ignoring the
@@ -1214,12 +2017,31 @@
       style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
     },
       ce('div', { style: { background: 'white', maxWidth: 520, width: '100%', borderRadius: 12, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' } },
-        ce('div', { style: { fontSize: '0.75rem', color: '#1e3a8a', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, activePoll.type === 'rating' && ratingScale ? tr('rating') + ' ' + ratingScale.min + '-' + ratingScale.max : activePoll.type),
-        ce('h2', { style: { margin: '0 0 1rem 0', fontSize: '1.15rem', color: '#0f172a' } }, activePoll.prompt),
-        submitted ? ce('div', { style: { padding: '0.75rem', background: '#dcfce7', color: '#166534', borderRadius: 8, fontWeight: 600 } },
+        ce('div', { style: { fontSize: '0.75rem', color: '#1e3a8a', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, feedbackConfig.enabled ? tr('Feedback response') + ' · ' + tr('Attempt') + ' ' + currentAttempt : (activePoll.type === 'rating' && ratingScale ? tr('rating') + ' ' + ratingScale.min + '-' + ratingScale.max : activePoll.type)),
+        ce('h2', { style: { margin: '0 0 0.55rem 0', fontSize: '1.15rem', color: '#0f172a' } }, activePoll.prompt),
+        feedbackConfig.enabled && feedbackConfig.criteria ? ce('div', { style: { margin: '0 0 0.8rem 0', padding: '0.55rem', background: '#f8fafc', borderLeft: '3px solid #6366f1', borderRadius: 6, color: '#475569', fontSize: '0.76rem', lineHeight: 1.4 } },
+          ce('strong', { style: { display: 'block', color: '#312e81', fontSize: '0.68rem', textTransform: 'uppercase', marginBottom: 2 } }, tr('Success criteria')),
+          feedbackConfig.criteria
+        ) : null,
+        submitted ? (feedbackConfig.enabled ? ce('div', { style: { padding: '0.75rem', background: studentFeedback ? '#eef2ff' : '#dcfce7', color: studentFeedback ? '#312e81' : '#166534', borderRadius: 8 } },
+          ce('div', { style: { fontWeight: 800 } }, studentFeedback ? tr('Your teacher reviewed your response') : (currentAttempt > 1 ? tr('Revision sent. Waiting for teacher feedback.') : tr('Response sent. Waiting for teacher feedback.'))),
+          studentFeedback ? ce('div', { style: { marginTop: 7, padding: '0.6rem', background: 'white', border: '1px solid #c7d2fe', borderRadius: 7, whiteSpace: 'pre-wrap', color: '#1e293b', fontSize: '0.86rem', lineHeight: 1.45 } }, studentFeedback.text) : null,
+          studentFeedback && studentFeedback.allowRevision && currentAttempt < feedbackConfig.maxAttempts ? ce('button', {
+            onClick: function () {
+              const nextAttempt = Math.min(feedbackConfig.maxAttempts, currentAttempt + 1);
+              setCurrentAttempt(nextAttempt);
+              setResponseValue(submittedResponse);
+              setSubmitted(false);
+              setStudentFeedback(null);
+              statusSentRef.current = '';
+              if (guestRef.current) guestRef.current.sendResponseStatus(activePoll.id, 'editing', nextAttempt);
+            },
+            style: { marginTop: 8, padding: '0.55rem 0.9rem', borderRadius: 6, border: 'none', background: '#4f46e5', color: 'white', cursor: 'pointer', fontWeight: 800, width: '100%' }
+          }, tr('Revise using this feedback')) : studentFeedback ? ce('p', { style: { margin: '0.55rem 0 0 0', fontSize: '0.75rem', fontWeight: 700 } }, tr('Feedback cycle complete.')) : null
+        ) : ce('div', { style: { padding: '0.75rem', background: '#dcfce7', color: '#166534', borderRadius: 8, fontWeight: 600 } },
           ce('div', null, tr('Response sent. Waiting for the teacher to close this poll.')),
-          ce('button', { onClick: function () { setActivePoll(null); setSubmitted(false); setResponseValue(''); }, style: { marginTop: 8, padding: '0.45rem 0.8rem', borderRadius: 6, border: '1px solid #86efac', background: 'white', color: '#166534', cursor: 'pointer', fontWeight: 800, width: '100%' } }, tr('Hide while waiting'))
-        ) :
+          ce('button', { onClick: function () { setActivePoll(null); setSubmitted(false); setResponseValue(''); studentPollIdRef.current = null; }, style: { marginTop: 8, padding: '0.45rem 0.8rem', borderRadius: 6, border: '1px solid #86efac', background: 'white', color: '#166534', cursor: 'pointer', fontWeight: 800, width: '100%' } }, tr('Hide while waiting'))
+        )) :
           activePoll.type === 'rating' ? ce('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'stretch', flexWrap: 'wrap', margin: '1rem 0' } },
             ratingValues.map(function (n) {
               const selected = Number(responseValue) === n;
@@ -1235,8 +2057,12 @@
               return ce('button', { key: i, onClick: function () { setResponseValue(opt); }, style: { textAlign: 'left', padding: '0.6rem 0.9rem', borderRadius: 8, border: '2px solid ' + (responseValue === opt ? '#1e3a8a' : '#cbd5e1'), background: responseValue === opt ? '#eef2ff' : 'white', cursor: 'pointer', fontWeight: 500 } }, opt);
             })
           ) :
-          ce('textarea', { value: responseValue, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': tr('Your response'), placeholder: tr('Type your response'), rows: 5, style: { width: '100%', padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box', margin: '0 0 1rem 0' } }),
-        submitted ? null : ce('button', { onClick: submit, disabled: !canSubmit, style: { padding: '0.6rem 1.2rem', borderRadius: 6, border: 'none', background: canSubmit ? '#1e3a8a' : '#cbd5e1', color: 'white', cursor: canSubmit ? 'pointer' : 'default', fontWeight: 700, width: '100%' } }, tr('Submit response')),
+          activePoll.type === 'wordcloud' ? ce('div', { style: { margin: '0.5rem 0 1rem 0' } },
+            ce('input', { type: 'text', value: responseValue, maxLength: WORD_CLOUD_MAX_LENGTH, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': tr('Your word or short phrase'), placeholder: tr('Enter one word or short phrase'), style: { width: '100%', padding: '0.7rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box' } }),
+            ce('p', { style: { margin: '0.35rem 0 0 0', color: '#64748b', fontSize: '0.72rem' } }, tr('Your term is held for teacher review before it can appear in the class word cloud.'))
+          ) :
+          ce('textarea', { value: responseValue, maxLength: feedbackConfig.enabled ? FEEDBACK_RESPONSE_MAX_LENGTH : undefined, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': tr('Your response'), placeholder: feedbackConfig.enabled && currentAttempt > 1 ? tr('Revise your response using the feedback') : tr('Type your response'), rows: 5, style: { width: '100%', padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box', margin: '0 0 1rem 0' } }),
+        submitted ? null : ce('button', { onClick: submit, disabled: !canSubmit, style: { padding: '0.6rem 1.2rem', borderRadius: 6, border: 'none', background: canSubmit ? '#1e3a8a' : '#cbd5e1', color: 'white', cursor: canSubmit ? 'pointer' : 'default', fontWeight: 700, width: '100%' } }, feedbackConfig.enabled && currentAttempt > 1 ? tr('Submit revision') : tr('Submit response')),
         submitNotice ? ce('p', { role: 'status', style: { fontSize: '0.75rem', color: '#b45309', marginTop: '0.75rem', marginBottom: 0 } }, submitNotice) : null,
         connectionState === 'failed' ? ce('p', { style: { fontSize: '0.75rem', color: '#b91c1c', marginTop: '0.75rem', marginBottom: 0 } }, tr('Direct connection failed. Submitting will export your response as a downloadable file for the teacher to import.')) :
           connectionState === 'reconnecting' ? ce('p', { style: { fontSize: '0.75rem', color: '#b45309', marginTop: '0.75rem', marginBottom: 0 } }, tr('Connection lost — reconnecting…')) :
@@ -1254,6 +2080,18 @@
     buildRatingScale: buildRatingScale,
     normalizeRatingScale: normalizeRatingScale,
     buildPollResultsSummary: buildPollResultsSummary,
+    normalizeWordCloudTerm: normalizeWordCloudTerm,
+    buildWordCloudItems: buildWordCloudItems,
+    WORD_CLOUD_MAX_LENGTH: WORD_CLOUD_MAX_LENGTH,
+    normalizeFeedbackConfig: normalizeFeedbackConfig,
+    normalizeFeedbackResponseText: normalizeFeedbackResponseText,
+    sanitizeFeedbackPacket: sanitizeFeedbackPacket,
+    upsertFeedbackResponse: upsertFeedbackResponse,
+    resolveFeedbackAudienceUids: resolveFeedbackAudienceUids,
+    buildFeedbackPrompt: buildFeedbackPrompt,
+    FEEDBACK_RESPONSE_MAX_LENGTH: FEEDBACK_RESPONSE_MAX_LENGTH,
+    FEEDBACK_CRITERIA_MAX_LENGTH: FEEDBACK_CRITERIA_MAX_LENGTH,
+    FEEDBACK_TEXT_MAX_LENGTH: FEEDBACK_TEXT_MAX_LENGTH,
     upsertLiveGuest: upsertLiveGuest,
     upsertPollResponse: upsertPollResponse,
     uniqueResponsesForSummary: uniqueResponsesForSummary,
@@ -1263,8 +2101,8 @@
     HostPanel: HostPanel,
     GuestOverlay: GuestOverlay,
     _meta: {
-      version: '1.6.0',
-      description: 'FERPA-by-design live polling via WebRTC peer-to-peer with custom rating scales, teacher-selected post-submit behavior, anonymous aggregate result sharing, teacher-authored auto-routing rules, reconnect-safe transport (hostClosed terminal event, re-offer handling, state sync on reconnect, guest auto-rejoin), initialPoll composer presets (Live Session Center Quick Check), a roster gate on incoming offers (allowedUids), and a window.__alloRtcConfig TURN override hook.',
+      version: '1.8.0',
+      description: 'FERPA-by-design live polling via WebRTC peer-to-peer with rating, multiple choice, free text, teacher-reviewed feedback and revision, and teacher-moderated word clouds; custom rating scales; teacher-selected post-submit behavior; anonymous aggregate result sharing; teacher-authored auto-routing rules; reconnect-safe transport (hostClosed terminal event, re-offer handling, state sync on reconnect, guest auto-rejoin); initialPoll composer presets (Live Session Center Quick Check, Word Cloud, and Feedback Response); a roster gate on incoming offers (allowedUids); and a window.__alloRtcConfig TURN override hook.',
     },
   };
 

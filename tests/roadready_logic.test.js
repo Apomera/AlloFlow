@@ -143,6 +143,62 @@ describe('physical road layouts', () => {
     expect(oneWay.every((arrow) => arrow.direction === -1)).toBe(true);
   });
 
+  it('projects vehicles and targets into an angled road frame', () => {
+    const heading = 0.42;
+    const slope = Math.tan(heading);
+    const spline = {
+      centerAt: (station) => 48 + slope * station,
+      headingAt: () => heading,
+      heightAt: () => 0
+    };
+    const world = { profile: { roadHalfWidth: 6.5, lanesPerDirection: 2 }, spline };
+    const pointAt = (station, lateral) => ({
+      x: spline.centerAt(station) + lateral * Math.cos(heading),
+      y: station - lateral * Math.sin(heading)
+    });
+    const observerPoint = pointAt(10, 4.65);
+    const targetPoint = pointAt(22, 4.65);
+    const local = RR.mainRoadLocalPoint(world, observerPoint.x, observerPoint.y);
+    expect(local.longitudinal).toBeCloseTo(10, 4);
+    expect(local.lateral).toBeCloseTo(4.65, 4);
+    const observer = { ...observerPoint, heading: -Math.PI / 2 - heading };
+    const relation = RR.roadRelativeTarget(world, observer, targetPoint);
+    expect(relation.ahead).toBeCloseTo(-12, 4);
+    observer.heading = Math.PI / 2 - heading;
+    expect(RR.roadRelativeTarget(world, observer, targetPoint).ahead).toBeCloseTo(12, 4);
+    expect(RR.roadRelativeTarget(world, observer, targetPoint).lateralDifference).toBeCloseTo(0, 4);
+  });
+
+  it('assesses legal outer lanes without single-lane false departures', () => {
+    const suburban = { roadHalfWidth: 6.5, lanesPerDirection: 2 };
+    const southOuter = RR.assessRoadLanePosition(suburban, 4.65, -1);
+    expect(southOuter.outsideEdge).toBe(false);
+    expect(southOuter.centerlineCrossed).toBe(false);
+    expect(southOuter.nearestLaneCenter).toBeCloseTo(4.65, 8);
+    const northOuter = RR.assessRoadLanePosition(suburban, -4.65, 1);
+    expect(northOuter.outsideEdge).toBe(false);
+    expect(northOuter.centerlineCrossed).toBe(false);
+    expect(RR.assessRoadLanePosition(suburban, 0.6, 1).centerlineCrossed).toBe(true);
+    expect(RR.assessRoadLanePosition(suburban, 6.3, -1).outsideEdge).toBe(true);
+    const downtown = { roadHalfWidth: 4.5, oneWay: true, oneWayDirection: -1, oneWayLanes: 2 };
+    expect(RR.assessRoadLanePosition(downtown, -2.1, -1)).toMatchObject({
+      outsideEdge: false, centerlineCrossed: false, wrongWay: false
+    });
+    expect(RR.assessRoadLanePosition(downtown, 2.1, 1).wrongWay).toBe(true);
+  });
+
+  it('measures signal control distance only on the player approach', () => {
+    const world = {
+      profile: { roadHalfWidth: 3.5 },
+      spline: { centerAt: () => 48, headingAt: () => 0, heightAt: () => 0 }
+    };
+    const car = { x: 49.6, y: 20, heading: -Math.PI / 2 };
+    const ahead = { x: 48, y: 10, type: 'light' };
+    const behind = { x: 48, y: 30, type: 'light' };
+    expect(RR.controlDistanceAhead(world, ahead, car, 4.5)).toBeGreaterThan(0);
+    expect(RR.controlDistanceAhead(world, behind, car, 4.5)).toBeLessThan(0);
+  });
+
   it('keeps curved cross-street coordinates reversible and aligned with travel headings', () => {
     const pose = RR.crossStreetPose(48, 64, 0.35, 6.5, RR.MAP_SIZE);
     const worldPoint = RR.crossStreetWorldPoint(pose, 18, 1.5);

@@ -24,12 +24,12 @@ describe('EPPP incorrect-option feedback diagnostics', () => {
     expect(report.mostRecentWave).toEqual(report.waves['eppp-option-feedback-wave-11']);
     expect(report.latestReviewWave).toBe('eppp-option-feedback-wave-11');
     expect(report.summary).toMatchObject({
-      itemsWithWarnings: 1389,
-      incorrectOptionsWithWarnings: 4018,
-      insufficientDetailOptions: 1465,
-      genericTemplateOptions: 2474,
-      choiceRestatementOptions: 1767,
-      fullKeyEchoOptions: 1517,
+      itemsWithWarnings: 1357,
+      incorrectOptionsWithWarnings: 3924,
+      insufficientDetailOptions: 1425,
+      genericTemplateOptions: 2420,
+      choiceRestatementOptions: 1722,
+      fullKeyEchoOptions: 1489,
       wave10IncorrectOptions: 48,
       wave10OptionsWithWarnings: 0,
       wave11IncorrectOptions: 48,

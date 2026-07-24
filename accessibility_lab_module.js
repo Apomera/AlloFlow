@@ -2,17 +2,17 @@
  * AlloFlow Accessibility Lab Module
  *
  * Embedded accessibility verification suite for educators. Lets a teacher
- * preview lessons as their students would experience them, run live audits,
- * hear what a screen reader would announce, and simulate common disabilities.
+ * inspect static accommodation layouts, hand artifacts to the authentic workspace renderer,
+ * run live audits, inspect semantic structure, and perform focused visual checks.
  *
  * Module export: window.AlloModules.AccessibilityLab (React component).
  *
  * Phases (each ships independently):
- *   1. Preview as my student   (this ship)
+ *   1. Content preview + authentic workspace handoff
  *   2. Keyboard navigation tour
  *   3. Live in-app a11y audit (axe-core)
- *   4. Screen-reader announcement preview
- *   5. Disability simulators (low-vision, color-blindness, dyslexia, motor)
+ *   4. Semantic announcement outline
+ *   5. Visual checks + reading-layout and motor guidance
  *
  * Props expected from the monolith host:
  *   isOpen: boolean
@@ -21,6 +21,7 @@
  *   history: array of saved history items (lessons + outputs)
  *   callTTS: (text, opts) => Promise (used in Phase 4 + optional Phase 1 read-aloud)
  *   t: (key) => string (i18n)
+ *   onOpenAuthenticView: optional function(historyItem) that hands the artifact to the host workspace renderer
  */
 (function () {
   'use strict';
@@ -49,13 +50,88 @@
   // ----- Constants ------------------------------------------------------------
 
   var TABS = [
-    { key: 'preview',      label: 'Preview as student', icon: '👁️',  ready: true },
+    { key: 'preview',      label: 'Content preview',   icon: '👁️',  ready: true },
     { key: 'keyboard',     label: 'Keyboard tour',      icon: '⌨️',  ready: true },
     { key: 'audit',        label: 'Audit',              icon: '🔍', ready: true },
-    { key: 'screenreader', label: 'Screen reader',      icon: '🔊', ready: true },
+    { key: 'screenreader', label: 'Semantic outline',  icon: '🔊', ready: true },
     { key: 'simulators',   label: 'Simulators',         icon: '👓', ready: true },
   ];
 
+  var PREVIEW_SUPPORTED_TYPES = ['analysis', 'glossary', 'quiz', 'outline', 'sentence-frames', 'word-sounds', 'simplified'];
+  var REVIEW_SCORECARD_STORAGE_KEY = 'alloflow_accessibility_review_scorecards_v1';
+  var REVIEW_CHECKS = [
+    { id: 'keyboard', label: 'Keyboard-only task completion', hint: 'Complete the primary task without a mouse or touch input.' },
+    { id: 'focus', label: 'Focus order and visibility', hint: 'Focus stays visible, follows a logical order, and is never trapped.' },
+    { id: 'reflow', label: 'Reflow and zoom', hint: 'At narrow width or high zoom, content remains usable without loss or two-axis scrolling.' },
+    { id: 'text_spacing', label: 'Text-spacing resilience', hint: 'Increased line, paragraph, word, and letter spacing does not hide or overlap content.' },
+    { id: 'errors', label: 'Instructions, errors, and feedback', hint: 'Required input, errors, and feedback are specific, perceivable, and actionable.' },
+    { id: 'motion', label: 'Reduced motion', hint: 'The task remains understandable and usable when motion is reduced.' },
+    { id: 'media', label: 'Media alternatives and controls', hint: 'Relevant audio or video has accessible controls and equivalent alternatives, or is not applicable.' },
+    { id: 'assistive_tech', label: 'Real assistive-technology task', hint: 'Complete the task with an appropriate screen reader or other required assistive technology.' },
+  ];
+
+  function reviewItemKey(item) {
+    if (!item) return '';
+    if (item.id !== undefined && item.id !== null && String(item.id)) return String(item.id);
+    return String(item.type || 'artifact') + ':' + String(item.title || 'untitled');
+  }
+
+  function emptyReviewChecks() {
+    var checks = {};
+    REVIEW_CHECKS.forEach(function (check) { checks[check.id] = 'untested'; });
+    return checks;
+  }
+
+  function normalizeReviewScorecard(raw, item) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    var checks = emptyReviewChecks();
+    if (raw.checks && typeof raw.checks === 'object') {
+      REVIEW_CHECKS.forEach(function (check) {
+        var value = raw.checks[check.id];
+        if (['untested', 'pass', 'fail', 'not_applicable'].indexOf(value) >= 0) checks[check.id] = value;
+      });
+    }
+    return {
+      version: 1,
+      artifactId: reviewItemKey(item) || String(raw.artifactId || ''),
+      artifactType: item && item.type ? String(item.type) : String(raw.artifactType || ''),
+      artifactTitle: item && item.title ? String(item.title) : String(raw.artifactTitle || ''),
+      checks: checks,
+      notes: typeof raw.notes === 'string' ? raw.notes : '',
+      startedAt: typeof raw.startedAt === 'string' ? raw.startedAt : null,
+      lastReviewedAt: typeof raw.lastReviewedAt === 'string' ? raw.lastReviewedAt : null,
+      updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : null,
+      automated: raw.automated && typeof raw.automated === 'object' ? raw.automated : null,
+    };
+  }
+
+  function summarizeReviewScorecard(card) {
+    var counts = { pass: 0, fail: 0, untested: 0, not_applicable: 0, total: REVIEW_CHECKS.length };
+    var checks = card && card.checks ? card.checks : {};
+    REVIEW_CHECKS.forEach(function (check) {
+      var value = checks[check.id];
+      if (!Object.prototype.hasOwnProperty.call(counts, value)) value = 'untested';
+      counts[value] += 1;
+    });
+    counts.complete = counts.untested === 0;
+    return counts;
+  }
+
+  function loadReviewScorecards() {
+    try {
+      var raw = window.localStorage && window.localStorage.getItem(REVIEW_SCORECARD_STORAGE_KEY);
+      if (!raw) return {};
+      var parsed = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch (_) { return {}; }
+  }
+
+  function persistReviewScorecards(store) {
+    try {
+      if (window.localStorage) window.localStorage.setItem(REVIEW_SCORECARD_STORAGE_KEY, JSON.stringify(store || {}));
+      return true;
+    } catch (_) { return false; }
+  }
   var FONT_FAMILIES = [
     { value: 'system',   label: 'Default (system)',     css: 'system-ui, -apple-system, "Segoe UI", sans-serif' },
     { value: 'sans',     label: 'Sans-serif',           css: '"Atkinson Hyperlegible", Arial, sans-serif' },
@@ -356,16 +432,18 @@
       );
     }
 
-    // fallback: dump JSON in a code block
-    return e('div', null,
-      e('p', { style: { color: theme.sub, fontStyle: 'italic', marginBottom: '8px' } }, 'Preview not yet specialized for type "' + asString(item.type) + '". Showing raw data:'),
-      e('pre', {
-        style: { fontSize: '0.85em', backgroundColor: theme.bg === '#ffffff' ? '#f1f5f9' : '#1e293b', padding: '12px', borderRadius: '4px', overflow: 'auto', maxHeight: '300px' }
-      }, JSON.stringify(data, null, 2))
+    // Unsupported artifacts must be opened in their authentic student view.
+    // Raw lesson data is intentionally never presented as a student preview.
+    return e('div', {
+      style: { padding: '16px', border: '1px solid ' + theme.sub + '60', borderRadius: '6px' }
+    },
+      e('p', { style: { color: theme.sub, fontStyle: 'italic' } },
+        'This content type is not represented by the static accommodation preview. Open it in the real student view to verify its interaction and accessibility.'
+      )
     );
   }
 
-  // ----- Phase 1: Preview as student -----------------------------------------
+  // ----- Phase 1: Content accommodation preview -----------------------------
 
   function PreviewTab(props) {
     var history = props.history || [];
@@ -394,8 +472,21 @@
       };
     }
 
-    var sel$ = useState(null);
+    var sel$ = useState(function () {
+      var reviewId = props.reviewSession && props.reviewSession.itemId;
+      return reviewId ? (history.find(function (item) { return item && String(item.id) === String(reviewId); }) || null) : null;
+    });
     var selectedItem = sel$[0], setSelectedItem = sel$[1];
+
+    var reviewStore$ = useState(loadReviewScorecards);
+    var reviewStore = reviewStore$[0], setReviewStore = reviewStore$[1];
+
+    var reviewSessionItemId = props.reviewSession && props.reviewSession.itemId ? String(props.reviewSession.itemId) : '';
+    useEffect(function () {
+      if (!reviewSessionItemId) return;
+      var match = history.find(function (item) { return item && String(item.id) === reviewSessionItemId; });
+      if (match && (!selectedItem || String(selectedItem.id) !== reviewSessionItemId)) setSelectedItem(match);
+    }, [reviewSessionItemId, history]);
 
     var settings$ = useState(settingsFromApp);
     var settings = settings$[0], setSettings = settings$[1];
@@ -448,42 +539,133 @@
         return;
       }
       try {
-        callTTS(text);
+        Promise.resolve(callTTS(text)).catch(function (err) {
+          addToast && addToast(tr('a11y_lab.preview.read_aloud_error', 'Could not start read-aloud: ') + (err && err.message), 'error');
+        });
       } catch (err) {
         addToast && addToast(tr('a11y_lab.preview.read_aloud_error', 'Could not start read-aloud: ') + (err && err.message), 'error');
       }
     }
 
+    var hasStaticPreview = !!selectedItem && PREVIEW_SUPPORTED_TYPES.indexOf(selectedItem.type) >= 0;
+    var authenticViewAvailable = typeof props.onOpenAuthenticView === 'function';
+    var selectedReviewKey = reviewItemKey(selectedItem);
+    var scorecard = selectedItem ? normalizeReviewScorecard(reviewStore[selectedReviewKey], selectedItem) : null;
+    var scoreSummary = summarizeReviewScorecard(scorecard);
+
+    function saveScorecard(nextCard) {
+      if (!selectedReviewKey || !nextCard) return;
+      var stamped = Object.assign({}, nextCard, { updatedAt: new Date().toISOString() });
+      var nextStore = Object.assign({}, reviewStore);
+      nextStore[selectedReviewKey] = stamped;
+      setReviewStore(nextStore);
+      persistReviewScorecards(nextStore);
+    }
+
+    function updateReviewStatus(checkId, status) {
+      if (!scorecard || ['untested', 'pass', 'fail', 'not_applicable'].indexOf(status) < 0) return;
+      var checks = Object.assign({}, scorecard.checks);
+      checks[checkId] = status;
+      saveScorecard(Object.assign({}, scorecard, {
+        checks: checks,
+        startedAt: scorecard.startedAt || new Date().toISOString(),
+      }));
+    }
+
+    function updateReviewNotes(notes) {
+      if (!scorecard) return;
+      saveScorecard(Object.assign({}, scorecard, {
+        notes: String(notes || '').slice(0, 5000),
+        startedAt: scorecard.startedAt || new Date().toISOString(),
+      }));
+    }
+
+    function markReviewComplete() {
+      if (!scorecard) return;
+      var summary = summarizeReviewScorecard(scorecard);
+      if (summary.untested > 0) {
+        addToast && addToast(tr('a11y_lab.review.incomplete', 'Complete or mark every check not applicable before finishing the review.'), 'info');
+        return;
+      }
+      saveScorecard(Object.assign({}, scorecard, {
+        startedAt: scorecard.startedAt || new Date().toISOString(),
+        lastReviewedAt: new Date().toISOString(),
+      }));
+      addToast && addToast(summary.fail > 0
+        ? tr('a11y_lab.review.completed_with_findings', 'Review saved with accessibility findings to address.')
+        : tr('a11y_lab.review.completed', 'Accessibility review completed and saved.'), summary.fail > 0 ? 'info' : 'success');
+    }
+
+    function handleOpenAuthenticView() {
+      if (!selectedItem || !authenticViewAvailable) {
+        addToast && addToast(tr('a11y_lab.preview.authentic_unavailable', 'The authentic workspace view is not available in this host.'), 'error');
+        return;
+      }
+      try {
+        if (scorecard && !scorecard.startedAt) saveScorecard(Object.assign({}, scorecard, { startedAt: new Date().toISOString() }));
+        var openResult = props.onOpenAuthenticView(selectedItem);
+        if (openResult && typeof openResult.then === 'function') {
+          openResult.catch(function (err) {
+            addToast && addToast(tr('a11y_lab.preview.authentic_error', 'Could not open the authentic workspace view: ') + (err && err.message), 'error');
+          });
+        }
+      } catch (err) {
+        addToast && addToast(tr('a11y_lab.preview.authentic_error', 'Could not open the authentic workspace view: ') + (err && err.message), 'error');
+      }
+    }
+
     if (!selectedItem) {
-      // Lesson selection screen
-      var validHistory = history.filter(function (item) { return item && item.type && item.type !== 'image'; });
+      // Every saved artifact can be handed to the canonical workspace renderer.
+      // A subset also has a faithful static accommodation preview inside the Lab.
+      var validHistory = history.filter(function (item) { return item && item.type; });
+      var missingReviewSession = props.reviewSession && !validHistory.some(function (item) { return String(item.id) === String(props.reviewSession.itemId); });
       return e('div', { className: 'flex flex-col gap-4' },
         e('div', null,
-          e('h3', { className: 'font-bold text-lg text-slate-800' }, tr('a11y_lab.preview.heading', 'Preview a lesson as your student')),
+          e('h3', { className: 'font-bold text-lg text-slate-800' }, tr('a11y_lab.preview.heading_workspace', 'Review saved content accessibility')),
           e('p', { className: 'text-sm text-slate-600 mt-1' },
-            tr('a11y_lab.preview.select_intro', 'Choose a saved lesson to preview with student accessibility settings applied (font, size, contrast, line spacing). This shows you what the content looks like for students using accommodations.'))
+            tr('a11y_lab.preview.select_intro_workspace', 'Choose any saved artifact. Reading-focused content can be checked here with static accommodations; interactive and specialized artifacts open through the app\'s authentic workspace renderer.'))
+        ),
+        missingReviewSession && e('div', { className: 'flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-950' },
+          e('p', { className: 'flex-1 text-xs' }, tr('a11y_lab.review.missing_artifact', 'The artifact from the active review session is no longer in saved history. End the session or select another artifact.')),
+          typeof props.onEndReviewSession === 'function' && e('button', {
+            type: 'button',
+            onClick: props.onEndReviewSession,
+            className: 'px-3 py-2 text-xs font-semibold border border-amber-400 rounded-lg hover:bg-amber-100',
+          }, tr('a11y_lab.review.end_session', 'End review session'))
         ),
         validHistory.length === 0
           ? e('div', { className: 'p-8 text-center bg-slate-50 rounded-lg border border-slate-200 text-slate-600' },
-              tr('a11y_lab.preview.no_lessons', 'No saved lessons yet. Generate a lesson in Teacher Mode first, then come back to preview it.'))
+              tr('a11y_lab.preview.no_saved_content', 'No saved content yet. Generate or save an artifact first, then return here to review it.'))
           : e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
               validHistory.map(function (item) {
+                var supportsStatic = PREVIEW_SUPPORTED_TYPES.indexOf(item.type) >= 0;
+                var savedCard = reviewStore[reviewItemKey(item)] ? normalizeReviewScorecard(reviewStore[reviewItemKey(item)], item) : null;
+                var savedSummary = savedCard ? summarizeReviewScorecard(savedCard) : null;
                 return e('button', {
+                  type: 'button',
                   key: item.id,
                   onClick: function () { setSelectedItem(item); },
                   className: 'flex flex-col items-start gap-1 p-3 bg-white border border-slate-200 rounded-lg hover:border-indigo-500 hover:shadow-sm text-left transition-all',
                 },
-                  e('div', { className: 'flex items-center gap-2' },
+                  e('div', { className: 'flex items-center gap-2 w-full' },
                     e('span', { className: 'text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800' }, item.type),
-                    e('span', { className: 'font-bold text-sm text-slate-800' }, asString(item.title) || tr('a11y_lab.preview.untitled', '(untitled)'))
+                    e('span', { className: 'font-bold text-sm text-slate-800 flex-1' }, asString(item.title) || tr('a11y_lab.preview.untitled', '(untitled)'))
                   ),
+                  e('span', {
+                    className: 'text-[11px] font-semibold ' + (supportsStatic ? 'text-emerald-700' : 'text-amber-700')
+                  }, supportsStatic
+                    ? tr('a11y_lab.preview.static_available', 'Static accommodation preview available')
+                    : tr('a11y_lab.preview.authentic_required', 'Authentic workspace view required')),
+                  savedSummary && e('span', { className: 'text-[11px] text-slate-600' },
+                    savedSummary.fail + ' ' + tr('a11y_lab.review.findings_short', 'findings') + ' · ' +
+                    savedSummary.pass + ' ' + tr('a11y_lab.review.passed_short', 'passed') + ' · ' +
+                    savedSummary.untested + ' ' + tr('a11y_lab.review.untested_short', 'untested')),
                   item.meta && e('span', { className: 'text-xs text-slate-500 truncate w-full' }, asString(item.meta))
                 );
               })
             )
       );
     }
-
     // Preview pane
     return e('div', { className: 'flex flex-col gap-4' },
       e('div', { className: 'flex items-center justify-between' },
@@ -497,43 +679,139 @@
         )
       ),
 
+      e('div', { className: 'flex flex-col md:flex-row md:items-center gap-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg' },
+        e('div', { className: 'flex-1' },
+          e('h4', { className: 'text-sm font-bold text-indigo-950' },
+            hasStaticPreview
+              ? tr('a11y_lab.preview.static_scope_heading', 'Static accommodation check')
+              : tr('a11y_lab.preview.authentic_scope_heading', 'Authentic renderer required')),
+          e('p', { className: 'text-xs text-indigo-900 mt-1' },
+            hasStaticPreview
+              ? tr('a11y_lab.preview.static_scope_body', 'The controls below test reading presentation only. Open the authentic workspace view to verify interactions, focus behavior, feedback, audio, and responsive layout.')
+              : tr('a11y_lab.preview.authentic_scope_body', 'This artifact depends on its real application state and interaction model. The Lab will hand it to the canonical workspace renderer instead of approximating it here.'))
+        ),
+        e('button', {
+          type: 'button',
+          onClick: handleOpenAuthenticView,
+          disabled: !authenticViewAvailable,
+          className: 'shrink-0 px-3 py-2 text-xs font-bold bg-indigo-700 text-white rounded-lg hover:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed',
+        }, tr('a11y_lab.preview.open_authentic', 'Open in authentic workspace view'))
+      ),
+
+      e('section', { className: 'border border-slate-200 rounded-xl overflow-hidden', 'data-a11y-review-scorecard': selectedReviewKey },
+        e('div', { className: 'flex flex-col md:flex-row md:items-center gap-3 px-4 py-3 bg-slate-50 border-b border-slate-200' },
+          e('div', { className: 'flex-1' },
+            e('h4', { className: 'font-bold text-sm text-slate-900' }, tr('a11y_lab.review.heading', 'Artifact accessibility scorecard')),
+            e('p', { className: 'text-xs text-slate-600 mt-0.5' }, tr('a11y_lab.review.description', 'Record evidence from the authentic task. Untested checks remain visible and are never treated as passes.')),
+            scorecard.automated && e('p', { className: 'text-[11px] text-indigo-700 mt-1' },
+              tr('a11y_lab.review.automated_prefix', 'Latest automated audit: ') +
+              scorecard.automated.violationRules + ' ' + tr('a11y_lab.review.violations_short', 'violations') + ' · ' +
+              scorecard.automated.affectedElements + ' ' + tr('a11y_lab.review.elements_short', 'elements') + ' · ' +
+              scorecard.automated.needsReview + ' ' + tr('a11y_lab.review.need_review_short', 'need review') +
+              ' (' + scorecard.automated.engine + ' ' + scorecard.automated.engineVersion + ')')
+          ),
+          e('div', { className: 'flex flex-wrap gap-1.5 text-[11px] font-bold', 'aria-live': 'polite' },
+            e('span', { className: 'px-2 py-1 rounded bg-emerald-100 text-emerald-800' }, scoreSummary.pass + ' ' + tr('a11y_lab.review.passed_short', 'passed')),
+            e('span', { className: 'px-2 py-1 rounded bg-rose-100 text-rose-800' }, scoreSummary.fail + ' ' + tr('a11y_lab.review.findings_short', 'findings')),
+            e('span', { className: 'px-2 py-1 rounded bg-slate-200 text-slate-700' }, scoreSummary.untested + ' ' + tr('a11y_lab.review.untested_short', 'untested')),
+            scoreSummary.not_applicable > 0 && e('span', { className: 'px-2 py-1 rounded bg-blue-100 text-blue-800' }, scoreSummary.not_applicable + ' ' + tr('a11y_lab.review.na_short', 'N/A'))
+          )
+        ),
+        e('fieldset', { className: 'p-4 space-y-3' },
+          e('legend', { className: 'sr-only' }, tr('a11y_lab.review.checks_legend', 'Manual accessibility review checks')),
+          REVIEW_CHECKS.map(function (check) {
+            var selectId = 'a11y-review-check-' + check.id;
+            return e('div', { key: check.id, className: 'grid gap-2 md:grid-cols-[1fr_150px] md:items-center p-3 rounded-lg border border-slate-200 bg-white' },
+              e('div', null,
+                e('label', { htmlFor: selectId, className: 'block text-sm font-semibold text-slate-800' }, check.label),
+                e('p', { className: 'text-xs text-slate-500 mt-0.5' }, check.hint)
+              ),
+              e('select', {
+                id: selectId,
+                value: scorecard.checks[check.id],
+                onChange: function (ev) { updateReviewStatus(check.id, ev.target.value); },
+                className: 'w-full px-2 py-2 text-xs font-semibold border border-slate-300 rounded-lg bg-white',
+              },
+                e('option', { value: 'untested' }, tr('a11y_lab.review.status_untested', 'Not tested')),
+                e('option', { value: 'pass' }, tr('a11y_lab.review.status_pass', 'Pass')),
+                e('option', { value: 'fail' }, tr('a11y_lab.review.status_fail', 'Finding')),
+                e('option', { value: 'not_applicable' }, tr('a11y_lab.review.status_na', 'Not applicable'))
+              )
+            );
+          }),
+          e('div', { className: 'pt-2' },
+            e('label', { htmlFor: 'a11y-review-notes', className: 'block text-sm font-semibold text-slate-800 mb-1' }, tr('a11y_lab.review.notes_label', 'Review notes and evidence')),
+            e('textarea', {
+              id: 'a11y-review-notes',
+              value: scorecard.notes,
+              rows: 4,
+              maxLength: 5000,
+              onChange: function (ev) { updateReviewNotes(ev.target.value); },
+              placeholder: tr('a11y_lab.review.notes_placeholder', 'Record the task, assistive technology, browser, observed problem, and reproduction steps.'),
+              className: 'w-full px-3 py-2 text-sm border border-slate-300 rounded-lg resize-y',
+            })
+          ),
+          e('div', { className: 'flex flex-col sm:flex-row sm:items-center gap-2 pt-2 border-t border-slate-200' },
+            e('div', { className: 'flex-1 text-xs text-slate-600' },
+              scorecard.lastReviewedAt
+                ? tr('a11y_lab.review.last_reviewed_prefix', 'Last completed: ') + new Date(scorecard.lastReviewedAt).toLocaleString()
+                : tr('a11y_lab.review.not_completed', 'This review has not been completed yet.')),
+            props.reviewSession && typeof props.onEndReviewSession === 'function' && e('button', {
+              type: 'button',
+              onClick: props.onEndReviewSession,
+              className: 'px-3 py-2 text-xs font-semibold border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50',
+            }, tr('a11y_lab.review.end_session', 'End review session')),
+            e('button', {
+              type: 'button',
+              onClick: markReviewComplete,
+              className: 'px-3 py-2 text-xs font-bold bg-emerald-700 text-white rounded-lg hover:bg-emerald-800',
+            }, tr('a11y_lab.review.complete_button', 'Complete and save review'))
+          )
+        )
+      ),
+
       // Settings strip
-      e('div', { className: 'bg-slate-50 border border-slate-200 rounded-lg p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3' },
+      hasStaticPreview && e('div', { className: 'bg-slate-50 border border-slate-200 rounded-lg p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3' },
         e('div', null,
-          e('label', { className: 'block text-xs font-semibold text-slate-700 mb-1' }, tr('a11y_lab.preview.font_label', 'Font')),
+          e('label', { htmlFor: 'a11y-lab-preview-font', className: 'block text-xs font-semibold text-slate-700 mb-1' }, tr('a11y_lab.preview.font_label', 'Font')),
           e('select', {
+            id: 'a11y-lab-preview-font',
             value: settings.fontFamily,
             onChange: function (ev) { update('fontFamily', ev.target.value); },
             className: 'w-full px-2 py-1 text-xs border border-slate-300 rounded bg-white',
           }, FONT_FAMILIES.map(function (f) { return e('option', { key: f.value, value: f.value }, f.label); }))
         ),
         e('div', null,
-          e('label', { className: 'block text-xs font-semibold text-slate-700 mb-1' }, tr('a11y_lab.preview.size_label', 'Size')),
+          e('label', { htmlFor: 'a11y-lab-preview-size', className: 'block text-xs font-semibold text-slate-700 mb-1' }, tr('a11y_lab.preview.size_label', 'Size')),
           e('select', {
+            id: 'a11y-lab-preview-size',
             value: settings.fontSize,
             onChange: function (ev) { update('fontSize', ev.target.value); },
             className: 'w-full px-2 py-1 text-xs border border-slate-300 rounded bg-white',
           }, FONT_SIZES.map(function (s) { return e('option', { key: s.value, value: s.value }, s.label); }))
         ),
         e('div', null,
-          e('label', { className: 'block text-xs font-semibold text-slate-700 mb-1' }, tr('a11y_lab.preview.theme_label', 'Theme')),
+          e('label', { htmlFor: 'a11y-lab-preview-theme', className: 'block text-xs font-semibold text-slate-700 mb-1' }, tr('a11y_lab.preview.theme_label', 'Theme')),
           e('select', {
+            id: 'a11y-lab-preview-theme',
             value: settings.theme,
             onChange: function (ev) { update('theme', ev.target.value); },
             className: 'w-full px-2 py-1 text-xs border border-slate-300 rounded bg-white',
           }, THEMES.map(function (t) { return e('option', { key: t.value, value: t.value }, t.label); }))
         ),
         e('div', null,
-          e('label', { className: 'block text-xs font-semibold text-slate-700 mb-1' }, tr('a11y_lab.preview.spacing_label', 'Line spacing')),
+          e('label', { htmlFor: 'a11y-lab-preview-line-spacing', className: 'block text-xs font-semibold text-slate-700 mb-1' }, tr('a11y_lab.preview.spacing_label', 'Line spacing')),
           e('select', {
+            id: 'a11y-lab-preview-line-spacing',
             value: settings.lineSpacing,
             onChange: function (ev) { update('lineSpacing', ev.target.value); },
             className: 'w-full px-2 py-1 text-xs border border-slate-300 rounded bg-white',
           }, LINE_SPACINGS.map(function (s) { return e('option', { key: s.value, value: s.value }, s.label); }))
         ),
         e('div', null,
-          e('label', { className: 'block text-xs font-semibold text-slate-700 mb-1' }, tr('a11y_lab.preview.letter_spacing_label', 'Letter spacing')),
+          e('label', { htmlFor: 'a11y-lab-preview-letter-spacing', className: 'block text-xs font-semibold text-slate-700 mb-1' }, tr('a11y_lab.preview.letter_spacing_label', 'Letter spacing')),
           e('select', {
+            id: 'a11y-lab-preview-letter-spacing',
             value: settings.letterSpacing,
             onChange: function (ev) { update('letterSpacing', ev.target.value); },
             className: 'w-full px-2 py-1 text-xs border border-slate-300 rounded bg-white',
@@ -549,17 +827,17 @@
 
       // Unmapped-theme note: surfaced when the app's current readingTheme has
       // no equivalent in the lab's simplified theme enum.
-      unmappedAppTheme && e('div', { className: 'p-2 text-xs bg-blue-50 border border-blue-200 rounded text-blue-900' },
+      hasStaticPreview && unmappedAppTheme && e('div', { className: 'p-2 text-xs bg-blue-50 border border-blue-200 rounded text-blue-900' },
         tr('a11y_lab.preview.unmapped_theme_note', 'Note: the app is currently using a reading theme (warm, blue, green, rose, or dyslexia overlay) that is not represented in this preview yet. Switch it in the main accessibility settings to preview it accurately.')
       ),
 
-      // Preview pane (the actual student-eye view)
-      e('div', { id: 'alloflow-a11y-preview-pane', style: settingsStyle(settings, theme), 'aria-label': tr('a11y_lab.preview.pane_aria', 'Student preview pane') },
+      // Static accommodation preview; interactive behavior belongs to the authentic student view.
+      hasStaticPreview && e('div', { id: 'alloflow-a11y-preview-pane', style: settingsStyle(settings, theme), 'aria-label': tr('a11y_lab.preview.pane_accommodations_aria', 'Content accommodation preview pane') },
         renderHistoryItemContent(selectedItem, theme, renderFormattedText)
       ),
 
       // Apply / Reset buttons (only when host passed the setters)
-      canApplyToApp && e('div', { className: 'flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200' },
+      hasStaticPreview && canApplyToApp && e('div', { className: 'flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200' },
         e('button', {
           onClick: handleApplyToApp,
           className: 'px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700',
@@ -574,8 +852,8 @@
       ),
 
       // Hint
-      e('div', { className: 'text-xs text-slate-500 italic' },
-        tr('a11y_lab.preview.tip', 'Tip: switch the theme to High contrast and try Extra Large font to simulate low-vision usage. Switch the font to OpenDyslexic to simulate a dyslexia-friendly view.'))
+      hasStaticPreview && e('div', { className: 'text-xs text-slate-500 italic' },
+        tr('a11y_lab.preview.tip_resilience', 'Tip: use high contrast, larger text, and increased spacing to check whether the content remains readable. This is a layout-resilience check, not a simulation of any individual disability.'))
     );
   }
 
@@ -589,24 +867,68 @@
     'input:not([disabled]):not([type="hidden"])',
     'select:not([disabled])',
     'textarea:not([disabled])',
+    'summary',
+    'iframe',
+    'audio[controls]',
+    'video[controls]',
     '[tabindex]:not([tabindex="-1"])',
-    '[contenteditable="true"]',
+    '[contenteditable]:not([contenteditable="false"])',
   ].join(', ');
 
+  function referencedText(el, attrName) {
+    var ids = (el.getAttribute(attrName) || '').trim().split(/\s+/).filter(Boolean);
+    if (ids.length === 0) return '';
+    var doc = el.ownerDocument || document;
+    return ids.map(function (id) {
+      var ref = doc.getElementById(id);
+      return ref ? (ref.textContent || '').trim().replace(/\s+/g, ' ') : '';
+    }).filter(Boolean).join(' ');
+  }
+
+  function associatedLabelText(el) {
+    if (!el) return '';
+    try {
+      if (el.labels && el.labels.length) {
+        return Array.from(el.labels).map(function (label) {
+          return (label.textContent || '').trim().replace(/\s+/g, ' ');
+        }).filter(Boolean).join(' ');
+      }
+    } catch (_) {}
+    var id = el.getAttribute && el.getAttribute('id');
+    if (!id) return '';
+    try {
+      var doc = el.ownerDocument || document;
+      var label = doc.querySelector('label[for="' + CSS.escape(id) + '"]');
+      return label ? (label.textContent || '').trim().replace(/\s+/g, ' ') : '';
+    } catch (_) { return ''; }
+  }
+
   function getElementLabel(el) {
-    var aria = el.getAttribute('aria-label');
-    if (aria) return aria;
-    var labelledBy = el.getAttribute('aria-labelledby');
-    if (labelledBy) {
-      var labelEl = document.getElementById(labelledBy);
-      if (labelEl) return labelEl.textContent.trim().slice(0, 80);
+    var labelledByText = referencedText(el, 'aria-labelledby');
+    if (labelledByText) return labelledByText.slice(0, 80);
+    var aria = (el.getAttribute('aria-label') || '').trim();
+    if (aria) return aria.slice(0, 80);
+    var nativeLabel = associatedLabelText(el);
+    if (nativeLabel) return nativeLabel.slice(0, 80);
+    var tag = el.tagName.toLowerCase();
+    if (tag === 'img' || (tag === 'input' && (el.type || '').toLowerCase() === 'image')) {
+      var alt = (el.getAttribute('alt') || '').trim();
+      if (alt) return alt.slice(0, 80);
+    }
+    if (tag === 'input' && ['button', 'submit', 'reset'].indexOf((el.type || '').toLowerCase()) >= 0) {
+      var value = (el.value || el.getAttribute('value') || '').trim();
+      if (value) return value.slice(0, 80);
     }
     var title = el.getAttribute('title');
     if (title) return title;
-    var text = (el.textContent || '').trim().replace(/\s+/g, ' ');
-    if (text) return text.slice(0, 80);
+    var contentNamed = tag === 'button' || tag === 'a' || tag === 'summary' ||
+      ['button', 'link', 'menuitem', 'option', 'tab'].indexOf(el.getAttribute('role')) >= 0;
+    if (contentNamed) {
+      var text = (el.textContent || '').trim().replace(/\s+/g, ' ');
+      if (text) return text.slice(0, 80);
+    }
     var placeholder = el.getAttribute('placeholder');
-    if (placeholder) return '[' + placeholder + ']';
+    if (placeholder) return '[placeholder=' + placeholder.slice(0, 60) + ']';
     var name = el.getAttribute('name');
     if (name) return '[name=' + name + ']';
     return '<' + el.tagName.toLowerCase() + '>';
@@ -641,13 +963,14 @@
     var orderedFocusable = withPositive.concat(withZeroOrNone);
 
     // Suspicious "fake buttons": div/span with cursor:pointer that aren't keyboard-accessible
-    var allClickyDivs = Array.from(document.querySelectorAll('div, span'));
+    var allClickyDivs = Array.from(document.querySelectorAll('div, span, [onclick], [role="button"], [role="link"], [role="menuitem"]'));
     var suspicious = allClickyDivs.filter(function (el) {
       if (isInExcludedContainer(el) || !isElementVisible(el)) return false;
       var style = window.getComputedStyle(el);
-      if (style.cursor !== 'pointer') return false;
+      var interactiveRole = ['button', 'link', 'menuitem'].indexOf(el.getAttribute('role')) >= 0;
+      if (style.cursor !== 'pointer' && !el.hasAttribute('onclick') && !interactiveRole) return false;
       if (el.tabIndex >= 0) return false;
-      if (el.matches('a, button, [role="button"]')) return false;
+      if (el.matches('a[href], button, input, select, textarea, summary')) return false;
       // Skip if a parent is a button/link (probably decorative inside)
       var parent = el.parentElement;
       while (parent && parent !== document.body) {
@@ -663,7 +986,7 @@
     // Missing accessible name on focusable elements
     var noLabel = orderedFocusable.filter(function (el) {
       var label = getElementLabel(el);
-      return !label || label.startsWith('<') || label === '[name=]';
+      return !label || label.startsWith('<') || label.startsWith('[placeholder=') || label.startsWith('[name=');
     });
 
     return {
@@ -922,25 +1245,44 @@
 
   // ----- Phase 3: Live in-app a11y audit (axe-core) --------------------------
 
-  var AXE_CDN_URL = 'https://cdn.jsdelivr.net/npm/axe-core@4.10.3/axe.min.js';
+  // Prefer the same-origin vendored build so audits work offline and under a
+  // restrictive content-security policy. The CDN remains a fallback for
+  // deployments that do not yet publish /vendor/axe-core/axe.min.js.
+  var AXE_LOCAL_URLS = ['/vendor/axe-core/axe.min.js', 'vendor/axe-core/axe.min.js'];
+  var AXE_CDN_URL = 'https://cdn.jsdelivr.net/npm/axe-core@4.12.1/axe.min.js';
   var axeLoadPromise = null;
 
-  function loadAxeCore() {
-    if (window.axe && typeof window.axe.run === 'function') {
-      return Promise.resolve(window.axe);
-    }
-    if (axeLoadPromise) return axeLoadPromise;
-    axeLoadPromise = new Promise(function (resolve, reject) {
-      var s = document.createElement('script');
-      s.src = AXE_CDN_URL;
-      s.async = true;
-      s.crossOrigin = 'anonymous';
-      s.onload = function () {
+  function loadAxeScript(url) {
+    return new Promise(function (resolve, reject) {
+      var script = document.createElement('script');
+      script.src = url;
+      script.async = true;
+      script.setAttribute('data-alloflow-axe-source', url);
+      if (/^https?:/i.test(url)) script.crossOrigin = 'anonymous';
+      script.onload = function () {
         if (window.axe && typeof window.axe.run === 'function') resolve(window.axe);
         else reject(new Error('axe-core loaded but window.axe is missing'));
       };
-      s.onerror = function () { axeLoadPromise = null; reject(new Error('Failed to load axe-core from CDN')); };
-      document.head.appendChild(s);
+      script.onerror = function () {
+        if (script.parentNode) script.parentNode.removeChild(script);
+        reject(new Error('Failed to load axe-core from ' + url));
+      };
+      document.head.appendChild(script);
+    });
+  }
+
+  function loadAxeCore() {
+    if (window.axe && typeof window.axe.run === 'function') return Promise.resolve(window.axe);
+    if (axeLoadPromise) return axeLoadPromise;
+    var candidates = AXE_LOCAL_URLS.concat([AXE_CDN_URL]);
+    axeLoadPromise = candidates.reduce(function (chain, url) {
+      return chain.catch(function () {
+        if (window.axe && typeof window.axe.run === 'function') return window.axe;
+        return loadAxeScript(url);
+      });
+    }, Promise.reject(new Error('axe-core not loaded'))).catch(function (err) {
+      axeLoadPromise = null;
+      throw err;
     });
     return axeLoadPromise;
   }
@@ -999,6 +1341,38 @@
     return violation.help || violation.description || violation.id;
   }
 
+
+  function persistAutomatedAuditForReview(reviewSession, axeResult, axeVersion) {
+    if (!reviewSession || !reviewSession.itemId || !axeResult) return null;
+    var item = {
+      id: reviewSession.itemId,
+      type: reviewSession.artifactType || '',
+      title: reviewSession.artifactTitle || '',
+    };
+    var key = reviewItemKey(item);
+    var store = loadReviewScorecards();
+    var card = normalizeReviewScorecard(store[key], item);
+    var violations = Array.isArray(axeResult.violations) ? axeResult.violations : [];
+    var automated = {
+      runAt: new Date().toISOString(),
+      engine: 'axe-core',
+      engineVersion: String(axeVersion || 'unknown'),
+      standard: 'WCAG 2.2 A/AA',
+      violationRules: violations.length,
+      affectedElements: violations.reduce(function (sum, violation) { return sum + (Array.isArray(violation.nodes) ? violation.nodes.length : 0); }, 0),
+      passedRules: Array.isArray(axeResult.passes) ? axeResult.passes.length : 0,
+      needsReview: Array.isArray(axeResult.incomplete) ? axeResult.incomplete.length : 0,
+      ruleIds: violations.map(function (violation) { return violation && violation.id; }).filter(Boolean).slice(0, 100),
+    };
+    var next = Object.assign({}, card, {
+      automated: automated,
+      startedAt: card.startedAt || reviewSession.startedAt || automated.runAt,
+      updatedAt: automated.runAt,
+    });
+    store[key] = next;
+    persistReviewScorecards(store);
+    return next;
+  }
   function AuditTab(props) {
     var addToast = props.addToast;
     var tr = makeTr(props.t);
@@ -1009,6 +1383,8 @@
     var result = result$[0], setResult = result$[1];
     var error$ = useState(null);
     var error = error$[0], setError = error$[1];
+    var lastRun$ = useState(null);
+    var lastRun = lastRun$[0], setLastRun = lastRun$[1];
 
     function handleRunAudit() {
       setStatus('loading');
@@ -1019,14 +1395,16 @@
           return axe.run(
             { exclude: [[LAB_EXCLUDE_SELECTOR]] },
             {
-              runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+              runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
               resultTypes: ['violations', 'passes', 'incomplete'],
             }
           );
         })
         .then(function (axeResult) {
           setResult(axeResult);
+          setLastRun(new Date());
           setStatus('done');
+          persistAutomatedAuditForReview(props.reviewSession, axeResult, window.axe && window.axe.version);
           var totalNodes = (axeResult.violations || []).reduce(function (sum, v) {
             return sum + (v.nodes ? v.nodes.length : 0);
           }, 0);
@@ -1084,7 +1462,7 @@
       e('div', null,
         e('h3', { className: 'font-bold text-lg text-slate-800' }, tr('a11y_lab.audit.heading', 'Live in-app accessibility audit')),
         e('p', { className: 'text-sm text-slate-600 mt-1' },
-          tr('a11y_lab.audit.description', 'Runs axe-core (industry-standard accessibility engine, used by browsers, the Deque team, and many enterprise audits) against the current view. Reports WCAG 2.1 A and AA violations in plain language framed by student impact. The lab modal itself is excluded.'))
+          tr('a11y_lab.audit.description_wcag22', 'Runs axe-core (industry-standard accessibility engine, used by browsers, the Deque team, and many enterprise audits) against the current view. Reports WCAG 2.2 A and AA violations in plain language framed by student impact. The lab modal itself is excluded.'))
       ),
 
       // Action button + status
@@ -1094,16 +1472,16 @@
           disabled: status === 'loading' || status === 'running',
           className: 'px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50',
         }, status === 'loading' ? tr('a11y_lab.audit.loading', 'Loading axe-core...') : status === 'running' ? tr('a11y_lab.audit.running', 'Running audit...') : (result ? tr('a11y_lab.audit.rerun', 'Re-run audit') : tr('a11y_lab.audit.run', '🔍 Run audit'))),
-        result && e('span', { className: 'text-xs text-slate-500' },
-          tr('a11y_lab.audit.last_run_prefix', 'Last run: ') + new Date().toLocaleTimeString())
+        lastRun && e('span', { className: 'text-xs text-slate-500' },
+          tr('a11y_lab.audit.last_run_prefix', 'Last run: ') + lastRun.toLocaleTimeString())
       ),
 
       status === 'error' && e('div', { className: 'p-3 bg-rose-50 border border-rose-300 rounded text-sm text-rose-900' },
-        tr('a11y_lab.audit.error_prefix', 'Audit failed: ') + error + tr('a11y_lab.audit.error_suffix', '. Check your network connection (axe-core loads from cdn.jsdelivr.net) and try again.')
+        tr('a11y_lab.audit.error_prefix', 'Audit failed: ') + error + tr('a11y_lab.audit.error_suffix_bundled', '. The bundled audit engine and CDN fallback were both unavailable; check the deployment assets or network connection and try again.')
       ),
 
       !result && status !== 'error' && status !== 'loading' && status !== 'running' && e('div', { className: 'p-6 text-center bg-slate-50 rounded-lg border border-dashed border-slate-300 text-sm text-slate-600' },
-        tr('a11y_lab.audit.idle', 'Click "Run audit" to scan the current view for WCAG 2.1 A and AA violations. The first run takes ~2 seconds to load axe-core (~350 KB minified) from a CDN; subsequent runs are instant.')
+        tr('a11y_lab.audit.idle_wcag22', 'Click "Run audit" to scan the current view for WCAG 2.2 A and AA violations. The Lab first tries the bundled same-origin axe-core asset and falls back to the CDN only on older deployments.')
       ),
 
       result && e('div', { className: 'flex flex-col gap-3' },
@@ -1131,7 +1509,7 @@
         ),
 
         result.violations.length === 0 && e('div', { className: 'p-4 bg-emerald-50 border border-emerald-300 rounded text-sm text-emerald-900 text-center' },
-          tr('a11y_lab.audit.no_violations', '✅ No WCAG 2.1 A/AA violations found in the current view by axe-core. (Note: automated audits catch ~30-50% of real accessibility issues. Combine with the keyboard tour, screen-reader preview, and manual review.)')
+          tr('a11y_lab.audit.no_violations_wcag22', '✅ No WCAG 2.2 A/AA violations found in the current view by axe-core. (Note: automated audits catch ~30-50% of real accessibility issues. Combine with the keyboard tour, semantic outline, real assistive-technology testing, and manual review.)')
         ),
 
         // Violations grouped by impact
@@ -1250,12 +1628,12 @@
 
         // Tip
         e('div', { className: 'text-xs text-slate-500 italic mt-2' },
-          tr('a11y_lab.audit.tip', 'Tip: critical and serious issues are open by default. Click "Show me" on any rule to focus and highlight the first affected element. axe-core covers ~30-50% of real accessibility issues; combine with the keyboard tour, screen-reader preview, and manual review.'))
+          tr('a11y_lab.audit.tip_semantic', 'Tip: critical and serious issues are open by default. Click "Show me" on any rule to highlight the first affected element. Automated checks are only one layer; combine them with the keyboard tour, semantic outline, zoom/reflow checks, and manual assistive-technology testing.'))
       )
     );
   }
 
-  // ----- Phase 4: Screen-reader announcement preview -------------------------
+  // ----- Phase 4: Semantic announcement outline -------------------------------
 
   // Map an HTML tag (or role attr) to the role a screen reader would announce.
   // Not exhaustive, but covers the common cases. Falls back to null for
@@ -1295,43 +1673,56 @@
     if (tag === 'aside') return 'complementary';
     if (tag === 'section') return el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') ? 'region' : null;
     if (tag === 'article') return 'article';
+    if (tag === 'table') return 'table';
+    if (tag === 'ul' || tag === 'ol') return 'list';
+    if (tag === 'li') return 'list item';
+    if (tag === 'details') return 'group';
+    if (tag === 'summary') return 'button';
+    if (tag === 'figure') return 'figure';
+    if (tag === 'fieldset') return 'group';
     return null;
   }
 
   function getScreenReaderName(el) {
-    var ariaLabel = el.getAttribute('aria-label');
-    if (ariaLabel && ariaLabel.trim()) return ariaLabel.trim();
-    var labelledBy = el.getAttribute('aria-labelledby');
-    if (labelledBy) {
-      var ids = labelledBy.split(/\s+/);
-      var labelText = ids.map(function (id) {
-        var labelEl = document.getElementById(id);
-        return labelEl ? labelEl.textContent.trim() : '';
-      }).filter(Boolean).join(' ');
-      if (labelText) return labelText;
+    // Follow the high-value portion of accessible-name precedence:
+    // aria-labelledby, aria-label, native labels/attributes, then content only
+    // for roles that are actually allowed to derive their name from content.
+    var labelledByText = referencedText(el, 'aria-labelledby');
+    if (labelledByText) return labelledByText.slice(0, 200);
+    var ariaLabel = (el.getAttribute('aria-label') || '').trim();
+    if (ariaLabel) return ariaLabel.slice(0, 200);
+    var tag = el.tagName.toLowerCase();
+    var nativeLabel = associatedLabelText(el);
+    if (nativeLabel) return nativeLabel.slice(0, 200);
+    if (tag === 'img' || (tag === 'input' && (el.type || '').toLowerCase() === 'image')) {
+      return (el.getAttribute('alt') || '').trim().slice(0, 200);
     }
-    if (el.tagName.toLowerCase() === 'img') {
-      return el.getAttribute('alt') || '';
+    if (tag === 'table') {
+      var caption = el.querySelector(':scope > caption');
+      if (caption) return (caption.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 200);
     }
-    if (el.tagName.toLowerCase() === 'input') {
-      // For inputs, the label is usually a separate <label> element with for=
-      var id = el.getAttribute('id');
-      if (id) {
-        var lbl = document.querySelector('label[for="' + CSS.escape(id) + '"]');
-        if (lbl) return lbl.textContent.trim();
-      }
-      // Or wrapping label
-      var wrappingLabel = el.closest('label');
-      if (wrappingLabel) return wrappingLabel.textContent.trim();
-      var ph = el.getAttribute('placeholder');
-      if (ph) return ph + ' (placeholder)';
-      return '';
+    if (tag === 'input' && ['button', 'submit', 'reset'].indexOf((el.type || '').toLowerCase()) >= 0) {
+      return (el.value || el.getAttribute('value') || '').trim().slice(0, 200);
     }
-    var text = (el.textContent || '').trim().replace(/\s+/g, ' ');
-    if (text) return text.slice(0, 200);
-    var title = el.getAttribute('title');
-    if (title) return title;
+    var role = el.getAttribute('role');
+    var nameFromContent = ['button', 'a', 'summary', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'dt', 'dd', 'th', 'caption'].indexOf(tag) >= 0 ||
+      ['button', 'link', 'menuitem', 'option', 'tab', 'heading', 'listitem', 'cell', 'columnheader', 'rowheader'].indexOf(role) >= 0;
+    if (nameFromContent) {
+      var text = (el.textContent || '').trim().replace(/\s+/g, ' ');
+      if (text) return text.slice(0, 200);
+    }
+    var title = (el.getAttribute('title') || '').trim();
+    if (title) return title.slice(0, 200);
+    var placeholder = (el.getAttribute('placeholder') || '').trim();
+    if (placeholder) return placeholder.slice(0, 180) + ' (placeholder fallback)';
     return '';
+  }
+
+  function getScreenReaderDescription(el) {
+    var describedBy = referencedText(el, 'aria-describedby');
+    if (describedBy) return describedBy.slice(0, 240);
+    var ariaDescription = (el.getAttribute('aria-description') || '').trim();
+    return ariaDescription ? ariaDescription.slice(0, 240) : '';
   }
 
   function getScreenReaderState(el) {
@@ -1356,7 +1747,24 @@
       states.push(el.checked ? 'selected' : 'not selected');
     } else if (el.checked) {
       states.push('checked');
+    } else {
+      var ariaChecked = el.getAttribute('aria-checked');
+      if (ariaChecked === 'mixed') states.push('partially checked');
+      else if (ariaChecked === 'true') states.push('checked');
+      else if (ariaChecked === 'false') states.push('not checked');
     }
+    var tag = el.tagName.toLowerCase();
+    var type = (el.type || '').toLowerCase();
+    if (tag === 'select') {
+      var selectedOption = el.options && el.selectedIndex >= 0 ? el.options[el.selectedIndex] : null;
+      if (selectedOption) states.push('value ' + (selectedOption.textContent || selectedOption.value || '').trim());
+    } else if ((tag === 'input' || tag === 'textarea') && ['checkbox', 'radio', 'button', 'submit', 'reset', 'image', 'password'].indexOf(type) < 0 && el.value) {
+      states.push('value ' + String(el.value).slice(0, 120));
+    }
+    var valueText = el.getAttribute('aria-valuetext');
+    var valueNow = el.getAttribute('aria-valuenow');
+    if (valueText) states.push('value ' + valueText);
+    else if (valueNow) states.push('value ' + valueNow);
     var expanded = el.getAttribute('aria-expanded');
     if (expanded === 'true') states.push('expanded');
     else if (expanded === 'false') states.push('collapsed');
@@ -1375,10 +1783,12 @@
     var state = getScreenReaderState(el);
     if (state === null) return null; // aria-hidden
     var name = getScreenReaderName(el);
+    var description = getScreenReaderDescription(el);
     var parts = [];
     if (name) parts.push(name);
     parts.push(role);
     if (state) parts.push(state);
+    if (description) parts.push('description: ' + description);
     return parts.join(', ');
   }
 
@@ -1389,15 +1799,15 @@
     // Collect semantic + interactive elements; document order matches reading order.
     var selector = [
       'h1, h2, h3, h4, h5, h6',
-      'nav, main, header, footer, aside, article',
+      'nav, main, header, footer, aside, article, table, ul, ol, li, details, summary, figure, fieldset',
       'section[aria-label], section[aria-labelledby]',
       '[role="region"], [role="navigation"], [role="main"], [role="banner"], [role="contentinfo"], [role="complementary"], [role="dialog"], [role="alert"], [role="tablist"], [role="tab"], [role="tabpanel"]',
       'a[href]',
-      'button:not([disabled])',
-      'input:not([disabled]):not([type="hidden"])',
-      'select:not([disabled])',
-      'textarea:not([disabled])',
-      '[contenteditable="true"]',
+      'button',
+      'input:not([type="hidden"])',
+      'select',
+      'textarea',
+      '[contenteditable]:not([contenteditable="false"])',
       'img[alt]:not([alt=""])',
       '[role="img"]',
     ].join(', ');
@@ -1408,7 +1818,7 @@
       // Skip elements inside an aria-hidden ancestor
       var ancestor = el.parentElement;
       while (ancestor && ancestor !== document.body) {
-        if (ancestor.getAttribute('aria-hidden') === 'true') return false;
+        if (ancestor.getAttribute('aria-hidden') === 'true' || ancestor.hasAttribute('inert')) return false;
         ancestor = ancestor.parentElement;
       }
       return true;
@@ -1424,7 +1834,9 @@
 
     return els.map(function (el, i) {
       var text = composeAnnouncement(el);
-      return text ? { index: i, el: el, text: text, tag: el.tagName.toLowerCase() } : null;
+      var langHost = el.closest && el.closest('[lang]');
+      var lang = langHost ? langHost.getAttribute('lang') : (document.documentElement.lang || 'en-US');
+      return text ? { index: i, el: el, text: text, tag: el.tagName.toLowerCase(), lang: lang } : null;
     }).filter(Boolean);
   }
 
@@ -1491,7 +1903,7 @@
       try {
         var items = buildScreenReaderQueue(LAB_EXCLUDE_SELECTOR);
         setQueue(items);
-        addToast && addToast(tr('a11y_lab.screenreader.queue_built_prefix', 'Built ') + items.length + tr('a11y_lab.screenreader.queue_built_suffix', ' announcements (headings, landmarks, links, controls, and images with alt text).'), 'info');
+        addToast && addToast(tr('a11y_lab.screenreader.queue_built_prefix', 'Built ') + items.length + tr('a11y_lab.screenreader.semantic_queue_built_suffix', ' semantic checkpoints (headings, landmarks, lists, tables, links, controls, and meaningful images).'), 'info');
       } catch (err) {
         addToast && addToast(tr('a11y_lab.screenreader.queue_failed', 'Failed to build queue: ') + (err && err.message), 'error');
       }
@@ -1507,7 +1919,7 @@
       var utter = new SpeechSynthesisUtterance(item.text);
       utter.rate = rateRef.current;
       utter.pitch = 1.0;
-      utter.lang = (document.documentElement.lang || 'en-US');
+      utter.lang = item.lang || document.documentElement.lang || 'en-US';
       utter.onend = onEnd;
       utter.onerror = onEnd;
       window.speechSynthesis.speak(utter);
@@ -1579,9 +1991,9 @@
 
     return e('div', { className: 'flex flex-col gap-4' },
       e('div', null,
-        e('h3', { className: 'font-bold text-lg text-slate-800' }, tr('a11y_lab.screenreader.heading', 'Screen-reader announcement preview')),
+        e('h3', { className: 'font-bold text-lg text-slate-800' }, tr('a11y_lab.screenreader.semantic_heading', 'Semantic announcement outline')),
         e('p', { className: 'text-sm text-slate-600 mt-1' },
-          tr('a11y_lab.screenreader.description', "Build the list of what a screen reader would announce while moving through the page in reading order, then listen. Headings, landmarks, links, form controls, and images with alt text are included. The lab modal itself is excluded. Uses your browser's built-in speech synthesis (the same kind of TTS engine real screen readers use, so the audio quality is representative of what students actually hear)."))
+          tr('a11y_lab.screenreader.semantic_description', "Build an approximate outline of names, roles, states, values, and descriptions for important page elements, then optionally hear that outline with browser text-to-speech. This is a semantic debugging aid, not a screen-reader emulator; actual announcements vary by browser, operating system, screen reader, settings, and navigation mode."))
       ),
 
       !ttsAvailable && e('div', { className: 'p-3 bg-amber-50 border border-amber-300 rounded text-sm text-amber-900' },
@@ -1593,7 +2005,7 @@
         e('button', {
           onClick: buildQueue,
           className: 'px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700',
-        }, queue ? tr('a11y_lab.screenreader.rescan', 'Re-scan page') : tr('a11y_lab.screenreader.build', '🔊 Build announcement queue')),
+        }, queue ? tr('a11y_lab.screenreader.rescan', 'Re-scan page') : tr('a11y_lab.screenreader.semantic_build', '🔊 Build semantic outline')),
         queue && queue.length > 0 && e('button', {
           onClick: playingIndex !== null ? stopAll : playAll,
           className: 'px-4 py-2 text-sm font-semibold border border-emerald-600 ' +
@@ -1610,7 +2022,7 @@
       ),
 
       !queue && e('div', { className: 'p-6 text-center bg-slate-50 rounded-lg border border-dashed border-slate-300 text-sm text-slate-600' },
-        tr('a11y_lab.screenreader.idle', 'Click "Build announcement queue" to scan the page (excluding this lab) for everything a screen reader would announce: headings, landmarks, links, buttons, form controls, and images with alt text. You can then play the whole queue or any single item.')
+        tr('a11y_lab.screenreader.semantic_idle', 'Click "Build semantic outline" to inspect headings, landmarks, lists, tables, links, controls, and meaningful images on the selected page surface. You can play the approximate phrases or inspect them as text.')
       ),
 
       queue && queue.length === 0 && e('div', { className: 'p-6 text-center bg-amber-50 rounded-lg border border-amber-300 text-sm text-amber-900' },
@@ -1619,7 +2031,7 @@
 
       queue && queue.length > 0 && e('div', { className: 'flex flex-col gap-2' },
         e('div', { className: 'text-xs text-slate-600 mb-1' },
-          queue.length + ' ' + tr('a11y_lab.screenreader.queue_count_hint', 'announcements queued. Click any item to hear it. The element is highlighted on the page while it speaks.')),
+          queue.length + ' ' + tr('a11y_lab.screenreader.semantic_queue_count_hint', 'semantic checkpoints. Play an item to hear the approximation; the corresponding element is highlighted while it speaks.')),
         e('div', { className: 'border border-slate-200 rounded max-h-96 overflow-y-auto bg-white' },
           queue.map(function (item, i) {
             var isPlaying = playingIndex === i;
@@ -1642,7 +2054,7 @@
           })
         ),
         e('div', { className: 'text-xs text-slate-500 italic mt-2' },
-          tr('a11y_lab.screenreader.tip', 'Tip: try playing the whole queue with your eyes closed. That is a meaningful approximation of how a student using a screen reader navigates the page. If the announcements feel disorienting or skip critical content, that is a problem to fix.'))
+          tr('a11y_lab.screenreader.semantic_tip', 'Use this outline to spot suspicious names, missing states, and structural gaps. For release verification, repeat the task with a real screen reader such as NVDA, VoiceOver, or TalkBack.'))
       )
     );
   }
@@ -1691,27 +2103,14 @@ body.alloflow-sim-tritanopia > ' + SIM_EXCLUDE + ' {\
 body.alloflow-sim-achromatopsia > ' + SIM_EXCLUDE + ' {\
   filter: url("#alloflow-sim-achromatopsia");\
 }\
-body.alloflow-sim-dyslexia > ' + SIM_EXCLUDE + ' {\
-  filter: blur(0.4px) contrast(0.85);\
-  letter-spacing: 0.04em;\
-  word-spacing: 0.12em;\
+body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' {\
+  letter-spacing: 0.08em;\
+  word-spacing: 0.16em;\
 }\
-@media (prefers-reduced-motion: no-preference) {\
-  body.alloflow-sim-dyslexia > ' + SIM_EXCLUDE + ' p,\
-  body.alloflow-sim-dyslexia > ' + SIM_EXCLUDE + ' li,\
-  body.alloflow-sim-dyslexia > ' + SIM_EXCLUDE + ' span,\
-  body.alloflow-sim-dyslexia > ' + SIM_EXCLUDE + ' h1,\
-  body.alloflow-sim-dyslexia > ' + SIM_EXCLUDE + ' h2,\
-  body.alloflow-sim-dyslexia > ' + SIM_EXCLUDE + ' h3 {\
-    animation: alloflow-sim-dyslexia-jitter 6s infinite;\
-  }\
-}\
-@keyframes alloflow-sim-dyslexia-jitter {\
-  0%, 100% { letter-spacing: 0.04em; word-spacing: 0.12em; }\
-  20% { letter-spacing: 0.06em; word-spacing: 0.10em; }\
-  40% { letter-spacing: 0.03em; word-spacing: 0.14em; }\
-  60% { letter-spacing: 0.05em; word-spacing: 0.11em; }\
-  80% { letter-spacing: 0.04em; word-spacing: 0.13em; }\
+body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' p,\
+body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
+  line-height: 1.8 !important;\
+  max-width: 70ch;\
 }';
 
   function ensureSimulatorAssetsLoaded() {
@@ -1739,7 +2138,8 @@ body.alloflow-sim-dyslexia > ' + SIM_EXCLUDE + ' {\
     'alloflow-sim-deuteranopia',
     'alloflow-sim-tritanopia',
     'alloflow-sim-achromatopsia',
-    'alloflow-sim-dyslexia',
+    'alloflow-sim-reading-stress',
+    'alloflow-sim-dyslexia', // cleanup for sessions opened before this upgrade
   ];
 
   function applySimulator(activeKey, blurPx) {
@@ -1795,10 +2195,10 @@ body.alloflow-sim-dyslexia > ' + SIM_EXCLUDE + ' {\
         description: tr('a11y_lab.simulators.items.achromatopsia_desc', 'Complete absence of color vision. Affects roughly 0.003% of the population (about 1 in 30,000). The world appears in shades of grey.'),
       },
       {
-        key: 'dyslexia',
-        label: tr('a11y_lab.simulators.items.dyslexia_label', 'Dyslexia visual stress'),
-        icon: '🌀',
-        description: tr('a11y_lab.simulators.items.dyslexia_desc', 'A LIMITED simulation of one common visual-stress experience some dyslexic readers report (slight blur, lower contrast, shifting spacing). Dyslexia is highly individual; this is one slice, not a definitive rendering. About 5-10% of students have dyslexia.'),
+        key: 'reading-stress',
+        label: tr('a11y_lab.simulators.items.reading_stress_label', 'Reading-layout stress test'),
+        icon: '📖',
+        description: tr('a11y_lab.simulators.items.reading_stress_desc', 'Tests whether content remains usable with generous letter, word, and line spacing and a readable line length. This does not simulate dyslexia or any individual reader; it is a layout-resilience check.'),
       },
       {
         key: 'motor-info',
@@ -1914,10 +2314,10 @@ body.alloflow-sim-dyslexia > ' + SIM_EXCLUDE + ' {\
 
     var tr = makeTr(props.t);
     var tabLabels = {
-      preview:      tr('a11y_lab.tabs.preview',      'Preview as student'),
+      preview:      tr('a11y_lab.tabs.content_preview', 'Content preview'),
       keyboard:     tr('a11y_lab.tabs.keyboard',     'Keyboard tour'),
       audit:        tr('a11y_lab.tabs.audit',        'Audit'),
-      screenreader: tr('a11y_lab.tabs.screenreader', 'Screen reader'),
+      screenreader: tr('a11y_lab.tabs.semantic_outline', 'Semantic outline'),
       simulators:   tr('a11y_lab.tabs.simulators',   'Simulators'),
     };
 
@@ -2103,6 +2503,12 @@ body.alloflow-sim-dyslexia > ' + SIM_EXCLUDE + ' {\
   window.AlloModules.AccessibilityLabInternals = {
     composeAnnouncement: composeAnnouncement, getScreenReaderRole: getScreenReaderRole,
     getScreenReaderName: getScreenReaderName, getScreenReaderState: getScreenReaderState,
+    getScreenReaderDescription: getScreenReaderDescription,
+    getElementLabel: getElementLabel, scanKeyboardAccessibility: scanKeyboardAccessibility,
+    buildScreenReaderQueue: buildScreenReaderQueue,
+    reviewItemKey: reviewItemKey, normalizeReviewScorecard: normalizeReviewScorecard,
+    summarizeReviewScorecard: summarizeReviewScorecard, loadReviewScorecards: loadReviewScorecards,
+    persistAutomatedAuditForReview: persistAutomatedAuditForReview,
   };
   console.log('[CDN] AccessibilityLab loaded');
 })();

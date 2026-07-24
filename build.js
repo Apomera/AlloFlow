@@ -796,6 +796,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'LiveLessonRun',
+        filename: 'view_live_lesson_run_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'StudentJoinPanel',
         filename: 'view_student_join_panel_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1053,6 +1058,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_datastudio.js',
     'stem_lab/stem_tool_dataplot.js',
     'stem_lab/stem_tool_geo.js',
+    'stem_lab/stem_tool_gisstudio.js',
     'stem_lab/stem_tool_fractions.js',
     'stem_lab/stem_tool_manipulatives.js',
     'stem_lab/stem_tool_money.js',
@@ -1875,6 +1881,14 @@ if (dryRun) {
 
     // ── Auto-copy module files to prismflow-deploy/public/ ──
     const PUBLIC_DIR = path.join(ROOT, 'prismflow-deploy', 'public');
+    // Accessibility Lab uses a same-origin axe-core build first so audits work
+    // offline and under restrictive content-security policies.
+    const axeCoreSource = path.join(ROOT, 'node_modules', 'axe-core', 'axe.min.js');
+    const axeCoreDest = path.join(PUBLIC_DIR, 'vendor', 'axe-core', 'axe.min.js');
+    if (fs.existsSync(axeCoreSource)) {
+        fs.mkdirSync(path.dirname(axeCoreDest), { recursive: true });
+        fs.copyFileSync(axeCoreSource, axeCoreDest);
+    }
     const modulesToCopy = [
         // Root-level modules
         ...MODULES.map(m => m.filename),

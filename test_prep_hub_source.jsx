@@ -8,6 +8,62 @@ const TEST_PREP_STUDY_PLANS_STORAGE_KEY = 'alloflow_test_prep_study_plans_v1';
 const TEST_PREP_ITEM_TYPES = ['single-choice'];
 const TEST_PREP_SESSION_STORAGE_KEY = 'alloflow_test_prep_session_v1';
 const TEST_PREP_PACK_STATUSES = ['ready', 'preview', 'planned', 'research'];
+const TEST_PREP_CDN_BASE = 'https://alloflow-cdn.pages.dev/';
+const TEST_PREP_GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/';
+
+function testPrepNormalizeRepoAssetUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw || raw.includes('..')) return '';
+  if (/^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(raw)) return raw;
+  try {
+    const parsed = new URL(raw);
+    const isCloudflare = parsed.origin === 'https://alloflow-cdn.pages.dev' && parsed.pathname.startsWith('/test_prep/');
+    const isGitHubRaw = parsed.origin === 'https://raw.githubusercontent.com' && parsed.pathname.startsWith('/Apomera/AlloFlow/main/test_prep/');
+    if (isCloudflare || isGitHubRaw) return raw;
+  } catch (_) {}
+  return '';
+}
+
+function testPrepRepoAssetPath(value) {
+  const safeUrl = testPrepNormalizeRepoAssetUrl(value);
+  if (!safeUrl) return '';
+  if (!/^https?:\/\//i.test(safeUrl)) return safeUrl.replace(/^\.\//, '').split(/[?#]/)[0];
+  try {
+    const parsed = new URL(safeUrl);
+    if (parsed.origin === 'https://raw.githubusercontent.com') return parsed.pathname.replace(/^\/Apomera\/AlloFlow\/main\//, '');
+    return parsed.pathname.replace(/^\/+/, '');
+  } catch (_) {
+    return '';
+  }
+}
+
+function testPrepRepoAssetCandidates(value) {
+  const path = testPrepRepoAssetPath(value);
+  if (!path) return [];
+  return [
+    TEST_PREP_CDN_BASE + path,
+    TEST_PREP_GITHUB_RAW_BASE + path,
+    './' + path,
+  ].filter((candidate, index, candidates) => candidates.indexOf(candidate) === index);
+}
+
+async function testPrepFetchRepoJson(value, validate) {
+  const candidates = testPrepRepoAssetCandidates(value);
+  let lastError = new Error('No trusted AlloFlow repository asset URL was provided.');
+  for (const candidate of candidates) {
+    try {
+      const response = await fetch(candidate, { cache: 'no-store' });
+      if (!response || !response.ok) throw new Error('HTTP ' + (response && response.status ? response.status : 'unavailable'));
+      const payload = await response.json();
+      if (typeof validate === 'function' && !validate(payload)) throw new Error('Unexpected JSON schema');
+      return payload;
+    } catch (error) {
+      lastError = error;
+      try { console.warn('[TestPrepHub] Repository asset unavailable from ' + candidate + ':', error && error.message); } catch (_) {}
+    }
+  }
+  throw lastError;
+}
 
 const WORKPLACE_SAFETY_DEMO = {
   schemaVersion: TEST_PREP_SCHEMA_VERSION,
@@ -115,10 +171,10 @@ const EPPP_PART_ONE_SCAFFOLD = {
   status: 'ready',
   accent: 'violet',
   contentReview: '1,500 source-reviewed practice items; independent expert review pending',
-  legacyUrl: './test_prep/eppp_legacy/index.html?embedded=1',
-  nativeQaUrl: './test_prep/eppp_native_qa.json',
-  learningLibraryUrl: './test_prep/eppp_learning_library.json',
-  learningLibraryQaUrl: './test_prep/eppp_learning_library_qa.json',
+  legacyUrl: 'https://alloflow-cdn.pages.dev/test_prep/eppp_legacy/index.html?embedded=1',
+  nativeQaUrl: 'https://alloflow-cdn.pages.dev/test_prep/eppp_native_qa.json',
+  learningLibraryUrl: 'https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library.json',
+  learningLibraryQaUrl: 'https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library_qa.json',
   blueprintLabel: 'EPPP Part 1-Knowledge current blueprint (2026-2027)',
   blueprintEffective: 'Current Part 1 blueprint used during 2026 and 2027 administrations',
   officialBlueprintUrl: 'https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/',
@@ -473,18 +529,18 @@ function normalizeTestPrepPack(pack) {
     officialConstructedResponseCount: Math.max(0, Math.min(50, Math.round(testPrepFinite(input.officialConstructedResponseCount, 0)))),
     officialTotalTimeMinutes: Math.max(0, Math.min(1000, Math.round(testPrepFinite(input.officialTotalTimeMinutes, 0)))),
     officialSubtests,
-    legacyUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.legacyUrl || '').trim()) && !String(input.legacyUrl || '').includes('..') ? String(input.legacyUrl).trim() : '',
-    legacyAuditUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.legacyAuditUrl || '').trim()) && !String(input.legacyAuditUrl || '').includes('..') ? String(input.legacyAuditUrl).trim() : '',
-    legacyInventoryUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.legacyInventoryUrl || '').trim()) && !String(input.legacyInventoryUrl || '').includes('..') ? String(input.legacyInventoryUrl).trim() : '',
-    legacyReviewLedgerUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.legacyReviewLedgerUrl || '').trim()) && !String(input.legacyReviewLedgerUrl || '').includes('..') ? String(input.legacyReviewLedgerUrl).trim() : '',
-    nextReviewDocketUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.nextReviewDocketUrl || '').trim()) && !String(input.nextReviewDocketUrl || '').includes('..') ? String(input.nextReviewDocketUrl).trim() : '',
-    curation500Url: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.curation500Url || '').trim()) && !String(input.curation500Url || '').includes('..') ? String(input.curation500Url).trim() : '',
-    curation1000Url: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.curation1000Url || '').trim()) && !String(input.curation1000Url || '').includes('..') ? String(input.curation1000Url).trim() : '',
-    expansionAuditUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.expansionAuditUrl || '').trim()) && !String(input.expansionAuditUrl || '').includes('..') ? String(input.expansionAuditUrl).trim() : '',
-    assistantAuditUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.assistantAuditUrl || '').trim()) && !String(input.assistantAuditUrl || '').includes('..') ? String(input.assistantAuditUrl).trim() : '',
-    nativeQaUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.nativeQaUrl || '').trim()) && !String(input.nativeQaUrl || '').includes('..') ? String(input.nativeQaUrl).trim() : '',
-    learningLibraryUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.learningLibraryUrl || '').trim()) && !String(input.learningLibraryUrl || '').includes('..') ? String(input.learningLibraryUrl).trim() : '',
-    learningLibraryQaUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.learningLibraryQaUrl || '').trim()) && !String(input.learningLibraryQaUrl || '').includes('..') ? String(input.learningLibraryQaUrl).trim() : '',
+    legacyUrl: testPrepNormalizeRepoAssetUrl(input.legacyUrl),
+    legacyAuditUrl: testPrepNormalizeRepoAssetUrl(input.legacyAuditUrl),
+    legacyInventoryUrl: testPrepNormalizeRepoAssetUrl(input.legacyInventoryUrl),
+    legacyReviewLedgerUrl: testPrepNormalizeRepoAssetUrl(input.legacyReviewLedgerUrl),
+    nextReviewDocketUrl: testPrepNormalizeRepoAssetUrl(input.nextReviewDocketUrl),
+    curation500Url: testPrepNormalizeRepoAssetUrl(input.curation500Url),
+    curation1000Url: testPrepNormalizeRepoAssetUrl(input.curation1000Url),
+    expansionAuditUrl: testPrepNormalizeRepoAssetUrl(input.expansionAuditUrl),
+    assistantAuditUrl: testPrepNormalizeRepoAssetUrl(input.assistantAuditUrl),
+    nativeQaUrl: testPrepNormalizeRepoAssetUrl(input.nativeQaUrl),
+    learningLibraryUrl: testPrepNormalizeRepoAssetUrl(input.learningLibraryUrl),
+    learningLibraryQaUrl: testPrepNormalizeRepoAssetUrl(input.learningLibraryQaUrl),
     blueprintLabel: String(input.blueprintLabel || '').trim().slice(0, 180),
     blueprintEffective: String(input.blueprintEffective || '').trim().slice(0, 240),
     officialBlueprintUrl: /^https:\/\/[a-zA-Z0-9.-]+\/[a-zA-Z0-9_./?=&%#-]*$/.test(String(input.officialBlueprintUrl || '').trim()) ? String(input.officialBlueprintUrl).trim() : '',
@@ -730,6 +786,10 @@ function testPrepNormalizeItemResults(value) {
   });
   return output;
 }
+function testPrepNormalizeAssistedItemIds(value) {
+  return Array.from(new Set((Array.isArray(value) ? value : []).slice(0, 500).map((id) => testPrepSlug(id, '')).filter(Boolean)));
+}
+
 function testPrepAttemptMetadata(metadata) {
   const input = metadata && typeof metadata === 'object' && !Array.isArray(metadata) ? metadata : {};
   return {
@@ -744,6 +804,7 @@ function testPrepAttemptMetadata(metadata) {
     timeLimitMinutes: Math.max(0, Math.min(600, Math.floor(testPrepFinite(input.timeLimitMinutes, 0)))),
     timedOut: input.timedOut === true,
     itemIds: (Array.isArray(input.itemIds) ? input.itemIds : []).slice(0, 500).map((id) => testPrepSlug(id, '')).filter(Boolean),
+    assistedItemIds: testPrepNormalizeAssistedItemIds(input.assistedItemIds),
   };
 }
 
@@ -773,6 +834,7 @@ function recordTestPrepBatchAttempt(progress, pack, diagnostic, confidence, now,
     timeLimitMinutes: meta.timeLimitMinutes,
     timedOut: meta.timedOut,
     itemIds: meta.itemIds,
+    assistedItemIds: meta.assistedItemIds,
     batchNumber: Math.max(1, Math.floor(testPrepFinite(diagnostic.sourceBatchNumber, diagnostic.batchNumber))),
     batchCount: Math.max(1, Math.floor(testPrepFinite(diagnostic.sourceBatchCount, diagnostic.batchCount))),
     firstQuestion: Math.max(1, Math.floor(testPrepFinite(diagnostic.sourceFirstQuestion, diagnostic.firstQuestion))),
@@ -804,6 +866,7 @@ function normalizeTestPrepProgress(value) {
     timeLimitMinutes: Math.max(0, Math.min(600, Math.floor(testPrepFinite(attempt && attempt.timeLimitMinutes, 0)))),
     timedOut: attempt && attempt.timedOut === true,
     itemIds: (Array.isArray(attempt && attempt.itemIds) ? attempt.itemIds : []).slice(0, 500).map((id) => testPrepSlug(id, '')).filter(Boolean),
+    assistedItemIds: testPrepNormalizeAssistedItemIds(attempt && attempt.assistedItemIds),
     batchNumber: Math.max(0, Math.floor(testPrepFinite(attempt && attempt.batchNumber, 0))),
     batchCount: Math.max(0, Math.floor(testPrepFinite(attempt && attempt.batchCount, 0))),
     firstQuestion: Math.max(0, Math.floor(testPrepFinite(attempt && attempt.firstQuestion, 0))),
@@ -1058,6 +1121,7 @@ function recordTestPrepAttempt(progress, pack, answers, confidence, now, metadat
     timeLimitMinutes: meta.timeLimitMinutes,
     timedOut: meta.timedOut,
     itemIds: meta.itemIds,
+    assistedItemIds: meta.assistedItemIds,
   });
   return writeTestPrepProgress(next);
 }
@@ -1446,6 +1510,7 @@ function testPrepNormalizeSession(value) {
     timeRemainingSeconds: Math.max(0, Math.floor(testPrepFinite(input.timeRemainingSeconds, 0))),
     answers,
     confidence,
+    assistedItemIds: meta.assistedItemIds,
     updatedAt: Math.max(0, Math.floor(testPrepFinite(input.updatedAt, 0))),
   };
 }
@@ -1520,8 +1585,56 @@ const TEST_PREP_LARGE_TEXT_STYLES = `
 }
 `;
 
+function testPrepQuestionSpeechText(item, questionIndex, totalQuestions) {
+  if (!item) return '';
+  const position = Math.max(0, Math.floor(testPrepFinite(questionIndex, 0))) + 1;
+  const total = Math.max(position, Math.floor(testPrepFinite(totalQuestions, position)));
+  const choiceList = Array.isArray(item.choices) ? item.choices : [];
+  const choices = choiceList.map((choice, index) => String.fromCharCode(65 + index) + ', ' + choice).join('. ');
+  const labels = choiceList.map((_, index) => String.fromCharCode(65 + index));
+  return 'Question ' + position + ' of ' + total + '. ' + String(item.prompt || '').trim() + '. Answer choices. ' + choices + '. Say choose ' + (labels.length > 1 ? labels.slice(0, -1).join(', ') + ', or ' + labels[labels.length - 1] : labels[0] || 'an option') + '.';
+}
+
+function testPrepFeedbackSpeechText(item, selectedChoice) {
+  if (!item || selectedChoice == null) return '';
+  const correct = Number(selectedChoice) === Number(item.answerIndex);
+  const selectedLabel = String.fromCharCode(65 + Number(selectedChoice));
+  const supportedLabel = String.fromCharCode(65 + Number(item.answerIndex));
+  return (correct ? 'Correct. ' : 'Review this one. You selected ' + selectedLabel + '. The supported answer is ' + supportedLabel + '. ') + String(item.rationale || '').trim() + '. Say next question, repeat explanation, or ask a clarification question.';
+}
+
+function testPrepParseHandsFreeCommand(value) {
+  const original = String(value || '').trim();
+  const text = original.toLowerCase().replace(/[^a-z0-9\s'-]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!text) return { type: 'unknown', transcript: original };
+  if (/^(?:stop|exit|disable|turn off)(?: hands free| voice mode)?$/.test(text) || /^(?:stop hands free|stop voice mode)$/.test(text)) return { type: 'stop', transcript: original };
+  if (/\b(?:slower|slow down)\b/.test(text)) return { type: 'slower', transcript: original };
+  if (/\b(?:faster|speed up)\b/.test(text)) return { type: 'faster', transcript: original };
+  if (/\b(?:repeat|read)(?: the)? (?:explanation|feedback|reasoning)\b/.test(text)) return { type: 'repeat-feedback', transcript: original };
+  if (/^(?:repeat|repeat question|read question|read it again|say that again)$/.test(text)) return { type: 'repeat-question', transcript: original };
+  const choiceMatch = text.match(/\b(?:choose|select|answer|option)\s+(?:option\s+)?(a|b|c|d|e|f|g|h|first|second|third|fourth|fifth|sixth|seventh|eighth|1|2|3|4|5|6|7|8)\b/);
+  if (choiceMatch) {
+    const choiceMap = { a: 0, first: 0, '1': 0, b: 1, second: 1, '2': 1, c: 2, third: 2, '3': 2, d: 3, fourth: 3, '4': 3, e: 4, fifth: 4, '5': 4, f: 5, sixth: 5, '6': 5, g: 6, seventh: 6, '7': 6, h: 7, eighth: 7, '8': 7 };
+    return { type: 'choose', choiceIndex: choiceMap[choiceMatch[1]], transcript: original };
+  }
+  if (/^(?:check|check answer|submit|submit answer)$/.test(text)) return { type: 'submit', transcript: original };
+  if (/^(?:next|next question|continue|save answer and continue|finish practice)$/.test(text)) return { type: 'next', transcript: original };
+  if (/^(?:help|commands|what can i say)$/.test(text)) return { type: 'help', transcript: original };
+  if (/^(?:ask|clarify|explain|define|what does|what is|who is|can you|could you|why|how)\b/.test(text)) return { type: 'clarify', query: original.replace(/^(?:ask|clarify)\s+/i, '').trim() || original, transcript: original };
+  return { type: 'unknown', transcript: original };
+}
+
+function testPrepBuildClarificationPrompt(item, question, checked, selectedChoice) {
+  const safeQuestion = String(question || '').trim().slice(0, 800);
+  const choices = item && Array.isArray(item.choices) ? item.choices.map((choice, index) => String.fromCharCode(65 + index) + '. ' + choice).join('\n') : '';
+  const base = 'You are the accessibility clarification assistant inside AlloFlow Test Prep. Answer in 70 words or fewer, in plain language, and do not claim an official score or endorsement.\nQuestion shown to learner: ' + String(item && item.prompt || '').slice(0, 1200) + (checked ? '\nChoices:\n' + choices : '') + '\nLearner asks: ' + safeQuestion;
+  if (!checked) return base + '\nThe learner has not checked an answer. Clarify wording, vocabulary, or task directions only. Do not identify, hint at, eliminate, rank, or paraphrase toward the correct option. If the request would reveal the answer, politely refuse and offer a neutral definition.';
+  return base + '\nThe learner has checked an answer. You may explain the source-reviewed feedback. Selected option: ' + (selectedChoice == null ? 'none' : String.fromCharCode(65 + Number(selectedChoice))) + '. Supported option: ' + String.fromCharCode(65 + Number(item.answerIndex)) + '. Rationale: ' + String(item.rationale || '').slice(0, 1800);
+}
+
 function TestPrepHub(props) {
-  const { isOpen = true, onClose = (() => {}), callTTS, addToast } = props || {};
+  const { isOpen = true, onClose = (() => {}), callTTS, callGemini, selectedVoice = 'Puck', addToast } = props || {};
+  const SpeechRecognitionCtor = typeof window !== 'undefined' ? (window.SpeechRecognition || window.webkitSpeechRecognition) : null;
   const packs = listTestPrepPacks();
   const readyPack = packs.find((pack) => pack.status === 'ready') || packs[0];
   const [tab, setTab] = React.useState('explore');
@@ -1573,12 +1686,28 @@ function TestPrepHub(props) {
   const [customQuizVariant, setCustomQuizVariant] = React.useState(1);
   const [memoryAidOpen, setMemoryAidOpen] = React.useState('');
   const [readAloudStatus, setReadAloudStatus] = React.useState('idle');
+  const [handsFreeEnabled, setHandsFreeEnabled] = React.useState(false);
+  const [handsFreeStatus, setHandsFreeStatus] = React.useState('idle');
+  const [handsFreeTranscript, setHandsFreeTranscript] = React.useState('');
+  const [handsFreeError, setHandsFreeError] = React.useState('');
+  const [handsFreeRate, setHandsFreeRate] = React.useState(1);
+  const [clarificationDraft, setClarificationDraft] = React.useState('');
+  const [clarificationStatus, setClarificationStatus] = React.useState('idle');
+  const [clarificationResponse, setClarificationResponse] = React.useState('');
+  const [assistedItemIds, setAssistedItemIds] = React.useState([]);
   const dialogRef = React.useRef(null);
   const legacyChapterFrameRef = React.useRef(null);
   const readAloudAudioRef = React.useRef(null);
   const readAloudUtteranceRef = React.useRef(null);
   const readAloudAbortRef = React.useRef(null);
   const readAloudRequestRef = React.useRef(0);
+  const handsFreeRecognitionRef = React.useRef(null);
+  const handsFreeSuppressRestartRef = React.useRef(false);
+  const handsFreeEnabledRef = React.useRef(false);
+  const handsFreeCommandHandlerRef = React.useRef(null);
+  const handsFreeRateRef = React.useRef(1);
+  const handsFreeAudioCacheRef = React.useRef(new Map());
+  const handsFreeCacheGenerationRef = React.useRef(0);
   const [chapterCheckAnswers, setChapterCheckAnswers] = React.useState({});
   const [chapterCheckRevealed, setChapterCheckRevealed] = React.useState({});
   const selectedPack = packs.find((pack) => pack.id === selectedPackId) || readyPack;
@@ -1605,6 +1734,9 @@ function TestPrepHub(props) {
   const availableSkills = learningLibrary && Array.isArray(learningLibrary.skills) ? learningLibrary.skills : [];
   const skillById = Object.fromEntries(availableSkills.map((skill) => [skill.id, skill]));
   const domainById = Object.fromEntries((selectedPack ? selectedPack.domains : []).map((domain) => [domain.id, domain]));
+
+  handsFreeEnabledRef.current = handsFreeEnabled;
+  handsFreeRateRef.current = handsFreeRate;
 
   React.useEffect(() => {
     const key = 'alloflow_test_prep_flashcards_' + (selectedPack ? selectedPack.id : 'none') + '_v1';
@@ -1697,13 +1829,9 @@ function TestPrepHub(props) {
     setChapterCheckRevealed({});
     if (!libraryUrl || typeof fetch !== 'function') { setLearningLibraryStatus('idle'); return undefined; }
     setLearningLibraryStatus('loading');
-    fetch(libraryUrl, { cache: 'no-store' })
-      .then((response) => {
-        if (!response || !response.ok) throw new Error('Learning library unavailable.');
-        return response.json();
-      })
+    testPrepFetchRepoJson(libraryUrl, (catalog) => Boolean(catalog && catalog.schemaVersion === 1 && catalog.summary && Array.isArray(catalog.chapters)))
       .then((catalog) => {
-        if (cancelled || !catalog || catalog.schemaVersion !== 1 || !catalog.summary || !Array.isArray(catalog.chapters)) return;
+        if (cancelled) return;
         setLearningLibrary(catalog);
         setLearningLibraryStatus('ready');
       })
@@ -1712,7 +1840,7 @@ function TestPrepHub(props) {
   }, [selectedPack && selectedPack.learningLibraryUrl]);
 
   React.useEffect(() => {
-    if (!practiceStarted || !selectedPack || !activeItemIds.length || result || checkpoint) return;
+    if (!practiceStarted || !selectedPack || !activePack || !activePack.items.length || result || checkpoint) return;
     setSavedSession(writeTestPrepSession({
       packId: selectedPack.id,
       mode: practiceMode,
@@ -1724,14 +1852,15 @@ function TestPrepHub(props) {
       sourceItemCount: selectedPack ? selectedPack.items.length : 0,
       sourceBatchSize: selectedPack ? selectedPack.batchSize : 0,
       timeLimitMinutes: practiceMode === 'simulation' ? selectedPack.simulationTimeMinutes : 0,
-      itemIds: activeItemIds,
+      itemIds: activePack.items.map((item) => item.id),
       questionIndex,
       timeRemainingSeconds,
       answers,
       confidence,
+      assistedItemIds,
       updatedAt: Date.now(),
     }));
-  }, [practiceStarted, selectedPackId, practiceMode, practiceLabel, targetSkillId, targetDomainId, targetDifficultyFilter, sourceStartIndex, activeItemIds, questionIndex, timeRemainingSeconds, answers, confidence, result, checkpoint]);
+  }, [practiceStarted, selectedPackId, practiceMode, practiceLabel, targetSkillId, targetDomainId, targetDifficultyFilter, sourceStartIndex, activeItemIds, questionIndex, timeRemainingSeconds, answers, confidence, assistedItemIds, result, checkpoint]);
 
   React.useEffect(() => {
     if (!practiceStarted || practiceMode !== 'simulation' || result || checkpoint || timeRemainingSeconds <= 0) return undefined;
@@ -1743,15 +1872,29 @@ function TestPrepHub(props) {
     if (practiceStarted && practiceMode === 'simulation' && !result && !checkpoint && activeItemIds.length && timeRemainingSeconds === 0) finishPractice(true);
   }, [practiceStarted, practiceMode, result, checkpoint, activeItemIds.length, timeRemainingSeconds]);
 
-  React.useEffect(() => () => stopReadAloud(false), []);
+  React.useEffect(() => () => { disableHandsFree(false); stopReadAloud(false); }, []);
 
   React.useEffect(() => {
-    if (readAloudAudioRef.current || readAloudUtteranceRef.current || readAloudAbortRef.current) stopReadAloud();
-  }, [currentItem && currentItem.id]);
+    setClarificationDraft('');
+    setClarificationResponse('');
+    setClarificationStatus('idle');
+    if (!handsFreeEnabled || !currentItem) {
+      if (readAloudAudioRef.current || readAloudUtteranceRef.current || readAloudAbortRef.current) stopReadAloud();
+      return undefined;
+    }
+    const timer = setTimeout(() => {
+      prewarmUpcomingQuestionAudio();
+      const text = testPrepQuestionSpeechText(currentItem, questionIndex, activePack ? activePack.items.length : 1);
+      speakTestPrepText(text, { cacheKey: testPrepAudioCacheKey(text) });
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [handsFreeEnabled, currentItem && currentItem.id]);
 
   React.useEffect(() => {
     syncLegacyChapterTextSize();
   }, [largeText, libraryChapterId]);
+
+  handsFreeCommandHandlerRef.current = handleHandsFreeCommand;
 
   if (!isOpen) return null;
 
@@ -1789,11 +1932,16 @@ function TestPrepHub(props) {
   }
 
   function resetPracticeWorkspace() {
+    disableHandsFree();
     setQuestionIndex(0);
     setSelectedChoice(null);
     setChecked(false);
     setAnswers({});
     setConfidence({});
+    setAssistedItemIds([]);
+    setClarificationDraft('');
+    setClarificationResponse('');
+    setClarificationStatus('idle');
     setResult(null);
     setCheckpoint(null);
   }
@@ -2086,6 +2234,7 @@ function TestPrepHub(props) {
     setQuestionIndex(safeIndex);
     setAnswers(savedSession.answers);
     setConfidence(savedSession.confidence);
+    setAssistedItemIds(savedSession.assistedItemIds);
     setSelectedChoice(resumedAnswer == null ? null : resumedAnswer);
     setChecked(resumedAnswer != null);
     setResult(null);
@@ -2109,6 +2258,7 @@ function TestPrepHub(props) {
       timeLimitMinutes: practiceMode === 'simulation' && selectedPack ? selectedPack.simulationTimeMinutes : 0,
       timedOut: timedOut === true,
       itemIds: activePack ? activePack.items.map((item) => item.id) : [],
+      assistedItemIds,
     };
   }
 
@@ -2118,7 +2268,8 @@ function TestPrepHub(props) {
     const score = scoreTestPrepAttempt(activePack, finalAnswers);
     const nextProgress = recordTestPrepAttempt(progress, activePack, finalAnswers, confidence, Date.now(), practiceAttemptMetadata(timedOut));
     setProgress(nextProgress);
-    setResult(Object.assign({}, score, { timedOut: timedOut === true }));
+    setResult(Object.assign({}, score, { timedOut: timedOut === true, assistedItemCount: assistedItemIds.filter((id) => activePack.items.some((item) => item.id === id)).length }));
+    if (handsFreeEnabledRef.current) speakTestPrepText('Practice complete. You answered ' + score.correct + ' of ' + score.total + ' correctly. This is a learning result, not an official score.');
     clearTestPrepSession();
     setSavedSession(null);
     announce(timedOut ? 'Time ended. Review the learning summary; this is not an official score.' : 'Practice set complete. This result is for learning, not an official score.', timedOut ? 'info' : 'success');
@@ -2156,75 +2307,160 @@ function TestPrepHub(props) {
     return Math.floor(safe / 60) + ':' + String(safe % 60).padStart(2, '0');
   }
 
+  function stopHandsFreeRecognition(suppressRestart = true) {
+    if (suppressRestart) handsFreeSuppressRestartRef.current = true;
+    const recognition = handsFreeRecognitionRef.current;
+    handsFreeRecognitionRef.current = null;
+    if (recognition) {
+      recognition.onstart = null;
+      recognition.onresult = null;
+      recognition.onerror = null;
+      recognition.onend = null;
+      try { recognition.abort(); } catch (_) { try { recognition.stop(); } catch (_) {} }
+    }
+  }
+
+  function startHandsFreeListening() {
+    if (!handsFreeEnabledRef.current || !SpeechRecognitionCtor || readAloudAudioRef.current || readAloudUtteranceRef.current || readAloudAbortRef.current) return;
+    stopHandsFreeRecognition(false);
+    handsFreeSuppressRestartRef.current = false;
+    try {
+      const recognition = new SpeechRecognitionCtor();
+      handsFreeRecognitionRef.current = recognition;
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      recognition.lang = 'en-US';
+      recognition.onstart = () => { if (handsFreeEnabledRef.current) setHandsFreeStatus('listening'); };
+      recognition.onresult = (event) => {
+        const transcript = String(event && event.results && event.results[0] && event.results[0][0] && event.results[0][0].transcript || '').trim();
+        setHandsFreeTranscript(transcript);
+        setHandsFreeStatus('processing');
+        stopHandsFreeRecognition(true);
+        Promise.resolve(handsFreeCommandHandlerRef.current && handsFreeCommandHandlerRef.current(transcript)).catch(() => {
+          setHandsFreeError('That voice command could not be completed.');
+          speakTestPrepText('That command could not be completed. Say help to hear the available commands.');
+        });
+      };
+      recognition.onerror = (event) => {
+        const code = String(event && event.error || 'unavailable');
+        handsFreeRecognitionRef.current = null;
+        if (code === 'not-allowed' || code === 'service-not-allowed') {
+          handsFreeEnabledRef.current = false;
+          setHandsFreeEnabled(false);
+          setHandsFreeStatus('unavailable');
+          setHandsFreeError('Microphone permission is required for hands-free commands.');
+          announce('Microphone permission is required for hands-free Test Prep.', 'warning');
+          return;
+        }
+        if (code !== 'aborted' && code !== 'no-speech') setHandsFreeError('Voice recognition paused. It will retry automatically.');
+      };
+      recognition.onend = () => {
+        handsFreeRecognitionRef.current = null;
+        if (handsFreeSuppressRestartRef.current) { handsFreeSuppressRestartRef.current = false; return; }
+        if (handsFreeEnabledRef.current && !readAloudAudioRef.current && !readAloudUtteranceRef.current && !readAloudAbortRef.current) setTimeout(startHandsFreeListening, 250);
+      };
+      recognition.start();
+    } catch (_) {
+      handsFreeRecognitionRef.current = null;
+      setHandsFreeStatus('unavailable');
+      setHandsFreeError('Voice recognition is unavailable in this browser.');
+    }
+  }
+
+  function testPrepAudioCacheKey(text) {
+    return String(selectedVoice || 'Puck') + '|' + handsFreeRateRef.current.toFixed(2) + '|en|' + String(text || '');
+  }
+
+  function prewarmUpcomingQuestionAudio() {
+    if (!handsFreeEnabledRef.current || typeof callTTS !== 'function' || !activePack || !currentItem) return;
+    try { if (typeof navigator !== 'undefined' && navigator.connection && navigator.connection.saveData) return; } catch (_) {}
+    const generation = handsFreeCacheGenerationRef.current;
+    for (let offset = 1; offset <= 3; offset += 1) {
+      const item = activePack.items[questionIndex + offset];
+      if (!item) continue;
+      const text = testPrepQuestionSpeechText(item, questionIndex + offset, activePack.items.length);
+      const key = testPrepAudioCacheKey(text);
+      if (handsFreeAudioCacheRef.current.has(key)) continue;
+      const promise = Promise.resolve(callTTS(text, selectedVoice || 'Puck', handsFreeRateRef.current, { maxRetries: 0, priority: 'low', reason: 'test-prep-prewarm', language: 'English' }))
+        .then((url) => {
+          if (generation !== handsFreeCacheGenerationRef.current || !url) { handsFreeAudioCacheRef.current.delete(key); return null; }
+          const entry = handsFreeAudioCacheRef.current.get(key);
+          if (entry) entry.url = url;
+          return url;
+        })
+        .catch(() => { handsFreeAudioCacheRef.current.delete(key); return null; });
+      handsFreeAudioCacheRef.current.set(key, { promise, url: null });
+    }
+    while (handsFreeAudioCacheRef.current.size > 12) handsFreeAudioCacheRef.current.delete(handsFreeAudioCacheRef.current.keys().next().value);
+  }
+
+  function finishSpokenRequest(requestId, nextStatus) {
+    if (requestId !== readAloudRequestRef.current) return;
+    readAloudAudioRef.current = null;
+    readAloudUtteranceRef.current = null;
+    readAloudAbortRef.current = null;
+    setReadAloudStatus(nextStatus || 'idle');
+    if (handsFreeEnabledRef.current && nextStatus !== 'unavailable') setTimeout(startHandsFreeListening, 100);
+  }
+
   function speakQuestionWithBrowser(text, requestId) {
     if (requestId !== readAloudRequestRef.current) return false;
     try {
       if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
         const utterance = new window.SpeechSynthesisUtterance(text);
+        utterance.rate = handsFreeRateRef.current;
         readAloudUtteranceRef.current = utterance;
-        utterance.onstart = () => { if (requestId === readAloudRequestRef.current) setReadAloudStatus('speaking'); };
-        utterance.onend = () => {
-          if (requestId !== readAloudRequestRef.current) return;
-          readAloudUtteranceRef.current = null;
-          readAloudAbortRef.current = null;
-          setReadAloudStatus('idle');
-        };
+        utterance.onstart = () => { if (requestId === readAloudRequestRef.current) { setReadAloudStatus('speaking'); if (handsFreeEnabledRef.current) setHandsFreeStatus('speaking'); } };
+        utterance.onend = () => finishSpokenRequest(requestId, 'idle');
         utterance.onerror = () => {
           if (requestId !== readAloudRequestRef.current) return;
-          readAloudUtteranceRef.current = null;
-          readAloudAbortRef.current = null;
-          setReadAloudStatus('unavailable');
+          finishSpokenRequest(requestId, 'unavailable');
+          setHandsFreeError('Speech playback is unavailable in this environment.');
           announce('Read-aloud is unavailable in this environment.', 'warning');
         };
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utterance);
         setReadAloudStatus('speaking');
+        if (handsFreeEnabledRef.current) setHandsFreeStatus('speaking');
         return true;
       }
     } catch (_) {}
-    readAloudAbortRef.current = null;
-    setReadAloudStatus('unavailable');
+    finishSpokenRequest(requestId, 'unavailable');
     announce('Read-aloud is unavailable in this environment.', 'warning');
     return false;
   }
 
-  async function readQuestion() {
-    if (!currentItem) return;
-    if (readAloudStatus === 'loading' || readAloudStatus === 'speaking') {
-      stopReadAloud();
-      announce('Read-aloud stopped.', 'info');
-      return;
-    }
-    const text = currentItem.prompt + '. ' + currentItem.choices.map((choice, index) => String.fromCharCode(65 + index) + ', ' + choice).join('. ');
+  async function speakTestPrepText(text, options) {
+    const safeText = String(text || '').trim();
+    if (!safeText) return;
+    stopHandsFreeRecognition(true);
     stopReadAloud(false);
     const requestId = readAloudRequestRef.current + 1;
     readAloudRequestRef.current = requestId;
-    const controller = typeof AbortController === 'function' ? new AbortController() : null;
-    readAloudAbortRef.current = controller;
+    const input = options && typeof options === 'object' ? options : {};
+    const cached = input.cacheKey ? handsFreeAudioCacheRef.current.get(input.cacheKey) : null;
+    const controller = !cached && typeof AbortController === 'function' ? new AbortController() : null;
+    readAloudAbortRef.current = controller || { abort: () => {} };
     setReadAloudStatus('loading');
+    if (handsFreeEnabledRef.current) setHandsFreeStatus('speaking');
     try {
-      const audioUrl = typeof callTTS === 'function'
-        ? await callTTS(text, 'Puck', 1, controller ? { maxRetries: 2, signal: controller.signal } : 2)
-        : null;
+      const audioUrl = cached
+        ? (cached.url || await cached.promise)
+        : typeof callTTS === 'function'
+          ? await callTTS(safeText, selectedVoice || 'Puck', handsFreeRateRef.current, controller ? { maxRetries: 2, signal: controller.signal, reason: 'test-prep-playback', language: 'English' } : 2)
+          : null;
       if (requestId !== readAloudRequestRef.current) return;
       if (audioUrl && typeof window !== 'undefined' && typeof window.Audio === 'function') {
         const audio = new window.Audio(audioUrl);
         readAloudAudioRef.current = audio;
-        audio.onplay = () => { if (requestId === readAloudRequestRef.current) setReadAloudStatus('speaking'); };
-        audio.onended = () => {
-          if (requestId !== readAloudRequestRef.current) return;
-          readAloudAudioRef.current = null;
-          readAloudAbortRef.current = null;
-          setReadAloudStatus('idle');
-        };
+        audio.onplay = () => { if (requestId === readAloudRequestRef.current) { setReadAloudStatus('speaking'); if (handsFreeEnabledRef.current) setHandsFreeStatus('speaking'); } };
+        audio.onended = () => finishSpokenRequest(requestId, 'idle');
         audio.onerror = () => {
           if (requestId !== readAloudRequestRef.current) return;
-          audio.onplay = null;
-          audio.onended = null;
-          audio.onerror = null;
+          audio.onplay = null; audio.onended = null; audio.onerror = null;
           readAloudAudioRef.current = null;
-          readAloudAbortRef.current = null;
-          speakQuestionWithBrowser(text, requestId);
+          speakQuestionWithBrowser(safeText, requestId);
         };
         await Promise.resolve(audio.play());
         if (requestId === readAloudRequestRef.current) setReadAloudStatus('speaking');
@@ -2234,15 +2470,148 @@ function TestPrepHub(props) {
       if (controller && controller.signal.aborted) return;
       if (requestId !== readAloudRequestRef.current) return;
       if (readAloudAudioRef.current) {
-        readAloudAudioRef.current.onplay = null;
-        readAloudAudioRef.current.onended = null;
-        readAloudAudioRef.current.onerror = null;
+        readAloudAudioRef.current.onplay = null; readAloudAudioRef.current.onended = null; readAloudAudioRef.current.onerror = null;
         try { readAloudAudioRef.current.pause(); } catch (_) {}
         readAloudAudioRef.current = null;
       }
     }
-    if (requestId !== readAloudRequestRef.current) return;
-    speakQuestionWithBrowser(text, requestId);
+    if (requestId === readAloudRequestRef.current) speakQuestionWithBrowser(safeText, requestId);
+  }
+
+  async function readQuestion() {
+    if (!currentItem) return;
+    if (readAloudStatus === 'loading' || readAloudStatus === 'speaking') {
+      stopReadAloud();
+      if (handsFreeEnabledRef.current) setTimeout(startHandsFreeListening, 100);
+      announce('Read-aloud stopped.', 'info');
+      return;
+    }
+    const text = testPrepQuestionSpeechText(currentItem, questionIndex, activePack ? activePack.items.length : 1);
+    await speakTestPrepText(text, { cacheKey: testPrepAudioCacheKey(text) });
+  }
+
+  function disableHandsFree(updateState = true) {
+    handsFreeEnabledRef.current = false;
+    stopHandsFreeRecognition(true);
+    stopReadAloud(false);
+    if (updateState) {
+      setHandsFreeEnabled(false);
+      setHandsFreeStatus('idle');
+      setHandsFreeTranscript('');
+    }
+  }
+
+  function toggleHandsFree() {
+    if (handsFreeEnabledRef.current) { disableHandsFree(); announce('Hands-free Test Prep stopped.', 'info'); return; }
+    if (!SpeechRecognitionCtor) {
+      setHandsFreeStatus('unavailable');
+      setHandsFreeError('This browser does not provide speech recognition. Read question remains available.');
+      announce('Voice commands are unavailable in this browser. Read-aloud still works.', 'warning');
+      return;
+    }
+    handsFreeAudioCacheRef.current.clear();
+    handsFreeCacheGenerationRef.current += 1;
+    try { if (typeof window !== 'undefined' && window.__alloVoiceLoop && window.__alloVoiceLoop.isActive && window.__alloVoiceLoop.isActive()) window.__alloVoiceLoop.stop(); } catch (_) {}
+    handsFreeEnabledRef.current = true;
+    setHandsFreeEnabled(true);
+    setHandsFreeStatus('starting');
+    setHandsFreeError('');
+    setHandsFreeTranscript('');
+    announce('Hands-free Test Prep started. Audio pauses the microphone while speaking.', 'success');
+  }
+
+  async function askTestPrepClarification(question) {
+    const query = String(question || clarificationDraft || '').trim();
+    if (!currentItem || !query || clarificationStatus === 'loading') return;
+    if (practiceMode === 'simulation') {
+      const message = 'AI content clarification is locked during a timed simulation. You can still say repeat question or choose an answer.';
+      setClarificationResponse(message);
+      if (handsFreeEnabledRef.current) await speakTestPrepText(message);
+      return;
+    }
+    if (typeof callGemini !== 'function') {
+      const message = 'AI clarification is unavailable right now. The source-reviewed explanation remains available after you check your answer.';
+      setClarificationResponse(message);
+      if (handsFreeEnabledRef.current) await speakTestPrepText(message);
+      return;
+    }
+    setClarificationStatus('loading');
+    setHandsFreeStatus('processing');
+    setClarificationResponse('');
+    setAssistedItemIds((previous) => previous.includes(currentItem.id) ? previous : previous.concat(currentItem.id));
+    try {
+      const raw = await callGemini(testPrepBuildClarificationPrompt(currentItem, query, checked, selectedChoice));
+      const response = String(raw && typeof raw === 'object' && raw.text ? raw.text : raw || '').trim().slice(0, 1200) || 'No clarification was returned. Try asking in a different way.';
+      setClarificationResponse(response);
+      setClarificationStatus('ready');
+      setClarificationDraft('');
+      if (handsFreeEnabledRef.current) await speakTestPrepText(response);
+    } catch (_) {
+      const message = 'AI clarification could not be reached. You can continue, repeat the question, or review the sourced explanation after checking your answer.';
+      setClarificationResponse(message);
+      setClarificationStatus('error');
+      if (handsFreeEnabledRef.current) await speakTestPrepText(message);
+    }
+  }
+
+  async function handleHandsFreeCommand(transcript) {
+    const command = testPrepParseHandsFreeCommand(transcript);
+    if (checkpoint) {
+      if (command.type === 'stop') { disableHandsFree(); return; }
+      if (command.type === 'next') { continueAfterCheckpoint(); return; }
+      await speakTestPrepText('A diagnostic checkpoint is open. Say next question to continue, or stop hands free.');
+      return;
+    }
+    if (result) {
+      if (command.type === 'stop') { disableHandsFree(); return; }
+      await speakTestPrepText('Practice is complete. Use the visible buttons to choose another set or view progress, or say stop hands free.');
+      return;
+    }
+    setHandsFreeError('');
+    if (command.type === 'stop') { disableHandsFree(); announce('Hands-free Test Prep stopped.', 'info'); return; }
+    if (command.type === 'slower' || command.type === 'faster') {
+      const nextRate = Math.max(0.75, Math.min(1.25, handsFreeRateRef.current + (command.type === 'faster' ? 0.1 : -0.1)));
+      handsFreeRateRef.current = nextRate;
+      setHandsFreeRate(nextRate);
+      handsFreeAudioCacheRef.current.clear();
+      handsFreeCacheGenerationRef.current += 1;
+      await speakTestPrepText('Speech rate set to ' + Math.round(nextRate * 100) + ' percent.');
+      return;
+    }
+    if (command.type === 'repeat-question') { await readQuestion(); return; }
+    if (command.type === 'repeat-feedback') {
+      await speakTestPrepText(checked ? testPrepFeedbackSpeechText(currentItem, selectedChoice) : 'Check your answer before asking to repeat the explanation.');
+      return;
+    }
+    if (command.type === 'choose') {
+      if (checked) { await speakTestPrepText('This answer has already been checked. Say next question or repeat explanation.'); return; }
+      if (!currentItem || command.choiceIndex >= currentItem.choices.length) { await speakTestPrepText('That answer option is not available for this question.'); return; }
+      setSelectedChoice(command.choiceIndex);
+      await speakTestPrepText('Selected ' + String.fromCharCode(65 + command.choiceIndex) + ', ' + currentItem.choices[command.choiceIndex] + '. Say check answer, or choose a different option.');
+      return;
+    }
+    if (command.type === 'submit') {
+      if (selectedChoice == null) { await speakTestPrepText('Choose an answer before submitting.'); return; }
+      if (practiceMode === 'simulation') { advanceSimulation(); return; }
+      if (checked) { await speakTestPrepText('Your answer is already checked. Say next question.'); return; }
+      checkAnswer();
+      await speakTestPrepText(testPrepFeedbackSpeechText(currentItem, selectedChoice));
+      return;
+    }
+    if (command.type === 'next') {
+      if (practiceMode === 'simulation') {
+        if (selectedChoice == null) { await speakTestPrepText('Choose an answer before continuing.'); return; }
+        advanceSimulation(); return;
+      }
+      if (!checked) { await speakTestPrepText('Check your answer before moving to the next question.'); return; }
+      advance(); return;
+    }
+    if (command.type === 'clarify') { await askTestPrepClarification(command.query); return; }
+    if (command.type === 'help') {
+      await speakTestPrepText('You can say choose A, check answer, next question, repeat question, repeat explanation, slower, faster, ask followed by a question, or stop hands free.');
+      return;
+    }
+    await speakTestPrepText('I did not recognize that command. Say help to hear the available commands.');
   }
 
   function checkAnswer() {
@@ -2287,7 +2656,8 @@ function TestPrepHub(props) {
       metadata.itemIds = activePack.items.slice(currentBatch.startIndex, currentBatch.endIndex).map((item) => item.id);
       const nextProgress = recordTestPrepBatchAttempt(progress, activePack, sourceDiagnostic, confidence, Date.now(), metadata);
       setProgress(nextProgress);
-      setCheckpoint(Object.assign({}, sourceDiagnostic, { practiceLabel: practiceLabel || ('Batch ' + sourceBatchNumber) }));
+      setCheckpoint(Object.assign({}, sourceDiagnostic, { practiceLabel: practiceLabel || ('Batch ' + sourceBatchNumber), assistedItemCount: metadata.assistedItemIds.filter((id) => metadata.itemIds.includes(id)).length }));
+      if (handsFreeEnabledRef.current) speakTestPrepText('This practice batch is complete. Review the diagnostic feedback, then say next question to continue.');
       clearTestPrepSession();
       setSavedSession(null);
       announce((practiceLabel || ('Batch ' + diagnostic.batchNumber)) + ' complete. Review the ' + (practiceMode === 'guided-review' ? 'guided-learning' : 'diagnostic') + ' feedback before continuing.', 'success');
@@ -2616,6 +2986,7 @@ function TestPrepHub(props) {
                   <p className="mt-2 text-5xl font-black text-slate-900">{result.correct}/{result.total}</p>
                   <p className="mt-2 text-lg font-bold text-slate-800">{result.percent}% correct in this practice set</p>
                   {result.timedOut && <p className="mx-auto mt-3 max-w-xl rounded-lg bg-sky-50 p-3 text-sm font-bold text-sky-950">The timer ended before the set was submitted. Unanswered questions are included as incorrect in this practice summary.</p>}
+                  {!!result.assistedItemCount && <p className="mx-auto mt-3 max-w-xl rounded-lg border border-violet-300 bg-violet-50 p-3 text-sm font-bold text-violet-950">AI clarification was used on {result.assistedItemCount} item{result.assistedItemCount === 1 ? '' : 's'}. Narration and voice navigation do not mark an item assisted.</p>}
                   <p className="mx-auto mt-3 max-w-xl rounded-lg bg-amber-50 p-3 text-sm text-amber-950">This is a learning result, not an official score, scaled score, pass prediction, certification, license, or evidence of professional competence.</p>
                   <div className="mt-5 flex flex-wrap justify-center gap-3">
                     <button type="button" onClick={selectedPack.simulationItemCount ? chooseAnotherPracticeSet : () => openPack(selectedPack, 'practice')} className="rounded-xl bg-indigo-700 px-5 py-3 font-black text-white hover:bg-indigo-800 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">{selectedPack.simulationItemCount ? 'Choose another practice set' : 'Practice again'}</button>
@@ -2629,12 +3000,20 @@ function TestPrepHub(props) {
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">{practiceLabel || 'Practice set'}</p><p className="font-black text-indigo-900">{practiceMode === 'guided-review' ? 'Guided-review activity ' : 'Question '}{questionIndex + 1} of {activePack.items.length}</p>{practiceMode === 'diagnostic' && <p className="mt-1 text-sm font-bold text-sky-800">{currentSection && currentSection.kind === 'independent-diagnostic' ? 'Independent-practice bank item ' : selectedPack.guidedReviewBatchCount ? 'Source-question bank item ' : 'Question bank item '}{sourceStartIndex + questionIndex + 1} of {selectedPack.items.length}</p>}{practiceMode === 'guided-review' && <p className="mt-1 text-sm font-bold text-violet-800">Guided activity {sourceStartIndex + questionIndex + 1} of {selectedPack.items.length}; this score is excluded from diagnostic analytics.</p>}{currentBatch && currentBatch.batchCount > 1 && <p className="mt-1 text-sm font-bold text-slate-700">Batch {currentBatch.batchNumber} of {currentBatch.batchCount} · Question {currentBatch.position} of {currentBatch.itemCount}</p>}{practiceMode === 'simulation' && <div className="mt-2 flex flex-wrap items-center gap-2"><p className="text-lg font-black text-amber-900" role="timer">Time remaining {formatPracticeTime(timeRemainingSeconds)}</p><button type="button" onClick={extendSimulationTime} className="rounded-lg border border-amber-600 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 focus:ring-2 focus:ring-amber-700 focus:ring-offset-2">Add 10 minutes</button>{timeRemainingSeconds <= 60 && <p className="w-full text-sm font-bold text-rose-800" role="status" aria-live="polite">One minute or less remains. Use Add 10 minutes now if you need more time.</p>}</div>}</div>
                     <button type="button" aria-pressed={readAloudActive} onClick={readQuestion} className="rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">{'\uD83D\uDD0A'} {readAloudStatus === 'loading' ? 'Preparing audio' : readAloudStatus === 'speaking' ? 'Stop reading' : 'Read question'}</button>
+                    <button type="button" aria-pressed={handsFreeEnabled} onClick={toggleHandsFree} className={'rounded-lg border px-3 py-2 text-sm font-black focus:ring-2 focus:ring-cyan-700 ' + (handsFreeEnabled ? 'border-cyan-700 bg-cyan-700 text-white' : 'border-cyan-500 bg-cyan-50 text-cyan-950')}>{handsFreeEnabled ? '\uD83C\uDFA4 Stop hands-free' : '\uD83C\uDFA4 Hands-free mode'}</button>
                     {currentItem.examItemStatus !== 'not-approved-as-independent-exam-item' && <button type="button" aria-pressed={currentItemSavedForReview} onClick={() => toggleSavedForReview(currentItem.id)} className={'rounded-lg border px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-600 ' + (currentItemSavedForReview ? 'border-emerald-600 bg-emerald-50 text-emerald-950' : 'border-indigo-400 bg-indigo-50 text-indigo-900')}>{currentItemSavedForReview ? 'Remove from review' : 'Save for review'}</button>}
                     <button type="button" onClick={() => beginAnnotation({ targetType: 'question', targetId: currentItem.id, targetLabel: 'Question: ' + currentItem.prompt })} className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-950 focus:ring-2 focus:ring-amber-600">Add note or highlight</button>
                     <button type="button" onClick={() => { try { window.AlloModules && window.AlloModules.ItemCorrection && window.AlloModules.ItemCorrection.openFor({ packId: selectedPack.id, packTitle: selectedPack.title, itemId: currentItem.id, prompt: currentItem.prompt, domain: currentItem.domainId, reviewTier: currentItem.examItemStatus === 'not-approved-as-independent-exam-item' ? 'guided-review' : 'source-reviewed', currentAnswer: currentItem.choices[currentItem.answerIndex] }); } catch (_) {} }} className="rounded-lg border border-teal-400 bg-teal-50 px-3 py-2 text-sm font-bold text-teal-900 focus:ring-2 focus:ring-teal-600">Suggest a correction</button>
                     <button type="button" onClick={chooseAnotherPracticeSet} className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-600">Practice options</button>
                   </div>
                   <p role="status" aria-live="polite" className={readAloudStatus === 'unavailable' ? 'mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-950' : 'sr-only'}>{readAloudMessage}</p>
+                  {(handsFreeEnabled || handsFreeError) && <section className="mt-4 rounded-xl border border-cyan-300 bg-cyan-50 p-4" aria-labelledby="test-prep-hands-free-title">
+                    <div className="flex flex-wrap items-center justify-between gap-2"><div><h4 id="test-prep-hands-free-title" className="font-black text-cyan-950">Hands-free Test Prep</h4><p className="mt-1 text-sm text-cyan-950">The microphone pauses during narration. Audio for the next three questions is prepared quietly when cloud speech is available.</p></div><span className="rounded-full border border-cyan-500 bg-white px-3 py-1 text-xs font-black uppercase text-cyan-950" role="status" aria-live="polite">{handsFreeEnabled ? handsFreeStatus : 'off'} - {Math.round(handsFreeRate * 100)}% speed</span></div>
+                    {handsFreeEnabled && <p className="mt-3 text-sm font-semibold text-cyan-950">Say: choose B; check answer; next question; repeat question; repeat explanation; slower; faster; ask followed by a question; or stop hands free.</p>}
+                    {!!handsFreeTranscript && <p className="mt-2 rounded-lg border border-cyan-200 bg-white p-2 text-sm text-slate-800"><strong>Heard:</strong> {handsFreeTranscript}</p>}
+                    {!!handsFreeError && <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-sm font-bold text-amber-950">{handsFreeError}</p>}
+                    {handsFreeEnabled && <div className="mt-3 border-t border-cyan-200 pt-3"><label htmlFor="test-prep-clarification" className="text-sm font-black text-slate-900">Ask for clarification</label><p className="mt-1 text-xs text-slate-700">Before checking, AI may only clarify neutral wording or definitions. After checking, it may discuss the sourced rationale. Use is labeled as assisted; narration alone is not.</p><div className="mt-2 flex flex-col gap-2 sm:flex-row"><input id="test-prep-clarification" value={clarificationDraft} onChange={(event) => setClarificationDraft(event.target.value)} disabled={practiceMode === 'simulation' || clarificationStatus === 'loading'} placeholder={practiceMode === 'simulation' ? 'Locked during timed simulation' : 'Example: What does this term mean?'} className="min-w-0 flex-1 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-cyan-700 disabled:bg-slate-100" /><button type="button" onClick={() => askTestPrepClarification()} disabled={!clarificationDraft.trim() || practiceMode === 'simulation' || clarificationStatus === 'loading'} className="rounded-lg bg-violet-700 px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-violet-600">{clarificationStatus === 'loading' ? 'Clarifying...' : 'Ask AI'}</button></div>{practiceMode === 'simulation' && <p className="mt-2 text-xs font-bold text-amber-900">Content coaching is locked during timed simulation; narration, answer selection, and navigation remain available.</p>}{!!clarificationResponse && <div className="mt-3 rounded-lg border border-violet-300 bg-white p-3 text-sm leading-relaxed text-slate-900" role="status" aria-live="polite"><p className="font-black text-violet-950">AI clarification - assisted item</p><p className="mt-1">{clarificationResponse}</p></div>}</div>}
+                  </section>}
                   {currentItem.competencyTag && <p className="mt-3 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm leading-relaxed text-indigo-950"><strong>Unofficial integrated 2027 blueprint practice · {currentItem.competencyTag}</strong>{currentItem.competencyLabel ? ' - ' + currentItem.competencyLabel : ''}</p>}
                   <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200" aria-hidden="true"><div className="h-full bg-indigo-700" style={{ width: Math.round((questionIndex + 1) / Math.max(1, activePack.items.length) * 100) + '%' }} /></div>
                   <fieldset className="mt-6" disabled={checked}>
@@ -2723,7 +3102,7 @@ function TestPrepHub(props) {
               </nav>
 
               {learningLibraryStatus === 'loading' && <p className="rounded-xl border border-indigo-200 bg-white p-5 text-sm font-bold text-indigo-900" role="status">Loading the learning library…</p>}
-              {learningLibraryStatus === 'unavailable' && <p className="rounded-xl border border-rose-300 bg-rose-50 p-5 text-sm text-rose-950" role="alert">The learning catalog is unavailable in this preview. Practice questions remain available from the Practice tab.</p>}
+              {learningLibraryStatus === 'unavailable' && <p className="rounded-xl border border-rose-300 bg-rose-50 p-5 text-sm text-rose-950" role="alert">The learning catalog could not be loaded from AlloFlow's content network. Practice questions remain available from the Practice tab.</p>}
 
               {learningLibrary && !libraryChapterId && libraryMode === 'search' && (
                 <section className="space-y-4" aria-labelledby="library-global-search-title">

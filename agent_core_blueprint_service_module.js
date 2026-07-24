@@ -275,7 +275,290 @@
     };
   }
 
-  var API = { createBlueprintService: createBlueprintService };
+
+
+  /**
+   * Versioned command-workflow lifecycle. Reuses the Blueprint service's
+   * draft/revise/dry-run/approve pattern while delegating command semantics to
+   * AlloCommands through injected functions.
+   */
+  var COMMAND_WORKFLOW_LIBRARY_KEY = 'alloflow_command_blueprints_v1';
+
+  function createCommandWorkflowService(deps) {
+    var d = deps || {};
+    var C = getContracts(d.contracts);
+    if (!C || typeof C.validateCommandWorkflow !== 'function') throw new Error('CommandWorkflow contracts are required');
+
+    function commandList(ctx) {
+      if (typeof d.getCommands !== 'function') return [];
+      try { return d.getCommands(ctx || {}, { includeGated: true }) || []; } catch (_) { return []; }
+    }
+    function knownIds(ctx) { return commandList(ctx).map(function (command) { return command && command.id; }).filter(Boolean); }
+    function commandById(ctx, id) { return commandList(ctx).find(function (command) { return command && command.id === id; }) || { id: id }; }
+    function sanitizeSteps(steps, ctx) {
+      return (Array.isArray(steps) ? steps : []).slice(0, 8).map(function (raw, index) {
+        var command = commandById(ctx, raw && raw.commandId);
+        var params = raw && raw.params || {};
+        if (typeof d.sanitizeCommandParams === 'function') {
+          try { params = d.sanitizeCommandParams(command, params); } catch (_) { params = {}; }
+        }
+        return {
+          stepId: String(raw && raw.stepId || 'step-' + (index + 1)),
+          commandId: String(raw && raw.commandId || ''),
+          params: params,
+          why: String(raw && raw.why || '').slice(0, 120),
+          onFailure: raw && raw.onFailure === 'stop' ? 'stop' : 'pause'
+        };
+      });
+    }
+    function validate(workflow, ctx) {
+      return C.validateCommandWorkflow(workflow, { knownCommandIds: knownIds(ctx) });
+    }
+    function createDraft(request, ctx) {
+      var req = request || {};
+      return validate({
+        schemaVersion: C.SCHEMA_VERSION,
+        workflowId: String(req.workflowId || 'cw-' + Date.now().toString(36)),
+        kind: 'command-workflow',
+        audience: req.audience || 'teacher',
+        steps: sanitizeSteps(req.steps, ctx),
+        warnings: [],
+        review: { state: 'draft', reviewer: '' },
+        provenance: req.provenance || {}
+      }, ctx);
+    }
+    function revise(workflow, changes, ctx) {
+      var report = validate(workflow, ctx);
+      if (!report.ok) return report;
+      var next = report.value;
+      var ch = changes || {};
+      var steps = next.steps.map(function (step) { return Object.assign({}, step, { params: Object.assign({}, step.params) }); });
+      if (Array.isArray(ch.replaceSteps)) steps = sanitizeSteps(ch.replaceSteps, ctx);
+      if (ch.removeStepId) steps = steps.filter(function (step) { return step.stepId !== ch.removeStepId; });
+      if (ch.moveStep && ch.moveStep.stepId) {
+        var from = steps.findIndex(function (step) { return step.stepId === ch.moveStep.stepId; });
+        if (from >= 0) {
+          var moved = steps.splice(from, 1)[0];
+          var to = Math.max(0, Math.min(steps.length, Number(ch.moveStep.toIndex) || 0));
+          steps.splice(to, 0, moved);
+        }
+      }
+      if (ch.setParam && ch.setParam.stepId) {
+        steps = steps.map(function (step) {
+          if (step.stepId !== ch.setParam.stepId) return step;
+          var params = Object.assign({}, step.params);
+          params[ch.setParam.key] = ch.setParam.value;
+          var command = commandById(ctx, step.commandId);
+          if (typeof d.sanitizeCommandParams === 'function') {
+            try { params = d.sanitizeCommandParams(command, params); } catch (_) { params = {}; }
+          }
+          return Object.assign({}, step, { params: params });
+        });
+      }
+      return validate(Object.assign({}, next, { steps: steps, review: { state: 'draft', reviewer: '' } }), ctx);
+    }
+    function reviseFromText(workflow, instruction, ctx) {
+      var report = validate(workflow, ctx);
+      if (!report.ok) return Object.assign({}, report, { summary: '' });
+      var text = String(instruction || '').trim();
+      var steps = report.value.steps;
+      var match = text.match(/^(?:remove|delete)\s+(?:step\s+)?(\d+)\s*[.!]?$/i);
+      if (match) {
+        var removeIndex = Number(match[1]) - 1;
+        if (!steps[removeIndex]) return { ok: false, errors: [{ code: 'unknown-step', path: 'steps', message: 'That step number is not in the workflow.' }], value: null, summary: '' };
+        var removed = steps[removeIndex];
+        var removedReport = revise(report.value, { removeStepId: removed.stepId }, ctx);
+        return Object.assign({}, removedReport, { summary: 'Removed step ' + (removeIndex + 1) + '.' });
+      }
+      match = text.match(/^move\s+(?:step\s+)?(\d+)\s+(first|last|up|down|before\s+(?:step\s+)?\d+|after\s+(?:step\s+)?\d+)\s*[.!]?$/i);
+      if (match) {
+        var fromIndex = Number(match[1]) - 1;
+        if (!steps[fromIndex]) return { ok: false, errors: [{ code: 'unknown-step', path: 'steps', message: 'That step number is not in the workflow.' }], value: null, summary: '' };
+        var target = match[2].toLowerCase();
+        var toIndex = fromIndex;
+        if (target === 'first') toIndex = 0;
+        else if (target === 'last') toIndex = steps.length - 1;
+        else if (target === 'up') toIndex = Math.max(0, fromIndex - 1);
+        else if (target === 'down') toIndex = Math.min(steps.length - 1, fromIndex + 1);
+        else {
+          var targetNumber = Number((target.match(/\d+/) || [0])[0]) - 1;
+          if (!steps[targetNumber]) return { ok: false, errors: [{ code: 'unknown-target-step', path: 'steps', message: 'The destination step number is not in the workflow.' }], value: null, summary: '' };
+          toIndex = /^after/.test(target) ? targetNumber + 1 : targetNumber;
+          if (fromIndex < toIndex) toIndex -= 1;
+        }
+        var moveReport = revise(report.value, { moveStep: { stepId: steps[fromIndex].stepId, toIndex: toIndex } }, ctx);
+        return Object.assign({}, moveReport, { summary: 'Moved step ' + (fromIndex + 1) + '.' });
+      }
+      match = text.match(/^(?:set|change)\s+(?:step\s+)?(\d+)\s+([a-zA-Z][a-zA-Z0-9_-]*)\s+(?:to|=)\s+(.+?)\s*[.!]?$/i);
+      if (match) {
+        var setIndex = Number(match[1]) - 1;
+        if (!steps[setIndex]) return { ok: false, errors: [{ code: 'unknown-step', path: 'steps', message: 'That step number is not in the workflow.' }], value: null, summary: '' };
+        var rawValue = match[3].trim();
+        var value = /^(true|false)$/i.test(rawValue) ? /^true$/i.test(rawValue) : (/^-?\d+(?:\.\d+)?$/.test(rawValue) ? Number(rawValue) : rawValue);
+        var setReport = revise(report.value, { setParam: { stepId: steps[setIndex].stepId, key: match[2], value: value } }, ctx);
+        if (setReport.ok && !Object.prototype.hasOwnProperty.call(setReport.value.steps[setIndex].params, match[2])) {
+          return { ok: false, errors: [{ code: 'unsupported-param', path: 'steps[' + setIndex + '].params.' + match[2], message: 'That command does not accept the requested parameter.' }], value: null, summary: '' };
+        }
+        return Object.assign({}, setReport, { summary: 'Updated step ' + (setIndex + 1) + '.' });
+      }
+      return { ok: false, errors: [{ code: 'edit-not-understood', path: '', message: 'Try “remove step 2”, “move step 3 first”, or “set step 1 grade to 4”.' }], value: null, summary: '' };
+    }
+    function dryRun(workflow, ctx, opts) {
+      var report = validate(workflow, ctx);
+      if (!report.ok) return { ok: false, errors: report.errors, steps: [], approvalRequired: true };
+      var rawSteps = report.value.steps.map(function (step) { return { commandId: step.commandId, params: step.params, why: step.why }; });
+      var readiness = typeof d.validatePlan === 'function' ? d.validatePlan(ctx || {}, rawSteps, opts || {}) : { ok: true, items: rawSteps.map(function (step, index) { return { index: index, commandId: step.commandId, status: 'ready', detail: '' }; }) };
+      return {
+        ok: !!readiness.ok,
+        errors: readiness.ok ? [] : [{ code: 'workflow-blocked', path: 'steps', message: 'One or more workflow steps are blocked.' }],
+        steps: report.value.steps.map(function (step, index) { return Object.assign({}, step, { readiness: readiness.items && readiness.items[index] || { status: 'ready', detail: '' } }); }),
+        approvalRequired: true
+      };
+    }
+    function approve(workflow, reviewer, ctx) {
+      var report = validate(workflow, ctx);
+      if (!report.ok) return report;
+      return validate(Object.assign({}, report.value, { review: { state: 'approved', reviewer: String(reviewer || 'teacher').slice(0, 200) } }), ctx);
+    }
+    function planExecution(workflow, ctx, opts) {
+      var report = validate(workflow, ctx);
+      if (!report.ok) return { ok: false, errors: report.errors, steps: [], dryRun: null };
+      if (report.value.review.state !== 'approved') return { ok: false, errors: [{ code: 'approval-required', path: 'review.state', message: 'A teacher must approve this command workflow before execution.' }], steps: [], dryRun: null };
+      var preview = dryRun(report.value, ctx, opts);
+      if (!preview.ok) return { ok: false, errors: preview.errors, steps: [], dryRun: preview };
+      return { ok: true, errors: [], steps: report.value.steps.map(function (step) { return { commandId: step.commandId, params: step.params, why: step.why }; }), dryRun: preview };
+    }
+
+    function libraryError(code, message) {
+      return { ok: false, errors: [{ code: code, path: 'library', message: message }], warnings: [], items: [], value: null };
+    }
+    function currentAudience(ctx) {
+      if (typeof d.getAudience === 'function') {
+        try { return d.getAudience(ctx || {}); } catch (_) {}
+      }
+      return ctx && ctx.commandAudience || '';
+    }
+    function storageBackend() {
+      return d.storage && typeof d.storage.getItem === 'function' && typeof d.storage.setItem === 'function' ? d.storage : null;
+    }
+    function parseLibrary() {
+      var storage = storageBackend();
+      if (!storage) return libraryError('storage-unavailable', 'Saved Command Blueprints are unavailable in this environment.');
+      try {
+        var raw = storage.getItem(COMMAND_WORKFLOW_LIBRARY_KEY);
+        if (!raw) return { ok: true, errors: [], warnings: [], items: [] };
+        var parsed = JSON.parse(raw);
+        var items = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.items) ? parsed.items : null);
+        if (!items) return libraryError('library-corrupt', 'The saved Command Blueprint library could not be read.');
+        if (!Array.isArray(parsed) && parsed.schemaVersion !== C.SCHEMA_VERSION) return libraryError('library-version-unsupported', 'This saved Command Blueprint library uses an unsupported version.');
+        return { ok: true, errors: [], warnings: [], items: items.slice(0, 24) };
+      } catch (_) {
+        return libraryError('library-corrupt', 'The saved Command Blueprint library could not be read.');
+      }
+    }
+    function writeLibrary(items) {
+      var storage = storageBackend();
+      if (!storage) return libraryError('storage-unavailable', 'Saved Command Blueprints are unavailable in this environment.');
+      try {
+        storage.setItem(COMMAND_WORKFLOW_LIBRARY_KEY, JSON.stringify({ schemaVersion: C.SCHEMA_VERSION, items: items.slice(0, 24) }));
+        return { ok: true, errors: [], warnings: [], items: items.slice(0, 24) };
+      } catch (_) {
+        return libraryError('storage-write-failed', 'The Command Blueprint could not be saved on this device.');
+      }
+    }
+    function normalizeTemplateName(name, fallback) {
+      var clean = String(name || '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+      return clean || fallback || 'Command Blueprint';
+    }
+    function listSaved(ctx) {
+      var parsed = parseLibrary();
+      if (!parsed.ok) return parsed;
+      var audience = currentAudience(ctx);
+      var warnings = [];
+      var items = [];
+      parsed.items.forEach(function (raw, index) {
+        if (!raw || typeof raw !== 'object' || !raw.workflow) {
+          warnings.push({ code: 'invalid-saved-workflow', path: 'library[' + index + ']', message: 'An invalid saved workflow was ignored.' });
+          return;
+        }
+        if (audience && raw.workflow.audience !== audience) return;
+        var report = validate(raw.workflow, ctx);
+        if (!report.ok) {
+          warnings.push({ code: 'invalid-saved-workflow', path: 'library[' + index + ']', message: 'A saved workflow is no longer valid in this command catalog.' });
+          return;
+        }
+        if (audience && report.value.audience !== audience) return;
+        items.push({
+          workflowId: report.value.workflowId,
+          name: normalizeTemplateName(raw.name, 'Command Blueprint ' + (index + 1)),
+          workflow: report.value,
+          createdAt: typeof raw.createdAt === 'string' ? raw.createdAt : '',
+          updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : ''
+        });
+      });
+      items.sort(function (a, b) { return String(b.updatedAt).localeCompare(String(a.updatedAt)); });
+      return { ok: true, errors: [], warnings: warnings, items: items };
+    }
+    function saveSaved(workflow, name, ctx) {
+      var report = validate(workflow, ctx);
+      if (!report.ok) return Object.assign({}, report, { items: [] });
+      var audience = currentAudience(ctx);
+      if (audience && report.value.audience !== audience) return libraryError('audience-mismatch', 'This Command Blueprint belongs to a different view.');
+      var draftReport = validate(Object.assign({}, report.value, { review: { state: 'draft', reviewer: '' } }), ctx);
+      if (!draftReport.ok) return Object.assign({}, draftReport, { items: [] });
+      var parsed = parseLibrary();
+      if (!parsed.ok) return parsed;
+      var existing = parsed.items.find(function (item) { return item && item.workflow && item.workflow.workflowId === draftReport.value.workflowId && item.workflow.audience === draftReport.value.audience; });
+      var now = typeof d.now === 'function' ? String(d.now()) : new Date().toISOString();
+      var record = {
+        workflowId: draftReport.value.workflowId,
+        name: normalizeTemplateName(name, existing && existing.name),
+        workflow: draftReport.value,
+        createdAt: existing && typeof existing.createdAt === 'string' ? existing.createdAt : now,
+        updatedAt: now
+      };
+      var next = [record].concat(parsed.items.filter(function (item) { return !(item && item.workflow && item.workflow.workflowId === record.workflowId && item.workflow.audience === record.workflow.audience); }));
+      var written = writeLibrary(next);
+      return written.ok ? { ok: true, errors: [], warnings: [], value: record, items: listSaved(ctx).items } : written;
+    }
+    function loadSaved(workflowId, ctx) {
+      var listed = listSaved(ctx);
+      if (!listed.ok) return Object.assign({}, listed, { value: null });
+      var found = listed.items.find(function (item) { return item.workflowId === String(workflowId || ''); });
+      if (!found) return libraryError('saved-workflow-not-found', 'That saved Command Blueprint is not available in this view.');
+      var report = validate(Object.assign({}, found.workflow, { review: { state: 'draft', reviewer: '' } }), ctx);
+      if (!report.ok) return Object.assign({}, report, { items: listed.items });
+      return { ok: true, errors: [], warnings: listed.warnings, value: report.value, template: found, items: listed.items };
+    }
+    function deleteSaved(workflowId, ctx) {
+      var listed = listSaved(ctx);
+      if (!listed.ok) return listed;
+      var allowed = listed.items.some(function (item) { return item.workflowId === String(workflowId || ''); });
+      if (!allowed) return libraryError('saved-workflow-not-found', 'That saved Command Blueprint is not available in this view.');
+      var parsed = parseLibrary();
+      if (!parsed.ok) return parsed;
+      var audience = currentAudience(ctx);
+      var next = parsed.items.filter(function (item) { return !(item && item.workflow && item.workflow.workflowId === String(workflowId || '') && (!audience || item.workflow.audience === audience)); });
+      var written = writeLibrary(next);
+      return written.ok ? { ok: true, errors: [], warnings: [], items: listSaved(ctx).items } : written;
+    }
+    return {
+      createDraft: createDraft,
+      revise: revise,
+      reviseFromText: reviseFromText,
+      validate: validate,
+      dryRun: dryRun,
+      approve: approve,
+      planExecution: planExecution,
+      listSaved: listSaved,
+      saveSaved: saveSaved,
+      loadSaved: loadSaved,
+      deleteSaved: deleteSaved
+    };
+  }
+
+
+  var API = { createBlueprintService: createBlueprintService, createCommandWorkflowService: createCommandWorkflowService, COMMAND_WORKFLOW_LIBRARY_KEY: COMMAND_WORKFLOW_LIBRARY_KEY };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   if (typeof window !== 'undefined') {

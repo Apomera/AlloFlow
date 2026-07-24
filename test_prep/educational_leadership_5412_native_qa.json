@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-19T17:49:06.740Z",
+  "generatedAt": "2026-07-23T17:25:00.425Z",
   "packId": "praxis-educational-leadership-5412",
   "standard": {
     "label": "AlloFlow independent 5412 source, structure, feedback, originality, safety, and linkage QA v1",
@@ -928,7 +928,7 @@
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
     "sourceItemsSha256": "6f247aa0dd616926115d9e2db1d92895cb4cec963df621c04858ca3f5aee7d23",
-    "learningLibrarySha256": "82e6016640ba1fd9beea5bf3c7563a255ba76d7d5e30ae93ff8316c89a9cfeb0",
+    "learningLibrarySha256": "d84cdd3bcba7858e8aaf003ce9d56e393e2fe37c3997d0cd7dcb36e4e5579063",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   },
   "expansion": {

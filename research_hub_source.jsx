@@ -67,6 +67,15 @@
   var useRef = React.useRef;
   var useCallback = React.useCallback;
   var useMemo = React.useMemo;
+  var evidenceGraphApi = window.AlloFlowResearchEvidenceGraph;
+  function buildEvidenceGraph(journal) {
+    if (evidenceGraphApi && typeof evidenceGraphApi.buildEvidenceGraph === 'function') return evidenceGraphApi.buildEvidenceGraph(journal);
+    return { schemaVersion: 1, generatorVersion: 'unavailable', generatedAt: new Date().toISOString(), nodes: [], edges: [], counts: {}, claimViews: [], diagnostics: [{ severity: 'action', code: 'evidence_graph_unavailable', message: 'The evidence graph module did not load.' }], status: 'action_needed' };
+  }
+  function buildW3CWebAnnotations(journal, graph) { return evidenceGraphApi.toW3CWebAnnotations(journal, graph); }
+  function buildCslJson(journal) { return evidenceGraphApi.toCslJson(journal); }
+  function buildRoCrate(journal, graph) { return evidenceGraphApi.toRoCrate(journal, graph); }
+  function buildInteroperabilityBundle(journal) { return evidenceGraphApi.buildInteroperabilityBundle(journal); }
 
   // ───────────────────────────────────────────────────────────────────────
   // Constants
@@ -76,6 +85,10 @@
   var CAPTURE_INBOX_KEY = 'alloflow_research_capture_inbox_v1';
   var MAX_CAPTURE_BYTES = 60000;
   var MAX_CAPTURE_INBOX_ITEMS = 20;
+  var MAX_CAPTURES_PER_TOOL_PER_MINUTE = 5;
+  var CAPTURE_RATE_WINDOW_MS = 60000;
+  var RESEARCH_STORAGE_SOFT_LIMIT_BYTES = 4 * 1024 * 1024;
+  var RESEARCH_STORAGE_WARNING_RATIO = 0.7;
 
   var TOOL_INTEGRATION_CONTRACT_VERSION = 1;
   var TOOL_INTEGRATION_METHOD_PACKS = [
@@ -83,6 +96,7 @@
     'community_qualitative','civic_policy','creative_cultural'
   ];
   var registeredToolIntegrations = {};
+  var registeredCaptureSanitizers = {};
 
   function isPlainRecord(value) {
     return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -90,6 +104,31 @@
 
   function safeJsonClone(value) {
     try { return JSON.parse(JSON.stringify(value)); } catch (_) { return null; }
+  }
+
+  function utf8ByteLength(value) {
+    var text = String(value || '');
+    try { return new TextEncoder().encode(text).length; }
+    catch (_) {
+      try { return unescape(encodeURIComponent(text)).length; }
+      catch (_) { return text.length * 2; }
+    }
+  }
+
+  function researchStorageHealth(journal) {
+    var journalRaw = '';
+    try { journalRaw = JSON.stringify(journal || {}); } catch (_) { journalRaw = ''; }
+    var inboxRaw = safeLocal(CAPTURE_INBOX_KEY) || '';
+    var recoveryRaw = safeLocal(RECOVERY_STORAGE_KEY) || '';
+    var bytes = utf8ByteLength(journalRaw) + utf8ByteLength(inboxRaw) + utf8ByteLength(recoveryRaw);
+    var ratio = bytes / RESEARCH_STORAGE_SOFT_LIMIT_BYTES;
+    return {
+      bytes: bytes,
+      limitBytes: RESEARCH_STORAGE_SOFT_LIMIT_BYTES,
+      ratio: ratio,
+      percent: Math.min(999, Math.round(ratio * 100)),
+      status: ratio >= 1 ? 'over_limit' : ratio >= 0.9 ? 'critical' : ratio >= RESEARCH_STORAGE_WARNING_RATIO ? 'warning' : 'healthy'
+    };
   }
 
   function validateToolIntegrationContract(input) {
@@ -108,6 +147,12 @@
     });
     if (!isPlainRecord(input.capabilities) || input.capabilities.captureArtifact !== true) issues.push('capabilities.captureArtifact must be true');
     if (!isPlainRecord(input.privacy) || input.privacy.learnerApprovalRequired !== true) issues.push('privacy.learnerApprovalRequired must be true');
+    if (input.privacy && input.privacy.sanitizerRequired === true && !String(input.privacy.sanitizerId || '').trim()) issues.push('privacy.sanitizerId is required when sanitizerRequired is true');
+    var reviewedAtMs = Date.parse(String(input.reviewedAt || ''));
+    var reviewAfterMs = Date.parse(String(input.reviewAfter || ''));
+    if (!isFinite(reviewedAtMs)) issues.push('reviewedAt must be an ISO date');
+    if (!isFinite(reviewAfterMs)) issues.push('reviewAfter must be an ISO date');
+    if (isFinite(reviewedAtMs) && isFinite(reviewAfterMs) && reviewAfterMs <= reviewedAtMs) issues.push('reviewAfter must be later than reviewedAt');
     if (!isPlainRecord(input.reproducibility) || !Array.isArray(input.reproducibility.requiredFields) || !input.reproducibility.requiredFields.length) issues.push('reproducibility.requiredFields is required');
     else {
       var allowedReceiptFields = ['softwareVersion','sourceRecordId','parameters','randomSeed','limitations','datasetVersion','transformations'];
@@ -131,6 +176,72 @@
     return { ok: true, issues: [], contract: checked.contract };
   }
 
+  function registerCaptureSanitizer(toolId, sanitizerId, sanitizer) {
+    var id = String(toolId || '').trim();
+    var sid = String(sanitizerId || '').trim();
+    if (!id || !sid || typeof sanitizer !== 'function') return { ok: false, reason: 'toolId, sanitizerId, and a sanitizer function are required.' };
+    registeredCaptureSanitizers[id] = { id: sid, sanitize: sanitizer };
+    return { ok: true, toolId: id, sanitizerId: sid };
+  }
+
+  function transformCaptureStrings(value, transform, depth) {
+    if (depth > 10) return value;
+    if (typeof value === 'string') return transform(value);
+    if (Array.isArray(value)) return value.map(function (item) { return transformCaptureStrings(item, transform, depth + 1); });
+    if (isPlainRecord(value)) {
+      var out = {};
+      Object.keys(value).forEach(function (key) { out[key] = transformCaptureStrings(value[key], transform, depth + 1); });
+      return out;
+    }
+    return value;
+  }
+
+  function enforceCapturePrivacy(input, contract) {
+    var clone = safeJsonClone(input);
+    if (!clone) return { ok: false, reason: 'Capture must be JSON-serializable before privacy review.', findings: [] };
+    var findings = [];
+    var sourceToolId = String(clone.sourceToolId || '').trim();
+    var privacy = contract && contract.privacy || {};
+    var registered = registeredCaptureSanitizers[sourceToolId];
+    if (privacy.sanitizerRequired === true && (!registered || registered.id !== privacy.sanitizerId)) return { ok: false, reason: 'Required sanitizer ' + String(privacy.sanitizerId || '') + ' is not registered for ' + sourceToolId + '.', findings: [] };
+    if (registered && (!privacy.sanitizerId || registered.id === privacy.sanitizerId)) {
+      try {
+        clone = safeJsonClone(registered.sanitize(clone));
+        if (!clone) throw new Error('sanitizer returned a non-serializable value');
+        findings.push({ code: 'tool_sanitizer_applied', count: 1, sanitizerId: registered.id });
+      } catch (_) { return { ok: false, reason: 'The registered capture sanitizer failed.', findings: [] }; }
+    }
+    var scanClone = safeJsonClone(clone) || {};
+    delete scanClone.integrationContract;
+    var serialized = JSON.stringify(scanClone);
+    var secretPattern = /(?:\bsk-[A-Za-z0-9_-]{20,}\b|\bAIza[A-Za-z0-9_-]{20,}\b|\bgh[pousr]_[A-Za-z0-9]{20,}\b|-----BEGIN [A-Z ]*PRIVATE KEY-----|authorization\s*:\s*bearer\s+[A-Za-z0-9._~-]{12,})/i;
+    if (secretPattern.test(serialized)) return { ok: false, reason: 'Capture blocked because it appears to contain a credential or private key.', findings: [{ code: 'secret_detected', count: 1 }] };
+    if (privacy.directIdentifiersAllowed !== true) {
+      var directIdentifierPattern = /(?:\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b|\b\d{3}-\d{2}-\d{4}\b|\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b)/i;
+      if (directIdentifierPattern.test(serialized)) return { ok: false, reason: 'Capture blocked because direct contact or identity information was detected.', findings: [{ code: 'direct_identifier_detected', count: 1 }] };
+    }
+    if (privacy.sequenceLikeTextAllowed !== true) {
+      var sequenceCount = 0;
+      clone = transformCaptureStrings(clone, function (text) {
+        return String(text)
+          .replace(/\b[ACGTUN]{40,}\b/gi, function () { sequenceCount++; return '[nucleic-acid sequence omitted]'; })
+          .replace(/\b[ACDEFGHIKLMNPQRSTVWY]{40,}\b/gi, function () { sequenceCount++; return '[protein sequence omitted]'; });
+      }, 0);
+      if (sequenceCount) findings.push({ code: 'sequence_like_text_redacted', count: sequenceCount });
+    }
+    return { ok: true, value: clone, findings: findings };
+  }
+
+  function simpleCaptureHash(text) {
+    var hash = 2166136261;
+    for (var i = 0; i < text.length; i++) { hash ^= text.charCodeAt(i); hash = Math.imul(hash, 16777619); }
+    return ('00000000' + (hash >>> 0).toString(16)).slice(-8);
+  }
+
+  function captureFingerprint(artifact) {
+    var basis = [artifact.sourceToolId, artifact.title, artifact.summary, artifact.provenance && artifact.provenance.sourceRecordId, JSON.stringify(artifact.data || {})].join('|');
+    return simpleCaptureHash(basis);
+  }
   function normalizeReproducibilityReceipt(input, capture, contract) {
     var src = isPlainRecord(input) ? input : {};
     var required = contract && contract.reproducibility && Array.isArray(contract.reproducibility.requiredFields)
@@ -170,17 +281,20 @@
   function assessResearchArtifactIntegration(artifact) {
     var issues = [];
     var contract = artifact && artifact.integrationContract;
-    if (!contract) issues.push({ severity: 'review', code: 'unregistered_tool', message: 'No versioned AlloFlow integration contract is attached.' });
+    if (!contract) issues.push({ severity: 'review', code: artifact && artifact.integrationContractStatus === 'legacy' ? 'legacy_integration' : 'unregistered_tool', message: artifact && artifact.integrationContractStatus === 'legacy' ? 'Legacy capture: original contract metadata was not recorded.' : 'No versioned AlloFlow integration contract is attached.' });
     else {
       var checked = validateToolIntegrationContract(contract);
-      if (!checked.ok) issues.push({ severity: 'action', code: 'invalid_contract', message: checked.issues.join('; ') });
+      if (!checked.ok) issues.push({ severity: artifact && artifact.integrationContractStatus === 'legacy_contract' ? 'review' : 'action', code: artifact && artifact.integrationContractStatus === 'legacy_contract' ? 'legacy_contract_metadata' : 'invalid_contract', message: checked.issues.join('; ') });
       if (!contract.license || !String(contract.license.name || contract.license.spdx || '').trim()) issues.push({ severity: 'action', code: 'missing_license', message: 'Tool license metadata is missing.' });
       if (!contract.citation || !String(contract.citation.text || '').trim()) issues.push({ severity: 'action', code: 'missing_citation', message: 'Tool citation guidance is missing.' });
+      var reviewAfterMs = Date.parse(String(contract.reviewAfter || ''));
+      if (!isFinite(reviewAfterMs)) issues.push({ severity: 'review', code: 'missing_freshness_review', message: 'No valid integration review date is declared.' });
+      else if (reviewAfterMs < Date.now()) issues.push({ severity: 'review', code: 'integration_review_overdue', message: 'The integration metadata review is overdue.' });
     }
     var receipt = artifact && artifact.reproducibilityReceipt;
     if (!receipt) issues.push({ severity: 'review', code: 'missing_reproducibility_receipt', message: 'No reproducibility receipt is attached.' });
     else if (receipt.status !== 'complete') issues.push({ severity: 'review', code: 'partial_reproducibility_receipt', message: 'Missing reproducibility fields: ' + (receipt.missingFields || []).join(', ') });
-    if (artifact && artifact.acceptedAt && !String(artifact.learnerNote || '').trim()) issues.push({ severity: 'action', code: 'missing_learner_interpretation', message: 'The learner has not explained what this output means.' });
+    if (artifact && artifact.acceptedAt && !String(artifact.learnerNote || artifact.legacyContextNote || '').trim()) issues.push({ severity: 'action', code: 'missing_learner_interpretation', message: 'The learner has not explained what this output means.' });
     if (artifact && artifact.acceptedAt && !String(artifact.uncertaintyNote || '').trim()) issues.push({ severity: 'review', code: 'missing_uncertainty_note', message: 'No uncertainty or limitation note was recorded.' });
     return { status: issues.some(function (x) { return x.severity === 'action'; }) ? 'action_needed' : issues.length ? 'needs_review' : 'healthy', issues: issues };
   }
@@ -238,10 +352,15 @@
       if ((j.framings || []).length < 2 && (claims.length || j.humanitiesPosition)) add('review', 'missing_counterinterpretation', 'The position has not yet been tested against at least two framings.');
     }
     var artifacts = j.capturedArtifacts || [];
-    var uninterpreted = artifacts.filter(function (artifact) { return !String(artifact.learnerNote || '').trim(); });
+    var uninterpreted = artifacts.filter(function (artifact) { return !String(artifact.learnerNote || artifact.legacyContextNote || '').trim(); });
     if (uninterpreted.length) add('action', 'uninterpreted_tool_outputs', uninterpreted.length + ' tool artifact(s) lack learner interpretation.', uninterpreted.length);
     var partialReceipts = artifacts.filter(function (artifact) { return !artifact.reproducibilityReceipt || artifact.reproducibilityReceipt.status !== 'complete'; });
     if (partialReceipts.length) add('review', 'partial_reproducibility', partialReceipts.length + ' tool artifact(s) have incomplete reproducibility receipts.', partialReceipts.length);
+    var evidenceGraphAudit = buildEvidenceGraph(j);
+    var missingGraphWarrants = (evidenceGraphAudit.diagnostics || []).filter(function (item) { return item.code === 'missing_graph_warrant'; });
+    if (missingGraphWarrants.length) add('action', 'missing_evidence_warrants', missingGraphWarrants.length + ' supporting evidence relationship(s) need an explanatory warrant.', missingGraphWarrants.length);
+    var unlinkedGraphEvidence = (evidenceGraphAudit.diagnostics || []).filter(function (item) { return item.code === 'unlinked_graph_evidence'; });
+    if (unlinkedGraphEvidence.length) add('review', 'unlinked_evidence', unlinkedGraphEvidence.length + ' evidence item(s) are recorded but not connected to a claim or position.', unlinkedGraphEvidence.length);
     var counts = {
       action: issues.filter(function (x) { return x.severity === 'action'; }).length,
       review: issues.filter(function (x) { return x.severity === 'review'; }).length,
@@ -250,6 +369,35 @@
     return { status: counts.action ? 'action_needed' : counts.review ? 'review_recommended' : 'ready', counts: counts, issues: issues, generatedAt: Date.now() };
   }
 
+  function EvidenceGraphView(props) {
+    var graph = props.graph || { nodes: [], edges: [], counts: {}, claimViews: [], diagnostics: [], status: 'ready' };
+    var relationshipColors = { supports: '#166534', complicates: '#9a3412', contradicts: '#b91c1c', contextualizes: '#1d4ed8' };
+    var unlinkedCount = (graph.diagnostics || []).filter(function (item) { return item.code === 'unlinked_graph_evidence'; }).length;
+    var actionCount = (graph.diagnostics || []).filter(function (item) { return item.severity === 'action'; }).length;
+    var reviewCount = (graph.diagnostics || []).filter(function (item) { return item.severity !== 'action'; }).length;
+    return <details data-research-evidence-graph="true" style={{ marginTop: '12px', borderRadius: '12px', border: '1px solid ' + (graph.status === 'ready' ? '#86efac' : graph.status === 'action_needed' ? '#fca5a5' : '#fcd34d'), background: '#fff' }}>
+      <summary style={{ cursor: 'pointer', padding: '10px 12px', fontSize: '11px', fontWeight: 900, color: '#1e293b', background: 'linear-gradient(90deg,#f8fafc,#f0fdfa)' }}>
+        Evidence map: {(graph.claimViews || []).length} claim{(graph.claimViews || []).length === 1 ? '' : 's'} · {(graph.edges || []).filter(function (edge) { return ['supports','complicates','contradicts','contextualizes'].indexOf(edge.type) !== -1; }).length} reasoning link(s)
+      </summary>
+      <div style={{ padding: '0 12px 12px' }}>
+        <p style={{ margin: '9px 0', fontSize: '10px', color: '#475569' }}>This map keeps scientific results, humanistic passages, design tests, sources, and tool outputs distinct while showing the relationships you explicitly authored. It does not infer agreement or grade the argument.</p>
+        {(graph.claimViews || []).length ? <div role="list" aria-label="Claims and their evidence relationships" style={{ display: 'grid', gap: '9px' }}>
+          {graph.claimViews.map(function (view) { return <article key={view.claim.id} role="listitem" data-evidence-claim-node={view.claim.type} style={{ borderRadius: '10px', border: '1px solid #cbd5e1', padding: '10px', background: '#f8fafc' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'flex-start' }}><strong style={{ fontSize: '11px', color: '#0f172a' }}>{view.claim.label}</strong><span style={{ flex: '0 0 auto', borderRadius: '999px', padding: '2px 6px', background: '#e0e7ff', color: '#4338ca', fontSize: '8px', fontWeight: 900 }}>{view.claim.discipline}</span></div>
+            {view.relationships.length ? <ul style={{ margin: '8px 0 0', padding: 0, listStyle: 'none', display: 'grid', gap: '6px' }}>{view.relationships.map(function (row) { return <li key={row.edge.id} data-evidence-relationship={row.edge.type} style={{ borderLeft: '3px solid ' + (relationshipColors[row.edge.type] || '#64748b'), padding: '6px 8px', background: '#fff', fontSize: '10px', color: '#334155' }}><strong style={{ color: relationshipColors[row.edge.type] || '#475569' }}>{row.edge.type}</strong>{' ← ' + row.evidence.label}{row.edge.warrant ? <div style={{ marginTop: '3px', color: '#64748b' }}><strong>Warrant:</strong> {row.edge.warrant}</div> : <div style={{ marginTop: '3px', color: '#b91c1c', fontWeight: 800 }}>Warrant needed: explain why this evidence bears on the claim.</div>}</li>; })}</ul> : <div style={{ marginTop: '7px', padding: '7px', borderRadius: '7px', background: '#fef2f2', color: '#991b1b', fontSize: '10px', fontWeight: 800 }}>No explicit supporting evidence is connected yet.</div>}
+          </article>; })}
+        </div> : <div style={{ padding: '8px', borderRadius: '8px', background: '#f8fafc', color: '#64748b', fontSize: '10px' }}>Create a claim, design claim, or humanities position to begin the evidence map.</div>}
+        {(actionCount || reviewCount) ? <div role="status" style={{ marginTop: '9px', padding: '8px', borderRadius: '8px', background: actionCount ? '#fef2f2' : '#fffbeb', color: actionCount ? '#991b1b' : '#92400e', fontSize: '10px' }}><strong>{actionCount} action · {reviewCount} review</strong>{unlinkedCount ? ' · ' + unlinkedCount + ' recorded evidence item(s) are not connected to an argument.' : ''}</div> : <div role="status" style={{ marginTop: '9px', color: '#166534', fontSize: '10px', fontWeight: 800 }}>Every current claim has explicit support, warrants are present, and counterevidence is represented.</div>}
+        <div aria-label="Portable inquiry exports" style={{ marginTop: '10px', display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
+          <button type="button" onClick={props.onDownloadGraph} style={{ minHeight: '40px', padding: '6px 9px', borderRadius: '8px', border: '1px solid #475569', background: '#fff', color: '#334155', fontSize: '9px', fontWeight: 900 }}>Evidence graph JSON</button>
+          <button type="button" onClick={props.onDownloadAnnotations} disabled={!graph.counts.annotation} style={{ minHeight: '40px', padding: '6px 9px', borderRadius: '8px', border: '1px solid #7c3aed', background: '#fff', color: '#6d28d9', fontSize: '9px', fontWeight: 900, opacity: graph.counts.annotation ? 1 : .5 }}>W3C annotations</button>
+          <button type="button" onClick={props.onDownloadCitations} style={{ minHeight: '40px', padding: '6px 9px', borderRadius: '8px', border: '1px solid #0369a1', background: '#fff', color: '#0369a1', fontSize: '9px', fontWeight: 900 }}>CSL citations</button>
+          <button type="button" onClick={props.onDownloadRoCrate} style={{ minHeight: '40px', padding: '6px 9px', borderRadius: '8px', border: '1px solid #0f766e', background: '#fff', color: '#0f766e', fontSize: '9px', fontWeight: 900 }}>RO-Crate 1.3 metadata</button>
+          <button type="button" onClick={props.onDownloadBundle} style={{ minHeight: '40px', padding: '6px 9px', borderRadius: '8px', border: 0, background: '#312e81', color: '#fff', fontSize: '9px', fontWeight: 900 }}>Complete interoperability bundle</button>
+        </div>
+      </div>
+    </details>;
+  }
   function researchId(prefix) {
     return String(prefix || 'rh') + Date.now() + '_' + Math.floor(Math.random() * 1000000);
   }
@@ -262,14 +410,18 @@
   }
 
   function writeCaptureInbox(items) {
-    safeLocal(CAPTURE_INBOX_KEY, JSON.stringify((items || []).slice(-MAX_CAPTURE_INBOX_ITEMS)));
+    return safeLocal(CAPTURE_INBOX_KEY, JSON.stringify(items || [])) === true;
   }
 
   function removeCaptureInboxItem(id) {
-    writeCaptureInbox(readCaptureInbox().filter(function (item) { return item && item.id !== id; }));
-  }
-  function normalizeResearchCapture(input) {
+    return writeCaptureInbox(readCaptureInbox().filter(function (item) { return item && item.id !== id; }));
+  }  function normalizeResearchCapture(input) {
     if (!input || typeof input !== 'object') return { ok: false, reason: 'Capture must be an object.' };
+    var preliminaryToolId = String(input.sourceToolId || '').trim().slice(0, 80);
+    var preliminaryContract = input.integrationContract || registeredToolIntegrations[preliminaryToolId] || null;
+    var privacyResult = enforceCapturePrivacy(input, preliminaryContract);
+    if (!privacyResult.ok) return privacyResult;
+    input = privacyResult.value;
     var sourceToolId = String(input.sourceToolId || '').trim().slice(0, 80);
     var title = String(input.title || '').trim().slice(0, 180);
     var summary = String(input.summary || '').trim().slice(0, 4000);
@@ -306,22 +458,28 @@
       },
       integrationContract: checkedContract.contract,
       integrationContractStatus: checkedContract.contract ? 'validated' : 'unregistered',
-      reproducibilityReceipt: normalizeReproducibilityReceipt(input.reproducibility, captureMeta, checkedContract.contract),
+      reproducibilityReceipt: normalizeReproducibilityReceipt(input.reproducibilityReceipt || input.reproducibility, captureMeta, checkedContract.contract),
+      privacyFindings: privacyResult.findings || [],
       queuedAt: Date.now()
     };
+    artifact.captureFingerprint = captureFingerprint(artifact);
     artifact.integrationHealth = assessResearchArtifactIntegration(artifact);
     return { ok: true, artifact: artifact };
-  }
-  function queueResearchCapture(input) {
+  }  function queueResearchCapture(input) {
     var normalized = normalizeResearchCapture(input);
     if (!normalized.ok) return normalized;
     var inbox = readCaptureInbox();
+    if (inbox.length >= MAX_CAPTURE_INBOX_ITEMS) return { ok: false, reason: 'The Research Hub capture inbox is full. Review or dismiss queued artifacts before sending more.' };
+    var fingerprint = normalized.artifact.captureFingerprint;
+    if (inbox.some(function (item) { return item && item.captureFingerprint === fingerprint; })) return { ok: false, duplicate: true, reason: 'This artifact is already waiting for review.' };
+    var cutoff = Date.now() - CAPTURE_RATE_WINDOW_MS;
+    var recentFromTool = inbox.filter(function (item) { return item && item.sourceToolId === normalized.artifact.sourceToolId && item.queuedAt >= cutoff; }).length;
+    if (recentFromTool >= MAX_CAPTURES_PER_TOOL_PER_MINUTE) return { ok: false, rateLimited: true, reason: 'This tool sent too many captures in one minute. Review the queue before trying again.' };
     inbox.push(normalized.artifact);
-    writeCaptureInbox(inbox);
+    if (!writeCaptureInbox(inbox)) return { ok: false, reason: 'Local storage is unavailable or full. Download existing portfolio work before retrying.' };
     try { window.dispatchEvent(new CustomEvent('alloflow:research-capture', { detail: normalized.artifact })); } catch (_) {}
-    return { ok: true, queued: true, captureId: normalized.artifact.id };
-  }
-  var MAX_AI_CALLS_PER_SESSION = 8;
+    return { ok: true, queued: true, captureId: normalized.artifact.id, privacyFindings: normalized.artifact.privacyFindings };
+  }  var MAX_AI_CALLS_PER_SESSION = 8;
   var VOICE_NOTE_MAX_SECONDS = 60;
   var INPUT_HARD_CAP = 1500;     // Generous; lane prompts may quote evidence
   var PROVENANCE_ARRAY_FIELDS = [
@@ -396,9 +554,12 @@
   function safeLocal(key, value) {
     try {
       if (value === undefined) return window.localStorage.getItem(key);
-      if (value === null) { window.localStorage.removeItem(key); return; }
+      if (value === null) { window.localStorage.removeItem(key); return true; }
       window.localStorage.setItem(key, value);
-    } catch (_) { /* quota / private / sandboxed */ }
+      return true;
+    } catch (_) {
+      return value === undefined ? null : false;
+    }
   }
 
   // ───────────────────────────────────────────────────────────────────────
@@ -609,6 +770,22 @@
       }      // v:1-v:4 → v:5 added method identity. v:1-v:5 → v:6 adds
       // inquiry episodes and cross-tool provenance. A byte-for-byte
       // pre-migration backup is retained above.
+      if (Array.isArray(parsed.capturedArtifacts)) {
+        parsed.capturedArtifacts = parsed.capturedArtifacts.map(function (artifact) {
+          if (!artifact) return artifact;
+          if (artifact.integrationContract && (!artifact.integrationContract.reviewedAt || !artifact.integrationContract.reviewAfter)) {
+            return Object.assign({}, artifact, {
+              integrationContractStatus: 'legacy_contract',
+              legacyProvenance: artifact.legacyProvenance || { status: 'legacy_contract', reason: 'Contract snapshot predates freshness metadata; recorded fields are preserved but review dates remain unknown.' }
+            });
+          }
+          if (artifact.integrationContract || artifact.integrationContractStatus === 'legacy') return artifact;
+          return Object.assign({}, artifact, {
+            integrationContractStatus: 'legacy',
+            legacyProvenance: artifact.legacyProvenance || { status: 'legacy', reason: 'Captured before AlloFlow Tool Integration Contract v1; original tool metadata remains unknown.' }
+          });
+        });
+      }
       parsed.v = 6;
       // aiCallCount resets per page-load — quota is a per-session anti-spam
       // gate, not anti-cost; documented explicitly so this isn't surprising.
@@ -624,8 +801,7 @@
       var snapshot = Object.assign({}, journal);
       delete snapshot.originalSchemaVersion;
       snapshot.updatedAt = Date.now();
-      safeLocal(STORAGE_KEY, JSON.stringify(snapshot));
-      return true;
+      return safeLocal(STORAGE_KEY, JSON.stringify(snapshot)) === true;
     } catch (_) { return false; }
   }
 
@@ -749,8 +925,10 @@
   window.ResearchHub.captureArtifact = queueResearchCapture;
   window.ResearchHub.getCaptureInboxCount = function () { return readCaptureInbox().length; };
   window.ResearchHub.registerToolIntegration = registerToolIntegration;
+  window.ResearchHub.registerCaptureSanitizer = registerCaptureSanitizer;
   window.ResearchHub.getToolIntegrations = function () { return safeJsonClone(registeredToolIntegrations) || {}; };
   window.ResearchHub.getIntegrationHealth = function (artifacts) { return summarizeIntegrationHealth(artifacts); };
+  window.ResearchHub.getStorageHealth = function (journal) { return researchStorageHealth(journal); };
   // Tier-1 placeholder lane descriptors. These render in the lane selector
   // even before the lane plugin script loads, so the user sees the road-
   // map. When a plugin registers later, it overwrites the placeholder.
@@ -1918,6 +2096,10 @@
     var captureUncertainty = _captureUncertainty[0]; var setCaptureUncertainty = _captureUncertainty[1];
     var _captureEvidence = useState(true);
     var captureAsEvidence = _captureEvidence[0]; var setCaptureAsEvidence = _captureEvidence[1];
+    var _archiveReady = useState(false);
+    var artifactArchiveReady = _archiveReady[0]; var setArtifactArchiveReady = _archiveReady[1];
+    var _legacyDrafts = useState({});
+    var legacyDrafts = _legacyDrafts[0]; var setLegacyDrafts = _legacyDrafts[1];
     var closeHandlerRef = useRef(onClose);
     closeHandlerRef.current = onClose;
 
@@ -2043,8 +2225,11 @@
       { label: 'Revise and loop', complete: (journal.loopBacks || []).length > 0 },
     ];
     var researchProgress = Math.round(researchMilestones.filter(function (step) { return step.complete; }).length / researchMilestones.length * 100);
+    var evidenceGraph = useMemo(function () { return buildEvidenceGraph(journal); }, [journal]);
     var inquiryAudit = useMemo(function () { return buildInquiryAudit(journal); }, [journal]);
     var integrationHealth = useMemo(function () { return summarizeIntegrationHealth(journal.capturedArtifacts || []); }, [journal.capturedArtifacts]);
+    var storageHealth = useMemo(function () { return researchStorageHealth(journal); }, [journal]);
+    var legacyArtifacts = (journal.capturedArtifacts || []).filter(function (artifact) { return artifact && (!artifact.integrationContract || artifact.integrationContractStatus === 'legacy_contract'); });
     var researchNextMove = !researchMilestones[0].complete
       ? 'Write a question worth investigating'
       : !activeLane
@@ -2160,11 +2345,78 @@
         inquiryEpisodes: journal.inquiryEpisodes || [],
         integrationHealth: summarizeIntegrationHealth(journal.capturedArtifacts || []),
         inquiryAudit: buildInquiryAudit(journal),
+        evidenceGraph: evidenceGraph,
+        interoperability: { webAnnotation: 'W3C Web Annotation Data Model', citations: 'CSL-JSON', researchPackage: 'RO-Crate 1.3' },
         journal: journal,
       };
       if (!downloadJsonFile('alloflow-inquiry-portfolio.json', payload)) addToast('Portfolio download is unavailable in this browser.', 'error');
     };
 
+    var downloadEvidenceGraph = function () {
+      if (!downloadJsonFile('alloflow-evidence-graph.json', evidenceGraph)) addToast('Evidence graph download is unavailable in this browser.', 'error');
+      else addToast('Evidence graph downloaded with explicit claims, evidence, warrants, and counterevidence relationships.', 'success');
+    };
+    var downloadWebAnnotations = function () {
+      var annotations = buildW3CWebAnnotations(journal, evidenceGraph);
+      if (!downloadJsonFile('alloflow-web-annotations.jsonld', annotations)) addToast('Web Annotation download is unavailable in this browser.', 'error');
+      else addToast('W3C Web Annotation JSON-LD downloaded.', 'success');
+    };
+    var downloadCslCitations = function () {
+      var citations = buildCslJson(journal);
+      if (!downloadJsonFile('alloflow-citations.json', citations)) addToast('Citation download is unavailable in this browser.', 'error');
+      else addToast('CSL-compatible citation records downloaded.', 'success');
+    };
+    var downloadRoCrate = function () {
+      var crate = buildRoCrate(journal, evidenceGraph);
+      if (!downloadJsonFile('ro-crate-metadata.json', crate)) addToast('RO-Crate metadata download is unavailable in this browser.', 'error');
+      else addToast('RO-Crate 1.3 metadata downloaded. Keep it with the portfolio files it describes.', 'success');
+    };
+    var downloadInteroperabilityBundle = function () {
+      var bundle = buildInteroperabilityBundle(journal);
+      if (!downloadJsonFile('alloflow-inquiry-interoperability-bundle.json', bundle)) addToast('Interoperability bundle download is unavailable in this browser.', 'error');
+      else addToast('Portable evidence graph, annotations, citations, and RO-Crate metadata downloaded as one bounded bundle.', 'success');
+    };
+    var downloadToolArtifactArchive = function () {
+      var artifacts = journal.capturedArtifacts || [];
+      if (!artifacts.length) { addToast('There are no approved tool artifacts to archive.', 'info'); return; }
+      var linkedEvidence = (journal.evidenceCards || []).filter(function (card) { return card && card.toolArtifactId; });
+      var payload = { format: 'alloflow-tool-artifact-archive', schemaVersion: 1, exportedAt: new Date().toISOString(), artifacts: artifacts, linkedEvidenceCards: linkedEvidence };
+      if (downloadJsonFile('alloflow-tool-artifact-archive.json', payload)) {
+        setArtifactArchiveReady(true);
+        addToast('Artifact archive downloaded. Review the file before choosing the removal step.', 'success');
+      } else addToast('Artifact archive download is unavailable in this browser.', 'error');
+    };
+
+    var removeDownloadedToolArtifacts = function () {
+      if (!artifactArchiveReady) return;
+      setJournal(function (prev) {
+        var archivedIds = (prev.capturedArtifacts || []).map(function (artifact) { return artifact.id; });
+        var next = Object.assign({}, prev);
+        next.capturedArtifacts = [];
+        next.evidenceCards = (prev.evidenceCards || []).filter(function (card) { return !card.toolArtifactId || archivedIds.indexOf(card.toolArtifactId) === -1; });
+        next.updatedAt = Date.now();
+        return next;
+      });
+      setArtifactArchiveReady(false);
+      addToast('Downloaded tool artifacts and their linked evidence cards were removed from this device.', 'success');
+    };
+
+    var saveLegacyArtifactContext = function (artifactId) {
+      var note = String(legacyDrafts[artifactId] || '').trim().slice(0, 2000);
+      if (note.length < 12) return;
+      setJournal(function (prev) {
+        var next = Object.assign({}, prev);
+        next.capturedArtifacts = (prev.capturedArtifacts || []).map(function (artifact) {
+          if (!artifact || artifact.id !== artifactId) return artifact;
+          var updated = Object.assign({}, artifact, { legacyContextNote: note, legacyReviewedAt: Date.now() });
+          updated.integrationHealth = assessResearchArtifactIntegration(updated);
+          return updated;
+        });
+        return next;
+      });
+      setLegacyDrafts(function (prev) { var next = Object.assign({}, prev); delete next[artifactId]; return next; });
+      addToast('Legacy context saved without claiming missing original provenance.', 'success');
+    };
     var downloadRecoveryCopy = function () {
       var raw = safeLocal(STORAGE_KEY);
       var parsed = null;
@@ -2318,6 +2570,7 @@
                   <span style={{ fontSize: '9px', fontWeight: 900, color: '#0f766e' }}>{readCaptureInbox().length + ' queued'}</span>
                 </div>
                 <p style={{ margin: '9px 0 0', fontSize: '11px', lineHeight: 1.55, color: '#334155' }}>{pendingCapture.summary}</p>
+                {pendingCapture.privacyFindings && pendingCapture.privacyFindings.length > 0 && <div data-capture-privacy-findings="true" style={{ marginTop: '8px', padding: '7px 9px', borderRadius: '9px', background: '#f5f3ff', border: '1px solid #c4b5fd', fontSize: '10px', color: '#5b21b6' }}><strong>Automated privacy checks:</strong> {pendingCapture.privacyFindings.map(function (finding) { return finding.code + (finding.count ? ' ×' + finding.count : ''); }).join(' · ')}</div>}
                 <div style={{ marginTop: '8px', padding: '8px 10px', borderRadius: '9px', background: '#ecfeff', fontSize: '10px', color: '#155e75' }}><strong>Privacy/provenance:</strong> {(pendingCapture.provenance && pendingCapture.provenance.privacy) || 'No raw files or direct identifiers included.'}</div>
                 {pendingCapture.integrationContract ? (
                   <details data-capture-integration-contract="true" style={{ marginTop: '8px', padding: '7px 9px', borderRadius: '9px', border: '1px solid #99f6e4', background: '#f0fdfa', fontSize: '10px', color: '#134e4a' }}>
@@ -2632,7 +2885,16 @@
                   <div style={{ borderRadius: '12px', border: '1px solid #ccfbf1', background: '#f0fdfa', padding: '10px' }}><div style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: '#0f766e' }}>Portfolio continuity</div><div style={{ marginTop: '4px', fontSize: '11px', color: '#334155' }}>Everything here travels with you when you switch inquiry approaches or workspaces.</div></div>
                   <div style={{ borderRadius: '12px', border: '1px solid #fde68a', background: '#fffbeb', padding: '10px' }}><div style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: '#b45309' }}>AI questions</div><div style={{ marginTop: '4px', fontSize: '11px', color: '#334155' }}>{(journal.aiCallCount || 0) + ' of ' + MAX_AI_CALLS_PER_SESSION + ' used this session - your authored work is not counted.'}</div></div>
                 </div>
-                <details data-inquiry-evidence-audit="true" open={inquiryAudit.status === 'action_needed'} style={{ marginTop: '12px', borderRadius: '12px', border: '1px solid ' + (inquiryAudit.status === 'ready' ? '#86efac' : inquiryAudit.status === 'action_needed' ? '#fca5a5' : '#fcd34d'), background: inquiryAudit.status === 'ready' ? '#f0fdf4' : inquiryAudit.status === 'action_needed' ? '#fef2f2' : '#fffbeb' }}>
+                <div data-research-storage-health="true" style={{ marginTop: '12px', padding: '9px 10px', borderRadius: '10px', border: '1px solid ' + (storageHealth.status === 'healthy' ? '#bfdbfe' : storageHealth.status === 'warning' ? '#fcd34d' : '#fca5a5'), background: storageHealth.status === 'healthy' ? '#eff6ff' : storageHealth.status === 'warning' ? '#fffbeb' : '#fef2f2', fontSize: '10px', color: '#334155' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}><strong>Local portfolio storage</strong><span>{storageHealth.percent}% of the 4 MB AlloFlow safety budget</span></div>
+                  <div role="progressbar" aria-label="Research portfolio local storage" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.min(100, storageHealth.percent)} style={{ marginTop: '5px', height: '6px', borderRadius: '999px', overflow: 'hidden', background: '#e2e8f0' }}><div style={{ width: Math.min(100, storageHealth.percent) + '%', height: '100%', background: storageHealth.status === 'healthy' ? '#2563eb' : storageHealth.status === 'warning' ? '#d97706' : '#dc2626' }} /></div>
+                  {storageHealth.status !== 'healthy' && <div style={{ marginTop: '6px', color: storageHealth.status === 'warning' ? '#92400e' : '#991b1b' }}>Download the portfolio or artifact archive now. Large audio and tool artifacts can exceed browser storage even when the interface remains open.</div>}
+                  {saveStatus === 'save unavailable' && <div role="alert" style={{ marginTop: '6px', color: '#991b1b', fontWeight: 900 }}>The latest write failed. “Saved” is not being shown; download your portfolio before closing this page.</div>}
+                </div>
+                {legacyArtifacts.length > 0 && <details data-legacy-artifact-repair="true" style={{ marginTop: '9px', borderRadius: '10px', border: '1px solid #fcd34d', background: '#fffbeb' }}>
+                  <summary style={{ cursor: 'pointer', padding: '9px 10px', fontSize: '10px', fontWeight: 900, color: '#92400e' }}>{legacyArtifacts.length} legacy tool artifact(s) need context</summary>
+                  <div style={{ padding: '0 10px 10px', display: 'grid', gap: '8px' }}>{legacyArtifacts.map(function (artifact) { var draft = legacyDrafts[artifact.id] || ''; return <div key={artifact.id} style={{ padding: '8px', borderRadius: '8px', background: '#fff', border: '1px solid #fde68a' }}><strong style={{ fontSize: '10px', color: '#78350f' }}>{artifact.title || artifact.sourceToolName || 'Legacy artifact'}</strong><div style={{ marginTop: '3px', fontSize: '9px', color: '#92400e' }}>Original contract, version, license, or receipt data was not recorded. Do not reconstruct it from memory.</div>{artifact.legacyContextNote ? <div style={{ marginTop: '5px', fontSize: '10px', color: '#475569' }}><strong>Learner-added context:</strong> {artifact.legacyContextNote}</div> : <div style={{ marginTop: '6px' }}><textarea aria-label={'Context for ' + (artifact.title || 'legacy artifact')} value={draft} onChange={function (e) { var value = e.target.value.slice(0, 2000); setLegacyDrafts(function (prev) { return Object.assign({}, prev, { [artifact.id]: value }); }); }} rows={2} maxLength={2000} placeholder="What do you know about how you used this output? Leave unknown original metadata unknown." style={{ width: '100%', boxSizing: 'border-box', padding: '6px', borderRadius: '6px', border: '1px solid #d6d3d1', fontSize: '10px', fontFamily: 'inherit' }} /><button type="button" disabled={draft.trim().length < 12} onClick={function () { saveLegacyArtifactContext(artifact.id); }} style={{ marginTop: '5px', minHeight: '36px', padding: '5px 9px', borderRadius: '7px', border: 0, background: draft.trim().length >= 12 ? '#b45309' : '#cbd5e1', color: '#fff', fontWeight: 800, fontSize: '10px' }}>Save learner context</button></div>}</div>; })}</div>
+                </details>}                <details data-inquiry-evidence-audit="true" open={inquiryAudit.status === 'action_needed'} style={{ marginTop: '12px', borderRadius: '12px', border: '1px solid ' + (inquiryAudit.status === 'ready' ? '#86efac' : inquiryAudit.status === 'action_needed' ? '#fca5a5' : '#fcd34d'), background: inquiryAudit.status === 'ready' ? '#f0fdf4' : inquiryAudit.status === 'action_needed' ? '#fef2f2' : '#fffbeb' }}>
                   <summary style={{ cursor: 'pointer', padding: '10px 12px', fontSize: '11px', fontWeight: 900, color: '#334155' }}>
                     Argument & evidence audit: {inquiryAudit.status === 'ready' ? 'ready' : inquiryAudit.counts.action + ' action / ' + inquiryAudit.counts.review + ' review'}
                   </summary>
@@ -2645,9 +2907,10 @@
                     <div style={{ marginTop: '7px', fontStyle: 'italic' }}>This is a reasoning check, not an automatic grade. The portfolio export includes the audit and integration-health receipt.</div>
                   </div>
                 </details>
-                {integrationHealth.total > 0 && <div data-integration-health-summary="true" style={{ marginTop: '8px', padding: '8px 10px', borderRadius: '10px', background: '#f8fafc', border: '1px solid #cbd5e1', fontSize: '10px', color: '#475569' }}><strong>Tool integration health:</strong> {integrationHealth.healthy} healthy · {integrationHealth.needsReview} review · {integrationHealth.actionNeeded} action needed.</div>}
+                <EvidenceGraphView graph={evidenceGraph} onDownloadGraph={downloadEvidenceGraph} onDownloadAnnotations={downloadWebAnnotations} onDownloadCitations={downloadCslCitations} onDownloadRoCrate={downloadRoCrate} onDownloadBundle={downloadInteroperabilityBundle} />                {integrationHealth.total > 0 && <div data-integration-health-summary="true" style={{ marginTop: '8px', padding: '8px 10px', borderRadius: '10px', background: '#f8fafc', border: '1px solid #cbd5e1', fontSize: '10px', color: '#475569' }}><strong>Tool integration health:</strong> {integrationHealth.healthy} healthy · {integrationHealth.needsReview} review · {integrationHealth.actionNeeded} action needed.</div>}
                 <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end', gap: '8px', flexWrap: 'wrap' }}>
-                  <button type="button" onClick={downloadInquiryPortfolio} style={{ minHeight: '44px', padding: '7px 12px', borderRadius: '10px', background: '#fff', border: '1px solid #818cf8', color: '#4338ca', fontWeight: 800, fontSize: '10px', cursor: 'pointer' }}>Download portfolio + provenance</button>
+                  <button type="button" onClick={downloadToolArtifactArchive} disabled={!(journal.capturedArtifacts || []).length} style={{ minHeight: '44px', padding: '7px 12px', borderRadius: '10px', background: '#fff', border: '1px solid #0d9488', color: '#0f766e', fontWeight: 800, fontSize: '10px', cursor: (journal.capturedArtifacts || []).length ? 'pointer' : 'not-allowed' }}>Download artifact archive</button>
+                  {artifactArchiveReady && <button type="button" data-remove-downloaded-artifacts="true" onClick={removeDownloadedToolArtifacts} style={{ minHeight: '44px', padding: '7px 12px', borderRadius: '10px', background: '#fff7ed', border: '1px solid #ea580c', color: '#9a3412', fontWeight: 900, fontSize: '10px', cursor: 'pointer' }}>Remove downloaded artifacts from this device</button>}                  <button type="button" onClick={downloadInquiryPortfolio} style={{ minHeight: '44px', padding: '7px 12px', borderRadius: '10px', background: '#fff', border: '1px solid #818cf8', color: '#4338ca', fontWeight: 800, fontSize: '10px', cursor: 'pointer' }}>Download portfolio + provenance</button>
                   <button type="button" onClick={requestClearJournal} style={{ minHeight: '44px', padding: '7px 12px', borderRadius: '10px', background: '#fff', border: '1px solid #fca5a5', color: '#b91c1c', fontWeight: 800, fontSize: '10px', cursor: 'pointer' }}>{t('research_hub.journal_reset') || 'Reset this inquiry'}</button>
                 </div>
               </div>
@@ -2826,6 +3089,9 @@
       RECOVERY_STORAGE_KEY: RECOVERY_STORAGE_KEY,
       CAPTURE_INBOX_KEY: CAPTURE_INBOX_KEY,
       TOOL_INTEGRATION_CONTRACT_VERSION: TOOL_INTEGRATION_CONTRACT_VERSION,
+      MAX_CAPTURE_INBOX_ITEMS: MAX_CAPTURE_INBOX_ITEMS,
+      MAX_CAPTURES_PER_TOOL_PER_MINUTE: MAX_CAPTURES_PER_TOOL_PER_MINUTE,
+      RESEARCH_STORAGE_SOFT_LIMIT_BYTES: RESEARCH_STORAGE_SOFT_LIMIT_BYTES,
       MAX_AI_CALLS_PER_SESSION: MAX_AI_CALLS_PER_SESSION,
       VOICE_NOTE_MAX_SECONDS: VOICE_NOTE_MAX_SECONDS,
       DEV_LEVELS: DEV_LEVELS,
@@ -2840,11 +3106,21 @@
       SHARED_STOP_WORDS: SHARED_STOP_WORDS,
       matchMethodPackForQuestion: matchMethodPackForQuestion,
       normalizeResearchCapture: normalizeResearchCapture,
+      queueResearchCapture: queueResearchCapture,
+      registerCaptureSanitizer: registerCaptureSanitizer,
+      enforceCapturePrivacy: enforceCapturePrivacy,
+      captureFingerprint: captureFingerprint,
+      researchStorageHealth: researchStorageHealth,
       validateToolIntegrationContract: validateToolIntegrationContract,
       normalizeReproducibilityReceipt: normalizeReproducibilityReceipt,
       assessResearchArtifactIntegration: assessResearchArtifactIntegration,
       summarizeIntegrationHealth: summarizeIntegrationHealth,
       buildInquiryAudit: buildInquiryAudit,
+      buildEvidenceGraph: buildEvidenceGraph,
+      buildW3CWebAnnotations: buildW3CWebAnnotations,
+      buildCslJson: buildCslJson,
+      buildRoCrate: buildRoCrate,
+      buildInteroperabilityBundle: buildInteroperabilityBundle,
       stampNewInquiryArtifacts: stampNewInquiryArtifacts,
       applyMethodPackSelection: applyMethodPackSelection,
     };

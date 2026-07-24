@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-19T17:48:53.019Z",
+  "generatedAt": "2026-07-23T17:24:43.512Z",
   "libraryId": "praxis-special-education-behavior-emotional-5372-learning-library",
   "packId": "praxis-special-education-behavior-emotional-5372",
   "standard": {
@@ -28,7 +28,7 @@
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
     "sourceItemsSha256": "ce141b69d479623372f33b397c4bfa757a32725d3e0d9de86a947ffdb983e7fe",
-    "learningLibrarySha256": "d913616775a2293d07a73a3e91efcaf4f5354ea060ca0d68580dba3f67bc007d",
+    "learningLibrarySha256": "dc6d99a66900931a74d93747ad19bf9de001ffa98181941f58ad2c99522c996f",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

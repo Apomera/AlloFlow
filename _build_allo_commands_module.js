@@ -15,7 +15,7 @@ const TMP = path.join(ROOT, '_tmp_allo_commands_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
 const source = fs.readFileSync(SOURCE, 'utf-8');
-const entry = `/* global React */\n\n${source}\n\nwindow.__alloCommandsExports = { AlloCommandPalette, buildAlloCommands, getCommandAudience, scoreCommand, routeUtterance, executeCommand, runCommandById, findReadingMatches, normalizeReadingRequest, readingMatchReasons, readingMatchWhyText, createVoiceLoop, looksMultiStep, getCommandContract, sanitizeCommandParams, validatePlan, planUtterance, runPlan };\n`;
+const entry = `/* global React */\n\n${source}\n\nwindow.__alloCommandsExports = { AlloCommandPalette, AlloCommandProgress, buildAlloCommands, getCommandAudience, getCommandAvailability, getLocalCommandInsights, mergeCommandProgressItems, scoreCommand, routeUtterance, executeCommand, runCommandById, findReadingMatches, normalizeReadingRequest, readingMatchReasons, readingMatchWhyText, createVoiceLoop, looksMultiStep, getCommandContract, sanitizeCommandParams, validatePlan, planUtterance, runPlan };\n`;
 fs.writeFileSync(TMP, entry, 'utf-8');
 console.log('[AlloCommands] Compiling allo_commands_source.jsx...');
 try {
@@ -43,7 +43,7 @@ const outputCode = `/**
 ${compiled}
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, buildAlloCommands: buildAlloCommands, getCommandAudience: getCommandAudience, scoreCommand: scoreCommand, routeUtterance: routeUtterance, executeCommand: executeCommand, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan };
+  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, AlloCommandProgress: AlloCommandProgress, buildAlloCommands: buildAlloCommands, getCommandAudience: getCommandAudience, getCommandAvailability: getCommandAvailability, getLocalCommandInsights: getLocalCommandInsights, mergeCommandProgressItems: mergeCommandProgressItems, scoreCommand: scoreCommand, routeUtterance: routeUtterance, executeCommand: executeCommand, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan };
   console.log('[CDN] AlloCommands loaded');
 })();
 `;

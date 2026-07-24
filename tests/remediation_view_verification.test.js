@@ -385,17 +385,30 @@ describe('web and workbench integration guards', () => {
   });
 
   it('routes both section re-fix paths through the canonical three-engine audit', () => {
-    expect((source.match(/await _commitRefixedSection\(result,/g) || []).length).toBe(2);
-    const start = source.indexOf('const _commitRefixedSection');
-    const end = source.indexOf('// Pure single-occurrence block splice', start);
-    const block = source.slice(start, end);
-    expect(block).toContain('verificationAudit: null');
-    expect(block).toContain('axeAudit: null');
-    expect(block).toContain('secondEngineAudit: null');
-    expect(block).toContain("verificationReasons: ['content-modified-pending-reverification']");
-    expect(block).toContain('const recheck = await _reauditAndScore(newHtml, null)');
-    expect(source).not.toContain('const [reAi, reAxe] = await Promise.all');
+    // Both UI affordances delegate to one owned operation. Keeping the async
+    // implementation centralized is what prevents the two paths drifting.
+    expect((source.match(/onClick=\{\(\) => \{ _runOwnedSectionRefix\(/g) || []).length).toBe(2);
 
+    const runStart = source.indexOf('const _runOwnedSectionRefix');
+    const runEnd = source.indexOf('const _runOwnedReaudit', runStart);
+    const runBlock = source.slice(runStart, runEnd);
+    expect(runBlock).toContain("_beginRemediationOperation('re-fix-section')");
+    expect(runBlock).toContain('signal: operationTicket.controller && operationTicket.controller.signal');
+    expect(runBlock).toContain('shouldAbort: () => !_remediationOperationIsCurrent(operationTicket)');
+    expect(runBlock).toContain('if (!_remediationOperationIsCurrent(operationTicket)) return null');
+    expect(runBlock).toContain('await _commitRefixedSection(result, sectionNumber, operationTicket)');
+
+    const commitStart = source.indexOf('const _commitRefixedSection');
+    const commitEnd = source.indexOf('const _runOwnedSectionRefix', commitStart);
+    const commitBlock = source.slice(commitStart, commitEnd);
+    expect(commitBlock).toContain('_commitAsyncHtmlIfCurrent(operationTicket.htmlToken');
+    expect(commitBlock).toContain('verificationAudit: null');
+    expect(commitBlock).toContain('axeAudit: null');
+    expect(commitBlock).toContain('secondEngineAudit: null');
+    expect(commitBlock).toContain("verificationReasons: ['content-modified-pending-reverification']");
+    expect(commitBlock).toContain('const recheck = await _reauditAndScore(newHtml, null, operationTicket)');
+    expect(commitBlock).toContain('if (!_remediationOperationIsCurrent(operationTicket) || (recheck && recheck.stale))');
+    expect(source).not.toContain('const [reAi, reAxe] = await Promise.all');
     expect(source).not.toContain('axeAudit: reAxe || prev');
   });
 

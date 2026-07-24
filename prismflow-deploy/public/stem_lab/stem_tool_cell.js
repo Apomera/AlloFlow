@@ -276,8 +276,45 @@ window.StemLab = window.StemLab || {
     });
     cx2d.restore();   // un-clip
   }
+  function drawCellMicrodissection(cx2d, W, H, type, t, sel, reduced, stage, tool, sectionDepth, stain) {
+    drawCellInterior(cx2d, W, H, type, t, sel, reduced);
+    var cx = W * 0.5, cy = H * 0.5, RX = W * (type === 'bacterium' ? 0.39 : type === 'plant' ? 0.38 : 0.35), RY = H * (type === 'bacterium' ? 0.24 : type === 'plant' ? 0.36 : 0.34);
+    var layout = interiorLayout(type);
+    var target = layout.find(function (entry) { return entry.key === sel && !entry.dot; }) || { x: 0.5, y: 0.5, r: 0.05 };
+    var targetX = cx + (target.x - 0.5) * 2 * RX, targetY = cy + (target.y - 0.5) * 2 * RY;
+    var sectionY = cy - RY + Math.max(0, Math.min(100, Number(sectionDepth) || 50)) / 100 * RY * 2;
+    cx2d.save();
+    if (stage >= 2) {
+      cx2d.fillStyle = 'rgba(2,6,23,0.34)'; cx2d.fillRect(0, 0, W, Math.max(0, sectionY - 28)); cx2d.fillRect(0, sectionY + 28, W, H - sectionY - 28);
+      cx2d.fillStyle = 'rgba(56,189,248,0.10)'; cx2d.fillRect(0, sectionY - 28, W, 56);
+      cx2d.strokeStyle = 'rgba(125,211,252,0.86)'; cx2d.lineWidth = 1.5; cx2d.setLineDash([7, 5]); cx2d.beginPath(); cx2d.moveTo(cx - RX * 1.08, sectionY); cx2d.lineTo(cx + RX * 1.08, sectionY); cx2d.stroke(); cx2d.setLineDash([]);
+    }
+    if (stage >= 3 && stain && stain !== 'none') {
+      cx2d.globalCompositeOperation = 'screen';
+      if (stain === 'membrane') { cx2d.strokeStyle = 'rgba(244,114,182,0.92)'; cx2d.lineWidth = 5; cx2d.beginPath(); cx2d.ellipse(cx, cy, RX, RY, 0, 0, Math.PI * 2); cx2d.stroke(); }
+      else {
+        layout.filter(function (entry) { return !entry.dot && (stain !== 'nuclear' || entry.key === 'nucleus' || entry.key === 'nucleoid'); }).forEach(function (entry, index) {
+          var glowX = cx + (entry.x - 0.5) * 2 * RX, glowY = cy + (entry.y - 0.5) * 2 * RY;
+          var glowR = Math.max(8, entry.r * 2 * Math.min(RX, RY) * 1.7);
+          var glow = cx2d.createRadialGradient(glowX, glowY, 1, glowX, glowY, glowR);
+          glow.addColorStop(0, stain === 'nuclear' ? 'rgba(167,139,250,0.78)' : (index % 2 ? 'rgba(34,211,238,0.62)' : 'rgba(74,222,128,0.62)')); glow.addColorStop(1, 'rgba(0,0,0,0)');
+          cx2d.fillStyle = glow; cx2d.beginPath(); cx2d.arc(glowX, glowY, glowR, 0, Math.PI * 2); cx2d.fill();
+        });
+      }
+      cx2d.globalCompositeOperation = 'source-over';
+    }
+    if (stage >= 4 && sel) { cx2d.strokeStyle = '#facc15'; cx2d.lineWidth = 2.5; cx2d.setLineDash([4, 3]); cx2d.beginPath(); cx2d.arc(targetX, targetY, Math.max(14, target.r * Math.min(RX, RY) * 2.5), 0, Math.PI * 2); cx2d.stroke(); cx2d.setLineDash([]); }
+    cx2d.lineCap = 'round'; cx2d.lineJoin = 'round';
+    if (tool === 'objective') { cx2d.fillStyle = 'rgba(15,23,42,0.9)'; cx2d.fillRect(34, 18, 100, 17); cx2d.fillStyle = '#64748b'; cx2d.fillRect(48, 34, 72, 26); cx2d.fillStyle = '#bae6fd'; cx2d.beginPath(); cx2d.ellipse(84, 62, 38, 9, 0, 0, Math.PI * 2); cx2d.fill(); }
+    else if (tool === 'microtome') { cx2d.strokeStyle = '#e2e8f0'; cx2d.lineWidth = 7; cx2d.beginPath(); cx2d.moveTo(24, sectionY - 7); cx2d.lineTo(W - 24, sectionY - 7); cx2d.stroke(); cx2d.strokeStyle = '#38bdf8'; cx2d.lineWidth = 2; cx2d.beginPath(); cx2d.moveTo(28, sectionY); cx2d.lineTo(W - 28, sectionY); cx2d.stroke(); }
+    else if (tool === 'laser') { cx2d.strokeStyle = 'rgba(248,113,113,0.95)'; cx2d.lineWidth = 1.5; cx2d.setLineDash([3, 3]); cx2d.beginPath(); cx2d.moveTo(targetX - 22, targetY); cx2d.lineTo(targetX + 22, targetY); cx2d.moveTo(targetX, targetY - 22); cx2d.lineTo(targetX, targetY + 22); cx2d.stroke(); cx2d.setLineDash([]); cx2d.fillStyle = 'rgba(248,113,113,0.75)'; cx2d.beginPath(); cx2d.arc(targetX, targetY, 3, 0, Math.PI * 2); cx2d.fill(); }
+    else if (tool === 'micropipette' || tool === 'microprobe') { cx2d.strokeStyle = tool === 'micropipette' ? '#bae6fd' : '#cbd5e1'; cx2d.lineWidth = tool === 'micropipette' ? 9 : 3; cx2d.beginPath(); cx2d.moveTo(W - 24, 42); cx2d.lineTo(targetX + 5, targetY - 4); cx2d.stroke(); cx2d.fillStyle = '#f8fafc'; cx2d.beginPath(); cx2d.arc(targetX + 3, targetY - 2, tool === 'micropipette' ? 3.5 : 2, 0, Math.PI * 2); cx2d.fill(); }
+    cx2d.fillStyle = 'rgba(2,6,23,0.82)'; cx2d.fillRect(14, H - 45, 142, 31); cx2d.strokeStyle = '#f8fafc'; cx2d.lineWidth = 3; cx2d.beginPath(); cx2d.moveTo(28, H - 25); cx2d.lineTo(88, H - 25); cx2d.stroke(); cx2d.font = 'bold 11px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#e2e8f0'; cx2d.fillText(type === 'bacterium' ? '1 µm' : '10 µm', 98, H - 21);
+    cx2d.fillStyle = 'rgba(2,6,23,0.78)'; cx2d.fillRect(W - 146, 14, 132, 27); cx2d.fillStyle = '#bae6fd'; cx2d.fillText('Micro stage ' + Math.min(5, stage + 1) + '/5', W - 134, 32); cx2d.restore();
+  }
+
   try {
-    window.__alloCellPure = { CELL_ORGANELLES: CELL_ORGANELLES, interiorHas: interiorHas, interiorOrganelles: interiorOrganelles, interiorLayout: interiorLayout, interiorHitTest: interiorHitTest };
+    window.__alloCellPure = { CELL_ORGANELLES: CELL_ORGANELLES, interiorHas: interiorHas, interiorOrganelles: interiorOrganelles, interiorLayout: interiorLayout, interiorHitTest: interiorHitTest, drawCellMicrodissection: drawCellMicrodissection };
   } catch (e) {}
 
   window.StemLab.registerTool('cell', {
@@ -20138,13 +20175,13 @@ var d = labToolData.cell || {};
           var completedChallengeCount = CELL_CHALLENGES.filter(function(c) { return d._completedChallenges && d._completedChallenges[c.id]; }).length;
           var organellesExplored = (ext.organellesClicked || []).length + (d.interiorSeen || []).length;
           var cellModeCategoryHint = {
-            observe: 'interactive', interior: 'interactive', processes: 'interactive', play: 'interactive', quiz: 'interactive',
+            observe: 'interactive', interior: 'interactive', microdissection: 'interactive', processes: 'interactive', play: 'interactive', quiz: 'interactive',
             encyclopedia: 'browse', filter: 'browse', compare: 'browse',
             history: 'knowledge', biologists: 'knowledge', lab: 'knowledge', disease: 'knowledge', ecology: 'knowledge',
             glossary: 'reference', finale: 'reference'
           };
           var cellModeLabelMap = {
-            observe: 'Observe', interior: 'Inside the Cell', processes: 'Cell Processes', play: 'Play', quiz: 'Quiz',
+            observe: 'Observe', interior: 'Inside the Cell', microdissection: 'Microdissection', processes: 'Cell Processes', play: 'Play', quiz: 'Quiz',
             encyclopedia: 'Encyclopedia', filter: 'Filter', compare: 'Compare',
             history: 'History', biologists: 'Biologists', lab: 'Lab Techniques', disease: 'Diseases', ecology: 'Ecology',
             glossary: 'Glossary', finale: 'Finale'
@@ -20165,6 +20202,16 @@ var d = labToolData.cell || {};
 
 
 
+          function openCellScaleDestination(toolId, stateKey, patch, label) {
+            setLabToolData(function(prev) {
+              var next = Object.assign({}, prev || {});
+              next[stateKey] = Object.assign({}, next[stateKey] || {}, patch || {}, { _scaleJourneySource: 'cell' });
+              return next;
+            });
+            if (typeof setStemLabTab === 'function') setStemLabTab('explore');
+            if (typeof setStemLabTool === 'function') setStemLabTool(toolId);
+            if (typeof announceToSR === 'function') announceToSR('Scale Journey: opening ' + label);
+          }
           return React.createElement("div", { ref: cleanupRef, className: "max-w-6xl mx-auto animate-in fade-in duration-200", "data-cell-tool": true },
 
             // Header
@@ -20179,13 +20226,13 @@ var d = labToolData.cell || {};
 
               React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[11px] font-bold rounded-full" }, "⭐ " + (d.researchPoints || 0) + " RP"),
 
-              React.createElement("span", { className: "text-xs text-slate-600 ml-1" }, d.mode === 'play' ? "\uD83C\uDFAE Playing as " + (ORGANISMS.find(function (o) { return o.id === d.playAsOrganism; }) || {}).label : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : d.mode === 'processes' ? "\u2699\uFE0F Cell Processes" : "\uD83D\uDC41 Observe"),
+              React.createElement("span", { className: "text-xs text-slate-600 ml-1" }, d.mode === 'play' ? "\uD83C\uDFAE Playing as " + (ORGANISMS.find(function (o) { return o.id === d.playAsOrganism; }) || {}).label : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : d.mode === 'microdissection' ? 'Microdissection' : d.mode === 'processes' ? "\u2699\uFE0F Cell Processes" : d.mode === 'interior' ? 'Inside the Cell' : "\uD83D\uDC41 Observe"),
 
 
               (function() {
                 var CELL_CATEGORIES = [
                   { id: 'interactive', label: 'Interactive Sim', icon: '🔬', desc: 'Watch, go inside a cell, trace processes, play, or quiz', color: 'green',
-                    modes: ['observe', 'interior', 'processes', 'play', 'quiz'] },
+                    modes: ['observe', 'interior', 'microdissection', 'processes', 'play', 'quiz'] },
                   { id: 'browse', label: 'Browse Organisms', icon: '🦠', desc: 'Encyclopedia + filter + compare', color: 'cyan',
                     modes: ['encyclopedia', 'filter', 'compare'] },
                   { id: 'knowledge', label: 'Knowledge & History', icon: '📚', desc: 'History, biologists, labs, diseases, ecology', color: 'amber',
@@ -20195,6 +20242,7 @@ var d = labToolData.cell || {};
                 ];
                 var CELL_MODE_LABELS = {
                   observe: '👁 Observe', interior: '🔬 Inside the Cell', play: '🎮 Play', quiz: '🧠 Quiz',
+                  microdissection: 'Microdissection',
                   processes: '\u2699\uFE0F Cell Processes',
                   encyclopedia: '📚 Encyclopedia', filter: '🔍 Filter', compare: '⚖ Compare',
                   history: '📜 History', biologists: '🧑‍🔬 Biologists', lab: '🔬 Lab Techniques',
@@ -20214,7 +20262,7 @@ var d = labToolData.cell || {};
                 var atHub = !d._cellCategory && !d._cellSearch && !d._cellPicked;
                 var activeCat = CELL_CATEGORIES.find(function(c) { return c.id === activeCategoryId; });
                 var searchTerm = (d._cellSearch || '').toLowerCase();
-                var allModes = ['observe','interior','processes','play','quiz','encyclopedia','filter','compare','history','biologists','lab','disease','ecology','glossary','finale'];
+                var allModes = ['observe','interior','microdissection','processes','play','quiz','encyclopedia','filter','compare','history','biologists','lab','disease','ecology','glossary','finale'];
                 // Grade gate: hide the Diseases mode (STIs, death tolls) from K-2 and 3-5.
                 if (!cellBandAllowsClinical) { CELL_CATEGORIES.forEach(function(c) { c.modes = c.modes.filter(function(m) { return m !== 'disease'; }); }); allModes = allModes.filter(function(m) { return m !== 'disease'; }); }
                 var searchResults = searchTerm ? allModes.filter(function(m) { return (CELL_MODE_LABELS[m] || m).toLowerCase().indexOf(searchTerm) !== -1; }) : null;
@@ -20339,6 +20387,7 @@ var d = labToolData.cell || {};
                   [
                     { id: 'observe', label: 'Petri Dish', desc: 'Watch organisms move, feed, split, and interact.', accent: '#15803d' },
                     { id: 'interior', label: 'Inside a Cell', desc: 'Compare animal, plant, and bacterial structures.', accent: '#0e7490' },
+                    { id: 'microdissection', label: 'Microdissection', desc: 'Prepare optical sections, label structures, collect a sample, and record evidence.', accent: '#7c3aed' },
                     { id: 'processes', label: 'Cell Processes', desc: 'Trace energy, membrane transport, photosynthesis, and protein shipping.', accent: '#b45309' },
                     { id: 'play', label: 'Play as Cell', desc: 'Control an organism and learn its survival strategy.', accent: '#7c3aed' },
                     { id: 'quiz', label: 'Concept Check', desc: 'Practice organelles, movement, and cell type clues.', accent: '#0284c7' }
@@ -20392,6 +20441,7 @@ var d = labToolData.cell || {};
             // ── Topic-accent hero band (per mode) ──
             (function() {
               var MODE_META = {
+                microdissection: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.11)', icon: 'Micro', title: 'Microdissection - prepare, target, and record', hint: 'Calibrate the field, prepare a thin section, add contrast, collect a precise target, and preserve the evidence metadata.' },
                 observe: { accent: '#15803d', soft: 'rgba(22,163,74,0.10)', icon: '👁️', title: 'Observe - explore the cell',         hint: 'Click any organelle to see its structure, function, and how it talks to its neighbors. Cells are factories: every organelle has a job and a delivery route.' },
                 play:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎮', title: 'Play - be the organism',           hint: 'Steer the cell yourself. Bacteria swim with flagella; protists pseudopod; humans push fluid via pumps. Movement reveals what each cell is built for.' },
                 processes: { accent: '#b45309', soft: 'rgba(245,158,11,0.12)', icon: '⚙️', title: 'Processes - follow matter and energy', hint: 'Trace where each process happens, what enters, what leaves, and which organelles cooperate. Start with cellular respiration, then zoom into the Krebs cycle.' },
@@ -20421,7 +20471,7 @@ var d = labToolData.cell || {};
 
             // Canvas (petri dish) — hidden while the "Inside the Cell" interior view is active
 
-            d.mode !== 'interior' && d.mode !== 'processes' && React.createElement("div", { "data-cell-stage": true, className: "relative rounded-xl overflow-hidden border border-emerald-300 bg-slate-950 shadow-xl", style: { height: '560px', background: 'radial-gradient(circle at 22% 18%,rgba(34,197,94,0.22),rgba(2,6,23,0) 34%),radial-gradient(circle at 78% 16%,rgba(14,165,233,0.18),rgba(2,6,23,0) 30%),#020617' } },
+            d.mode !== 'interior' && d.mode !== 'microdissection' && d.mode !== 'processes' && React.createElement("div", { "data-cell-stage": true, className: "relative rounded-xl overflow-hidden border border-emerald-300 bg-slate-950 shadow-xl", style: { height: '560px', background: 'radial-gradient(circle at 22% 18%,rgba(34,197,94,0.22),rgba(2,6,23,0) 34%),radial-gradient(circle at 78% 16%,rgba(14,165,233,0.18),rgba(2,6,23,0) 30%),#020617' } },
 
               React.createElement("div", { id: "cell-sim-status", role: "status", "aria-live": "polite", className: typeof srOnly === 'string' ? srOnly : "sr-only", style: srOnly && typeof srOnly === 'object' ? srOnly : undefined }, cellCanvasStatus),
 
@@ -20652,7 +20702,7 @@ var d = labToolData.cell || {};
 
             // 🔬 Petri Dish Filters: Select Visible Cell Types
 
-            d.mode !== 'interior' && !d.quizMode && React.createElement("div", { className: "bg-white rounded-xl border border-green-200 p-3 mt-3 shadow-sm" },
+            d.mode !== 'interior' && d.mode !== 'microdissection' && d.mode !== 'processes' && !d.quizMode && React.createElement("div", { className: "bg-white rounded-xl border border-green-200 p-3 mt-3 shadow-sm" },
 
               React.createElement("div", { className: "flex justify-between items-center mb-2" },
 
@@ -20803,7 +20853,7 @@ var d = labToolData.cell || {};
 
             // Organism selector buttons
 
-            d.mode !== 'interior' && !d.quizMode && React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
+            d.mode !== 'interior' && d.mode !== 'microdissection' && d.mode !== 'processes' && !d.quizMode && React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
 
               ORGANISMS.map(function (org) {
 
@@ -20871,7 +20921,7 @@ var d = labToolData.cell || {};
 
             // Info card for selected organism
 
-            d.mode !== 'interior' && !d.quizMode && selDef && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selDef.color } },
+            d.mode !== 'interior' && d.mode !== 'microdissection' && d.mode !== 'processes' && !d.quizMode && selDef && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selDef.color } },
 
               React.createElement("div", { className: "flex items-start justify-between" },
 
@@ -21440,6 +21490,121 @@ var d = labToolData.cell || {};
             ,
 
             // ═══════════════════════════════════════════════════════════
+            // MICRODISSECTION — cell-scale preparation, targeting, sampling, and evidence
+            d.mode === 'microdissection' && (function() {
+              var h = React.createElement;
+              var microType = d.microCellType || 'animal';
+              var microTarget = d.microTarget || null;
+              var microStage = Math.max(0, Math.min(5, Number(d.microStage) || 0));
+              var microTool = d.microTool || 'objective';
+              var microDepth = d.microSectionDepth == null ? 50 : Math.max(0, Math.min(100, Number(d.microSectionDepth) || 0));
+              var microStain = d.microStain || 'none';
+              var microEvidence = Array.isArray(d.microEvidence) ? d.microEvidence.slice(-6) : [];
+              var procedureSpecimen = d.procedureSpecimen && typeof d.procedureSpecimen === 'object' && !Array.isArray(d.procedureSpecimen) && d.procedureSpecimen.source === 'anatomy-procedure' ? d.procedureSpecimen : null;
+              var linkedAnatomyProcedure = labToolData.anatomy && labToolData.anatomy.procedure && typeof labToolData.anatomy.procedure === 'object' ? labToolData.anatomy.procedure : {};
+              var targetDef = microTarget && CELL_ORGANELLES[microTarget] ? CELL_ORGANELLES[microTarget] : null;
+              var microKeys = interiorOrganelles(microType).filter(function(key) { return key !== 'cytoplasm'; });
+              var reducedMicro = false; try { reducedMicro = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+              var MICRO_TYPES = [{ id: 'animal', label: 'Animal cell' }, { id: 'plant', label: 'Plant cell' }, { id: 'bacterium', label: 'Bacterium' }];
+              var MICRO_TOOLS = [
+                { id: 'objective', label: 'Objective', use: 'calibrate magnification' },
+                { id: 'microtome', label: 'Microtome', use: 'prepare a thin section' },
+                { id: 'microprobe', label: 'Microprobe', use: 'touch a precise region' },
+                { id: 'micropipette', label: 'Micropipette', use: 'collect a tiny liquid sample' },
+                { id: 'laser', label: 'Laser capture', use: 'isolate a labeled region' }
+              ];
+              var MICRO_STEPS = ['Calibrate', 'Section', 'Stain', 'Sample', 'Record'];
+              function microPatch(patch) { updateCellDataFunctional(function(cel) { return Object.assign(cel, patch); }); }
+              function setMicroTarget(key) {
+                if (!key || !CELL_ORGANELLES[key]) return;
+                microPatch({ microTarget: key, microFeedback: 'Target selected: ' + CELL_ORGANELLES[key].name + '.' });
+                if (typeof announceToSR === 'function') announceToSR('Microdissection target: ' + CELL_ORGANELLES[key].name);
+              }
+              function microMessage(message, kind) {
+                microPatch({ microFeedback: message });
+                if (typeof addToast === 'function') addToast(message, kind || 'info');
+                if (typeof announceToSR === 'function') announceToSR(message);
+              }
+              function runMicroStep() {
+                if (microStage === 0 && microTool !== 'objective') return microMessage('Select the objective to calibrate magnification first.', 'warning');
+                if (microStage === 1 && microTool !== 'microtome') return microMessage('Select the microtome to prepare a thin section.', 'warning');
+                if (microStage === 2 && microStain === 'none') return microMessage('Choose a stain or fluorescent label before imaging the target.', 'warning');
+                if (microStage === 3 && !targetDef) return microMessage('Select an organelle or cell structure to target.', 'warning');
+                if (microStage === 3 && ['microprobe', 'micropipette', 'laser'].indexOf(microTool) < 0) return microMessage('Choose a microprobe, micropipette, or laser capture tool for sampling.', 'warning');
+                if (microStage === 4) {
+                  var entry = { id: 'micro-' + Date.now(), cellType: microType, target: microTarget, targetName: targetDef ? targetDef.name : 'Cell region', tool: microTool, stain: microStain, sectionDepth: microDepth, capturedAt: Date.now() };
+                  if (procedureSpecimen) {
+                    setLabToolData(function(prev) {
+                      var next = Object.assign({}, prev || {});
+                      next.cell = Object.assign({}, next.cell || {}, { microStage: 5, microFeedback: 'Cell evidence recorded and returned to the integrated procedure.', microEvidence: microEvidence.concat([entry]).slice(-6) });
+                      var anatomyState = Object.assign({}, next.anatomy || {});
+                      anatomyState.procedure = Object.assign({}, anatomyState.procedure || {}, { stage: 5, microscopyStarted: true, microscopyComplete: true, evidenceId: entry.id, feedback: 'Cell-scale evidence received. Return to the Procedure Studio for the debrief.' });
+                      next.anatomy = anatomyState;
+                      return next;
+                    });
+                  } else microPatch({ microStage: 5, microFeedback: 'Evidence recorded. Compare the same structure at another biological scale.', microEvidence: microEvidence.concat([entry]).slice(-6) });
+                  if (typeof addToast === 'function') addToast(procedureSpecimen ? 'Integrated cell evidence recorded' : 'Microdissection evidence recorded', 'success');
+                  if (typeof announceToSR === 'function') announceToSR('Microdissection evidence recorded');
+                  return;
+                }
+                var messages = ['Objective calibrated. The scale bar now anchors the field of view.', 'Thin section prepared. Adjust section depth to scan a different plane.', 'Label applied. Fluorescence increases contrast; it does not enlarge the structure.', 'Target sample collected. Record the preparation and instrument metadata.'];
+                microPatch({ microStage: microStage + 1, microFeedback: messages[microStage] });
+                if (typeof announceToSR === 'function') announceToSR(messages[microStage]);
+              }
+              var actionLabels = ['Calibrate objective', 'Prepare section', 'Apply label', 'Collect target sample', 'Record evidence', 'Protocol complete'];
+              return h('section', { className: 'mt-4 rounded-2xl border border-violet-200 bg-white p-4 shadow-sm', 'data-cell-microdissection-workspace': true, 'aria-labelledby': 'cell-micro-title' },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                  h('div', null, h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-violet-700' }, 'Cell-scale investigation'), h('h4', { id: 'cell-micro-title', className: 'text-xl font-black text-slate-900' }, 'Microdissection Studio'), h('p', { className: 'mt-1 max-w-3xl text-sm leading-relaxed text-slate-600' }, 'Prepare a section, add contrast, isolate a cellular target, and preserve enough metadata for someone else to interpret your evidence.')),
+                  h('span', { className: 'rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-black text-violet-800' }, (microType === 'bacterium' ? '1 µm' : '10 µm') + ' field scale')
+                ),
+                procedureSpecimen ? h('div', { className: 'mt-3 rounded-xl border-2 border-rose-200 bg-rose-50 p-3', 'data-procedure-specimen-handoff': 'true' },
+                  h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                    h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-rose-700' }, 'Integrated procedure specimen'), h('div', { className: 'text-sm font-black text-rose-950' }, procedureSpecimen.targetName || 'Synthetic tissue target'), h('p', { className: 'mt-1 text-xs text-rose-900' }, 'Specimen ' + procedureSpecimen.id + ' · preserved integrity ' + Math.round(Number(procedureSpecimen.sampleIntegrity) || 0) + '% · planned at CT slice ' + Math.round(Number(procedureSpecimen.planSlice) || 0))),
+                    microStage >= 5 ? h('button', { type: 'button', onClick: function() { openCellScaleDestination('anatomy', 'anatomy', { _activeTab: 'procedure', procedure: Object.assign({}, linkedAnatomyProcedure, { stage: 6, microscopyStarted: true, microscopyComplete: true, evidenceId: (microEvidence[microEvidence.length - 1] || {}).id || linkedAnatomyProcedure.evidenceId, feedback: 'Evidence chain complete. Review the performance breakdown.' }) }, 'Procedure debrief'); }, className: 'rounded-lg bg-rose-800 px-3 py-2 text-xs font-black text-white hover:bg-rose-900' }, 'Return to procedure debrief \u2192') : h('span', { className: 'rounded-full border border-rose-200 bg-white px-2 py-1 text-[10px] font-bold text-rose-800' }, 'Complete all 5 stages')
+                  )
+                ) : null,                h('div', { className: 'mt-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-xs leading-relaxed text-sky-950' }, h('strong', null, 'Scientific model: '), 'At cell scale, researchers use microtomes, optical sectioning, micropipettes, probes, and laser-capture systems—not a hand-held scalpel. The drawing is schematic; the scale bar and procedure order carry the measurement meaning.'),
+                h('ol', { className: 'mt-3 grid gap-2 sm:grid-cols-5', 'aria-label': 'Microdissection protocol progress' }, MICRO_STEPS.map(function(label, index) { var done = microStage > index, active = microStage === index; return h('li', { key: label, className: 'rounded-lg border px-2 py-2 text-center text-xs font-bold', style: { borderColor: done || active ? '#8b5cf6' : '#cbd5e1', background: done ? '#ede9fe' : active ? '#f5f3ff' : '#fff', color: done || active ? '#5b21b6' : '#64748b' }, 'aria-current': active ? 'step' : undefined }, (done ? '✓ ' : (index + 1) + '. ') + label); })),
+                h('div', { className: 'mt-3 grid gap-3 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.85fr)]' },
+                  h('div', null,
+                    h('div', { className: 'flex flex-wrap gap-2 mb-2', role: 'group', 'aria-label': 'Cell specimen type' }, MICRO_TYPES.map(function(item) { var on = item.id === microType; return h('button', { key: item.id, 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microCellType: item.id, microTarget: null, microStage: 0, microTool: 'objective', microFeedback: 'Specimen changed. Recalibrate the objective.' }); }, className: 'rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors ' + (on ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 bg-white text-violet-800 hover:bg-violet-50') }, item.label); })),
+                    h('div', { className: 'overflow-hidden rounded-xl border border-slate-800 bg-slate-950 shadow-xl' },
+                      h('canvas', { key: 'cell-micro-' + microType + '-' + microStage + '-' + microTool + '-' + microDepth + '-' + microStain + '-' + (microTarget || 'none'), 'data-cell-microdissection-canvas': true, width: 760, height: 440, role: 'img', 'aria-label': 'Microdissection view of a ' + microType + ' cell at protocol stage ' + Math.min(5, microStage + 1) + '. ' + (targetDef ? 'Target: ' + targetDef.name + '.' : 'No target selected.'), style: { width: '100%', height: 'auto', display: 'block', cursor: 'crosshair' }, onClick: function(e) { var cv = e.currentTarget, r = cv.getBoundingClientRect(); setMicroTarget(interiorHitTest(microType, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height)); }, ref: function(cv) {
+                        if (!cv) { try { if (window.__alloCellMicroCleanup) window.__alloCellMicroCleanup(); } catch (e) {} return; }
+                        if (cv._cellMicroCleanup) cv._cellMicroCleanup();
+                        try { if (window.__alloCellMicroCleanup && window.__alloCellMicroCleanup !== cv._cellMicroCleanup) window.__alloCellMicroCleanup(); } catch (e) {}
+                        var cx2d = cv.getContext && cv.getContext('2d'); if (!cx2d) return;
+                        var alive = true, frameId = null, phase = 0;
+                        function drawMicroFrame() { if (!alive || !cv.isConnected) return; try { drawCellMicrodissection(cx2d, cv.width, cv.height, microType, phase, microTarget, reducedMicro, microStage, microTool, microDepth, microStain); } catch (e) {} }
+                        function frame() { frameId = null; if (!alive || !cv.isConnected) return; phase += 0.016; drawMicroFrame(); if (!reducedMicro) frameId = requestAnimationFrame(frame); }
+                        cv._cellMicroCleanup = function() { alive = false; if (frameId) cancelAnimationFrame(frameId); if (window.__alloCellMicroCleanup === cv._cellMicroCleanup) window.__alloCellMicroCleanup = null; };
+                        try { window.__alloCellMicroCleanup = cv._cellMicroCleanup; } catch (e) {}
+                        drawMicroFrame(); if (!reducedMicro) frameId = requestAnimationFrame(frame);
+                      } })
+                    ),
+                    h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' }, h('label', { className: 'text-xs font-bold text-slate-700', htmlFor: 'micro-section-depth' }, 'Section depth ' + microDepth + '%'), h('input', { id: 'micro-section-depth', type: 'range', min: 0, max: 100, step: 1, value: microDepth, onChange: function(e) { microPatch({ microSectionDepth: Number(e.target.value) }); }, className: 'min-w-[180px] flex-1 accent-violet-600', 'aria-label': 'Optical section depth' })),
+                    h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Cell structures to target' }, microKeys.map(function(key) { var item = CELL_ORGANELLES[key], on = key === microTarget; return h('button', { key: key, 'aria-pressed': on ? 'true' : 'false', onClick: function() { setMicroTarget(key); }, className: 'rounded-md border px-2 py-1 text-[11px] font-bold transition-colors ' + (on ? 'text-white' : 'bg-white text-slate-700 hover:bg-slate-50'), style: on ? { background: item.color, borderColor: item.color } : { borderColor: item.color } }, item.name); }))
+                  ),
+                  h('aside', { className: 'space-y-3' },
+                    h('div', { className: 'rounded-xl border border-violet-200 bg-violet-50/60 p-3' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-violet-800' }, 'Instrument'), h('div', { className: 'mt-2 grid gap-1.5 sm:grid-cols-2 xl:grid-cols-1', role: 'group', 'aria-label': 'Microdissection instrument' }, MICRO_TOOLS.map(function(item) { var on = item.id === microTool; return h('button', { key: item.id, 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microTool: item.id, microFeedback: item.label + ': ' + item.use + '.' }); }, className: 'rounded-lg border px-3 py-2 text-left text-xs font-bold transition-colors ' + (on ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 bg-white text-slate-700 hover:bg-violet-50') }, item.label, h('span', { className: 'block text-[10px] font-normal opacity-80' }, item.use)); }))),
+                    h('div', { className: 'rounded-xl border border-fuchsia-200 bg-fuchsia-50/60 p-3' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-fuchsia-800' }, 'Contrast / label'), h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Microscopy label' }, [['none', 'None'], ['fluorescence', 'Fluorescence'], ['nuclear', 'Nuclear'], ['membrane', 'Membrane']].map(function(item) { var on = microStain === item[0]; return h('button', { key: item[0], 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microStain: item[0], microFeedback: item[1] + ' label selected.' }); }, className: 'rounded-md border px-2 py-1 text-[11px] font-bold ' + (on ? 'border-fuchsia-700 bg-fuchsia-700 text-white' : 'border-fuchsia-200 bg-white text-fuchsia-800 hover:bg-fuchsia-100') }, item[1]); }))),
+                    h('button', { type: 'button', onClick: runMicroStep, disabled: microStage >= 5, className: 'w-full rounded-xl bg-violet-700 px-4 py-3 text-sm font-black text-white shadow-sm transition-colors hover:bg-violet-800 disabled:cursor-not-allowed disabled:bg-emerald-700', 'data-micro-action': microStage }, actionLabels[microStage]),
+                    h('div', { role: 'status', 'aria-live': 'polite', className: 'min-h-[48px] rounded-lg border border-slate-200 bg-white p-2 text-xs leading-relaxed text-slate-700' }, d.microFeedback || 'Start by selecting the objective and calibrating the field of view.'),
+                    h('button', { type: 'button', onClick: function() { microPatch({ microStage: 0, microTool: 'objective', microStain: 'none', microTarget: null, microFeedback: 'Protocol reset. Calibrate the objective.' }); }, className: 'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50' }, 'Reset protocol')
+                  )
+                ),
+                h('div', { className: 'mt-4 grid gap-3 lg:grid-cols-2' },
+                  h('div', { className: 'rounded-xl border border-emerald-200 bg-emerald-50/60 p-3' }, h('h5', { className: 'text-sm font-black text-emerald-900' }, 'Evidence log'), microEvidence.length ? h('ul', { className: 'mt-2 space-y-1.5 text-xs text-emerald-950' }, microEvidence.slice().reverse().map(function(entry) { return h('li', { key: entry.id, className: 'rounded-lg border border-emerald-200 bg-white p-2' }, h('strong', null, entry.targetName), ' · ', entry.cellType, ' · ', entry.tool, ' · ', entry.stain, ' · depth ', entry.sectionDepth, '%'); })) : h('p', { className: 'mt-2 text-xs text-emerald-900' }, 'No evidence recorded yet. Complete the five-stage protocol to preserve the target, preparation, instrument, label, and section depth.'), microEvidence.length ? h('button', { type: 'button', onClick: function() { microPatch({ microEvidence: [] }); }, className: 'mt-2 text-xs font-bold text-emerald-800 underline' }, 'Clear evidence log') : null),
+                  h('nav', { className: 'rounded-xl border border-indigo-200 bg-indigo-50/60 p-3', 'aria-label': 'Scale Journey destinations' }, h('h5', { className: 'text-sm font-black text-indigo-950' }, 'Scale Journey'), h('p', { className: 'mt-1 text-xs leading-relaxed text-indigo-900' }, 'Follow the same biological story outward to an organ system or inward to microscopy and molecules.'), h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-2' },
+                    h('button', { type: 'button', onClick: function() { openCellScaleDestination('anatomy', 'anatomy', { _activeTab: 'explore' }, 'Anatomy Explorer'); }, className: 'rounded-lg border border-indigo-200 bg-white px-3 py-2 text-left text-xs font-bold text-indigo-900 hover:bg-indigo-100' }, 'Human body →'),
+                    h('button', { type: 'button', onClick: function() { openCellScaleDestination('dissection', 'dissection', {}, 'Dissection Lab'); }, className: 'rounded-lg border border-indigo-200 bg-white px-3 py-2 text-left text-xs font-bold text-indigo-900 hover:bg-indigo-100' }, 'Organ dissection →'),
+                    h('button', { type: 'button', onClick: function() { openCellScaleDestination('microbiology', 'microbiology', { tab: 'microscope' }, 'Microscope Lab'); }, className: 'rounded-lg border border-indigo-200 bg-white px-3 py-2 text-left text-xs font-bold text-indigo-900 hover:bg-indigo-100' }, 'Microscope →'),
+                    h('button', { type: 'button', onClick: function() { openCellScaleDestination('moleculeShelf', 'moleculeShelf', {}, 'Molecule Shelf'); }, className: 'rounded-lg border border-indigo-200 bg-white px-3 py-2 text-left text-xs font-bold text-indigo-900 hover:bg-indigo-100' }, 'Molecules →')
+                  ))
+                )
+              );
+            })()
+
+            ,
             // CELL PROCESSES — connected pathway maps
             d.mode === 'processes' && (function() {
               var h = React.createElement;

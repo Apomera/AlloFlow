@@ -16,8 +16,10 @@ import { resolve } from 'node:path';
 const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 
 describe('M1 — deduction coercion + merged-score finite guard', () => {
-  it('the producer coerces the deduction with Number(...)||0', () => {
-    expect(src).toContain('Number(i && i.deduction) || 0');
+  it('the producer derives deductions from canonical severity weights, never model-provided deduction text', () => {
+    expect(src).toContain("var severity = String((i && i.severity) || '').toLowerCase();");
+    expect(src).toContain('var deduction = Number(SEVERITY_WEIGHTS[severity]) || 0;');
+    expect(src).not.toContain('Number(i && i.deduction) || 0');
   });
   it('the chunked merged score is Number.isFinite-guarded (null when degraded)', () => {
     expect(src).toContain('Number.isFinite(adjustedDeductions) ? Math.max(0, Math.min(100, 100 - adjustedDeductions)) : null');
@@ -30,8 +32,10 @@ describe('M1 — deduction coercion + merged-score finite guard', () => {
 });
 
 describe('M2 — a chunk reply without issues[] is a failure, not a clean audit', () => {
-  it('_auditOneChunk rejects a reply lacking issues[]', () => {
-    expect(src).toContain('if (!p || !Array.isArray(p.issues)) return null;');
+  it('_auditOneChunk routes replies lacking a valid issues[] schema to self-heal', () => {
+    expect(src).toContain('const p = _requireStrictOutputAudit(parseAuditJson(r));');
+    expect(src).toContain('_outputAuditIssueArrayIsValid(parsed.issues)');
+    expect(src).toMatch(/const p = _requireStrictOutputAudit\(parseAuditJson\(r\)\);[\s\S]{0,500}_auditMemoPut\(_memoKey, p\);[\s\S]{0,100}catch \{ return null; \}/);
   });
   it('mirror: {}, {passes:[]}, null are rejected; {issues:[]} is accepted', () => {
     const ok = (p) => !(!p || !Array.isArray(p.issues));

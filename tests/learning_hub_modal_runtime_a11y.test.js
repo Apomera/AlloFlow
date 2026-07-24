@@ -76,7 +76,7 @@ describe('Learning Hub modal runtime accessibility', () => {
 
     const dialog = host.querySelector('[role="dialog"]');
     const buttons = Array.from(dialog.querySelectorAll('button'));
-    expect(buttons).toHaveLength(15);
+    expect(buttons).toHaveLength(16);
     expect(document.activeElement).toBe(buttons[0]);
     expect(dialog.getAttribute('aria-labelledby')).toBe('learning-hub-title');
     expect(dialog.getAttribute('aria-describedby')).toBe('learning-hub-subtitle');

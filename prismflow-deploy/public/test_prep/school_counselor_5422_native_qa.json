@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-19T17:49:12.695Z",
+  "generatedAt": "2026-07-23T17:25:02.833Z",
   "packId": "praxis-school-counselor-5422",
   "standard": {
     "label": "AlloFlow independent 5422 source, structure, feedback, originality, safety, and linkage QA v1",
@@ -10412,7 +10412,7 @@
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
     "sourceItemsSha256": "fefb7925bb3239e3094a2be919f0ba1c62eb51f06baa0381babd1742f534dba0",
-    "learningLibrarySha256": "cc9bea8341f6c34f8b77ed46c2addec8ba3908f5ce6cb00f55982ff24a6c4103",
+    "learningLibrarySha256": "32bf459fa5310ec0c04dd83b841c9f244b7f5928446d5f47213c4f5b7a424e1d",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   },
   "expansion": {

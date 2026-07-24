@@ -91,6 +91,8 @@ describe('Guided Mode host wiring', () => {
     expect(miscHandlers).toContain('setGuidedCompletedIds(_cleanIds(_gtp.completedSteps))');
     expect(miscHandlers).toContain('setGuidedSkippedIds(_cleanIds(_gtp.skippedSteps))');
     expect(miscHandlers).toContain('setGuidedCreatedHistoryIds');
+    expect(miscHandlers).toContain('setGuidedDeliveryEvidence');
+    expect(app).toContain('deliveryEvidence: guidedDeliveryEvidence');
   });
 
   it('gives the generate dispatcher the ACTIVE step list so subset tours auto-advance', () => {
@@ -127,10 +129,17 @@ describe('Guided Mode host wiring', () => {
 
   it('binds the highlight to the real target and forces the Create sidebar', () => {
     expect(app).toContain("el.classList.add('allo-guided-target')");
+    expect(app).toContain('new MutationObserver');
+    expect(app).toContain('targetClassObserver.disconnect()');
+    expect(app).toContain("el.setAttribute('data-allo-guided-target', 'true')");
+    expect(app).toContain("el.removeAttribute('data-allo-guided-target')");
+    expect(app).toContain('const targetRetryTimer = setTimeout');
+    expect(app).toContain('clearTimeout(targetRetryTimer)');
     expect(app).toContain("el.classList.remove('allo-guided-target')");
     expect(app).not.toContain('setGuidedRect');
     expect(app).toContain("if (guidedMode && activeSidebarTab !== 'create')");
     expect(app).toContain("setActiveSidebarTab('create')");
+    expect(app).toContain('[guidedMode, guidedStep, hasSelectedRole, guidedSelectedIds, guidedTargetEpoch]');
   });
 
   it('sanitizes saved step IDs and persists skipped/session-created state', () => {
@@ -171,6 +180,42 @@ describe('Guided Mode improvement wiring', () => {
     expect(app).toContain('openGuidedHistoryItem={handleRestoreView}');
   });
 
+  it('adds outcome phases, assignment directions, and comprehensive delivery as real milestones', () => {
+    expect(app).toContain('const GUIDED_PHASES = [');
+    expect(app).toContain("{ id: 'directions', phase: 'assign'");
+    expect(app).toContain("{ id: 'package-deliver', phase: 'deliver'");
+    expect(app).toContain("'directions': 'tour-tool-directions'");
+    expect(app).toContain("'package-deliver': 'tour-tool-fullpack'");
+    expect(app).toContain("guidedPhases={GUIDED_PHASES}");
+    expect(app).toContain("guidedDeliveryGroups={GUIDED_DELIVERY_GROUPS}");
+    expect(banner).toContain("const GUIDED_CLICK_STEPS = ['math']");
+    expect(banner).toContain("step.id === 'package-deliver' ? _deliveryOutcomeDone");
+    expect(app).toContain("markGuidedDeliveryEvidence('directionsSaved')");
+    expect(banner).toContain("Phase {current} of {total}");
+  });
+
+  it('covers every export and sharing family in Package & Deliver', () => {
+    for (const option of [
+      'PDF / Print', 'Worksheet', 'Slides (.pptx)', 'Accessible Word (.docx)', 'OpenDocument (.odt)',
+      'Interactive HTML', 'EPUB (.epub)', 'Plain text (.txt)', 'Markdown (.md)', 'NotebookLM source (.md)', 'Electronic Braille (.brf)',
+      'QTI quiz package', 'H5P interactive activity (.h5p)', 'IMS content package',
+      'Homework QR / self-contained link', 'Class Mailbox / hosted printable QR', 'Live class session', 'Editable AlloFlow project',
+      'Adventure Storybook HTML (optional narration)', 'Persona private-session JSON + HTML transcript',
+    ]) expect(app).toContain(option);
+    expect(app).toContain("onClick={() => openExportPreview('print')}");
+    expect(app).toContain('onClick={createGuidedHomeworkShare}');
+    expect(app).toContain('setShowSessionStartOptions(true)');
+    expect(app).toContain('previewGuidedStudentAssignment={previewGuidedStudentAssignment}');
+    expect(app).toContain("onExportSuccess: () => completeGuidedDelivery('exportCreated')");
+  });
+
+  it('keeps one intended left-panel surface visible for Directions, Delivery, and final review', () => {
+    expect(app).toContain("guidedActiveSteps[guidedStep]?.id === 'directions')) ? undefined : 'none'");
+    expect(app).toContain("guidedActiveSteps[guidedStep]?.id === 'package-deliver' || guidedActiveSteps[guidedStep]?.id === '_final'");
+    expect(app).toContain("if (currentStep.id === '_final') return false;");
+    expect(app).toContain("guidedActiveSteps[guidedStep]?.id === 'alignment') ? undefined : 'none'");
+    expect(app).not.toContain("guidedActiveSteps[guidedStep]?.id === 'alignment' || guidedActiveSteps[guidedStep]?.id === '_final'");
+  });
   it('keeps recap feedback local and makes generated and skipped items navigable', () => {
     expect(banner).toContain("localStorage.setItem('allo_guided_feedback'");
     expect(banner).toContain('openGuidedHistoryItem(entry.item)');
@@ -188,9 +233,9 @@ describe('Guided Mode controlled-journey safeguards', () => {
 
   it('locks all generation variants and requires the source/final bookends', () => {
     expect(app).toContain('isGuidedRetrying={isProcessing || isGeneratingPersona || isGeneratingSource || isExtracting}');
-    expect(app).toContain("new Set(['source-input', ...raw.selectedIds.filter(id => valid.has(id)), '_final'])");
-    expect(app).toContain("if (id === 'source-input' || id === '_final') return");
-    expect(banner).toContain("const locked = s.id === 'source-input' || s.id === '_final'");
+    expect(app).toContain("new Set(['source-input', ...raw.selectedIds.filter(id => valid.has(id)), 'package-deliver', '_final'])");
+    expect(app).toContain("if (id === 'source-input' || id === 'package-deliver' || id === '_final') return");
+    expect(banner).toContain("const locked = s.id === 'source-input' || s.id === 'package-deliver' || s.id === '_final'");
   });
 
   it('counts entered source text as completed and ignores panel-shell clicks', () => {
@@ -198,5 +243,25 @@ describe('Guided Mode controlled-journey safeguards', () => {
     expect(banner).toContain('const done = _effectiveCompletedSet.has(s.id)');
     expect(app).toContain("target.closest('button, input, select, textarea, a[href]");
     expect(app).toContain("control.getAttribute('aria-expanded') != null");
+  });
+});
+describe('Guided Mode cleanup contracts', () => {
+  it('archives completed runs separately from paused progress', () => {
+    expect(app).toContain("localStorage.setItem('allo_guided_completed_runs'");
+    expect(app).toContain("localStorage.setItem('allo_guided_last_completion'");
+    expect(app).toContain('handleCompleteGuidedMode={handleCompleteGuidedMode}');
+  });
+
+  it('restores a temporary target tabindex after focus leaves', () => {
+    const helper = app.slice(app.indexOf('const focusGuidedTarget'), app.indexOf('const handleCompleteGuidedMode'));
+    expect(helper).toContain("const previousTabIndex = target.getAttribute('tabindex')");
+    expect(helper).toContain("target.addEventListener('blur', restoreTabIndex, { once: true })");
+    expect(helper).toContain("target.removeAttribute('tabindex')");
+  });
+
+  it('passes provider-aware progress data to the Guided banner', () => {
+    expect(app).toContain('processingProgress={processingProgress}');
+    expect(app).toContain('generationStep={generationStep}');
+    expect(app).toContain('guidedProviderProfile={String(');
   });
 });

@@ -280,7 +280,8 @@ function ExportPreviewView(props) {
     theme,
     toggleA11yInspect,
     updateExportPreview: updateExportPreview2,
-    exportPreviewSource
+    exportPreviewSource,
+    onExportSuccess
   } = props;
   const [writingCheck, setWritingCheck] = React.useState(null);
   const [wordGoalProgress, setWordGoalProgress] = React.useState({ count: 0, goal: 0, percent: 0 });
@@ -650,8 +651,12 @@ function ExportPreviewView(props) {
     anchor.click();
     anchor.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 1e3);
+    try {
+      if (typeof onExportSuccess === "function") onExportSuccess({ kind: "file", format: extension, fileName });
+    } catch (_) {
+    }
     return fileName;
-  }, [getCleanBuilderDocument]);
+  }, [getCleanBuilderDocument, onExportSuccess]);
   const runPackageExport = React.useCallback(async (kind) => {
     if (altExportBusy) return;
     const handler = kind === "qti" ? handleExportQTI : kind === "h5p" ? handleExportH5P : handleExportIMS;
@@ -673,12 +678,16 @@ function ExportPreviewView(props) {
         if (!clean) throw new Error("The editable preview is not ready.");
         await handler({ liveHtml: clean.html, liveTitle: clean.title });
       }
+      try {
+        if (typeof onExportSuccess === "function") onExportSuccess({ kind: "package", format: kind });
+      } catch (_) {
+      }
     } catch (error) {
       addToast && addToast(`${kind.toUpperCase()} export failed: ${error?.message || "unknown error"}`, "error");
     } finally {
       if (mountedRef.current) setAltExportBusy("");
     }
-  }, [altExportBusy, handleExportQTI, handleExportH5P, handleExportIMS, addToast, qtiAssessments, selectedQtiKey, h5pActivities, selectedH5PKey, getCleanBuilderDocument]);
+  }, [altExportBusy, handleExportQTI, handleExportH5P, handleExportIMS, addToast, qtiAssessments, selectedQtiKey, h5pActivities, selectedH5PKey, getCleanBuilderDocument, onExportSuccess]);
   const runOfficeExport = React.useCallback(async (format) => {
     if (altExportBusy) return;
     const api = window.AlloModules?.AccessibleOfficeExport;
@@ -717,13 +726,17 @@ function ExportPreviewView(props) {
     setExportActionBusy(true);
     try {
       await executeExportFromPreview();
+      try {
+        if (typeof onExportSuccess === "function") onExportSuccess({ kind: "builder", format: exportPreviewMode });
+      } catch (_) {
+      }
     } catch (error) {
       if (mountedRef.current) addToast && addToast("Export failed. The builder is still open so you can try again.", "error");
     } finally {
       exportActionLockRef.current = false;
       if (mountedRef.current) setExportActionBusy(false);
     }
-  }, [executeExportFromPreview, runBuilderPreflight, exportPreviewMode, addToast]);
+  }, [executeExportFromPreview, runBuilderPreflight, exportPreviewMode, addToast, onExportSuccess]);
   const handleRadioGroupKeyDown = React.useCallback((e) => {
     if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(e.key)) return;
     const radios = Array.from(e.currentTarget.querySelectorAll('[role="radio"]:not([disabled])'));

@@ -15,7 +15,7 @@ import { resetStemLab, loadTool, renderTool } from './helpers/stem_widgets_smoke
 // The quiz shuffles its options with Math.random(); freeze it so digests are stable.
 
 const FILE = 'stem_lab/stem_tool_brainatlas.js';
-const VIEWS = ['lateral', 'medial', 'superior', 'inferior', 'cranialNervesWillis', 'homunculus', 'visualPathway', 'languageNetwork', 'strokeTerritories', 'cerebellumClinic', 'brainstemCrossSection', 'csfHydrocephalus', 'neurotransmitters', 'neuron', 'synapses', 'basalGangliaLoop', 'limbicPapezLoop', 'stimulate', 'sleepStages', 'eegWaves', 'crossLateral'];
+const VIEWS = ['lateral', 'medial', 'superior', 'inferior', 'cranialNervesWillis', 'homunculus', 'visualPathway', 'languageNetwork', 'strokeTerritories', 'cerebellumClinic', 'brainstemCrossSection', 'csfHydrocephalus', 'neurotransmitters', 'neuron', 'prenatalDevelopment', 'synapses', 'basalGangliaLoop', 'limbicPapezLoop', 'stimulate', 'sleepStages', 'eegWaves', 'crossLateral'];
 
 function digest(html) {
   const count = (re) => (html.match(re) || []).length;
@@ -147,7 +147,7 @@ describe('brainAtlas render goldens', () => {
     expect(html).toMatch(/Neurotransmitters/);
     expect(html).toMatch(/Neuron/);
     expect(html).toMatch(/Synapse/);
-    expect(html).toMatch(/1 through 21 switch views/);
+    expect(html).toMatch(/1 through 22 switch views/);
   });
 
   it('refinement UI: plain detail hides advanced anatomy until requested', () => {

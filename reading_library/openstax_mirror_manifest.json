@@ -1,0 +1,693 @@
+{
+  "schema": "allo-openstax-mirror-manifest@1",
+  "licenseAuditSource": "https://help.openstax.org/s/article/Licensing-information-of-OpenStax-textbooks",
+  "license": "CC BY-NC-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "books": [
+    {
+      "slug": "openstax-biology-2e-chapter-1",
+      "title": "OpenStax Biology 2e · Chapter 1: The Study of Life",
+      "bookTitle": "Biology 2e",
+      "description": "An accessibility-ready mirror of the opening OpenStax Biology 2e chapter.",
+      "subjects": [
+        "Biology",
+        "Scientific inquiry",
+        "Characteristics of life",
+        "Open textbooks"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/biology-2e/pages/1-introduction",
+      "sections": [
+        "https://openstax.org/books/biology-2e/pages/1-introduction",
+        "https://openstax.org/books/biology-2e/pages/1-1-the-science-of-biology",
+        "https://openstax.org/books/biology-2e/pages/1-2-themes-and-concepts-of-biology"
+      ],
+      "bookUrl": "https://openstax.org/books/biology-2e/pages/1-introduction"
+    },
+    {
+      "slug": "openstax-astronomy-2e-chapter-1",
+      "title": "OpenStax Astronomy 2e · Chapter 1: Science and the Universe",
+      "bookTitle": "Astronomy 2e",
+      "description": "An accessibility-ready mirror of the opening OpenStax Astronomy 2e chapter.",
+      "subjects": [
+        "Astronomy",
+        "Scientific inquiry",
+        "Scale of the universe",
+        "Open textbooks"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/astronomy-2e/pages/1-1-the-nature-of-astronomy",
+      "sections": [
+        "https://openstax.org/books/astronomy-2e/pages/1-1-the-nature-of-astronomy",
+        "https://openstax.org/books/astronomy-2e/pages/1-2-the-nature-of-science",
+        "https://openstax.org/books/astronomy-2e/pages/1-3-the-laws-of-nature",
+        "https://openstax.org/books/astronomy-2e/pages/1-4-numbers-in-astronomy",
+        "https://openstax.org/books/astronomy-2e/pages/1-5-consequences-of-light-travel-time",
+        "https://openstax.org/books/astronomy-2e/pages/1-6-a-tour-of-the-universe",
+        "https://openstax.org/books/astronomy-2e/pages/1-7-the-universe-on-the-large-scale",
+        "https://openstax.org/books/astronomy-2e/pages/1-8-the-universe-of-the-very-small",
+        "https://openstax.org/books/astronomy-2e/pages/1-9-a-conclusion-and-a-beginning"
+      ],
+      "bookUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction"
+    },
+    {
+      "slug": "openstax-us-history-chapter-1",
+      "title": "OpenStax U.S. History · Chapter 1: The Americas, Europe, and Africa Before 1492",
+      "bookTitle": "U.S. History",
+      "description": "An accessibility-ready mirror of the opening OpenStax U.S. History chapter.",
+      "subjects": [
+        "U.S. history",
+        "Indigenous societies",
+        "European exploration",
+        "West Africa"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/us-history/pages/1-introduction",
+      "sections": [
+        "https://openstax.org/books/us-history/pages/1-introduction",
+        "https://openstax.org/books/us-history/pages/1-1-the-americas",
+        "https://openstax.org/books/us-history/pages/1-2-europe-on-the-brink-of-change",
+        "https://openstax.org/books/us-history/pages/1-3-west-africa-and-the-role-of-slavery"
+      ],
+      "bookUrl": "https://openstax.org/books/us-history/pages/1-introduction"
+    },
+    {
+      "slug": "openstax-biology-2e-chapter-2",
+      "title": "OpenStax Biology 2e · Chapter 2: The Chemical Foundation of Life",
+      "bookTitle": "Biology 2e",
+      "description": "An accessibility-ready mirror of OpenStax Biology 2e Chapter 2.",
+      "subjects": [
+        "Biology",
+        "Chemistry of life",
+        "Atoms and molecules",
+        "Water and carbon"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/biology-2e/pages/2-introduction",
+      "sections": [
+        "https://openstax.org/books/biology-2e/pages/2-introduction",
+        "https://openstax.org/books/biology-2e/pages/2-1-atoms-isotopes-ions-and-molecules-the-building-blocks",
+        "https://openstax.org/books/biology-2e/pages/2-2-water",
+        "https://openstax.org/books/biology-2e/pages/2-3-carbon"
+      ],
+      "bookUrl": "https://openstax.org/books/biology-2e/pages/1-introduction"
+    },
+    {
+      "slug": "openstax-astronomy-2e-chapter-2",
+      "title": "OpenStax Astronomy 2e · Chapter 2: Observing the Sky",
+      "bookTitle": "Astronomy 2e",
+      "description": "An accessibility-ready mirror of OpenStax Astronomy 2e Chapter 2.",
+      "subjects": [
+        "Astronomy",
+        "Observing the sky",
+        "Ancient astronomy",
+        "Scientific revolution"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/astronomy-2e/pages/2-thinking-ahead",
+      "sections": [
+        "https://openstax.org/books/astronomy-2e/pages/2-thinking-ahead",
+        "https://openstax.org/books/astronomy-2e/pages/2-1-the-sky-above",
+        "https://openstax.org/books/astronomy-2e/pages/2-2-ancient-astronomy",
+        "https://openstax.org/books/astronomy-2e/pages/2-3-astrology-and-astronomy",
+        "https://openstax.org/books/astronomy-2e/pages/2-4-the-birth-of-modern-astronomy"
+      ],
+      "bookUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction"
+    },
+    {
+      "slug": "openstax-us-history-chapter-2",
+      "title": "OpenStax U.S. History · Chapter 2: Early Globalization",
+      "bookTitle": "U.S. History",
+      "description": "An accessibility-ready mirror of OpenStax U.S. History Chapter 2.",
+      "subjects": [
+        "U.S. history",
+        "Atlantic world",
+        "Colonization",
+        "Columbian Exchange"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/us-history/pages/2-introduction",
+      "sections": [
+        "https://openstax.org/books/us-history/pages/2-introduction",
+        "https://openstax.org/books/us-history/pages/2-1-portuguese-exploration-and-spanish-conquest",
+        "https://openstax.org/books/us-history/pages/2-2-religious-upheavals-in-the-developing-atlantic-world",
+        "https://openstax.org/books/us-history/pages/2-3-challenges-to-spains-supremacy",
+        "https://openstax.org/books/us-history/pages/2-4-new-worlds-in-the-americas-labor-commerce-and-the-columbian-exchange"
+      ],
+      "bookUrl": "https://openstax.org/books/us-history/pages/1-introduction"
+    },
+    {
+      "slug": "openstax-biology-2e-chapter-3",
+      "title": "OpenStax Biology 2e · Chapter 3: Biological Macromolecules",
+      "bookTitle": "Biology 2e",
+      "bookUrl": "https://openstax.org/books/biology-2e/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax Biology 2e Chapter 3.",
+      "subjects": [
+        "Biology",
+        "Macromolecules",
+        "Carbohydrates and lipids",
+        "Proteins and nucleic acids"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/biology-2e/pages/3-introduction",
+      "sections": [
+        "https://openstax.org/books/biology-2e/pages/3-introduction",
+        "https://openstax.org/books/biology-2e/pages/3-1-synthesis-of-biological-macromolecules",
+        "https://openstax.org/books/biology-2e/pages/3-2-carbohydrates",
+        "https://openstax.org/books/biology-2e/pages/3-3-lipids",
+        "https://openstax.org/books/biology-2e/pages/3-4-proteins",
+        "https://openstax.org/books/biology-2e/pages/3-5-nucleic-acids"
+      ]
+    },
+    {
+      "slug": "openstax-astronomy-2e-chapter-3",
+      "title": "OpenStax Astronomy 2e · Chapter 3: Orbits and Gravity",
+      "bookTitle": "Astronomy 2e",
+      "bookUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax Astronomy 2e Chapter 3.",
+      "subjects": [
+        "Astronomy",
+        "Planetary motion",
+        "Newtonian mechanics",
+        "Gravity and orbits"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/astronomy-2e/pages/3-thinking-ahead",
+      "sections": [
+        "https://openstax.org/books/astronomy-2e/pages/3-thinking-ahead",
+        "https://openstax.org/books/astronomy-2e/pages/3-1-the-laws-of-planetary-motion",
+        "https://openstax.org/books/astronomy-2e/pages/3-2-newtons-great-synthesis",
+        "https://openstax.org/books/astronomy-2e/pages/3-3-newtons-universal-law-of-gravitation",
+        "https://openstax.org/books/astronomy-2e/pages/3-4-orbits-in-the-solar-system",
+        "https://openstax.org/books/astronomy-2e/pages/3-5-motions-of-satellites-and-spacecraft",
+        "https://openstax.org/books/astronomy-2e/pages/3-6-gravity-with-more-than-two-bodies"
+      ]
+    },
+    {
+      "slug": "openstax-us-history-chapter-3",
+      "title": "OpenStax U.S. History · Chapter 3: Colonial Societies, 1500–1700",
+      "bookTitle": "U.S. History",
+      "bookUrl": "https://openstax.org/books/us-history/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax U.S. History Chapter 3.",
+      "subjects": [
+        "U.S. history",
+        "Colonial societies",
+        "European empires",
+        "Impact of colonization"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/us-history/pages/3-introduction",
+      "sections": [
+        "https://openstax.org/books/us-history/pages/3-introduction",
+        "https://openstax.org/books/us-history/pages/3-1-spanish-exploration-and-colonial-society",
+        "https://openstax.org/books/us-history/pages/3-2-colonial-rivalries-dutch-and-french-colonial-ambitions",
+        "https://openstax.org/books/us-history/pages/3-3-english-settlements-in-america",
+        "https://openstax.org/books/us-history/pages/3-4-the-impact-of-colonization"
+      ]
+    },
+    {
+      "slug": "openstax-biology-2e-chapter-4",
+      "title": "OpenStax Biology 2e · Chapter 4: Cell Structure",
+      "bookTitle": "Biology 2e",
+      "bookUrl": "https://openstax.org/books/biology-2e/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax Biology 2e Chapter 4.",
+      "subjects": [
+        "Biology",
+        "Cell structure",
+        "Prokaryotic and eukaryotic cells",
+        "Cellular systems"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/biology-2e/pages/4-introduction",
+      "sections": [
+        "https://openstax.org/books/biology-2e/pages/4-introduction",
+        "https://openstax.org/books/biology-2e/pages/4-1-studying-cells",
+        "https://openstax.org/books/biology-2e/pages/4-2-prokaryotic-cells",
+        "https://openstax.org/books/biology-2e/pages/4-3-eukaryotic-cells",
+        "https://openstax.org/books/biology-2e/pages/4-4-the-endomembrane-system-and-proteins",
+        "https://openstax.org/books/biology-2e/pages/4-5-the-cytoskeleton",
+        "https://openstax.org/books/biology-2e/pages/4-6-connections-between-cells-and-cellular-activities"
+      ]
+    },
+    {
+      "slug": "openstax-astronomy-2e-chapter-4",
+      "title": "OpenStax Astronomy 2e · Chapter 4: Earth, Moon, and Sky",
+      "bookTitle": "Astronomy 2e",
+      "bookUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax Astronomy 2e Chapter 4.",
+      "subjects": [
+        "Astronomy",
+        "Earth and sky",
+        "Seasons and calendars",
+        "Moon phases and eclipses"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/astronomy-2e/pages/4-thinking-ahead",
+      "sections": [
+        "https://openstax.org/books/astronomy-2e/pages/4-thinking-ahead",
+        "https://openstax.org/books/astronomy-2e/pages/4-1-earth-and-sky",
+        "https://openstax.org/books/astronomy-2e/pages/4-2-the-seasons",
+        "https://openstax.org/books/astronomy-2e/pages/4-3-keeping-time",
+        "https://openstax.org/books/astronomy-2e/pages/4-4-the-calendar",
+        "https://openstax.org/books/astronomy-2e/pages/4-5-phases-and-motions-of-the-moon",
+        "https://openstax.org/books/astronomy-2e/pages/4-6-ocean-tides-and-the-moon",
+        "https://openstax.org/books/astronomy-2e/pages/4-7-eclipses-of-the-sun-and-moon"
+      ]
+    },
+    {
+      "slug": "openstax-us-history-chapter-4",
+      "title": "OpenStax U.S. History · Chapter 4: Rule Britannia! The English Empire, 1660–1763",
+      "bookTitle": "U.S. History",
+      "bookUrl": "https://openstax.org/books/us-history/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax U.S. History Chapter 4.",
+      "subjects": [
+        "U.S. history",
+        "British Empire",
+        "Colonial slavery and consumer culture",
+        "Great Awakening and imperial wars"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/us-history/pages/4-introduction",
+      "sections": [
+        "https://openstax.org/books/us-history/pages/4-introduction",
+        "https://openstax.org/books/us-history/pages/4-1-charles-ii-and-the-restoration-colonies",
+        "https://openstax.org/books/us-history/pages/4-2-the-glorious-revolution-and-the-english-empire",
+        "https://openstax.org/books/us-history/pages/4-3-an-empire-of-slavery-and-the-consumer-revolution",
+        "https://openstax.org/books/us-history/pages/4-4-great-awakening-and-enlightenment",
+        "https://openstax.org/books/us-history/pages/4-5-wars-for-empire"
+      ]
+    },
+    {
+      "slug": "openstax-biology-2e-chapter-5",
+      "title": "OpenStax Biology 2e · Chapter 5: Structure and Function of Plasma Membranes",
+      "bookTitle": "Biology 2e",
+      "bookUrl": "https://openstax.org/books/biology-2e/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax Biology 2e Chapter 5.",
+      "subjects": [
+        "Biology",
+        "Plasma membranes",
+        "Passive and active transport",
+        "Bulk transport"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/biology-2e/pages/5-introduction",
+      "sections": [
+        "https://openstax.org/books/biology-2e/pages/5-introduction",
+        "https://openstax.org/books/biology-2e/pages/5-1-components-and-structure",
+        "https://openstax.org/books/biology-2e/pages/5-2-passive-transport",
+        "https://openstax.org/books/biology-2e/pages/5-3-active-transport",
+        "https://openstax.org/books/biology-2e/pages/5-4-bulk-transport"
+      ]
+    },
+    {
+      "slug": "openstax-astronomy-2e-chapter-5",
+      "title": "OpenStax Astronomy 2e · Chapter 5: Radiation and Spectra",
+      "bookTitle": "Astronomy 2e",
+      "bookUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax Astronomy 2e Chapter 5.",
+      "subjects": [
+        "Astronomy",
+        "Light and radiation",
+        "Electromagnetic spectrum",
+        "Spectroscopy and Doppler effect"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/astronomy-2e/pages/5-thinking-ahead",
+      "sections": [
+        "https://openstax.org/books/astronomy-2e/pages/5-thinking-ahead",
+        "https://openstax.org/books/astronomy-2e/pages/5-1-the-behavior-of-light",
+        "https://openstax.org/books/astronomy-2e/pages/5-2-the-electromagnetic-spectrum",
+        "https://openstax.org/books/astronomy-2e/pages/5-3-spectroscopy-in-astronomy",
+        "https://openstax.org/books/astronomy-2e/pages/5-4-the-structure-of-the-atom",
+        "https://openstax.org/books/astronomy-2e/pages/5-5-formation-of-spectral-lines",
+        "https://openstax.org/books/astronomy-2e/pages/5-6-the-doppler-effect"
+      ]
+    },
+    {
+      "slug": "openstax-us-history-chapter-5",
+      "title": "OpenStax U.S. History · Chapter 5: Imperial Reforms and Colonial Protests, 1763–1774",
+      "bookTitle": "U.S. History",
+      "bookUrl": "https://openstax.org/books/us-history/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax U.S. History Chapter 5.",
+      "subjects": [
+        "U.S. history",
+        "Imperial reform",
+        "Colonial protest",
+        "American identity"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/us-history/pages/5-introduction",
+      "sections": [
+        "https://openstax.org/books/us-history/pages/5-introduction",
+        "https://openstax.org/books/us-history/pages/5-1-confronting-the-national-debt-the-aftermath-of-the-french-and-indian-war",
+        "https://openstax.org/books/us-history/pages/5-2-the-stamp-act-and-the-sons-and-daughters-of-liberty",
+        "https://openstax.org/books/us-history/pages/5-3-the-townshend-acts-and-colonial-protest",
+        "https://openstax.org/books/us-history/pages/5-4-the-destruction-of-the-tea-and-the-coercive-acts",
+        "https://openstax.org/books/us-history/pages/5-5-disaffection-the-first-continental-congress-and-american-identity"
+      ]
+    },
+    {
+      "slug": "openstax-biology-2e-chapter-6",
+      "title": "OpenStax Biology 2e · Chapter 6: Metabolism",
+      "bookTitle": "Biology 2e",
+      "bookUrl": "https://openstax.org/books/biology-2e/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax Biology 2e Chapter 6.",
+      "subjects": [
+        "Biology",
+        "Energy and metabolism",
+        "Thermodynamics and ATP",
+        "Enzymes"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/biology-2e/pages/6-introduction",
+      "sections": [
+        "https://openstax.org/books/biology-2e/pages/6-introduction",
+        "https://openstax.org/books/biology-2e/pages/6-1-energy-and-metabolism",
+        "https://openstax.org/books/biology-2e/pages/6-2-potential-kinetic-free-and-activation-energy",
+        "https://openstax.org/books/biology-2e/pages/6-3-the-laws-of-thermodynamics",
+        "https://openstax.org/books/biology-2e/pages/6-4-atp-adenosine-triphosphate",
+        "https://openstax.org/books/biology-2e/pages/6-5-enzymes"
+      ]
+    },
+    {
+      "slug": "openstax-astronomy-2e-chapter-6",
+      "title": "OpenStax Astronomy 2e · Chapter 6: Astronomical Instruments",
+      "bookTitle": "Astronomy 2e",
+      "bookUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax Astronomy 2e Chapter 6.",
+      "subjects": [
+        "Astronomy",
+        "Telescopes",
+        "Astronomical detectors",
+        "Observatories and instrumentation"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/astronomy-2e/pages/6-thinking-ahead",
+      "sections": [
+        "https://openstax.org/books/astronomy-2e/pages/6-thinking-ahead",
+        "https://openstax.org/books/astronomy-2e/pages/6-1-telescopes",
+        "https://openstax.org/books/astronomy-2e/pages/6-2-telescopes-today",
+        "https://openstax.org/books/astronomy-2e/pages/6-3-visible-light-detectors-and-instruments",
+        "https://openstax.org/books/astronomy-2e/pages/6-4-radio-telescopes",
+        "https://openstax.org/books/astronomy-2e/pages/6-5-observations-outside-earths-atmosphere",
+        "https://openstax.org/books/astronomy-2e/pages/6-6-the-future-of-large-telescopes"
+      ]
+    },
+    {
+      "slug": "openstax-us-history-chapter-6",
+      "title": "OpenStax U.S. History · Chapter 6: America's War for Independence, 1775–1783",
+      "bookTitle": "U.S. History",
+      "bookUrl": "https://openstax.org/books/us-history/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax U.S. History Chapter 6.",
+      "subjects": [
+        "U.S. history",
+        "American Revolution",
+        "War for independence",
+        "Revolutionary identities"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/us-history/pages/6-introduction",
+      "sections": [
+        "https://openstax.org/books/us-history/pages/6-introduction",
+        "https://openstax.org/books/us-history/pages/6-1-britains-law-and-order-strategy-and-its-consequences",
+        "https://openstax.org/books/us-history/pages/6-2-the-early-years-of-the-revolution",
+        "https://openstax.org/books/us-history/pages/6-3-war-in-the-south",
+        "https://openstax.org/books/us-history/pages/6-4-identity-during-the-american-revolution"
+      ]
+    },
+    {
+      "slug": "openstax-biology-2e-chapter-7",
+      "title": "OpenStax Biology 2e · Chapter 7: Cellular Respiration",
+      "bookTitle": "Biology 2e",
+      "bookUrl": "https://openstax.org/books/biology-2e/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax Biology 2e Chapter 7.",
+      "subjects": [
+        "Biology",
+        "Cellular respiration",
+        "Glycolysis and the citric acid cycle",
+        "Oxidative phosphorylation"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/biology-2e/pages/7-introduction",
+      "sections": [
+        "https://openstax.org/books/biology-2e/pages/7-introduction",
+        "https://openstax.org/books/biology-2e/pages/7-1-energy-in-living-systems",
+        "https://openstax.org/books/biology-2e/pages/7-2-glycolysis",
+        "https://openstax.org/books/biology-2e/pages/7-3-oxidation-of-pyruvate-and-the-citric-acid-cycle",
+        "https://openstax.org/books/biology-2e/pages/7-4-oxidative-phosphorylation",
+        "https://openstax.org/books/biology-2e/pages/7-5-metabolism-without-oxygen",
+        "https://openstax.org/books/biology-2e/pages/7-6-connections-of-carbohydrate-protein-and-lipid-metabolic-pathways",
+        "https://openstax.org/books/biology-2e/pages/7-7-regulation-of-cellular-respiration"
+      ]
+    },
+    {
+      "slug": "openstax-astronomy-2e-chapter-7",
+      "title": "OpenStax Astronomy 2e · Chapter 7: Other Worlds: An Introduction to the Solar System",
+      "bookTitle": "Astronomy 2e",
+      "bookUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax Astronomy 2e Chapter 7.",
+      "subjects": [
+        "Astronomy",
+        "Solar system",
+        "Planetary composition",
+        "Planetary formation and dating"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/astronomy-2e/pages/7-thinking-ahead",
+      "sections": [
+        "https://openstax.org/books/astronomy-2e/pages/7-thinking-ahead",
+        "https://openstax.org/books/astronomy-2e/pages/7-1-overview-of-our-planetary-system",
+        "https://openstax.org/books/astronomy-2e/pages/7-2-composition-and-structure-of-planets",
+        "https://openstax.org/books/astronomy-2e/pages/7-3-dating-planetary-surfaces",
+        "https://openstax.org/books/astronomy-2e/pages/7-4-origin-of-the-solar-system"
+      ]
+    },
+    {
+      "slug": "openstax-us-history-chapter-7",
+      "title": "OpenStax U.S. History · Chapter 7: Creating Republican Governments, 1776–1790",
+      "bookTitle": "U.S. History",
+      "bookUrl": "https://openstax.org/books/us-history/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax U.S. History Chapter 7.",
+      "subjects": [
+        "U.S. history",
+        "Republican government",
+        "Constitutional Convention",
+        "Early American democracy"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/us-history/pages/7-introduction",
+      "sections": [
+        "https://openstax.org/books/us-history/pages/7-introduction",
+        "https://openstax.org/books/us-history/pages/7-1-common-sense-from-monarchy-to-an-american-republic",
+        "https://openstax.org/books/us-history/pages/7-2-how-much-revolutionary-change",
+        "https://openstax.org/books/us-history/pages/7-3-debating-democracy",
+        "https://openstax.org/books/us-history/pages/7-4-the-constitutional-convention-and-federal-constitution"
+      ]
+    },
+    {
+      "slug": "openstax-biology-2e-chapter-8",
+      "title": "OpenStax Biology 2e · Chapter 8: Photosynthesis",
+      "bookTitle": "Biology 2e",
+      "bookUrl": "https://openstax.org/books/biology-2e/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax Biology 2e Chapter 8.",
+      "subjects": [
+        "Biology",
+        "Photosynthesis",
+        "Light-dependent reactions",
+        "Organic molecule synthesis"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/biology-2e/pages/8-introduction",
+      "sections": [
+        "https://openstax.org/books/biology-2e/pages/8-introduction",
+        "https://openstax.org/books/biology-2e/pages/8-1-overview-of-photosynthesis",
+        "https://openstax.org/books/biology-2e/pages/8-2-the-light-dependent-reactions-of-photosynthesis",
+        "https://openstax.org/books/biology-2e/pages/8-3-using-light-energy-to-make-organic-molecules"
+      ]
+    },
+    {
+      "slug": "openstax-astronomy-2e-chapter-8",
+      "title": "OpenStax Astronomy 2e · Chapter 8: Earth as a Planet",
+      "bookTitle": "Astronomy 2e",
+      "bookUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax Astronomy 2e Chapter 8.",
+      "subjects": [
+        "Astronomy",
+        "Earth systems",
+        "Atmosphere and climate",
+        "Planetary evolution"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/astronomy-2e/pages/8-thinking-ahead",
+      "sections": [
+        "https://openstax.org/books/astronomy-2e/pages/8-thinking-ahead",
+        "https://openstax.org/books/astronomy-2e/pages/8-1-the-global-perspective",
+        "https://openstax.org/books/astronomy-2e/pages/8-2-earths-crust",
+        "https://openstax.org/books/astronomy-2e/pages/8-3-earths-atmosphere",
+        "https://openstax.org/books/astronomy-2e/pages/8-4-life-chemical-evolution-and-climate-change",
+        "https://openstax.org/books/astronomy-2e/pages/8-5-cosmic-influences-on-the-evolution-of-earth"
+      ]
+    },
+    {
+      "slug": "openstax-us-history-chapter-8",
+      "title": "OpenStax U.S. History · Chapter 8: Growing Pains: The New Republic, 1790–1820",
+      "bookTitle": "U.S. History",
+      "bookUrl": "https://openstax.org/books/us-history/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax U.S. History Chapter 8.",
+      "subjects": [
+        "U.S. history",
+        "Early republic",
+        "Partisan politics",
+        "War of 1812"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/us-history/pages/8-introduction",
+      "sections": [
+        "https://openstax.org/books/us-history/pages/8-introduction",
+        "https://openstax.org/books/us-history/pages/8-1-competing-visions-federalists-and-democratic-republicans",
+        "https://openstax.org/books/us-history/pages/8-2-the-new-american-republic",
+        "https://openstax.org/books/us-history/pages/8-3-partisan-politics",
+        "https://openstax.org/books/us-history/pages/8-4-the-united-states-goes-back-to-war"
+      ]
+    },
+    {
+      "slug": "openstax-biology-2e-chapter-9",
+      "title": "OpenStax Biology 2e · Chapter 9: Cell Communication",
+      "bookTitle": "Biology 2e",
+      "bookUrl": "https://openstax.org/books/biology-2e/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax Biology 2e Chapter 9.",
+      "subjects": [
+        "Biology",
+        "Cell communication",
+        "Signal transduction",
+        "Cellular receptors"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/biology-2e/pages/9-introduction",
+      "sections": [
+        "https://openstax.org/books/biology-2e/pages/9-introduction",
+        "https://openstax.org/books/biology-2e/pages/9-1-signaling-molecules-and-cellular-receptors",
+        "https://openstax.org/books/biology-2e/pages/9-2-propagation-of-the-signal",
+        "https://openstax.org/books/biology-2e/pages/9-3-response-to-the-signal",
+        "https://openstax.org/books/biology-2e/pages/9-4-signaling-in-single-celled-organisms"
+      ]
+    },
+    {
+      "slug": "openstax-astronomy-2e-chapter-9",
+      "title": "OpenStax Astronomy 2e · Chapter 9: Cratered Worlds",
+      "bookTitle": "Astronomy 2e",
+      "bookUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax Astronomy 2e Chapter 9.",
+      "subjects": [
+        "Astronomy",
+        "Moon",
+        "Impact craters",
+        "Mercury"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/astronomy-2e/pages/9-thinking-ahead",
+      "sections": [
+        "https://openstax.org/books/astronomy-2e/pages/9-thinking-ahead",
+        "https://openstax.org/books/astronomy-2e/pages/9-1-general-properties-of-the-moon",
+        "https://openstax.org/books/astronomy-2e/pages/9-2-the-lunar-surface",
+        "https://openstax.org/books/astronomy-2e/pages/9-3-impact-craters",
+        "https://openstax.org/books/astronomy-2e/pages/9-4-the-origin-of-the-moon",
+        "https://openstax.org/books/astronomy-2e/pages/9-5-mercury"
+      ]
+    },
+    {
+      "slug": "openstax-us-history-chapter-9",
+      "title": "OpenStax U.S. History · Chapter 9: Industrial Transformation in the North, 1800–1850",
+      "bookTitle": "U.S. History",
+      "bookUrl": "https://openstax.org/books/us-history/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax U.S. History Chapter 9.",
+      "subjects": [
+        "U.S. history",
+        "Industrialization",
+        "Transportation revolution",
+        "Class divisions"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/us-history/pages/9-introduction",
+      "sections": [
+        "https://openstax.org/books/us-history/pages/9-introduction",
+        "https://openstax.org/books/us-history/pages/9-1-early-industrialization-in-the-northeast",
+        "https://openstax.org/books/us-history/pages/9-2-a-vibrant-capitalist-republic",
+        "https://openstax.org/books/us-history/pages/9-3-on-the-move-the-transportation-revolution",
+        "https://openstax.org/books/us-history/pages/9-4-a-new-social-order-class-divisions"
+      ]
+    },
+    {
+      "slug": "openstax-biology-2e-chapter-10",
+      "title": "OpenStax Biology 2e · Chapter 10: Cell Reproduction",
+      "bookTitle": "Biology 2e",
+      "bookUrl": "https://openstax.org/books/biology-2e/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax Biology 2e Chapter 10.",
+      "subjects": [
+        "Biology",
+        "Cell division",
+        "Cell cycle",
+        "Cancer and cell-cycle control"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/biology-2e/pages/10-introduction",
+      "sections": [
+        "https://openstax.org/books/biology-2e/pages/10-introduction",
+        "https://openstax.org/books/biology-2e/pages/10-1-cell-division",
+        "https://openstax.org/books/biology-2e/pages/10-2-the-cell-cycle",
+        "https://openstax.org/books/biology-2e/pages/10-3-control-of-the-cell-cycle",
+        "https://openstax.org/books/biology-2e/pages/10-4-cancer-and-the-cell-cycle",
+        "https://openstax.org/books/biology-2e/pages/10-5-prokaryotic-cell-division"
+      ]
+    },
+    {
+      "slug": "openstax-astronomy-2e-chapter-10",
+      "title": "OpenStax Astronomy 2e · Chapter 10: Earthlike Planets: Venus and Mars",
+      "bookTitle": "Astronomy 2e",
+      "bookUrl": "https://openstax.org/books/astronomy-2e/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax Astronomy 2e Chapter 10.",
+      "subjects": [
+        "Astronomy",
+        "Venus",
+        "Mars",
+        "Planetary evolution"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/astronomy-2e/pages/10-thinking-ahead",
+      "sections": [
+        "https://openstax.org/books/astronomy-2e/pages/10-thinking-ahead",
+        "https://openstax.org/books/astronomy-2e/pages/10-1-the-nearest-planets-an-overview",
+        "https://openstax.org/books/astronomy-2e/pages/10-2-the-geology-of-venus",
+        "https://openstax.org/books/astronomy-2e/pages/10-3-the-massive-atmosphere-of-venus",
+        "https://openstax.org/books/astronomy-2e/pages/10-4-the-geology-of-mars",
+        "https://openstax.org/books/astronomy-2e/pages/10-5-water-and-life-on-mars",
+        "https://openstax.org/books/astronomy-2e/pages/10-6-divergent-planetary-evolution"
+      ]
+    },
+    {
+      "slug": "openstax-us-history-chapter-10",
+      "title": "OpenStax U.S. History · Chapter 10: Jacksonian Democracy, 1820–1840",
+      "bookTitle": "U.S. History",
+      "bookUrl": "https://openstax.org/books/us-history/pages/1-introduction",
+      "description": "An accessibility-ready mirror of OpenStax U.S. History Chapter 10.",
+      "subjects": [
+        "U.S. history",
+        "Jacksonian democracy",
+        "Indian Removal",
+        "Majority rule"
+      ],
+      "level": "6",
+      "sourceUrl": "https://openstax.org/books/us-history/pages/10-introduction",
+      "sections": [
+        "https://openstax.org/books/us-history/pages/10-introduction",
+        "https://openstax.org/books/us-history/pages/10-1-a-new-political-style-from-john-quincy-adams-to-andrew-jackson",
+        "https://openstax.org/books/us-history/pages/10-2-the-rise-of-american-democracy",
+        "https://openstax.org/books/us-history/pages/10-3-the-nullification-crisis-and-the-bank-war",
+        "https://openstax.org/books/us-history/pages/10-4-indian-removal",
+        "https://openstax.org/books/us-history/pages/10-5-the-tyranny-and-triumph-of-the-majority"
+      ]
+    }
+  ],
+  "aiNotice": "This book may not be used in the training of large language models or otherwise be ingested into large language models or generative AI offerings without OpenStax's permission.",
+  "aiNoticeObservedAt": "2026-07-23"
+}

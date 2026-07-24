@@ -101,6 +101,9 @@
     '.brainatlas-canvas-actions{display:flex;flex:0 0 auto;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;}',
     '.brainatlas-canvas-chip{flex:0 0 auto;border-radius:999px;background:var(--ba-button);color:var(--ba-button-text);border:1px solid var(--ba-button-border);font-size:10px;font-weight:900;padding:5px 8px;}',
     '.brainatlas-canvas-chip--accent{border-color:rgba(124,58,237,.35);background:rgba(124,58,237,.10);color:var(--ba-purple);}',
+    '.brainatlas-display-mode-switch{display:inline-flex;align-items:center;gap:3px;border:1px solid var(--ba-button-border);border-radius:10px;background:var(--ba-button);padding:3px;box-shadow:0 4px 12px rgba(15,23,42,.06);}',
+    '.brainatlas-display-mode-switch button{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:29px;border:0;border-radius:7px;background:transparent;color:var(--ba-muted);padding:5px 9px;font-size:10px;font-weight:950;white-space:nowrap;cursor:pointer;}',
+    '.brainatlas-display-mode-switch button:hover{color:var(--ba-purple);}.brainatlas-display-mode-switch button:focus-visible{outline:2px solid var(--ba-sky);outline-offset:1px;}.brainatlas-display-mode-switch button[aria-pressed="true"]{background:var(--ba-surface);color:var(--ba-purple);box-shadow:0 2px 8px rgba(15,23,42,.10);}',
     '.brainatlas-zoom-controls{display:inline-flex;flex:0 0 auto;align-items:center;gap:2px;border:1px solid var(--ba-button-border);border-radius:9px;background:var(--ba-button);padding:3px;box-shadow:0 4px 12px rgba(15,23,42,.06);}',
     '.brainatlas-zoom-controls button{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:28px;border:0;border-radius:6px;background:transparent;color:var(--ba-button-text);padding:0 7px;font-size:14px;font-weight:950;line-height:1;cursor:pointer;}',
     '.brainatlas-zoom-controls button:hover:not(:disabled){background:var(--ba-panel);color:var(--ba-purple);}',
@@ -123,6 +126,28 @@
     '.brainatlas-status-label strong{color:var(--ba-text);font-size:10px;}',
     '.brainatlas-status-divider{width:1px;height:16px;flex:0 0 auto;background:var(--ba-border);}',
     '.brainatlas-status-hint{margin-left:auto;text-align:right;}',
+    '.brainatlas-prenatal-controls{display:grid;gap:9px;flex:0 0 auto;padding:11px 18px;border-bottom:1px solid var(--ba-border);background:linear-gradient(100deg,rgba(190,24,93,.06),rgba(14,116,144,.06)),var(--ba-surface);}',
+    '.brainatlas-prenatal-range-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}',
+    '.brainatlas-prenatal-range-label{color:var(--ba-text);font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.05em;}',
+    '.brainatlas-prenatal-range{flex:1 1 220px;min-width:150px;accent-color:var(--ba-purple);}',
+    '.brainatlas-prenatal-week{display:inline-flex;align-items:center;justify-content:center;min-width:76px;min-height:30px;border:1px solid var(--ba-button-border);border-radius:999px;background:var(--ba-button);color:var(--ba-purple);padding:4px 9px;font-size:10px;font-weight:950;white-space:nowrap;}',
+    '.brainatlas-prenatal-stage-list{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x proximity;padding:1px 1px 4px;scrollbar-width:thin;}',
+    '.brainatlas-prenatal-stage-button{display:grid;gap:2px;flex:1 0 124px;min-height:48px;scroll-snap-align:start;border:1px solid var(--ba-button-border);border-radius:9px;background:var(--ba-button);color:var(--ba-button-text);padding:7px 9px;text-align:left;line-height:1.2;}',
+    '.brainatlas-prenatal-stage-button strong{font-size:10px;color:inherit;}.brainatlas-prenatal-stage-button span{font-size:9px;color:var(--ba-muted);}.brainatlas-prenatal-stage-button[aria-pressed="true"]{border-color:var(--ba-purple);background:var(--ba-purple);color:var(--ba-surface);box-shadow:0 6px 14px rgba(124,58,237,.20);}.brainatlas-prenatal-stage-button[aria-pressed="true"] span{color:inherit;}',
+    '.brainatlas-3d-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;flex:0 0 auto;padding:10px 18px;border-bottom:1px solid var(--ba-border);background:linear-gradient(105deg,rgba(124,58,237,.07),rgba(14,165,233,.06)),var(--ba-surface);}',
+    '.brainatlas-3d-control-groups{display:flex;align-items:center;gap:9px;min-width:0;flex-wrap:wrap;}.brainatlas-3d-control-group{display:flex;align-items:center;gap:4px;min-width:0;flex-wrap:wrap;}.brainatlas-3d-control-label{color:var(--ba-muted);font-size:9px;font-weight:950;text-transform:uppercase;letter-spacing:.06em;margin-right:2px;}',
+    '.brainatlas-3d-segment{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--ba-button-border);border-radius:9px;background:var(--ba-button);padding:3px;}.brainatlas-3d-segment button,.brainatlas-3d-camera-controls button{display:inline-flex;align-items:center;justify-content:center;min-height:29px;border:0;border-radius:6px;background:transparent;color:var(--ba-button-text);padding:5px 8px;font-size:9px;font-weight:950;white-space:nowrap;cursor:pointer;}.brainatlas-3d-segment button:hover,.brainatlas-3d-camera-controls button:hover{background:var(--ba-panel);color:var(--ba-purple);}.brainatlas-3d-segment button:focus-visible,.brainatlas-3d-camera-controls button:focus-visible{outline:2px solid var(--ba-sky);outline-offset:1px;}.brainatlas-3d-segment button[aria-pressed="true"]{background:var(--ba-purple);color:#fff;}',
+    '.brainatlas-3d-camera-controls{display:flex;align-items:center;justify-content:flex-end;gap:2px;border:1px solid var(--ba-button-border);border-radius:9px;background:var(--ba-button);padding:3px;flex-wrap:wrap;}',
+    '.brainatlas-3d-slicebar{display:flex;align-items:center;gap:10px;flex:0 0 auto;flex-wrap:wrap;border-bottom:1px solid var(--ba-border);background:linear-gradient(100deg,rgba(14,165,233,.10),rgba(124,58,237,.08)),var(--ba-surface);padding:8px 18px;}.brainatlas-3d-slice-copy{display:grid;gap:1px;min-width:132px;}.brainatlas-3d-slice-copy span{color:var(--ba-sky);font-size:8px;font-weight:950;text-transform:uppercase;letter-spacing:.07em;}.brainatlas-3d-slice-copy strong{color:var(--ba-text);font-size:10px;line-height:1.25;}.brainatlas-3d-slice-range-wrap{display:flex;align-items:center;gap:7px;flex:1 1 250px;min-width:150px;}.brainatlas-3d-slice-range-label{color:var(--ba-muted);font-size:8px;font-weight:950;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}.brainatlas-3d-slice-range{width:100%;min-width:100px;accent-color:var(--ba-purple);}.brainatlas-3d-slice-output{display:inline-flex;align-items:center;justify-content:center;min-width:43px;min-height:28px;border:1px solid var(--ba-border);border-radius:999px;background:var(--ba-surface);color:var(--ba-purple);font-size:8px;font-weight:950;}.brainatlas-3d-slice-actions{display:flex;align-items:center;gap:4px;}.brainatlas-3d-slice-actions button{min-height:30px;border:1px solid var(--ba-button-border);border-radius:8px;background:var(--ba-button);color:var(--ba-button-text);padding:5px 8px;font-size:8px;font-weight:950;white-space:nowrap;}.brainatlas-3d-slice-actions button:hover{border-color:var(--ba-purple);}.brainatlas-3d-slice-actions button:focus-visible{outline:2px solid var(--ba-sky);outline-offset:1px;}.brainatlas-3d-slice-help{width:100%;margin:-2px 0 0;color:var(--ba-muted);font-size:8px;line-height:1.35;}',
+    '.brainatlas-3d-searchbar{position:relative;z-index:8;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:9px;flex:0 0 auto;padding:10px 18px;border-bottom:1px solid var(--ba-border);background:linear-gradient(100deg,rgba(15,118,110,.08),rgba(14,165,233,.06)),var(--ba-surface);}',
+    '.brainatlas-3d-search-wrap{position:relative;min-width:0;}.brainatlas-3d-search-field{display:flex;align-items:center;gap:8px;min-height:42px;border:1px solid var(--ba-button-border);border-radius:10px;background:var(--ba-surface);padding:0 7px 0 11px;box-shadow:0 6px 18px rgba(15,23,42,.06);}.brainatlas-3d-search-field:focus-within{border-color:var(--ba-purple);box-shadow:0 0 0 3px rgba(124,58,237,.14);}.brainatlas-3d-search-icon{color:var(--ba-purple);font-size:14px;line-height:1;}.brainatlas-tool-shell .brainatlas-3d-search-input{width:100%;min-width:0!important;border:0!important;background:transparent!important;color:var(--ba-text)!important;padding:9px 1px!important;outline:0!important;box-shadow:none!important;font-size:11px;}.brainatlas-tool-shell .brainatlas-3d-search-input:disabled{cursor:wait;opacity:.72;}',
+    '.brainatlas-3d-search-clear{display:inline-flex;align-items:center;justify-content:center;width:29px;height:29px;flex:0 0 auto;border:1px solid var(--ba-button-border);border-radius:7px;background:var(--ba-button);color:var(--ba-button-text);font-size:13px;font-weight:950;}.brainatlas-3d-search-clear:hover{border-color:var(--ba-purple);}.brainatlas-3d-search-note{max-width:250px;margin:0;color:var(--ba-muted);font-size:9px;line-height:1.35;text-align:right;}',
+    '.brainatlas-3d-search-results{position:absolute;left:0;right:0;top:calc(100% + 5px);z-index:15;display:grid;gap:4px;max-height:330px;overflow:auto;border:1px solid var(--ba-border);border-radius:12px;background:var(--ba-surface);padding:6px;box-shadow:0 22px 54px rgba(15,23,42,.22);}.brainatlas-3d-search-result{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:9px;width:100%;min-height:46px;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--ba-text);padding:7px 8px;text-align:left;}.brainatlas-3d-search-result:hover,.brainatlas-3d-search-result[data-active="true"]{border-color:rgba(124,58,237,.34);background:var(--ba-panel);}.brainatlas-3d-search-result:focus-visible{outline:3px solid var(--ba-sky);outline-offset:1px;}.brainatlas-3d-result-icon{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:rgba(124,58,237,.12);color:var(--ba-purple);font-size:14px;font-weight:950;}.brainatlas-3d-result-copy{min-width:0;}.brainatlas-3d-result-copy strong{display:block;color:var(--ba-text);font-size:11px;line-height:1.25;overflow-wrap:anywhere;}.brainatlas-3d-result-copy span{display:block;margin-top:2px;color:var(--ba-muted);font-size:9px;line-height:1.3;overflow-wrap:anywhere;}.brainatlas-3d-result-view{display:inline-flex;align-items:center;min-height:24px;border:1px solid var(--ba-border);border-radius:999px;background:var(--ba-surface);color:var(--ba-teal);padding:3px 7px;font-size:8px;font-weight:950;white-space:nowrap;}.brainatlas-3d-search-empty{display:grid;gap:3px;padding:13px;color:var(--ba-muted);font-size:10px;line-height:1.4;text-align:center;}.brainatlas-3d-search-empty strong{color:var(--ba-text);font-size:11px;}',
+    '.brainatlas-3d-search-result-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:stretch;gap:4px;border-radius:9px;}.brainatlas-3d-result-sides{display:flex;align-items:center;gap:3px;padding-right:3px;}.brainatlas-3d-result-sides button{display:inline-flex;align-items:center;justify-content:center;min-width:30px;min-height:34px;border:1px solid var(--ba-button-border);border-radius:8px;background:var(--ba-button);color:var(--ba-purple);padding:4px 6px;font-size:8px;font-weight:950;}.brainatlas-3d-result-sides button:hover{border-color:var(--ba-purple);background:var(--ba-panel);}.brainatlas-3d-result-sides button:focus-visible{outline:2px solid var(--ba-sky);outline-offset:1px;}',
+    '.brainatlas-3d-search-side{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0;}.brainatlas-3d-challenge-toggle{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:36px;flex:0 0 auto;border:1px solid var(--ba-purple);border-radius:9px;background:var(--ba-purple);color:#fff;padding:6px 10px;font-size:9px;font-weight:950;white-space:nowrap;box-shadow:0 7px 16px rgba(124,58,237,.18);}.brainatlas-3d-challenge-toggle:hover{filter:brightness(1.06);}.brainatlas-3d-challenge-toggle:disabled{opacity:.58;cursor:wait;box-shadow:none;filter:none;}.brainatlas-3d-challenge-toggle:focus-visible{outline:3px solid var(--ba-sky);outline-offset:2px;}.brainatlas-3d-challenge-toggle[aria-pressed="true"]{background:var(--ba-surface);color:var(--ba-purple);}',
+    '.brainatlas-3d-challenge{display:grid;gap:9px;flex:0 0 auto;border-bottom:1px solid var(--ba-border);background:radial-gradient(circle at 0 0,rgba(245,158,11,.14),transparent 34%),linear-gradient(115deg,rgba(124,58,237,.08),rgba(14,165,233,.06)),var(--ba-surface);padding:11px 18px;}.brainatlas-3d-challenge-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:12px;}.brainatlas-3d-challenge-kicker{margin:0 0 2px;color:var(--ba-amber);font-size:8px;font-weight:950;text-transform:uppercase;letter-spacing:.08em;}.brainatlas-3d-challenge-title{margin:0;color:var(--ba-text);font-size:14px;line-height:1.2;font-weight:950;}.brainatlas-3d-challenge-instruction{margin:3px 0 0;color:var(--ba-muted);font-size:9px;line-height:1.35;}.brainatlas-3d-challenge-stats{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap;}.brainatlas-3d-challenge-stat{display:inline-flex;align-items:center;min-height:25px;border:1px solid var(--ba-border);border-radius:999px;background:var(--ba-surface);color:var(--ba-muted);padding:3px 7px;font-size:8px;font-weight:950;white-space:nowrap;}.brainatlas-3d-challenge-stat strong{margin-left:3px;color:var(--ba-purple);}',
+    '.brainatlas-3d-challenge-main{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;}.brainatlas-3d-difficulty{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--ba-button-border);border-radius:9px;background:var(--ba-button);padding:3px;}.brainatlas-3d-difficulty button{min-height:29px;border:0;border-radius:6px;background:transparent;color:var(--ba-muted);padding:5px 8px;font-size:8px;font-weight:950;white-space:nowrap;}.brainatlas-3d-difficulty button[aria-pressed="true"]{background:var(--ba-purple);color:#fff;}.brainatlas-3d-difficulty button:focus-visible{outline:2px solid var(--ba-sky);outline-offset:1px;}.brainatlas-3d-challenge-clue{min-width:0;border:1px solid rgba(124,58,237,.24);border-left:4px solid var(--ba-purple);border-radius:9px;background:var(--ba-surface);padding:8px 10px;}.brainatlas-3d-challenge-clue-label{display:block;margin-bottom:2px;color:var(--ba-purple);font-size:8px;font-weight:950;text-transform:uppercase;letter-spacing:.06em;}.brainatlas-3d-challenge-clue strong{display:block;color:var(--ba-text);font-size:11px;line-height:1.4;overflow-wrap:anywhere;}.brainatlas-3d-challenge-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap;}.brainatlas-3d-challenge-actions button{min-height:31px;border:1px solid var(--ba-button-border);border-radius:8px;background:var(--ba-button);color:var(--ba-button-text);padding:5px 8px;font-size:8px;font-weight:950;white-space:nowrap;}.brainatlas-3d-challenge-actions button:hover{border-color:var(--ba-purple);}.brainatlas-3d-challenge-actions button:disabled{opacity:.52;cursor:not-allowed;}.brainatlas-3d-challenge-actions button:focus-visible{outline:2px solid var(--ba-sky);outline-offset:1px;}.brainatlas-3d-challenge-actions .brainatlas-3d-next{border-color:var(--ba-teal);background:var(--ba-teal);color:#fff;}',
+    '.brainatlas-3d-challenge-hint,.brainatlas-3d-challenge-feedback{display:flex;align-items:flex-start;gap:7px;border:1px solid var(--ba-border);border-radius:8px;background:var(--ba-panel);padding:7px 9px;color:var(--ba-muted);font-size:9px;line-height:1.4;overflow-wrap:anywhere;}.brainatlas-3d-challenge-hint strong,.brainatlas-3d-challenge-feedback strong{color:var(--ba-text);}.brainatlas-3d-challenge-feedback[data-result="correct"]{border-color:rgba(15,118,110,.34);background:rgba(15,118,110,.08);}.brainatlas-3d-challenge-feedback[data-result="retry"]{border-color:rgba(217,119,6,.34);background:rgba(217,119,6,.08);}.brainatlas-3d-challenge-feedback[data-result="revealed"]{border-color:rgba(124,58,237,.34);background:rgba(124,58,237,.08);}.brainatlas-3d-challenge-access{border-top:1px solid var(--ba-border);padding-top:7px;}.brainatlas-3d-challenge-access summary{cursor:pointer;color:var(--ba-purple);font-size:8px;font-weight:950;}.brainatlas-3d-challenge-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:7px;}.brainatlas-3d-challenge-options button{min-height:34px;border:1px solid var(--ba-button-border);border-radius:8px;background:var(--ba-surface);color:var(--ba-button-text);padding:6px 8px;font-size:8px;font-weight:900;line-height:1.25;overflow-wrap:anywhere;}.brainatlas-3d-challenge-options button:hover{border-color:var(--ba-purple);background:var(--ba-panel);}.brainatlas-3d-challenge-options button:disabled{opacity:.52;cursor:not-allowed;}.brainatlas-3d-challenge-options button:focus-visible{outline:2px solid var(--ba-sky);outline-offset:1px;}',
     '.brainatlas-canvas-stage{display:flex;flex:1 1 auto;min-height:0;align-items:center;justify-content:flex-start;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable both-edges;scrollbar-width:thin;scrollbar-color:var(--ba-purple) var(--ba-panel);padding:18px;background:radial-gradient(circle at 50% 14%,rgba(124,58,237,.12),transparent 46%),linear-gradient(rgba(100,116,139,.065) 1px,transparent 1px),linear-gradient(90deg,rgba(100,116,139,.065) 1px,transparent 1px),var(--ba-panel);background-size:auto,32px 32px,32px 32px,auto;}',
     '.brainatlas-canvas-stage::-webkit-scrollbar{width:10px;height:10px;}',
     '.brainatlas-canvas-stage::-webkit-scrollbar-track{background:var(--ba-panel);}',
@@ -130,7 +155,15 @@
     '.brainatlas-canvas-zoom-frame{display:flex;flex:0 0 auto;align-items:center;justify-content:center;margin:auto;transition:width .18s ease,max-width .18s ease;}',
     '.brainatlas-canvas-zoom-frame .brainatlas-canvas{max-width:none!important;}',
     '.brainatlas-canvas{display:block;width:100%!important;height:auto!important;max-width:1160px!important;border-radius:12px!important;border-color:rgba(124,58,237,.30)!important;box-shadow:0 18px 42px rgba(76,29,149,.14),0 0 0 1px rgba(255,255,255,.35) inset;transition:box-shadow .18s ease,border-color .18s ease;}',
+    '.brainatlas-3d-stage{position:relative;display:flex;flex:1 1 auto;min-height:620px;overflow:hidden;background:radial-gradient(circle at 50% 18%,rgba(79,70,229,.30),transparent 42%),radial-gradient(circle at 14% 82%,rgba(14,165,233,.18),transparent 38%),linear-gradient(155deg,#0f172a,#17123f 55%,#0c2841);}',
+    '.brainatlas-3d-slice-badge{position:absolute;left:12px;top:10px;z-index:4;display:grid;gap:1px;max-width:calc(100% - 170px);border:1px solid rgba(103,232,249,.40);border-radius:10px;background:rgba(15,23,42,.86);backdrop-filter:blur(8px);color:#e0f2fe;padding:7px 9px;pointer-events:none;box-shadow:0 10px 26px rgba(0,0,0,.22);}.brainatlas-3d-slice-badge strong{font-size:9px;line-height:1.2;}.brainatlas-3d-slice-badge span{color:#a5f3fc;font-size:8px;line-height:1.3;}',
+    '.brainatlas-3d-canvas{display:block;width:100%;height:100%;min-height:620px;touch-action:none;cursor:grab;outline:none;}.brainatlas-3d-canvas:active{cursor:grabbing;}.brainatlas-3d-canvas:focus-visible{box-shadow:inset 0 0 0 4px var(--ba-sky);}',
+    '.brainatlas-3d-loading{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;pointer-events:none;padding:24px;background:linear-gradient(155deg,rgba(15,23,42,.92),rgba(23,18,63,.88));color:#e2e8f0;text-align:center;}.brainatlas-3d-loading-card{display:grid;justify-items:center;gap:9px;max-width:420px;}.brainatlas-3d-loading-spinner{width:34px;height:34px;border:3px solid rgba(255,255,255,.20);border-top-color:#a78bfa;border-radius:999px;animation:brainatlas-3d-spin .9s linear infinite;}.brainatlas-3d-loading strong{font-size:13px;}.brainatlas-3d-loading span{font-size:10px;line-height:1.5;color:#cbd5e1;}@keyframes brainatlas-3d-spin{to{transform:rotate(360deg);}}',
+    '.brainatlas-3d-loading[data-state="ready"]{display:none;}.brainatlas-3d-loading[data-state="error"]{pointer-events:auto;background:linear-gradient(155deg,rgba(69,10,10,.94),rgba(15,23,42,.94));}.brainatlas-3d-loading[data-state="error"] .brainatlas-3d-loading-spinner{display:none;}',
+    '.brainatlas-3d-selection{position:absolute;left:16px;bottom:16px;z-index:3;display:grid;gap:2px;max-width:min(390px,calc(100% - 32px));border:1px solid rgba(196,181,253,.44);border-radius:12px;background:rgba(15,23,42,.88);backdrop-filter:blur(10px);color:#f8fafc;padding:10px 12px;box-shadow:0 14px 34px rgba(0,0,0,.28);pointer-events:none;}.brainatlas-3d-selection-eyebrow{color:#a5f3fc;font-size:8px;font-weight:950;text-transform:uppercase;letter-spacing:.08em;}.brainatlas-3d-selection strong{font-size:13px;line-height:1.25;overflow-wrap:anywhere;}.brainatlas-3d-selection span:last-child{color:#cbd5e1;font-size:9px;line-height:1.4;overflow-wrap:anywhere;}',
+    '.brainatlas-3d-credit{position:absolute;right:10px;top:9px;z-index:3;color:rgba(226,232,240,.76);font-size:8px;line-height:1.3;text-align:right;text-shadow:0 1px 3px rgba(0,0,0,.8);}.brainatlas-3d-credit a{color:inherit;text-decoration:none;}.brainatlas-3d-credit a:hover,.brainatlas-3d-credit a:focus-visible{color:#fff;text-decoration:underline;}',
     '.brainatlas-canvas-shell[data-brainatlas-has-selection="true"] .brainatlas-canvas{border-color:var(--ba-purple)!important;box-shadow:0 20px 48px rgba(76,29,149,.18),0 0 0 3px rgba(124,58,237,.12);}',
+    '.brainatlas-3d-guide{display:grid;gap:12px;border:1px solid var(--ba-border);border-radius:15px;background:radial-gradient(circle at 0 0,rgba(124,58,237,.14),transparent 34%),linear-gradient(135deg,var(--ba-surface),var(--ba-panel));padding:15px;box-shadow:0 16px 38px rgba(15,23,42,.09);}.brainatlas-3d-guide-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:14px;}.brainatlas-3d-guide-kicker{margin:0 0 3px;color:var(--ba-purple);font-size:9px;font-weight:950;text-transform:uppercase;letter-spacing:.08em;}.brainatlas-3d-guide-title{margin:0;color:var(--ba-text);font-size:19px;line-height:1.2;font-weight:950;overflow-wrap:anywhere;}.brainatlas-3d-guide-pronunciation{margin:4px 0 0;color:var(--ba-muted);font-size:10px;line-height:1.35;overflow-wrap:anywhere;}.brainatlas-3d-guide-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;}.brainatlas-3d-guide-actions button{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:34px;border:1px solid var(--ba-button-border);border-radius:9px;background:var(--ba-button);color:var(--ba-button-text);padding:6px 9px;font-size:9px;font-weight:950;white-space:nowrap;}.brainatlas-3d-guide-actions button:hover{border-color:var(--ba-purple);}.brainatlas-3d-guide-actions button:focus-visible{outline:3px solid var(--ba-sky);outline-offset:2px;}.brainatlas-3d-guide-actions .brainatlas-3d-guide-primary{border-color:var(--ba-purple);background:var(--ba-purple);color:#fff;}.brainatlas-3d-guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}.brainatlas-3d-guide-card{min-width:0;border:1px solid var(--ba-border);border-top:4px solid var(--ba-purple);border-radius:10px;background:var(--ba-surface);padding:10px 11px;}.brainatlas-3d-guide-card[data-tone="teal"]{border-top-color:var(--ba-teal);}.brainatlas-3d-guide-card[data-tone="rose"]{border-top-color:var(--ba-rose);}.brainatlas-3d-guide-card strong{display:block;margin-bottom:4px;color:var(--ba-text);font-size:9px;font-weight:950;text-transform:uppercase;letter-spacing:.04em;}.brainatlas-3d-guide-card span{display:block;color:var(--ba-muted);font-size:11px;line-height:1.45;overflow-wrap:anywhere;}.brainatlas-3d-guide-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--ba-border);padding-top:10px;color:var(--ba-muted);font-size:9px;line-height:1.4;}.brainatlas-3d-guide-family{display:inline-flex;align-items:center;min-height:25px;border:1px solid rgba(15,118,110,.28);border-radius:999px;background:rgba(15,118,110,.08);color:var(--ba-teal);padding:4px 8px;font-weight:950;white-space:nowrap;}',
     '.brainatlas-canvas-shell:fullscreen,.brainatlas-canvas-shell:-webkit-full-screen,.brainatlas-canvas-shell:-moz-full-screen,.brainatlas-canvas-shell.brainatlas-fullscreen-fallback{width:100vw!important;height:100vh!important;max-width:none!important;border:0!important;border-radius:0!important;background:var(--ba-surface)!important;box-shadow:none!important;overflow:hidden!important;}',
     '.brainatlas-canvas-shell.brainatlas-fullscreen-fallback{position:fixed!important;inset:0!important;z-index:99998!important;}',
     '.brainatlas-canvas-shell:fullscreen .brainatlas-canvas-header,.brainatlas-canvas-shell:-webkit-full-screen .brainatlas-canvas-header,.brainatlas-canvas-shell:-moz-full-screen .brainatlas-canvas-header,.brainatlas-canvas-shell.brainatlas-fullscreen-fallback .brainatlas-canvas-header{display:flex;align-items:center;gap:10px;padding:8px 12px;background:linear-gradient(100deg,var(--ba-surface),var(--ba-panel));box-shadow:0 8px 24px rgba(15,23,42,.10);}',
@@ -140,6 +173,7 @@
     '.brainatlas-canvas-shell:fullscreen .brainatlas-canvas-actions,.brainatlas-canvas-shell:-webkit-full-screen .brainatlas-canvas-actions,.brainatlas-canvas-shell:-moz-full-screen .brainatlas-canvas-actions,.brainatlas-canvas-shell.brainatlas-fullscreen-fallback .brainatlas-canvas-actions{margin:0;flex-wrap:nowrap;}',
     '.brainatlas-canvas-shell:fullscreen .brainatlas-canvas-stage,.brainatlas-canvas-shell:-webkit-full-screen .brainatlas-canvas-stage,.brainatlas-canvas-shell:-moz-full-screen .brainatlas-canvas-stage,.brainatlas-canvas-shell.brainatlas-fullscreen-fallback .brainatlas-canvas-stage{padding:12px;}',
     '.brainatlas-canvas-shell:fullscreen .brainatlas-canvas,.brainatlas-canvas-shell:-webkit-full-screen .brainatlas-canvas,.brainatlas-canvas-shell:-moz-full-screen .brainatlas-canvas,.brainatlas-canvas-shell.brainatlas-fullscreen-fallback .brainatlas-canvas{width:auto!important;height:100%!important;max-width:100%!important;max-height:100%!important;}',
+    '.brainatlas-canvas-shell:fullscreen .brainatlas-3d-stage,.brainatlas-canvas-shell:-webkit-full-screen .brainatlas-3d-stage,.brainatlas-canvas-shell:-moz-full-screen .brainatlas-3d-stage,.brainatlas-canvas-shell.brainatlas-fullscreen-fallback .brainatlas-3d-stage{min-height:0!important;height:auto!important;flex:1 1 0!important;}.brainatlas-canvas-shell:fullscreen .brainatlas-3d-canvas,.brainatlas-canvas-shell:-webkit-full-screen .brainatlas-3d-canvas,.brainatlas-canvas-shell:-moz-full-screen .brainatlas-3d-canvas,.brainatlas-canvas-shell.brainatlas-fullscreen-fallback .brainatlas-3d-canvas{min-height:0!important;height:100%!important;}',
     '.brainatlas-canvas-shell:fullscreen .brainatlas-canvas-zoom-frame,.brainatlas-canvas-shell:-webkit-full-screen .brainatlas-canvas-zoom-frame,.brainatlas-canvas-shell:-moz-full-screen .brainatlas-canvas-zoom-frame,.brainatlas-canvas-shell.brainatlas-fullscreen-fallback .brainatlas-canvas-zoom-frame{width:auto!important;height:100%!important;max-width:100%!important;margin:auto;}',
     '.brainatlas-canvas-shell:fullscreen .brainatlas-canvas-chip,.brainatlas-canvas-shell:-webkit-full-screen .brainatlas-canvas-chip,.brainatlas-canvas-shell:-moz-full-screen .brainatlas-canvas-chip,.brainatlas-canvas-shell.brainatlas-fullscreen-fallback .brainatlas-canvas-chip,.brainatlas-canvas-shell:fullscreen .brainatlas-zoom-controls,.brainatlas-canvas-shell:-webkit-full-screen .brainatlas-zoom-controls,.brainatlas-canvas-shell:-moz-full-screen .brainatlas-zoom-controls,.brainatlas-canvas-shell.brainatlas-fullscreen-fallback .brainatlas-zoom-controls,.brainatlas-canvas-shell:fullscreen .brainatlas-canvas-status,.brainatlas-canvas-shell:-webkit-full-screen .brainatlas-canvas-status,.brainatlas-canvas-shell:-moz-full-screen .brainatlas-canvas-status,.brainatlas-canvas-shell.brainatlas-fullscreen-fallback .brainatlas-canvas-status,.brainatlas-canvas-shell:fullscreen .brainatlas-learning-footer,.brainatlas-canvas-shell:-webkit-full-screen .brainatlas-learning-footer,.brainatlas-canvas-shell:-moz-full-screen .brainatlas-learning-footer,.brainatlas-canvas-shell.brainatlas-fullscreen-fallback .brainatlas-learning-footer{display:none;}',
     '.brainatlas-canvas-shell:fullscreen .brainatlas-fullscreen-enter-label,.brainatlas-canvas-shell:-webkit-full-screen .brainatlas-fullscreen-enter-label,.brainatlas-canvas-shell:-moz-full-screen .brainatlas-fullscreen-enter-label,.brainatlas-canvas-shell.brainatlas-fullscreen-fallback .brainatlas-fullscreen-enter-label{display:none;}',
@@ -210,8 +244,11 @@
     '.theme-contrast .brainatlas-tool-shell button:not([aria-pressed="true"]){background:var(--ba-button)!important;color:var(--ba-button-text)!important;border-color:var(--ba-button-border)!important;}',
     '.theme-contrast .brainatlas-tool-shell button[aria-pressed="true"]{background:var(--ba-button-border)!important;color:#000!important;border-color:var(--ba-text)!important;}',
     '.theme-contrast .brainatlas-detail-toggle button[aria-pressed="true"],.theme-contrast .brainatlas-group-button[aria-pressed="true"]{outline:2px solid var(--ba-button-border);outline-offset:2px;}',
-    '@media (max-width:760px){.brainatlas-tool-shell{padding:0 2px;}.brainatlas-topbar{grid-template-columns:auto minmax(0,1fr);}.brainatlas-topbar-jump{grid-column:1/-1;width:100%;}.brainatlas-mission-inner{grid-template-columns:1fr;padding:14px;}.brainatlas-mission-title{font-size:19px;}.brainatlas-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.brainatlas-detail-takeaways{grid-template-columns:1fr;}.brainatlas-canvas-header{display:block;padding:13px 14px;}.brainatlas-canvas-actions{justify-content:flex-start;margin-top:10px;}.brainatlas-canvas-status{align-items:flex-start;flex-wrap:wrap;padding:8px 14px;}.brainatlas-status-hint{width:100%;margin-left:18px;text-align:left;}.brainatlas-learning-footer{grid-template-columns:1fr;}.brainatlas-teacher-prompt{border-left:0;border-top:1px solid var(--ba-border);}.brainatlas-canvas-stage{padding:8px;}.brainatlas-view-panel-head{display:block;}.brainatlas-view-count{margin-top:8px;}.brainatlas-view-rail{flex-wrap:nowrap;}.brainatlas-view-button{max-width:178px;}.brainatlas-controls{grid-template-columns:1fr;align-items:stretch;}.brainatlas-controls-actions{justify-content:space-between;}.brainatlas-route-library-head{align-items:flex-start;}.brainatlas-route-card{flex-basis:82vw;max-width:240px;}}',
-    '@media (max-width:460px){.brainatlas-metric-grid{grid-template-columns:1fr;}.brainatlas-action-row button{flex:1 1 100%;}.brainatlas-controls input{min-width:100%!important;}.brainatlas-study-strip{grid-template-columns:1fr;}}'
+    '@media (max-width:760px){.brainatlas-tool-shell{padding:0 2px;}.brainatlas-topbar{grid-template-columns:auto minmax(0,1fr);}.brainatlas-topbar-jump{grid-column:1/-1;width:100%;}.brainatlas-mission-inner{grid-template-columns:1fr;padding:14px;}.brainatlas-mission-title{font-size:19px;}.brainatlas-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.brainatlas-detail-takeaways{grid-template-columns:1fr;}.brainatlas-canvas-header{display:block;padding:13px 14px;}.brainatlas-canvas-actions{justify-content:flex-start;margin-top:10px;}.brainatlas-canvas-status{align-items:flex-start;flex-wrap:wrap;padding:8px 14px;}.brainatlas-status-hint{width:100%;margin-left:18px;text-align:left;}.brainatlas-learning-footer{grid-template-columns:1fr;}.brainatlas-teacher-prompt{border-left:0;border-top:1px solid var(--ba-border);}.brainatlas-canvas-stage{padding:8px;}.brainatlas-3d-controls{grid-template-columns:1fr;padding:9px 12px;}.brainatlas-3d-camera-controls{justify-content:flex-start;}.brainatlas-3d-stage,.brainatlas-3d-canvas{min-height:500px;}.brainatlas-canvas-shell:fullscreen .brainatlas-canvas-header,.brainatlas-canvas-shell:-webkit-full-screen .brainatlas-canvas-header,.brainatlas-canvas-shell:-moz-full-screen .brainatlas-canvas-header,.brainatlas-canvas-shell.brainatlas-fullscreen-fallback .brainatlas-canvas-header{display:block;}.brainatlas-canvas-shell:fullscreen .brainatlas-canvas-actions,.brainatlas-canvas-shell:-webkit-full-screen .brainatlas-canvas-actions,.brainatlas-canvas-shell:-moz-full-screen .brainatlas-canvas-actions,.brainatlas-canvas-shell.brainatlas-fullscreen-fallback .brainatlas-canvas-actions{flex-wrap:wrap;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-fullscreen-navigator,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:-webkit-full-screen .brainatlas-fullscreen-navigator,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:-moz-full-screen .brainatlas-fullscreen-navigator,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-fullscreen-navigator{display:none;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-controls,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:-webkit-full-screen .brainatlas-3d-controls,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:-moz-full-screen .brainatlas-3d-controls,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-controls{display:flex;align-items:center;gap:7px;overflow-x:auto;overflow-y:hidden;padding:6px 8px;scrollbar-width:thin;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-control-groups,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-control-group,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-segment,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-camera-controls,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-control-groups,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-control-group,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-segment,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-camera-controls{flex-wrap:nowrap;flex:0 0 auto;}.brainatlas-view-panel-head{display:block;}.brainatlas-view-count{margin-top:8px;}.brainatlas-view-rail{flex-wrap:nowrap;}.brainatlas-view-button{max-width:178px;}.brainatlas-controls{grid-template-columns:1fr;align-items:stretch;}.brainatlas-controls-actions{justify-content:space-between;}.brainatlas-route-library-head{align-items:flex-start;}.brainatlas-route-card{flex-basis:82vw;max-width:240px;}}',
+    '@media (max-width:760px){.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-canvas-heading,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-canvas-heading,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-canvas-status,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-canvas-status,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-learning-footer,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-learning-footer,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-canvas-chip,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-canvas-chip,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-fullscreen-navigator,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-fullscreen-navigator{display:none!important;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-canvas-header,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-canvas-header{display:flex!important;align-items:center;padding:6px 8px;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-canvas-actions,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-canvas-actions{width:100%;margin:0;flex-wrap:nowrap;justify-content:space-between;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-controls,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-controls{display:flex!important;align-items:center;gap:7px;overflow-x:auto!important;overflow-y:hidden!important;padding:5px 7px;scrollbar-width:thin;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-control-groups,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-control-group,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-segment,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-camera-controls,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-control-groups,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-control-group,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-segment,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-camera-controls{flex-wrap:nowrap!important;flex:0 0 auto;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-stage,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-stage{position:relative;min-height:0!important;height:auto!important;flex:1 1 0!important;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-canvas,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-canvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-height:0!important;}}',    '@media (max-width:760px){.brainatlas-3d-searchbar{grid-template-columns:1fr;padding:8px 12px;}.brainatlas-3d-search-side{justify-content:space-between;}.brainatlas-3d-search-note{max-width:none;text-align:left;}.brainatlas-3d-challenge-head{grid-template-columns:1fr;}.brainatlas-3d-challenge-stats{justify-content:flex-start;}.brainatlas-3d-challenge-main{grid-template-columns:1fr;}.brainatlas-3d-challenge-actions{justify-content:flex-start;}.brainatlas-3d-challenge-options{grid-template-columns:repeat(2,minmax(0,1fr));}.brainatlas-3d-guide-head{grid-template-columns:1fr;}.brainatlas-3d-guide-actions{justify-content:flex-start;}.brainatlas-3d-guide-grid{grid-template-columns:1fr;}.brainatlas-3d-guide-foot{align-items:flex-start;flex-wrap:wrap;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-challenge,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-challenge{gap:5px;padding:6px 8px;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-challenge-head,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-challenge-head{grid-template-columns:minmax(0,1fr) auto;gap:6px;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-challenge-instruction,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-challenge-instruction,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-challenge-access,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-challenge-access{display:none;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-challenge-main,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-challenge-main{grid-template-columns:auto minmax(0,1fr);gap:5px;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-challenge-clue,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-challenge-clue{grid-column:1/-1;grid-row:2;padding:6px 8px;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-challenge-actions,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-challenge-actions{justify-content:flex-end;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-challenge-hint,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-challenge-feedback,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-challenge-hint,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-challenge-feedback{padding:5px 7px;}}',
+    '@media (max-width:460px){.brainatlas-metric-grid{grid-template-columns:1fr;}.brainatlas-action-row button{flex:1 1 100%;}.brainatlas-controls input{min-width:100%!important;}.brainatlas-study-strip{grid-template-columns:1fr;}.brainatlas-3d-searchbar{padding:7px 8px;}.brainatlas-3d-search-note{display:none;}.brainatlas-3d-search-result{grid-template-columns:auto minmax(0,1fr);}.brainatlas-3d-result-view{display:none;}.brainatlas-3d-challenge{padding:9px 10px;}.brainatlas-3d-challenge-options{grid-template-columns:1fr;}.brainatlas-3d-guide{padding:12px;}.brainatlas-3d-guide-title{font-size:17px;}.brainatlas-3d-guide-actions button{flex:1 1 auto;}}',
+    '@media (max-width:760px){.brainatlas-3d-slicebar{padding:7px 10px;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-slicebar,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-slicebar{flex-wrap:nowrap;gap:6px;padding:5px 7px;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-slice-copy,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-slice-copy{min-width:96px;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-slice-help,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-slice-help{display:none;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-slice-range-wrap,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-slice-range-wrap{min-width:105px;flex-basis:130px;}.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"]:fullscreen .brainatlas-3d-slice-range-label,.brainatlas-canvas-shell[data-brainatlas-display-mode="3d"].brainatlas-fullscreen-fallback .brainatlas-3d-slice-range-label{display:none;}}',
+    '@media (max-width:460px){.brainatlas-3d-search-result-row{grid-template-columns:minmax(0,1fr) auto;}.brainatlas-3d-result-sides{align-items:stretch;flex-direction:column;padding:2px;}.brainatlas-3d-result-sides button{min-width:28px;min-height:28px;}.brainatlas-3d-slicebar{gap:6px;padding:7px 8px;}.brainatlas-3d-slice-copy{min-width:0;flex:1 1 140px;}.brainatlas-3d-slice-range-wrap{order:4;flex-basis:100%;}.brainatlas-3d-slice-help{display:none;}.brainatlas-3d-slice-badge{max-width:calc(100% - 120px);}}',
   ].join('');
   if (document.head) document.head.appendChild(st);
 })();
@@ -785,6 +822,18 @@ var d = labToolData.brainAtlas || {};
               ]
 
             },
+            prenatalDevelopment: {
+              name: t('stem.brainatlas.prenatal_brain_development', 'Prenatal Brain Development'), desc: t('stem.brainatlas.prenatal_brain_development_desc', 'Follow the overlapping stages that shape the brain from neural tube to a folded, connected newborn brain.'),
+              isPrenatal: true,
+              regions: [
+                { id: 'prenatal_neural_tube', name: t('stem.brainatlas.prenatal_neural_tube', 'Weeks 3-4 ? Neural tube'), week: 4, weekLabel: 'Weeks 3-4', short: 'Neural tube closes', x: 0.10, y: 0.72, w: 0.08, fn: 'The neural plate folds and closes into the neural tube, the early structure that will form the brain and spinal cord. Closure is usually complete by the end of the fourth week.', context: 'The cranial end begins expanding while neural crest cells leave the tube to help form much of the peripheral nervous system.', continues: 'The tube\'s hollow center becomes the ventricular system and central canal.' },
+                { id: 'prenatal_brain_regions', name: t('stem.brainatlas.prenatal_brain_regions', 'Weeks 5-8 ? Brain regions emerge'), week: 7, weekLabel: 'Weeks 5-8', short: 'Basic brain plan', x: 0.26, y: 0.72, w: 0.08, fn: 'The cranial neural tube expands into early forebrain, midbrain, and hindbrain regions; these subdivide as the basic brain plan takes shape.', context: 'Neural stem cells multiply rapidly, and the first neurons begin differentiating.', continues: 'These early regions later give rise to the cerebrum, thalamus, brainstem, and cerebellum.' },
+                { id: 'prenatal_neuron_production', name: t('stem.brainatlas.prenatal_neuron_production', 'Weeks 9-12 ? Neuron production'), week: 11, weekLabel: 'Weeks 9-12', short: 'Neurons multiply', x: 0.42, y: 0.72, w: 0.08, fn: 'Neural precursor cells are producing neurons at a rapid rate while the cerebral hemispheres enlarge. The developing cortex is still relatively smooth.', context: 'New neurons begin migrating away from germinal zones toward future brain layers.', continues: 'Neuron production and migration continue beyond this window and overlap substantially.' },
+                { id: 'prenatal_cortical_migration', name: t('stem.brainatlas.prenatal_cortical_migration', 'Weeks 13-20 ? Migration builds cortex'), week: 17, weekLabel: 'Weeks 13-20', short: 'Cortical layers form', x: 0.58, y: 0.72, w: 0.08, fn: 'Large numbers of young neurons travel along radial glial guides and accumulate in the cortical plate, helping build the layered cerebral cortex.', context: 'Growing axons extend toward targets as sensory pathways and major tracts begin organizing.', continues: 'Migration, differentiation, and early circuit organization overlap throughout the second trimester.' },
+                { id: 'prenatal_connections', name: t('stem.brainatlas.prenatal_connections', 'Weeks 21-27 ? Connections organize'), week: 24, weekLabel: 'Weeks 21-27', short: 'Long-range wiring', x: 0.74, y: 0.72, w: 0.08, fn: 'Thalamocortical, callosal, and other long-range fibers expand while the temporary subplate helps incoming signals find developing cortical targets.', context: 'Early grooves become more visible, glial production increases, and immature networks begin coordinating activity.', continues: 'Connections are still provisional; synapses, axons, and support cells continue maturing.' },
+                { id: 'prenatal_folding_networks', name: t('stem.brainatlas.prenatal_folding_networks', 'Weeks 28-40 ? Folding and networks'), week: 34, weekLabel: 'Weeks 28-40', short: 'Folds and networks', x: 0.90, y: 0.72, w: 0.08, fn: 'The cortex expands quickly and forms increasingly complex gyri and sulci while synapses, dendrites, and long-range networks grow.', context: 'By around week 33, the primary sulci are present; sensory and state-regulation circuits continue organizing.', continues: 'Brain development remains active after birth; synapse formation, pruning, and myelination continue for years.' }
+              ]
+            },
             synapses: {
               name: t('stem.brainatlas.synapse_development', '\uD83D\uDD17 Synapse & Development'), desc: t('stem.brainatlas.how_synapses_form_get_pruned_and_matur', 'How synapses form, get pruned, and mature across the lifespan'), 
               isSynapse: true,
@@ -900,6 +949,51 @@ var d = labToolData.brainAtlas || {};
           var filtered = searchTerm ? regions.filter(function (r) { return r.name.toLowerCase().indexOf(searchTerm) >= 0 || r.fn.toLowerCase().indexOf(searchTerm) >= 0 || (r.conditions || '').toLowerCase().indexOf(searchTerm) >= 0; }) : regions;
 
           var sel = d.selectedRegion ? regions.find(function (r) { return r.id === d.selectedRegion; }) : null;
+          var BRAIN_3D_VIEW_KEYS = ['lateral', 'medial', 'superior', 'inferior'];
+          var brain3DAvailable = BRAIN_3D_VIEW_KEYS.indexOf(viewKey) >= 0;
+          var atlasDisplayMode = d.atlasDisplayMode === '3d' ? '3d' : 'diagram';
+          var useBrain3D = brain3DAvailable && atlasDisplayMode === '3d';
+          var brain3DLayer = ['all', 'left', 'right', 'deep'].indexOf(d.brain3DLayer) >= 0 ? d.brain3DLayer : 'all';
+          var brain3DFocus = ['all', 'fade', 'isolate'].indexOf(d.brain3DFocus) >= 0 ? d.brain3DFocus : 'all';
+          var brain3DSliceAxis = ['off', 'sagittal', 'coronal', 'axial'].indexOf(d.brain3DSliceAxis) >= 0 ? d.brain3DSliceAxis : 'off';
+          var brain3DSlicePositionRaw = parseInt(d.brain3DSlicePosition, 10);
+          var brain3DSlicePosition = Math.max(0, Math.min(100, isNaN(brain3DSlicePositionRaw) ? 50 : brain3DSlicePositionRaw));
+          var brain3DSliceFlip = !!d.brain3DSliceFlip;
+          var selected3DStructure = String(d.selected3DStructure || '');
+          var brain3DStructureIndex = Array.isArray(window.__alloBrainAtlas3DStructureIndex) ? window.__alloBrainAtlas3DStructureIndex : (Array.isArray(d.brain3DStructureIndex) ? d.brain3DStructureIndex : []);
+          var brain3DSearch = String(d.brain3DSearch || '');
+          var brain3DSearchOpen = !!d.brain3DSearchOpen;
+          var brain3DSearchActiveIndex = Math.max(0, parseInt(d.brain3DSearchActiveIndex, 10) || 0);
+          var brain3DChallengeActive = !!d.brain3DChallengeActive;
+          var brain3DChallengeDifficulty = ['learn', 'explore', 'challenge'].indexOf(d.brain3DChallengeDifficulty) >= 0 ? d.brain3DChallengeDifficulty : 'learn';
+          var brain3DChallengeRound = Math.max(0, parseInt(d.brain3DChallengeRound, 10) || 0);
+          var brain3DChallengeHintLevel = Math.max(0, Math.min(2, parseInt(d.brain3DChallengeHintLevel, 10) || 0));
+          var brain3DChallengeFeedback = d.brain3DChallengeFeedback || null;
+          var brain3DChallengeScore = Math.max(0, parseInt(d.brain3DChallengeScore, 10) || 0);
+          var brain3DChallengeCorrect = Math.max(0, parseInt(d.brain3DChallengeCorrect, 10) || 0);
+          var brain3DChallengeStreak = Math.max(0, parseInt(d.brain3DChallengeStreak, 10) || 0);
+          var prenatalWeek = parseInt(d.prenatalWeek, 10);
+          if (!isFinite(prenatalWeek)) prenatalWeek = sel && sel.week ? sel.week : 4;
+          prenatalWeek = Math.max(3, Math.min(40, prenatalWeek));
+          function closestPrenatalStage(week) {
+            if (!currentView.isPrenatal || !regions.length) return null;
+            return regions.reduce(function (best, stage) {
+              return !best || Math.abs(stage.week - week) < Math.abs(best.week - week) ? stage : best;
+            }, null);
+          }
+          var activePrenatalStage = currentView.isPrenatal ? (sel || closestPrenatalStage(prenatalWeek)) : null;
+          function selectPrenatalStage(stage) {
+            if (!stage) return;
+            upd('prenatalWeek', stage.week);
+            upd('selectedRegion', stage.id);
+            if (typeof announceToSR === 'function') announceToSR(stage.name + ' selected.');
+          }
+          function setPrenatalWeek(week) {
+            var nextWeek = Math.max(3, Math.min(40, parseInt(week, 10) || 4));
+            var nextStage = closestPrenatalStage(nextWeek);
+            upd('prenatalWeek', nextWeek);
+            if (nextStage) upd('selectedRegion', nextStage.id);
+          }
 
 
 
@@ -1015,7 +1109,7 @@ var d = labToolData.brainAtlas || {};
 
             // If view or sim scenario changed, cancel the old animation so we restart with fresh closures
 
-            var _cacheKey = viewKey + '|' + simScenario + '|' + eegActivityMode;
+            var _cacheKey = viewKey + '|' + simScenario + '|' + eegActivityMode + '|' + (currentView.isPrenatal ? prenatalWeek : '');
 
             if (canvas._brainCleanup) canvas._brainCleanup();
             else if (canvas._brainAnim) { cancelAnimationFrame(canvas._brainAnim); canvas._brainAnim = null; }
@@ -1035,7 +1129,7 @@ var d = labToolData.brainAtlas || {};
 
             // Neurochemistry views get a reduced text scale so the larger
             // canvases become breathing room for labels, not oversized glyphs.
-            var neuroTextScale = currentView.isSynapse ? 0.60 : (currentView.isNeuron ? 0.60 : (currentView.isNT ? 0.65 : 1));
+            var neuroTextScale = currentView.isPrenatal ? 0.72 : (currentView.isSynapse ? 0.60 : (currentView.isNeuron ? 0.60 : (currentView.isNT ? 0.65 : 1)));
             var fontScale = Math.min(1.3, (W / 600) * neuroTextScale); // Grow labels for readability without recreating collisions.
             function brainAtlasEllipsizeCanvasText(text, maxWidth) {
               var value = String(text || '');
@@ -4669,6 +4763,193 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.restore();
 
+              } else if (currentView.isPrenatal) {
+                var prenatalStages = regions;
+                var prenatalActive = activePrenatalStage || prenatalStages[0];
+                var prenatalIndex = Math.max(0, prenatalStages.findIndex(function (stage) { return prenatalActive && stage.id === prenatalActive.id; }));
+                var prenatalColors = ['#7c3aed', '#8b5cf6', '#2563eb', '#0f766e', '#0891b2', '#be185d'];
+                var prenatalColor = prenatalColors[prenatalIndex] || prenatalColors[0];
+                var prenatalTick = canvas._brainTick || 0;
+                var prenatalGlow = brainMotionReduced ? 0.45 : (0.45 + 0.30 * Math.sin(prenatalTick * 0.045));
+
+                var prenatalBackground = ctx.createLinearGradient(0, 0, W, H);
+                prenatalBackground.addColorStop(0, '#fff7ed');
+                prenatalBackground.addColorStop(0.52, '#fdf4ff');
+                prenatalBackground.addColorStop(1, '#ecfeff');
+                ctx.fillStyle = prenatalBackground;
+                ctx.fillRect(0, 0, W, H);
+                brainAtlasDrawCompactCanvasHeading('Brain development before birth', 'Move through gestational weeks; milestones overlap rather than switching on at one instant.', { title: '#581c87', subtitle: '#6b21a8' });
+
+                var prenatalBandY = Math.max(66, H * 0.09);
+                var prenatalBandH = Math.max(38, H * 0.055);
+                [
+                  { x1: 0.06, x2: 0.36, title: 'FIRST TRIMESTER', sub: 'plan + early regions', color: '#7c3aed' },
+                  { x1: 0.37, x2: 0.69, title: 'SECOND TRIMESTER', sub: 'cells migrate + connect', color: '#0f766e' },
+                  { x1: 0.70, x2: 0.94, title: 'THIRD TRIMESTER', sub: 'folds + networks grow', color: '#be185d' }
+                ].forEach(function (band) {
+                  var bx = band.x1 * W, bw = (band.x2 - band.x1) * W;
+                  ctx.fillStyle = band.color + '12';
+                  ctx.strokeStyle = band.color + '55';
+                  ctx.lineWidth = 1;
+                  ctx.beginPath();
+                  ctx.roundRect(bx, prenatalBandY, bw, prenatalBandH, 8);
+                  ctx.fill();
+                  ctx.stroke();
+                  brainAtlasDrawBoundedNodeLabel(bx + bw / 2, prenatalBandY + prenatalBandH / 2, bw - 10, prenatalBandH - 4, band.title, band.sub, band.color, '#475569');
+                });
+
+                var prenatalBrainX = W * 0.31;
+                var prenatalBrainY = H * 0.39;
+                var prenatalScale = 0.76 + prenatalIndex * 0.055;
+                var prenatalBrainW = W * 0.31 * prenatalScale;
+                var prenatalBrainH = H * 0.25 * prenatalScale;
+
+                ctx.save();
+                var prenatalHalo = ctx.createRadialGradient(prenatalBrainX, prenatalBrainY, 10, prenatalBrainX, prenatalBrainY, prenatalBrainW * 0.72);
+                prenatalHalo.addColorStop(0, prenatalColor + '38');
+                prenatalHalo.addColorStop(1, prenatalColor + '00');
+                ctx.fillStyle = prenatalHalo;
+                ctx.beginPath();
+                ctx.arc(prenatalBrainX, prenatalBrainY, prenatalBrainW * (0.58 + prenatalGlow * 0.05), 0, Math.PI * 2);
+                ctx.fill();
+
+                if (prenatalIndex === 0) {
+                  ctx.strokeStyle = prenatalColor;
+                  ctx.lineWidth = Math.max(5, W * 0.008);
+                  ctx.lineCap = 'round';
+                  ctx.beginPath();
+                  ctx.moveTo(prenatalBrainX - prenatalBrainW * 0.38, prenatalBrainY - prenatalBrainH * 0.34);
+                  ctx.bezierCurveTo(prenatalBrainX - prenatalBrainW * 0.12, prenatalBrainY - prenatalBrainH * 0.66, prenatalBrainX + prenatalBrainW * 0.15, prenatalBrainY - prenatalBrainH * 0.56, prenatalBrainX + prenatalBrainW * 0.38, prenatalBrainY - prenatalBrainH * 0.18);
+                  ctx.moveTo(prenatalBrainX - prenatalBrainW * 0.38, prenatalBrainY + prenatalBrainH * 0.34);
+                  ctx.bezierCurveTo(prenatalBrainX - prenatalBrainW * 0.12, prenatalBrainY + prenatalBrainH * 0.66, prenatalBrainX + prenatalBrainW * 0.15, prenatalBrainY + prenatalBrainH * 0.56, prenatalBrainX + prenatalBrainW * 0.38, prenatalBrainY + prenatalBrainH * 0.18);
+                  ctx.stroke();
+                  ctx.fillStyle = '#ffffff';
+                  ctx.strokeStyle = '#a855f7';
+                  ctx.lineWidth = 3;
+                  ctx.beginPath();
+                  ctx.ellipse(prenatalBrainX + prenatalBrainW * 0.40, prenatalBrainY, prenatalBrainW * 0.10, prenatalBrainH * 0.22, 0, 0, Math.PI * 2);
+                  ctx.fill();
+                  ctx.stroke();
+                  brainAtlasDrawPathLabel(prenatalBrainX, prenatalBrainY + prenatalBrainH * 0.78, 'neural plate -> neural tube', prenatalColor, W * 0.25);
+                } else if (prenatalIndex === 1) {
+                  [
+                    { x: -0.22, rx: 0.21, ry: 0.38, color: '#8b5cf6' },
+                    { x: 0.08, rx: 0.17, ry: 0.31, color: '#2563eb' },
+                    { x: 0.31, rx: 0.14, ry: 0.25, color: '#0f766e' }
+                  ].forEach(function (vesicle) {
+                    ctx.fillStyle = vesicle.color + 'bb';
+                    ctx.strokeStyle = vesicle.color;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.ellipse(prenatalBrainX + prenatalBrainW * vesicle.x, prenatalBrainY, prenatalBrainW * vesicle.rx, prenatalBrainH * vesicle.ry, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                  });
+                  brainAtlasDrawPathLabel(prenatalBrainX, prenatalBrainY + prenatalBrainH * 0.70, 'forebrain ? midbrain ? hindbrain', prenatalColor, W * 0.29);
+                } else {
+                  ctx.fillStyle = '#f9a8d4';
+                  ctx.strokeStyle = prenatalColor;
+                  ctx.lineWidth = 3;
+                  ctx.beginPath();
+                  ctx.moveTo(prenatalBrainX - prenatalBrainW * 0.45, prenatalBrainY + prenatalBrainH * 0.12);
+                  ctx.bezierCurveTo(prenatalBrainX - prenatalBrainW * 0.53, prenatalBrainY - prenatalBrainH * 0.30, prenatalBrainX - prenatalBrainW * 0.24, prenatalBrainY - prenatalBrainH * 0.55, prenatalBrainX + prenatalBrainW * 0.12, prenatalBrainY - prenatalBrainH * 0.50);
+                  ctx.bezierCurveTo(prenatalBrainX + prenatalBrainW * 0.52, prenatalBrainY - prenatalBrainH * 0.46, prenatalBrainX + prenatalBrainW * 0.58, prenatalBrainY - prenatalBrainH * 0.06, prenatalBrainX + prenatalBrainW * 0.42, prenatalBrainY + prenatalBrainH * 0.24);
+                  ctx.bezierCurveTo(prenatalBrainX + prenatalBrainW * 0.20, prenatalBrainY + prenatalBrainH * 0.50, prenatalBrainX - prenatalBrainW * 0.24, prenatalBrainY + prenatalBrainH * 0.52, prenatalBrainX - prenatalBrainW * 0.45, prenatalBrainY + prenatalBrainH * 0.12);
+                  ctx.fill();
+                  ctx.stroke();
+
+                  ctx.fillStyle = '#fda4af';
+                  ctx.beginPath();
+                  ctx.ellipse(prenatalBrainX + prenatalBrainW * 0.36, prenatalBrainY + prenatalBrainH * 0.32, prenatalBrainW * 0.15, prenatalBrainH * 0.19, -0.1, 0, Math.PI * 2);
+                  ctx.fill();
+                  ctx.stroke();
+                  ctx.strokeStyle = '#9f1239';
+                  ctx.lineWidth = 4;
+                  ctx.beginPath();
+                  ctx.moveTo(prenatalBrainX + prenatalBrainW * 0.30, prenatalBrainY + prenatalBrainH * 0.42);
+                  ctx.lineTo(prenatalBrainX + prenatalBrainW * 0.34, prenatalBrainY + prenatalBrainH * 0.72);
+                  ctx.stroke();
+
+                  var prenatalFoldCount = Math.max(0, (prenatalIndex - 2) * 3);
+                  ctx.strokeStyle = 'rgba(131,24,67,0.58)';
+                  ctx.lineWidth = 1.5;
+                  for (var pf = 0; pf < prenatalFoldCount; pf++) {
+                    var pfY = prenatalBrainY - prenatalBrainH * 0.30 + (pf % 4) * prenatalBrainH * 0.16;
+                    var pfX = prenatalBrainX - prenatalBrainW * 0.24 + Math.floor(pf / 4) * prenatalBrainW * 0.22;
+                    ctx.beginPath();
+                    ctx.bezierCurveTo(pfX - prenatalBrainW * 0.10, pfY, pfX, pfY - prenatalBrainH * 0.08, pfX + prenatalBrainW * 0.13, pfY);
+                    ctx.stroke();
+                  }
+
+                  if (prenatalIndex === 2 || prenatalIndex === 3) {
+                    for (var pn = 0; pn < 18; pn++) {
+                      var angle = (pn / 18) * Math.PI * 2;
+                      var radius = prenatalBrainW * (0.10 + (pn % 4) * 0.055);
+                      ctx.fillStyle = pn % 2 ? '#2563eb' : '#7c3aed';
+                      ctx.beginPath();
+                      ctx.arc(prenatalBrainX + Math.cos(angle) * radius, prenatalBrainY + Math.sin(angle) * radius * 0.55, 2.5, 0, Math.PI * 2);
+                      ctx.fill();
+                    }
+                  }
+                  if (prenatalIndex >= 4) {
+                    ctx.strokeStyle = 'rgba(37,99,235,0.58)';
+                    ctx.lineWidth = 2;
+                    for (var pc = 0; pc < 5; pc++) {
+                      ctx.beginPath();
+                      ctx.moveTo(prenatalBrainX - prenatalBrainW * 0.30, prenatalBrainY - prenatalBrainH * 0.24 + pc * prenatalBrainH * 0.12);
+                      ctx.bezierCurveTo(prenatalBrainX - prenatalBrainW * 0.06, prenatalBrainY + prenatalBrainH * 0.18, prenatalBrainX + prenatalBrainW * 0.16, prenatalBrainY - prenatalBrainH * 0.22, prenatalBrainX + prenatalBrainW * 0.36, prenatalBrainY + prenatalBrainH * 0.04 + pc * prenatalBrainH * 0.035);
+                      ctx.stroke();
+                    }
+                  }
+                }
+                ctx.restore();
+
+                brainAtlasDrawPathLabel(prenatalBrainX, prenatalBrainY - prenatalBrainH * 0.72, prenatalActive.weekLabel, prenatalColor, W * 0.20);
+                brainAtlasDrawAnnotationCard(W * 0.57, H * 0.225, W * 0.36, H * 0.30, prenatalActive.short, prenatalActive.fn, prenatalColor, true);
+
+                var prenatalTimelineY = H * 0.72;
+                ctx.strokeStyle = '#cbd5e1';
+                ctx.lineWidth = 5;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(prenatalStages[0].x * W, prenatalTimelineY);
+                ctx.lineTo(prenatalStages[prenatalStages.length - 1].x * W, prenatalTimelineY);
+                ctx.stroke();
+
+                var prenatalWeekX = W * (0.10 + ((prenatalWeek - 3) / 37) * 0.80);
+                ctx.strokeStyle = prenatalColor + '99';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(prenatalWeekX, prenatalTimelineY - 28);
+                ctx.lineTo(prenatalWeekX, prenatalTimelineY + 28);
+                ctx.stroke();
+
+                prenatalStages.forEach(function (stage, stageIndex) {
+                  var stageX = stage.x * W;
+                  var stageColor = prenatalColors[stageIndex];
+                  var stageActive = prenatalActive && prenatalActive.id === stage.id;
+                  if (stageActive) {
+                    ctx.fillStyle = stageColor + '22';
+                    ctx.beginPath();
+                    ctx.arc(stageX, prenatalTimelineY, 21 + prenatalGlow * 3, 0, Math.PI * 2);
+                    ctx.fill();
+                  }
+                  ctx.fillStyle = stageActive ? stageColor : '#ffffff';
+                  ctx.strokeStyle = stageColor;
+                  ctx.lineWidth = stageActive ? 4 : 2;
+                  ctx.beginPath();
+                  ctx.arc(stageX, prenatalTimelineY, stageActive ? 13 : 10, 0, Math.PI * 2);
+                  ctx.fill();
+                  ctx.stroke();
+                  ctx.fillStyle = stageActive ? '#ffffff' : stageColor;
+                  ctx.font = 'bold ' + Math.round(9 * fontScale) + 'px Inter,system-ui,sans-serif';
+                  ctx.textAlign = 'center';
+                  ctx.fillText(String(stageIndex + 1), stageX, prenatalTimelineY + 3);
+                  brainAtlasDrawPathLabel(stageX, prenatalTimelineY - 32, stage.weekLabel, stageColor, W * 0.13);
+                  brainAtlasDrawBoundedNodeLabel(stageX, prenatalTimelineY + 40, W * 0.145, 38, stage.short, '', stageColor, '#64748b');
+                });
+
+                brainAtlasDrawInfoStrip(W * 0.13, H * 0.90, W * 0.74, H * 0.045, 'Approximate gestational weeks ? Processes overlap ? Brain development continues after birth', '#7c3aed');
               } else if (currentView.isSynapse) {
                 // Synaptic density across the lifespan (Huttenlocher-style)
                 ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
@@ -5525,7 +5806,7 @@ var d = labToolData.brainAtlas || {};
 
 
               // ── Enhanced Region Markers (anatomical views only) ──
-              if (!currentView.isNeuron && !currentView.isNT && !currentView.isSleep && !currentView.isEEG && !currentView.isSynapse && !currentView.isStim && !currentView.isHomunculus && !currentView.isVisualPathway && !currentView.isLanguageNetwork && !currentView.isBasalGanglia && !currentView.isCranialWillis && !currentView.isLimbicPapez && !currentView.isStrokeTerritory && !currentView.isCerebellumClinic && !currentView.isBrainstemCross && !currentView.isCsfHydro)
+              if (!currentView.isNeuron && !currentView.isNT && !currentView.isSleep && !currentView.isEEG && !currentView.isSynapse && !currentView.isPrenatal && !currentView.isStim && !currentView.isHomunculus && !currentView.isVisualPathway && !currentView.isLanguageNetwork && !currentView.isBasalGanglia && !currentView.isCranialWillis && !currentView.isLimbicPapez && !currentView.isStrokeTerritory && !currentView.isCerebellumClinic && !currentView.isBrainstemCross && !currentView.isCsfHydro)
               filtered.forEach(function (r) {
 
                 var px = r.x * W, py = r.y * H;
@@ -5692,7 +5973,10 @@ var d = labToolData.brainAtlas || {};
 
             });
 
-            if (closest) upd('selectedRegion', closest.id);
+            if (closest) {
+              upd('selectedRegion', closest.id);
+              if (currentView.isPrenatal && closest.week) upd('prenatalWeek', closest.week);
+            }
 
           };
 
@@ -5721,10 +6005,11 @@ var d = labToolData.brainAtlas || {};
           var canvasZoomPercent = Math.round(canvasZoom * 100);
           var viewsExploredCount = Object.keys(d.viewsExplored || {}).length;
           var atlasCompletion = VIEW_KEYS.length ? Math.min(100, Math.round((viewsExploredCount / VIEW_KEYS.length) * 100)) : 0;
-          var selectedLabel = sel && sel.name ? sel.name : (t('stem.brainatlas.none_selected', 'None selected') || 'None selected');
+          var selected3DLabel = selected3DStructure ? brainAtlasHumanize3DName(selected3DStructure) : '';
+          var selectedLabel = useBrain3D ? (selected3DLabel || (sel && sel.name) || (t('stem.brainatlas.none_selected', 'None selected') || 'None selected')) : (sel && sel.name ? sel.name : (t('stem.brainatlas.none_selected', 'None selected') || 'None selected'));
           selectedLabel = String(selectedLabel || 'None selected');
           var showNtInquiry = viewKey === 'neurotransmitters' || !!d.showNtInquiry;
-          var specialAtlasView = !!(currentView.isNT || currentView.isNeuron || currentView.isSynapse || currentView.isHomunculus || currentView.isVisualPathway || currentView.isLanguageNetwork || currentView.isBasalGanglia || currentView.isCranialWillis || currentView.isLimbicPapez || currentView.isStrokeTerritory || currentView.isCerebellumClinic || currentView.isBrainstemCross || currentView.isCsfHydro || currentView.isStim || currentView.isSleep || currentView.isEEG || currentView.isCrossLateral);
+          var specialAtlasView = !!(currentView.isNT || currentView.isNeuron || currentView.isSynapse || currentView.isPrenatal || currentView.isHomunculus || currentView.isVisualPathway || currentView.isLanguageNetwork || currentView.isBasalGanglia || currentView.isCranialWillis || currentView.isLimbicPapez || currentView.isStrokeTerritory || currentView.isCerebellumClinic || currentView.isBrainstemCross || currentView.isCsfHydro || currentView.isStim || currentView.isSleep || currentView.isEEG || currentView.isCrossLateral);
           // Neurochemistry diagrams (synapse release, neuron anatomy, synapse
           // growth) pack many labels into a tall vertical stack and were
           // cramped / overlapping. Give them a larger canvas so the diagram
@@ -5732,7 +6017,7 @@ var d = labToolData.brainAtlas || {};
           // so the extra room becomes label SPACING, not bigger glyphs.
           // Safe: hit-testing is fraction-based [0,1], independent of canvas px.
           var neurochemView = !!(currentView.isNT || currentView.isNeuron || currentView.isSynapse);
-          var wideAtlasView = !!(currentView.isSynapse || currentView.isLanguageNetwork || currentView.isVisualPathway || currentView.isBasalGanglia || currentView.isLimbicPapez || currentView.isCranialWillis || currentView.isStrokeTerritory || currentView.isCerebellumClinic || currentView.isBrainstemCross || currentView.isCsfHydro || currentView.isCrossLateral);
+          var wideAtlasView = !!(currentView.isSynapse || currentView.isPrenatal || currentView.isLanguageNetwork || currentView.isVisualPathway || currentView.isBasalGanglia || currentView.isLimbicPapez || currentView.isCranialWillis || currentView.isStrokeTerritory || currentView.isCerebellumClinic || currentView.isBrainstemCross || currentView.isCsfHydro || currentView.isCrossLateral);
           var atlasW = currentView.isNeuron ? 1040 : (wideAtlasView ? 1040 : (currentView.isHomunculus ? 960 : (currentView.isNT ? 960 : (specialAtlasView ? 900 : 840))));
           var atlasH = currentView.isNeuron ? 880 : (currentView.isNT ? 820 : (wideAtlasView ? 780 : (currentView.isHomunculus ? 720 : (specialAtlasView ? 680 : 640))));
           // Use native fullscreen when available; otherwise fill the host frame safely.
@@ -5808,12 +6093,13 @@ var d = labToolData.brainAtlas || {};
             if (typeof announceToSR === 'function') announceToSR((t('stem.brainatlas.fullscreen_view_changed', 'Fullscreen diagram') || 'Fullscreen diagram') + ' ' + nextPosition + ' of ' + VIEW_KEYS.length + ': ' + (VIEWS[nextKey].name || nextKey) + '.');
           }
           var missionText = sel
-            ? t('stem.brainatlas.now_studying_region_detail', 'Now studying selected region details, function, related conditions, and damage patterns.')
+            ? (currentView.isPrenatal ? (t('stem.brainatlas.now_studying_prenatal_stage', 'Now studying one prenatal milestone and the overlapping processes around it.') || 'Now studying one prenatal milestone and the overlapping processes around it.') : t('stem.brainatlas.now_studying_region_detail', 'Now studying selected region details, function, related conditions, and damage patterns.'))
             : currentView.desc;
           var quizScoreLabel = (d.quizCorrect || 0) + ' correct';
           var VIEW_GROUPS = [
             { id: 'atlas', label: t('stem.brainatlas.group_atlas', 'Atlas'), note: t('stem.brainatlas.group_atlas_note', 'Lobes, language, body maps, orientation, nerves, and vessels'), views: ['lateral', 'medial', 'superior', 'inferior', 'cranialNervesWillis', 'homunculus', 'visualPathway', 'languageNetwork'] },
             { id: 'clinical', label: t('stem.brainatlas.group_clinical', 'Clinical'), note: t('stem.brainatlas.group_clinical_note', 'Stroke territories, cerebellar signs, brainstem tracts, CSF flow, and case clues'), views: ['strokeTerritories', 'cerebellumClinic', 'brainstemCrossSection', 'csfHydrocephalus'] },
+            { id: 'development', label: t('stem.brainatlas.group_development', 'Development'), note: t('stem.brainatlas.group_development_note', 'Brain growth before birth'), views: ['prenatalDevelopment'] },
             { id: 'systems', label: t('stem.brainatlas.group_systems', 'Systems'), note: t('stem.brainatlas.group_systems_note', 'Cells, synapses, chemistry, memory, emotion, and movement loops'), views: ['neurotransmitters', 'neuron', 'synapses', 'basalGangliaLoop', 'limbicPapezLoop'] },
             { id: 'simulations', label: t('stem.brainatlas.group_simulations', 'Simulations'), note: t('stem.brainatlas.group_simulations_note', 'Stimulation, sleep, rhythms, and wiring'), views: ['stimulate', 'sleepStages', 'eegWaves', 'crossLateral'] }
           ];
@@ -5825,6 +6111,590 @@ var d = labToolData.brainAtlas || {};
           }
           var activeViewGroupId = d.viewGroup || brainAtlasViewGroupFor(viewKey);
           var activeViewGroup = VIEW_GROUPS.filter(function (group) { return group.id === activeViewGroupId; })[0] || VIEW_GROUPS[0];
+
+          // Interactive 3D anatomy viewer. The anatomical model and its loaders are
+          // fetched only after the learner chooses 3D, keeping every 2D atlas view fast.
+          function brainAtlasHumanize3DName(name) {
+            var value = String(name || '').replace(/^Allen_/i, '').replace(/\.\d+$/, '');
+            var side = /_L$/i.test(value) ? 'left' : (/_R$/i.test(value) ? 'right' : '');
+            value = value.replace(/_[LR]$/i, '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+            value = value.replace(/\b\w/g, function (letter) { return letter.toUpperCase(); });
+            return value + (side ? ' (' + side + ')' : '');
+          }
+
+          function brainAtlas3DFamilyInfo(name) {
+            var key = String(name || '').toLowerCase();
+            if (/hippocamp/.test(key)) return { label: 'Memory network', icon: 'M', keywords: 'memory learning navigation limbic', functionText: 'The hippocampal formation helps build new declarative memories and supports spatial context.', connectionsText: 'It works with entorhinal cortex, fornix, mammillary bodies, thalamus, and widespread cortex.', clinicalText: 'Bilateral injury can severely impair formation of new memories; memory is still distributed across connected networks.' };
+            if (/amygdal/.test(key)) return { label: 'Emotion and salience', icon: 'E', keywords: 'emotion fear salience threat limbic', functionText: 'The amygdala helps tag biologically important events and shapes emotional learning and attention.', connectionsText: 'It exchanges information with hippocampus, hypothalamus, prefrontal cortex, sensory cortex, and brainstem.', clinicalText: 'Changes can affect threat learning and emotional salience, but no single structure contains one emotion.' };
+            if (/hypothalam/.test(key)) return { label: 'Homeostasis', icon: 'H', keywords: 'homeostasis hormones hunger temperature sleep autonomic endocrine', functionText: 'The hypothalamus coordinates body-state regulation, endocrine signals, temperature, appetite, and daily rhythms.', connectionsText: 'It links cortex and limbic circuits with pituitary, autonomic centers, and brainstem effectors.', clinicalText: 'Effects depend on the nucleus involved and can include endocrine, sleep, appetite, temperature, or autonomic changes.' };
+            if (/thalam/.test(key)) return { label: 'Relay and integration', icon: 'R', keywords: 'relay sensation attention motor cortex', functionText: 'Thalamic nuclei route and shape sensory, motor, attention, and arousal signals headed toward cortex.', connectionsText: 'Parallel thalamocortical loops link specific nuclei with cortex, basal ganglia, cerebellum, and brainstem.', clinicalText: 'Injury can alter sensation, attention, arousal, movement, or pain depending on the affected territory.' };
+            if (/caudate|putamen|globus|pallid|accumbens|subthalam/.test(key)) return { label: 'Basal ganglia', icon: 'B', keywords: 'movement habit reward action selection basal ganglia', functionText: 'Basal-ganglia circuits help select actions, tune movement, learn habits, and evaluate outcomes.', connectionsText: 'Cortex, striatum, pallidum, subthalamic nucleus, substantia nigra, and thalamus form repeating loops.', clinicalText: 'Circuit imbalance contributes to movement disorders; specific effects differ across direct, indirect, and limbic loops.' };
+            if (/cerebell/.test(key)) return { label: 'Coordination network', icon: 'C', keywords: 'coordination balance timing motor learning cerebellum', functionText: 'The cerebellum compares intended and actual performance to refine timing, balance, coordination, and learning.', connectionsText: 'It communicates with spinal, vestibular, brainstem, thalamic, motor, and cognitive cortical systems.', clinicalText: 'Lesions often cause same-side limb incoordination, gait imbalance, abnormal eye movements, or scanning speech.' };
+            if (/pons|medulla|midbrain/.test(key)) return { label: 'Brainstem', icon: 'S', keywords: 'brainstem breathing arousal cranial nerves pathways pons medulla midbrain', functionText: 'Brainstem regions support vital regulation, arousal, cranial-nerve functions, and passage of major pathways.', connectionsText: 'Ascending and descending tracts intersect with cranial-nerve nuclei, cerebellum, hypothalamus, and spinal cord.', clinicalText: 'Small lesions can affect several tightly packed systems and may produce crossed face-and-body findings.' };
+            if (/ventric/.test(key)) return { label: 'CSF spaces', icon: 'V', keywords: 'ventricle cerebrospinal fluid csf hydrocephalus', functionText: 'The ventricular system contains cerebrospinal fluid and forms part of its production and circulation route.', connectionsText: 'Lateral ventricles drain through the third ventricle, aqueduct, fourth ventricle, and subarachnoid space.', clinicalText: 'Flow obstruction or impaired reabsorption can enlarge the ventricles; the pattern helps localize the problem.' };
+            if (/corpus.?callos|commissure|white.?matter|capsule|fornix/.test(key)) return { label: 'White-matter pathway', icon: 'W', keywords: 'connection tract fibers white matter communication pathway', functionText: 'This fiber system carries information between regions rather than acting as an isolated processing center.', connectionsText: 'Its learning value comes from tracing which source and destination regions the fibers connect.', clinicalText: 'Disconnection effects depend on which fibers are interrupted and which alternative routes remain available.' };
+            if (/frontal|precentral/.test(key)) return { label: 'Frontal cortex', icon: 'F', keywords: 'planning movement inhibition decisions executive motor frontal', functionText: 'Frontal cortical areas contribute to action planning, movement, working goals, inhibition, and flexible behavior.', connectionsText: 'They participate in distributed loops with sensory and association cortex, thalamus, basal ganglia, cerebellum, and limbic systems.', clinicalText: 'Effects vary by location and network, ranging from weakness to changes in planning, language, motivation, or inhibition.' };
+            if (/parietal|postcentral|precuneus|angular|supramarginal/.test(key)) return { label: 'Parietal cortex', icon: 'P', keywords: 'sensation space attention body parietal integration', functionText: 'Parietal regions integrate body sensation, spatial information, attention, and multimodal meaning.', connectionsText: 'They combine sensory input and exchange information with frontal, temporal, occipital, thalamic, and motor networks.', clinicalText: 'Injury may affect sensation, spatial attention, skilled action, calculation, reading, or body awareness.' };
+            if (/temporal|fusiform|parahippocampal|uncus/.test(key)) return { label: 'Temporal cortex', icon: 'T', keywords: 'hearing language memory recognition temporal', functionText: 'Temporal regions support hearing, meaning, recognition, memory interfaces, and high-level visual processing.', connectionsText: 'They link auditory and visual association cortex with language, limbic, frontal, and memory systems.', clinicalText: 'Effects can involve comprehension, recognition, memory, auditory processing, or seizures depending on location.' };
+            if (/occipital|cuneus|lingual|calcarine/.test(key)) return { label: 'Visual cortex', icon: 'O', keywords: 'vision visual field occipital', functionText: 'Occipital regions receive and transform visual information into maps of features and visual space.', connectionsText: 'Visual signals arrive through thalamic relays and continue into dorsal spatial and ventral recognition streams.', clinicalText: 'Lesions can produce predictable visual-field loss or higher-order visual-processing difficulty.' };
+            return { label: 'Named anatomy', icon: 'A', keywords: 'brain anatomy structure', functionText: 'This is a named anatomical part of the reference model. Its role is best understood as part of a connected system.', connectionsText: 'Use neighboring structures and the matching teaching view to place it within a larger functional circuit.', clinicalText: 'A structure label alone does not determine symptoms; side, subregion, pathway, and extent all matter.' };
+          }
+
+          function brainAtlas3DPronunciation(name) {
+            var key = String(name || '').toLowerCase();
+            var options = [
+              [/hippocamp/, 'hip-uh-KAM-pus'], [/amygdal/, 'uh-MIG-duh-luh'], [/hypothalam/, 'hy-poh-THAL-uh-mus'], [/thalam/, 'THAL-uh-mus'],
+              [/cerebell/, 'ser-uh-BELL-um'], [/corpus.?callos/, 'KOR-pus kuh-LOH-sum'], [/cingulat/, 'SIN-gyuh-lut'], [/caudate/, 'KAW-date'],
+              [/putamen/, 'pyoo-TAY-men'], [/globus.?pallid/, 'GLOH-bus PAL-ih-dus'], [/accumbens/, 'uh-KUM-benz'], [/medulla/, 'meh-DULL-uh'],
+              [/pons/, 'ponz'], [/occipital/, 'ok-SIP-ih-tul'], [/parietal/, 'puh-RYE-uh-tul'], [/temporal/, 'TEM-puh-rul'],
+              [/fusiform/, 'FYOO-zih-form'], [/precuneus/, 'pree-KYOO-nee-us'], [/cuneus/, 'KYOO-nee-us'], [/insula/, 'IN-suh-luh']
+            ];
+            for (var pi = 0; pi < options.length; pi++) if (options[pi][0].test(key)) return options[pi][1];
+            return '';
+          }
+
+          function brainAtlas3DRecommendedView(name, preferredView) {
+            if (preferredView && brainAtlasMap3DRegion(name, preferredView)) return preferredView;
+            var order = ['medial', 'lateral', 'superior', 'inferior'];
+            for (var vi = 0; vi < order.length; vi++) if (brainAtlasMap3DRegion(name, order[vi])) return order[vi];
+            return preferredView && BRAIN_3D_VIEW_KEYS.indexOf(preferredView) >= 0 ? preferredView : 'lateral';
+          }
+
+          function brainAtlasMap3DRegion(name, targetView) {
+            var key = String(name || '').toLowerCase();
+            function has(pattern) { return pattern.test(key); }
+            if (targetView === 'lateral') {
+              if (has(/precentral/)) return 'motor_cortex';
+              if (has(/insul/)) return 'insular';
+              if (has(/angular/)) return 'angular_gyrus';
+              if (has(/supramarginal/)) return 'supramarginal';
+              if (has(/cerebell/)) return 'cerebellum';
+              if (has(/pons|medulla|midbrain/)) return 'brainstem';
+              if (has(/occipital|cuneus|lingual|calcarine/)) return 'occipital';
+              if (has(/temporal|fusiform|parahippocampal|uncus/)) return 'temporal';
+              if (has(/parietal|postcentral|precuneus/)) return 'parietal';
+              if (has(/frontal/)) return 'frontal';
+            }
+            if (targetView === 'medial') {
+              if (has(/hypothalam/)) return 'hypothalamus';
+              if (has(/thalam/)) return 'thalamus';
+              if (has(/hippocamp/)) return 'hippocampus';
+              if (has(/amygdal/)) return 'amygdala';
+              if (has(/corpus.?callos/)) return 'corpus_callosum';
+              if (has(/cingulat/)) return 'cingulate';
+              if (has(/caudate|putamen|globus.?pallidus|nucleus.?accumbens|subthalam/)) return 'basal_ganglia';
+              if (has(/ventric/)) return 'ventricles';
+              if (has(/fornix/)) return 'fornix';
+              if (has(/mammillar/)) return 'mammillary';
+              if (has(/sept/)) return 'septum_pell';
+              if (has(/pineal/)) return 'pineal_brain';
+            }
+            if (targetView === 'superior') {
+              if (has(/paracentral|supplementary/)) return 'sma';
+              if (has(/frontal|precentral/)) return 'frontal_sup';
+              if (has(/parietal|postcentral|precuneus|angular|supramarginal/)) return 'parietal_sup';
+            }
+            if (targetView === 'inferior') {
+              if (has(/olfactory/)) return 'olfactory';
+              if (has(/optic.?chiasm/)) return 'optic_chiasm';
+              if (has(/temporal|parahippocampal|fusiform|uncus/)) return 'temporal_inf';
+              if (has(/cerebell/)) return 'cerebellum_inf';
+              if (has(/medulla/)) return 'medulla_inf';
+              if (has(/pituitar/)) return 'pituitary_brain';
+            }
+            return null;
+          }
+
+          function brainAtlas3DColor(name) {
+            var key = String(name || '').toLowerCase();
+            if (/ventric/.test(key)) return 0x38bdf8;
+            if (/cerebell/.test(key)) return 0x34d399;
+            if (/pons|medulla|midbrain/.test(key)) return 0xf59e0b;
+            if (/hippocamp|amygdal|thalam|hypothalam|caudate|putamen|globus|accumbens|subthalam|fornix|mammillar/.test(key)) return 0x2dd4bf;
+            if (/corpus.?callos|white.?matter|capsule|commissure/.test(key)) return 0xe2e8f0;
+            if (/frontal|precentral/.test(key)) return 0xfb7185;
+            if (/parietal|postcentral|precuneus|angular|supramarginal/.test(key)) return 0x60a5fa;
+            if (/temporal|fusiform|parahippocampal|uncus/.test(key)) return 0xc084fc;
+            if (/occipital|cuneus|lingual|calcarine/.test(key)) return 0x22d3ee;
+            return 0xa78bfa;
+          }
+
+          function brainAtlasLoad3DDependencies() {
+            if (window.__alloBrainAtlas3DDependencies) return window.__alloBrainAtlas3DDependencies;
+            var stem = window.StemLab;
+            if (!stem || !stem.ensureThree || !stem.loadScriptResilient) return Promise.reject(new Error('The shared 3D engine is not available.'));
+            var coreLocal = new URL('vendor/three-r128/three.min.js', document.baseURI).href;
+            var orbitLocal = new URL('vendor/three-r128/OrbitControls.js', document.baseURI).href;
+            var gltfLocal = new URL('vendor/three-r128/GLTFLoader.js', document.baseURI).href;
+            var decoderLocal = new URL('vendor/meshoptimizer/meshopt_decoder.module.js', document.baseURI).href;
+            var promise = stem.loadScriptResilient([
+              coreLocal,
+              'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js'
+            ], {
+              cacheKey: 'three-core',
+              check: function () { return !!window.THREE; },
+              failMessage: 'The 3D engine could not load. The accessible 2D atlas remains available.'
+            }).then(function () {
+              return stem.loadScriptResilient([
+                orbitLocal,
+                'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js',
+                'https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js'
+              ], {
+                cacheKey: 'three-orbit',
+                check: function () { return !!(window.THREE && window.THREE.OrbitControls); },
+                failMessage: 'The 3D camera controls could not start.'
+              });
+            }).then(function () {
+              return stem.loadScriptResilient([
+                gltfLocal,
+                'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js',
+                'https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js'
+              ], {
+                cacheKey: 'brain-atlas-gltf-r128',
+                check: function () { return !!(window.THREE && window.THREE.GLTFLoader); },
+                failMessage: 'The anatomy model loader could not start.'
+              });            }).then(function () {
+              if (window.MeshoptDecoder) return window.MeshoptDecoder.ready || true;
+              return import(decoderLocal).catch(function () {
+                return import('https://cdn.jsdelivr.net/npm/meshoptimizer@1.2.0/meshopt_decoder.mjs');
+              }).then(function (module) {
+                window.MeshoptDecoder = module.MeshoptDecoder || module.default || module;
+                return window.MeshoptDecoder.ready || true;
+              });
+            }).then(function () {
+              return { THREE: window.THREE, MeshoptDecoder: window.MeshoptDecoder };
+            }).catch(function (error) {
+              window.__alloBrainAtlas3DDependencies = null;
+              throw error;
+            });
+            window.__alloBrainAtlas3DDependencies = promise;
+            return promise;
+          }
+
+          function brainAtlas3DSetOverlay(canvas, stateName, title, message) {
+            if (!canvas || !canvas.parentNode) return;
+            var overlay = canvas.parentNode.querySelector('.brainatlas-3d-loading');
+            if (!overlay) return;
+            overlay.setAttribute('data-state', stateName || 'loading');
+            var strong = overlay.querySelector('strong');
+            var detail = overlay.querySelector('[data-brainatlas-3d-loading-detail]');
+            if (strong && title) strong.textContent = title;
+            if (detail && message) detail.textContent = message;
+          }
+
+          function brainAtlas3DCanvasRef(canvas) {
+            if (!canvas) {
+              var previousCanvas = window.__alloBrainAtlas3DCanvas;
+              window.setTimeout(function () {
+                if (previousCanvas && !previousCanvas.isConnected && previousCanvas._brain3DState) previousCanvas._brain3DState.cleanup();
+              }, 0);
+              return;
+            }
+
+            if (window.__alloBrainAtlas3DCanvas && window.__alloBrainAtlas3DCanvas !== canvas && !window.__alloBrainAtlas3DCanvas.isConnected && window.__alloBrainAtlas3DCanvas._brain3DState) {
+              window.__alloBrainAtlas3DCanvas._brain3DState.cleanup();
+            }
+            window.__alloBrainAtlas3DCanvas = canvas;
+
+            if (canvas._brain3DState) {
+              canvas._brain3DState.updateFromRender(viewKey, brain3DLayer, brain3DFocus, selected3DStructure, d.selectedRegion || '', handleBrainAtlas3DChallengePick, brain3DSliceAxis, brain3DSlicePosition, brain3DSliceFlip);
+              return;
+            }
+
+            var state = {
+              alive: true,
+              ready: false,
+              canvas: canvas,
+              viewKey: viewKey,
+              layer: brain3DLayer,
+              focus: brain3DFocus,
+              sliceAxis: brain3DSliceAxis,
+              slicePosition: brain3DSlicePosition,
+              sliceFlip: brain3DSliceFlip,
+              selectedStructure: selected3DStructure,
+              selectedRegion: d.selectedRegion || '',
+              onStructurePicked: handleBrainAtlas3DChallengePick,
+              meshes: [],
+              frame: null,
+              pointerStart: null
+            };
+            canvas._brain3DState = state;
+
+            state.requestRender = function () {
+              if (!state.alive || state.frame || !state.renderer || !state.scene || !state.camera) return;
+              state.frame = requestAnimationFrame(function () {
+                state.frame = null;
+                if (!state.alive || !canvas.isConnected) { state.cleanup(); return; }
+                if (state.controls) state.controls.update();
+                state.renderer.render(state.scene, state.camera);
+              });
+            };
+
+            state.updateSlicePlane = function () {
+              if (!state.THREE || !state.modelBounds) return;
+              var enabled = ['sagittal', 'coronal', 'axial'].indexOf(state.sliceAxis) >= 0;
+              if (!enabled) {
+                state.clipPlane = null;
+                state.clippingPlanes = null;
+                state.meshes.forEach(function (mesh) {
+                  if (mesh.material && mesh.material.clippingPlanes) {
+                    mesh.material.clippingPlanes = null;
+                    mesh.material.needsUpdate = true;
+                  }
+                });
+                state.requestRender();
+                return;
+              }
+              var axisName = state.sliceAxis === 'sagittal' ? 'x' : (state.sliceAxis === 'coronal' ? 'z' : 'y');
+              var low = state.modelBounds.min[axisName];
+              var high = state.modelBounds.max[axisName];
+              var fraction = Math.max(0, Math.min(1, Number(state.slicePosition || 0) / 100));
+              var coordinate = low + (high - low) * fraction;
+              var direction = state.sliceFlip ? -1 : 1;
+              var normal = new state.THREE.Vector3(axisName === 'x' ? direction : 0, axisName === 'y' ? direction : 0, axisName === 'z' ? direction : 0);
+              if (!state.clipPlane) state.clipPlane = new state.THREE.Plane();
+              state.clipPlane.set(normal, -coordinate * direction);
+              if (!state.clippingPlanes) state.clippingPlanes = [state.clipPlane];
+              state.meshes.forEach(function (mesh) {
+                if (!mesh.material) return;
+                if (mesh.material.clippingPlanes !== state.clippingPlanes) {
+                  mesh.material.clippingPlanes = state.clippingPlanes;
+                  mesh.material.needsUpdate = true;
+                }
+              });
+              state.requestRender();
+            };
+            state.setPreset = function (preset, announce) {
+              if (!state.camera) return;
+              if (state.cameraTween) { cancelAnimationFrame(state.cameraTween); state.cameraTween = null; }
+              var key = preset || state.viewKey || 'lateral';
+              var position = [4.6, 0.15, 0.15];
+              var up = [0, 1, 0];
+              if (key === 'medial') position = [-4.6, 0.15, 0.15];
+              else if (key === 'front') position = [0, 0.1, 4.6];
+              else if (key === 'superior' || key === 'top') { position = [0, 4.6, 0.01]; up = [0, 0, -1]; }
+              else if (key === 'inferior' || key === 'bottom') { position = [0, -4.6, 0.01]; up = [0, 0, 1]; }
+              state.camera.up.set(up[0], up[1], up[2]);
+              state.camera.position.set(position[0], position[1], position[2]);
+              state.camera.lookAt(0, 0, 0);
+              if (state.controls) { state.controls.target.set(0, 0, 0); state.controls.update(); }
+              state.requestRender();
+              if (announce && typeof announceToSR === 'function') announceToSR('3D camera set to ' + key + ' view.');
+            };
+
+            state.revealStructure = function (structureKey, mappedRegion, announce) {
+              if (!state.ready || !state.THREE || !state.root || !structureKey) return false;
+              var matches = state.meshes.filter(function (mesh) {
+                var meta = mesh.userData.brainAtlas3D || {};
+                return meta.structureKey === structureKey;
+              });
+              if (!matches.length) return false;
+              if (state.cameraTween) { cancelAnimationFrame(state.cameraTween); state.cameraTween = null; }
+              state.selectedStructure = structureKey;
+              state.selectedRegion = mappedRegion || brainAtlasMap3DRegion(structureKey, state.viewKey) || '';
+              state.layer = 'all';
+              state.focus = 'fade';
+              state.applyAppearance();
+              state.root.updateMatrixWorld(true);
+              var box = new state.THREE.Box3();
+              matches.forEach(function (mesh) { box.expandByObject(mesh); });
+              if (box.isEmpty()) return false;
+              var center = box.getCenter(new state.THREE.Vector3());
+              var sphere = box.getBoundingSphere(new state.THREE.Sphere());
+              var direction = state.camera.position.clone().sub(state.controls ? state.controls.target : new state.THREE.Vector3());
+              if (direction.lengthSq() < 0.0001) direction.set(1, 0.12, 0.18);
+              direction.normalize();
+              var fovRadians = state.camera.fov * Math.PI / 180;
+              var fitDistance = Math.max(0.62, Math.min(5.8, (sphere.radius || 0.18) / Math.sin(fovRadians / 2) * 1.65));
+              var destination = center.clone().add(direction.multiplyScalar(fitDistance));
+              var startPosition = state.camera.position.clone();
+              var startTarget = state.controls ? state.controls.target.clone() : new state.THREE.Vector3();
+              var started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+              var duration = prefersReducedMotion ? 0 : 560;
+              function finishReveal() {
+                state.camera.position.copy(destination);
+                if (state.controls) { state.controls.target.copy(center); state.controls.update(); }
+                else state.camera.lookAt(center);
+                state.cameraTween = null;
+                state.requestRender();
+              }
+              if (!duration) finishReveal();
+              else {
+                var animateReveal = function (now) {
+                  if (!state.alive) return;
+                  var progress = Math.min(1, ((now || Date.now()) - started) / duration);
+                  var eased = 1 - Math.pow(1 - progress, 3);
+                  state.camera.position.lerpVectors(startPosition, destination, eased);
+                  var currentTarget = startTarget.clone().lerp(center, eased);
+                  if (state.controls) state.controls.target.copy(currentTarget);
+                  state.camera.lookAt(currentTarget);
+                  state.renderer.render(state.scene, state.camera);
+                  if (progress < 1) state.cameraTween = requestAnimationFrame(animateReveal);
+                  else finishReveal();
+                };
+                state.cameraTween = requestAnimationFrame(animateReveal);
+              }
+              if (announce && typeof announceToSR === 'function') announceToSR(brainAtlasHumanize3DName(structureKey) + ' revealed and centered in the 3D model.');
+              return true;
+            };
+
+            state.applyAppearance = function () {
+              if (!state.ready) return;
+              var hasSelection = !!(state.selectedRegion || state.selectedStructure);
+              state.meshes.forEach(function (mesh) {
+                var meta = mesh.userData.brainAtlas3D || {};
+                meta.regionId = brainAtlasMap3DRegion(meta.structureKey, state.viewKey);
+                var layerVisible = true;
+                if (state.layer === 'left' && meta.hemisphere === 'right') layerVisible = false;
+                if (state.layer === 'right' && meta.hemisphere === 'left') layerVisible = false;
+                if (state.layer === 'deep' && meta.cortical) layerVisible = false;
+                var selected = state.selectedStructure ? meta.structureKey === state.selectedStructure : (state.selectedRegion ? meta.regionId === state.selectedRegion : false);
+                if (state.focus === 'isolate' && hasSelection && !selected) layerVisible = false;
+                mesh.visible = layerVisible;
+                if (!mesh.material) return;
+                var opacity = state.focus === 'fade' && hasSelection && !selected ? 0.13 : 0.94;
+                mesh.material.opacity = opacity;
+                mesh.material.transparent = opacity < 1;
+                mesh.material.depthWrite = opacity > 0.25;
+                mesh.material.color.setHex(selected ? 0xfbbf24 : meta.baseColor);
+                if (mesh.material.emissive) mesh.material.emissive.setHex(selected ? 0x6b3b00 : 0x080b1e);
+                mesh.material.emissiveIntensity = selected ? 0.48 : 0.08;
+              });
+              state.requestRender();
+            };
+
+            state.updateFromRender = function (nextView, nextLayer, nextFocus, nextStructure, nextRegion, nextPickHandler, nextSliceAxis, nextSlicePosition, nextSliceFlip) {
+              var viewChanged = state.viewKey !== nextView;
+              state.viewKey = nextView;
+              state.layer = nextLayer;
+              state.focus = nextFocus;
+              state.selectedStructure = nextStructure || '';
+              state.selectedRegion = nextRegion || '';
+              state.onStructurePicked = nextPickHandler;
+              state.sliceAxis = nextSliceAxis || 'off';
+              state.slicePosition = Math.max(0, Math.min(100, Number(nextSlicePosition) || 0));
+              state.sliceFlip = !!nextSliceFlip;
+              state.applyAppearance();
+              state.updateSlicePlane();
+              if (viewChanged) state.setPreset(nextView, false);
+            };
+
+            state.resize = function () {
+              if (!state.renderer || !state.camera || !canvas.parentNode) return;
+              var width = Math.max(320, canvas.parentNode.clientWidth || canvas.clientWidth || 800);
+              var height = Math.max(360, canvas.parentNode.clientHeight || canvas.clientHeight || 620);
+              state.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+              state.renderer.setSize(width, height, false);
+              state.camera.aspect = width / height;
+              state.camera.updateProjectionMatrix();
+              state.requestRender();
+            };
+
+            state.cleanup = function () {
+              if (!state.alive) return;
+              state.alive = false;
+              if (state.frame) cancelAnimationFrame(state.frame);
+              if (state.cameraTween) cancelAnimationFrame(state.cameraTween);
+              if (state.resizeObserver) state.resizeObserver.disconnect();
+              window.removeEventListener('resize', state.resize);
+              canvas.removeEventListener('pointerdown', state.onPointerDown);
+              canvas.removeEventListener('pointerup', state.onPointerUp);
+              canvas.removeEventListener('keydown', state.onKeyDown);
+              if (state.controls) state.controls.dispose();
+              state.meshes.forEach(function (mesh) {
+                if (mesh.geometry && mesh.geometry.dispose) mesh.geometry.dispose();
+                if (mesh.material && mesh.material.dispose) mesh.material.dispose();
+              });
+              if (state.renderer) state.renderer.dispose();
+              canvas._brain3DState = null;
+              if (window.__alloBrainAtlas3DCanvas === canvas) window.__alloBrainAtlas3DCanvas = null;
+            };
+
+            state.onPointerDown = function (event) {
+              state.pointerStart = { x: event.clientX, y: event.clientY };
+            };
+            state.onPointerUp = function (event) {
+              if (!state.ready || !state.pointerStart) return;
+              var dx = event.clientX - state.pointerStart.x;
+              var dy = event.clientY - state.pointerStart.y;
+              state.pointerStart = null;
+              if (Math.sqrt(dx * dx + dy * dy) > 6) return;
+              var rect = canvas.getBoundingClientRect();
+              state.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+              state.pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+              state.raycaster.setFromCamera(state.pointer, state.camera);
+              var hits = state.raycaster.intersectObjects(state.meshes.filter(function (mesh) { return mesh.visible; }), false);
+              if (state.clipPlane && state.sliceAxis !== 'off') hits = hits.filter(function (hit) { return state.clipPlane.distanceToPoint(hit.point) <= 0.0001; });
+              if (!hits.length) return;
+              var meta = hits[0].object.userData.brainAtlas3D || {};
+              var mapped = brainAtlasMap3DRegion(meta.structureKey, state.viewKey);
+              upd('selected3DStructure', meta.structureKey || '');
+              upd('selectedRegion', mapped || null);
+              if (typeof state.onStructurePicked === 'function') state.onStructurePicked(meta.structureKey || '', mapped || null);
+              if (typeof announceToSR === 'function') announceToSR(brainAtlasHumanize3DName(meta.structureKey) + ' selected in the 3D brain model.' + (mapped ? ' Related atlas region opened.' : ''));
+            };
+            state.onKeyDown = function (event) {
+              if (!state.ready) return;
+              var handled = true;
+              if (event.key === 'ArrowLeft') state.root.rotation.y -= 0.12;
+              else if (event.key === 'ArrowRight') state.root.rotation.y += 0.12;
+              else if (event.key === 'ArrowUp') state.root.rotation.x -= 0.10;
+              else if (event.key === 'ArrowDown') state.root.rotation.x += 0.10;
+              else if (event.key === '+' || event.key === '=') state.camera.position.multiplyScalar(0.90);
+              else if (event.key === '-' || event.key === '_') state.camera.position.multiplyScalar(1.10);
+              else if (event.key === 'Home') state.setPreset(state.viewKey, true);
+              else if (event.key === 'Escape') {
+                var shell = canvas.closest && canvas.closest('.brainatlas-canvas-shell');
+                var fullscreenActive = !!(document.fullscreenElement || document.webkitFullscreenElement || (shell && shell.classList.contains('brainatlas-fullscreen-fallback')));
+                if (fullscreenActive) handled = false;
+                else { upd('selected3DStructure', ''); upd('selectedRegion', null); }
+              }
+              else handled = false;
+              if (handled) { event.preventDefault(); state.requestRender(); }
+            };
+            canvas.addEventListener('pointerdown', state.onPointerDown);
+            canvas.addEventListener('pointerup', state.onPointerUp);
+            canvas.addEventListener('keydown', state.onKeyDown);
+
+            brainAtlas3DSetOverlay(canvas, 'loading', 'Preparing the 3D anatomy model', 'Loading the open, 141-structure reference atlas. The 2D atlas remains available at any time.');
+            brainAtlasLoad3DDependencies().then(function (deps) {
+              if (!state.alive || !canvas.isConnected) return;
+              var THREE = deps.THREE;
+              state.THREE = THREE;
+              state.scene = new THREE.Scene();
+              state.camera = new THREE.PerspectiveCamera(38, 1, 0.01, 50);
+              state.renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+              state.renderer.setClearColor(0x0f172a, 0);
+              state.renderer.localClippingEnabled = true;
+              if (THREE.sRGBEncoding) state.renderer.outputEncoding = THREE.sRGBEncoding;
+              state.renderer.physicallyCorrectLights = true;
+              state.scene.add(new THREE.HemisphereLight(0xdbeafe, 0x111827, 1.35));
+              var keyLight = new THREE.DirectionalLight(0xffffff, 2.4);
+              keyLight.position.set(4, 6, 5);
+              state.scene.add(keyLight);
+              var rimLight = new THREE.DirectionalLight(0x67e8f9, 1.5);
+              rimLight.position.set(-5, 1, -4);
+              state.scene.add(rimLight);
+              state.controls = new THREE.OrbitControls(state.camera, canvas);
+              state.controls.enableDamping = false;
+              state.controls.enablePan = false;
+              state.controls.minDistance = 0.35;
+              state.controls.maxDistance = 9;
+              state.controls.rotateSpeed = 0.72;
+              state.controls.zoomSpeed = 0.86;
+              state.controls.addEventListener('change', state.requestRender);
+              state.raycaster = new THREE.Raycaster();
+              state.pointer = new THREE.Vector2();
+              state.setPreset(state.viewKey, false);
+              state.resize();
+
+              var loader = new THREE.GLTFLoader();
+              loader.setMeshoptDecoder(deps.MeshoptDecoder);
+              var modelUrl = new URL('stem_lab/assets/brainatlas/alloflow-brain-atlas-meshopt.glb', document.baseURI).href;
+              loader.load(modelUrl, function (gltf) {
+                if (!state.alive || !canvas.isConnected) return;
+                state.root = gltf.scene;
+                var box = new THREE.Box3().setFromObject(state.root);
+                var center = box.getCenter(new THREE.Vector3());
+                var size = box.getSize(new THREE.Vector3());
+                var largest = Math.max(size.x, size.y, size.z) || 1;
+                var modelScale = 2.85 / largest;
+                state.root.scale.setScalar(modelScale);
+                state.root.position.copy(center).multiplyScalar(-modelScale);
+                state.root.updateMatrixWorld(true);
+                state.modelBounds = new THREE.Box3().setFromObject(state.root);
+                var structureMap = {};
+                state.root.traverse(function (object) {
+                  if (!object.isMesh) return;
+                  var structureKey = object.name || (object.parent && object.parent.name) || 'Brain structure';
+                  var lower = structureKey.toLowerCase();
+                  var hemisphere = /_l(?:\.\d+)?$/i.test(structureKey) ? 'left' : (/_r(?:\.\d+)?$/i.test(structureKey) ? 'right' : 'midline');
+                  var cortical = /gyrus|cortex|lobule|precuneus|cuneus|operculum|pole|insula|paracentral/i.test(lower) && !/cerebell/i.test(lower);
+                  var baseColor = brainAtlas3DColor(structureKey);
+                  object.material = new THREE.MeshStandardMaterial({
+                    color: baseColor,
+                    roughness: 0.70,
+                    metalness: 0.02,
+                    transparent: true,
+                    opacity: 0.94,
+                    side: THREE.DoubleSide,
+                    emissive: 0x080b1e,
+                    emissiveIntensity: 0.08
+                  });
+                  object.userData.brainAtlas3D = { structureKey: structureKey, hemisphere: hemisphere, cortical: cortical, baseColor: baseColor, regionId: null };
+                  state.meshes.push(object);
+                  var structureLabel = brainAtlasHumanize3DName(structureKey);
+                  var structureIndexKey = structureLabel.toLowerCase();
+                  if (!structureMap[structureIndexKey]) {
+                    var familyInfo = brainAtlas3DFamilyInfo(structureKey);
+                    structureMap[structureIndexKey] = {
+                      key: structureKey,
+                      label: structureLabel,
+                      family: familyInfo.label,
+                      icon: familyInfo.icon,
+                      keywords: familyInfo.keywords,
+                      hemisphere: hemisphere
+                    };
+                  }
+                });
+                state.structureIndex = Object.keys(structureMap).map(function (indexKey) { return structureMap[indexKey]; }).sort(function (a, b) { return a.label.localeCompare(b.label); });
+                window.__alloBrainAtlas3DStructureIndex = state.structureIndex;
+                upd('brain3DStructureIndex', state.structureIndex);
+                state.scene.add(state.root);
+                state.ready = true;
+                state.applyAppearance();
+                state.updateSlicePlane();
+                state.setPreset(state.viewKey, false);
+                brainAtlas3DSetOverlay(canvas, 'ready', '', '');
+                if (typeof announceToSR === 'function') announceToSR('Interactive 3D brain anatomy model ready. Drag to rotate, scroll to zoom, or select a structure.');
+              }, function (progress) {
+                if (!progress || !progress.total) return;
+                var percent = Math.max(1, Math.min(99, Math.round((progress.loaded / progress.total) * 100)));
+                brainAtlas3DSetOverlay(canvas, 'loading', 'Loading brain anatomy — ' + percent + '%', 'Optimized model data is loading once, then remains cached by your browser.');
+              }, function (error) {
+                console.error('[BrainAtlas] 3D anatomy model failed to load', error);
+                brainAtlas3DSetOverlay(canvas, 'error', 'The 3D model could not load', 'Use the 2D Diagram button above to continue with the complete accessible atlas.');
+              });
+            }).catch(function (error) {
+              console.error('[BrainAtlas] 3D dependencies failed to load', error);
+              brainAtlas3DSetOverlay(canvas, 'error', 'The 3D engine could not start', 'Use the 2D Diagram button above to continue with the complete accessible atlas.');
+            });
+          }
+
+          function setBrainAtlas3DMode(mode) {
+            upd('atlasDisplayMode', mode === '3d' && brain3DAvailable ? '3d' : 'diagram');
+            if (typeof announceToSR === 'function') announceToSR(mode === '3d' && brain3DAvailable ? '3D brain anatomy mode selected. The model is loading.' : '2D brain diagram mode selected.');
+          }
+
+          function setBrainAtlas3DCamera(preset) {
+            var canvas = window.__alloBrainAtlas3DCanvas;
+            if (canvas && canvas._brain3DState) canvas._brain3DState.setPreset(preset, true);
+          }
+
+          function brainAtlas3DSliceAxisLabel(axis) {
+            return axis === 'sagittal' ? 'Sagittal left-right cut' : (axis === 'coronal' ? 'Coronal front-back cut' : (axis === 'axial' ? 'Axial top-bottom cut' : 'Cutaway off'));
+          }
+
+          function setBrainAtlas3DSliceAxis(axis) {
+            var nextAxis = ['sagittal', 'coronal', 'axial'].indexOf(axis) >= 0 ? axis : 'off';
+            upd('brain3DSliceAxis', nextAxis);
+            if (nextAxis !== 'off') {
+              var preset = nextAxis === 'sagittal' ? 'medial' : (nextAxis === 'coronal' ? 'front' : 'top');
+              window.setTimeout(function () { setBrainAtlas3DCamera(preset); }, 35);
+            }
+            if (typeof announceToSR === 'function') announceToSR(nextAxis === 'off' ? '3D cutaway closed. The whole model is visible.' : brainAtlas3DSliceAxisLabel(nextAxis) + ' opened. Move the cut depth slider or flip the visible side.');
+          }
+
+          function setBrainAtlas3DSlicePosition(value) {
+            upd('brain3DSlicePosition', Math.max(0, Math.min(100, parseInt(value, 10) || 0)));
+          }
+
+          function flipBrainAtlas3DSlice() {
+            upd('brain3DSliceFlip', !brain3DSliceFlip);
+            if (typeof announceToSR === 'function') announceToSR('Cutaway visible side flipped.');
+          }
+
           var visibleViewKeys = activeViewGroup.views.filter(function (key) { return !!VIEWS[key]; });
           var detailMode = d.detailMode || 'plain';
           var showAdvancedDetail = detailMode === 'advanced';
@@ -5833,12 +6703,323 @@ var d = labToolData.brainAtlas || {};
             if (!limit || clean.length <= limit) return clean;
             return clean.slice(0, Math.max(0, limit - 3)).replace(/\s+\S*$/, '') + '...';
           }
+
+          var brain3DQuery = brain3DSearch.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+          var brain3DSearchStopWords = ['a', 'an', 'and', 'for', 'of', 'the', 'to'];
+          var brain3DQueryTerms = brain3DQuery ? brain3DQuery.split(/\s+/).filter(function (term) { return brain3DSearchStopWords.indexOf(term) < 0; }) : [];
+          var brain3DSearchAliases = {
+            memory: ['memory', 'hippocamp', 'fornix', 'mammillar', 'entorhinal'], memories: ['memory', 'hippocamp', 'fornix', 'mammillar', 'entorhinal'], remember: ['memory', 'hippocamp'], hippocampus: ['hippocamp'],
+            amygdala: ['amygdal'], thalamus: ['thalam'], hypothalamus: ['hypothalam'], cerebellum: ['cerebell'], ventricle: ['ventric'], ventricles: ['ventric'],
+            emotion: ['emotion', 'amygdal', 'salience', 'fear', 'threat'], emotional: ['emotion', 'amygdal', 'salience'], fear: ['fear', 'threat', 'amygdal', 'salience'],
+            vision: ['vision', 'visual', 'occipital', 'calcarine', 'cuneus', 'lingual'], visual: ['vision', 'visual', 'occipital', 'calcarine', 'cuneus', 'lingual'], sight: ['vision', 'visual', 'occipital'],
+            movement: ['movement', 'motor', 'precentral', 'caudate', 'putamen', 'pallid', 'subthalam'], motor: ['movement', 'motor', 'precentral', 'caudate', 'putamen', 'pallid', 'subthalam'],
+            balance: ['balance', 'coordination', 'cerebell'], coordination: ['balance', 'coordination', 'cerebell'],
+            hormone: ['hormone', 'endocrine', 'hypothalam'], hormones: ['hormone', 'endocrine', 'hypothalam'], appetite: ['appetite', 'hunger', 'hypothalam'], temperature: ['temperature', 'homeostasis', 'hypothalam'],
+            relay: ['relay', 'thalam'], sensation: ['sensation', 'sensory', 'thalam', 'postcentral'], sensory: ['sensation', 'sensory', 'thalam', 'postcentral'],
+            language: ['language', 'speech', 'temporal', 'frontal'], speech: ['language', 'speech', 'temporal', 'frontal'],
+            fluid: ['fluid', 'csf', 'ventric'], csf: ['fluid', 'csf', 'ventric']
+          };
+          var brain3DQueryGroups = brain3DQueryTerms.map(function (term) { return brain3DSearchAliases[term] || [term]; });
+          var brain3DSearchEntries = brain3DQueryGroups.length ? brain3DStructureIndex.map(function (item) {
+            var haystack = (item.label + ' ' + (item.family || '') + ' ' + (item.keywords || '')).toLowerCase();
+            for (var qi = 0; qi < brain3DQueryGroups.length; qi++) {
+              var alternatives = brain3DQueryGroups[qi];
+              var matched = false;
+              for (var ai = 0; ai < alternatives.length; ai++) if (haystack.indexOf(alternatives[ai]) >= 0) { matched = true; break; }
+              if (!matched) return null;
+            }
+            var label = item.label.toLowerCase();
+            var baseLabel = label.replace(/\s*\((left|right)\)\s*$/i, '').trim();
+            var queryWithoutSide = brain3DQuery.replace(/\b(left|right)\b/g, '').replace(/\s+/g, ' ').trim();
+            var score = baseLabel === queryWithoutSide ? 0 : (baseLabel.indexOf(queryWithoutSide) === 0 ? 1 : (baseLabel.indexOf(queryWithoutSide) >= 0 ? 2 : 4));
+            var asksMemory = brain3DQueryTerms.some(function (term) { return ['memory', 'memories', 'remember'].indexOf(term) >= 0; });
+            var asksEmotion = brain3DQueryTerms.some(function (term) { return ['amygdala', 'emotion', 'emotional', 'fear'].indexOf(term) >= 0; });
+            if (asksMemory && /(?:body|head|tail) of hippocampus/.test(baseLabel)) score -= 3;
+            if (asksMemory && /amygdalohippocampal/.test(baseLabel)) score += 2;
+            if (asksEmotion && /amygdaloid complex/.test(baseLabel)) score -= 3;
+            if (asksEmotion && /amygdalohippocampal/.test(baseLabel)) score += 2;
+            if (brain3DQueryTerms.some(function (term) { return ['balance', 'coordination'].indexOf(term) >= 0; }) && /cerebell/.test(baseLabel)) score -= 2;
+            if (brain3DQueryTerms.some(function (term) { return ['vision', 'visual', 'sight'].indexOf(term) >= 0; }) && /occipital|calcarine|cuneus|lingual/.test(baseLabel)) score -= 1.5;
+            if (brain3DQueryTerms.some(function (term) { return ['movement', 'motor'].indexOf(term) >= 0; }) && /precentral|putamen|caudate|pallid|subthalam/.test(baseLabel)) score -= 1.5;
+            if (item.hemisphere === 'midline') score += 0.15;
+            return { item: item, score: score, baseLabel: item.label.replace(/\s*\((left|right)\)\s*$/i, '').trim() };
+          }).filter(Boolean) : [];
+          var brain3DSearchGroupMap = {};
+          brain3DSearchEntries.forEach(function (entry) {
+            var groupKey = entry.baseLabel.toLowerCase();
+            if (!brain3DSearchGroupMap[groupKey]) brain3DSearchGroupMap[groupKey] = { groupKey: groupKey, label: entry.baseLabel, entries: [], score: entry.score };
+            brain3DSearchGroupMap[groupKey].entries.push(entry);
+            brain3DSearchGroupMap[groupKey].score = Math.min(brain3DSearchGroupMap[groupKey].score, entry.score);
+          });
+          var preferredSearchSide = brain3DQueryTerms.indexOf('right') >= 0 ? 'right' : (brain3DQueryTerms.indexOf('left') >= 0 ? 'left' : 'left');
+          var brain3DSearchResults = Object.keys(brain3DSearchGroupMap).map(function (groupKey) {
+            var group = brain3DSearchGroupMap[groupKey];
+            group.entries.sort(function (a, b) { return a.score - b.score || a.item.label.localeCompare(b.item.label); });
+            var primaryEntry = group.entries.filter(function (entry) { return entry.item.hemisphere === preferredSearchSide; })[0] || group.entries[0];
+            var sideItems = group.entries.map(function (entry) { return entry.item; }).sort(function (a, b) {
+              var order = { left: 0, right: 1, midline: 2 };
+              return (order[a.hemisphere] || 0) - (order[b.hemisphere] || 0);
+            });
+            var sides = sideItems.map(function (item) { return item.hemisphere; }).filter(function (side, index, values) { return values.indexOf(side) === index; });
+            return Object.assign({}, primaryEntry.item, { label: group.label, groupKey: group.groupKey, sideItems: sideItems, sides: sides, score: group.score, hemisphere: sides.length > 1 ? 'bilateral' : primaryEntry.item.hemisphere });
+          }).sort(function (a, b) { return a.score - b.score || a.label.localeCompare(b.label); }).slice(0, 8);
+          if (brain3DSearchActiveIndex >= brain3DSearchResults.length) brain3DSearchActiveIndex = Math.max(0, brain3DSearchResults.length - 1);
+
+          function selectBrainAtlas3DSearchResult(item) {
+            if (!item) return;
+            var targetView = brainAtlas3DRecommendedView(item.key, viewKey);
+            var mappedRegion = brainAtlasMap3DRegion(item.key, targetView);
+            if (targetView !== viewKey) {
+              upd('view', targetView);
+              upd('viewGroup', brainAtlasViewGroupFor(targetView));
+              upd('viewsExplored', (function () { var explored = Object.assign({}, d.viewsExplored); explored[targetView] = true; return explored; })());
+            }
+            upd('selected3DStructure', item.key);
+            upd('selectedRegion', mappedRegion || null);
+            upd('brain3DLayer', 'all');
+            upd('brain3DFocus', 'fade');
+            upd('brain3DSliceAxis', 'off');
+            upd('brain3DSearch', item.label);
+            upd('brain3DSearchOpen', false);
+            upd('brain3DSearchActiveIndex', 0);
+            window.setTimeout(function () {
+              var canvas = window.__alloBrainAtlas3DCanvas;
+              if (canvas && canvas._brain3DState) canvas._brain3DState.revealStructure(item.key, mappedRegion, true);
+            }, 40);
+          }
+
+          function handleBrainAtlas3DSearchKey(event) {
+            if (!event) return;
+            if (event.key === 'ArrowDown' && brain3DSearchResults.length) {
+              event.preventDefault();
+              upd('brain3DSearchOpen', true);
+              upd('brain3DSearchActiveIndex', (brain3DSearchActiveIndex + 1) % brain3DSearchResults.length);
+            } else if (event.key === 'ArrowUp' && brain3DSearchResults.length) {
+              event.preventDefault();
+              upd('brain3DSearchOpen', true);
+              upd('brain3DSearchActiveIndex', (brain3DSearchActiveIndex - 1 + brain3DSearchResults.length) % brain3DSearchResults.length);
+            } else if (event.key === 'Enter' && brain3DSearchResults.length) {
+              event.preventDefault();
+              selectBrainAtlas3DSearchResult(brain3DSearchResults[brain3DSearchActiveIndex] || brain3DSearchResults[0]);
+            } else if (event.key === 'Escape') {
+              event.preventDefault();
+              upd('brain3DSearchOpen', false);
+            }
+          }
+
+          function speakBrainAtlas3DSelection() {
+            var spokenLabel = String(selected3DLabel || (sel && sel.name) || '').replace(/\s*\((left|right)\)\s*$/i, '');
+            if (!spokenLabel) return;
+            if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') {
+              if (typeof announceToSR === 'function') announceToSR('Speech pronunciation is not available in this browser.');
+              return;
+            }
+            try {
+              window.speechSynthesis.cancel();
+              var utterance = new window.SpeechSynthesisUtterance(spokenLabel);
+              utterance.rate = 0.78;
+              utterance.pitch = 1;
+              window.speechSynthesis.speak(utterance);
+            } catch (e) {
+              if (typeof announceToSR === 'function') announceToSR('Speech pronunciation could not start.');
+            }
+          }
+
+          function recenterBrainAtlas3DSelection() {
+            var canvas = window.__alloBrainAtlas3DCanvas;
+            if (canvas && canvas._brain3DState && selected3DStructure) canvas._brain3DState.revealStructure(selected3DStructure, sel && sel.id, true);
+          }
+
+          function openBrainAtlas3DSelectionIn2D() {
+            upd('atlasDisplayMode', 'diagram');
+            upd('brain3DSearchOpen', false);
+            window.setTimeout(scrollToBrainAtlasDiagram, 30);
+            if (typeof announceToSR === 'function') announceToSR('Matching 2D teaching diagram opened for ' + ((sel && sel.name) || selected3DLabel || 'the selected structure') + '.');
+          }
+
+          function clearBrainAtlas3DSelection() {
+            upd('selected3DStructure', '');
+            upd('selectedRegion', null);
+            upd('brain3DFocus', 'all');
+            if (typeof announceToSR === 'function') announceToSR('3D structure selection cleared.');
+          }
+
+          var selected3DFamily = brainAtlas3DFamilyInfo(selected3DStructure || (sel && (sel.id + ' ' + sel.name)) || '');
+          var selected3DGuide = (selected3DStructure || sel) ? {
+            title: selected3DLabel || (sel && sel.name) || 'Brain structure',
+            family: selected3DFamily.label,
+            pronunciation: brainAtlas3DPronunciation(selected3DStructure || (sel && sel.name) || ''),
+            functionText: brainAtlasShortText((sel && sel.fn) || selected3DFamily.functionText, 240),
+            connectionsText: brainAtlasShortText((sel && sel.pathways) || selected3DFamily.connectionsText, 240),
+            clinicalText: brainAtlasShortText((sel && (sel.damage || sel.conditions)) || selected3DFamily.clinicalText, 240),
+            hasTeachingCard: !!sel
+          } : null;
+
+          var BRAIN_3D_CHALLENGE_POOL = [
+            { id: 'hippocampus', label: 'Hippocampus', pattern: /(?:^|_)(?:body|head|tail)_of_hippocampus(?:_|$)|(?:^|_)hippocampus(?:_|$)/i, representative: /body_of_hippocampus/i, view: 'medial', layer: 'deep', learn: 'Find and select the hippocampus.', explore: 'Find the structure that helps form new declarative memories and supports spatial context.', challenge: 'A patient can hold a short conversation but cannot form lasting new memories. Find the structure most directly associated with this pattern.', hint1: 'Look deep in the medial temporal region rather than on the outer cortex.', hint2: 'Use the medial view and Deep structures layer. Its curved formation sits near the temporal horn.', why: 'The hippocampal formation is central to memory consolidation and spatial context, while long-term memory storage remains distributed.' },
+            { id: 'amygdala', label: 'Amygdala', pattern: /(?:^|_)amygdaloid_(?:complex|area)(?:_|$)/i, representative: /amygdaloid_complex/i, view: 'medial', layer: 'deep', learn: 'Find and select the amygdala.', explore: 'Find the structure that tags emotional salience and helps shape threat learning.', challenge: 'Find the structure whose network helps attach biological importance to sensory events and influence autonomic emotional responses.', hint1: 'Look deep in the anterior medial temporal region, near the hippocampal formation.', hint2: 'Use the medial view and Deep structures layer. It lies toward the front of the hippocampus.', why: 'The amygdala participates in salience and emotional learning through broad connections; it is not a single fear center.' },
+            { id: 'thalamus', label: 'Thalamus', pattern: /^(?!.*hypothalam).*thalam/i, view: 'medial', layer: 'deep', learn: 'Find and select the thalamus.', explore: 'Find the deep relay whose nuclei route sensory, motor, attention, and arousal signals toward cortex.', challenge: 'A small deep lesion alters sensation, attention, and arousal without directly damaging cortex. Find the major relay structure that could connect these systems.', hint1: 'Look near the center of the brain, above the hypothalamus.', hint2: 'Use the medial view and Deep structures layer. It is a paired, central structure beside the third ventricle.', why: 'Thalamic nuclei participate in parallel thalamocortical loops rather than acting as one undifferentiated relay.' },
+            { id: 'hypothalamus', label: 'Hypothalamus', pattern: /hypothalam/i, view: 'medial', layer: 'deep', learn: 'Find and select the hypothalamus.', explore: 'Find the structure that coordinates temperature, appetite, endocrine signaling, autonomic state, and daily rhythms.', challenge: 'A lesion disrupts body-temperature regulation, appetite, pituitary signaling, and sleep timing. Find the small region that links these homeostatic systems.', hint1: 'Look below the thalamus near the base of the diencephalon.', hint2: 'Use the medial view and Deep structures layer, then inspect the area above the pituitary region.', why: 'Different hypothalamic nuclei coordinate endocrine, autonomic, circadian, and motivated-body-state functions.' },
+            { id: 'cerebellum', label: 'Cerebellum', pattern: /cerebell/i, view: 'lateral', layer: 'all', learn: 'Find and select the cerebellum.', explore: 'Find the structure that refines timing, balance, coordination, and error-based motor learning.', challenge: 'A patient has same-side limb dysmetria, intention tremor, and an unsteady gait. Find the structure most strongly implicated.', hint1: 'Look at the compact, highly folded structure behind and below the cerebrum.', hint2: 'Use a side or back-facing view. It sits posterior to the brainstem.', why: 'Cerebellar lesions often produce ipsilateral coordination problems because of the circuit’s crossing pattern.' },
+            { id: 'brainstem', label: 'Brainstem', pattern: /pons|medulla|midbrain/i, view: 'lateral', layer: 'all', learn: 'Find and select a part of the brainstem.', explore: 'Find the compact region that contains cranial-nerve nuclei, vital regulatory centers, arousal systems, and major passing tracts.', challenge: 'Find the region where a small lesion can combine an ipsilateral cranial-nerve sign with a contralateral body deficit.', hint1: 'Look at the stalk connecting the cerebrum, cerebellum, and spinal cord.', hint2: 'Use the side view and inspect the midbrain, pons, or medulla.', why: 'The brainstem tightly packs nuclei and long tracts, which explains crossed and multi-system findings.' },
+            { id: 'corpus_callosum', label: 'Corpus callosum', pattern: /corpus.?callos/i, view: 'medial', layer: 'deep', learn: 'Find and select the corpus callosum.', explore: 'Find the major white-matter bridge that shares information between the cerebral hemispheres.', challenge: 'A disconnection limits transfer of visual information from one hemisphere to the language-dominant hemisphere. Find the large commissural pathway involved.', hint1: 'Look for a curved midline fiber structure rather than a cortical lobe.', hint2: 'Use the medial view and Deep structures layer. It arches over the ventricles.', why: 'The corpus callosum contains commissural fibers that coordinate information across the two cerebral hemispheres.' },
+            { id: 'ventricles', label: 'Ventricular system', pattern: /ventric/i, view: 'medial', layer: 'deep', learn: 'Find and select part of the ventricular system.', explore: 'Find a cerebrospinal-fluid space within the brain.', challenge: 'An obstruction changes the size of fluid-filled internal spaces upstream from the blockage. Find one of those spaces.', hint1: 'Look inside the brain rather than on its surface.', hint2: 'Use the medial view and Deep structures layer. Search around the central CSF pathway.', why: 'Ventricular shape and enlargement patterns help localize CSF-flow obstruction or impaired reabsorption.' },
+            { id: 'occipital', label: 'Visual cortex region', pattern: /occipital|cuneus|lingual|calcarine/i, view: 'lateral', layer: 'all', learn: 'Find and select an occipital visual-cortex structure.', explore: 'Find a posterior cortical structure that receives or transforms visual information.', challenge: 'A cortical lesion produces a contralateral homonymous visual-field deficit. Find the posterior cortical territory most likely involved.', hint1: 'Look at the back of the cerebral hemisphere.', hint2: 'Use the side view and inspect the occipital, cuneus, lingual, or calcarine region.', why: 'Occipital cortex maps visual space and feeds dorsal spatial and ventral recognition streams.' },
+            { id: 'basal_ganglia', label: 'Basal ganglia', pattern: /caudate|putamen|globus.?pallid|accumbens|subthalam/i, view: 'medial', layer: 'deep', learn: 'Find and select a basal-ganglia structure.', explore: 'Find part of the deep circuit that helps select actions, tune movement, learn habits, and evaluate outcomes.', challenge: 'Find a structure belonging to the loop in which altered direct and indirect pathways can contribute to bradykinesia, chorea, or hemiballismus.', hint1: 'Look deep beneath the cortex rather than in the cerebellum.', hint2: 'Use the medial view and Deep structures layer; caudate, putamen, pallidum, accumbens, or subthalamic nucleus all count.', why: 'Basal-ganglia function emerges from connected direct, indirect, motor, cognitive, and limbic loops.' }
+          ];
+          var brain3DChallenge = brain3DChallengeActive ? BRAIN_3D_CHALLENGE_POOL[brain3DChallengeRound % BRAIN_3D_CHALLENGE_POOL.length] : null;
+          var brain3DChallengeClue = brain3DChallenge ? brain3DChallenge[brain3DChallengeDifficulty] : '';
+          var brain3DChallengeOptions = [];
+          if (brain3DChallenge) {
+            var challengeOptionOffsets = [0, 3, 6, 8];
+            challengeOptionOffsets.forEach(function (offset) { brain3DChallengeOptions.push(BRAIN_3D_CHALLENGE_POOL[(brain3DChallengeRound + offset) % BRAIN_3D_CHALLENGE_POOL.length]); });
+            var challengeOptionRotation = brain3DChallengeRound % brain3DChallengeOptions.length;
+            brain3DChallengeOptions = brain3DChallengeOptions.slice(challengeOptionRotation).concat(brain3DChallengeOptions.slice(0, challengeOptionRotation));
+          }
+
+          function brainAtlas3DChallengeMatches(challenge, structureKey) {
+            return !!(challenge && structureKey && challenge.pattern.test(String(structureKey)));
+          }
+
+          function brainAtlas3DChallengeRepresentative(challenge) {
+            if (!challenge) return null;
+            var matches = brain3DStructureIndex.filter(function (item) { return brainAtlas3DChallengeMatches(challenge, item.key); });
+            var preferred = challenge.representative ? matches.filter(function (item) { return challenge.representative.test(String(item.key)); }) : [];
+            var candidates = preferred.length ? preferred : matches;
+            return candidates.filter(function (item) { return item.hemisphere === 'left'; })[0] || candidates.filter(function (item) { return item.hemisphere === 'midline'; })[0] || candidates[0] || null;
+          }
+
+          function prepareBrainAtlas3DChallenge(challenge, announce) {
+            if (!challenge) return;
+            if (challenge.view !== viewKey) {
+              upd('view', challenge.view);
+              upd('viewGroup', brainAtlasViewGroupFor(challenge.view));
+              upd('viewsExplored', (function () { var explored = Object.assign({}, d.viewsExplored); explored[challenge.view] = true; return explored; })());
+            }
+            upd('atlasDisplayMode', '3d');
+            upd('brain3DLayer', challenge.layer || 'all');
+            upd('brain3DFocus', 'all');
+            upd('brain3DSliceAxis', 'off');
+            upd('selected3DStructure', '');
+            upd('selectedRegion', null);
+            upd('brain3DSearch', '');
+            upd('brain3DSearchOpen', false);
+            window.setTimeout(function () { setBrainAtlas3DCamera(challenge.view); }, 45);
+            if (announce && typeof announceToSR === 'function') announceToSR('3D challenge ready. ' + challenge[brain3DChallengeDifficulty]);
+          }
+
+          function setBrainAtlas3DChallengeActive(active) {
+            upd('brain3DChallengeActive', !!active);
+            upd('brain3DChallengeFeedback', null);
+            upd('brain3DChallengeHintLevel', 0);
+            upd('brain3DChallengeMisses', 0);
+            if (active) prepareBrainAtlas3DChallenge(BRAIN_3D_CHALLENGE_POOL[brain3DChallengeRound % BRAIN_3D_CHALLENGE_POOL.length], true);
+            else {
+              upd('brain3DFocus', 'all');
+              if (typeof announceToSR === 'function') announceToSR('Find It in 3D challenge closed.');
+            }
+          }
+
+          function setBrainAtlas3DChallengeDifficulty(level) {
+            if (['learn', 'explore', 'challenge'].indexOf(level) < 0) return;
+            upd('brain3DChallengeDifficulty', level);
+            upd('brain3DChallengeFeedback', null);
+            upd('brain3DChallengeHintLevel', 0);
+            upd('brain3DChallengeMisses', 0);
+            if (typeof announceToSR === 'function' && brain3DChallenge) announceToSR(level + ' difficulty. ' + brain3DChallenge[level]);
+          }
+
+          function submitBrainAtlas3DChallenge(correct, pickedLabel) {
+            if (!brain3DChallenge || (brain3DChallengeFeedback && (brain3DChallengeFeedback.status === 'correct' || brain3DChallengeFeedback.status === 'revealed'))) return;
+            if (correct) {
+              var basePoints = brain3DChallengeDifficulty === 'challenge' ? 3 : (brain3DChallengeDifficulty === 'explore' ? 2 : 1);
+              var misses = Math.max(0, parseInt(d.brain3DChallengeMisses, 10) || 0);
+              var points = Math.max(1, basePoints - Math.min(1, brain3DChallengeHintLevel) - Math.min(1, misses));
+              upd('brain3DChallengeFeedback', { status: 'correct', picked: pickedLabel, points: points });
+              upd('brain3DChallengeScore', brain3DChallengeScore + points);
+              upd('brain3DChallengeCorrect', brain3DChallengeCorrect + 1);
+              upd('brain3DChallengeStreak', brain3DChallengeStreak + 1);
+              upd('brain3DChallengeBestStreak', Math.max(parseInt(d.brain3DChallengeBestStreak, 10) || 0, brain3DChallengeStreak + 1));
+              if (typeof sfxBrainSuccess === 'function') sfxBrainSuccess();
+              if (typeof announceToSR === 'function') announceToSR('Correct. ' + pickedLabel + '. ' + brain3DChallenge.why + ' ' + points + ' point' + (points === 1 ? '' : 's') + ' earned.');
+            } else {
+              upd('brain3DChallengeFeedback', { status: 'retry', picked: pickedLabel, points: 0 });
+              upd('brain3DChallengeStreak', 0);
+              upd('brain3DChallengeMisses', (parseInt(d.brain3DChallengeMisses, 10) || 0) + 1);
+              if (typeof sfxBrainClick === 'function') sfxBrainClick();
+              if (typeof announceToSR === 'function') announceToSR(pickedLabel + ' is not the target. Try again or use a hint.');
+            }
+          }
+
+          function handleBrainAtlas3DChallengePick(structureKey) {
+            if (!brain3DChallengeActive || !brain3DChallenge) return;
+            submitBrainAtlas3DChallenge(brainAtlas3DChallengeMatches(brain3DChallenge, structureKey), brainAtlasHumanize3DName(structureKey));
+          }
+
+          function chooseBrainAtlas3DChallengeOption(option) {
+            if (!option || !brain3DChallenge) return;
+            var correct = option.id === brain3DChallenge.id;
+            submitBrainAtlas3DChallenge(correct, option.label);
+            if (!correct) return;
+            var representative = brainAtlas3DChallengeRepresentative(option);
+            if (!representative) return;
+            var mapped = brainAtlasMap3DRegion(representative.key, option.view);
+            upd('selected3DStructure', representative.key);
+            upd('selectedRegion', mapped || null);
+            upd('brain3DFocus', 'fade');
+            window.setTimeout(function () {
+              var canvas = window.__alloBrainAtlas3DCanvas;
+              if (canvas && canvas._brain3DState) canvas._brain3DState.revealStructure(representative.key, mapped, false);
+            }, 35);
+          }
+
+          function advanceBrainAtlas3DChallenge() {
+            var nextRound = brain3DChallengeRound + 1;
+            var nextChallenge = BRAIN_3D_CHALLENGE_POOL[nextRound % BRAIN_3D_CHALLENGE_POOL.length];
+            upd('brain3DChallengeRound', nextRound);
+            upd('brain3DChallengeFeedback', null);
+            upd('brain3DChallengeHintLevel', 0);
+            upd('brain3DChallengeMisses', 0);
+            prepareBrainAtlas3DChallenge(nextChallenge, true);
+          }
+
+          function requestBrainAtlas3DChallengeHint() {
+            if (!brain3DChallenge) return;
+            var nextHint = Math.min(2, brain3DChallengeHintLevel + 1);
+            upd('brain3DChallengeHintLevel', nextHint);
+            if (nextHint === 2) {
+              upd('brain3DLayer', brain3DChallenge.layer || 'all');
+              setBrainAtlas3DCamera(brain3DChallenge.view);
+            }
+            if (typeof announceToSR === 'function') announceToSR('Hint ' + nextHint + ': ' + (nextHint === 1 ? brain3DChallenge.hint1 : brain3DChallenge.hint2));
+          }
+
+          function revealBrainAtlas3DChallengeAnswer() {
+            if (!brain3DChallenge) return;
+            var representative = brainAtlas3DChallengeRepresentative(brain3DChallenge);
+            upd('brain3DChallengeFeedback', { status: 'revealed', picked: brain3DChallenge.label, points: 0 });
+            upd('brain3DChallengeStreak', 0);
+            if (representative) {
+              var mapped = brainAtlasMap3DRegion(representative.key, brain3DChallenge.view);
+              upd('selected3DStructure', representative.key);
+              upd('selectedRegion', mapped || null);
+              upd('brain3DFocus', 'fade');
+              window.setTimeout(function () {
+                var canvas = window.__alloBrainAtlas3DCanvas;
+                if (canvas && canvas._brain3DState) canvas._brain3DState.revealStructure(representative.key, mapped, true);
+              }, 35);
+            }
+            if (typeof announceToSR === 'function') announceToSR('Answer revealed: ' + brain3DChallenge.label + '. ' + brain3DChallenge.why);
+          }
+
           function brainAtlasPlainTakeaway(region) {
             if (!region) return t('stem.brainatlas.pick_a_region_takeaway', 'Pick a region to see its student takeaway.');
             return brainAtlasShortText(region.fn, 210);
           }
           function brainAtlasTeacherPrompt() {
+            if (currentView.isPrenatal && sel) return t('stem.brainatlas.teacher_prompt_prenatal_selected', 'Ask students to connect this milestone to the stages immediately before and after it, then name one process that overlaps both.');
             if (sel) return t('stem.brainatlas.teacher_prompt_selected', 'Ask students: What evidence from the function or damage pattern helps you identify this region?');
+            if (currentView.isPrenatal) return t('stem.brainatlas.teacher_prompt_prenatal', 'Ask students to move the week slider, compare two milestones, and explain why brain development is a continuous overlapping process.');
             if (currentView.isNT) return t('stem.brainatlas.teacher_prompt_nt', 'Ask students to change one neurotransmitter at a time, then name what changed and what stayed uncertain.');
             if (currentView.isNeuron) return t('stem.brainatlas.teacher_prompt_neuron', 'Ask students to trace one signal from dendrite to axon terminal using one sentence per step.');
             if (currentView.isSynapse) return t('stem.brainatlas.teacher_prompt_synapse', 'Ask students to explain how strengthening or pruning a synapse could change learning over time.');
@@ -5859,7 +7040,9 @@ var d = labToolData.brainAtlas || {};
             return t('stem.brainatlas.teacher_prompt_atlas', 'Ask students to choose one region, name its everyday job, and predict what might change if it were damaged.');
           }
           function brainAtlasCanvasSummary() {
+            if (useBrain3D) return (brain3DChallengeActive && brain3DChallenge ? ('Find It in 3D challenge. ' + brain3DChallengeClue + ' ') : 'Interactive 3D anatomical brain model with 141 named structures. ') + (brain3DSliceAxis !== 'off' ? (brainAtlas3DSliceAxisLabel(brain3DSliceAxis) + ' active at ' + brain3DSlicePosition + ' percent depth. ' + (brain3DSliceFlip ? 'The opposite side is visible. ' : 'The first side is visible. ')) : '') + (selected3DLabel ? ('Selected structure: ' + selected3DLabel + '. ') : '') + (sel ? ('Related atlas region: ' + sel.name + '. ' + brainAtlasShortText(sel.fn, 135) + ' ') : '') + 'Drag to rotate, scroll or use plus and minus to zoom, use arrow keys to rotate or tilt, and press Home to reset the camera. Model-free answer choices and the region directory provide equivalent learning content without precise 3D pointer control.';
             if (sel) return currentView.name + ': ' + sel.name + '. ' + brainAtlasShortText(sel.fn, 190);
+            if (currentView.isPrenatal) return t('stem.brainatlas.canvas_summary_prenatal', 'Prenatal brain-development timeline from gestational week 3 to 40, showing neural-tube closure, early brain regions, neuron production, cortical migration, long-range wiring, folding, and growing networks. Timings are approximate and overlap.');
             if (currentView.isNT) return t('stem.brainatlas.canvas_summary_nt', 'Neurotransmitter view showing synaptic release, receptor binding, and reuptake. Active scenario: ') + activeSim.name + '. ' + brainAtlasShortText(activeSim.desc, 150);
             if (currentView.isNeuron) return t('stem.brainatlas.canvas_summary_neuron', 'Neuron anatomy view showing dendrites, soma, axon hillock, myelin, nodes, terminals, and a spike-cycle decoder for threshold, sodium influx, potassium efflux, refractory recovery, and all-or-nothing firing.');
             if (currentView.isSynapse) return t('stem.brainatlas.canvas_summary_synapse', 'Synapse and development view showing how neural connections can strengthen, weaken, or be pruned through experience.');
@@ -5896,7 +7079,8 @@ var d = labToolData.brainAtlas || {};
             { id: 'memory', view: 'limbicPapezLoop', badge: t('stem.brainatlas.route_badge_memory', 'Memory'), title: t('stem.brainatlas.route_limbic_papez_title', 'Link memory and emotion'), copy: t('stem.brainatlas.route_limbic_papez_copy', 'Trace Papez circuit and compare it with amygdala-driven body responses.'), color: '#f59e0b' },
             { id: 'signals', view: 'neuron', badge: t('stem.brainatlas.route_badge_cells', 'Cells'), title: t('stem.brainatlas.route_signals_title', 'Follow a signal'), copy: t('stem.brainatlas.route_signals_copy', 'Zoom from neuron anatomy into firing, myelin, and synaptic flow.'), color: '#d97706' },
             { id: 'rhythms', view: 'eegWaves', badge: t('stem.brainatlas.route_badge_rhythms', 'Rhythms'), title: t('stem.brainatlas.route_rhythms_title', 'Read brain waves'), copy: t('stem.brainatlas.route_rhythms_copy', 'Compare delta through gamma and connect waves to sleep and attention.'), color: '#be185d' },
-            { id: 'crossing', view: 'crossLateral', badge: t('stem.brainatlas.route_badge_wiring', 'Wiring'), title: t('stem.brainatlas.route_crossing_title', 'Trace left vs right'), copy: t('stem.brainatlas.route_crossing_copy', 'See why one hemisphere affects the opposite side of the body and why the corpus callosum lets the halves share information.'), color: '#dc2626' }
+            { id: 'crossing', view: 'crossLateral', badge: t('stem.brainatlas.route_badge_wiring', 'Wiring'), title: t('stem.brainatlas.route_crossing_title', 'Trace left vs right'), copy: t('stem.brainatlas.route_crossing_copy', 'See why one hemisphere affects the opposite side of the body and why the corpus callosum lets the halves share information.'), color: '#dc2626' },
+            { id: 'beforebirth', view: 'prenatalDevelopment', badge: t('stem.brainatlas.route_badge_development', 'Development'), title: t('stem.brainatlas.route_prenatal_title', 'Grow a brain before birth'), copy: t('stem.brainatlas.route_prenatal_copy', 'Slide from neural-tube closure through neuron migration, cortical folding, and expanding networks.'), color: '#be185d' }
           ];
           // Patient Simulator: an AI patient roleplays the real effect of a hidden
           // stimulation; the student guesses the region. Grounded in STIM_SCENARIOS.
@@ -6302,6 +7486,13 @@ var d = labToolData.brainAtlas || {};
                 eegWaves:          { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '📈', title: t('stem.brainatlas.eeg_waves_brain_rhythms', 'EEG waves — brain rhythms'),                    hint: t('stem.brainatlas.delta_deep_sleep_theta_drowsy_memory_a', 'Delta (deep sleep) → Theta (drowsy + memory) → Alpha (relaxed wakefulness) → Beta (active thinking) → Gamma (focused attention). Frequency rises with arousal level.') },
                 crossLateral:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '⚡', title: t('stem.brainatlas.cross_lateral_wiring_left_vs_right', 'Cross-lateral wiring — left vs right'),          hint: t('stem.brainatlas.each_hemisphere_controls_the_opposite_', 'Each hemisphere controls the OPPOSITE side of the body, while the corpus callosum transfers information between hemispheres. Split-brain studies make that bridge visible: what one hemisphere sees may not be verbally reportable unless information crosses.') }
               };
+              VIEW_META.prenatalDevelopment = {
+                accent: '#be185d',
+                soft: 'rgba(190,24,93,0.10)',
+                icon: 'GW',
+                title: t('stem.brainatlas.prenatal_timeline_title', 'Prenatal brain development - week by week'),
+                hint: t('stem.brainatlas.prenatal_timeline_hint', 'Use the gestational-week slider to connect neural-tube closure, early brain regions, neuron production, cortical migration, long-range wiring, and third-trimester folding. Timings are approximate and processes overlap.')
+              };
               VIEW_META.synapses = {
                 accent: '#8b5cf6',
                 soft: 'rgba(139,92,246,0.10)',
@@ -6397,13 +7588,13 @@ var d = labToolData.brainAtlas || {};
 
             React.createElement("div", { className: "brainatlas-controls mb-3", "data-brainatlas-controls": "true" },
               React.createElement("div", { className: "brainatlas-controls-search" },
-                React.createElement("label", { htmlFor: "brainatlas-region-search", className: "brainatlas-controls-label" }, t('stem.brainatlas.find_a_region', 'Find a region') || 'Find a region'),
+                React.createElement("label", { htmlFor: "brainatlas-region-search", className: "brainatlas-controls-label" }, currentView.isPrenatal ? (t('stem.brainatlas.find_a_milestone', 'Find a milestone') || 'Find a milestone') : (t('stem.brainatlas.find_a_region', 'Find a region') || 'Find a region')),
                 React.createElement("div", { className: "brainatlas-search-field" },
                   React.createElement("span", { className: "brainatlas-search-icon", "aria-hidden": "true" }, '\u2315'),
                   React.createElement("input", {
                     id: "brainatlas-region-search",
-                    type: "text", placeholder: t('stem.brainatlas.search_regions_functions_conditions', "Search regions, functions, conditions..."),
-                    'aria-label': t('stem.brainatlas.search_brain_regions_functions_and_con', 'Search brain regions, functions, and conditions'),
+                    type: "text", placeholder: currentView.isPrenatal ? (t('stem.brainatlas.search_prenatal_milestones', 'Search prenatal milestones...') || 'Search prenatal milestones...') : t('stem.brainatlas.search_regions_functions_conditions', "Search regions, functions, conditions..."),
+                    'aria-label': currentView.isPrenatal ? (t('stem.brainatlas.search_prenatal_development', 'Search prenatal development milestones') || 'Search prenatal development milestones') : t('stem.brainatlas.search_brain_regions_functions_and_con', 'Search brain regions, functions, and conditions'),
                     value: d.search || '',
                     onChange: function (e) { upd('search', e.target.value); },
                     className: "brainatlas-search-input text-xs"
@@ -6431,7 +7622,7 @@ var d = labToolData.brainAtlas || {};
                   role: "status",
                   "aria-live": "polite",
                   "data-brainatlas-region-count": "true"
-                }, filtered.length + ' regions')
+                }, filtered.length + (currentView.isPrenatal ? ' milestones' : ' regions'))
               )
             ),
 
@@ -6708,21 +7899,25 @@ var d = labToolData.brainAtlas || {};
 
               // ─── Canvas ───
 
-              React.createElement("div", { id: "brainatlas-canvas-fullscreen", className: "brainatlas-canvas-shell", "data-brainatlas-canvas-shell": "true", "data-brainatlas-has-selection": sel ? "true" : "false" },
+              React.createElement("div", { id: "brainatlas-canvas-fullscreen", className: "brainatlas-canvas-shell", "data-brainatlas-canvas-shell": "true", "data-brainatlas-display-mode": useBrain3D ? "3d" : "diagram", "data-brainatlas-has-selection": (sel || selected3DStructure) ? "true" : "false" },
 
                 React.createElement("div", { className: "brainatlas-canvas-header" },
                   React.createElement("div", { className: "brainatlas-canvas-heading", "data-brainatlas-canvas-heading": "true" },
-                    React.createElement("p", { className: "brainatlas-canvas-eyebrow" }, t('stem.brainatlas.interactive_diagram', 'Interactive diagram') || 'Interactive diagram'),
-                    React.createElement("p", { className: "brainatlas-canvas-title" }, currentView.name),
-                    React.createElement("p", { className: "brainatlas-canvas-subtitle" }, sel ? (t('stem.brainatlas.selected_region', 'Selected region') + ': ' + sel.name) : t('stem.brainatlas.select_a_region_or_switch_views', 'Select a region on the atlas, or switch views to compare systems.'))
+                    React.createElement("p", { className: "brainatlas-canvas-eyebrow" }, useBrain3D ? 'Interactive 3D anatomy' : (t('stem.brainatlas.interactive_diagram', 'Interactive diagram') || 'Interactive diagram')),
+                    React.createElement("p", { className: "brainatlas-canvas-title" }, currentView.name + (useBrain3D ? " — 3D Anatomy" : "")),
+                    React.createElement("p", { className: "brainatlas-canvas-subtitle" }, useBrain3D ? (brain3DChallengeActive && brain3DChallenge ? ('Challenge: ' + brain3DChallengeClue) : (selected3DLabel ? ('Selected structure: ' + selected3DLabel + (sel ? ' — connected to ' + sel.name : '')) : 'Drag to rotate, scroll to zoom, or choose a structure. Use the controls below to reveal either hemisphere or deep anatomy.')) : (currentView.isPrenatal ? (activePrenatalStage ? ('Selected milestone: ' + activePrenatalStage.name) : 'Move the week slider or choose a milestone.') : (sel ? (t('stem.brainatlas.selected_region', 'Selected region') + ': ' + sel.name) : t('stem.brainatlas.select_a_region_or_switch_views', 'Select a region on the atlas, or switch views to compare systems.'))))
                   ),
                   React.createElement("div", { className: "brainatlas-canvas-actions" },
+                    brain3DAvailable && React.createElement("div", { className: "brainatlas-display-mode-switch", role: "group", "aria-label": "Brain atlas display mode" },
+                      React.createElement("button", { type: "button", "aria-pressed": useBrain3D ? "false" : "true", onClick: function () { setBrainAtlas3DMode('diagram'); } }, React.createElement("span", { "aria-hidden": "true" }, '▧'), '2D Diagram'),
+                      React.createElement("button", { type: "button", "aria-pressed": useBrain3D ? "true" : "false", onClick: function () { setBrainAtlas3DMode('3d'); } }, React.createElement("span", { "aria-hidden": "true" }, '⬡'), '3D Model')
+                    ),
                     React.createElement("span", {
                       className: "brainatlas-canvas-chip brainatlas-canvas-chip--accent",
                       "data-brainatlas-view-position": "true"
                     }, (t('stem.brainatlas.view_position', 'View') || 'View') + ' ' + currentViewPosition + ' / ' + VIEW_KEYS.length),
-                    React.createElement("span", { className: "brainatlas-canvas-chip" }, filtered.length + " targets"),
-                    React.createElement("div", {
+                    React.createElement("span", { className: "brainatlas-canvas-chip" }, useBrain3D ? "141 structures" : (filtered.length + (currentView.isPrenatal ? " milestones" : " targets"))),
+                    !useBrain3D && React.createElement("div", {
                       className: "brainatlas-zoom-controls",
                       role: "group",
                       "aria-label": t('stem.brainatlas.diagram_zoom_controls', 'Diagram zoom controls'),
@@ -6806,8 +8001,293 @@ var d = labToolData.brainAtlas || {};
                     React.createElement("span", null, t('stem.brainatlas.focus_region', 'Focus:')),
                     React.createElement("strong", null, selectedLabel)
                   ),
-                  React.createElement("span", { className: "brainatlas-status-hint" }, canvasZoom > 1 ? t('stem.brainatlas.diagram_enlarged_scroll_hint', 'Diagram enlarged - scroll to explore every label.') : (d.quizMode ? t('stem.brainatlas.quiz_status_hint', 'Quiz is active - use the diagram and evidence to decide.') : t('stem.brainatlas.canvas_interaction_hint', 'Select a label on the diagram or choose a region below.')))
+                  React.createElement("span", { className: "brainatlas-status-hint" }, useBrain3D ? (brain3DChallengeActive ? 'Challenge active · Select the structure that matches the clue' : (brain3DSliceAxis !== 'off' ? brainAtlas3DSliceAxisLabel(brain3DSliceAxis) + ' · Move depth or flip side' : 'Drag to rotate · Scroll to zoom · Click a structure · Arrow keys rotate')) : (canvasZoom > 1 ? t('stem.brainatlas.diagram_enlarged_scroll_hint', 'Diagram enlarged - scroll to explore every label.') : (d.quizMode ? t('stem.brainatlas.quiz_status_hint', 'Quiz is active - use the diagram and evidence to decide.') : t('stem.brainatlas.canvas_interaction_hint', 'Select a label on the diagram or choose a region below.'))))
                 ),
+                useBrain3D && React.createElement("section", { className: "brainatlas-3d-searchbar", "data-brainatlas-3d-searchbar": "true", "aria-label": "Find and reveal a 3D brain structure" },
+                  React.createElement("div", { className: "brainatlas-3d-search-wrap" },
+                    React.createElement("div", { className: "brainatlas-3d-search-field" },
+                      React.createElement("span", { className: "brainatlas-3d-search-icon", "aria-hidden": "true" }, '\u2315'),
+                      React.createElement("input", {
+                        id: "brainatlas-3d-search",
+                        type: "search",
+                        className: "brainatlas-3d-search-input",
+                        value: brain3DSearch,
+                        disabled: !brain3DStructureIndex.length || brain3DChallengeActive,
+                        placeholder: brain3DChallengeActive ? "Search is paused during Find It in 3D" : (brain3DStructureIndex.length ? "Search grouped anatomy or function, such as hippocampus or memory" : "Building the 3D structure index..."),
+                        "aria-label": "Search 3D brain structures by anatomy or function",
+                        role: "combobox",
+                        "aria-autocomplete": "list",
+                        "aria-expanded": brain3DSearchOpen && !!brain3DQuery ? "true" : "false",
+                        "aria-controls": "brainatlas-3d-search-results",
+                        "aria-activedescendant": brain3DSearchResults.length ? ("brainatlas-3d-result-" + brain3DSearchActiveIndex) : undefined,
+                        onChange: function (event) { upd('brain3DSearch', event.target.value); upd('brain3DSearchOpen', true); upd('brain3DSearchActiveIndex', 0); },
+                        onFocus: function () { if (brain3DQuery) upd('brain3DSearchOpen', true); },
+                        onBlur: function () { window.setTimeout(function () { upd('brain3DSearchOpen', false); }, 140); },
+                        onKeyDown: handleBrainAtlas3DSearchKey
+                      }),
+                      brain3DSearch && React.createElement("button", {
+                        type: "button",
+                        className: "brainatlas-3d-search-clear",
+                        "aria-label": "Clear 3D structure search",
+                        onMouseDown: function (event) { event.preventDefault(); },
+                        onClick: function () { upd('brain3DSearch', ''); upd('brain3DSearchOpen', false); upd('brain3DSearchActiveIndex', 0); }
+                      }, '\u00d7')
+                    ),
+                    brain3DSearchOpen && !!brain3DQuery && React.createElement("div", {
+                      id: "brainatlas-3d-search-results",
+                      className: "brainatlas-3d-search-results",
+                      role: "listbox",
+                      "aria-label": "Matching 3D brain structures",
+                      "data-brainatlas-3d-search-results": "true"
+                    },
+                      brain3DSearchResults.length ? brain3DSearchResults.map(function (item, resultIndex) {
+                        var resultView = brainAtlas3DRecommendedView(item.key, viewKey);
+                        var hasMappedCard = !!brainAtlasMap3DRegion(item.key, resultView);
+                        var resultViewName = (VIEWS[resultView] && VIEWS[resultView].name) || resultView;
+                        var groupedSides = Array.isArray(item.sideItems) ? item.sideItems.filter(function (sideItem) { return sideItem.hemisphere === 'left' || sideItem.hemisphere === 'right'; }) : [];
+                        var anatomyScope = item.hemisphere === 'bilateral' ? 'bilateral pair' : (item.hemisphere !== 'midline' ? item.hemisphere + ' side' : 'midline anatomy');
+                        return React.createElement("div", { key: item.groupKey || item.key, className: "brainatlas-3d-search-result-row", role: "presentation" },
+                          React.createElement("button", {
+                            id: "brainatlas-3d-result-" + resultIndex,
+                            type: "button",
+                            role: "option",
+                            "aria-selected": resultIndex === brain3DSearchActiveIndex ? "true" : "false",
+                            className: "brainatlas-3d-search-result",
+                            "data-active": resultIndex === brain3DSearchActiveIndex ? "true" : "false",
+                            "data-brainatlas-3d-result": item.key,
+                            onMouseDown: function (event) { event.preventDefault(); },
+                            onMouseEnter: function () { upd('brain3DSearchActiveIndex', resultIndex); },
+                            onClick: function () { selectBrainAtlas3DSearchResult(item); }
+                          },
+                            React.createElement("span", { className: "brainatlas-3d-result-icon", "aria-hidden": "true" }, item.icon || 'A'),
+                            React.createElement("span", { className: "brainatlas-3d-result-copy" },
+                              React.createElement("strong", null, item.label),
+                              React.createElement("span", null, item.family + ' · ' + anatomyScope + (hasMappedCard ? ' · teaching card available' : ' · model anatomy'))
+                            ),
+                            React.createElement("span", { className: "brainatlas-3d-result-view" }, resultViewName)
+                          ),
+                          groupedSides.length > 1 && React.createElement("div", { className: "brainatlas-3d-result-sides", role: "group", "aria-label": "Choose a side for " + item.label },
+                            groupedSides.map(function (sideItem) {
+                              return React.createElement("button", {
+                                key: sideItem.key,
+                                type: "button",
+                                "aria-label": "Reveal " + item.label + " on the " + sideItem.hemisphere + " side",
+                                title: "Reveal " + sideItem.hemisphere + " side",
+                                onMouseDown: function (event) { event.preventDefault(); },
+                                onClick: function () { selectBrainAtlas3DSearchResult(sideItem); }
+                              }, sideItem.hemisphere === 'left' ? 'L' : 'R');
+                            })
+                          )
+                        );                      }) : React.createElement("div", { className: "brainatlas-3d-search-empty", role: "status" },
+                        React.createElement("strong", null, "No matching structure"),
+                        React.createElement("span", null, "Try a broader anatomical name or a function such as memory, vision, movement, or balance.")
+                      )
+                    )
+                  ),
+                  React.createElement("div", { className: "brainatlas-3d-search-side" },
+                    React.createElement("p", { className: "brainatlas-3d-search-note" }, brain3DChallengeActive ? "Search is paused so the structure name is not revealed." : (brain3DStructureIndex.length ? "Search by anatomy or function, then reveal the result." : "The searchable index appears as soon as the model is ready.")),
+                    React.createElement("button", {
+                      type: "button",
+                      className: "brainatlas-3d-challenge-toggle",
+                      "data-brainatlas-3d-challenge-toggle": "true",
+                      "aria-pressed": brain3DChallengeActive ? "true" : "false",
+                      disabled: !brain3DStructureIndex.length,
+                      onClick: function () { setBrainAtlas3DChallengeActive(!brain3DChallengeActive); }
+                    }, React.createElement("span", { "aria-hidden": "true" }, brain3DChallengeActive ? '\u00d7' : '\u25ce'), brain3DChallengeActive ? "End challenge" : "Find It in 3D")
+                  )
+                ),
+                useBrain3D && React.createElement("section", { className: "brainatlas-3d-controls", "data-brainatlas-3d-controls": "true", "aria-label": "3D anatomy controls" },
+                  React.createElement("div", { className: "brainatlas-3d-control-groups" },
+                    React.createElement("div", { className: "brainatlas-3d-control-group" },
+                      React.createElement("span", { className: "brainatlas-3d-control-label" }, 'Anatomy'),
+                      React.createElement("div", { className: "brainatlas-3d-segment", role: "group", "aria-label": "Visible anatomy layer" },
+                        [{ id: 'all', label: 'Whole brain' }, { id: 'left', label: 'Left side' }, { id: 'right', label: 'Right side' }, { id: 'deep', label: 'Deep structures' }].map(function (option) {
+                          return React.createElement("button", { key: option.id, type: "button", "aria-pressed": brain3DLayer === option.id, onClick: function () { upd('brain3DLayer', option.id); } }, option.label);
+                        })
+                      )
+                    ),
+                    React.createElement("div", { className: "brainatlas-3d-control-group" },
+                      React.createElement("span", { className: "brainatlas-3d-control-label" }, 'Selection'),
+                      React.createElement("div", { className: "brainatlas-3d-segment", role: "group", "aria-label": "Selection focus style" },
+                        [{ id: 'all', label: 'All visible' }, { id: 'fade', label: 'Fade others' }, { id: 'isolate', label: 'Isolate' }].map(function (option) {
+                          return React.createElement("button", { key: option.id, type: "button", "aria-pressed": brain3DFocus === option.id, onClick: function () { upd('brain3DFocus', option.id); } }, option.label);
+                        })
+                      )
+                    ),
+                    React.createElement("div", { className: "brainatlas-3d-control-group", "data-brainatlas-3d-cutaway-controls": "true" },
+                      React.createElement("span", { className: "brainatlas-3d-control-label" }, 'Cutaway'),
+                      React.createElement("div", { className: "brainatlas-3d-segment", role: "group", "aria-label": "3D anatomical cutaway plane" },
+                        [{ id: 'off', label: 'Off' }, { id: 'sagittal', label: 'Sagittal' }, { id: 'coronal', label: 'Coronal' }, { id: 'axial', label: 'Axial' }].map(function (option) {
+                          return React.createElement("button", { key: option.id, type: "button", "aria-pressed": brain3DSliceAxis === option.id ? "true" : "false", onClick: function () { setBrainAtlas3DSliceAxis(option.id); } }, option.label);
+                        })
+                      )
+                    )
+                  ),
+                  React.createElement("div", { className: "brainatlas-3d-camera-controls", role: "group", "aria-label": "3D camera presets" },
+                    [{ id: 'lateral', label: 'Side' }, { id: 'front', label: 'Front' }, { id: 'top', label: 'Top' }, { id: 'bottom', label: 'Bottom' }, { id: viewKey, label: 'Reset' }].map(function (preset, index) {
+                      return React.createElement("button", { key: preset.label + index, type: "button", onClick: function () { setBrainAtlas3DCamera(preset.id); } }, preset.label);
+                    })
+                  )
+                ),
+                useBrain3D && brain3DSliceAxis !== 'off' && React.createElement("section", {
+                  className: "brainatlas-3d-slicebar",
+                  "data-brainatlas-3d-slice": "true",
+                  "data-axis": brain3DSliceAxis,
+                  "data-position": brain3DSlicePosition,
+                  "aria-label": brainAtlas3DSliceAxisLabel(brain3DSliceAxis) + " controls"
+                },
+                  React.createElement("div", { className: "brainatlas-3d-slice-copy" },
+                    React.createElement("span", null, "Anatomical cutaway"),
+                    React.createElement("strong", null, brainAtlas3DSliceAxisLabel(brain3DSliceAxis))
+                  ),
+                  React.createElement("label", { className: "brainatlas-3d-slice-range-wrap", htmlFor: "brainatlas-3d-slice-depth" },
+                    React.createElement("span", { className: "brainatlas-3d-slice-range-label" }, "Cut depth"),
+                    React.createElement("input", {
+                      id: "brainatlas-3d-slice-depth",
+                      className: "brainatlas-3d-slice-range",
+                      type: "range",
+                      min: "0",
+                      max: "100",
+                      step: "1",
+                      value: brain3DSlicePosition,
+                      "aria-valuetext": brain3DSlicePosition + " percent through the " + brain3DSliceAxis + " plane",
+                      onChange: function (event) { setBrainAtlas3DSlicePosition(event.target.value); }
+                    })
+                  ),
+                  React.createElement("output", { className: "brainatlas-3d-slice-output", htmlFor: "brainatlas-3d-slice-depth", "aria-live": "polite" }, brain3DSlicePosition + "%"),
+                  React.createElement("div", { className: "brainatlas-3d-slice-actions" },
+                    React.createElement("button", { type: "button", "data-brainatlas-3d-slice-flip": "true", onClick: flipBrainAtlas3DSlice }, brain3DSliceFlip ? "Show first side" : "Flip side"),
+                    React.createElement("button", { type: "button", onClick: function () { setBrainAtlas3DSliceAxis('off'); } }, "Close")
+                  ),
+                  React.createElement("p", { className: "brainatlas-3d-slice-help" }, "Drag the plane through the model to expose deep anatomy. Flip side changes which half remains visible; search and challenges automatically restore the whole model before revealing an answer.")
+                ),
+                useBrain3D && brain3DChallengeActive && brain3DChallenge && React.createElement("section", {
+                  className: "brainatlas-3d-challenge",
+                  "data-brainatlas-3d-challenge": "true",
+                  "data-brainatlas-3d-challenge-difficulty": brain3DChallengeDifficulty,
+                  role: "region",
+                  "aria-labelledby": "brainatlas-3d-challenge-title"
+                },
+                  React.createElement("div", { className: "brainatlas-3d-challenge-head" },
+                    React.createElement("div", null,
+                      React.createElement("p", { className: "brainatlas-3d-challenge-kicker" }, "Active learning challenge · Round " + ((brain3DChallengeRound % BRAIN_3D_CHALLENGE_POOL.length) + 1) + " of " + BRAIN_3D_CHALLENGE_POOL.length),
+                      React.createElement("h3", { id: "brainatlas-3d-challenge-title", className: "brainatlas-3d-challenge-title" }, "Find It in 3D"),
+                      React.createElement("p", { className: "brainatlas-3d-challenge-instruction" }, "Rotate the model and select the structure that best matches the clue. Hints reduce the available points, but retrying is always encouraged.")
+                    ),
+                    React.createElement("div", { className: "brainatlas-3d-challenge-stats", "aria-label": "3D challenge progress" },
+                      React.createElement("span", { className: "brainatlas-3d-challenge-stat" }, "Score", React.createElement("strong", { "data-brainatlas-3d-challenge-score": "true" }, brain3DChallengeScore)),
+                      React.createElement("span", { className: "brainatlas-3d-challenge-stat" }, "Mastered", React.createElement("strong", null, brain3DChallengeCorrect)),
+                      React.createElement("span", { className: "brainatlas-3d-challenge-stat" }, "Streak", React.createElement("strong", null, brain3DChallengeStreak))
+                    )
+                  ),
+                  React.createElement("div", { className: "brainatlas-3d-challenge-main" },
+                    React.createElement("div", { className: "brainatlas-3d-difficulty", role: "group", "aria-label": "3D challenge difficulty" },
+                      [{ id: 'learn', label: 'Learn' }, { id: 'explore', label: 'Explore' }, { id: 'challenge', label: 'Challenge' }].map(function (level) {
+                        return React.createElement("button", { key: level.id, type: "button", "aria-pressed": brain3DChallengeDifficulty === level.id ? "true" : "false", onClick: function () { setBrainAtlas3DChallengeDifficulty(level.id); } }, level.label);
+                      })
+                    ),
+                    React.createElement("div", { className: "brainatlas-3d-challenge-clue" },
+                      React.createElement("span", { className: "brainatlas-3d-challenge-clue-label" }, brain3DChallengeDifficulty === 'learn' ? "Structure name" : (brain3DChallengeDifficulty === 'explore' ? "Function clue" : "Clinical clue")),
+                      React.createElement("strong", { "data-brainatlas-3d-challenge-clue": "true" }, brain3DChallengeClue)
+                    ),
+                    React.createElement("div", { className: "brainatlas-3d-challenge-actions" },
+                      (!brain3DChallengeFeedback || brain3DChallengeFeedback.status === 'retry') && React.createElement("button", { type: "button", disabled: brain3DChallengeHintLevel >= 2, onClick: requestBrainAtlas3DChallengeHint }, brain3DChallengeHintLevel ? "Another hint" : "Hint"),
+                      (!brain3DChallengeFeedback || brain3DChallengeFeedback.status === 'retry') && React.createElement("button", { type: "button", onClick: revealBrainAtlas3DChallengeAnswer }, "Show answer"),
+                      brain3DChallengeFeedback && (brain3DChallengeFeedback.status === 'correct' || brain3DChallengeFeedback.status === 'revealed') && React.createElement("button", { type: "button", className: "brainatlas-3d-next", onClick: advanceBrainAtlas3DChallenge }, "Next structure \u2192")
+                    )
+                  ),
+                  brain3DChallengeHintLevel > 0 && React.createElement("div", { className: "brainatlas-3d-challenge-hint", role: "status", "data-brainatlas-3d-challenge-hint": brain3DChallengeHintLevel },
+                    React.createElement("span", { "aria-hidden": "true" }, '\u25c7'),
+                    React.createElement("span", null, React.createElement("strong", null, "Hint " + brain3DChallengeHintLevel + ": "), brain3DChallengeHintLevel === 1 ? brain3DChallenge.hint1 : brain3DChallenge.hint2)
+                  ),
+                  brain3DChallengeFeedback && React.createElement("div", {
+                    className: "brainatlas-3d-challenge-feedback",
+                    "data-result": brain3DChallengeFeedback.status,
+                    "data-brainatlas-3d-challenge-feedback": "true",
+                    role: "status",
+                    "aria-live": "polite"
+                  },
+                    React.createElement("span", { "aria-hidden": "true" }, brain3DChallengeFeedback.status === 'correct' ? '\u2713' : (brain3DChallengeFeedback.status === 'revealed' ? '\u25ce' : '\u21bb')),
+                    React.createElement("span", null,
+                      React.createElement("strong", null, brain3DChallengeFeedback.status === 'correct' ? ("Correct · +" + brain3DChallengeFeedback.points + (brain3DChallengeFeedback.points === 1 ? " point. " : " points. ")) : (brain3DChallengeFeedback.status === 'revealed' ? ("Answer revealed: " + brain3DChallenge.label + ". ") : (brain3DChallengeFeedback.picked + " is not the target. Try again. "))),
+                      brain3DChallengeFeedback.status === 'retry' ? "Rotate, change layers, or request a hint." : brain3DChallenge.why
+                    )
+                  ),
+                  React.createElement("details", { className: "brainatlas-3d-challenge-access" },
+                    React.createElement("summary", null, "Use model-free answer choices"),
+                    React.createElement("div", { className: "brainatlas-3d-challenge-options", role: "group", "aria-label": "Accessible answer choices for the 3D challenge" },
+                      brain3DChallengeOptions.map(function (option) {
+                        var terminalFeedback = brain3DChallengeFeedback && (brain3DChallengeFeedback.status === 'correct' || brain3DChallengeFeedback.status === 'revealed');
+                        return React.createElement("button", { key: option.id, type: "button", disabled: !!terminalFeedback, onClick: function () { chooseBrainAtlas3DChallengeOption(option); } }, option.label);
+                      })
+                    )
+                  )
+                ),
+                currentView.isPrenatal && React.createElement("section", {
+                  className: "brainatlas-prenatal-controls",
+                  "data-brainatlas-prenatal-controls": "true",
+                  "aria-label": t('stem.brainatlas.prenatal_timeline_controls', 'Prenatal development timeline controls')
+                },
+                  React.createElement("div", { className: "brainatlas-prenatal-range-row" },
+                    React.createElement("label", { id: "brainatlas-prenatal-week-label", htmlFor: "brainatlas-prenatal-week", className: "brainatlas-prenatal-range-label" }, t('stem.brainatlas.gestational_week', 'Gestational week')),
+                    React.createElement("input", {
+                      id: "brainatlas-prenatal-week",
+                      className: "brainatlas-prenatal-range",
+                      type: "range",
+                      min: "3",
+                      max: "40",
+                      step: "1",
+                      value: prenatalWeek,
+                      "aria-labelledby": "brainatlas-prenatal-week-label",
+                      "aria-valuetext": "Gestational week " + prenatalWeek + ", nearest milestone " + (activePrenatalStage ? activePrenatalStage.short : ''),
+                      onChange: function (e) { setPrenatalWeek(e.target.value); }
+                    }),
+                    React.createElement("output", { className: "brainatlas-prenatal-week", htmlFor: "brainatlas-prenatal-week", "aria-live": "polite", "data-brainatlas-prenatal-week": "true" }, 'Week ' + prenatalWeek)
+                  ),
+                  React.createElement("div", { className: "brainatlas-prenatal-stage-list", role: "group", "aria-label": t('stem.brainatlas.prenatal_milestones', 'Prenatal development milestones') },
+                    regions.map(function (stage) {
+                      var stageActive = activePrenatalStage && activePrenatalStage.id === stage.id;
+                      return React.createElement("button", {
+                        key: stage.id,
+                        type: "button",
+                        className: "brainatlas-prenatal-stage-button",
+                        "data-brainatlas-prenatal-stage": stage.id,
+                        "aria-pressed": stageActive ? "true" : "false",
+                        onClick: function () { selectPrenatalStage(stage); }
+                      },
+                        React.createElement("strong", null, stage.weekLabel),
+                        React.createElement("span", null, stage.short)
+                      );
+                    })
+                  )
+                ),
+                useBrain3D ? React.createElement("div", { className: "brainatlas-3d-stage", "data-brainatlas-3d-stage": "true" },
+                  brain3DSliceAxis !== 'off' && React.createElement("div", { className: "brainatlas-3d-slice-badge", "data-brainatlas-3d-slice-badge": "true", "aria-hidden": "true" },
+                    React.createElement("strong", null, brainAtlas3DSliceAxisLabel(brain3DSliceAxis)),
+                    React.createElement("span", null, "Depth " + brain3DSlicePosition + "% · " + (brain3DSliceFlip ? "opposite side visible" : "first side visible"))
+                  ),
+                  React.createElement("canvas", {
+                    ref: brainAtlas3DCanvasRef,
+                    tabIndex: 0,
+                    role: "application",
+                    "aria-label": canvasSummary,
+                    "aria-describedby": "brainatlas-canvas-summary",
+                    "aria-keyshortcuts": "ArrowLeft ArrowRight ArrowUp ArrowDown + - Home Escape",
+                    className: "brainatlas-3d-canvas",
+                    "data-brainatlas-3d-canvas": "true"
+                  }),
+                  React.createElement("div", { className: "brainatlas-3d-loading", "data-state": "loading", role: "status", "aria-live": "polite" },
+                    React.createElement("div", { className: "brainatlas-3d-loading-card" },
+                      React.createElement("span", { className: "brainatlas-3d-loading-spinner", "aria-hidden": "true" }),
+                      React.createElement("strong", null, 'Preparing the 3D anatomy model'),
+                      React.createElement("span", { "data-brainatlas-3d-loading-detail": "true" }, 'Loading the open, 141-structure reference atlas. The complete 2D atlas remains available at any time.')
+                    )
+                  ),
+
+                  React.createElement("div", { className: "brainatlas-3d-credit" },
+                    React.createElement("a", { href: "https://3d.nih.gov/entries/3DPX-020960", target: "_blank", rel: "noreferrer", title: "Open model source and attribution" }, 'NIH 3D / Allen Human Reference Atlas · CC BY 4.0')
+                  )
+                ) :
                 React.createElement("div", {
                   className: "brainatlas-canvas-stage",
                   "data-brainatlas-scrollable": canvasZoom > 1 ? "true" : "false"
@@ -6864,6 +8344,46 @@ var d = labToolData.brainAtlas || {};
                   teacherPrompt
                 )
 
+                )
+              ),
+
+              useBrain3D && selected3DGuide && React.createElement("section", {
+                className: "brainatlas-3d-guide",
+                "data-brainatlas-3d-guide": "true",
+                role: "region",
+                "aria-labelledby": "brainatlas-3d-guide-title",
+                "aria-live": "polite"
+              },
+                React.createElement("div", { className: "brainatlas-3d-guide-head" },
+                  React.createElement("div", null,
+                    React.createElement("p", { className: "brainatlas-3d-guide-kicker" }, "Guided learning · selected anatomy"),
+                    React.createElement("h3", { id: "brainatlas-3d-guide-title", className: "brainatlas-3d-guide-title" }, selected3DGuide.title),
+                    React.createElement("p", { className: "brainatlas-3d-guide-pronunciation" }, selected3DGuide.pronunciation ? ("Say it: " + selected3DGuide.pronunciation) : "Use Hear name for an audio pronunciation.")
+                  ),
+                  React.createElement("div", { className: "brainatlas-3d-guide-actions" },
+                    selected3DStructure && React.createElement("button", { type: "button", onClick: recenterBrainAtlas3DSelection, "aria-label": "Recenter the 3D camera on " + selected3DGuide.title }, React.createElement("span", { "aria-hidden": "true" }, '\u25ce'), "Recenter"),
+                    React.createElement("button", { type: "button", onClick: speakBrainAtlas3DSelection, "aria-label": "Hear the name " + selected3DGuide.title + " pronounced" }, React.createElement("span", { "aria-hidden": "true" }, '\u266b'), "Hear name"),
+                    React.createElement("button", { type: "button", className: "brainatlas-3d-guide-primary", onClick: openBrainAtlas3DSelectionIn2D }, React.createElement("span", { "aria-hidden": "true" }, '\u25a7'), selected3DGuide.hasTeachingCard ? "Open related 2D diagram" : "Open current 2D view"),
+                    React.createElement("button", { type: "button", onClick: clearBrainAtlas3DSelection, "aria-label": "Clear selected 3D structure" }, "Clear")
+                  )
+                ),
+                React.createElement("div", { className: "brainatlas-3d-guide-grid" },
+                  React.createElement("div", { className: "brainatlas-3d-guide-card" },
+                    React.createElement("strong", null, "What it contributes"),
+                    React.createElement("span", null, selected3DGuide.functionText)
+                  ),
+                  React.createElement("div", { className: "brainatlas-3d-guide-card", "data-tone": "teal" },
+                    React.createElement("strong", null, "Connected systems"),
+                    React.createElement("span", null, selected3DGuide.connectionsText)
+                  ),
+                  React.createElement("div", { className: "brainatlas-3d-guide-card", "data-tone": "rose" },
+                    React.createElement("strong", null, "Clinical lens"),
+                    React.createElement("span", null, selected3DGuide.clinicalText)
+                  )
+                ),
+                React.createElement("div", { className: "brainatlas-3d-guide-foot" },
+                  React.createElement("span", { className: "brainatlas-3d-guide-family" }, selected3DGuide.family),
+                  React.createElement("span", null, selected3DGuide.hasTeachingCard ? "A matching teaching card is open below for deeper study." : "This model label has no one-to-one card in this orientation; use the 2D atlas and neighboring anatomy for context.")
                 )
               ),
 
@@ -7514,7 +9034,11 @@ var d = labToolData.brainAtlas || {};
                       className: "brainatlas-detail-takeaways",
                       "data-brainatlas-detail-takeaways": "true"
                     },
-                      [
+                      (currentView.isPrenatal ? [
+                        { label: t('stem.brainatlas.quick_milestone', 'Milestone') || 'Milestone', text: brainAtlasShortText(sel.fn, 116), color: '#7c3aed' },
+                        { label: t('stem.brainatlas.quick_also_happening', 'Also happening') || 'Also happening', text: brainAtlasShortText(sel.context, 116), color: '#0f766e' },
+                        { label: t('stem.brainatlas.quick_continues_next', 'Continues next') || 'Continues next', text: brainAtlasShortText(sel.continues, 116), color: '#be185d' }
+                      ] : [
                         {
                           label: t('stem.brainatlas.quick_function', 'Function') || 'Function',
                           text: brainAtlasShortText(sel.fn, 116),
@@ -7530,7 +9054,7 @@ var d = labToolData.brainAtlas || {};
                           text: brainAtlasShortText(sel.damage || t('stem.brainatlas.damage_depends_on_circuit', 'Effects depend on the connected circuit and task being tested.'), 116),
                           color: '#e11d48'
                         }
-                      ].map(function (item) {
+                      ]).map(function (item) {
                         return React.createElement("div", {
                           key: item.label,
                           className: "brainatlas-detail-takeaway",
@@ -7546,10 +9070,19 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.function', "Function")),
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, currentView.isPrenatal ? (t('stem.brainatlas.what_is_forming', 'What is forming') || 'What is forming') : t('stem.brainatlas.function', "Function")),
 
                         React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.fn)
 
+                      ),
+                      currentView.isPrenatal && sel.context && React.createElement("div", null,
+                        React.createElement("p", { className: "text-[11px] font-bold text-teal-700 uppercase mb-0.5" }, t('stem.brainatlas.also_happening', 'Also happening')),
+                        React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-teal-50 rounded-lg p-2" }, sel.context)
+                      ),
+
+                      currentView.isPrenatal && sel.continues && React.createElement("div", null,
+                        React.createElement("p", { className: "text-[11px] font-bold text-pink-700 uppercase mb-0.5" }, t('stem.brainatlas.development_continues', 'Development continues')),
+                        React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-pink-50 rounded-lg p-2" }, sel.continues)
                       ),
 
                       React.createElement("div", { className: "brainatlas-plain-summary", "data-brainatlas-plain-summary": "true" },
@@ -7676,9 +9209,11 @@ var d = labToolData.brainAtlas || {};
 
                           var parts = [];
 
-                          parts.push('Brain region: ' + sel.name + '.');
+                          parts.push((currentView.isPrenatal ? 'Prenatal milestone: ' : 'Brain region: ') + sel.name + '.');
 
-                          parts.push('Function: ' + sel.fn + '.');
+                          parts.push((currentView.isPrenatal ? 'What is forming: ' : 'Function: ') + sel.fn + '.');
+                          if (sel.context) parts.push('Also happening: ' + sel.context + '.');
+                          if (sel.continues) parts.push('Development continues: ' + sel.continues + '.');
 
                           if (sel.conditions) parts.push('Associated conditions: ' + sel.conditions + '.');
 
@@ -7686,11 +9221,11 @@ var d = labToolData.brainAtlas || {};
 
                           if (sel.drugs) parts.push('Related pharmacology: ' + sel.drugs + '.');
 
-                          var prompt = 'Explain this brain region ' + lv.promptHint + '. '
+                          var prompt = (currentView.isPrenatal ? 'Explain this prenatal brain-development milestone ' : 'Explain this brain region ') + lv.promptHint + '. '
 
                             + parts.join(' ') + ' '
 
-                            + 'In 2-3 short sentences, explain (a) what this region does, (b) a concrete everyday example or analogy, and (c) why it matters. '
+                            + (currentView.isPrenatal ? 'In 2-3 short sentences, explain (a) what is forming, (b) what overlaps this stage, and (c) what continues next. ' : 'In 2-3 short sentences, explain (a) what this region does, (b) a concrete everyday example or analogy, and (c) why it matters. ')
 
                             + 'If any function listed is a simplification or a contested single-region claim (for example dopamine as the "pleasure chemical", or pinning empathy, theory of mind, or consciousness to one region), say so briefly in plain words. '
 
@@ -7830,7 +9365,7 @@ var d = labToolData.brainAtlas || {};
                           type: "button",
                           "data-brainatlas-region-button": "true",
                           "aria-label": (t('stem.brainatlas.open_region_details', 'Open region details for') || 'Open region details for') + ' ' + r.name,
-                          onClick: function () { upd('selectedRegion', r.id); },
+                          onClick: function () { if (currentView.isPrenatal) selectPrenatalStage(r); else { upd('selected3DStructure', ''); upd('selectedRegion', r.id); } },
                           className: "brainatlas-region-item w-full text-left px-3 py-2 rounded-xl text-xs transition-all hover:shadow-sm " +
                             (d.selectedRegion === r.id ? 'font-bold border-2 border-purple-400 bg-purple-50' : 'transition-colors bg-slate-50 hover:bg-white border border-slate-400 active:scale-[0.97]')
                         },

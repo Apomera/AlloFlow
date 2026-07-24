@@ -16,7 +16,9 @@ const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
 const runPlainLanguageHandler = new AsyncFunction(
   'pdfFixResult', 'setPlainLangBusy', '_captureAsyncHtmlToken', '_sourceDigestForToken',
   'simplifyAccessibleHtml', 'plainLangLevel', 'setPlainLangProgress', '_commitAsyncHtmlIfCurrent',
-  'addToast', 't',
+  '_beginRemediationOperation', '_remediationOperationSourceIsCurrent', '_cancelRemediationOperation',
+  '_viewSanitizeMarkupForExport', '_docPipeline', '_toastForRemediationOperation',
+  '_completeRemediationOperation', 'addToast', 't',
   view.slice(plainHandlerStart + 'onClick={async () => {'.length, plainHandlerEnd)
 );
 const cssSanitizerStart = pipe.indexOf('function _alloDecodeImportedCss');
@@ -25,6 +27,12 @@ if (cssSanitizerStart < 0 || cssSanitizerEnd < 0) throw new Error('Imported CSS 
 const sanitizeImportedCss = new Function(
   pipe.slice(cssSanitizerStart, cssSanitizerEnd) + '\nreturn _alloSanitizeImportedCss;'
 )();
+const htmlSanitizerEnd = pipe.indexOf('function _alloSanitizeRemediationProject', cssSanitizerStart);
+if (htmlSanitizerEnd < 0) throw new Error('HTML sanitizer marker missing');
+const sanitizeRemediationHtml = new Function(
+  'DOMParser',
+  'const _ALLO_MAX_IMPORTED_HTML_CHARS = 128 * 1024 * 1024;\n' + pipe.slice(cssSanitizerStart, htmlSanitizerEnd) + '\nreturn _alloSanitizeRemediationHtml;'
+)(globalThis.DOMParser);
 const checkpointRuntimeStart = pipe.indexOf("const _ACTIVE_BATCH_FILES_KEY");
 const checkpointRuntimeEnd = pipe.indexOf('  const _AUDIT_SLICE_BYTES_KB', checkpointRuntimeStart);
 if (checkpointRuntimeStart < 0 || checkpointRuntimeEnd < 0) throw new Error('Batch checkpoint runtime markers missing');
@@ -51,7 +59,7 @@ const checkpointHelpers = makeCheckpointRuntime(
 
 describe('remediation deep-dive hardening', () => {
   it('sanitizes every imported remediation HTML lane before commit or Builder preview', () => {
-    expect(pipe).toContain("querySelectorAll('script,iframe,frame,object,embed,base,link,meta,svg,math,template')");
+    expect(pipe).toContain("querySelectorAll('script,iframe,frame,object,embed,base,link,meta,template,svg foreignObject");
     expect(pipe).toContain("if (/^on/i.test(name)");
     expect(pipe).toContain("name === 'ping' || name === 'manifest'");
     expect(pipe).toContain("out._translation = Object.assign({}, out._translation, { html: sanitize(out._translation.html) })");
@@ -61,6 +69,26 @@ describe('remediation deep-dive hardening', () => {
     expect(host).toContain('const _sanitizedImport = _projectSanitizer(_savedProject);');
     expect(host).toContain('const _safeRemediationHtml = _docPipeline.sanitizeRemediationHtml(pdfFixResult.accessibleHtml);');
     expect(preview).toContain("exportPreviewSource === 'remediation' ? 'allow-same-origin' : 'allow-same-origin allow-scripts allow-forms'");
+  });
+
+  it('preserves static accessible SVG and MathML while removing their active-content vectors', () => {
+    const clean = sanitizeRemediationHtml(`<!DOCTYPE html><html lang="en"><body>
+      <svg role="img" aria-label="Triangle diagram" viewBox="0 0 10 10">
+        <path d="M0 10 L5 0 L10 10 Z"></path>
+        <script>alert(1)</script><foreignObject><iframe src="https://evil.example"></iframe></foreignObject>
+        <animate attributeName="x" from="0" to="10"></animate>
+        <use href="https://evil.example/icons.svg#x"></use>
+        <path onload="alert(2)" style="fill:url(javascript:alert(3))"></path>
+      </svg>
+      <math aria-label="x squared"><mrow><mi>x</mi><msup><mn>2</mn></msup></mrow></math>
+    </body></html>`);
+    expect(clean).toContain('<svg');
+    expect(clean).toContain('role="img"');
+    expect(clean).toContain('aria-label="Triangle diagram"');
+    expect(clean).toContain('<path');
+    expect(clean).toContain('<math');
+    expect(clean).toContain('<mi>x</mi>');
+    expect(clean).not.toMatch(/<script|foreignObject|<iframe|<animate|evil\.example|onload|javascript:/i);
   });
 
   it('canonicalizes CSS escapes and comments before removing fetch and execution primitives', () => {
@@ -130,6 +158,17 @@ describe('remediation deep-dive hardening', () => {
         committed = updater({ accessibleHtml: sourceHtml });
         return true;
       },
+      () => ({
+        documentEpoch: 1,
+        htmlToken: { documentEpoch: 1, revision: 3, html: sourceHtml },
+        controller: { signal: { aborted: false } },
+      }),
+      () => true,
+      () => true,
+      (html) => html,
+      {},
+      (_ticket, message, tone) => { toasts.push([message, tone]); return true; },
+      () => true,
       (...args) => toasts.push(args),
       (key) => key
     );
@@ -615,6 +654,17 @@ describe('remediation deep-dive hardening', () => {
     await expect(runtime.load()).resolves.toBeNull();
     expect(values.get('pdf_active_batch_files_v1')).toBeFalsy();
     expect(toasts.some(m => /earlier AlloFlow version was cleared/i.test(m))).toBe(true);
+    values.set('pdf_active_batch_files_v1', {
+      schemaVersion: 4, batchId: 'batch_legacy_unversioned', rootWriteId: 'r2',
+      files: [{ id: 'legacy', fileName: 'legacy.pdf', fileSize: 4, base64: 'AA==' }],
+      settings: {}, startedAt: 1, savedAt: Date.now(),
+    });
+    await expect(runtime.load()).resolves.toBeNull();
+    expect(values.get('pdf_active_batch_files_v1')).toBeFalsy();
+    expect(toasts.filter(m => /earlier AlloFlow version was cleared/i.test(m)).length).toBe(2);
+    expect(pipe).toContain('filesRec.promptVersion !== _PIPELINE_PROMPT_VERSION');
+    expect(pipe).toContain('rec.promptVersion === _PIPELINE_PROMPT_VERSION');
+    expect(pipe).not.toContain('!rec.promptVersion || rec.promptVersion === _PIPELINE_PROMPT_VERSION');
     // Source pin: item null-guard sits BEFORE key derivation in the batch runner.
     expect(pipe).toContain('if (!item) continue; // key derivation dereferences the item');
     expect(() => runtime.keyFor('batch_prewave_saved', null)).not.toThrow();

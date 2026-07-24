@@ -390,7 +390,7 @@
   // Each lane reuses a forcing-certified level. classifyShot remains authoritative,
   // and both the accessible SVG and optional Three.js view consume the same samples.
   var ARC_STATE_VERSION = 2;
-  var BATTLE_STATE_VERSION = 5;
+  var BATTLE_STATE_VERSION = 7;
   var BATTLE_LANE_IDS = ['L1', 'L3', 'L5'];
   var BATTLE_LANE_META = [
     { id: 'direct', title: 'Direct Circuit', short: 'Line', color: '#22d3ee', solution: { m: 0.5, b: 0 } },
@@ -439,12 +439,14 @@
       schemaVersion: BATTLE_STATE_VERSION, mode: mode === 'hotseat' ? 'hotseat' : 'cpu',
       assist: opts.assist === 'challenge' ? 'challenge' : 'guided',
       trailRule: mode === 'hotseat' && opts.trailRule === 'walls' ? 'walls' : 'visual',
+      weapon: ['standard', 'standard'],
+      phaseCharges: mode === 'hotseat' && opts.trailRule === 'walls' ? [1, 1] : [0, 0],
       arena: arenaId,
       cpuLevel: opts.cpuLevel === 'practice' ? 'practice' : 'standard',
       status: 'playing', turn: 0, round: 1, winner: null,
       selectedLane: [0, 0], drafts: battleDrafts(arenaId),
       shields: [[true, true, true], [true, true, true]],
-      trails: [], shots: 0, handoff: false, stats: [{ shots: 0, captures: 0 }, { shots: 0, captures: 0 }],
+      trails: [], shots: 0, handoff: false, stats: [{ shots: 0, captures: 0 }, { shots: 0, captures: 0 }], replayIndex: 0,
       log: ['Circuit Clash ready. Player 1 begins. Choose an active circuit, shape the function, then fire.']
     };
   }
@@ -455,6 +457,14 @@
     var out = Object.assign({}, base, raw, { schemaVersion: BATTLE_STATE_VERSION });
     out.assist = raw.assist === 'challenge' ? 'challenge' : 'guided';
     out.trailRule = out.mode === 'hotseat' && raw.trailRule === 'walls' ? 'walls' : 'visual';
+    out.phaseCharges = [0, 1].map(function (seat) {
+      if (out.trailRule !== 'walls') return 0;
+      if (!raw.phaseCharges || raw.phaseCharges[seat] == null) return base.phaseCharges[seat];
+      return Number(raw.phaseCharges[seat]) > 0 ? 1 : 0;
+    });
+    out.weapon = [0, 1].map(function (seat) {
+      return out.trailRule === 'walls' && out.phaseCharges[seat] > 0 && raw.weapon && raw.weapon[seat] === 'phase' ? 'phase' : 'standard';
+    });
     out.arena = battleArena(raw.arena).id;
     out.cpuLevel = raw.cpuLevel === 'practice' ? 'practice' : 'standard';
     out.selectedLane = [0, 1].map(function (seat) {
@@ -474,6 +484,9 @@
       });
     });
     out.trails = Array.isArray(raw.trails) ? raw.trails.slice(-12) : [];
+    var maxReplayIndex = Math.max(0, out.trails.length - 1);
+    var requestedReplayIndex = raw.replayIndex == null ? maxReplayIndex : Math.floor(Number(raw.replayIndex));
+    out.replayIndex = isFinite(requestedReplayIndex) ? Math.max(0, Math.min(maxReplayIndex, requestedReplayIndex)) : maxReplayIndex;
     out.log = Array.isArray(raw.log) && raw.log.length ? raw.log.slice(-12) : base.log;
     out.stats = [0, 1].map(function (seat) {
       var persisted = raw.stats && raw.stats[seat];
@@ -595,13 +608,15 @@
       return { x: Math.round(pt.x * 100) / 100, y: Math.round(pt.y * 100) / 100 };
     });
     var baseResult = classifyShot(level, params);
-    var result = battleTrailCollision(level, samples, battle, seat, lane, baseResult) || baseResult;
+    var weapon = battle.trailRule === 'walls' && battle.weapon[seat] === 'phase' && battle.phaseCharges[seat] > 0 ? 'phase' : 'standard';
+    var result = weapon === 'phase' ? baseResult : (battleTrailCollision(level, samples, battle, seat, lane, baseResult) || baseResult);
     var captured = result.result === 'hit' && battle.shields[defender][lane];
     var shields = battle.shields.map(function (row) { return row.slice(); });
     if (captured) shields[defender][lane] = false;
     var trail = {
       id: 'trail-' + (battle.shots + 1), seat: seat, lane: lane,
       family: level.family, params: Object.assign({}, params), result: result.result, captured: captured,
+      weapon: weapon,
       trailSeat: result.trailSeat == null ? null : result.trailSeat,
       collisionTrailId: result.trailId || null,
       killedAt: result.killedAt ? { x: result.killedAt.x, y: result.killedAt.y } : null,
@@ -618,6 +633,7 @@
     var nextTurn = won ? seat : defender;
     if (won) message += ' ' + attackerName + ' wins Circuit Clash!';
     else message += ' ' + battlePlayerLabel(battle, nextTurn) + ' is next.';
+    if (weapon === 'phase') message = 'Phase Pulse: ' + message;
     var drafts = battle.drafts.map(function (seatDrafts) {
       return seatDrafts.map(function (p) { return Object.assign({}, p); });
     });
@@ -625,13 +641,127 @@
     var stats = battle.stats.map(function (row) { return { shots: row.shots, captures: row.captures }; });
     stats[seat].shots += 1;
     if (captured) stats[seat].captures += 1;
+    var weapons = battle.weapon.slice(), phaseCharges = battle.phaseCharges.slice();
+    weapons[seat] = 'standard';
+    if (weapon === 'phase') phaseCharges[seat] = Math.max(0, phaseCharges[seat] - 1);
     var next = Object.assign({}, battle, {
+      replayIndex: won ? trails.length - 1 : battle.replayIndex,
       status: won ? 'won' : 'playing', winner: won ? seat : null, handoff: !won && battle.mode === 'hotseat',
       turn: nextTurn, round: battle.round + (!won && seat === 1 ? 1 : 0),
+      weapon: weapons, phaseCharges: phaseCharges,
       shields: shields, drafts: drafts, trails: trails, shots: battle.shots + 1, stats: stats,
       log: [message].concat(battle.log).slice(0, 12)
     });
-    return { battle: next, result: result, message: message, captured: captured, trail: trail };
+    return { battle: next, result: result, message: message, captured: captured, trail: trail, weapon: weapon };
+  }
+
+  function battleTrailSummary(rawBattle, trail) {
+    var battle = normalizeBattleState(rawBattle);
+    if (!trail) return null;
+    var arena = battleArena(battle.arena);
+    var laneIndex = Math.max(0, Math.min(2, Number(trail.lane) || 0));
+    var level = battleLane(laneIndex, battle.arena);
+    var params = trail.params || defaultParams(level);
+    var result = classifyShot(level, params);
+    var laneMeta = arena.lanes[laneIndex] || arena.lanes[0];
+    var outcome;
+    if (trail.captured) outcome = 'captured the relay';
+    else if (trail.result === 'trail') outcome = 'collided with ' + battlePlayerLabel(battle, trail.trailSeat == null ? (trail.seat === 0 ? 1 : 0) : trail.trailSeat) + '\'s failed trail at x = ' + round1(trail.killedAt && trail.killedAt.x);
+    else if (result.result === 'hit') outcome = 'reached an offline relay';
+    else outcome = describeResult(level, result, 1);
+    if (trail.weapon === 'phase') outcome = 'Phase Pulse: ' + outcome;
+    return {
+      player: battlePlayerLabel(battle, trail.seat),
+      lane: laneIndex,
+      laneTitle: laneMeta.title,
+      equation: describeEquation(level, params),
+      outcome: outcome
+    };
+  }
+
+  function battleReplayFrame(rawBattle, requestedIndex) {
+    var battle = normalizeBattleState(rawBattle);
+    var total = battle.trails.length;
+    if (!total) return null;
+    var rawIndex = requestedIndex == null ? battle.replayIndex : Math.floor(Number(requestedIndex));
+    var index = isFinite(rawIndex) ? Math.max(0, Math.min(total - 1, rawIndex)) : battle.replayIndex;
+    var trail = battle.trails[index];
+    var summary = battleTrailSummary(battle, trail);
+    return Object.assign({}, summary, {
+      index: index,
+      number: index + 1,
+      total: total,
+      trail: trail,
+      announcement: 'Replay shot ' + (index + 1) + ' of ' + total + '. ' + summary.player + ', ' + summary.laneTitle + '. ' + summary.equation + '. Result: ' + summary.outcome + '.'
+    });
+  }
+
+  function battleReplayParamValue(level, name, value) {
+    var spec = level.params[name] || {};
+    return spec.asPeriod ? periodOf(value) + ' units per wave' : fmtVal(value, spec.step == null ? 0.01 : spec.step);
+  }
+
+  function battleReplayComparison(rawBattle, requestedIndex) {
+    var battle = normalizeBattleState(rawBattle);
+    var frame = battleReplayFrame(battle, requestedIndex);
+    if (!frame) return null;
+    var previousIndex = -1;
+    for (var i = frame.index - 1; i >= 0; i--) {
+      var candidate = battle.trails[i];
+      if (candidate && candidate.seat === frame.trail.seat && Number(candidate.lane) === frame.lane) {
+        previousIndex = i;
+        break;
+      }
+    }
+    if (previousIndex < 0) {
+      return {
+        comparable: false,
+        previousIndex: null,
+        changes: [],
+        summary: 'First recorded attempt by ' + frame.player + ' in the ' + frame.laneTitle + '; no earlier comparable shot.'
+      };
+    }
+    var previousTrail = battle.trails[previousIndex];
+    var level = battleLane(frame.lane, battle.arena);
+    var currentParams = frame.trail.params || defaultParams(level);
+    var previousParams = previousTrail.params || defaultParams(level);
+    var changes = [];
+    (level.paramOrder || []).forEach(function (name) {
+      var spec = level.params[name] || {};
+      var fromValue = Number(previousParams[name]);
+      var toValue = Number(currentParams[name]);
+      if (!isFinite(fromValue) || !isFinite(toValue) || Math.abs(toValue - fromValue) <= 0.000001) return;
+      var fromComparable = spec.asPeriod ? periodOf(fromValue) : fromValue;
+      var toComparable = spec.asPeriod ? periodOf(toValue) : toValue;
+      var direction = toComparable > fromComparable ? 'increased' : (toComparable < fromComparable ? 'decreased' : 'changed');
+      var label = spec.asPeriod ? 'period' : name;
+      changes.push({
+        name: name,
+        label: label,
+        from: battleReplayParamValue(level, name, fromValue),
+        to: battleReplayParamValue(level, name, toValue),
+        direction: direction,
+        text: label + ' ' + direction + ' from ' + battleReplayParamValue(level, name, fromValue) + ' to ' + battleReplayParamValue(level, name, toValue)
+      });
+    });
+    var previousSummary = battleTrailSummary(battle, previousTrail);
+    var improved = !previousTrail.captured && !!frame.trail.captured;
+    var changeText = changes.length ? changes.map(function (change) { return change.text; }).join('; ') + '.' : 'Equation parameters were unchanged.';
+    var outcomeText = improved
+      ? 'The revision captured the relay.'
+      : (previousSummary.outcome === frame.outcome ? 'The recorded outcome stayed the same.' : 'The recorded outcome changed from ' + previousSummary.outcome + ' to ' + frame.outcome + '.');
+    return {
+      comparable: true,
+      previousIndex: previousIndex,
+      previousNumber: previousIndex + 1,
+      previousTrail: previousTrail,
+      previousOutcome: previousSummary.outcome,
+      changes: changes,
+      improved: improved,
+      changeText: changeText,
+      outcomeText: outcomeText,
+      summary: 'Compared with shot ' + (previousIndex + 1) + ' by the same player in the same circuit. ' + changeText + ' ' + outcomeText
+    };
   }
 
   function battleRecap(rawBattle) {
@@ -653,23 +783,7 @@
         accuracy: stat.shots ? Math.round(stat.captures / stat.shots * 100) : 0
       };
     });
-    var recent = battle.trails.slice(-6).reverse().map(function (trail) {
-      var level = battleLane(trail.lane, battle.arena);
-      var result = classifyShot(level, trail.params || defaultParams(level));
-      var laneMeta = arena.lanes[trail.lane] || arena.lanes[0];
-      var outcome = trail.captured
-        ? 'captured the relay'
-        : (trail.result === 'trail'
-          ? 'collided with ' + battlePlayerLabel(battle, trail.trailSeat == null ? (trail.seat === 0 ? 1 : 0) : trail.trailSeat) + '\'s failed trail at x = ' + round1(trail.killedAt && trail.killedAt.x)
-          : (result.result === 'hit' ? 'reached an offline relay' : describeResult(level, result, 1)));
-      return {
-        player: battlePlayerLabel(battle, trail.seat),
-        lane: trail.lane,
-        laneTitle: laneMeta.title,
-        equation: describeEquation(level, trail.params || defaultParams(level)),
-        outcome: outcome
-      };
-    });
+    var recent = battle.trails.slice(-6).reverse().map(function (trail) { return battleTrailSummary(battle, trail); });
     var recommendation = 'No missed trajectories in the recorded shots. Try Predict Then Fire or the other arena next.';
     if (hardestLane != null) {
       var hardestTrail = null;
@@ -738,7 +852,7 @@
   // Outcome narration — direction AND magnitude of the error (design §8.2).
   function describeResult(level, res, shots) {
     if (res.result === 'trail') {
-      return 'Trail collision at x = ' + round1(res.at) + '. Your beam met an opposing failed trail and stopped. ' + actionHint(level, res);
+      return 'Trail collision at x = ' + round1(res.at) + '. Your beam met Player ' + ((Number(res.trailSeat) || 0) + 1) + '\'s failed trail and stopped. ' + actionHint(level, res);
     }
     if (level.goal === 'match') {
       if (res.result === 'hit') return 'Matched! Your curve overlays the ghost — within ' + level.matchTol + ' units the whole way. Solved in ' + shots + (shots === 1 ? ' shot.' : ' shots.');
@@ -1094,6 +1208,8 @@
     battleTrailCollision: battleTrailCollision,
     battleFire: battleFire,
     battleRecap: battleRecap,
+    battleReplayFrame: battleReplayFrame,
+    battleReplayComparison: battleReplayComparison,
     levelById: levelById,
     levelIndex: levelIndex,
     round1: round1,
@@ -1188,6 +1304,24 @@
       '#allo-arccity-root [role="slider"]:focus{outline:3px solid #22d3ee;outline-offset:2px;border-radius:6px;}' +
       '#allo-arccity-root [role="slider"]:focus-visible{outline:3px solid #22d3ee;outline-offset:2px;border-radius:6px;}' +
       '#allo-arccity-root button:focus-visible{outline:2px solid #22d3ee;outline-offset:2px;border-radius:6px;}' +
+      '#allo-arccity-root,#allo-arccity-root *{box-sizing:border-box;}' +
+      '#allo-arccity-root .arc-battle-options>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:800;}' +
+      '#allo-arccity-root .arc-battle-option-group button,#allo-arccity-root .arc-battle-lanes button,#allo-arccity-root .arc-battle-loadout button,#allo-arccity-root .arc-battle-replay button{min-height:40px;}' +
+      '@media (max-width:520px){' +
+      '#allo-arccity-root{width:100%;padding:10px!important;overflow-x:hidden;}' +
+      '#allo-arccity-root .arc-battle-panel{min-width:0;}' +
+      '#allo-arccity-root .arc-battle-option-group{align-items:stretch!important;}' +
+      '#allo-arccity-root .arc-battle-option-group button{flex:1 1 135px;margin-left:0!important;}' +
+      '#allo-arccity-root .arc-battle-score>*{min-width:0!important;flex:1 1 100%!important;}' +
+      '#allo-arccity-root .arc-battle-param-snap{grid-template-columns:minmax(0,1fr)!important;}' +
+      '#allo-arccity-root .arc-battle-param-inputs{grid-template-columns:minmax(0,1fr) 76px!important;}' +
+      '#allo-arccity-root .arc-battle-lanes button{flex:1 1 90px;min-height:44px;}' +
+      '#allo-arccity-root .arc-battle-actions{position:sticky;bottom:0;z-index:4;padding:8px 0 10px;background:var(--allo-stem-surface,#0f172a);border-top:1px solid var(--allo-stem-border,#475569);}' +
+      '#allo-arccity-root .arc-battle-actions button{min-height:44px;}' +
+      '#allo-arccity-root .arc-battle-secondary{font-size:12px!important;line-height:1.45;}' +
+      '#allo-arccity-root .arc-battle-board{max-height:none!important;}' +
+      '}' +
+      '@media (max-width:360px){#allo-arccity-root .arc-battle-param-inputs{grid-template-columns:minmax(0,1fr) 72px!important;}}' +
       // success-celebration elements are invisible / un-transformed unless the
       // (reduced-motion-gated) animation reveals them — so reduced-motion is calm.
       '#allo-arccity-root .arccity-burst,#allo-arccity-root .arccity-sparks,#allo-arccity-root .arccity-shock,#allo-arccity-root .arccity-pop{transform-box:fill-box;transform-origin:center;opacity:0;}' +
@@ -1344,6 +1478,7 @@
     if (!pack || !pack.THREE) return;
     var THREE = pack.THREE, battle = normalizeBattleState(rawBattle);
     var laneMeta = battleArena(battle.arena).lanes;
+    var replayComparison3D = battle.status === 'won' ? battleReplayComparison(battle) : null;
     for (var seat = 0; seat < 2; seat++) {
       for (var lane = 0; lane < 3; lane++) {
         var relay = pack.relays[seat][lane], online = battle.shields[seat][lane];
@@ -1372,14 +1507,40 @@
       var line = new THREE.Line(geo, mat);
       if (dashed && line.computeLineDistances) line.computeLineDistances();
       pack.trailGroup.add(line);
+      return pts;
     }
-    battle.trails.forEach(function (trail) {
-      addTrail(trail.samples || [], trail.seat, trail.lane, laneMeta[trail.lane].color, 0.58, trail.result !== 'hit', trail.killedAt && trail.killedAt.x);
+    battle.trails.forEach(function (trail, trailIndex) {
+      var selectedReplay = battle.status === 'won' && trailIndex === battle.replayIndex;
+      var comparedReplay = replayComparison3D && replayComparison3D.comparable && trailIndex === replayComparison3D.previousIndex;
+      var trailColor = selectedReplay ? '#ffffff' : (comparedReplay ? '#94a3b8' : (trail.weapon === 'phase' ? '#ffffff' : laneMeta[trail.lane].color));
+      var trailOpacity = selectedReplay ? 1 : (comparedReplay ? 0.72 : (battle.status === 'won' ? 0.16 : (trail.weapon === 'phase' ? 0.95 : 0.58)));
+      var trailDashed = selectedReplay ? false : (comparedReplay ? true : (trail.weapon === 'phase' ? false : trail.result !== 'hit'));
+      var renderedPoints = addTrail(trail.samples || [], trail.seat, trail.lane, trailColor, trailOpacity, trailDashed, trail.killedAt && trail.killedAt.x);
+      if (selectedReplay && renderedPoints && renderedPoints.length) {
+        var endpoint = renderedPoints[renderedPoints.length - 1];
+        var replayGeo = new THREE.SphereGeometry(0.12, 10, 8);
+        var replayMat = new THREE.MeshBasicMaterial({ color: '#ffffff' });
+        var replayMarker = new THREE.Mesh(replayGeo, replayMat);
+        replayMarker.position.copy(endpoint);
+        pack.trailGroup.add(replayMarker);
+      }
     });
     if (battle.status !== 'won' && !battle.handoff && battle.assist !== 'challenge' && !(battle.mode === 'cpu' && battle.turn === 1)) {
       var activeSeat = battle.turn, activeLane = battle.selectedLane[activeSeat];
-      var preview = sampleCurve(battleLane(activeLane, battle.arena), battle.drafts[activeSeat][activeLane]);
-      addTrail(preview, activeSeat, activeLane, activeSeat === 0 ? '#e0ffff' : '#ffe4f3', 0.95, true, null);
+      var previewLevel = battleLane(activeLane, battle.arena);
+      var preview = sampleCurve(previewLevel, battle.drafts[activeSeat][activeLane]);
+      var previewBase = classifyShot(previewLevel, battle.drafts[activeSeat][activeLane]);
+      var previewWeapon = battle.trailRule === 'walls' && battle.weapon[activeSeat] === 'phase' && battle.phaseCharges[activeSeat] > 0 ? 'phase' : 'standard';
+      var previewResult = previewWeapon === 'phase' ? previewBase : (battleTrailCollision(previewLevel, preview, battle, activeSeat, activeLane, previewBase) || previewBase);
+      addTrail(preview, activeSeat, activeLane, previewWeapon === 'phase' ? '#ffffff' : (activeSeat === 0 ? '#e0ffff' : '#ffe4f3'), 0.95, previewWeapon !== 'phase', previewResult.killedAt && previewResult.killedAt.x);
+      if (previewResult.result === 'trail' && previewResult.killedAt) {
+        var impact = previewResult.killedAt, impactX = activeSeat === 0 ? -5 + impact.x : 5 - impact.x;
+        var impactGeo = new THREE.SphereGeometry(0.13, 10, 8);
+        var impactMat = new THREE.MeshBasicMaterial({ color: '#ef4444' });
+        var impactMarker = new THREE.Mesh(impactGeo, impactMat);
+        impactMarker.position.set(impactX, Math.max(0.03, impact.y * 0.52), [-3, 0, 3][activeLane]);
+        pack.trailGroup.add(impactMarker);
+      }
     }
     pack.renderer.render(pack.scene, pack.camera);
   }
@@ -1799,6 +1960,14 @@
           drafts[seat][lane][name] = value;
           replaceBattle(Object.assign({}, next, { drafts: drafts }));
         }
+        function setBattleWeapon(weapon) {
+          var next = normalizeBattleState(battle), seat = next.turn;
+          if (next.trailRule !== 'walls' || next.status === 'won' || next.handoff) return;
+          var weapons = next.weapon.slice();
+          weapons[seat] = weapon === 'phase' && next.phaseCharges[seat] > 0 ? 'phase' : 'standard';
+          replaceBattle(Object.assign({}, next, { weapon: weapons }));
+          announceArc(ctx, weapons[seat] === 'phase' ? 'Phase Pulse armed. This shot will pass through light trails but must still clear the circuit.' : 'Standard function trail armed.');
+        }
         function beginBattleTurn() {
           var outcome = battleBeginTurn(battle);
           if (outcome.battle === battle || !battle.handoff) return;
@@ -1838,6 +2007,16 @@
           replaceBattle(createBattleState(battle.mode, { assist: battle.assist, trailRule: battle.trailRule, cpuLevel: battle.cpuLevel, arena: battle.arena }));
           announceArc(ctx, 'Circuit Clash reset. Player 1 begins.');
         }
+        function setBattleReplay(index) {
+          var next = normalizeBattleState(battle);
+          if (next.status !== 'won' || !next.trails.length) return;
+          var frame = battleReplayFrame(next, index);
+          if (!frame) return;
+          var comparison = battleReplayComparison(next, frame.index);
+          replaceBattle(Object.assign({}, next, { replayIndex: frame.index }));
+          announceArc(ctx, frame.announcement + (comparison ? ' ' + comparison.summary : ''));
+        }
+
         function toggleBattle3D() {
           if (typeof setToolData !== 'function') return;
           setToolData(function (prev) {
@@ -2381,14 +2560,17 @@
 
         // ── Circuit Clash tactical projection. The SVG is the complete, accessible
         // game surface; the optional Three.js arena added below is a peer view only.
-        var battleSeat = battle.turn;
+        var battleReplay = battle.status === 'won' ? battleReplayFrame(battle) : null;
+        var battleReplayComparisonData = battleReplay ? battleReplayComparison(battle, battleReplay.index) : null;
+        var battleSeat = battleReplay ? battleReplay.trail.seat : battle.turn;
         var battleDefender = battleSeat === 0 ? 1 : 0;
-        var battleLaneIndex = battle.selectedLane[battleSeat];
+        var battleLaneIndex = battleReplay ? battleReplay.lane : battle.selectedLane[battleSeat];
         var battleLevel = battleLane(battleLaneIndex, battle.arena);
-        var battleParams = battle.drafts[battleSeat][battleLaneIndex];
+        var battleParams = battleReplay ? (battleReplay.trail.params || defaultParams(battleLevel)) : battle.drafts[battleSeat][battleLaneIndex];
         var battlePreview = sampleCurve(battleLevel, battleParams);
         var battlePreviewBaseResult = classifyShot(battleLevel, battleParams);
-        var battlePreviewResult = battleTrailCollision(battleLevel, battlePreview, battle, battleSeat, battleLaneIndex, battlePreviewBaseResult) || battlePreviewBaseResult;
+        var battleWeapon = battleReplay ? (battleReplay.trail.weapon === 'phase' ? 'phase' : 'standard') : (battle.trailRule === 'walls' && battle.weapon[battleSeat] === 'phase' && battle.phaseCharges[battleSeat] > 0 ? 'phase' : 'standard');
+        var battlePreviewResult = battleWeapon === 'phase' ? battlePreviewBaseResult : (battleTrailCollision(battleLevel, battlePreview, battle, battleSeat, battleLaneIndex, battlePreviewBaseResult) || battlePreviewBaseResult);
         var battleHandoff = battle.mode === 'hotseat' && battle.handoff && battle.status !== 'won';
         var battleLocked = battle.status === 'won' || battleHandoff || (battle.mode === 'cpu' && battleSeat === 1);
         var battlePreviewVisible = battle.status !== 'won' && !battleHandoff && battle.assist !== 'challenge' && !(battle.mode === 'cpu' && battleSeat === 1);
@@ -2418,14 +2600,32 @@
           battleSvgEls.push(h('polyline', {
             key: 'bt-' + trail.id + '-' + ti,
             points: battlePoints(trail.samples || [], trail.seat, trail.killedAt && trail.killedAt.x),
-            fill: 'none', stroke: meta.color, strokeWidth: 2.5,
-            strokeDasharray: trail.result === 'hit' ? null : '7 5', opacity: 0.42,
+            fill: 'none', stroke: trail.weapon === 'phase' ? '#ffffff' : meta.color, strokeWidth: trail.weapon === 'phase' ? 4 : 2.5,
+            strokeDasharray: trail.weapon === 'phase' || trail.result === 'hit' ? null : '7 5', opacity: trail.weapon === 'phase' ? 0.9 : 0.42,
             'aria-hidden': 'true'
           }));
           if (trail.result === 'trail' && trail.killedAt) {
             battleSvgEls.push(h('circle', { key: 'bt-hit-' + trail.id + '-' + ti, cx: bsx(battleGlobalX(trail.killedAt.x, trail.seat)), cy: bsy(trail.killedAt.y), r: 6, fill: PAL.danger, stroke: '#ffffff', strokeWidth: 1.5, 'aria-hidden': 'true' }));
           }
         });
+        if (battleReplay) {
+          if (battleReplayComparisonData && battleReplayComparisonData.comparable) {
+            var compareTrail = battleReplayComparisonData.previousTrail;
+            var compareKillX = compareTrail.killedAt && compareTrail.killedAt.x;
+            battleSvgEls.push(h('polyline', { key: 'battle-replay-compare-trail', points: battlePoints(compareTrail.samples || [], compareTrail.seat, compareKillX), fill: 'none', stroke: '#94a3b8', strokeWidth: 3, strokeDasharray: '4 4', opacity: 0.82, 'aria-hidden': 'true' }));
+          }
+          var replayTrail = battleReplay.trail, replayKillX = replayTrail.killedAt && replayTrail.killedAt.x, replayEndpoint = null;
+          for (var replayPointIndex = 0; replayPointIndex < (replayTrail.samples || []).length; replayPointIndex++) {
+            var replayPoint = replayTrail.samples[replayPointIndex];
+            if (replayKillX != null && replayPoint.x > replayKillX + 0.001) continue;
+            if (!isFinite(replayPoint.y) || replayPoint.y < -1 || replayPoint.y > 9) continue;
+            replayEndpoint = replayPoint;
+          }
+          battleSvgEls.push(h('polyline', { key: 'battle-replay-trail', points: battlePoints(replayTrail.samples || [], replayTrail.seat, replayKillX), fill: 'none', stroke: '#ffffff', strokeWidth: 6, opacity: 1, filter: 'url(#arc-glow)', 'aria-hidden': 'true' }));
+          if (replayEndpoint) {
+            battleSvgEls.push(h('circle', { key: 'battle-replay-end', cx: bsx(battleGlobalX(replayEndpoint.x, replayTrail.seat)), cy: bsy(replayEndpoint.y), r: 7, fill: '#111827', stroke: '#ffffff', strokeWidth: 3, 'aria-hidden': 'true' }));
+          }
+        }
         // Obstacles are mirrored into the active player's firing direction.
         (battleLevel.walls || []).forEach(function (wall, wi) {
           var wx = battleGlobalX(wall.x, battleSeat);
@@ -2439,10 +2639,13 @@
         // Current authored function preview.
         if (battlePreviewVisible) {
           battleSvgEls.push(h('polyline', {
-            key: 'battle-preview', points: battlePoints(battlePreview, battleSeat, null),
-            fill: 'none', stroke: battleSeat === 0 ? '#22d3ee' : '#f472b6',
-            strokeWidth: 3.5, strokeDasharray: '5 4', filter: 'url(#arc-glow)'
+            key: 'battle-preview', points: battlePoints(battlePreview, battleSeat, battlePreviewResult.killedAt && battlePreviewResult.killedAt.x),
+            fill: 'none', stroke: battleWeapon === 'phase' ? '#ffffff' : (battleSeat === 0 ? '#22d3ee' : '#f472b6'),
+            strokeWidth: battleWeapon === 'phase' ? 4 : 3.5, strokeDasharray: battleWeapon === 'phase' ? null : '5 4', filter: 'url(#arc-glow)'
           }));
+          if (battlePreviewResult.result === 'trail' && battlePreviewResult.killedAt) {
+            battleSvgEls.push(h('circle', { key: 'battle-preview-collision', cx: bsx(battleGlobalX(battlePreviewResult.killedAt.x, battleSeat)), cy: bsy(battlePreviewResult.killedAt.y), r: 7, fill: '#ef4444', stroke: '#ffffff', strokeWidth: 2, 'aria-hidden': 'true' }));
+          }
         } else {
           battleSvgEls.push(h('text', { key: 'battle-preview-hidden', x: BW / 2, y: 42, textAnchor: 'middle', fill: INK, opacity: 0.7, fontSize: 13, fontWeight: 800 }, battleHandoff ? 'PASS DEVICE — CONTROLS HIDDEN' : (battle.mode === 'cpu' && battleSeat === 1 ? 'CPU TRAJECTORY HIDDEN' : 'CHALLENGE AIM — PREVIEW HIDDEN')));
         }
@@ -2465,9 +2668,10 @@
             }));
           }
         });
-        var battleBoardLabel = 'Circuit Clash ' + battleArenaConfig.title + ' tactical board. ' + (battleHandoff ? 'Turn handoff pending for ' + battlePlayerLabel(battle, battleSeat) + '. Controls and preview are hidden.' : battlePlayerLabel(battle, battleSeat) + ' is aiming at the ' + battleLaneMeta[battleLaneIndex].title + '. ' + describeBoard(battleLevel)) + (battle.trailRule === 'walls' ? ' Failed opposing trails are active light walls.' : ' Trails are visual history only.');
+        var battleBoardLabel = battleReplay ? 'Circuit Clash ' + battleArenaConfig.title + ' replay board. ' + battleReplay.announcement + ' ' + battleReplayComparisonData.summary + ' ' + describeBoard(battleLevel) : 'Circuit Clash ' + battleArenaConfig.title + ' tactical board. ' + (battleHandoff ? 'Turn handoff pending for ' + battlePlayerLabel(battle, battleSeat) + '. Controls and preview are hidden.' : battlePlayerLabel(battle, battleSeat) + ' is aiming at the ' + battleLaneMeta[battleLaneIndex].title + '. ' + describeBoard(battleLevel)) + (battle.trailRule === 'walls' ? ' Failed opposing trails are active light walls.' : ' Trails are visual history only.');
+        if (battlePreviewVisible && battlePreviewResult.result === 'trail') battleBoardLabel += ' Guided preview predicts a collision with ' + battlePlayerLabel(battle, battlePreviewResult.trailSeat) + '\'s failed trail at x ' + round1(battlePreviewResult.at) + '.';
         var battleSvg = h('svg', {
-          key: 'battle-svg', viewBox: '0 0 ' + BW + ' ' + BH, width: '100%', role: 'img',
+          key: 'battle-svg', className: 'arc-battle-board', viewBox: '0 0 ' + BW + ' ' + BH, width: '100%', role: 'img',
           'aria-label': battleBoardLabel,
           style: { display: 'block', maxHeight: '48vh', border: '1px solid ' + GRID, borderRadius: 12, overflow: 'hidden' }
         }, battleSvgEls);
@@ -2484,20 +2688,39 @@
         function battleParamControl(name) {
           var spec = battleLevel.params[name], value = battleParams[name];
           var display = spec.asPeriod ? periodOf(value) + ' units' : fmtVal(value, spec.step);
-          if (spec.locked) return h('div', { key: 'bp-' + name, style: { marginBottom: 8, color: INK, fontSize: 12, opacity: 0.72 } }, spec.label + ': ' + display + ' (fixed)');
-          if (spec.snapValues) return h('label', { key: 'bp-' + name, style: { display: 'grid', gridTemplateColumns: 'minmax(160px,1fr) minmax(120px,180px)', gap: 10, alignItems: 'center', marginBottom: 9, color: INK, fontSize: 12 } },
+          if (spec.locked) return h('div', { key: 'bp-' + name, className: 'arc-battle-param', style: { marginBottom: 8, color: INK, fontSize: 12, opacity: 0.72 } }, spec.label + ': ' + display + ' (fixed)');
+          if (spec.snapValues) return h('label', { key: 'bp-' + name, className: 'arc-battle-param arc-battle-param-snap', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(110px,180px)', gap: 10, alignItems: 'center', marginBottom: 9, color: INK, fontSize: 12 } },
             h('span', { key: 'label' }, spec.label),
             h('select', { key: 'select', value: String(value), disabled: battleLocked, onChange: function (e) { setBattleParam(name, e.target.value); }, style: { width: '100%', padding: '7px 8px', borderRadius: 8, border: '1px solid ' + GRID, background: 'var(--allo-stem-surface, #ffffff)', color: INK } }, spec.snapValues.map(function (snap) {
               return h('option', { key: 'snap-' + snap, value: String(snap) }, periodOf(snap) + ' units');
             })));
-          return h('div', { key: 'bp-' + name, style: { marginBottom: 9 } },
+          return h('div', { key: 'bp-' + name, className: 'arc-battle-param', style: { marginBottom: 9 } },
             h('label', { key: 'label', htmlFor: 'arc-battle-' + name, style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: INK, fontSize: 12, marginBottom: 4 } }, h('span', { key: 'txt' }, spec.label), h('span', { key: 'val', style: { fontWeight: 800 } }, display)),
-            h('div', { key: 'inputs', style: { display: 'grid', gridTemplateColumns: '1fr 86px', gap: 8, alignItems: 'center' } },
+            h('div', { key: 'inputs', className: 'arc-battle-param-inputs', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 86px', gap: 8, alignItems: 'center' } },
               h('input', { key: 'range', id: 'arc-battle-' + name, type: 'range', min: spec.min, max: spec.max, step: spec.step, value: value, disabled: battleLocked, onChange: function (e) { setBattleParam(name, e.target.value); }, style: { width: '100%', accentColor: BEAM } }),
               h('input', { key: 'number', type: 'number', min: spec.min, max: spec.max, step: spec.step, value: value, disabled: battleLocked, 'aria-label': spec.label + ' exact value', onChange: function (e) { setBattleParam(name, e.target.value); }, style: { width: '100%', boxSizing: 'border-box', padding: '6px 7px', borderRadius: 8, border: '1px solid ' + GRID, background: 'var(--allo-stem-surface, #ffffff)', color: INK } })));
         }
 
         var battleReview = battle.status === 'won' ? battleRecap(battle) : null;
+        var battleReplayPanel = battleReplay ? h('section', { key: 'battle-replay', className: 'arc-battle-replay', 'aria-labelledby': 'arc-battle-replay-title', style: { margin: '10px 0', padding: '9px 10px', border: '1px solid ' + GRID, borderRadius: 9, background: 'rgba(255,255,255,0.05)' } },
+          h('h3', { key: 'title', id: 'arc-battle-replay-title', style: { margin: '0 0 6px', fontSize: 13 } }, 'Shot replay'),
+          h('div', { key: 'battle-replay-frame', id: 'arc-battle-replay-frame', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 12, lineHeight: 1.45 } },
+            h('div', { key: 'position', style: { fontWeight: 800 } }, 'Shot ' + battleReplay.number + ' of ' + battleReplay.total + ' â€” ' + battleReplay.player + ' â€” ' + battleReplay.laneTitle),
+            h('div', { key: 'equation' }, battleReplay.equation),
+            h('div', { key: 'outcome', style: { opacity: 0.82 } }, 'Result: ' + battleReplay.outcome),
+            h('div', { key: 'battle-replay-comparison', role: 'note', style: { marginTop: 8, padding: '7px 8px', borderLeft: '3px dashed #94a3b8', background: 'rgba(148,163,184,0.08)' } },
+              h('div', { key: 'title', style: { fontWeight: 800 } }, battleReplayComparisonData.comparable ? 'Compared with shot ' + battleReplayComparisonData.previousNumber : 'Revision comparison'),
+              battleReplayComparisonData.comparable
+                ? (battleReplayComparisonData.changes.length
+                  ? h('ul', { key: 'changes', style: { margin: '4px 0', paddingLeft: 20 } }, battleReplayComparisonData.changes.map(function (change) { return h('li', { key: 'change-' + change.name }, change.text); }))
+                  : h('p', { key: 'unchanged', style: { margin: '4px 0' } }, 'Equation parameters were unchanged.'))
+                : h('p', { key: 'first', style: { margin: '4px 0' } }, battleReplayComparisonData.summary),
+              battleReplayComparisonData.comparable ? h('p', { key: 'comparison-outcome', style: { margin: '4px 0 0', opacity: 0.82 } }, battleReplayComparisonData.outcomeText) : null)),
+          h('div', { key: 'controls', role: 'group', 'aria-label': 'Shot replay navigation', style: { display: 'flex', gap: 8, marginTop: 8 } },
+            h('button', { key: 'battle-replay-prev', type: 'button', disabled: battleReplay.index === 0, 'aria-controls': 'arc-battle-replay-frame', onClick: function () { setBattleReplay(battleReplay.index - 1); }, style: { padding: '6px 9px', borderRadius: 8, border: '1px solid ' + GRID, background: 'transparent', color: INK, opacity: battleReplay.index === 0 ? 0.5 : 1 } }, 'Previous shot'),
+            h('button', { key: 'battle-replay-next', type: 'button', disabled: battleReplay.index === battleReplay.total - 1, 'aria-controls': 'arc-battle-replay-frame', onClick: function () { setBattleReplay(battleReplay.index + 1); }, style: { padding: '6px 9px', borderRadius: 8, border: '1px solid ' + GRID, background: 'transparent', color: INK, opacity: battleReplay.index === battleReplay.total - 1 ? 0.5 : 1 } }, 'Next shot'))
+        ) : null;
+
         var battleRecapPanel = battleReview ? h('section', { key: 'battle-recap', 'aria-labelledby': 'arc-battle-recap-title', style: { marginTop: 14, padding: '12px 14px', border: '1px solid ' + NODE_ON, borderRadius: 10, background: 'rgba(52,211,153,0.08)', color: INK } },
           h('h2', { key: 'title', id: 'arc-battle-recap-title', style: { margin: '0 0 6px', fontSize: 16 } }, 'Post-match analysis'),
           h('p', { key: 'summary', style: { margin: '0 0 8px', fontSize: 12, lineHeight: 1.45 } }, battleReview.winnerLabel + ' won ' + battleReview.arenaTitle + ' after ' + battleReview.totalShots + ' total shots.'),
@@ -2505,6 +2728,7 @@
             return h('span', { key: 'recap-player-' + player.seat, style: { padding: '4px 7px', border: '1px solid ' + GRID, borderRadius: 999, fontSize: 11 } }, player.label + ': ' + player.captures + '/' + player.shots + ' captures (' + player.accuracy + '%)');
           })),
           battleReview.hardestLaneTitle ? h('p', { key: 'hardest', style: { margin: '0 0 8px', fontSize: 12 } }, 'Most difficult circuit: ' + battleReview.hardestLaneTitle + '.') : h('p', { key: 'hardest', style: { margin: '0 0 8px', fontSize: 12 } }, 'No missed trajectories were recorded.'),
+          battleReplayPanel,
           h('h3', { key: 'recent-title', style: { margin: '8px 0 5px', fontSize: 13 } }, 'Recent function shots'),
           battleReview.recent.length ? h('ol', { key: 'battle-recap-shots', style: { margin: 0, paddingLeft: 22, fontSize: 11, lineHeight: 1.45 } }, battleReview.recent.map(function (shot, shotIndex) {
             return h('li', { key: 'recap-shot-' + shotIndex, style: { marginBottom: 6 } },
@@ -2516,7 +2740,8 @@
         ) : null;
 
 
-        var battlePanel = h('div', { key: 'battle-panel' },
+        var battleSetupSummary = (battle.mode === 'cpu' ? 'Solo vs CPU' : 'Two-player hot-seat') + ' / ' + battleArenaConfig.title + ' / ' + (battle.assist === 'challenge' ? 'Predict then fire' : 'Guided preview') + ' / ' + (battle.mode === 'cpu' ? (battle.cpuLevel === 'practice' ? 'Practice probe' : 'Standard solver') : (battle.trailRule === 'walls' ? 'Trail walls' : 'Visual trails')) + (S.battle3d ? ' / 3D on' : ' / tactical view');
+        var battlePanel = h('div', { key: 'battle-panel', className: 'arc-battle-panel' },
           h('div', { key: 'battle-intro', style: { padding: '10px 12px', borderRadius: 10, border: '1px solid ' + BEAM, background: 'rgba(34,211,238,0.08)', color: INK, marginBottom: 12 } },
             h('div', { key: 'title', style: { fontSize: 17, fontWeight: 900 } }, 'Circuit Clash'),
             h('div', { key: 'copy', style: { fontSize: 12, lineHeight: 1.45, opacity: 0.82, marginTop: 3 } }, 'Turn-based neon function battle. Capture all three opposing relays. Every shot leaves a light trail; there is no timer.')),
@@ -2527,54 +2752,63 @@
               h('li', { key: 'turns' }, 'Choose a relay, adjust the equation, and fire. Every valid shot ends the turn.'),
               h('li', { key: 'aim' }, 'Guided Preview shows the trajectory; Predict Then Fire keeps it hidden until the shot.'),
               h('li', { key: 'handoff' }, 'In hot-seat play, pass the device when prompted. The next player confirms before controls reappear.'),
-              h('li', { key: 'trail-walls' }, 'Optional Trail Walls make failed opposing trails block later beams in that circuit. Change the curve to route around them.'))),
+              h('li', { key: 'trail-walls' }, 'Optional Trail Walls make failed opposing trails block later beams in that circuit. Change the curve to route around them.'),
+              h('li', { key: 'phase-pulse' }, 'Each Trail Walls player gets one Phase Pulse. It passes through light trails, but walls, gates, and the target still use the authored function.'))),
 
-          h('div', { key: 'battle-mode', role: 'group', 'aria-label': 'Battle opponent', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
+          h('details', { key: 'battle-options', className: 'arc-battle-options', style: { marginBottom: 10, padding: '5px 10px 9px', border: '1px solid ' + GRID, borderRadius: 9, color: INK } },
+            h('summary', { key: 'battle-options-summary', 'aria-label': 'Match options. Current setup: ' + battleSetupSummary }, 'Match options'),
+            h('div', { key: 'current-setup', className: 'arc-battle-secondary', style: { margin: '0 0 9px', opacity: 0.78 } }, 'Current setup: ' + battleSetupSummary),
+          h('div', { key: 'battle-mode', className: 'arc-battle-option-group', role: 'group', 'aria-label': 'Battle opponent', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
             h('button', { key: 'cpu', type: 'button', 'aria-pressed': battle.mode === 'cpu', onClick: function () { setBattleMode('cpu'); }, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid ' + (battle.mode === 'cpu' ? BEAM : GRID), background: battle.mode === 'cpu' ? 'rgba(34,211,238,0.14)' : 'transparent', color: INK, fontWeight: 700 } }, 'Solo vs CPU'),
             h('button', { key: 'hotseat', type: 'button', 'aria-pressed': battle.mode === 'hotseat', onClick: function () { setBattleMode('hotseat'); }, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid ' + (battle.mode === 'hotseat' ? BEAM : GRID), background: battle.mode === 'hotseat' ? 'rgba(34,211,238,0.14)' : 'transparent', color: INK, fontWeight: 700 } }, 'Two-player hot-seat'),
             h('button', { key: 'toggle-3d', type: 'button', 'aria-pressed': !!S.battle3d, onClick: toggleBattle3D, style: { marginLeft: 'auto', padding: '6px 10px', borderRadius: 8, border: '1px solid ' + GRID, background: S.battle3d ? 'rgba(244,114,182,0.13)' : 'transparent', color: INK, fontWeight: 700 } }, S.battle3d ? 'Hide 3D arena' : 'Show 3D arena')),
-          h('div', { key: 'battle-arena', role: 'group', 'aria-label': 'Battle arena', style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 5 } },
+          h('div', { key: 'battle-arena', className: 'arc-battle-option-group', role: 'group', 'aria-label': 'Battle arena', style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 5 } },
             h('span', { key: 'label', style: { color: INK, fontSize: 12, fontWeight: 800 } }, 'Arena:'),
             Object.keys(BATTLE_ARENAS).map(function (arenaId) {
               var arenaOption = BATTLE_ARENAS[arenaId], active = battle.arena === arenaId;
               return h('button', { key: 'battle-arena-' + arenaId, type: 'button', 'aria-pressed': active, onClick: function () { setBattleArena(arenaId); }, style: { padding: '5px 9px', borderRadius: 8, border: '1px solid ' + (active ? '#a78bfa' : GRID), background: active ? 'rgba(167,139,250,0.14)' : 'transparent', color: INK } }, arenaOption.title);
             })),
           h('div', { key: 'battle-arena-blurb', style: { color: INK, fontSize: 11, opacity: 0.72, marginBottom: 8 } }, battleArenaConfig.blurb),
-          h('div', { key: 'battle-assist', role: 'group', 'aria-label': 'Trajectory preview rule', style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 8 } },
+          h('div', { key: 'battle-assist', className: 'arc-battle-option-group', role: 'group', 'aria-label': 'Trajectory preview rule', style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 8 } },
             h('span', { key: 'label', style: { color: INK, fontSize: 12, fontWeight: 800 } }, 'Aim rule:'),
             h('button', { key: 'battle-assist-guided', type: 'button', 'aria-pressed': battle.assist === 'guided', onClick: function () { setBattleAssist('guided'); }, style: { padding: '5px 9px', borderRadius: 8, border: '1px solid ' + (battle.assist === 'guided' ? BEAM : GRID), background: battle.assist === 'guided' ? 'rgba(34,211,238,0.14)' : 'transparent', color: INK } }, 'Guided preview'),
             h('button', { key: 'battle-assist-challenge', type: 'button', 'aria-pressed': battle.assist === 'challenge', onClick: function () { setBattleAssist('challenge'); }, style: { padding: '5px 9px', borderRadius: 8, border: '1px solid ' + (battle.assist === 'challenge' ? '#facc15' : GRID), background: battle.assist === 'challenge' ? 'rgba(250,204,21,0.12)' : 'transparent', color: INK } }, 'Predict then fire')),
-          battle.mode === 'hotseat' ? h('div', { key: 'battle-trail-rule', role: 'group', 'aria-label': 'Persistent trail collision rule', style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 8 } },
+          battle.mode === 'hotseat' ? h('div', { key: 'battle-trail-rule', className: 'arc-battle-option-group', role: 'group', 'aria-label': 'Persistent trail collision rule', style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 8 } },
             h('span', { key: 'label', style: { color: INK, fontSize: 12, fontWeight: 800 } }, 'Trail rule:'),
             h('button', { key: 'battle-trails-visual', type: 'button', 'aria-pressed': battle.trailRule === 'visual', onClick: function () { setBattleTrailRule('visual'); }, style: { padding: '5px 9px', borderRadius: 8, border: '1px solid ' + (battle.trailRule === 'visual' ? BEAM : GRID), background: battle.trailRule === 'visual' ? 'rgba(34,211,238,0.14)' : 'transparent', color: INK } }, 'Visual only'),
             h('button', { key: 'battle-trails-walls', type: 'button', 'aria-pressed': battle.trailRule === 'walls', onClick: function () { setBattleTrailRule('walls'); }, style: { padding: '5px 9px', borderRadius: 8, border: '1px solid ' + (battle.trailRule === 'walls' ? '#ef4444' : GRID), background: battle.trailRule === 'walls' ? 'rgba(239,68,68,0.12)' : 'transparent', color: INK } }, 'Trail walls'),
             h('span', { key: 'note', style: { color: INK, fontSize: 11, opacity: 0.72 } }, battle.trailRule === 'walls' ? 'Failed opposing trails block later shots.' : 'Trails show history without blocking.')) : null,
-          battle.mode === 'cpu' ? h('div', { key: 'battle-cpu-level', role: 'group', 'aria-label': 'CPU strategy', style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
+          battle.mode === 'cpu' ? h('div', { key: 'battle-cpu-level', className: 'arc-battle-option-group', role: 'group', 'aria-label': 'CPU strategy', style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
             h('span', { key: 'label', style: { color: INK, fontSize: 12, fontWeight: 800 } }, 'CPU strategy:'),
             h('button', { key: 'cpu-level-practice', type: 'button', 'aria-pressed': battle.cpuLevel === 'practice', onClick: function () { setBattleCpuLevel('practice'); }, style: { padding: '5px 9px', borderRadius: 8, border: '1px solid ' + (battle.cpuLevel === 'practice' ? '#f472b6' : GRID), background: battle.cpuLevel === 'practice' ? 'rgba(244,114,182,0.13)' : 'transparent', color: INK } }, 'Practice probe'),
-            h('button', { key: 'cpu-level-standard', type: 'button', 'aria-pressed': battle.cpuLevel === 'standard', onClick: function () { setBattleCpuLevel('standard'); }, style: { padding: '5px 9px', borderRadius: 8, border: '1px solid ' + (battle.cpuLevel === 'standard' ? '#f472b6' : GRID), background: battle.cpuLevel === 'standard' ? 'rgba(244,114,182,0.13)' : 'transparent', color: INK } }, 'Standard solver')) : null,
-          h('div', { key: 'score', style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 7 } }, battleShieldCard(0), battleShieldCard(1)),
-          h('div', { key: 'battle-stats', 'aria-label': 'Match statistics', style: { display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 10, color: INK, fontSize: 11, opacity: 0.82 } }, [0, 1].map(function (seat) {
+            h('button', { key: 'cpu-level-standard', type: 'button', 'aria-pressed': battle.cpuLevel === 'standard', onClick: function () { setBattleCpuLevel('standard'); }, style: { padding: '5px 9px', borderRadius: 8, border: '1px solid ' + (battle.cpuLevel === 'standard' ? '#f472b6' : GRID), background: battle.cpuLevel === 'standard' ? 'rgba(244,114,182,0.13)' : 'transparent', color: INK } }, 'Standard solver')) : null),
+          h('div', { key: 'score', className: 'arc-battle-score', style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 7 } }, battleShieldCard(0), battleShieldCard(1)),
+          h('div', { key: 'battle-stats', className: 'arc-battle-secondary', 'aria-label': 'Match statistics', style: { display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 10, color: INK, fontSize: 11, opacity: 0.82 } }, [0, 1].map(function (seat) {
             var stat = battle.stats[seat], accuracy = stat.shots ? Math.round(stat.captures / stat.shots * 100) : 0;
             return h('span', { key: 'battle-stat-' + seat }, battlePlayerLabel(battle, seat) + ': ' + stat.captures + ' captures / ' + stat.shots + ' shots (' + accuracy + '%)');
           })),
           S.battle3d ? h(ArcCityBattle3D, { key: 'battle3d-' + battle.arena, React: React, battle: battle }) : null,
           battleSvg,
           h('div', { key: 'turn', role: 'status', style: { margin: '10px 0', padding: '8px 10px', borderRadius: 8, background: battle.status === 'won' ? 'rgba(52,211,153,0.14)' : (battleHandoff ? 'rgba(250,204,21,0.11)' : 'rgba(148,163,184,0.09)'), color: INK, fontWeight: 800, fontSize: 13 } }, battle.status === 'won' ? battlePlayerLabel(battle, battle.winner) + ' won in round ' + battle.round + '.' : (battleHandoff ? 'Pass the device to ' + battlePlayerLabel(battle, battleSeat) + '. Controls remain hidden until they confirm.' : 'Round ' + battle.round + ' — ' + battlePlayerLabel(battle, battleSeat) + ' turn')),
-          h('div', { key: 'lane-group', role: 'group', 'aria-label': 'Target circuit', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 12 } }, battleLaneMeta.map(function (meta, laneNo) {
+          h('div', { key: 'lane-group', className: 'arc-battle-lanes', role: 'group', 'aria-label': 'Target circuit', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 12 } }, battleLaneMeta.map(function (meta, laneNo) {
             var selected = laneNo === battleLaneIndex, available = battle.shields[battleDefender][laneNo];
             return h('button', { key: 'lane-' + laneNo, type: 'button', disabled: battleLocked || !available, 'aria-pressed': selected, onClick: function () { setBattleLane(laneNo); }, style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + (selected ? meta.color : GRID), background: selected ? 'rgba(34,211,238,0.11)' : 'transparent', color: INK, opacity: available ? 1 : 0.48, fontWeight: selected ? 800 : 600, cursor: battleLocked || !available ? 'not-allowed' : 'pointer' } }, meta.short + (available ? ' relay' : ' captured'));
           })),
+          !battleHandoff && battle.trailRule === 'walls' && battle.status !== 'won' ? h('div', { key: 'battle-weapon', className: 'arc-battle-loadout', role: 'group', 'aria-label': 'Shot loadout', style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
+            h('span', { key: 'label', style: { color: INK, fontSize: 12, fontWeight: 800 } }, 'Loadout:'),
+            h('button', { key: 'battle-weapon-standard', type: 'button', 'aria-pressed': battleWeapon === 'standard', onClick: function () { setBattleWeapon('standard'); }, style: { padding: '6px 9px', borderRadius: 8, border: '1px solid ' + (battleWeapon === 'standard' ? BEAM : GRID), background: battleWeapon === 'standard' ? 'rgba(34,211,238,0.14)' : 'transparent', color: INK } }, 'Standard trail'),
+            h('button', { key: 'battle-weapon-phase', type: 'button', disabled: battle.phaseCharges[battleSeat] < 1, 'aria-pressed': battleWeapon === 'phase', onClick: function () { setBattleWeapon('phase'); }, style: { padding: '6px 9px', borderRadius: 8, border: '1px solid ' + (battleWeapon === 'phase' ? '#ffffff' : GRID), background: battleWeapon === 'phase' ? 'rgba(255,255,255,0.14)' : 'transparent', color: INK, opacity: battle.phaseCharges[battleSeat] > 0 ? 1 : 0.5 } }, 'Phase pulse (' + battle.phaseCharges[battleSeat] + ')'),
+            h('span', { key: 'note', style: { color: INK, fontSize: 11, opacity: 0.72 } }, battleWeapon === 'phase' ? 'Ignores light trails; circuit geometry still applies.' : 'Persistent trails can collide.')) : null,
           battleHandoff ? h('div', { key: 'battle-handoff-card', role: 'status', style: { padding: '12px 14px', borderRadius: 10, border: '1px solid ' + PAL.warn, background: 'rgba(250,204,21,0.08)', color: INK, fontSize: 13, fontWeight: 800, textAlign: 'center' } }, 'Pass the device. Equation controls and trajectory are hidden for ' + battlePlayerLabel(battle, battleSeat) + '.') : h('div', { key: 'battle-equation', 'aria-label': describeEquation(battleLevel, battleParams), style: { color: INK, fontSize: 13, fontWeight: 700, marginBottom: 10 } }, battleLaneMeta[battleLaneIndex].title + ' — ' + describeEquation(battleLevel, battleParams)),
-          battleHandoff ? null : h('div', { key: 'battle-params' }, battleLevel.paramOrder.map(battleParamControl)),
-          h('div', { key: 'battle-actions', style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 } },
+          battleHandoff ? null : h('div', { key: 'battle-params', className: 'arc-battle-params' }, battleLevel.paramOrder.map(battleParamControl)),
+          h('div', { key: 'battle-actions', className: 'arc-battle-actions', style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 } },
             battleHandoff
               ? h('button', { key: 'battle-begin-turn', type: 'button', autoFocus: true, onClick: beginBattleTurn, style: { flex: 1, padding: '11px 14px', border: 'none', borderRadius: 10, background: '#facc15', color: '#111827', fontWeight: 900 } }, 'Start ' + battlePlayerLabel(battle, battleSeat) + ' turn')
               : (battle.mode === 'cpu' && battleSeat === 1 && battle.status !== 'won'
                 ? h('button', { key: 'cpu-turn', type: 'button', onClick: runBattleCpu, style: { flex: 1, padding: '10px 14px', border: 'none', borderRadius: 10, background: '#f472b6', color: '#111827', fontWeight: 900 } }, 'Run CPU turn')
-                : h('button', { key: 'battle-fire', type: 'button', disabled: battle.status === 'won', onClick: fireBattle, style: { flex: 1, padding: '10px 14px', border: 'none', borderRadius: 10, background: BEAM, color: PAL.btnText, fontWeight: 900, opacity: battle.status === 'won' ? 0.55 : 1 } }, 'Fire function trail')),
+                : h('button', { key: 'battle-fire', type: 'button', disabled: battle.status === 'won', onClick: fireBattle, style: { flex: 1, padding: '10px 14px', border: 'none', borderRadius: 10, background: battleWeapon === 'phase' ? '#ffffff' : BEAM, color: battleWeapon === 'phase' ? '#111827' : PAL.btnText, fontWeight: 900, opacity: battle.status === 'won' ? 0.55 : 1 } }, battleWeapon === 'phase' ? 'Fire phase pulse' : 'Fire function trail')),
             h('button', { key: 'battle-reset', type: 'button', onClick: resetBattle, style: resetBtnStyle }, battle.status === 'won' ? 'Rematch' : 'Reset match')),
-          h('div', { key: 'preview-readout', style: { marginTop: 9, color: battlePreviewVisible && battlePreviewResult.result === 'hit' ? NODE_ON : PAL.warn, fontSize: 12 } }, battle.status === 'won' ? 'Match complete. Choose Rematch to keep these rules.' : (battleHandoff ? 'Hot-seat handoff pending. No equation or trajectory is visible.' : (battle.mode === 'cpu' && battleSeat === 1 ? 'CPU controls and trajectory are hidden. Run the CPU turn when ready.' : (battlePreviewVisible ? 'Prediction: ' + describeResult(battleLevel, battlePreviewResult, 1) : 'Challenge aim: trajectory and result stay hidden until Fire.')))),
+          h('div', { key: 'preview-readout', className: 'arc-battle-secondary', style: { marginTop: 9, color: battlePreviewVisible && battlePreviewResult.result === 'hit' ? NODE_ON : PAL.warn, fontSize: 12 } }, battle.status === 'won' ? 'Match complete. Choose Rematch to keep these rules.' : (battleHandoff ? 'Hot-seat handoff pending. No equation or trajectory is visible.' : (battle.mode === 'cpu' && battleSeat === 1 ? 'CPU controls and trajectory are hidden. Run the CPU turn when ready.' : (battlePreviewVisible ? 'Prediction: ' + describeResult(battleLevel, battlePreviewResult, 1) : 'Challenge aim: trajectory and result stay hidden until Fire.')))),
           battleRecapPanel,
           h('h3', { key: 'log-title', style: { color: INK, fontSize: 14, margin: '14px 0 5px' } }, 'Battle log'),
           h('ol', { key: 'battle-log', 'aria-label': 'Circuit Clash battle log, newest first', style: { margin: 0, paddingLeft: 22, color: INK, fontSize: 12, lineHeight: 1.5 } }, battle.log.map(function (entry, logIndex) { return h('li', { key: 'blog-' + battle.shots + '-' + logIndex }, entry); })));
@@ -2587,7 +2821,7 @@
               ? h('div', { key: 'game' }, levelBar, gauntletBanner) // no board until families are solved
               : h('div', { key: 'game' }, levelBar, gauntletBanner, (gauntlet ? gauntletTierLock : tierBar), svg, controls, gauntletNav, badgeStrip)));
 
-        return h('div', { id: 'allo-arccity-root', style: { padding: 16, maxWidth: 760, margin: '0 auto', color: INK } },
+        return h('div', { id: 'allo-arccity-root', className: 'arc-city-root', style: { padding: 16, maxWidth: 760, margin: '0 auto', color: INK } },
           header, viewToggle, body);
 
       } catch (e) {

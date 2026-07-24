@@ -1,0 +1,58 @@
+'use strict';
+
+module.exports = {
+  reviewedAt: '2026-07-22',
+  reviewWave: 'eppp-distractor-review-wave-01',
+  reviews: [
+    {
+      id: 'eppp-v2-professional-040',
+      expectedAnswerIndex: 1,
+      expectedPrompt: 'A licensed psychologist supervises a trainee who provided an assessment. The claim sent to a third-party payor lists the psychologist as the sole service provider. Which response best follows APA Ethics Code Standard 6.06?',
+      expectedPairIds: ['eppp-b002-professional-2', 'eppp-v2-professional-030'],
+      classification: 'distinct-coverage-false-positive',
+      decision: 'Retain without revision. The shared phrase “third-party” links accurate payor reporting under Standard 6.06 to therapy consent under Standard 10.01, but the items test different duties, decisions, and learning objectives. The application item has three plausible reporting-error distractors and no active lexical, extreme-word, or direct-recall warning.',
+      sourceCheck: 'The item remains aligned to APA Ethics Code Standard 6.06, which addresses accuracy in reports to payors and funding sources. Its paired items address informed consent to therapy under Standard 10.01, so the shared phrase does not establish redundant concept coverage.',
+      sourceUrls: ['https://www.apa.org/ethics/code'],
+    },
+    {
+      id: 'eppp-b016-social-1',
+      expectedAnswerIndex: 0,
+      expectedPrompt: 'A new employee has no objective benchmark for judging an unfamiliar presentation task, so she examines how coworkers with similar experience perform. Which process is most directly illustrated?',
+      expectedPairIds: ['eppp-v3-social-cultural-049'],
+      classification: 'intentional-foundation-application-scaffold',
+      decision: 'Retain without revision. This item requires application of social-comparison theory to a workplace scenario, whereas the paired foundation item asks for direct construct recognition. Their difficulty, prompt form, and cognitive demand are materially different despite a shared learning objective.',
+      sourceCheck: 'Festinger’s original 1954 article supports evaluation of abilities and opinions through comparison with other people when objective standards are unavailable. The scenario and keyed response preserve that distinction without adding a new factual claim.',
+      sourceUrls: ['https://doi.org/10.1177/001872675400700202'],
+    },
+    {
+      id: 'eppp-b022-assessment-1',
+      expectedAnswerIndex: 0,
+      expectedPrompt: 'An adult outpatient completes a 344-item self-report inventory. Several clinical scales are elevated, but response-validity indicators also suggest inconsistent and unusually negative responding. What should the psychologist do first?',
+      expectedPairIds: ['eppp-v3-assessment-078'],
+      classification: 'different-instrument-distinct-decision',
+      decision: 'Retain without revision. The reviewed item is a PAI interpretation scenario requiring validity-first decision making; the paired item is an MMPI-2 scale-recognition question. “Response-validity” is a cross-instrument assessment principle, not evidence that the two items duplicate one another.',
+      sourceCheck: 'PAR’s current PAI materials identify the instrument as a 344-item adult psychopathology inventory with four validity scales and interpretation guidance. That supports the item’s PAI identification and its emphasis on evaluating response validity before substantive clinical elevations.',
+      sourceUrls: ['https://www.parinc.com/products/pai'],
+    },
+    {
+      id: 'eppp-v3-professional-030',
+      expectedAnswerIndex: 1,
+      expectedPrompt: 'A graduate instructor asks a psychologist to upload a current proprietary test\'s item booklet and scoring key to a password-protected course site so students can practice. Which response best follows APA Ethics Code Standard 9.11?',
+      expectedPairIds: ['eppp-b010-professional-1'],
+      classification: 'intentional-foundation-application-scaffold',
+      decision: 'Retain without revision. The paired foundation item recalls the general test-security duty; this advanced scenario distinguishes test materials from test data and tests whether restricted distribution, deidentification, email, or paraphrase supplies authorization. The overlap is purposeful scaffolding rather than interchangeable item content.',
+      sourceCheck: 'APA Ethics Code Standard 9.11 requires reasonable efforts to maintain the integrity and security of test materials consistently with law and contractual obligations. The scenario applies that rule to distribution choices without claiming that a password or deidentification creates permission.',
+      sourceUrls: ['https://www.apa.org/ethics/code'],
+    },
+    {
+      id: 'eppp-v2-professional-030',
+      expectedAnswerIndex: 3,
+      expectedPrompt: 'At the start of therapy, a psychologist reviews fees and cancellation policies but has not discussed the likely course of therapy, third-party involvement, or limits of confidentiality. What is the best next step under APA Ethics Code Standard 10.01?',
+      expectedPairIds: ['eppp-b002-professional-2', 'eppp-v2-professional-040'],
+      classification: 'intentional-foundation-application-scaffold',
+      decision: 'Retain without revision. One linked item is the foundation recall scaffold for Standard 10.01; the other concerns accurate payor reporting under Standard 6.06 and is linked only by “third-party.” This item uniquely asks the learner to identify and repair an incomplete consent process.',
+      sourceCheck: 'APA Ethics Code Standard 10.01 identifies the nature and anticipated course of therapy, fees, third-party involvement, limits of confidentiality, and opportunity for questions. The prompt turns those elements into an applied omission-detection task while preserving the source-supported key.',
+      sourceUrls: ['https://www.apa.org/ethics/code'],
+    },
+  ],
+};

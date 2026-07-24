@@ -18,7 +18,8 @@ describe('final audit estimated minimum score', () => {
   });
 
   it('pipeline treats a missing final audit score as incomplete and carries estimate metadata', () => {
-    expect(pipeSrc).toContain('const _finalAuditScoreMissing = !_finalAuditHadUsableScore;');
+    // Mutable because the explicit final-audit retry may recover (or lose) a usable score.
+    expect(pipeSrc).toContain('let _finalAuditScoreMissing = !_finalAuditHadUsableScore;');
     expect(pipeSrc).toMatch(/_aiDegraded = !verification \|\| verification\.score === null \|\| verification\._scoreDegraded \|\| verification\.synthesized \|\| _finalAuditScoreMissing/);
     expect(pipeSrc).toContain('_estimatedMinimumScore = _alloComputeHeadline(_lastSuccessfulAiScore, deterministicScore);');
     expect(pipeSrc).toContain("kind: 'last-successful-ai-plus-current-automated'");

@@ -80,7 +80,8 @@ describe('A3 — futile verification refresh is skipped when EA is environmental
 
 describe('B4 — batch HTML dashboard popup tells the verification truth', () => {
   it('cards carry the processed/fully-verified split and a verification section renders the states map', () => {
-    expect(view).toContain('${done.length} processed · ${summary?.fullyVerified ?? 0} fully verified · ${failed.length} failed');
+    expect(view).toContain('${done.length}</div><div class="card-sub">');
+    expect(view).toContain('${summary?.fullyVerified ?? 0} fully verified · ${failed.length} failed · ${Math.max(0, queue.length - done.length - failed.length)} pending');
     expect(view).toContain("summary && summary.verificationStates ? '<div class=\"section\"><h2>WCAG Verification");
     expect(view).toContain("['complete', 'review-required', 'partial', 'unavailable'].map");
     expect(view).toContain('${summary?.reviewRequired ?? 0} verification review');

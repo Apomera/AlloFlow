@@ -18,6 +18,7 @@ const VIEWS = [
   'csfHydrocephalus',
   'neurotransmitters',
   'neuron',
+  'prenatalDevelopment',
   'synapses',
   'basalGangliaLoop',
   'limbicPapezLoop',
@@ -107,6 +108,38 @@ describe('brainAtlas refinement contracts', () => {
     expect(spike).toMatch(/refractory/i);
   });
 
+  it('adds an accessible prenatal brain-development timeline with roomy labels', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+    const html = render({
+      view: 'prenatalDevelopment',
+      viewGroup: 'development',
+      prenatalWeek: 24,
+      selectedRegion: 'prenatal_connections',
+    });
+
+    expect(html).toContain('data-brainatlas-active-group="development"');
+    expect(html).toContain('data-brainatlas-visible-group="development"');
+    expect(html).toContain('data-brainatlas-prenatal-controls="true"');
+    expect(html).toContain('id="brainatlas-prenatal-week"');
+    expect(html).toContain('data-brainatlas-prenatal-week="true">Week 24');
+    expect(html).toMatch(/aria-valuetext="Gestational week 24, nearest milestone Long-range wiring"/);
+    expect((html.match(/data-brainatlas-prenatal-stage=/g) || [])).toHaveLength(6);
+    expect(html).toContain('data-brainatlas-prenatal-stage="prenatal_connections" aria-pressed="true"');
+    expect(html).toContain('width="1040"');
+    expect(html).toContain('height="780"');
+    expect(html).toMatch(/Milestone/);
+    expect(html).toMatch(/Also happening/);
+    expect(html).toMatch(/Continues next/);
+    expect(html).toMatch(/Development continues/);
+    expect(html).toMatch(/processes overlap/i);
+
+    expect(src).toContain('currentView.isPrenatal');
+    expect(src).toContain("brainAtlasDrawCompactCanvasHeading('Brain development before birth'");
+    expect(src).toContain('Approximate gestational weeks ? Processes overlap');
+    expect(src).toContain('.brainatlas-prenatal-stage-list{display:flex;');
+  });
+
   it('provides a large responsive canvas with native and fallback fullscreen paths', () => {
     loadTool(FILE, 'brainAtlas');
     const src = readFileSync(FILE, 'utf8');
@@ -175,10 +208,10 @@ describe('brainAtlas refinement contracts', () => {
     expect(html).toContain('aria-labelledby="brainatlas-route-library-title"');
     expect(html).toContain('data-brainatlas-route-grid="true"');
     expect(html).toContain('data-brainatlas-route-card="true"');
-    expect((html.match(/data-brainatlas-route-card="true"/g) || [])).toHaveLength(15);
+    expect((html.match(/data-brainatlas-route-card="true"/g) || [])).toHaveLength(16);
     expect(html).toContain('data-brainatlas-route-active="true"');
     expect(html).toMatch(/Guided exploration/);
-    expect(html).toMatch(/15 paths/);
+    expect(html).toMatch(/16 paths/);
     expect(html).toMatch(/Open diagram/);
     expect(html).toMatch(/Map the lobes/);
     expect(html).toMatch(/Trace left vs right/);
@@ -285,9 +318,9 @@ describe('brainAtlas refinement contracts', () => {
     expect(first).toContain('data-brainatlas-previous-view="true"');
     expect(first).toContain('data-brainatlas-next-view="true"');
     expect(first).toContain('data-brainatlas-fullscreen-position="true"');
-    expect(first).toMatch(/data-brainatlas-fullscreen-position="true" aria-live="polite">1 \/ 21/);
+    expect(first).toMatch(/data-brainatlas-fullscreen-position="true" aria-live="polite">1 \/ 22/);
     expect(last).toContain('data-brainatlas-fullscreen-position="true"');
-    expect(last).toMatch(/data-brainatlas-fullscreen-position="true" aria-live="polite">21 \/ 21/);
+    expect(last).toMatch(/data-brainatlas-fullscreen-position="true" aria-live="polite">22 \/ 22/);
     expect(src).toContain('function stepBrainAtlasView(direction)');
     expect(src).toContain('VIEW_KEYS[(currentViewIndex - 1 + VIEW_KEYS.length) % VIEW_KEYS.length]');
     expect(src).toContain('VIEW_KEYS[(currentViewIndex + 1) % VIEW_KEYS.length]');

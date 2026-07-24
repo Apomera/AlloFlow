@@ -2485,6 +2485,15 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('id="demoTemplateSelect"');
     expect(html).toContain('id="demoDuplicateBtn"');
     expect(html).toContain('id="demoTemplateSafety"');
+    expect(html).toContain('id="demoTemplateUndoDeleteBtn"');
+    expect(html).toContain('var deletedDemoTemplate = null');
+    expect(html).toContain('undoDelete.disabled = locked || !canUndoDelete;');
+    expect(html).toContain('deletedDemoTemplate = { item: deleted, index: index };');
+    expect(html).toContain('The browser could not delete that tutorial template. Nothing changed.');
+    expect(html).toContain("$('demoTemplateUndoDeleteBtn').addEventListener('click'");
+    expect(html).toContain('demoTemplates.splice(restoreAt, 0, restored);');
+    expect(html).toContain('The browser could not restore that tutorial template. Undo is still available.');
+    expect(html).toContain('Restored tutorial template: ');
     expect(html).toContain('Saved templates are independent, editable copies.');
     expect(html).toContain('officialId: null,');
     expect(html).not.toContain("officialId: String(t.officialId");

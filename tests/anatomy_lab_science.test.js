@@ -1078,3 +1078,70 @@ describe('Anatomy alveolar gas-exchange deep dive', () => {
     expect(html).toContain('efficient exchange requires matched ventilation and perfusion');
   });
 });
+describe('Anatomy knee joint and movement deep dive', () => {
+  it('opens a labeled lateral knee cutaway from the patella structure', () => {
+    const closed = renderAnatomy({
+      system: 'skeletal', view: 'anterior', complexity: 3, selectedStructure: 'patella'
+    });
+    expect(closed).toContain('aria-label="Open Knee joint and movement deep dive"');
+    expect(closed).not.toContain('data-anatomy-atlas="patella"');
+
+    const open = renderAnatomy({
+      system: 'skeletal', view: 'anterior', complexity: 3, selectedStructure: 'patella',
+      _regionalAtlasOpen: 'patella'
+    });
+    expect(open).toContain('data-anatomy-atlas="patella"');
+    expect(open).toContain('Lateral knee joint cutaway and movement mechanics diagram');
+    expect(open).toContain('aria-label="Knee structure and movement steps"');
+    expect(open).toContain('articular cartilage');
+    expect(open).toContain('meniscus');
+    expect(open).toContain('ACL');
+    expect(open).toContain('PCL');
+    expect(open).toContain('patellar tendon');
+  });
+
+  it('clamps knee phases and exposes paused stability narration', () => {
+    const html = renderAnatomy({
+      system: 'skeletal', view: 'anterior', complexity: 3, selectedStructure: 'patella',
+      _regionalAtlasOpen: 'patella', _regionalAtlasStep: 500, _regionalAtlasPlaying: false
+    });
+    expect(html).toContain('class="anatomy-atlas is-paused"');
+    expect(html).toContain('aria-label="Play knee-mechanics animation"');
+    expect(html).toContain('4. Stability');
+    expect(html).toContain('The ACL limits anterior tibial translation and rotation');
+  });
+});
+describe('Anatomy neuromuscular-junction deep dive', () => {
+  it('opens a labeled motor-end-plate and sarcomere atlas from biceps', () => {
+    const closed = renderAnatomy({
+      system: 'muscular', view: 'anterior', complexity: 3, selectedStructure: 'biceps'
+    });
+    expect(closed).toContain('aria-label="Open Neuromuscular junction and contraction deep dive"');
+    expect(closed).not.toContain('data-anatomy-atlas="biceps"');
+
+    const open = renderAnatomy({
+      system: 'muscular', view: 'anterior', complexity: 3, selectedStructure: 'biceps',
+      _regionalAtlasOpen: 'biceps'
+    });
+    expect(open).toContain('data-anatomy-atlas="biceps"');
+    expect(open).toContain('Neuromuscular junction, calcium release, and sarcomere contraction diagram');
+    expect(open).toContain('aria-label="Neuromuscular activation steps"');
+    expect(open).toContain('axon terminal');
+    expect(open).toContain('synaptic vesicles');
+    expect(open).toContain('nicotinic ACh receptors');
+    expect(open).toContain('T-tubule');
+    expect(open).toContain('sarcoplasmic reticulum');
+    expect(open).toContain('SARCOMERE');
+  });
+
+  it('clamps activation phases and exposes paused contraction narration', () => {
+    const html = renderAnatomy({
+      system: 'muscular', view: 'anterior', complexity: 3, selectedStructure: 'biceps',
+      _regionalAtlasOpen: 'biceps', _regionalAtlasStep: 1000, _regionalAtlasPlaying: false
+    });
+    expect(html).toContain('class="anatomy-atlas is-paused"');
+    expect(html).toContain('aria-label="Play muscle-activation animation"');
+    expect(html).toContain('4. Sarcomere shortens');
+    expect(html).toContain('ATP-powered myosin cross-bridge cycles');
+  });
+});

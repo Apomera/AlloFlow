@@ -355,7 +355,7 @@ describe('AlloBot plan recovery wiring', () => {
   it('offers the exact remaining sequence while preserving the original undo point', () => {
     // 2026-07-20: the planning layer lives in UdlChat — assert host + module.
     const app = readFileSync('AlloFlowANTI.txt', 'utf-8') + readFileSync('udl_chat_source.jsx', 'utf-8');
-    expect(app).toContain('_pendingBotPlanRef.current = { steps: _remaining, originalText: _pendingPlan.originalText, resume: true }');
+    expect(app).toContain('_pendingBotPlanRef.current = _preparePendingCommandWorkflow(_AC, _alloCmdCtx(), _remaining, _pendingPlan.originalText, { resume: true });');
     expect(app).toContain("value: '__allo_plan_run'");
     expect(app).toContain('if (!_pendingPlan.resume || !_planUndoRef.current)');
     expect(app).toContain('_pendingBotPlanRef.current = null;');
@@ -384,6 +384,32 @@ describe('AlloBot plan recovery wiring', () => {
     }
   });
 });
+describe('CommandWorkflow plan-card integration', () => {
+  it('uses the Agent Core workflow lifecycle for dry-run, editing, and approval', () => {
+    const chat = readFileSync('udl_chat_source.jsx', 'utf-8');
+    expect(chat).toContain('createCommandWorkflowService');
+    expect(chat).toContain('_commandWorkflowPlanCard');
+    expect(chat).toContain("value: '__allo_plan_edit'");
+    expect(chat).toContain('reviseFromText(_pendingPlan.workflow');
+    expect(chat).toContain("approve(_pendingPlan.workflow, 'teacher-ui'");
+    expect(chat).toContain('planExecution(_approved.value');
+    expect(chat).toContain('Dry run passed. Run all steps, edit the workflow, or keep chatting.');
+    expect(chat).toContain("value: '__allo_plan_save'");
+    expect(chat).toContain("value: '__allo_plan_library'");
+    expect(chat).toContain("'__allo_plan_load:'");
+    expect(chat).toContain("'__allo_plan_delete:'");
+    expect(chat).toContain('saveSaved(_pendingPlan.workflow');
+    expect(chat).toContain('loadSaved(_savedWorkflowId');
+    expect(chat).toContain('deleteSaved(_savedWorkflowId');
+    expect(chat).toContain("_rawUtter === '__allo_plan_library'");
+    expect(chat).toContain('libraryOnly: true');
+    expect(chat).toContain('if (_pendingPlan.libraryOnly) return;');
+    const host = readFileSync('AlloFlowANTI.txt', 'utf-8');
+    expect(host).toContain('openCommandBlueprintLibrary: () => {');
+    expect(host).toContain("handleSendUDLMessage('__allo_plan_library')");
+  });
+});
+
 describe('runCommandById awaitCompletion isolation', () => {
   it('keeps the sync path synchronous for existing surfaces', () => {
     const { ctx } = mkCtx();

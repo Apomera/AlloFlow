@@ -8,12 +8,12 @@ Generated: 2026-07-22
 | --- | ---: |
 | Questions scanned | 1500 |
 | Incorrect options scanned | 4500 |
-| Questions with one or more warnings | 1389 |
-| Incorrect options with one or more warnings | 4018 |
-| Insufficient-detail warnings | 1465 |
-| Generic-template warnings | 2474 |
-| Choice-restatement warnings | 1767 |
-| Full-key-echo warnings | 1517 |
+| Questions with one or more warnings | 1357 |
+| Incorrect options with one or more warnings | 3924 |
+| Insufficient-detail warnings | 1425 |
+| Generic-template warnings | 2420 |
+| Choice-restatement warnings | 1722 |
+| Full-key-echo warnings | 1489 |
 | Wave-05 incorrect options with warnings | 0 of 24 |
 | Wave-06 incorrect options with warnings | 0 of 24 |
 | Wave-07 incorrect options with warnings | 0 of 48 |

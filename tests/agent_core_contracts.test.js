@@ -202,6 +202,43 @@ describe('Blueprint contract + legacy round-trip', () => {
   });
 });
 
+describe('CommandWorkflow contract', () => {
+  it('normalizes a versioned reviewed workflow without resource-specific reordering', () => {
+    const r = C.validateCommandWorkflow({
+      schemaVersion: '1.0', workflowId: 'cw-1', kind: 'command-workflow', audience: 'teacher',
+      steps: [
+        { stepId: 'quiz', commandId: 'generate_quiz', params: {}, onFailure: 'pause' },
+        { stepId: 'simplify', commandId: 'generate_simplified', params: { grade: '3' } },
+      ], review: { state: 'draft' },
+    }, { knownCommandIds: ['generate_quiz', 'generate_simplified'] });
+    expect(r.ok).toBe(true);
+    expect(r.value.steps.map((step) => step.stepId)).toEqual(['quiz', 'simplify']);
+    expect(r.value.review).toEqual({ state: 'draft', reviewer: '' });
+  });
+
+  it('fails closed on unknown commands, duplicate steps, nested params, and prompt provenance', () => {
+    const r = C.validateCommandWorkflow({
+      schemaVersion: '1.0', workflowId: 'cw-bad', kind: 'command-workflow', audience: 'teacher',
+      steps: [
+        { stepId: 'same', commandId: 'invented', params: { nested: { no: true } } },
+        { stepId: 'same', commandId: 'generate_quiz', params: {} },
+      ], review: { state: 'draft' }, provenance: { prompt: 'do not store this' },
+    }, { knownCommandIds: ['generate_quiz'] });
+    expect(r.ok).toBe(false);
+    expect(r.errors.map((error) => error.code)).toEqual(expect.arrayContaining([
+      'unknown-command', 'duplicate-step-id', 'bad-command-param-value', 'forbidden-provenance-field',
+    ]));
+  });
+
+  it('caps workflows at eight steps and drops unknown additive fields with warnings', () => {
+    const steps = Array.from({ length: 9 }, (_, index) => ({ stepId: 's-' + index, commandId: 'open_learning_hub', params: {} }));
+    const r = C.validateCommandWorkflow({ schemaVersion: '1.0', workflowId: 'cw-9', kind: 'command-workflow', audience: 'teacher', steps, extra: true }, { knownCommandIds: ['open_learning_hub'] });
+    expect(r.ok).toBe(false);
+    expect(r.errors.some((error) => error.code === 'too-many-workflow-steps')).toBe(true);
+    expect(r.warnings.some((warning) => warning.path === 'extra')).toBe(true);
+  });
+});
+
 describe('Artifact contract', () => {
   it('validates a resource artifact envelope and normalizes predictably', () => {
     const r = C.validateArtifact({

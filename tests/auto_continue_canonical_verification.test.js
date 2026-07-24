@@ -48,7 +48,9 @@ describe('auto-continue canonical verification', () => {
       'const _detRegressed =',
       '_mergedRound = await _finalizeRound(cur, {',
       'setPdfFixResult(snapshot);',
-      'if (!_genStale()) {',
+      'const _staleAtExit = _genStale();',
+      'const _ownsExit = pdfAutoContinueAbortCtrlRef.current === _abortCtrl;',
+      'if (!_staleAtExit && _ownsExit) {',
     ]) {
       expect(loop).toContain(landmark);
     }
@@ -258,7 +260,7 @@ describe('auto-continue canonical verification', () => {
     expect(loop).toContain('if (_vio === 0 && _aiIssues.length === 0 && _eaFails === 0 && _isCanonicalComplete(cur)) break;');
     expect(loop).toContain('else if (cur && (cur.afterScore || 0) >= pdfTargetScore && _canonicalComplete && !_expertOrFidelityReview)');
     expect(loop).toContain('_reviewReasons.map(formatVerificationReason)');
-    expect(loop).toContain("addToast('Human review required at score '");
+    expect(loop).toContain("_toastIfOwned('Human review required at score '");
     expect(loop).toMatch(/Human review required at score[\s\S]*?'warning'/);
   });
 

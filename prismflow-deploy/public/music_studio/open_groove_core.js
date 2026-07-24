@@ -3826,6 +3826,278 @@
     };
   }
 
+  function ogDetectVexFlowRuntime(runtime) {
+    runtime = runtime || root || {};
+    var vex = runtime.Vex || runtime.VexFlow || runtime.vexflow || null;
+    var flow = vex && (vex.Flow || vex) || null;
+    var available = !!(flow && (flow.Renderer || flow.Stave || flow.StaveNote));
+    return {
+      available: available,
+      globalName: runtime.Vex ? 'Vex.Flow' : runtime.VexFlow ? 'VexFlow' : runtime.vexflow ? 'vexflow' : null,
+      renderer: available && flow && flow.Renderer ? 'svg-canvas' : 'adapter-only'
+    };
+  }
+
+  function ogVexFlowPitchKey(pitch) {
+    var parsed = ogParsePitchSpelling(pitch);
+    return {
+      key: parsed.step.toLowerCase() + (parsed.alter === 1 ? '#' : parsed.alter === -1 ? 'b' : '') + '/' + parsed.octave,
+      accidental: parsed.alter === 1 ? '#' : parsed.alter === -1 ? 'b' : null,
+      spelling: parsed.spelling
+    };
+  }
+
+  function ogVexFlowDurationFromTicks(project, ticks) {
+    var beat = ogTicksPerBeat(project);
+    var ratio = Math.max(0.001, ogFinite(ticks, beat) / beat);
+    var candidates = [
+      { beats: 4, duration: 'w', label: 'whole', dots: 0 },
+      { beats: 3, duration: 'h', label: 'dotted half', dots: 1 },
+      { beats: 2, duration: 'h', label: 'half', dots: 0 },
+      { beats: 1.5, duration: 'q', label: 'dotted quarter', dots: 1 },
+      { beats: 1, duration: 'q', label: 'quarter', dots: 0 },
+      { beats: 0.75, duration: '8', label: 'dotted eighth', dots: 1 },
+      { beats: 0.5, duration: '8', label: 'eighth', dots: 0 },
+      { beats: 0.375, duration: '16', label: 'dotted sixteenth', dots: 1 },
+      { beats: 0.25, duration: '16', label: 'sixteenth', dots: 0 }
+    ];
+    var best = candidates[0];
+    var bestDelta = Math.abs(ratio - best.beats);
+    candidates.forEach(function (candidate) {
+      var delta = Math.abs(ratio - candidate.beats);
+      if (delta < bestDelta) {
+        best = candidate;
+        bestDelta = delta;
+      }
+    });
+    return {
+      duration: best.duration,
+      restDuration: best.duration + 'r',
+      label: best.label,
+      dots: best.dots,
+      beats: best.beats,
+      exact: bestDelta <= 0.03
+    };
+  }
+
+  function ogBuildVexFlowNotationModel(project, patternId, options) {
+    options = options || {};
+    var pattern = ogFindPattern(project, patternId || (project && project.patterns && project.patterns[0] && project.patterns[0].id));
+    var trackId = options.trackId || null;
+    var runtime = ogDetectVexFlowRuntime(options.runtime || options.capabilities || {});
+    var keySignature = ogBuildMusicXmlKeySignature(project);
+    var clef = ogInferStaffClef(project, trackId, options);
+    var ts = Array.isArray(project && project.timeSignature) ? project.timeSignature.slice(0, 2) : [4, 4];
+    if (!pattern) {
+      return {
+        engine: 'vexflow',
+        available: runtime.available,
+        rendererStatus: runtime.available ? 'ready' : 'adapter-ready',
+        fallbackEngine: 'open-groove-svg',
+        measures: [],
+        warnings: ['No pattern is available for VexFlow notation.'],
+        noteCount: 0,
+        restCount: 0,
+        chordCount: 0,
+        keySignature: keySignature,
+        timeSignature: ts,
+        clef: clef
+      };
+    }
+    var preview = ogBuildNotationPreview(project, pattern.id);
+    var measureTicks = ogTicksPerMeasure(project);
+    var beatTicks = ogTicksPerBeat(project);
+    var warnings = [];
+    var restCount = 0;
+    var chordCount = 0;
+    var noteCount = 0;
+    var measures = (preview.measures || []).map(function (measure, idx) {
+      var measureStart = (Math.max(1, ogInt(measure.bar, idx + 1)) - 1) * measureTicks;
+      var sourceNotes = (measure.notes || []).filter(function (note) { return !trackId || note.trackId === trackId; }).map(function (note) {
+        var localStart = note.notationStartTick != null
+          ? ogInt(note.notationStartTick, measureStart) - measureStart
+          : Math.round((Math.max(1, ogFinite(note.startBeat, 1)) - 1) * beatTicks);
+        localStart = Math.max(0, Math.min(measureTicks, localStart));
+        var durationTicks = Math.max(1, Math.round(Math.max(0.001, ogFinite(note.durationBeats, 1)) * beatTicks));
+        durationTicks = Math.max(1, Math.min(durationTicks, Math.max(1, measureTicks - localStart)));
+        var pitchKey = ogVexFlowPitchKey(note.pitch);
+        return {
+          id: note.id,
+          pitch: note.pitch,
+          key: pitchKey.key,
+          accidental: pitchKey.accidental,
+          localStart: localStart,
+          startBeat: Math.round((localStart / beatTicks + 1) * 1000) / 1000,
+          durationTicks: durationTicks,
+          duration: ogVexFlowDurationFromTicks(project, durationTicks),
+          midi: ogNoteNameToMidi(note.pitch)
+        };
+      }).filter(function (entry) { return entry.midi != null && entry.localStart < measureTicks; }).sort(function (a, b) {
+        return a.localStart - b.localStart || a.midi - b.midi || String(a.pitch).localeCompare(String(b.pitch));
+      });
+      var cursor = 0;
+      var elements = [];
+      for (var noteIndex = 0; noteIndex < sourceNotes.length;) {
+        var groupStart = sourceNotes[noteIndex].localStart;
+        var group = [];
+        while (noteIndex < sourceNotes.length && sourceNotes[noteIndex].localStart === groupStart) {
+          group.push(sourceNotes[noteIndex]);
+          noteIndex += 1;
+        }
+        if (groupStart > cursor) {
+          var gapTicks = groupStart - cursor;
+          var restDuration = ogVexFlowDurationFromTicks(project, gapTicks);
+          restCount += 1;
+          elements.push({ type: 'rest', localStart: cursor, startBeat: Math.round((cursor / beatTicks + 1) * 1000) / 1000, durationTicks: gapTicks, duration: restDuration, vexflow: { keys: ['b/4'], duration: restDuration.restDuration, dots: restDuration.dots } });
+          cursor = groupStart;
+        } else if (groupStart < cursor) {
+          warnings.push('Measure ' + measure.bar + ' contains overlapping notes; VexFlow should render this with multiple voices.');
+        }
+        var groupDurationTicks = group.reduce(function (max, entry) { return Math.max(max, entry.durationTicks); }, 1);
+        var durationMismatch = group.some(function (entry) { return entry.durationTicks !== groupDurationTicks; });
+        if (durationMismatch) warnings.push('Measure ' + measure.bar + ' contains a chord with mixed durations; export keeps the longest visible value.');
+        var vexDuration = ogVexFlowDurationFromTicks(project, groupDurationTicks);
+        chordCount += group.length > 1 ? 1 : 0;
+        noteCount += group.length;
+        elements.push({
+          type: group.length > 1 ? 'chord' : 'note',
+          localStart: groupStart,
+          startBeat: Math.round((groupStart / beatTicks + 1) * 1000) / 1000,
+          durationTicks: groupDurationTicks,
+          duration: vexDuration,
+          pitches: group.map(function (entry) { return entry.pitch; }),
+          notes: group,
+          vexflow: {
+            keys: group.map(function (entry) { return entry.key; }),
+            duration: vexDuration.duration,
+            dots: vexDuration.dots,
+            accidentals: group.map(function (entry) { return entry.accidental; })
+          }
+        });
+        cursor = Math.max(cursor, groupStart + groupDurationTicks);
+      }
+      if (cursor < measureTicks) {
+        var tailTicks = measureTicks - cursor;
+        var tailDuration = ogVexFlowDurationFromTicks(project, tailTicks);
+        restCount += 1;
+        elements.push({ type: 'rest', localStart: cursor, startBeat: Math.round((cursor / beatTicks + 1) * 1000) / 1000, durationTicks: tailTicks, duration: tailDuration, vexflow: { keys: ['b/4'], duration: tailDuration.restDuration, dots: tailDuration.dots } });
+      }
+      return {
+        bar: measure.bar,
+        clef: clef,
+        keySignature: keySignature,
+        timeSignature: ts,
+        elements: elements,
+        noteCount: sourceNotes.length,
+        restCount: elements.filter(function (entry) { return entry.type === 'rest'; }).length,
+        chordCount: elements.filter(function (entry) { return entry.type === 'chord'; }).length,
+        vexflow: {
+          stave: { clef: clef, keySignature: keySignature.tonic, timeSignature: ts.join('/') },
+          voiceMode: warnings.length ? 'soft' : 'strict'
+        }
+      };
+    });
+    return {
+      engine: 'vexflow',
+      available: runtime.available,
+      runtime: runtime,
+      rendererStatus: runtime.available ? 'ready' : 'adapter-ready',
+      fallbackEngine: 'open-groove-svg',
+      summary: runtime.available ? 'VexFlow runtime detected; SVG engraving can be mounted.' : 'VexFlow adapter data is ready; Open Groove SVG remains the fallback renderer.',
+      patternId: pattern.id,
+      trackId: trackId,
+      clef: clef,
+      clefLabel: ogStaffClefLabel(clef),
+      keySignature: keySignature,
+      timeSignature: ts,
+      measures: measures,
+      noteCount: noteCount,
+      restCount: restCount,
+      chordCount: chordCount,
+      warnings: warnings
+    };
+  }
+
+  function ogSafeExportStem(value, fallback) {
+    var stem = String(value || fallback || 'open-groove-score').trim().replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '');
+    return stem || 'open-groove-score';
+  }
+
+  function ogBuildMuseScoreBridgePlan(project, patternId, trackId, options) {
+    options = options || {};
+    var pattern = ogFindPattern(project, patternId || (project && project.patterns && project.patterns[0] && project.patterns[0].id));
+    var baseName = ogSafeExportStem(options.fileBaseName || (project && project.title), 'open-groove-score');
+    var musicXmlFile = baseName + '.musicxml';
+    var pdfFile = baseName + '.pdf';
+    var midiFile = baseName + '.mid';
+    var available = !!(options.museScoreAvailable || options.localBridgeAvailable || options.desktopBridgeAvailable);
+    var xml = options.includeXml && pattern ? ogBuildMusicXmlSketch(project, pattern.id, trackId, options) : null;
+    return {
+      engine: 'musescore',
+      available: available,
+      optional: true,
+      bridgeType: 'musicxml-companion',
+      status: available ? 'ready' : 'export-only',
+      summary: available ? 'MuseScore companion bridge is available for polished PDF/round-trip work.' : 'Export MusicXML now; open it in MuseScore Studio for polished layout and PDF export.',
+      patternId: pattern && pattern.id || null,
+      trackId: trackId || null,
+      files: { musicxml: musicXmlFile, pdf: pdfFile, midi: midiFile },
+      outputs: ['MusicXML', 'PDF', 'MIDI'],
+      commands: [
+        { platform: 'Windows', label: 'Export PDF', command: 'MuseScore4.exe -o "' + pdfFile + '" "' + musicXmlFile + '"' },
+        { platform: 'macOS/Linux', label: 'Export PDF', command: 'musescore -o "' + pdfFile + '" "' + musicXmlFile + '"' },
+        { platform: 'Any', label: 'Round-trip', command: 'Open ' + musicXmlFile + ' in MuseScore Studio, edit, then export MusicXML back into Open Groove.' }
+      ],
+      workflow: [
+        { id: 'export-musicxml', label: 'Export MusicXML', ready: !!pattern },
+        { id: 'polish-layout', label: 'Polish notation in MuseScore', ready: true },
+        { id: 'round-trip', label: 'Import revised MusicXML', ready: true }
+      ],
+      musicXml: xml
+    };
+  }
+
+  function ogBuildAudioToScoreAgentPlan(project, options) {
+    options = options || {};
+    var caps = options.capabilities || {};
+    var sourceAsset = options.sourceAssetId ? ogFindAsset(project, options.sourceAssetId) : null;
+    var license = sourceAsset ? ogSafeString(sourceAsset.license, 'Unknown') : ogSafeString(options.license, 'User Owned');
+    var rightsSafe = !!options.userConfirmedRights || license === 'User Owned' || license === 'Original' || license === 'CC0-1.0' || license === 'Public Domain';
+    var hasBasicPitch = !!(caps.basicPitchInstalled || caps.basicPitchWorker || caps.basicPitchReady);
+    var hasMt3 = !!(caps.mt3Installed || caps.mt3Worker || caps.mt3Ready);
+    var hasOmnizart = !!(caps.omnizartInstalled || caps.omnizartWorker || caps.omnizartReady);
+    var hasWorker = hasBasicPitch || hasMt3 || hasOmnizart || !!(caps.localTranscriptionWorker || caps.audioToMidiWorker);
+    var engine = hasMt3 ? 'mt3' : hasBasicPitch ? 'basic-pitch' : hasOmnizart ? 'omnizart' : 'manual-midi-import';
+    var blockers = [];
+    var warnings = [];
+    if (!sourceAsset) warnings.push('No source recording is attached yet; users can upload or record audio before transcription.');
+    if (!rightsSafe) blockers.push('Confirm rights before transcribing or exporting a copyrighted recording.');
+    if (!hasWorker) warnings.push('No local transcription engine is connected yet; use MIDI/MusicXML import or attach a worker.');
+    return {
+      engine: engine,
+      status: blockers.length ? 'blocked' : hasWorker ? 'ready' : 'setup-needed',
+      optional: true,
+      sourceAssetId: sourceAsset && sourceAsset.id || null,
+      rightsSafe: rightsSafe,
+      summary: blockers.length ? blockers[0] : hasWorker ? 'Ready to create an editable draft score from audio.' : 'Agent workflow is planned; connect Basic Pitch, MT3, Omnizart, or a local worker to generate drafts.',
+      engines: [
+        { id: 'basic-pitch', label: 'Basic Pitch', bestFor: 'Solo melody, bass, piano-like pitched audio', installed: hasBasicPitch, output: ['MIDI', 'pitch bends'] },
+        { id: 'mt3', label: 'MT3', bestFor: 'Multi-instrument research transcription', installed: hasMt3, output: ['multi-track MIDI'] },
+        { id: 'omnizart', label: 'Omnizart', bestFor: 'Notes, drums, chords, beats with Python checkpoints', installed: hasOmnizart, output: ['MIDI', 'chords', 'beats'] },
+        { id: 'manual-midi-import', label: 'Manual MIDI/MusicXML import', bestFor: 'Classroom-safe fallback and human correction', installed: true, output: ['editable notes'] }
+      ],
+      phases: [
+        { id: 'ingest', label: 'Audio ingest', output: 'source recording asset', ready: !!sourceAsset },
+        { id: 'rights', label: 'Rights check', output: 'export-safe project note', ready: rightsSafe },
+        { id: 'beat-map', label: 'Beat and meter map', output: 'tempo grid', ready: hasWorker },
+        { id: 'transcribe', label: 'Pitch/drum/chord draft', output: 'MIDI events', ready: hasWorker },
+        { id: 'quantize', label: 'Notation cleanup', output: 'MusicXML draft', ready: hasWorker },
+        { id: 'refine', label: 'Editable review', output: 'Open Groove staff measures', ready: true }
+      ],
+      warnings: warnings,
+      blockers: blockers
+    };
+  }
   function ogEscapeXml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
       return ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch === '"' ? '&quot;' : '&apos;';
@@ -5763,6 +6035,9 @@
     ogBuildCompositionNomenclature: ogBuildCompositionNomenclature,
     ogKeySignatureFifths: ogKeySignatureFifths,
     ogBuildMusicXmlKeySignature: ogBuildMusicXmlKeySignature,
+    ogBuildVexFlowNotationModel: ogBuildVexFlowNotationModel,
+    ogBuildMuseScoreBridgePlan: ogBuildMuseScoreBridgePlan,
+    ogBuildAudioToScoreAgentPlan: ogBuildAudioToScoreAgentPlan,
     ogNotationDurationTicks: ogNotationDurationTicks,
     ogParseNotationInput: ogParseNotationInput,
     ogWriteNotationInput: ogWriteNotationInput,

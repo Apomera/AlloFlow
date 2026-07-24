@@ -341,16 +341,18 @@
         var tutorChat = d.tutorChat || [];
         var tutorInput = d.tutorInput || '';
 
-        /* -- Style constants (dark theme) -- */
-        var BG = '#0f172a';
-        var TEXT = '#e2e8f0';
-        var CARD = 'rgba(99,102,241,0.08)';
-        var BORDER = 'rgba(99,102,241,0.2)';
-        var ACCENT = '#a5b4fc';
-        var MUTED = '#94a3b8';
-        var BTN_BG = 'linear-gradient(135deg,#4f46e5,#7c3aed)';
-        var BTN_FLAT = '#4f46e5';
-        var BTN_TEXT = '#fff';
+        /* -- Theme-responsive style constants -- */
+        var isContrast = !!ctx.isContrast;
+        var isDark = !!ctx.isDark;
+        var BG = isContrast ? '#000000' : (isDark ? '#0f172a' : '#f8fafc');
+        var TEXT = isContrast ? '#ffffff' : (isDark ? '#e2e8f0' : '#0f172a');
+        var CARD = isContrast ? '#000000' : (isDark ? 'rgba(99,102,241,0.08)' : '#ffffff');
+        var BORDER = isContrast ? '#fbbf24' : (isDark ? 'rgba(129,140,248,0.45)' : '#94a3b8');
+        var ACCENT = isContrast ? '#fbbf24' : (isDark ? '#a5b4fc' : '#4338ca');
+        var MUTED = isContrast ? '#ffffff' : (isDark ? '#94a3b8' : '#475569');
+        var BTN_BG = isContrast ? '#fbbf24' : (isDark ? 'linear-gradient(135deg,#4f46e5,#7c3aed)' : 'linear-gradient(135deg,#4338ca,#6d28d9)');
+        var BTN_FLAT = isContrast ? '#fbbf24' : (isDark ? '#4f46e5' : '#4338ca');
+        var BTN_TEXT = isContrast ? '#000000' : '#ffffff';
 
         var cardStyle = { background: CARD, border: '1px solid ' + BORDER, borderRadius: '12px', padding: '12px' };
         var btnStyle = function(active) {
@@ -925,7 +927,7 @@
         );
 
         /* ============ MAIN RENDER ============ */
-        return h('div', { style: { padding: '14px', color: TEXT, background: BG, borderRadius: '16px', minHeight: '400px' } },
+        return h('div', { 'data-algebra-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'), style: { padding: '14px', color: TEXT, background: BG, border: '1px solid ' + BORDER, borderRadius: '16px', minHeight: '400px' } },
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
             h('div', null,
               h('h3', { style: { fontSize: '16px', fontWeight: '700', margin: 0 } }, t('stem.algebraCAS.algebra_cas', '\uD83E\uDDEE Algebra CAS')),

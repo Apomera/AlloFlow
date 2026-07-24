@@ -537,6 +537,75 @@ describe('Document Builder export boundary hardening', () => {
     expect(addToast).toHaveBeenCalledWith(expect.stringContaining('H5P.QuestionSet 1.21'), 'success');
   });
 
+  it('repairs blank H5P runtime labels before packaging and reports the accessibility pass', async () => {
+    let zip;
+    window.JSZip = class MockZip {
+      constructor() { zip = this; this.files = new Map(); this.generateAsync = vi.fn().mockResolvedValue(new Blob()); }
+      file(name, value) { this.files.set(name, value); return this; }
+    };
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:h5p-repaired');
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const addToast = vi.fn();
+    const api = createExport({
+      sourceTopic: 'Topic', addToast,
+      t: (key) => key === 'common.next' ? '   ' : key,
+    });
+
+    expect(await api.handleExportH5P({ generatedContent: {
+      type: 'quiz', title: 'Accessible labels',
+      data: { questions: [{ question: 'Choose one', options: ['First', 'Second'], correctAnswer: 'First' }] },
+    } })).toBe(true);
+
+    const content = JSON.parse(zip.files.get('content/content.json'));
+    expect(content.l10n).toMatchObject({ nextButtonLabel: 'Next', nextButton: 'Next' });
+    expect(addToast).toHaveBeenCalledWith('2 H5P accessibility issue(s) were repaired automatically.', 'info');
+    expect(addToast).toHaveBeenCalledWith(expect.stringContaining('Accessibility check:'), 'success');
+  });
+
+  it('blocks H5P interactions with duplicate answer labels', async () => {
+    const generated = vi.fn().mockResolvedValue(new Blob());
+    window.JSZip = class MockZip {
+      file() { return this; }
+      generateAsync = generated;
+    };
+    const addToast = vi.fn();
+    const api = createExport({ sourceTopic: 'Topic', addToast, t: (key) => key });
+
+    expect(await api.handleExportH5P({ generatedContent: {
+      type: 'quiz', title: 'Ambiguous answers',
+      data: { questions: [{ question: 'Choose one', options: ['Same', ' same '], correctAnswer: 'Same' }] },
+    } })).toBe(false);
+
+    expect(generated).not.toHaveBeenCalled();
+    expect(addToast).toHaveBeenCalledWith(expect.stringContaining('duplicate answer labels'), 'error');
+  });
+
+  it('flags derived image alt text and audio without transcripts for human review', async () => {
+    let zip;
+    window.JSZip = class MockZip {
+      constructor() { zip = this; this.files = new Map(); this.generateAsync = vi.fn().mockResolvedValue(new Blob()); }
+      file(name, value) { this.files.set(name, value); return this; }
+    };
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:h5p-media-review');
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const addToast = vi.fn();
+    const api = createExport({ sourceTopic: 'Topic', addToast, t: (key) => key });
+
+    expect(await api.handleExportH5P({ generatedContent: {
+      type: 'flashcards', title: 'Media cards',
+      data: [{
+        front: 'Molecule', back: 'Two or more bonded atoms',
+        image: 'data:image/png;base64,aGVsbG8=', audio: 'data:audio/mpeg;base64,aGVsbG8=',
+      }],
+    } })).toBe(true);
+
+    const content = JSON.parse(zip.files.get('content/content.json'));
+    expect(content.dialogs[0].imageAltText).toBe('Molecule');
+    expect(addToast).toHaveBeenCalledWith(expect.stringMatching(/2 H5P accessibility item\(s\).*derived.*transcript/i), 'warning');
+    expect(addToast).toHaveBeenCalledWith(expect.stringContaining('2 to review'), 'success');
+  });
   it('refuses unsupported H5P content instead of manufacturing a package', async () => {
     const generated = vi.fn();
     window.JSZip = class MockZip {

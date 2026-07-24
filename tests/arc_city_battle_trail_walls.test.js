@@ -106,6 +106,16 @@ describe('Arc City render — Trail Walls controls and feedback', () => {
     const preview = render(stateFor(battle));
     expect(preview.text).toContain('Prediction: Trail collision');
     expect(preview.find('battle-svg').props['aria-label']).toContain('active light walls');
+    expect(preview.find('battle-svg').props['aria-label']).toMatch(/collision with Player 1's failed trail at x \d+\.\d/);
+    const previewPath = preview.find('battle-preview');
+    const lastPoint = previewPath.props.points.trim().split(/\s+/).at(-1).split(',').map(Number);
+    expect(Math.abs(lastPoint[0] - Number(preview.find('battle-preview-collision').props.cx))).toBeLessThan(1);
+    expect(preview.find('battle-preview-collision')).not.toBeNull();
+
+    battle.assist = 'challenge';
+    const hidden = render(stateFor(battle));
+    expect(hidden.find('battle-preview')).toBeNull();
+    expect(hidden.find('battle-preview-collision')).toBeNull();
 
     const fired = arc.battleFire(battle, arc.BATTLE_LANE_META[0].solution, 0).battle;
     const aftermath = render(stateFor(fired));

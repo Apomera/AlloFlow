@@ -1,0 +1,157 @@
+{
+    "schemaVersion":  1,
+    "catalogReviewedAt":  "2026-07-22",
+    "integrations":  [
+                         {
+                             "contract":  {
+                                              "schemaVersion":  1,
+                                              "id":  "alphafold_explorer",
+                                              "name":  "AlphaFold Explorer",
+                                              "version":  "2026.07",
+                                              "reviewedAt":  "2026-07-22",
+                                              "reviewAfter":  "2027-01-22",
+                                              "license":  {
+                                                              "name":  "GNU Affero General Public License v3.0",
+                                                              "spdx":  "AGPL-3.0-only",
+                                                              "note":  "Linked structure records retain their provider terms."
+                                                          },
+                                              "citation":  {
+                                                               "text":  "Cite the exact AlphaFold Database or learner-provided structure record identified in the exported reproducibility receipt.",
+                                                               "url":  "https://alphafold.ebi.ac.uk/"
+                                                           },
+                                              "supportedMethodPacks":  [
+                                                                           "scientific_investigation",
+                                                                           "engineering_design"
+                                                                       ],
+                                              "capabilities":  {
+                                                                   "captureArtifact":  true,
+                                                                   "rawDataIncluded":  false
+                                                               },
+                                              "privacy":  {
+                                                              "learnerApprovalRequired":  true,
+                                                              "directIdentifiersAllowed":  false,
+                                                              "rawStructureFilesIncluded":  false,
+                                                              "sequenceLikeTextAllowed":  false,
+                                                              "sanitizerId":  "alphafold_sequence_redaction_v1",
+                                                              "sanitizerRequired":  false
+                                                          },
+                                              "reproducibility":  {
+                                                                      "requiredFields":  [
+                                                                                             "softwareVersion",
+                                                                                             "sourceRecordId",
+                                                                                             "parameters",
+                                                                                             "randomSeed",
+                                                                                             "limitations"
+                                                                                         ]
+                                                                  }
+                                          },
+                             "adapterPaths":  [
+                                                  "alphafold_explorer/alphafold_explorer.html",
+                                                  "prismflow-deploy/public/alphafold_explorer/alphafold_explorer.html"
+                                              ],
+                             "captureFixturePath":  "dev-tools/fixtures/tool-integrations/alphafold.capture.json",
+                             "sdkRequired":  true
+                         },
+                         {
+                             "contract":  {
+                                              "schemaVersion":  1,
+                                              "id":  "text_inquiry_studio",
+                                              "name":  "Text Inquiry Studio",
+                                              "version":  "2026.07",
+                                              "reviewedAt":  "2026-07-22",
+                                              "reviewAfter":  "2027-01-22",
+                                              "license":  {
+                                                              "name":  "MIT License",
+                                                              "spdx":  "MIT",
+                                                              "note":  "NLP enhancement uses compromise 14.15.1; learners must separately respect source-text rights."
+                                                          },
+                                              "citation":  {
+                                                               "text":  "Cite the analyzed source edition or record and disclose Text Inquiry Studio 2026.07 with compromise 14.15.1 when its sentence segmentation is used.",
+                                                               "url":  "https://github.com/spencermountain/compromise"
+                                                           },
+                                              "supportedMethodPacks":  [
+                                                                           "humanistic_interpretation",
+                                                                           "civic_policy",
+                                                                           "creative_cultural"
+                                                                       ],
+                                              "capabilities":  {
+                                                                   "captureArtifact":  true,
+                                                                   "rawDataIncluded":  false
+                                                               },
+                                              "privacy":  {
+                                                              "learnerApprovalRequired":  true,
+                                                              "directIdentifiersAllowed":  false,
+                                                              "sequenceLikeTextAllowed":  false,
+                                                              "fullTextIncluded":  false,
+                                                              "sanitizerId":  "text_inquiry_excerpt_guard_v1",
+                                                              "sanitizerRequired":  false
+                                                          },
+                                              "reproducibility":  {
+                                                                      "requiredFields":  [
+                                                                                             "softwareVersion",
+                                                                                             "sourceRecordId",
+                                                                                             "parameters",
+                                                                                             "randomSeed",
+                                                                                             "limitations",
+                                                                                             "datasetVersion",
+                                                                                             "transformations"
+                                                                                         ]
+                                                                  }
+                                          },
+                             "adapterPaths":  [
+                                                  "text_inquiry/text_inquiry.html",
+                                                  "prismflow-deploy/public/text_inquiry/text_inquiry.html"
+                                              ],
+                             "captureFixturePath":  "dev-tools/fixtures/tool-integrations/text_inquiry.capture.json",
+                             "sdkRequired":  true
+                         }
+                     ],
+    "sdk":  {
+                "version":  "1.0.0",
+                "paths":  [
+                              "tool_integration_sdk.js",
+                              "prismflow-deploy/public/tool_integration_sdk.js"
+                          ],
+                "documentationPath":  "docs/tool_integration_sdk.md",
+                "templateContractPath":  "docs/tool-integration-template/contract.json",
+                "templateAdapterPath":  "docs/tool-integration-template/adapter.example.js",
+                "templateFixturePath":  "docs/tool-integration-template/capture.fixture.json"
+            },
+    "thirdPartyAssets":  [
+                             {
+                                 "id":  "compromise",
+                                 "version":  "14.15.1",
+                                 "license":  "MIT",
+                                 "sourceUrl":  "https://github.com/spencermountain/compromise",
+                                 "assetPaths":  [
+                                                    "vendor/compromise/compromise.js",
+                                                    "prismflow-deploy/public/vendor/compromise/compromise.js"
+                                                ],
+                                 "licensePaths":  [
+                                                      "vendor/compromise/LICENSE",
+                                                      "prismflow-deploy/public/vendor/compromise/LICENSE"
+                                                  ]
+                             }
+                         ],
+    "annotationBridge":  {
+                             "version":  "1.0.0",
+                             "paths":  [
+                                           "annotation_inquiry_bridge.js",
+                                           "prismflow-deploy/public/annotation_inquiry_bridge.js"
+                                       ]
+                         },
+    "evidenceGraph":  {
+                          "version":  "1.0.0",
+                          "schemaVersion":  1,
+                          "paths":  [
+                                        "research_evidence_graph.js",
+                                        "prismflow-deploy/public/research_evidence_graph.js"
+                                    ],
+                          "documentationPath":  "docs/evidence_graph_and_interoperability.md",
+                          "standards":  [
+                                            "W3C Web Annotation Data Model",
+                                            "CSL-JSON",
+                                            "RO-Crate 1.3"
+                                        ]
+                      }
+}

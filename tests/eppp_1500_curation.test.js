@@ -43,8 +43,12 @@ describe('EPPP 1,500-question curation release', () => {
       expect(item.choiceRationales.every((rationale) => rationale.length >= 80)).toBe(true);
       expect(item.sourceDetails).toHaveLength(item.references.length);
       expect(item.sourceDetails.every((source) => source.title.length >= 12 && source.credibility.length >= 100 && item.references.includes(source.url))).toBe(true);
-      expect(['legacy-citation-url-reviewed', 'domain-topic-authoritative-source', 'author-created-primary-apa-source']).toContain(item.sourceReviewBasis);
-      expect(item.sourceMatchScore).toBeGreaterThanOrEqual(item.domainId === 'professional' ? 0.05 : 0.15);
+      expect(['legacy-citation-url-reviewed', 'domain-topic-authoritative-source', 'author-created-primary-apa-source', 'item-specific-authoritative-source-review']).toContain(item.sourceReviewBasis);
+      if (item.sourceReviewBasis !== 'item-specific-authoritative-source-review') {
+        expect(item.sourceMatchScore).toBeGreaterThanOrEqual(item.domainId === 'professional' ? 0.05 : 0.15);
+      } else {
+        expect(item).not.toHaveProperty('sourceMatchScore');
+      }
     }
 
     const changingLegalClaim = /Tarasoff|HIPAA|state law|licens|court|subpoena|mandated|abuse|legal|Goldwater/i;

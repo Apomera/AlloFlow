@@ -46,6 +46,12 @@ describe('AlloCommandPalette accessibility', () => {
     expect(source).toContain("getCommandAudience(ctx) === 'student'");
     expect(source).toContain("t('student.actions', 'Student actions')");
     expect(source).toContain("t('student.actions_search')");
+    expect(source).toContain('aria-disabled={row.c.available === false}');
+    expect(source).toContain('const AlloCommandProgress = ({ ctx }) =>');
+    expect(source).toContain("const COMMAND_FAVORITES_KEY = 'allo_command_favorites_v1'");
+    expect(source).toContain("const COMMAND_USAGE_KEY = 'allo_command_usage_v1'");
+    expect(source).toContain('Pin selected command to favorites');
+    expect(source).toContain('Dismiss progress for ');
   });
 });
 
@@ -130,6 +136,34 @@ describe('command coverage drift guards', () => {
 
 });
 
+describe('private local command personalization', () => {
+  it('records only successful command ids and aggregate timestamps, never params or content', () => {
+    localStorage.removeItem('allo_command_usage_v1');
+    const setFontSizeTo = vi.fn(() => 19);
+    expect(AC.runCommandById({ setFontSizeTo }, 'set_font_size', { size: 19 })).toMatchObject({ handled: true });
+    const insights = AC.getLocalCommandInsights();
+    expect(insights[0]).toMatchObject({ commandId: 'set_font_size', count: 1 });
+    expect(Number.isFinite(insights[0].lastUsed)).toBe(true);
+    const stored = JSON.parse(localStorage.getItem('allo_command_usage_v1'));
+    expect(Object.keys(stored.set_font_size).sort()).toEqual(['count', 'lastUsed']);
+    expect(stored).not.toHaveProperty('params');
+    expect(stored).not.toHaveProperty('content');
+    localStorage.removeItem('allo_command_usage_v1');
+  });
+
+  it('keeps concurrent command progress entries separate when one completes', () => {
+    const aPending = { commandId: 'generate_quiz', startedAt: 10, status: 'pending' };
+    const bPending = { commandId: 'create_activity_rubric', startedAt: 20, status: 'pending' };
+    const aDone = { commandId: 'generate_quiz', startedAt: 10, status: 'success' };
+    let items = AC.mergeCommandProgressItems([], aPending);
+    items = AC.mergeCommandProgressItems(items, bPending);
+    items = AC.mergeCommandProgressItems(items, aDone);
+    expect(items).toHaveLength(2);
+    expect(items.find((item) => item.commandId === 'generate_quiz').status).toBe('success');
+    expect(items.find((item) => item.commandId === 'create_activity_rubric').status).toBe('pending');
+  });
+});
+
 describe('scoreCommand', () => {
   const cmd = { label: 'Open the educator hub', aliases: ['hub'] };
   it('scores an exact label/alias match 100', () => {
@@ -183,6 +217,18 @@ describe('buildAlloCommands (role + when filtering)', () => {
   it('applies when() predicates (a gated command appears only when its condition holds)', () => {
     expect(ids({})).not.toContain('pipeline_new_doc'); // when: pipelineOpen
     expect(ids({ pipelineOpen: true })).toContain('pipeline_new_doc');
+  });
+
+  it('describes unavailable teacher capabilities without exposing teacher commands to students', () => {
+    const teacherCommands = AC.buildAlloCommands({}, { includeUnavailable: true });
+    const rubric = teacherCommands.find((command) => command.id === 'create_activity_rubric');
+    expect(rubric).toMatchObject({ available: false, requiresCapabilities: ['activityRubricGenerator'] });
+    expect(rubric.unavailableReason).toContain('activity');
+    expect(AC.getCommandAvailability(rubric, {}).missingCapabilities).toContain('activityRubricGenerator');
+
+    const studentCommands = AC.buildAlloCommands({ isTeacherMode: false }, { includeUnavailable: true });
+    expect(studentCommands.some((command) => command.id === 'create_activity_rubric')).toBe(false);
+    expect(AC.executeCommand({}, rubric, {})).toBeNull();
   });
   it('covers newer studio and practice launchers with the right role visibility', () => {
     const teacher = ids({});
@@ -284,14 +330,14 @@ describe('buildAlloCommands (role + when filtering)', () => {
   it('surfaces the next teacher and student workflow commands only when their capabilities are ready', () => {
     const teacher = ids({
       canEditAssignmentDirections: true, editAssignmentDirections: vi.fn(),
-      openAssessmentBuilder: vi.fn(), openUdlGuide: vi.fn(),
+      openAssessmentBuilder: vi.fn(), openUdlGuide: vi.fn(), openCommandBlueprintLibrary: vi.fn(),
       canGenerateCurrentRubric: true, generateCurrentRubric: vi.fn(),
       canShareAssignment: true, shareAssignment: vi.fn(),
       canPreviewStudentAssignment: true, previewStudentAssignment: vi.fn(),
       hasResumableWork: true, resumeLatestWork: vi.fn(),
     });
     expect(teacher).toEqual(expect.arrayContaining([
-      'edit_assignment_directions', 'open_assessment_builder', 'open_udl_guide',
+      'edit_assignment_directions', 'open_assessment_builder', 'open_udl_guide', 'open_command_blueprints',
       'create_activity_rubric', 'share_assignment', 'preview_assignment_as_student', 'resume_latest_work',
     ]));
 
@@ -310,6 +356,7 @@ describe('buildAlloCommands (role + when filtering)', () => {
       'send_teacher_signal', 'review_teacher_feedback', 'resume_latest_work',
     ]));
     expect(student).not.toContain('edit_assignment_directions');
+    expect(student).not.toContain('open_command_blueprints');
   });
 
   it('hides data-dependent student commands when no matching data exists', () => {
@@ -709,6 +756,17 @@ describe('runCommandById (executes a confirmed, previewed command)', () => {
     expect(AC.runCommandById({}, 'no_such_command')).toBeNull();
   });
 
+  it('opens the teacher Command Blueprint library through one host callback', async () => {
+    const openCommandBlueprintLibrary = vi.fn();
+    const result = AC.runCommandById({ openCommandBlueprintLibrary }, 'open_command_blueprints', {});
+    expect(result).toMatchObject({ handled: true, commandId: 'open_command_blueprints' });
+    expect(result.narration).toContain('Command Blueprints');
+    expect(openCommandBlueprintLibrary).toHaveBeenCalledTimes(1);
+    expect(AC.getCommandContract('open_command_blueprints')).toMatchObject({ interaction: 'interactive', terminal: true, demoSafe: false });
+    const routed = await AC.routeUtterance({ openCommandBlueprintLibrary }, 'saved command blueprints', { allowAi: false, preview: true });
+    expect(routed).toMatchObject({ commandId: 'open_command_blueprints', via: 'deterministic', preview: true });
+  });
+
   it('rechecks the current audience before executing a stale command object', () => {
     const staleTeacherCommand = AC.buildAlloCommands({}).find((command) => command.id === 'open_educator_hub');
     const setShowEducatorHub = vi.fn();
@@ -781,6 +839,24 @@ describe('runCommandById (executes a confirmed, previewed command)', () => {
     expect(onCommandState.mock.calls.map(([state]) => state.status)).toEqual(['pending', 'success']);
   });
 
+  it('deduplicates repeated async command requests until the shared completion settles', async () => {
+    let finish;
+    const generateCurrentRubric = vi.fn(() => new Promise((resolve) => { finish = resolve; }));
+    const onCommandState = vi.fn();
+    const ctx = { canGenerateCurrentRubric: true, generateCurrentRubric, onCommandState };
+    const first = AC.runCommandById(ctx, 'create_activity_rubric', {});
+    const duplicate = AC.runCommandById(ctx, 'create_activity_rubric', {});
+
+    expect(first).toMatchObject({ pending: true });
+    expect(first.deduplicated).toBeUndefined();
+    expect(duplicate).toMatchObject({ pending: true, deduplicated: true });
+    expect(generateCurrentRubric).toHaveBeenCalledTimes(1);
+    expect(duplicate.completion).toBe(first.completion);
+    finish(true);
+    await expect(duplicate.completion).resolves.toMatchObject({ ok: true });
+    expect(onCommandState.mock.calls.map(([state]) => state.status)).toEqual(['pending', 'success']);
+  });
+
   it('turns asynchronous command rejection into an announced lifecycle failure', async () => {
     const addToast = vi.fn();
     const onCommandState = vi.fn();
@@ -790,6 +866,7 @@ describe('runCommandById (executes a confirmed, previewed command)', () => {
     expect(completed).toMatchObject({ ok: false, commandId: 'create_activity_rubric' });
     expect(completed.narration).toContain('offline');
     expect(onCommandState.mock.calls.map(([state]) => state.status)).toEqual(['pending', 'error']);
+    expect(onCommandState.mock.calls[1][0]).toMatchObject({ retryable: true, params: {} });
     expect(addToast).toHaveBeenCalledWith(expect.stringContaining('offline'), 'error');
   });
   it('opens newer studio launchers through one host handler and closes peer panels', () => {

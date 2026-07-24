@@ -144,6 +144,137 @@ const createExport = (deps) => {
         const cp = char.codePointAt(0);
         return cp === 0x9 || cp === 0xA || cp === 0xD || (cp >= 0x20 && cp <= 0xD7FF) || (cp >= 0xE000 && cp <= 0xFFFD) || (cp >= 0x10000 && cp <= 0x10FFFF);
     }).join(''));
+    const _h5pAccessibleText = (value) => String(value == null ? '' : value)
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/&nbsp;|&#160;/gi, ' ')
+        .replace(/&amp;/gi, '&')
+        .replace(/&lt;/gi, '<')
+        .replace(/&gt;/gi, '>')
+        .replace(/&quot;|&#34;/gi, '"')
+        .replace(/&#39;|&apos;/gi, "'")
+        .replace(/\s+/g, ' ')
+        .trim();
+    const _auditH5PAccessibility = ({ h5pJson, contentJson, context = {} }) => {
+        const report = { checks: 0, repaired: 0, errors: [], warnings: [] };
+        const requireValue = (condition, message) => {
+            report.checks += 1;
+            if (!condition) report.errors.push(message);
+        };
+        const reviewIf = (condition, message) => {
+            report.checks += 1;
+            if (condition) report.warnings.push(message);
+        };
+        const ensureText = (target, key, fallback, label) => {
+            report.checks += 1;
+            if (!target || typeof target !== 'object') {
+                report.errors.push(`${label} container is missing.`);
+                return;
+            }
+            if (!_h5pAccessibleText(target[key])) {
+                target[key] = fallback;
+                report.repaired += 1;
+            }
+        };
+        const requireDistinctAnswers = (answers, label) => {
+            const normalized = (Array.isArray(answers) ? answers : [])
+                .map((answer) => _h5pAccessibleText(answer && typeof answer === 'object' ? answer.text : answer).toLocaleLowerCase());
+            requireValue(normalized.length >= 2 && normalized.every(Boolean), `${label} needs at least two labeled answers.`);
+            requireValue(new Set(normalized).size === normalized.length, `${label} contains duplicate answer labels.`);
+        };
+
+        requireValue(!!_h5pAccessibleText(h5pJson && h5pJson.title), 'The activity title is missing.');
+        requireValue(/^[a-z]{2,3}$/i.test(String(h5pJson && h5pJson.language || '')), 'The activity language is not a valid two- or three-letter code.');
+        requireValue(!!(h5pJson && h5pJson.mainLibrary), 'The main H5P library is missing.');
+        requireValue(!!contentJson && typeof contentJson === 'object', 'The H5P content payload is missing.');
+
+        const mainLibrary = String(h5pJson && h5pJson.mainLibrary || '');
+        if (mainLibrary === 'H5P.SingleChoiceSet') {
+            const choices = Array.isArray(contentJson && contentJson.choices) ? contentJson.choices : [];
+            requireValue(choices.length > 0, 'The quiz has no accessible questions.');
+            choices.forEach((choice, index) => {
+                requireValue(!!_h5pAccessibleText(choice && choice.question), `Question ${index + 1} has no prompt.`);
+                requireDistinctAnswers(choice && choice.answers, `Question ${index + 1}`);
+            });
+            const labels = contentJson && contentJson.l10n;
+            [
+                ['nextButtonLabel', 'Next', 'Next button labels'],
+                ['nextButton', 'Next', 'Next button labels'],
+                ['showResultsButtonLabel', 'Show results', 'Results button labels'],
+                ['retryButtonLabel', 'Retry', 'Retry button labels'],
+                ['closeButtonLabel', 'Close', 'Close button labels'],
+                ['scoreBarLabel', 'You got :num out of :total points', 'Score announcements'],
+                ['a11yShowSolution', 'Show the solution. The task will be marked with its correct solution.', 'Solution announcements'],
+                ['a11yRetry', 'Retry the task. Reset all responses and start the task over again.', 'Retry announcements'],
+                ['correctAnswerIntroduction', 'Correct answer', 'Correct-answer labels'],
+            ].forEach(([key, fallback, label]) => ensureText(labels, key, fallback, label));
+            reviewIf(contentJson && contentJson.behaviour && contentJson.behaviour.soundEffectsEnabled === true, 'Sound effects are enabled and may create an audio-only feedback cue.');
+        } else if (mainLibrary === 'H5P.QuestionSet') {
+            const questions = Array.isArray(contentJson && contentJson.questions) ? contentJson.questions : [];
+            requireValue(questions.length > 0, 'The question set has no accessible questions.');
+            [
+                ['prevButton', 'Previous question', 'Previous-question controls'],
+                ['nextButton', 'Next question', 'Next-question controls'],
+                ['finishButton', 'Finish', 'Finish controls'],
+                ['submitButton', 'Submit', 'Submit controls'],
+                ['textualProgress', 'Question: @current of @total questions', 'Progress announcements'],
+                ['unansweredText', 'Unanswered', 'Unanswered-state labels'],
+                ['answeredText', 'Answered', 'Answered-state labels'],
+                ['currentQuestionText', 'Current question', 'Current-question labels'],
+                ['navigationLabel', 'Questions', 'Question navigation labels'],
+            ].forEach(([key, fallback, label]) => ensureText(contentJson && contentJson.texts, key, fallback, label));
+            questions.forEach((question, index) => {
+                const params = question && question.params;
+                const library = String(question && question.library || '');
+                if (library.startsWith('H5P.MultiChoice ')) {
+                    requireValue(!!_h5pAccessibleText(params && params.question), `Question ${index + 1} has no prompt.`);
+                    requireDistinctAnswers(params && params.answers, `Question ${index + 1}`);
+                    [
+                        ['checkAnswerButton', 'Check', 'Check-answer controls'], ['showSolutionButton', 'Show solution', 'Solution controls'],
+                        ['tryAgainButton', 'Retry', 'Retry controls'], ['scoreBarLabel', 'You got :num out of :total points', 'Score announcements'],
+                        ['a11yCheck', 'Check the answers.', 'Check-answer announcements'], ['a11yShowSolution', 'Show the solution.', 'Solution announcements'],
+                        ['a11yRetry', 'Retry the task.', 'Retry announcements'],
+                    ].forEach(([key, fallback, label]) => ensureText(params && params.UI, key, fallback, `${label} for question ${index + 1}`));
+                } else if (library.startsWith('H5P.Blanks ')) {
+                    requireValue(Array.isArray(params && params.questions) && params.questions.some((line) => /\*[^*]+\*/.test(String(line))), `Question ${index + 1} has no labeled blank.`);
+                    [
+                        ['inputLabel', 'Blank input @num of @total', 'Blank input labels'], ['checkAnswer', 'Check', 'Check-answer controls'],
+                        ['showSolutions', 'Show solution', 'Solution controls'], ['tryAgain', 'Retry', 'Retry controls'],
+                        ['a11yCheck', 'Check the answers.', 'Check-answer announcements'], ['a11yShowSolution', 'Show the solution.', 'Solution announcements'],
+                        ['a11yRetry', 'Retry the task.', 'Retry announcements'],
+                    ].forEach(([key, fallback, label]) => ensureText(params, key, fallback, `${label} for question ${index + 1}`));
+                } else if (library.startsWith('H5P.Essay ')) {
+                    requireValue(!!_h5pAccessibleText(params && params.taskDescription), `Question ${index + 1} has no task description.`);
+                    [
+                        ['placeholderText', 'Type your response here.', 'Response input labels'], ['ariaYourResult', 'Response submitted.', 'Submission announcements'],
+                        ['ariaCheck', 'Submit the response.', 'Submission controls'], ['ariaShowSolution', 'Show the sample solution.', 'Solution controls'],
+                        ['ariaRetry', 'Retry the task.', 'Retry controls'],
+                    ].forEach(([key, fallback, label]) => ensureText(params, key, fallback, `${label} for question ${index + 1}`));
+                } else {
+                    requireValue(false, `Question ${index + 1} uses an unaudited H5P library.`);
+                }
+            });
+        } else if (mainLibrary === 'H5P.Dialogcards') {
+            const dialogs = Array.isArray(contentJson && contentJson.dialogs) ? contentJson.dialogs : [];
+            requireValue(dialogs.length > 0, 'The card set has no accessible cards.');
+            dialogs.forEach((dialog, index) => {
+                requireValue(!!_h5pAccessibleText(dialog && dialog.text), `Card ${index + 1} has no front label.`);
+                requireValue(!!_h5pAccessibleText(dialog && dialog.answer), `Card ${index + 1} has no back label.`);
+                if (dialog && dialog.image) requireValue(!!_h5pAccessibleText(dialog.imageAltText), `Card ${index + 1} has an image without alt text.`);
+            });
+            [
+                ['answer', 'Turn', 'Card-turn controls'], ['next', 'Next', 'Next-card controls'],
+                ['prev', 'Previous', 'Previous-card controls'], ['retry', 'Retry', 'Retry controls'],
+                ['progressText', 'Card @card of @total', 'Card progress announcements'], ['cardFrontLabel', 'Card front', 'Card-front labels'],
+                ['cardBackLabel', 'Card back', 'Card-back labels'], ['audioNotSupported', 'Your browser does not support this audio', 'Audio fallback messages'],
+            ].forEach(([key, fallback, label]) => ensureText(contentJson, key, fallback, label));
+            reviewIf(Number(context.derivedImageAltCount) > 0, `${context.derivedImageAltCount} image alt text value(s) were derived from card-front text and should be reviewed.`);
+            reviewIf(Number(context.audioWithoutTranscriptCount) > 0, `${context.audioWithoutTranscriptCount} audio asset(s) have no explicit transcript and should be reviewed.`);
+        } else {
+            requireValue(false, `The ${mainLibrary || 'unknown'} H5P library has no accessibility audit profile.`);
+        }
+
+        return report;
+    };
     const _normalizeStorybookExportOptions = (value) => {
         if (typeof value === 'boolean') {
             return { includeImages: value, includeNarration: false, keepModalOpen: false, onProgress: null, signal: null };
@@ -731,6 +862,8 @@ const createExport = (deps) => {
             'audio/webm': 'webm',
         };
         let mediaOmitted = 0;
+        let derivedImageAltCount = 0;
+        let audioWithoutTranscriptCount = 0;
         const addEmbeddedAsset = (rawValue, kind, index) => {
             const source = Array.isArray(rawValue)
                 ? rawValue.find((value) => typeof value === 'string' && value.trim())
@@ -964,11 +1097,16 @@ const createExport = (deps) => {
                 const image = addEmbeddedAsset(imageValue, 'image', index);
                 if (image) {
                     dialog.image = image;
-                    dialog.imageAltText = plain(card?.imageAltText ?? card?.imageAlt ?? card?.alt) || front;
+                    const explicitAlt = plain(card?.imageAltText ?? card?.imageAlt ?? card?.alt);
+                    dialog.imageAltText = explicitAlt || front;
+                    if (!explicitAlt) derivedImageAltCount += 1;
                 }
                 const audioValue = card?.audio ?? card?.audioUrl ?? card?.pronunciationAudio;
                 const audio = addEmbeddedAsset(audioValue, 'audio', index);
-                if (audio) dialog.audio = [audio];
+                if (audio) {
+                    dialog.audio = [audio];
+                    if (!plain(card?.audioTranscript ?? card?.transcript ?? card?.caption)) audioWithoutTranscriptCount += 1;
+                }
                 return dialog;
             }).filter(Boolean);
             if (!dialogs.length) {
@@ -1031,6 +1169,22 @@ const createExport = (deps) => {
             fileSuffix = 'study-cards';
         }
 
+        const accessibilityReport = _auditH5PAccessibility({
+            h5pJson,
+            contentJson,
+            context: { derivedImageAltCount, audioWithoutTranscriptCount },
+        });
+        if (accessibilityReport.errors.length) {
+            addToast(`H5P accessibility check blocked export: ${accessibilityReport.errors.length} critical issue(s). ${accessibilityReport.errors[0]}`, "error");
+            return false;
+        }
+        if (accessibilityReport.repaired) {
+            addToast(`${accessibilityReport.repaired} H5P accessibility issue(s) were repaired automatically.`, "info");
+        }
+        if (accessibilityReport.warnings.length) {
+            addToast(`${accessibilityReport.warnings.length} H5P accessibility item(s) need human review: ${accessibilityReport.warnings.join(' ')}`, "warning");
+        }
+        const accessibilitySummary = ` Accessibility check: ${accessibilityReport.checks} checks, ${accessibilityReport.repaired} repaired, ${accessibilityReport.warnings.length} to review.`;
         const packageIssues = [];
         if (!h5pJson.title) packageIssues.push('title');
         if (!h5pJson.mainLibrary) packageIssues.push('mainLibrary');
@@ -1062,7 +1216,7 @@ const createExport = (deps) => {
             link.remove();
             window.setTimeout(() => URL.revokeObjectURL(url), 1000);
             const mediaSummary = packagedAssets.length ? ` ${packagedAssets.length} embedded media asset(s) included.` : '';
-            addToast(`H5P package ready.${mediaSummary} The destination must have ${libraryLabel} installed.`, "success");
+            addToast(`H5P package ready.${mediaSummary}${accessibilitySummary} The destination must have ${libraryLabel} installed.`, "success");
             return true;
         } catch (error) {
             warnLog('H5P package generation failed', error);

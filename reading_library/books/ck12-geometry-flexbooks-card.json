@@ -1,0 +1,67 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "ck12-geometry-flexbooks-card",
+  "title": "CK-12 Geometry FlexBooks",
+  "description": "A link-only discovery card for CK-12 geometry textbooks and study resources.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "ck12",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics",
+    "Geometry",
+    "Proof",
+    "Measurement"
+  ],
+  "authors": [
+    "CK-12 Foundation"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CK-12 Foundation",
+  "license": "CK-12 Curriculum Materials License · link-only catalog use",
+  "licenseUrl": "https://help.ck12.org/hc/en-us/articles/51042851054235-CK-12-Terms-of-Use",
+  "source": {
+    "id": "ck12",
+    "name": "CK-12",
+    "url": "https://www.ck12.org/flexbooks"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-23",
+    "auditSource": "https://help.ck12.org/hc/en-us/articles/51042851054235-CK-12-Terms-of-Use",
+    "reason": "CK-12 currently restricts content aggregation and AI/ML use without permission."
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "CK-12 geometry materials cover reasoning and proof, congruence, similarity, polygons, circles, area, volume, coordinate geometry, and transformations."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Open CK-12 FlexBooks and search for Geometry, then select the course version that matches local standards."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Link only: CK-12 curriculum text is not mirrored or sent to AlloFlow AI features. Open the official CK-12 site to read, customize, or assign the material."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 59
+  }
+}

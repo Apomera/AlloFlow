@@ -91,7 +91,11 @@ window.StemLab = window.StemLab || {
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
       var t = ctx.t;
-
+      var isContrast = !!ctx.isContrast;
+      var isDark = !!ctx.isDark;
+      var themeSurface = isContrast ? '#000000' : (isDark ? '#0f172a' : '#f8fafc');
+      var themeInk = isContrast ? '#ffffff' : (isDark ? '#f8fafc' : '#0f172a');
+      var themeBorder = isContrast ? '#fbbf24' : (isDark ? '#475569' : '#cbd5e1');
       // ── State handling ──
       var setToolSnapshots = ctx.setToolSnapshots;
       var exploreScore = ctx.exploreScore || { correct: 0, total: 0 };
@@ -928,7 +932,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex justify-center' },
               h('svg', {
                 width: gridW, height: gridH,
-                style: { background: '#f8fafc', touchAction: 'none' },
+                style: { background: themeSurface, touchAction: 'none' },
                 className: 'allo-cg-grid',
                 role: 'img',
                 'aria-label': 'Coordinate grid showing focus point at ' + qtPointX + ', ' + qtPointY + ', in quadrant ' + getQuadrant(qtPointX, qtPointY)
@@ -1845,7 +1849,7 @@ window.StemLab = window.StemLab || {
             ? 'Translate one real-world location into an ordered pair and explain the convention.'
             : 'Compare two points and explain their quadrant, distance, or rate of change.';
 
-      return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200' },
+      return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200', 'data-coordinate-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'), style: { background: themeSurface, color: themeInk, border: '1px solid ' + themeBorder } },
         // Header
         h('section', { 'data-coordinate-command': 'true', className: 'overflow-hidden rounded-2xl border border-cyan-300/40 bg-gradient-to-br from-slate-950 via-cyan-950 to-indigo-950 text-white shadow-xl' },
           h('div', { className: 'p-4 sm:p-5' },
@@ -1966,7 +1970,7 @@ window.StemLab = window.StemLab || {
 
         // SVG Grid
         h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-2 sm:p-4 flex justify-center overflow-x-auto' },
-          h('svg', { width: gridW, height: gridH, onClick: handleGridClick, onTouchStart: handleGridTouch, className: 'cursor-crosshair', style: { background: '#f8fafc', touchAction: 'none' } },
+          h('svg', { width: gridW, height: gridH, onClick: handleGridClick, onTouchStart: handleGridTouch, className: 'cursor-crosshair', style: { background: themeSurface, touchAction: 'none' } },
             gridElements,
             funcElements,
             lineElements,

@@ -111,11 +111,15 @@ describe('one-click remediation re-entry guard', () => {
 
   it('claims the generation before awaiting the document digest and ships the guard in every module copy', () => {
     const fixStart = pipelineSource.indexOf('const fixAndVerifyPdf = async');
-    const auditGuard = pipelineSource.indexOf("if (!_silentMode && !_auditResult)", fixStart);
+    const auditEvidence = pipelineSource.indexOf('const _auditEvidenceFailed = !_auditResult', fixStart);
+    const auditGuard = pipelineSource.indexOf('if (_auditEvidenceFailed)', auditEvidence);
     const generationClaim = pipelineSource.indexOf('window.__alloPdfRunGen =', fixStart);
     const digestAwait = pipelineSource.indexOf('await _documentDigest(_base64)', fixStart);
 
+    expect(auditEvidence).toBeGreaterThan(fixStart);
     expect(auditGuard).toBeGreaterThan(fixStart);
+    expect(pipelineSource.slice(auditEvidence, auditGuard)).toContain('Number(_auditResult.score) < 0');
+    expect(pipelineSource.slice(auditGuard, generationClaim)).toContain('BaselineAuditRequiredError');
     expect(auditGuard).toBeLessThan(generationClaim);
     expect(generationClaim).toBeLessThan(digestAwait);
     expect(pipelineSource).toContain('fixAndVerifyPdf: _wrapFixAndVerify(fixAndVerifyPdf)');

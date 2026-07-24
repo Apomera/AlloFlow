@@ -44,7 +44,7 @@ describe('host: result survives close and is re-openable in-session', () => {
   it('the floating "Return to remediation" pill is gated on result-exists-but-modal-closed (and never mid-run)', () => {
     // includes the run-state terms (defense-in-depth: the pill is structurally incapable of
     // appearing while any run is in flight, so an overlooked close door can't surface a mid-run pill).
-    expect(host).toContain('{pdfFixResult && !pdfAuditResult && !pdfAuditLoading && !pdfFixLoading && !pdfAutoContinueRunning && (');
+    expect(host).toContain('{(pdfFixResult || lastPdfAuditResultRef.current) && !pdfAuditResult && !pdfAuditLoading && !pdfFixLoading && !pdfAutoContinueRunning && (');
     // pill re-mounts via the stash, with a proven-renderable fallback shape (mirrors the
     // Load-Project pdfAuditResult shape) for the post-reload case where the ref is empty.
     expect(host).toContain('const _restore = lastPdfAuditResultRef.current || {');
@@ -54,8 +54,13 @@ describe('host: result survives close and is re-openable in-session', () => {
   });
 
   it('starting a NEW audit drops the stash (no stale re-entry for a cleared result)', () => {
-    expect(host).toMatch(/startNewPdfAudit = \(\) => \{\s*const documentIntakeEpoch = \+\+pdfDocumentSelectionEpochRef\.current;\s*invalidatePdfAuditRun\(\);\s*lastPdfAuditResultRef\.current = null;/);
-    expect(host.indexOf('invalidatePdfAuditRun();', host.indexOf('const startNewPdfAudit'))).toBeLessThan(host.indexOf('lastPdfAuditResultRef.current = null', host.indexOf('const startNewPdfAudit')));
+    const invalidateStart = host.indexOf('const invalidatePdfDocumentOperations = () => {');
+    const invalidateBody = host.slice(invalidateStart, host.indexOf('\n  };', invalidateStart));
+    const startNewStart = host.indexOf('const startNewPdfAudit = () => {');
+    const startNewBody = host.slice(startNewStart, host.indexOf('\n  };', startNewStart));
+    expect(invalidateStart).toBeGreaterThan(-1);
+    expect(invalidateBody).toMatch(/const documentIntakeEpoch = \+\+pdfDocumentSelectionEpochRef\.current;[\s\S]*invalidatePdfAuditRun\(\);/);
+    expect(startNewBody).toMatch(/const documentIntakeEpoch = invalidatePdfDocumentOperations\(\);\s*lastPdfAuditResultRef\.current = null;/);
   });
 });
 

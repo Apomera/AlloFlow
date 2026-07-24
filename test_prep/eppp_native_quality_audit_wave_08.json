@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-08",
+  "reviewedAt": "2026-07-23",
+  "reportType": "source-checked-native-item-repair",
+  "scope": "Deep-rewrite the next eight unreviewed items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.",
+  "challengeCriteria": [
+    "replace definition completion with application or analysis where difficulty warrants",
+    "use adjacent, instructionally plausible distractors without stacked absolute cues",
+    "avoid keyed lexical echoes that allow answer selection without construct knowledge",
+    "separate intentionally related coverage by decision, context, or cognitive demand",
+    "verify the key and rationale against an item-specific authoritative or peer-reviewed source",
+    "provide four substantive, option-specific explanations and preserve answer positions"
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 8,
+    "domainsCovered": 6,
+    "appliedOrAnalysisItems": 8,
+    "keyPositionsPreserved": 8,
+    "optionSpecificExplanations": 32,
+    "selectedItemsWithWarningsAfter": 0,
+    "selectedWarningIdsAfter": [],
+    "warningCountsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 181,
+      "asymmetricExtremeDistractorCandidates": 361,
+      "advancedDirectRecallCandidates": 27,
+      "semanticConceptDuplicatePairs": 309,
+      "semanticConceptDuplicateClusters": 131,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "warningCountsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 168,
+      "asymmetricExtremeDistractorCandidates": 346,
+      "advancedDirectRecallCandidates": 24,
+      "semanticConceptDuplicatePairs": 303,
+      "semanticConceptDuplicateClusters": 130,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-b027-intervention-3",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-narrative-externalizing-response",
+      "sourceCheck": "The Dulwich Centre describes externalising as separating the person from the problem, exploring the problem's influence, and identifying unique outcomes that can be developed into preferred story lines.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-assessment-037",
+      "domainId": "assessment",
+      "difficulty": "intermediate",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "assessment-standard-score-linear-transformation",
+      "sourceCheck": "The University of Connecticut resource gives z as standard-deviation distance, T as 50 plus ten times z, and common IQ scaling as 100 plus fifteen times z, directly supporting the comparison.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-biological-039",
+      "domainId": "biological",
+      "difficulty": "advanced",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "biological-bdnf-trkb-synaptic-plasticity",
+      "sourceCheck": "The review identifies mature-BDNF action at TrkB and evaluates its role in activity-dependent hippocampal long-term potentiation, supporting a reduced-plasticity prediction when TrkB is antagonized.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "advanced-direct-recall"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-029",
+      "domainId": "cognitive-affective",
+      "difficulty": "intermediate",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "cognitive-language-nativism-overregularization",
+      "sourceCheck": "OpenStax describes Chomsky's biological-predisposition account in contrast with Skinnerian reinforcement and notes children's overgeneralization errors as evidence of learning language rules.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-intervention-005",
+      "domainId": "intervention",
+      "difficulty": "intermediate",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-schema-abandonment-coping-mode",
+      "sourceCheck": "The ISST source defines schemas as broad themes about self and relationships developed during childhood and explains that triggered schemas elicit coping styles and schema modes that can sustain unhealthy patterns.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-intervention-022",
+      "domainId": "intervention",
+      "difficulty": "intermediate",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-cognitive-remediation-transfer",
+      "sourceCheck": "The meta-analysis defines cognitive remediation as an approach to improve cognitive skills and function in schizophrenia and reports stronger effects from strategy coaching and bridging discussions that support generalization.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-professional-036",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "professional-ethics-supervisee-evaluation-process",
+      "sourceCheck": "The official APA code states both tested requirements: communicate a timely and specific feedback process at the beginning of supervision and base evaluation on actual performance under established program requirements.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-research-009",
+      "domainId": "research",
+      "difficulty": "advanced",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "research-solomon-pretest-treatment-interaction",
+      "sourceCheck": "The SAGE methods entry states that the four-group design crosses treatment with pretest presence and that a significant interaction indicates the pretest may influence the treatment effect.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "advanced-direct-recall"
+      ],
+      "diagnosticsAfter": []
+    }
+  ],
+  "limitations": [
+    "Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation."
+  ]
+}

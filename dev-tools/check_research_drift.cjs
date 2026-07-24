@@ -45,15 +45,33 @@ const TARGETS = [
 ];
 
 // Mirror the exact transform from the _build_research_*_module.js scripts.
-function rebuild(sourcePath, outPath) {
-  execSync(
-    'npx esbuild "' + sourcePath + '" --bundle=false --format=esm ' +
-    '--jsx=transform --jsx-factory=React.createElement --jsx-fragment=React.Fragment ' +
-    '--outfile="' + outPath + '" --target=es2020',
-    { cwd: ROOT, stdio: 'pipe' }
-  );
-  const compiled = fs.readFileSync(outPath, 'utf-8');
-  return compiled.replace(/\nexport\s*\{\s*\}\s*;?\s*$/, '\n');
+function rebuild(sourcePath, outPath, base) {
+  let compileSource = sourcePath;
+  let compositeSource = null;
+  let compositeDir = null;
+  if (base === 'research_hub') {
+    const evidenceGraph = path.join(ROOT, 'research_evidence_graph.js');
+    if (!fs.existsSync(evidenceGraph)) throw new Error('Evidence Graph source not found: ' + evidenceGraph);
+    compositeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'alloflow-rh-drift-'));
+    compositeSource = path.join(compositeDir, '_tmp_research_hub_entry.jsx');
+    fs.writeFileSync(compositeSource, fs.readFileSync(evidenceGraph, 'utf8') + '\n' + fs.readFileSync(sourcePath, 'utf8'), 'utf8');
+    compileSource = compositeSource;
+  }
+  try {
+    execSync(
+      'npx esbuild "' + compileSource + '" --bundle=false --format=esm ' +
+      '--jsx=transform --jsx-factory=React.createElement --jsx-fragment=React.Fragment ' +
+      '--outfile="' + outPath + '" --target=es2020',
+      { cwd: ROOT, stdio: 'pipe' }
+    );
+    const compiled = fs.readFileSync(outPath, 'utf-8');
+    return compiled
+      .replace(/"[^"\n]*_tmp_research_hub_entry\.jsx"\(exports, module\)/, '"_tmp_research_hub_entry.jsx"(exports, module)')
+      .replace(/\nexport default (require_[A-Za-z0-9_]+)\(\);?\s*$/, '\n$1();\n')
+      .replace(/\nexport\s*\{\s*\}\s*;?\s*$/, '\n');
+  } finally {
+    if (compositeDir) { try { fs.rmSync(compositeDir, { recursive: true, force: true }); } catch (_) {} }
+  }
 }
 
 const drifts = [];
@@ -70,7 +88,7 @@ for (const base of TARGETS) {
   const tmp = path.join(os.tmpdir(), base + '.driftcheck.' + process.pid + '.js');
   let expected;
   try {
-    expected = rebuild(sourcePath, tmp);
+    expected = rebuild(sourcePath, tmp, base);
   } catch (e) {
     console.error('esbuild failed for ' + base + ': ' + (e && e.message));
     process.exit(2);

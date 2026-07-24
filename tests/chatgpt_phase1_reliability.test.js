@@ -112,7 +112,8 @@ describe('finding 10 — resumed batches run under their SAVED settings', () => 
   });
   it('the Resume button passes the persisted settings and tells the teacher', () => {
     expect(view).toContain('runPdfBatchRemediation({ resumeQueue, resumeSettings: resumableBatch.settings || null, resumeBatchId: resumableBatch.batchId || null })');
-    expect(view).toContain('discardResumableBatch(resumableBatch.batchId || null)');
+    expect(view).toContain("const checkpointBatchId = typeof resumableBatch.batchId === 'string' ? resumableBatch.batchId.trim() : '';");
+    expect(view).toContain('discardResumableBatch(checkpointBatchId)');
     expect(view).toContain('Resuming with the batch’s original settings');
   });
 });

@@ -33,6 +33,9 @@ afterEach(() => {
     root = null;
   }
   for (const node of [host, opener, outside]) node?.remove();
+  localStorage.removeItem('allo_command_favorites_v1');
+  localStorage.removeItem('allo_command_usage_v1');
+  sessionStorage.removeItem('allo_command_recents_v1');
   host = opener = outside = null;
 });
 
@@ -61,7 +64,7 @@ describe('AlloCommandPalette focus behavior', () => {
 
     const dialog = host.querySelector('[role="dialog"]');
     const input = dialog.querySelector('[role="combobox"]');
-    const close = dialog.querySelector('button[aria-label]');
+    const close = dialog.querySelector('button[aria-label*="Close"]');
     expect(document.activeElement).toBe(input);
 
     const axeResults = await axe.run(host, { rules: {
@@ -93,6 +96,29 @@ describe('AlloCommandPalette focus behavior', () => {
     await act(async () => { await Promise.resolve(); });
     expect(host.querySelector('[role="dialog"]')).toBeNull();
     expect(document.activeElement).toBe(opener);
+  });
+
+  it('pins the selected command locally and promotes it to a Favorites group', async () => {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+    act(() => root.render(React.createElement(AlloCommandPalette, { ctx: { t: () => null } })));
+
+    act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true })));
+    await act(async () => { await Promise.resolve(); });
+    const pin = host.querySelector('button[aria-label^="Pin selected command"]');
+    expect(pin).toBeTruthy();
+    const selectedLabel = host.querySelector('[role="option"][aria-selected="true"]')?.textContent;
+    act(() => pin.click());
+    expect(JSON.parse(localStorage.getItem('allo_command_favorites_v1'))).toHaveLength(1);
+    expect(host.querySelector('button[aria-label^="Remove selected command"]')).toBeTruthy();
+
+    act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    await act(async () => { await Promise.resolve(); });
+    act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true })));
+    await act(async () => { await Promise.resolve(); });
+    expect(host.querySelector('[role="dialog"]').textContent).toContain('Favorites');
+    expect(host.querySelector('[role="dialog"]').textContent).toContain(selectedLabel.trim());
   });
 
   it('opens with a prefilled query from an external launcher and restores focus', async () => {

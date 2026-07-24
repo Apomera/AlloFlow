@@ -1354,6 +1354,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return specs;
   }
 
+  function mainRoadLocalPoint(world, x, y) {
+    var spline = world && world.spline;
+    if (!spline) return { longitudinal: Number(y) || 0, lateral: Number(x) || 0, heading: 0 };
+    var sampleY = Number(y) || 0;
+    var px = Number(x) || 0, py = Number(y) || 0;
+    // Two projection passes find the nearest spline station closely enough for
+    // the road's bounded curvature and keep lateral comparisons stable on bends.
+    for (var pass = 0; pass < 2; pass++) {
+      var passHeading = spline.headingAt(sampleY);
+      var passDx = px - spline.centerAt(sampleY), passDy = py - sampleY;
+      var along = passDx * Math.sin(passHeading) + passDy * Math.cos(passHeading);
+      sampleY += along * Math.cos(passHeading);
+    }
+    var heading = spline.headingAt(sampleY);
+    var dx = px - spline.centerAt(sampleY), dy = py - sampleY;
+    return { longitudinal: sampleY,
+      lateral: dx * Math.cos(heading) - dy * Math.sin(heading),
+      heading: heading };
+  }
+
+  function roadRelativeTarget(world, observer, target) {
+    if (!observer || !target) return { ahead: Infinity, lateralDifference: Infinity, travelSign: 0 };
+    var observerLocal = mainRoadLocalPoint(world, observer.x, observer.y);
+    var targetLocal = mainRoadLocalPoint(world, target.x, target.y);
+    var forwardX = Math.cos(Number(observer.heading) || 0);
+    var forwardY = Math.sin(Number(observer.heading) || 0);
+    var alignment = forwardX * Math.sin(observerLocal.heading) + forwardY * Math.cos(observerLocal.heading);
+    var travelSign = alignment < 0 ? -1 : 1;
+    return { ahead: (targetLocal.longitudinal - observerLocal.longitudinal) * travelSign,
+      lateralDifference: targetLocal.lateral - observerLocal.lateral,
+      travelSign: travelSign, alignment: alignment,
+      observer: observerLocal, target: targetLocal };
+  }
+
+  function assessRoadLanePosition(profileOrChunk, lateralOffset, travelSign) {
+    var source = profileOrChunk || {};
+    var lateral = Number(lateralOffset) || 0;
+    var direction = Number(travelSign) < 0 ? -1 : 1;
+    var layout = roadLayoutFor(source);
+    var oneWay = oneWayRoadLayoutFor(source);
+    var centers = oneWay.enabled
+      ? oneWay.laneCenters.slice()
+      : layout.laneCenters.map(function(magnitude) { return direction > 0 ? -magnitude : magnitude; });
+    var nearest = centers.length ? centers[0] : 0;
+    centers.forEach(function(center) {
+      if (Math.abs(lateral - center) < Math.abs(lateral - nearest)) nearest = center;
+    });
+    return { lateral: lateral, travelSign: direction, laneCenters: centers,
+      nearestLaneCenter: nearest, distanceToLaneCenter: Math.abs(lateral - nearest),
+      laneWidth: oneWay.enabled ? oneWay.laneWidth : layout.laneWidth,
+      outsideEdge: Math.abs(lateral) > layout.edgeLineOffset,
+      centerlineCrossed: !oneWay.enabled && lateral * direction > 0.15,
+      wrongWay: oneWay.enabled && direction !== oneWay.direction };
+  }
+
   function isWrongWayTravel(profileOrChunk, heading) {
     var oneWay = oneWayRoadLayoutFor(profileOrChunk);
     if (!oneWay.enabled) return false;
@@ -1487,6 +1542,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       vehicleCenterCoordinate: car.y, distanceFromIntersection: Math.abs(car.y - signal.y),
       approachKey: 'main_' + travelSign, corridor: null };
   }
+  function controlDistanceAhead(world, signal, car, vehicleLength) {
+    var approach = playerControlApproach(world, signal, car, vehicleLength);
+    if (!approach.sameRoad || !approach.travelSign) return null;
+    return (approach.controlCoordinate - approach.frontCoordinate) * approach.travelSign;
+  }
+
   function roadsideOffsetFor(profileOrChunk, clearance) {
     var layout = roadLayoutFor(profileOrChunk);
     return layout.pavedHalfWidth + Math.max(0, Number(clearance) || 0);
@@ -7200,9 +7261,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             for (var rsi = 0; rsi < sigList.length; rsi++) {
               var sig = sigList[rsi];
               if (!sig || (sig.type !== 'light' && sig.type !== 'flagger')) continue;
-              var dySig = car.y - sig.y; // positive = ahead (lower y)
-              if (dySig > 0 && dySig < 12) {
-                if (sig.state === 'red' || sig.state === 'yellow') raTarget = Math.min(raTarget, dySig < 3 ? 0 : 10);
+                var raSignalAhead = controlDistanceAhead(infiniteWorldRef.current, sig, car,
+                vehicleFootprint(veh.id).length);
+              if (raSignalAhead != null && raSignalAhead > 0 && raSignalAhead < 12) {
+                if (sig.state === 'red' || sig.state === 'yellow') raTarget = Math.min(raTarget, raSignalAhead < 3 ? 0 : 10);
                 break;
               }
             }
@@ -7211,15 +7273,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             for (var rti = 0; rti < tList.length; rti++) {
               var tc = tList[rti];
               if (!tc) continue;
-              var dyT = car.y - tc.y;
-              var sameLaneX = Math.abs((tc.x || 0) - car.x) < 2.5;
-              if (dyT > 0 && dyT < 8 && sameLaneX) {
+              var raTrafficRel = roadRelativeTarget(infiniteWorldRef.current, car, tc);
+              var sameLaneX = Math.abs(raTrafficRel.lateralDifference) <
+                Math.max(1, scenarioRoadLayout(scn.id).laneWidth * 0.45);
+              if (raTrafficRel.ahead > 0 && raTrafficRel.ahead < 8 && sameLaneX) {
                 raTarget = Math.min(raTarget, Math.max(0, (tc.speed || 0) * MS_TO_MPH - 2));
               }
             }
             // Wildlife / pedestrian in path → brake hard.
             var wl = wildlifeRef.current;
-            if (wl && Math.abs(wl.x - car.x) < 4 && (car.y - wl.y) > 0 && (car.y - wl.y) < 14) raTarget = 0;
+            if (wl) {
+              var raWildlifeRel = roadRelativeTarget(infiniteWorldRef.current, car, wl);
+              if (Math.abs(raWildlifeRel.lateralDifference) < 4 &&
+                  raWildlifeRel.ahead > 0 && raWildlifeRel.ahead < 14) raTarget = 0;
+            }
             // Throttle/brake as a simple cruise controller.
             var raErr = raTarget - raSpeedMph;
             if (raErr > 2) { throttleInput = Math.min(1, raErr / 10); brakeInput = 0; }
@@ -7228,12 +7295,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Steering: look ~8 cells ahead on the spline and steer toward the centerline.
             if (raSpline) {
               var raLook = Math.max(4, Math.min(12, raSpeedMph * 0.15));
-              var targetX = raSpline.centerAt(car.y - raLook);
+              var raCurrent = mainRoadLocalPoint(infiniteWorldRef.current, car.x, car.y);
+              var raAlignment = Math.cos(car.heading) * Math.sin(raCurrent.heading) +
+                Math.sin(car.heading) * Math.cos(raCurrent.heading);
+              var raTravelSign = raAlignment < 0 ? -1 : 1;
+              var raTargetStation = raCurrent.longitudinal + raTravelSign * raLook;
+              var raTargetHeading = raSpline.headingAt(raTargetStation);
+              var raArrowSpecs = roadLaneArrowSpecs(getContinuousScenarioProfile(scn.id) || {});
+              var raLegalLanes = raArrowSpecs.filter(function(spec) { return spec.direction === raTravelSign; });
+              var raLaneOffset = raLegalLanes.length ? raLegalLanes[0].offset : (raTravelSign < 0 ? 1.2 : -1.2);
+              raLegalLanes.forEach(function(spec) {
+                if (Math.abs(spec.offset - raCurrent.lateral) < Math.abs(raLaneOffset - raCurrent.lateral)) raLaneOffset = spec.offset;
+              });
+              var targetX = raSpline.centerAt(raTargetStation) + raLaneOffset * Math.cos(raTargetHeading);
+              var targetY = raTargetStation - raLaneOffset * Math.sin(raTargetHeading);
               // Bias slightly right-of-center for right-lane driving (road is ~3 cells each side).
-              targetX += 1.2;
               var dx = targetX - car.x;
               // Heading offset from due-north. Positive dx → need to steer toward +x (right turn).
-              var desiredHeading = Math.atan2(-raLook, dx); // heading vector (dx, -raLook)
+              var desiredHeading = Math.atan2(targetY - car.y, dx);
               var headingErr = desiredHeading - car.heading;
               // Normalize to [-π, π]
               while (headingErr > Math.PI) headingErr -= Math.PI * 2;
@@ -7256,8 +7335,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             for (var nsi = 0; nsi < sigList.length; nsi++) {
               var nsig = sigList[nsi];
               if (!nsig || (nsig.type !== 'light' && nsig.type !== 'flagger')) continue;
-              var dySigN = car.y - nsig.y;
-              if (dySigN > 4 && dySigN < 10) {
+              var dySigN = controlDistanceAhead(infiniteWorldRef.current, nsig, car,
+                vehicleFootprint(veh.id).length);
+              if (dySigN != null && dySigN > 4 && dySigN < 10) {
                 var sigKey = 'sig_' + nsig.y + '_' + nsig.state;
                 if (ras.lastSignalId !== sigKey) {
                   ras.lastSignalId = sigKey;
@@ -7270,7 +7350,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             // Wildlife callout (once per creature)
             if (wl && !ras.announcedHazards['wl_' + wl.kind + '_' + Math.floor(wl.y)]) {
-              if (Math.abs(wl.x - car.x) < 6 && (car.y - wl.y) > 0 && (car.y - wl.y) < 20) {
+              var raNarrationWildlife = roadRelativeTarget(infiniteWorldRef.current, car, wl);
+              if (Math.abs(raNarrationWildlife.lateralDifference) < 6 &&
+                  raNarrationWildlife.ahead > 0 && raNarrationWildlife.ahead < 20) {
                 ras.announcedHazards['wl_' + wl.kind + '_' + Math.floor(wl.y)] = true;
                 // Bound the dict so a multi-hour Free Explore drive can't grow
                 // it unboundedly. At 200+ keys we wipe and restart — the only
@@ -10526,24 +10608,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Cells aren't physically marked as puddles/potholes — synthesize via
             // hash so the same world position always sounds the same. Speed-gated
             // (no thumps when crawling).
-            var cellKey = Math.floor(car.x) * 65537 + Math.floor(car.y);
-            if (a._lastCellKey === undefined) a._lastCellKey = cellKey;
-            if (cellKey !== a._lastCellKey && Math.abs(car.speed) > 4 && onRoad) {
-              var hash = (cellKey * 2654435761) >>> 0;
-              // Splash: only in rain, ~1 in 14 road cells.
-              if (weather === 'rain' && (hash % 14) === 0) {
-                playSplash(Math.min(8, Math.abs(car.speed) * 0.5));
-              }
-              // Pothole thump: ~1 in 60 road cells, intensity scales with speed.
-              else if (weather !== 'snow' && (hash % 60) === 0) {
-                playThump(Math.min(8, Math.abs(car.speed) * 0.6));
-              }
-              a._lastCellKey = cellKey;
-            } else if (cellKey === a._lastCellKey) {
-              // No change — leave key as-is.
-            } else {
-              a._lastCellKey = cellKey;
-            }
+            // Puddle entry and registered road features are the only impact-audio sources.
             // Rain ambient (if raining — constant patter)
             if (currentScenario.weather === 'rain' && !a._rainNode) {
               var rainBuf = a.ctx.createBuffer(1, a.ctx.sampleRate * 2, a.ctx.sampleRate);
@@ -14995,13 +15060,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
               spPos.needsUpdate = true;
               s3.tireSprayParticles.material.opacity = Math.min(0.7, Math.abs(car.speed) * 0.03);
-              // Brief splash sound when over a puddle at speed
-              if (overPuddle && Math.abs(car.speed) > 5) {
-                if (!s3._lastSplashAt || timeRef.current - s3._lastSplashAt > 0.7) {
-                  s3._lastSplashAt = timeRef.current;
-                  try { if (typeof playSplash === 'function') playSplash(Math.abs(car.speed)); } catch(_) {}
-                }
-              }
+              // Splash audio is emitted once on puddle entry by the physics loop.
             }
           }
 
@@ -17903,40 +17962,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   });
                 }
               }
-              // ── Rain puddles on the shoulder (rain weather only) ──
-              // Real rural shoulders pool water along low spots in heavy rain.
-              // Small dark glossy ovals scattered along the dirt shoulder give
-              // the right "everything is wet" feel without needing a real
-              // reflection pass. Phong material so the directional sun/moon
-              // catches a specular highlight that reads as "wet shine."
-              if (scn.weather === 'rain') {
-                var puRng = seededRandom(chunk.index * 50341 + 17);
-                var puMat = new T.MeshPhongMaterial({
-                  color: 0x1a2028, specular: 0x6a8aaa, shininess: 80,
-                  transparent: true, opacity: 0.85
-                });
-                for (var puZ = chunkWorldZ + 1.5; puZ < chunkWorldZ + CHUNK_SIZE - 1.5; puZ += 2.4 + puRng() * 1.2) {
-                  if (chunk.hasIntersection && Math.abs((puZ - chunkWorldZ) - chunk.intersectionY) < 4) continue;
-                  if (puRng() > 0.6) continue; // 40% spawn rate per slot — feels organic, not lined-up
-                  var puCenter = iw.spline ? iw.spline.centerAt(puZ - chunkWorldZ + ribbonChunkBaseY) : 0;
-                  var puWX = puCenter - MAP_SIZE / 2;
-                  var puHt = iw.spline ? iw.spline.heightAt(puZ - chunkWorldZ + ribbonChunkBaseY) : 0;
-                  var puSide = puRng() < 0.5 ? -1 : 1;
-                  // Sit IN the dirt shoulder, just outside the road edge
-                  var puX = puWX + puSide * (roadHalfW + 0.25 + puRng() * 0.3);
-                  var puZj = puZ + (puRng() - 0.5) * 0.6;
-                  if (visualCrossStreetClearanceAt(puX, puZj, 0.4)) continue;
-                  var puLen = 0.5 + puRng() * 0.7;
-                  var puWid = 0.35 + puRng() * 0.25;
-                  // Use CircleGeometry rotated flat for an oval puddle.
-                  var puMesh = new T.Mesh(new T.CircleGeometry(0.3, 12), puMat);
-                  puMesh.scale.set(puWid / 0.3, puLen / 0.3, 1);
-                  puMesh.rotation.x = -Math.PI / 2;
-                  puMesh.position.set(puX, puHt + 0.012, puZj);
-                  chunkGroup.add(puMesh);
-                }
-              }
-              // ── Moose crossing warning signs (rural, ~1 per 3 chunks) ──
+              // Standing water is rendered only from streamedPuddlesForChunk(),
+              // so every visible puddle participates in spray and tire physics.
+              // Moose crossing warning signs (rural, about one per 3 chunks)
               // Yellow diamond MUTCD warning with a moose silhouette — Maine
               // DOT places these on Routes 1, 11, 27, 201 and other rural
               // stretches with documented strikes. Reinforces the moose-strike
@@ -18982,7 +19010,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   depthWrite: false
                 });
                 // Render the exact authoritative footprints used by tire physics.
-                streamedPuddlesForChunk(iw, ci).forEach(function(puddleSpec) {
+                if (scn.weather === 'rain') streamedPuddlesForChunk(iw, ci).forEach(function(puddleSpec) {
                   var pWorldX = puddleSpec.x - MAP_SIZE / 2;
                   var pWorldZ = puddleSpec.y - MAP_SIZE / 2;
                   var puddle = new T.Mesh(new T.PlaneGeometry(puddleSpec.width, puddleSpec.length), puddleMat);
@@ -21125,8 +21153,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Signal ahead — prominent mini traffic light HUD indicator
           var nearestSig = null, nearestSigDist = Infinity;
           signalsRef.current.forEach(function(s) {
-            var ahead = Math.abs(s.y - car.y);
-            if (ahead < 12 && ahead < nearestSigDist && Math.abs(s.x - car.x) < 5) { nearestSigDist = ahead; nearestSig = s; }
+            var ahead = controlDistanceAhead(infiniteWorldRef.current, s, car,
+              vehicleFootprint(veh.id).length);
+            if (ahead != null && ahead > 0 && ahead < 12 && ahead < nearestSigDist) {
+              nearestSigDist = ahead; nearestSig = s;
+            }
           });
           if (nearestSig && nearestSigDist < 12) {
             var sigIsStop = nearestSig.type === 'stop';
@@ -21301,8 +21332,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               while (ang < -Math.PI) ang += 2 * Math.PI;
               // Directly ahead cone (~45° either side of forward)
               if (Math.abs(ang) > Math.PI / 4) return;
-              if (Math.abs(t.x - car.x) > 2.2) return; // must be in our lane
-              if (dist < closestAheadDist) { closestAhead = t; closestAheadDist = dist; }
+              var gapRel = roadRelativeTarget(infiniteWorldRef.current, car, t);
+              var gapLaneWidth = scenarioRoadLayout(scn.id).laneWidth;
+              if (gapRel.ahead <= 0 || Math.abs(gapRel.lateralDifference) > Math.max(1, gapLaneWidth * 0.45)) return;
+              if (gapRel.ahead < closestAheadDist) { closestAhead = t; closestAheadDist = gapRel.ahead; }
             });
             var ownSpd = Math.abs(car.speed); // m/s
             if (closestAhead && ownSpd > 2) {
@@ -21362,17 +21395,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // We consider the centerline (cross-into-oncoming) the worst offense.
           (function() {
             if (!infiniteWorldRef.current || !infiniteWorldRef.current.spline) { laneDepartureRef.current.side = null; return; }
-            var roadCenter = infiniteWorldRef.current.spline.centerAt(car.y);
-            var offset = car.x - roadCenter; // negative = left of center, positive = right
+            var departureFrame = mainRoadLocalPoint(infiniteWorldRef.current, car.x, car.y);
+            var offset = departureFrame.lateral;
+            var departureAlignment = Math.cos(car.heading) * Math.sin(departureFrame.heading) +
+              Math.sin(car.heading) * Math.cos(departureFrame.heading);
+            var departureTravelSign = departureAlignment < 0 ? -1 : 1;
             var signalOn = blinkerRef.current;
             var departureProfile = getContinuousScenarioProfile(scn.id) || {};
             var departureOneWay = oneWayRoadLayoutFor(departureProfile);
+            var departureAssessment = assessRoadLanePosition(departureProfile, offset, departureTravelSign);
             if (departureOneWay.enabled) {
               // Both sides of the center divider are legal through lanes. Warn only
               // when the vehicle actually leaves the paved one-way corridor.
               var pavedEdge = roadLayoutFor(departureProfile).edgeLineOffset;
               var nowOneWay = Date.now();
-              if (Math.abs(offset) > pavedEdge && signalOn === 0) {
+              if (departureAssessment.outsideEdge && signalOn === 0) {
                 laneDepartureRef.current.side = offset < 0 ? 'left' : 'right';
                 if (nowOneWay - laneDepartureRef.current.lastAlertAt > 4500) {
                   laneDepartureRef.current.lastAlertAt = nowOneWay;
@@ -21384,24 +21421,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Thresholds: ±1.0 cells is "normal lane." ±1.6 is crossing into oncoming/shoulder.
             // For player traveling -π/2 (heading south, drives on +X side), normal offset = +1.5.
             // Drifting below +0.5 → encroaching on centerline. Below -0.5 → FULLY in oncoming.
-            var worryZone = Math.abs(car.heading + Math.PI / 2) < 0.5; // heading matches -π/2
+            var worryZone = Math.abs(departureAlignment) > 0.7; // heading matches -π/2
             if (!worryZone) { laneDepartureRef.current.side = null; return; }
             var spd = Math.abs(car.speed) * MS_TO_MPH;
             if (spd < 10) { laneDepartureRef.current.side = null; return; } // ignore when parked
             var now = Date.now();
-            if (offset < 0.5 && signalOn !== -1) {
+            if (departureAssessment.centerlineCrossed && signalOn !== departureTravelSign) {
               // Drifting left across centerline without left signal
-              laneDepartureRef.current.side = 'left';
-              if (now - laneDepartureRef.current.lastAlertAt > 4500 && offset < 0) {
-                laneDepartureRef.current.lastAlertAt = now;
-                addToast('⚠️ Lane departure LEFT — across centerline!');
-              }
-            } else if (offset > 2.6 && signalOn !== 1) {
-              // Drifting right off the road onto shoulder without right signal
-              laneDepartureRef.current.side = 'right';
+              laneDepartureRef.current.side = departureTravelSign > 0 ? 'right' : 'left';
               if (now - laneDepartureRef.current.lastAlertAt > 4500) {
                 laneDepartureRef.current.lastAlertAt = now;
-                addToast('⚠️ Lane departure RIGHT — check shoulder!');
+                addToast('⚠️ Lane departure — across centerline!');
+              }
+            } else if (departureAssessment.outsideEdge && signalOn !== -departureTravelSign) {
+              // Drifting right off the road onto shoulder without right signal
+              laneDepartureRef.current.side = departureTravelSign > 0 ? 'left' : 'right';
+              if (now - laneDepartureRef.current.lastAlertAt > 4500) {
+                laneDepartureRef.current.lastAlertAt = now;
+                addToast('⚠️ Lane departure — check shoulder!');
               }
             } else {
               laneDepartureRef.current.side = null;
@@ -21427,17 +21464,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             var spdMph = Math.abs(car.speed) * MS_TO_MPH;
             if (spdMph < 8) { wrongSideRef.current.active = false; return; }
-            var roadCenter = infiniteWorldRef.current.spline.centerAt(car.y);
-            var offsetX = car.x - roadCenter; // signed: left of center is negative
+            var wrongFrame = mainRoadLocalPoint(infiniteWorldRef.current, car.x, car.y);
+            var roadCenter = infiniteWorldRef.current.spline.centerAt(wrongFrame.longitudinal);
+            var offsetX = wrongFrame.lateral;
             // Determine the correct side from heading. sin(heading) tells us Y-direction:
             //   heading ≈ +π/2 (northbound, sin +1) → correct side is x < center (offsetX < 0)
             //   heading ≈ -π/2 (southbound, sin -1) → correct side is x > center (offsetX > 0)
-            var northbound = Math.sin(car.heading) > 0.3;
-            var southbound = Math.sin(car.heading) < -0.3;
+            var wrongAlignment = Math.cos(car.heading) * Math.sin(wrongFrame.heading) +
+              Math.sin(car.heading) * Math.cos(wrongFrame.heading);
+            var northbound = wrongAlignment > 0.3;
+            var southbound = wrongAlignment < -0.3;
             if (!northbound && !southbound) { wrongSideRef.current.active = false; return; }
             // Player needs to be at least 0.5 cells across centerline to count as "wrong side"
             // (not just straddling the line).
-            var onWrongSide = northbound ? offsetX > 0.5 : offsetX < -0.5;
+            var onWrongSide = assessRoadLanePosition(getContinuousScenarioProfile(scn.id) || {},
+              offsetX, northbound ? 1 : -1).centerlineCrossed;
             if (!onWrongSide) {
               // Recovered — reset tracker
               wrongSideRef.current.active = false;
@@ -21461,17 +21502,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // 1) Wildlife ahead in our lane, ≤ 18 cells forward
             var wl = wildlifeRef.current;
             if (wl) {
-              var wlDy = (northbound ? wl.y - car.y : car.y - wl.y);
-              if (wlDy > 0 && wlDy < 18 && Math.abs(wl.x - roadCenter) < 3) obstaclePresent = true;
+              var wlRoadRel = roadRelativeTarget(infiniteWorldRef.current, car, wl);
+              if (wlRoadRel.ahead > 0 && wlRoadRel.ahead < 18 &&
+                  Math.abs(wlRoadRel.lateralDifference) < 3) obstaclePresent = true;
             }
             // 2) Stopped or nearly-stopped traffic ahead in our lane
             trafficRef.current.forEach(function(t) {
               if (obstaclePresent) return;
               if (!t || t.crossStreet) return;
-              var tDy = (northbound ? t.y - car.y : car.y - t.y);
-              if (tDy < 0 || tDy > 18) return;
+              var tRoadRel = roadRelativeTarget(infiniteWorldRef.current, car, t);
+              if (tRoadRel.ahead < 0 || tRoadRel.ahead > 18) return;
               // Must be in (or near) our lane, not in the oncoming lane we've crossed into
-              var tOffset = t.x - roadCenter;
+              var tOffset = tRoadRel.target.lateral;
               var tInOurLane = northbound ? (tOffset < 0) : (tOffset > 0);
               if (!tInOurLane) return;
               // "Obstacle" = stopped or slow vehicle ahead
@@ -21480,8 +21522,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // 3) Emergency responder on shoulder (Move Over context)
             if (emergencyRef.current) {
               var er = emergencyRef.current;
-              var erDy = (northbound ? er.y - car.y : car.y - er.y);
-              if (erDy > -5 && erDy < 20 && Math.abs(er.x - roadCenter) < 4) obstaclePresent = true;
+              var erRoadRel = roadRelativeTarget(infiniteWorldRef.current, car, er);
+              if (erRoadRel.ahead > -5 && erRoadRel.ahead < 20 &&
+                  Math.abs(erRoadRel.lateralDifference) < 4) obstaclePresent = true;
             }
             if (obstaclePresent) {
               // Legitimate avoidance — no penalty, no warning. Keep tracker active so that
@@ -21496,9 +21539,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // Opposite heading and close on the approach
               var sameDir = (Math.sin(t.heading) > 0) === northbound;
               if (sameDir) return;
-              var tDy2 = (northbound ? t.y - car.y : car.y - t.y);
-              if (tDy2 < 0 || tDy2 > 14) return;
-              if (Math.abs(t.x - car.x) < 2.5) oncomingClose = true;
+              var tRoadRel2 = roadRelativeTarget(infiniteWorldRef.current, car, t);
+              if (tRoadRel2.ahead < 0 || tRoadRel2.ahead > 14) return;
+              if (Math.abs(tRoadRel2.lateralDifference) < 2.5) oncomingClose = true;
             });
             // Penalty schedule. Rate-limited per-event so a 4-second incursion doesn't rack up 240 frames of deduction.
             if (oncomingClose && tNow - wrongSideRef.current.lastPenaltyAt > 2) {
@@ -32159,7 +32202,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       railroadCrossingControlState: railroadCrossingControlState, railroadRequiresFullStop: railroadRequiresFullStop,
       railroadTrainCollisionAt: railroadTrainCollisionAt,
       roadCrownHeight: roadCrownHeight, roadShoulderDrainageDrop: roadShoulderDrainageDrop,
-      roadLaneArrowSpecs: roadLaneArrowSpecs,
+      roadLaneArrowSpecs: roadLaneArrowSpecs, mainRoadLocalPoint: mainRoadLocalPoint,
+      roadRelativeTarget: roadRelativeTarget, assessRoadLanePosition: assessRoadLanePosition,
+      controlDistanceAhead: controlDistanceAhead,
       roadBankAngleAt: roadBankAngleAt,
       roadSurfacePoseAt: roadSurfacePoseAt, roadsideOffsetFor: roadsideOffsetFor,
       highwayRampPoseAt: highwayRampPoseAt,

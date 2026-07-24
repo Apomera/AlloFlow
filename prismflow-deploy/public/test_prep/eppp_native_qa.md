@@ -1,6 +1,6 @@
 # EPPP native pack editorial QA report
 
-Generated: 2026-07-22T15:54:47.206Z
+Generated: 2026-07-23T21:02:34.419Z
 
 Pack: EPPP Part 1 — Source-Reviewed Practice Bank v3.1.0
 
@@ -1317,7 +1317,7 @@ Editorial QA confirms cited answer support, one-best-answer structure, distinct 
 | eppp-v3-assessment-059 | assessment | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-assessment-060 | assessment | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-assessment-061 | assessment | legacy-seeded-re-authored | pass | 1 |
-| eppp-v3-assessment-062 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-v3-assessment-062 | assessment | legacy-seeded-re-authored | pass | 2 |
 | eppp-v3-assessment-063 | assessment | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-assessment-064 | assessment | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-assessment-065 | assessment | legacy-seeded-re-authored | pass | 1 |

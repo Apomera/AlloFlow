@@ -37,7 +37,7 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     expect(source).toContain('(prev || []).concat([ev.reading]).slice(-50)');
     expect(source).toContain("typeof ev.count === 'number' ? ev.count : c + 1");
     expect(source).toContain('boatState.passedRedNun && boatState.droppersDeployed >= 5');
-    expect(source).toContain("s3.completedMissions['mission-1'] = { completedAt: Date.now() }");
+    expect(source).toContain("s3.completedMissions['mission-1'] = { completedAt: Date.now(), mode: '3d' }");
   });
 
   it('provides touch and assistive-technology controls with safe release cleanup', () => {
@@ -126,7 +126,7 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     expect((source.match(/function kelpDeepTab\(\)/g) || [])).toHaveLength(1);
   });
 
-  it('resumes valid topics, deep-links navigation, and labels mission availability honestly', () => {
+  it('resumes valid topics, deep-links navigation, and exposes honest interactive mission modes', () => {
     const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_aquaculture.js'), 'utf8');
     expect(source).toContain("lastTopic: 'home'");
     expect(source).toContain('lastContentTopic: null');
@@ -139,9 +139,10 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     expect(source).toContain('savedNavigation.lastContentTopic = tab');
     expect(source).toContain("'Continue learning'");
     expect(source).toContain("{ id: 'mission-1', interactive: true");
-    expect(source).toContain("interactive ? (done ? 'Completed' : 'Interactive now') : 'Scenario preview'");
-    expect(source).toContain('Mission 1 is interactive now. Missions 2\\u201313 are clearly marked scenario previews');
-    expect(source).toContain("'Preview only \\u2014 completion and rewards are not active yet.'");
+    expect(source).toContain('var MISSION_SCENARIOS = {');
+    expect(source.match(/'mission-(?:[2-9]|1[0-3])': {/g) || []).toHaveLength(12);
+    expect(source).toContain("done ? 'Evidence saved' : (is3D ? '3D mission' : 'Decision scenario')");
+    expect(source).toContain('Missions 2–13 are decision scenarios');
   });
 
   it('extends comfortable reading to small interface text and higher-contrast muted copy', () => {
@@ -187,13 +188,53 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     expect(source).toContain("id: 'aq-my-learning-heading'");
     expect(source).toContain("'My learning'");
     expect(source).toContain("'Topics visited'");
-    expect(source).toContain("'Paths fully visited'");
+    expect(source).toContain("'Paths completed'");
     expect(source).toContain("'Recommended next: '");
-    expect(source).toContain('Progress tracks topics visited, not mastery.');
-    expect(source).toContain("'aria-valuetext': summary.completed + ' of ' + journey.topics.length + ' topics visited'");
+    expect(source).toContain('Visiting shows exploration; marking a lesson complete records intentional progress.');
+    expect(source).toContain("'aria-valuetext': summary.completed + ' of ' + journey.topics.length + ' lessons completed'");
     expect(source).toContain("className: 'aq-topic-reflection'");
     expect(source).toContain("id: 'aq-topic-note', value: noteDraft, maxLength: 600");
     expect(source).toContain("'aria-describedby': 'aq-topic-note-help aq-topic-note-status'");
     expect(source).not.toContain("{ id: 'aq-topic-note-status', 'aria-live':");
+  });
+
+  it('applies a cohesive responsive visual system with motion safeguards', () => {
+    const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_aquaculture.js'), 'utf8');
+    expect(source).toContain("radial-gradient(circle at 8% 0%, rgba(45,212,191,0.15), transparent 30%)");
+    expect(source).toContain("className: 'aq-home-card aq-learning-card'");
+    expect(source).toContain("className: 'aq-home-card aq-journeys-card'");
+    expect(source).toContain("className: 'aq-home-card aq-operations-card'");
+    expect(source).toContain("className: 'aq-metric-card'");
+    expect(source).toContain("className: 'aq-journey-card'");
+    expect(source).toContain("className: 'aq-btn aq-operation-tile'");
+    expect(source).toContain("className: 'aq-lesson-header'");
+    expect(source).toContain('.aq-home-card:before');
+    expect(source).toContain('.aq-btn:not(:disabled):hover');
+    expect(source).toContain('@media(prefers-reduced-motion:reduce)');
+    expect(source).toContain('.aq-primary-nav{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))}');
+    expect(source.match(/className: 'aq-content-card'/g) || []).toHaveLength(289);
+    expect(source.match(/className: 'aq-section-kicker'/g) || []).toHaveLength(289);
+    expect(source).toContain("className: 'aq-topic-group'");
+    expect(source).toContain("className: 'aq-topic-group-summary'");
+    expect(source).toContain('.aq-section-kicker:after');
+    expect(source).toContain('.aq-topic-content tbody tr:hover');
+    expect(source).toContain('.aq-topic-content input[type="range"]{accent-color:#2dd4bf');
+    expect(source).toContain('.aq-topic-content table{display:block;overflow-x:auto}');
+  });
+  it('adds evidence-based completion, saved decision missions, and seven quiz checkpoints', () => {
+    const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_aquaculture.js'), 'utf8');
+    expect(source).toContain('completedTopics: {}');
+    expect(source).toContain('function toggleTopicCompletion(topicId)');
+    expect(source).toContain("className: 'aq-btn aq-complete-topic'");
+    expect(source).toContain('function completeScenarioMission(missionId)');
+    expect(source).toContain('reflection.length < 20');
+    expect(source).toContain("mode: 'decision-scenario'");
+    expect(source).toContain('<section><h2>Mission evidence</h2>');
+    expect(source).toContain('var QUIZ_CHECKPOINTS = [');
+    expect(source.match(/id: 'checkpoint-[1-7]'/g) || []).toHaveLength(7);
+    expect(source).toContain('QUIZ_QUESTIONS.slice(checkpoint.start, checkpoint.start + 10)');
+    expect(source).toContain('function saveQuizCheckpointResult(checkpointId, score, total)');
+    expect(source).toContain('Skip for now');
+    expect(source).toContain('pathsCompleted');
   });
 });

@@ -2276,6 +2276,11 @@
         if (!h) return null;
         try {
           var d = (ctx.toolData && ctx.toolData.lumen) || {};
+          var isContrast = !!ctx.isContrast;
+          var isDark = !!ctx.isDark;
+          var themeSurface = isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff');
+          var themeInk = isContrast ? '#ffffff' : (isDark ? '#f8fafc' : '#0f172a');
+          var themeBorder = isContrast ? '#fbbf24' : (isDark ? '#475569' : '#e2e8f0');
           var upd = function (k, v) {
             if (ctx.update) ctx.update('lumen', k, v);
             else if (ctx.setToolData) ctx.setToolData(function (p) { p = p || {}; p.lumen = Object.assign({}, p.lumen); p.lumen[k] = v; return p; });
@@ -2291,7 +2296,7 @@
               type: 'button',
               onClick: function () { upd('mode', target); announce(title + ' opened.'); },
               className: 'p-4 rounded-2xl border-2 text-left transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2',
-              style: { borderColor: accent, background: '#ffffff', minHeight: '142px' },
+              style: { borderColor: isContrast ? themeBorder : accent, background: (isDark || isContrast) ? themeSurface : '#ffffff', color: (isDark || isContrast) ? themeInk : undefined, minHeight: '142px' },
               'aria-label': title + '. ' + description
             },
               h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, icon),
@@ -3710,7 +3715,7 @@
             ));
           }
 
-          return h('div', { className: 'p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800' }, kids);
+          return h('div', Object.assign({ className: 'p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800' }, (isDark || isContrast) ? { 'data-lumen-theme': isContrast ? 'contrast' : 'dark', style: { background: themeSurface, color: themeInk, borderColor: themeBorder } } : {}), kids);
         } catch (e) {
           // The host renderTool returns null on throw (the blank-tool bug class):
           // always hand back a VISIBLE fallback instead.

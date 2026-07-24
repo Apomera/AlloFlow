@@ -329,6 +329,9 @@
     var staffClefPair = React.useState('auto');
     var staffClef = staffClefPair[0];
     var setStaffClef = staffClefPair[1];
+    var notationRendererPair = React.useState('auto');
+    var notationRenderer = notationRendererPair[0];
+    var setNotationRenderer = notationRendererPair[1];
     var selectedPatternPair = React.useState(initialProjectRef.current.patterns[0] && initialProjectRef.current.patterns[0].id);
     var selectedPatternId = selectedPatternPair[0];
     var setSelectedPatternId = selectedPatternPair[1];
@@ -1475,6 +1478,117 @@
       }
     }
 
+    function VexFlowStaffView(props) {
+      var mountRef = React.useRef(null);
+      React.useEffect(function () {
+        var mount = mountRef.current;
+        if (!mount) return;
+        mount.innerHTML = '';
+        var model = props.model || {};
+        var runtime = root.Vex && root.Vex.Flow || root.VexFlow && (root.VexFlow.Flow || root.VexFlow) || root.vexflow && (root.vexflow.Flow || root.vexflow) || null;
+        if (!runtime || !runtime.Renderer || !runtime.Stave || !runtime.StaveNote || !runtime.Voice || !runtime.Formatter) {
+          mount.textContent = 'VexFlow runtime not detected. Open Groove SVG renderer remains active.';
+          return;
+        }
+        try {
+          var measures = model.measures || [];
+          var selected = Math.max(0, Math.min(Math.max(0, measures.length - 1), intValue(props.selectedBar, 0)));
+          var startIndex = Math.max(0, Math.min(Math.max(0, measures.length - 4), selected));
+          var visibleMeasures = measures.slice(startIndex, startIndex + 4);
+          if (!visibleMeasures.length) {
+            mount.textContent = 'No notation measures to engrave.';
+            return;
+          }
+          function intValue(value, fallback) {
+            var parsed = parseInt(value, 10);
+            return isFinite(parsed) ? parsed : fallback;
+          }
+          var width = Math.max(360, mount.clientWidth || 680);
+          var height = 152;
+          var renderer = new runtime.Renderer(mount, runtime.Renderer.Backends.SVG);
+          renderer.resize(width, height);
+          var context = renderer.getContext();
+          var margin = 10;
+          var staveTop = 24;
+          var measureWidth = Math.max(96, (width - margin * 2) / visibleMeasures.length);
+          function keyForVexFlow(keySignature) {
+            var tonic = keySignature && keySignature.tonic || 'C';
+            return keySignature && keySignature.mode === 'minor' ? tonic + 'm' : tonic;
+          }
+          function attachNotationDetails(staveNote, element) {
+            var vex = element && element.vexflow || {};
+            var keys = vex.keys || [];
+            (vex.accidentals || []).forEach(function (accidental, index) {
+              if (!accidental || !runtime.Accidental) return;
+              if (typeof staveNote.addModifier === 'function') staveNote.addModifier(new runtime.Accidental(accidental), index);
+              else if (typeof staveNote.addAccidental === 'function') staveNote.addAccidental(index, new runtime.Accidental(accidental));
+            });
+            var dots = Math.max(0, intValue(vex.dots, 0));
+            for (var dot = 0; dot < dots; dot += 1) {
+              if (typeof staveNote.addDotToAll === 'function') staveNote.addDotToAll();
+              else if (runtime.Dot && typeof staveNote.addModifier === 'function') {
+                for (var keyIndex = 0; keyIndex < Math.max(1, keys.length); keyIndex += 1) staveNote.addModifier(new runtime.Dot(), keyIndex);
+              }
+            }
+          }
+          visibleMeasures.forEach(function (measure, measureIndex) {
+            var stave = new runtime.Stave(margin + measureIndex * measureWidth, staveTop, measureWidth);
+            if (measureIndex === 0) {
+              if (typeof stave.addClef === 'function') stave.addClef(model.clef || 'treble');
+              if (typeof stave.addKeySignature === 'function') {
+                try { stave.addKeySignature(keyForVexFlow(model.keySignature)); } catch (_) {}
+              }
+              if (typeof stave.addTimeSignature === 'function') stave.addTimeSignature((model.timeSignature || [4, 4]).join('/'));
+            }
+            stave.setContext(context).draw();
+            var staveNotes = (measure.elements || []).map(function (element) {
+              var vex = element.vexflow || {};
+              var staveNote = new runtime.StaveNote({
+                clef: model.clef || 'treble',
+                keys: vex.keys && vex.keys.length ? vex.keys : ['b/4'],
+                duration: vex.duration || 'qr'
+              });
+              attachNotationDetails(staveNote, element);
+              return staveNote;
+            });
+            if (!staveNotes.length) return;
+            var voice = new runtime.Voice({ num_beats: intValue((model.timeSignature || [4, 4])[0], 4), beat_value: intValue((model.timeSignature || [4, 4])[1], 4) });
+            if (typeof voice.setStrict === 'function') voice.setStrict(false);
+            voice.addTickables(staveNotes);
+            new runtime.Formatter().joinVoices([voice]).format([voice], Math.max(40, measureWidth - 28));
+            voice.draw(context, stave);
+          });
+        } catch (err) {
+          mount.textContent = 'VexFlow rendering failed: ' + (err && err.message || 'unknown error');
+        }
+      }, [props.renderKey, props.themeMode, props.selectedBar]);
+      return h('div', {
+        ref: mountRef,
+        style: styles.vexflowStage,
+        role: 'img',
+        'aria-label': 'VexFlow engraved score preview'
+      });
+    }
+
+    function renderVexFlowStaff() {
+      if (!notationEnginePlan || notationEnginePlan.rendererStatus !== 'ready') {
+        return h('div', null,
+          h('div', { style: styles.integrationNotice, role: 'status' }, 'VexFlow runtime is not loaded, so Open Groove is showing the built-in editable SVG staff.'),
+          renderEngravedStaff());
+      }
+      return h(VexFlowStaffView, {
+        model: notationEnginePlan,
+        themeMode: themeMode,
+        selectedBar: selectedBar,
+        renderKey: [pattern && pattern.id, notationEnginePlan.noteCount, notationEnginePlan.restCount, notationEnginePlan.chordCount, selectedBar, staffClef].join(':')
+      });
+    }
+
+    function renderScoreStaff() {
+      var wantsVexFlow = notationRenderer === 'vexflow' || notationRenderer === 'auto' && notationEnginePlan && notationEnginePlan.rendererStatus === 'ready';
+      return wantsVexFlow ? renderVexFlowStaff() : renderEngravedStaff();
+    }
+
     function renderEngravedStaff() {
       if (!staffEngraving || !staffEngraving.measures || !staffEngraving.measures.length) {
         return h('div', { style: styles.sampleRegion }, 'Staff editor unavailable for this pattern.');
@@ -2215,6 +2329,24 @@
       selectedBar: selectedBar
     }) : { keyName: compositionNames.keyName, measures: [], notes: [], offGridCount: 0, performedOffsetCount: 0 };
     var bridgeMeasure = notationBridge.measures && notationBridge.measures[selectedBar] || { steps: [], notes: [] };
+    var notationEnginePlan = C.ogBuildVexFlowNotationModel ? C.ogBuildVexFlowNotationModel(project, pattern && pattern.id, {
+      trackId: synthTrack && synthTrack.id,
+      clef: staffClef,
+      runtime: root
+    }) : { engine: 'vexflow', rendererStatus: 'unavailable', summary: 'Notation adapter unavailable.', noteCount: 0, restCount: 0, chordCount: 0, warnings: [] };
+    var museScoreBridge = C.ogBuildMuseScoreBridgePlan ? C.ogBuildMuseScoreBridgePlan(project, pattern && pattern.id, synthTrack && synthTrack.id, {
+      museScoreAvailable: !!(root.OpenGrooveMuseScoreBridge || root.OpenGrooveDesktopBridge)
+    }) : { status: 'unavailable', summary: 'MuseScore bridge unavailable.', files: { musicxml: 'open-groove-score.musicxml' }, workflow: [] };
+    var audioToScorePlan = C.ogBuildAudioToScoreAgentPlan ? C.ogBuildAudioToScoreAgentPlan(project, {
+      sourceAssetId: selectedAsset && selectedAsset.id,
+      capabilities: {
+        basicPitchInstalled: !!(root.OpenGrooveBasicPitchBridge || root.OpenGrooveAudioToMidiBridge),
+        mt3Installed: !!root.OpenGrooveMt3Bridge,
+        omnizartInstalled: !!root.OpenGrooveOmnizartBridge,
+        localTranscriptionWorker: !!root.OpenGrooveTranscriptionWorker
+      },
+      userConfirmedRights: selectedAsset && (selectedAsset.license === 'User Owned' || selectedAsset.license === 'Original')
+    }) : { status: 'unavailable', summary: 'Audio transcription planner unavailable.', phases: [], engines: [], warnings: [] };
     var scaleNotes = compositionNames.scaleDegrees && compositionNames.scaleDegrees.length
       ? compositionNames.scaleDegrees.map(function (degree) { return degree.note; })
       : C.ogBuildScale ? C.ogBuildScale(project.key && project.key.tonic || 'C', project.key && project.key.mode || 'minor') : [];
@@ -3121,8 +3253,31 @@
                     h('option', { value: 'h' }, 'Half'),
                     h('option', { value: 'q' }, 'Quarter'),
                     h('option', { value: 'e' }, 'Eighth'),
-                    h('option', { value: 's' }, 'Sixteenth')))),
-              renderEngravedStaff()),
+                    h('option', { value: 's' }, 'Sixteenth'))),
+                h('label', { style: styles.fieldLabel }, 'Renderer',
+                  h('select', {
+                    style: styles.select,
+                    value: notationRenderer,
+                    onChange: function (ev) { setNotationRenderer(ev.target.value === 'vexflow' || ev.target.value === 'opengroove' ? ev.target.value : 'auto'); },
+                    'aria-label': 'Score renderer'
+                  },
+                    h('option', { value: 'auto' }, 'Auto'),
+                    h('option', { value: 'opengroove' }, 'Open Groove'),
+                    h('option', { value: 'vexflow' }, 'VexFlow')))),
+              renderScoreStaff()),
+            h('div', { style: styles.integrationPanel, role: 'group', 'aria-label': 'Notation engine, MuseScore, and audio transcription status' },
+              h('div', { style: Object.assign({}, styles.integrationCard, notationEnginePlan.rendererStatus === 'ready' ? styles.integrationCardReady : null) },
+                h('strong', null, 'VexFlow'),
+                h('span', { style: styles.meta }, notationEnginePlan.rendererStatus === 'ready' ? 'Runtime ready' : 'Adapter ready'),
+                h('span', { style: styles.integrationText }, (notationEnginePlan.noteCount || 0) + ' notes, ' + (notationEnginePlan.chordCount || 0) + ' chords, ' + (notationEnginePlan.restCount || 0) + ' rests')),
+              h('div', { style: Object.assign({}, styles.integrationCard, museScoreBridge.status === 'ready' ? styles.integrationCardReady : null) },
+                h('strong', null, 'MuseScore'),
+                h('span', { style: styles.meta }, museScoreBridge.status === 'ready' ? 'Bridge ready' : 'MusicXML bridge'),
+                h('button', { style: styles.inlineActionButton, onClick: prepareMusicXml, 'aria-label': 'Prepare MusicXML for MuseScore' }, museScoreBridge.files && museScoreBridge.files.musicxml || 'MusicXML')),
+              h('div', { style: Object.assign({}, styles.integrationCard, audioToScorePlan.status === 'ready' ? styles.integrationCardReady : audioToScorePlan.status === 'blocked' ? styles.integrationCardBlocked : null) },
+                h('strong', null, 'AI Score Draft'),
+                h('span', { style: styles.meta }, audioToScorePlan.status === 'ready' ? 'Worker ready' : audioToScorePlan.status === 'blocked' ? 'Rights needed' : 'Setup needed'),
+                h('span', { style: styles.integrationText }, audioToScorePlan.engine || 'manual-midi-import'))),
             h('div', { style: styles.bridgePanel, role: 'group', 'aria-label': 'Notation to step bridge' },
               h('div', { style: styles.bridgeHeader },
                 h('strong', null, 'Notation Bridge'),
@@ -3722,6 +3877,8 @@
     staffToolbar: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: '8px', alignItems: 'end' },
     staffRangeHint: { minHeight: '34px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', padding: '7px', display: 'inline-flex', alignItems: 'center', fontSize: '12px', fontWeight: 900, overflowWrap: 'anywhere' },
     staffSvg: { width: '100%', minHeight: '148px', display: 'block', border: '1px solid #cbd5e1', background: '#ffffff', touchAction: 'manipulation' },
+    vexflowStage: { width: '100%', minHeight: '152px', display: 'block', border: '1px solid #cbd5e1', background: '#ffffff', color: '#111827', overflowX: 'auto', padding: '4px', touchAction: 'manipulation' },
+    integrationNotice: { border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', padding: '7px', marginBottom: '8px', fontSize: '12px', fontWeight: 800, overflowWrap: 'anywhere' },
     bridgePanel: { display: 'grid', gap: '8px', marginBottom: '10px' },
     bridgeHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', color: '#0f172a', fontSize: '13px' },
     bridgeSteps: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(42px, 1fr))', gap: '5px' },
@@ -3733,6 +3890,12 @@
     bridgeNotePill: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: '16px', border: '1px solid currentColor', padding: '0 3px', fontSize: '10px', lineHeight: 1.1 },
     bridgeRows: { display: 'grid', gap: '5px' },
     bridgeRow: { display: 'grid', gridTemplateColumns: 'minmax(38px, 0.7fr) repeat(4, minmax(42px, 1fr))', gap: '5px', alignItems: 'center', borderTop: '1px solid #cbd5e1', paddingTop: '5px', color: '#334155', fontSize: '11px', fontWeight: 800, overflowWrap: 'anywhere', minWidth: 0 },
+    integrationPanel: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 148px), 1fr))', gap: '8px', marginBottom: '10px' },
+    integrationCard: { minHeight: '76px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', padding: '8px', display: 'grid', gap: '5px', alignContent: 'start', fontSize: '12px', fontWeight: 800, overflowWrap: 'anywhere' },
+    integrationCardReady: { border: '1px solid #0f766e', background: '#ccfbf1', color: '#0f172a' },
+    integrationCardBlocked: { border: '1px solid #dc2626', background: '#fee2e2', color: '#7f1d1d' },
+    integrationText: { color: 'inherit', fontSize: '11px', lineHeight: 1.3, fontWeight: 750, overflowWrap: 'anywhere' },
+    inlineActionButton: { minHeight: '30px', border: '1px solid #0f766e', background: '#ffffff', color: '#0f172a', padding: '0 8px', fontSize: '11px', fontWeight: 900, cursor: 'pointer', textAlign: 'center', overflowWrap: 'anywhere' },
     notationComposer: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 136px), 1fr))', gap: '8px', alignItems: 'end', marginBottom: '8px' },
     notationTextarea: { width: '100%', minHeight: '54px', resize: 'vertical', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '7px', fontFamily: 'ui-monospace, SFMono-Regular, Consolas, monospace', fontSize: '12px', boxSizing: 'border-box' },
     barTabs: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(68px, 1fr))', gap: '6px', marginBottom: '10px' },
@@ -3923,11 +4086,17 @@
       instrumentRoleBox: { border: '1px solid #38bdf8', background: '#0f172a', color: '#e0f2fe' },
       staffRangeHint: { border: '1px solid #64748b', background: '#111827', color: '#e2e8f0' },
       staffSvg: { border: '1px solid #64748b', background: '#020617' },
+      vexflowStage: { border: '1px solid #64748b', background: '#ffffff', color: '#111827' },
+      integrationNotice: { border: '1px solid #64748b', background: '#111827', color: '#e2e8f0' },
       bridgeHeader: { color: '#f8fafc' },
       bridgeStepCell: { border: '1px solid #64748b', background: '#1f2937', color: '#e2e8f0' },
       bridgeStepCellOn: { border: '1px solid #5eead4', background: '#134e4a', color: '#ecfeff', boxShadow: 'inset 0 0 0 1px #5eead4' },
       bridgeStepCellDrum: { border: '1px solid #fde68a', background: '#713f12', color: '#fef3c7' },
       bridgeRow: { borderTop: '1px solid #64748b', color: '#e2e8f0' },
+      integrationCard: { border: '1px solid #64748b', background: '#1f2937', color: '#e2e8f0' },
+      integrationCardReady: { border: '1px solid #5eead4', background: '#134e4a', color: '#ecfeff' },
+      integrationCardBlocked: { border: '1px solid #fca5a5', background: '#7f1d1d', color: '#fee2e2' },
+      inlineActionButton: { border: '1px solid #5eead4', background: '#020617', color: '#f8fafc' },
       notationTextarea: { border: '1px solid #94a3b8', background: '#020617', color: '#f8fafc' },
       barTab: { border: '1px solid #64748b', background: '#1f2937', color: '#e2e8f0' },
       barTabOn: { background: '#115e59', border: '1px solid #5eead4', color: '#ecfeff' },
@@ -4041,11 +4210,17 @@
       instrumentRoleBox: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       staffRangeHint: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       staffSvg: { border: '2px solid #ffffff', background: '#000000' },
+      vexflowStage: { border: '2px solid #ffffff', background: '#ffffff', color: '#000000' },
+      integrationNotice: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       bridgeHeader: { color: '#ffffff' },
       bridgeStepCell: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       bridgeStepCellOn: { border: '2px solid #ffffff', background: '#00ffff', color: '#000000', boxShadow: 'inset 0 0 0 2px #000000' },
       bridgeStepCellDrum: { border: '2px solid #ffffff', background: '#ffff00', color: '#000000' },
       bridgeRow: { borderTop: '2px solid #ffffff', color: '#ffffff' },
+      integrationCard: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      integrationCardReady: { border: '2px solid #ffffff', background: '#00ffff', color: '#000000' },
+      integrationCardBlocked: { border: '2px solid #ffffff', background: '#ffff00', color: '#000000' },
+      inlineActionButton: { border: '2px solid #ffffff', background: '#ffffff', color: '#000000' },
       notationTextarea: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       barTab: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       barTabOn: { background: '#00ffff', border: '2px solid #ffffff', color: '#000000' },

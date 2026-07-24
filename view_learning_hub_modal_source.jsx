@@ -68,7 +68,25 @@ function LearningHubModal(props) {
     try { const value = typeof t === 'function' ? t(key) : ''; return value && value !== key ? value : fallback; }
     catch (_) { return fallback; }
   };
-  return (
+  const [textInquiryLaunchError, setTextInquiryLaunchError] = React.useState('');
+  const openTextInquiryStudio = () => {
+    let url = 'https://alloflow-cdn.pages.dev/text_inquiry/text_inquiry.html?v=1';
+    try {
+      const loc = window.location || {};
+      const host = loc.hostname || '';
+      const pathname = loc.pathname || '';
+      const isLocalHost = /^(localhost|127\.0\.0\.1)$/i.test(host);
+      const isDesktopBundled = !!window._isDesktopBundledApp || (isLocalHost && pathname.indexOf('/app/') === 0);
+      const isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
+      if (isDesktopBundled) url = new URL('text_inquiry/text_inquiry.html?v=1', loc.href).toString();
+      else if (isLocalHost || isAlloHosted) url = new URL('/text_inquiry/text_inquiry.html?v=1', loc.origin).toString();
+    } catch (_) {}
+    let popup = null;
+    try { popup = window.open(url, 'alloflow-text-inquiry', 'width=1320,height=900'); } catch (_) { popup = null; }
+    if (!popup) { setTextInquiryLaunchError('The Text Inquiry Studio window was blocked. Allow pop-ups for this site, then try again.'); return; }
+    setTextInquiryLaunchError('');
+    setShowLearningHub(false);
+  };  return (
         <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4" style={{ zIndex: 260 }} role="presentation" onClick={() => setShowLearningHub(false)}>
           {/* allo-docsuite: this modal is a portal rendered OUTSIDE the main .allo-docsuite
               content wrapper, so the theme-dark gradient/text remaps (which are scoped to
@@ -168,7 +186,14 @@ function LearningHubModal(props) {
                   <p className="text-xs text-violet-600 mt-1">{t('learning_hub.litlab_desc') || 'Bring stories to life with character voices & literary analysis'}</p>
                 </div>
               </button>
-              {setShowMindMap && (
+              <button type="button" data-help-key="learning_hub_text_inquiry_card" onClick={openTextInquiryStudio} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-fuchsia-50 to-cyan-50 border border-fuchsia-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center" aria-describedby={textInquiryLaunchError ? 'text-inquiry-launch-error' : undefined}>
+                <span className="text-4xl" aria-hidden="true">{'🔎'}</span>
+                <div>
+                  <h3 className="font-bold text-fuchsia-900">Text Inquiry Studio</h3>
+                  <p className="text-xs text-fuchsia-800 mt-1">Inspect frequency and concordance, then test an interpretation against exceptions and context.</p>
+                </div>
+              </button>
+              {textInquiryLaunchError && <p id="text-inquiry-launch-error" role="alert" className="sm:col-span-3 text-xs font-bold text-red-700 bg-red-50 border border-red-300 rounded-lg p-3">{textInquiryLaunchError}</p>}              {setShowMindMap && (
                 <button type="button" onClick={() => { setShowLearningHub(false); setShowMindMap(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                   <span className="text-4xl" aria-hidden="true">🧭</span>
                   <div>

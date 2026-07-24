@@ -14,7 +14,7 @@
 //
 // Re-baseline ONLY when a substrate change is reviewed and expected: `vitest -u`.
 
-import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 import { setupHub, internals } from './helpers/research_hub_harness.js';
 
 beforeAll(() => setupHub());
@@ -298,11 +298,13 @@ describe('Research Hub · method matching and provenance helpers', () => {
     id: 'test_tool',
     name: 'Test Tool',
     version: '1.2.3',
+    reviewedAt: '2026-01-01',
+    reviewAfter: '2099-01-01',
     license: { spdx: 'MIT' },
     citation: { text: 'Test Tool, version 1.2.3.' },
     supportedMethodPacks: ['scientific_investigation'],
     capabilities: { captureArtifact: true },
-    privacy: { learnerApprovalRequired: true },
+    privacy: { learnerApprovalRequired: true, directIdentifiersAllowed: false, sequenceLikeTextAllowed: false },
     reproducibility: { requiredFields: ['softwareVersion','sourceRecordId','parameters','randomSeed','limitations'] },
   };
   it('matches the specific method rather than every lane sibling', () => {
@@ -362,6 +364,17 @@ describe('Research Hub · method matching and provenance helpers', () => {
     expect(complete.artifact.reproducibilityReceipt.status).toBe('complete');
     expect(complete.artifact.integrationHealth.status).toBe('healthy');
 
+    const sdkReceipt = internals().normalizeResearchCapture({
+      sourceToolId: 'test_tool', sourceToolName: 'Test Tool', sourceToolVersion: '1.2.3',
+      integrationContract: VALID_CONTRACT, title: 'SDK result', summary: 'A receipt emitted by the shared SDK.', data: {},
+      reproducibilityReceipt: {
+        softwareVersion: '1.2.3', sourceRecordId: 'record-sdk', parameters: { threshold: 0.5 },
+        randomSeed: 'not applicable', limitations: ['Bounded classroom observation.'],
+      },
+    });
+    expect(sdkReceipt.artifact.reproducibilityReceipt.status).toBe('complete');
+    expect(sdkReceipt.artifact.reproducibilityReceipt.sourceRecordId).toBe('record-sdk');
+
     const partial = internals().normalizeResearchCapture({
       sourceToolId: 'test_tool', sourceToolVersion: '1.2.3', integrationContract: VALID_CONTRACT,
       title: 'Partial result', summary: 'Missing reproducibility details.', data: {},
@@ -376,7 +389,7 @@ describe('Research Hub · method matching and provenance helpers', () => {
     const audit = internals().buildInquiryAudit({
       activeLane: 'humanities',
       claims: [{ id: 'c1', text: 'Linked claim' }, { id: 'c2', text: 'Unsupported claim' }],
-      claimEvidenceLinks: [{ claimId: 'c1', evidenceIds: ['s1'] }],
+      claimEvidenceLinks: [{ claimId: 'c1', evidenceIds: ['s1'], warrant: 'This vetted source directly addresses the bounded claim.' }],
       sources: [{ id: 's1', sift: { tier: 'unvetted' } }, { id: 's2', sift: { tier: 'secondary_corroborated' } }],
       humanitiesPosition: { text: 'A position' }, framings: [],
       designClaims: [{ id: 'd1', claimEvidenceRunIds: [], constraintRefs: [] }],
@@ -407,7 +420,7 @@ describe('Research Hub · method matching and provenance helpers', () => {
     const audit = internals().buildInquiryAudit({
       activeLane: 'humanities',
       claims: [{ id: 'c1', text: 'Supported claim' }],
-      claimEvidenceLinks: [{ claimId: 'c1', evidenceIds: ['s1'] }],
+      claimEvidenceLinks: [{ claimId: 'c1', evidenceIds: ['s1'], warrant: 'This vetted source directly addresses the bounded claim.' }],
       sources: [
         { id: 's1', sift: { tier: 'secondary_corroborated' }, humanitiesContext: sourceContext('supports') },
         { id: 's2', sift: { tier: 'secondary_corroborated' }, humanitiesContext: sourceContext('challenges') },
@@ -417,6 +430,90 @@ describe('Research Hub · method matching and provenance helpers', () => {
     });
     expect(audit.status).toBe('ready');
     expect(audit.issues).toEqual([]);
+  });
+  it('reports actual storage write failures instead of claiming the journal was saved', () => {
+    const spy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new DOMException('quota', 'QuotaExceededError'); });
+    try { expect(internals().saveJournal(internals().emptyJournal())).toBe(false); }
+    finally { spy.mockRestore(); }
+  });
+
+  it('estimates the Research storage budget and warns before browser quota', () => {
+    globalThis.window.localStorage.clear();
+    const healthy = internals().researchStorageHealth({ questionTitle: 'small' });
+    expect(healthy.status).toBe('healthy');
+    const warning = internals().researchStorageHealth({ payload: 'x'.repeat(Math.ceil(internals().RESEARCH_STORAGE_SOFT_LIMIT_BYTES * 0.75)) });
+    expect(['warning', 'critical', 'over_limit']).toContain(warning.status);
+    expect(warning.percent).toBeGreaterThanOrEqual(70);
+  });
+
+  it('centrally blocks secrets and direct identifiers and redacts sequence-like text', () => {
+    const secret = internals().enforceCapturePrivacy({ sourceToolId: 'test_tool', summary: 'token sk-abcdefghijklmnopqrstuvwxyz123456' }, VALID_CONTRACT);
+    expect(secret.ok).toBe(false);
+    expect(secret.findings[0].code).toBe('secret_detected');
+    const identifier = internals().enforceCapturePrivacy({ sourceToolId: 'test_tool', summary: 'Contact learner@example.org' }, VALID_CONTRACT);
+    expect(identifier.ok).toBe(false);
+    expect(identifier.findings[0].code).toBe('direct_identifier_detected');
+    const defaultIdentifier = internals().enforceCapturePrivacy({ sourceToolId: 'unregistered_tool', summary: 'Contact learner@example.org' });
+    expect(defaultIdentifier.ok).toBe(false);
+    expect(defaultIdentifier.findings[0].code).toBe('direct_identifier_detected');
+    const sequence = internals().enforceCapturePrivacy({ sourceToolId: 'test_tool', summary: 'ACGT'.repeat(12) }, VALID_CONTRACT);
+    expect(sequence.ok).toBe(true);
+    expect(sequence.value.summary).toBe('[nucleic-acid sequence omitted]');
+    expect(sequence.findings[0].code).toBe('sequence_like_text_redacted');
+  });
+
+  it('enforces required tool sanitizers before accepting a capture', () => {
+    const contract = { ...VALID_CONTRACT, id: 'sanitized_tool', privacy: { ...VALID_CONTRACT.privacy, sanitizerRequired: true, sanitizerId: 'trim_v1' } };
+    expect(internals().enforceCapturePrivacy({ sourceToolId: 'sanitized_tool', summary: '  text  ' }, contract).ok).toBe(false);
+    expect(internals().registerCaptureSanitizer('sanitized_tool', 'trim_v1', (input) => ({ ...input, summary: input.summary.trim() })).ok).toBe(true);
+    const checked = internals().enforceCapturePrivacy({ sourceToolId: 'sanitized_tool', summary: '  text  ' }, contract);
+    expect(checked.ok).toBe(true);
+    expect(checked.value.summary).toBe('text');
+  });
+
+  it('deduplicates queued captures and rate-limits one tool without dropping older inbox items', () => {
+    globalThis.window.localStorage.clear();
+    const makeCapture = (n) => ({ sourceToolId: 'queue_tool', title: 'Result ' + n, summary: 'Unique bounded result ' + n, data: { n } });
+    expect(internals().queueResearchCapture(makeCapture(1)).ok).toBe(true);
+    const duplicate = internals().queueResearchCapture(makeCapture(1));
+    expect(duplicate.ok).toBe(false);
+    expect(duplicate.duplicate).toBe(true);
+    for (let n = 2; n <= internals().MAX_CAPTURES_PER_TOOL_PER_MINUTE; n++) expect(internals().queueResearchCapture(makeCapture(n)).ok).toBe(true);
+    const limited = internals().queueResearchCapture(makeCapture(99));
+    expect(limited.ok).toBe(false);
+    expect(limited.rateLimited).toBe(true);
+    expect(JSON.parse(globalThis.window.localStorage.getItem(internals().CAPTURE_INBOX_KEY))).toHaveLength(internals().MAX_CAPTURES_PER_TOOL_PER_MINUTE);
+  });
+
+  it('labels pre-contract artifacts as legacy without fabricating provenance', () => {
+    globalThis.window.localStorage.clear();
+    const legacy = internals().emptyJournal();
+    legacy.capturedArtifacts = [{ id: 'old-a', title: 'Old output', learnerNote: 'My original interpretation.' }];
+    globalThis.window.localStorage.setItem(internals().STORAGE_KEY, JSON.stringify(legacy));
+    const loaded = internals().loadJournal();
+    expect(loaded.capturedArtifacts[0].integrationContractStatus).toBe('legacy');
+    expect(loaded.capturedArtifacts[0].integrationContract).toBeUndefined();
+    expect(loaded.capturedArtifacts[0].legacyProvenance.reason).toContain('original tool metadata remains unknown');
+  });
+
+  it('preserves older contract snapshots as legacy contracts without inventing review dates', () => {
+    globalThis.window.localStorage.clear();
+    const oldContract = { ...VALID_CONTRACT };
+    delete oldContract.reviewedAt;
+    delete oldContract.reviewAfter;
+    const legacy = internals().emptyJournal();
+    legacy.capturedArtifacts = [{ id: 'old-contract', title: 'Older contracted output', integrationContract: oldContract }];
+    globalThis.window.localStorage.setItem(internals().STORAGE_KEY, JSON.stringify(legacy));
+    const loaded = internals().loadJournal();
+    expect(loaded.capturedArtifacts[0].integrationContractStatus).toBe('legacy_contract');
+    expect(loaded.capturedArtifacts[0].integrationContract.reviewedAt).toBeUndefined();
+    expect(loaded.capturedArtifacts[0].legacyProvenance.reason).toContain('review dates remain unknown');
+  });
+
+  it('flags overdue integration metadata reviews', () => {
+    const stale = { integrationContract: { ...VALID_CONTRACT, reviewAfter: '2020-01-01' }, reproducibilityReceipt: { status: 'complete' } };
+    const health = internals().assessResearchArtifactIntegration(stale);
+    expect(health.issues.map((issue) => issue.code)).toContain('integration_review_overdue');
   });
   it('stamps only newly appended artifacts with method and episode provenance', () => {
     const oldEvidence = { id: 'old', text: 'earlier evidence' };

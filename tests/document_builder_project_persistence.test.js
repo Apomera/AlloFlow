@@ -62,7 +62,10 @@ describe('Document Builder project draft loading', () => {
     ]);
     expect(deps.restoreBuilderDraft).toHaveBeenCalledWith(builderDraft, [
       expect.objectContaining({ id: 'lesson-1', hydrated: true })
-    ]);
+    ], expect.objectContaining({
+      signal: expect.any(AbortSignal),
+      isCurrent: expect.any(Function),
+    }));
     await vi.waitFor(() => {
       expect(deps.projectFileInputRef.current.value).toBe('');
     });
@@ -74,7 +77,10 @@ describe('Document Builder project draft loading', () => {
 
     MiscHandlers.handleLoadProject({ target: { files: [{ contents }] } }, deps);
 
-    expect(deps.restoreBuilderDraft).toHaveBeenCalledWith(undefined, []);
+    expect(deps.restoreBuilderDraft).toHaveBeenCalledWith(undefined, [], expect.objectContaining({
+      signal: expect.any(AbortSignal),
+      isCurrent: expect.any(Function),
+    }));
   });
 
   it('brackets a valid import with a successful recovery lifecycle', async () => {

@@ -36,6 +36,65 @@ function _spliceSelectedText(chunks, firstId, lastId, replacement) {
   return out;
 }
 
+
+// Owns every asynchronous Diff Apply / AI Refine operation. The document
+// identity itself remains a host concern (the host token includes document
+// epoch, HTML revision, and the exact accessibleHtml snapshot); this manager
+// adds per-view generation and AbortController ownership so an older promise
+// cannot clear, commit over, or report progress for a newer operation.
+function _createPdfDiffOperationManager(controllerFactory) {
+  let generation = 0;
+  let active = null;
+  const makeController = () => {
+    if (typeof controllerFactory === 'function') return controllerFactory();
+    if (typeof AbortController !== 'undefined') return new AbortController();
+    const signal = { aborted: false };
+    return { signal, abort: () => { signal.aborted = true; } };
+  };
+  const abortOwner = (owner) => {
+    try { if (owner && owner.controller && typeof owner.controller.abort === 'function') owner.controller.abort(); } catch (_) {}
+  };
+  return {
+    begin(token, kind) {
+      if (active) abortOwner(active);
+      const controller = makeController();
+      const owner = {
+        generation: ++generation,
+        token,
+        kind: kind || 'remarkup',
+        controller,
+        signal: controller && controller.signal ? controller.signal : null,
+      };
+      active = owner;
+      return owner;
+    },
+    isCurrent(owner, tokenIsCurrent) {
+      if (!owner || active !== owner || owner.generation !== generation || (owner.signal && owner.signal.aborted)) return false;
+      return typeof tokenIsCurrent !== 'function' || tokenIsCurrent(owner.token) === true;
+    },
+    commit(owner, tokenIsCurrent, commitIfCurrent, updater) {
+      if (!this.isCurrent(owner, tokenIsCurrent) || typeof commitIfCurrent !== 'function') return false;
+      return commitIfCurrent(owner.token, updater) === true;
+    },
+    finish(owner) {
+      if (!owner || active !== owner || owner.generation !== generation) return false;
+      active = null;
+      return true;
+    },
+    cancel(owner) {
+      if (owner && active !== owner) return false;
+      const target = active;
+      if (!target) return false;
+      active = null;
+      generation += 1;
+      abortOwner(target);
+      return true;
+    },
+    getActive() {
+      return active;
+    },
+  };
+}
 // ── PdfDiffViewer: PORTAL from AlloFlowANTI.txt L22149-L22512 ──
 function PdfDiffViewer(props) {
   // `t` is the host's i18n translator. It was missing from this destructure
@@ -49,8 +108,10 @@ function PdfDiffViewer(props) {
   if (typeof t !== 'function') t = (key) => key;
   const {
     _applyTextSurgery, _lastDiffFingerprintRef, addToast, applyingRemarkup,
-    callGemini, diffChunks, diffGranularity, diffLibLoading,
+    callGemini, capturePdfHtmlCommitToken, commitPdfFixResultIfCurrent,
+    diffChunks, diffGranularity, diffLibLoading,
     diffLibReady, diffSelection, diffViewOpen, pdfFixResult,
+    isPdfHtmlCommitTokenCurrent, pdfDocumentEpoch,
     setApplyingRemarkup, setDiffChunks, setDiffGranularity, setDiffSelection,
     setDiffViewOpen, setPdfFixResult, setRangeRejected, toggleDiffChunk,
     warnLog
@@ -61,8 +122,13 @@ function PdfDiffViewer(props) {
   const diffConfirmRef = React.useRef(null);
   const diffConfirmCancelRef = React.useRef(null);
   const diffConfirmResolveRef = React.useRef(null);
+  const diffRemarkupManagerRef = React.useRef(null);
+  if (!diffRemarkupManagerRef.current) diffRemarkupManagerRef.current = _createPdfDiffOperationManager();
+
   const [diffConfirmation, setDiffConfirmation] = React.useState(null);
   const requestDiffConfirmation = (options) => new Promise(resolve => {
+    const pendingResolve = diffConfirmResolveRef.current;
+    if (pendingResolve) pendingResolve(false);
     diffConfirmResolveRef.current = resolve;
     setDiffConfirmation(options);
   });
@@ -72,6 +138,61 @@ function PdfDiffViewer(props) {
     setDiffConfirmation(null);
     if (resolve) resolve(accepted);
   };
+  const captureRemarkupToken = () => {
+    if (typeof capturePdfHtmlCommitToken === 'function') return capturePdfHtmlCommitToken();
+    return {
+      documentEpoch: pdfDocumentEpoch,
+      revision: null,
+      html: pdfFixResult && typeof pdfFixResult.accessibleHtml === 'string' ? pdfFixResult.accessibleHtml : null,
+    };
+  };
+  const remarkupTokenIsCurrent = (token) => {
+    if (!token || typeof token.html !== 'string') return false;
+    if (typeof isPdfHtmlCommitTokenCurrent === 'function') return isPdfHtmlCommitTokenCurrent(token) === true;
+    if (typeof capturePdfHtmlCommitToken === 'function') {
+      const current = capturePdfHtmlCommitToken();
+      return !!(current
+        && current.documentEpoch === token.documentEpoch
+        && current.revision === token.revision
+        && current.html === token.html);
+    }
+    return pdfDocumentEpoch === token.documentEpoch
+      && !!pdfFixResult
+      && pdfFixResult.accessibleHtml === token.html;
+  };
+  const beginRemarkupOperation = (kind, existingToken) => {
+    const token = existingToken || captureRemarkupToken();
+    if (!remarkupTokenIsCurrent(token)) return null;
+    const owner = diffRemarkupManagerRef.current.begin(token, kind);
+    setApplyingRemarkup(true);
+    return owner;
+  };
+  const remarkupOperationIsCurrent = (owner) => diffRemarkupManagerRef.current.isCurrent(owner, remarkupTokenIsCurrent);
+  const commitRemarkupOperation = (owner, updater) => {
+    // Refuse the mutation if an older host does not provide an atomic
+    // document-token CAS. A no-op is safer than committing into a new file.
+    if (typeof commitPdfFixResultIfCurrent !== 'function') return false;
+    return diffRemarkupManagerRef.current.commit(owner, remarkupTokenIsCurrent, commitPdfFixResultIfCurrent, updater);
+  };
+  const finishRemarkupOperation = (owner) => {
+    if (diffRemarkupManagerRef.current.finish(owner)) setApplyingRemarkup(false);
+  };
+  const cancelRemarkupOperation = () => {
+    const cancelled = diffRemarkupManagerRef.current.cancel();
+    if (cancelled || applyingRemarkup) setApplyingRemarkup(false);
+    return cancelled;
+  };
+  const callGeminiForRemarkup = async (owner, prompt) => {
+    if (!remarkupOperationIsCurrent(owner)) return null;
+    try {
+      const result = await callGemini(prompt, false, false, null, null, owner.signal || null);
+      return remarkupOperationIsCurrent(owner) ? result : null;
+    } catch (error) {
+      if (!remarkupOperationIsCurrent(owner) || (owner.signal && owner.signal.aborted) || error?.name === 'AbortError') return null;
+      throw error;
+    }
+  };
+
   const containDiffFocus = (event, container, onEscape) => {
     if (!event || !container) return;
     const nestedDialog = event.target?.closest?.('[role="alertdialog"]');
@@ -106,6 +227,27 @@ function PdfDiffViewer(props) {
       if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
     };
   }, [!!diffConfirmation]);
+  React.useEffect(() => {
+    const active = diffRemarkupManagerRef.current.getActive();
+    if (active && (!diffViewOpen || !remarkupTokenIsCurrent(active.token))) {
+      diffRemarkupManagerRef.current.cancel(active);
+      setApplyingRemarkup(false);
+    }
+  }, [diffViewOpen, pdfDocumentEpoch, pdfFixResult && pdfFixResult.accessibleHtml, setApplyingRemarkup]);
+  React.useEffect(() => {
+    if (diffViewOpen) return;
+    const resolve = diffConfirmResolveRef.current;
+    diffConfirmResolveRef.current = null;
+    if (diffConfirmation) setDiffConfirmation(null);
+    if (resolve) resolve(false);
+  }, [diffViewOpen]);
+  React.useEffect(() => () => {
+    diffRemarkupManagerRef.current.cancel();
+    setApplyingRemarkup(false);
+    const resolve = diffConfirmResolveRef.current;
+    diffConfirmResolveRef.current = null;
+    if (resolve) resolve(false);
+  }, [setApplyingRemarkup]);
   if (!(diffViewOpen && pdfFixResult)) return null;
   return ReactDOM.createPortal((() => {
         // When opened via "See what changed" after an Expert Workbench command, diff that COMMAND's
@@ -251,9 +393,10 @@ function PdfDiffViewer(props) {
         };
         const _applyAndExport = async () => {
           if (!_chunks || _rejCount === 0 || applyingRemarkup) return;
-          setApplyingRemarkup(true);
+          const _remarkupOwner = beginRemarkupOperation('apply');
+          if (!_remarkupOwner) return;
           try {
-            const _prevHtml = pdfFixResult?.accessibleHtml || '';
+            const _prevHtml = _remarkupOwner.token.html;
             const _prevFinal = pdfFixResult?.finalText || '';
             let newHtml = null;
             let surgeryCoverage = 0;
@@ -274,6 +417,7 @@ function PdfDiffViewer(props) {
               warnLog('[Diff] Text surgery threw, falling back to Gemini:', surgErr?.message || surgErr);
               surgeryFailReason = 'surgery-error-' + (surgErr?.message || 'unknown');
             }
+            if (!remarkupOperationIsCurrent(_remarkupOwner)) return;
             let usedFallback = false;
             if (!newHtml) {
               usedFallback = true;
@@ -292,9 +436,11 @@ function PdfDiffViewer(props) {
                   `APPROVED_TEXT:\n${_effectiveText}`;
               let remarkedHtml = null;
               try {
-                const raw = await callGemini(prompt);
+                const raw = await callGeminiForRemarkup(_remarkupOwner, prompt);
+                if (!remarkupOperationIsCurrent(_remarkupOwner)) return;
                 remarkedHtml = (raw || '').replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
               } catch (gErr) {
+                if (!remarkupOperationIsCurrent(_remarkupOwner)) return;
                 warnLog('[Diff] Gemini fallback remarkup failed:', gErr?.message || gErr);
               }
               if (remarkedHtml) {
@@ -312,8 +458,9 @@ function PdfDiffViewer(props) {
                 }
               }
             }
+            if (!remarkupOperationIsCurrent(_remarkupOwner)) return;
             if (newHtml) {
-              setPdfFixResult(prev => prev ? ({
+              const committed = commitRemarkupOperation(_remarkupOwner, prev => prev ? ({
                 ...prev,
                 accessibleHtml: newHtml,
                 finalText: _effectiveText,
@@ -324,6 +471,7 @@ function PdfDiffViewer(props) {
                 _lastApplyPath: usedFallback ? 'gemini' : 'surgery',
                 _applyVerificationFailed: null,
               }) : prev);
+              if (!committed) return;
               setDiffChunks(null);
               const pathLabel = usedFallback ? 'via Gemini fallback' : 'via text surgery';
               addToast('Edits applied ' + pathLabel + '. Accessible HTML updated.', 'success');
@@ -333,17 +481,18 @@ function PdfDiffViewer(props) {
               try { window.dispatchEvent(new CustomEvent('alloflow:fidelity-stale')); } catch (_) {}
             } else {
               warnLog('[Diff] Apply failed — both surgery and Gemini paths could not produce acceptable output. surgeryReason:', surgeryFailReason);
-              setPdfFixResult(prev => prev ? ({
+              const committed = commitRemarkupOperation(_remarkupOwner, prev => prev ? ({
                 ...prev,
                 finalText: _effectiveText,
                 _userEditedAt: new Date().toISOString(),
                 _rejectedHunkCount: _rejCount,
                 _applyVerificationFailed: surgeryFailReason || 'gemini-failed',
               }) : prev);
+              if (!committed) return;
               addToast('⚠ Apply kept original HTML — edits could not be committed cleanly (' + (surgeryFailReason || 'both paths failed') + '). Your text edits are recorded; structure was preserved.', 'warning');
             }
           } finally {
-            setApplyingRemarkup(false);
+            finishRemarkupOperation(_remarkupOwner);
           }
         };
         const _revertLastApply = () => {
@@ -374,6 +523,7 @@ function PdfDiffViewer(props) {
           const effVal = (c) => (c.type === 'add' ? (c.rejected ? '' : c.value) : c.type === 'del' ? (c.rejected ? c.value : '') : c.value);
           const selText = (_chunks || []).filter(c => c.id >= diffSelection.firstId && c.id <= diffSelection.lastId).map(effVal).join('').trim();
           if (!selText) { addToast(t('diff_view.refine_empty') || 'Nothing to refine in that selection.', 'info'); setDiffSelection(null); return; }
+          const _selectionToken = captureRemarkupToken();
           const refinePrompt = t('diff_view.refine_prompt') || 'Refine the selected passage with AI — describe the change (e.g. "simplify to a grade-5 reading level", "fix the awkward phrasing"):';
           const instruction = (typeof window !== 'undefined' && window.AlloFlowUX && typeof window.AlloFlowUX.prompt === 'function')
             ? await window.AlloFlowUX.prompt(refinePrompt, '', {
@@ -386,15 +536,22 @@ function PdfDiffViewer(props) {
             })
             : null;
           if (!instruction || !instruction.trim()) return;
-          setApplyingRemarkup(true);
+          if (!remarkupTokenIsCurrent(_selectionToken)) return;
+          const _remarkupOwner = beginRemarkupOperation('refine', _selectionToken);
+          if (!_remarkupOwner) return;
           try {
-            const _prevHtml = pdfFixResult?.accessibleHtml || '';
+            const _prevHtml = _remarkupOwner.token.html;
             const _prevFinal = pdfFixResult?.finalText || '';
             let rewritten = '';
             try {
-              const raw = await callGemini('You are a careful text editor. Rewrite ONLY the passage below per the instruction. Preserve meaning and any factual content (numbers, names, dates) unless the instruction explicitly says otherwise. Return ONLY the rewritten passage as plain text — no commentary, no quotes, no markdown.\n\nINSTRUCTION: ' + instruction.trim() + '\n\nPASSAGE:\n' + selText);
+              const raw = await callGeminiForRemarkup(_remarkupOwner, 'You are a careful text editor. Rewrite ONLY the passage below per the instruction. Preserve meaning and any factual content (numbers, names, dates) unless the instruction explicitly says otherwise. Return ONLY the rewritten passage as plain text — no commentary, no quotes, no markdown.\n\nINSTRUCTION: ' + instruction.trim() + '\n\nPASSAGE:\n' + selText);
+              if (!remarkupOperationIsCurrent(_remarkupOwner)) return;
               rewritten = (raw || '').replace(/^```\w*\s*/i, '').replace(/\s*```\s*$/, '').trim();
-            } catch (e) { warnLog('[Diff] refine callGemini failed: ' + (e && e.message || e)); }
+            } catch (e) {
+              if (!remarkupOperationIsCurrent(_remarkupOwner)) return;
+              warnLog('[Diff] refine callGemini failed: ' + (e && e.message || e));
+            }
+            if (!remarkupOperationIsCurrent(_remarkupOwner)) return;
             if (!rewritten) { addToast(t('diff_view.refine_empty_ai') || 'AI returned nothing — selection unchanged.', 'warning'); return; }
             const newEffective = _spliceSelectedText(_chunks, diffSelection.firstId, diffSelection.lastId, rewritten);
             let newHtml = null, usedFallback = false, failReason = '';
@@ -403,10 +560,12 @@ function PdfDiffViewer(props) {
               if (surg && surg.html && surg.coverage >= 0.95) newHtml = surg.html;
               else failReason = 'coverage-' + Math.round(((surg && surg.coverage) || 0) * 100);
             } catch (e) { failReason = 'surgery-error'; warnLog('[Diff] refine surgery threw: ' + (e && e.message || e)); }
+            if (!remarkupOperationIsCurrent(_remarkupOwner)) return;
             if (!newHtml) {
               usedFallback = true;
               try {
-                const raw = await callGemini('You are a WCAG 2.1 AA accessibility remediator. Produce a new HTML identical in STRUCTURE to CURRENT_HTML (same <img>/<table>/<figure>/<figcaption>/landmarks/ids/alt/classes/DOM layout) but whose TEXT matches APPROVED_TEXT. Do NOT add, remove, paraphrase, or reorder words beyond APPROVED_TEXT. Return ONLY the HTML — no commentary, no code fences.\n\nCURRENT_HTML:\n' + _prevHtml + '\n\nAPPROVED_TEXT:\n' + newEffective);
+                const raw = await callGeminiForRemarkup(_remarkupOwner, 'You are a WCAG 2.1 AA accessibility remediator. Produce a new HTML identical in STRUCTURE to CURRENT_HTML (same <img>/<table>/<figure>/<figcaption>/landmarks/ids/alt/classes/DOM layout) but whose TEXT matches APPROVED_TEXT. Do NOT add, remove, paraphrase, or reorder words beyond APPROVED_TEXT. Return ONLY the HTML — no commentary, no code fences.\n\nCURRENT_HTML:\n' + _prevHtml + '\n\nAPPROVED_TEXT:\n' + newEffective);
+                if (!remarkupOperationIsCurrent(_remarkupOwner)) return;
                 const cand = (raw || '').replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
                 if (cand) {
                   const _strip = (h) => h.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
@@ -415,10 +574,16 @@ function PdfDiffViewer(props) {
                   let found = 0; for (const tk of toks) if (newText.includes(tk.toLowerCase())) found++;
                   if ((toks.length ? found / toks.length : 1) >= 0.9) newHtml = cand; else failReason = 'gemini-coverage-low';
                 }
-              } catch (e) { failReason = 'gemini-error'; warnLog('[Diff] refine gemini fallback failed: ' + (e && e.message || e)); }
+              } catch (e) {
+                if (!remarkupOperationIsCurrent(_remarkupOwner)) return;
+                failReason = 'gemini-error';
+                warnLog('[Diff] refine gemini fallback failed: ' + (e && e.message || e));
+              }
             }
+            if (!remarkupOperationIsCurrent(_remarkupOwner)) return;
             if (newHtml) {
-              setPdfFixResult(prev => prev ? ({ ...prev, accessibleHtml: newHtml, finalText: newEffective, _userEditedAt: new Date().toISOString(), _preApplyHtml: _prevHtml, _preApplyFinalText: _prevFinal, _lastApplyPath: usedFallback ? 'ai-refine-gemini' : 'ai-refine-surgery', _applyVerificationFailed: null }) : prev);
+              const committed = commitRemarkupOperation(_remarkupOwner, prev => prev ? ({ ...prev, accessibleHtml: newHtml, finalText: newEffective, _userEditedAt: new Date().toISOString(), _preApplyHtml: _prevHtml, _preApplyFinalText: _prevFinal, _lastApplyPath: usedFallback ? 'ai-refine-gemini' : 'ai-refine-surgery', _applyVerificationFailed: null }) : prev);
+              if (!committed) return;
               setDiffChunks(null);
               setDiffSelection(null);
               addToast((t('diff_view.refine_applied') || 'AI refine applied to the selection') + ' (' + (usedFallback ? 'via Gemini' : 'via text surgery') + '). Use "Revert last apply" to undo.', 'success');
@@ -426,11 +591,15 @@ function PdfDiffViewer(props) {
             } else {
               addToast((t('diff_view.refine_failed') || '⚠ AI refine not applied — the rewrite could not be spliced cleanly') + ' (' + failReason + '). Selection unchanged.', 'warning');
             }
-          } finally { setApplyingRemarkup(false); }
+          } finally { finishRemarkupOperation(_remarkupOwner); }
         };
         // Close the diff and clear any command before/after override so the NEXT open (normal Diff
         // button / integrity banner / verification accordion) shows the full source->remediated diff.
         const _closeDiff = () => {
+          const cancelledRemarkup = cancelRemarkupOperation();
+          if (cancelledRemarkup) {
+            addToast('AI edit cancelled; no document changes were applied.', 'info');
+          }
           if (pdfFixResult && pdfFixResult._diffOverride) { try { setPdfFixResult(p => p ? ({ ...p, _diffOverride: null }) : p); } catch (_) {} }
           setDiffViewOpen(false);
         };

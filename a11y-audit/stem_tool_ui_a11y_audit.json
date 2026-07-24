@@ -1,28 +1,23 @@
 {
-  "generatedAt": "2026-07-22T04:46:27.631Z",
+  "generatedAt": "2026-07-23T02:52:37.239Z",
   "source": {
     "stemToolFileCount": 128,
-    "registeredToolCount": 130
+    "registeredToolCount": 131
   },
-  "toolCount": 130,
-  "loadErrors": [
-    {
-      "file": "stem_tool_galaxy.js",
-      "error": "missing ) after argument list"
-    }
-  ],
+  "toolCount": 131,
+  "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 40,
+    "issueCount": 19,
     "errorCount": 0,
-    "warningCount": 16,
-    "noticeCount": 24,
-    "toolsWithIssues": 35,
+    "warningCount": 0,
+    "noticeCount": 19,
+    "toolsWithIssues": 19,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 15,
-    "toolsWithCanvas": 36,
+    "toolsWithWarnings": 0,
+    "toolsWithCanvas": 37,
     "shellCoverage": {
-      "standardShellTools": 130,
+      "standardShellTools": 131,
       "lightBackgroundTools": [],
       "toolsWithoutStandardShell": []
     },
@@ -34,15 +29,15 @@
         "noticeCount": 0
       },
       "general": {
-        "toolCount": 11,
+        "toolCount": 10,
         "errorCount": 0,
-        "warningCount": 1,
-        "noticeCount": 12
+        "warningCount": 0,
+        "noticeCount": 10
       },
       "math": {
         "toolCount": 26,
         "errorCount": 0,
-        "warningCount": 8,
+        "warningCount": 0,
         "noticeCount": 1
       },
       "Games": {
@@ -52,15 +47,15 @@
         "noticeCount": 0
       },
       "science": {
-        "toolCount": 51,
+        "toolCount": 53,
         "errorCount": 0,
-        "warningCount": 5,
-        "noticeCount": 5
+        "warningCount": 0,
+        "noticeCount": 2
       },
       "technology": {
         "toolCount": 2,
         "errorCount": 0,
-        "warningCount": 1,
+        "warningCount": 0,
         "noticeCount": 0
       },
       "strategy": {
@@ -72,7 +67,7 @@
       "explore": {
         "toolCount": 4,
         "errorCount": 0,
-        "warningCount": 1,
+        "warningCount": 0,
         "noticeCount": 4
       },
       "creative": {
@@ -175,66 +170,13 @@
   },
   "topFindings": [
     {
-      "code": "tiny-text",
-      "severity": "warning",
-      "count": 12,
-      "toolCount": 12,
-      "exampleTools": [
-        "base10",
-        "calculus",
-        "coordinate",
-        "geologyExplorer",
-        "inequality",
-        "multtable",
-        "particleLab3d",
-        "plateTectonics",
-        "protractor",
-        "unitConvert",
-        "universe",
-        "volume"
-      ],
-      "recommendation": "Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height."
-    },
-    {
-      "code": "canvas-focus",
-      "severity": "warning",
-      "count": 2,
-      "toolCount": 2,
-      "exampleTools": [
-        "particleLab3d",
-        "skatelab"
-      ],
-      "recommendation": "If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives."
-    },
-    {
-      "code": "inline-contrast",
-      "severity": "warning",
-      "count": 1,
-      "toolCount": 1,
-      "exampleTools": [
-        "appLab"
-      ],
-      "recommendation": "Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text."
-    },
-    {
-      "code": "svg-name",
-      "severity": "warning",
-      "count": 1,
-      "toolCount": 1,
-      "exampleTools": [
-        "birdLab"
-      ],
-      "recommendation": "Mark decorative SVGs aria-hidden or give informative SVGs an aria-label/title."
-    },
-    {
       "code": "metadata",
       "severity": "notice",
-      "count": 19,
-      "toolCount": 19,
+      "count": 18,
+      "toolCount": 18,
       "exampleTools": [
         "accessLens",
         "archStudio",
-        "birdLab",
         "circuitShelf",
         "codingPlayground",
         "cyberDefense",
@@ -243,21 +185,18 @@
         "evoLab",
         "geologyExplorer",
         "geometryWorld",
-        "moleculeShelf"
+        "moleculeShelf",
+        "nutritionLab"
       ],
       "recommendation": "Fill in label, description, category, and aliases so discovery and context labels stay clear."
     },
     {
       "code": "horizontal-overflow-risk",
       "severity": "notice",
-      "count": 5,
-      "toolCount": 5,
+      "count": 1,
+      "toolCount": 1,
       "exampleTools": [
-        "areaPerimeter",
-        "birdLab",
-        "brainAtlas",
-        "plateTectonics",
-        "playlab"
+        "areaPerimeter"
       ],
       "recommendation": "Review fixed-width elements at 360px and 768px widths so panels and canvases do not overflow."
     }
@@ -361,7 +300,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive algebra with equation builder, balance scale, and step-by-step AI solving",
-      "renderedBytes": 7093,
+      "renderedBytes": 7192,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -475,9 +414,9 @@
       "desc": "Describe an app or science demo and AI builds it instantly. Edit the code, iterate, and export.",
       "renderedBytes": 13550,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 26,
@@ -491,20 +430,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "appLab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 28,
-          "selector": "div > div:nth-of-type(3) > div:nth-of-type(1) > div > button:nth-of-type(1)",
-          "ratio": 2.05,
-          "color": "#9ca3af",
-          "background": "#e5e7eb",
-          "text": "🚀 Generate App"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "aquacultureLab",
@@ -514,20 +440,20 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Pilot your skiff to your Bagaduce River lease. Deploy droppers, monitor water quality, harvest mussels, learn IALA-B buoyage + lease tiers + climate stressors in a 3D sim.",
-      "renderedBytes": 63206,
+      "renderedBytes": 89088,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 152,
-        "roleButtons": 0,
-        "fields": 1,
+        "buttons": 159,
+        "roleButtons": 1,
+        "fields": 2,
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 3,
+        "headings": 9,
         "links": 1,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -542,7 +468,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Build and run a virtual fish tank to learn the nitrogen cycle, water chemistry, fish anatomy, species care, and marine ecology.",
-      "renderedBytes": 32376,
+      "renderedBytes": 32381,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -569,15 +495,15 @@
       "ready": true,
       "lightBackground": false,
       "aliases": [],
-      "desc": "Author functions to fire light-beams, clear walls, and re-light a neon city.",
-      "renderedBytes": 23644,
+      "desc": "Author functions, re-light a neon city, and battle across two function-powered Circuit Clash arenas.",
+      "renderedBytes": 23908,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 23,
+        "buttons": 24,
         "roleButtons": 0,
         "fields": 0,
         "canvases": 0,
@@ -633,7 +559,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Tile, compare, decompose, and investigate 2-D shapes while building area and perimeter reasoning.",
-      "renderedBytes": 16396,
+      "renderedBytes": 16706,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -660,7 +586,7 @@
           "count": 1,
           "examples": [
             {
-              "selector": "div > section.rounded-2xl.border:nth-of-type(2) > details > div > table",
+              "selector": "div > section.rounded-2xl.border:nth-of-type(2) > details > div.focus:outline-none.focus:ring-2 > table",
               "width": "100%"
             }
           ]
@@ -703,7 +629,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Learn addition, subtraction, multiplication, and division through models, strategies, estimation, and mistake analysis.",
-      "renderedBytes": 6541,
+      "renderedBytes": 6562,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -871,7 +797,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore the chemistry, ratios, and heat science that make baking work",
-      "renderedBytes": 11315,
+      "renderedBytes": 11406,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -899,11 +825,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Base-10 blocks, abacus, slide rule & place value quiz.",
-      "renderedBytes": 19782,
+      "renderedBytes": 19785,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 51,
@@ -914,21 +840,10 @@
         "images": 0,
         "headings": 3,
         "links": 0,
-        "tinyTextClassHits": 3,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "base10",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 3,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "beehive",
@@ -1017,17 +932,17 @@
     {
       "id": "birdLab",
       "label": "BirdLab — I-Spy Ornithology",
-      "category": "general",
+      "category": "science",
       "ready": true,
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive bird-spotting and species ID for adolescents. Layered habitat scenes with animated birds whose movement signatures double as field marks. Pairs with Cornell Lab's free Merlin Bird ID app for real photos and audio. Maine-relevant without being Maine-only.",
-      "renderedBytes": 146361,
+      "renderedBytes": 146842,
       "standardShell": true,
-      "issueCount": 3,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
-      "noticeCount": 2,
+      "warningCount": 0,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 127,
         "roleButtons": 0,
@@ -1038,41 +953,9 @@
         "headings": 128,
         "links": 0,
         "tinyTextClassHits": 0,
-        "fixedWidthRiskCount": 2
+        "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "birdLab",
-          "severity": "warning",
-          "code": "svg-name",
-          "message": "SVG is neither aria-hidden nor named.",
-          "index": 1,
-          "selector": "div.birdlab-shell.p-6 > button.w-full.mb-5:nth-of-type(1) > div.p-4.flex:nth-of-type(1) > div:nth-of-type(2) > svg"
-        },
-        {
-          "toolId": "birdLab",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "Tool includes fixed-width surfaces that need mobile visual review.",
-          "count": 2,
-          "examples": [
-            {
-              "selector": "div > div.birdlab-shell.p-6 > div.mb-6.rounded-3xl:nth-of-type(1) > svg > rect:nth-of-type(1)",
-              "width": "800"
-            },
-            {
-              "selector": "div > div.birdlab-shell.p-6 > div.mb-6.rounded-3xl:nth-of-type(1) > svg > rect:nth-of-type(2)",
-              "width": "800"
-            }
-          ]
-        },
-        {
-          "toolId": "birdLab",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "brainAtlas",
@@ -1082,14 +965,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore an interactive brain model: regions, functions, neurotransmitter synapses, EEG waves, and a labeling quiz.",
-      "renderedBytes": 33556,
+      "renderedBytes": 34254,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
-        "buttons": 54,
+        "buttons": 56,
         "roleButtons": 0,
         "fields": 1,
         "canvases": 1,
@@ -1098,23 +981,9 @@
         "headings": 7,
         "links": 0,
         "tinyTextClassHits": 0,
-        "fixedWidthRiskCount": 1
+        "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "brainAtlas",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "Tool includes fixed-width surfaces that need mobile visual review.",
-          "count": 1,
-          "examples": [
-            {
-              "selector": "div#brainatlas-canvas-fullscreen > div.brainatlas-canvas-stage:nth-of-type(3) > div.brainatlas-canvas-zoom-frame > canvas.brainatlas-canvas.border-2",
-              "width": "840"
-            }
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "bridgeLab",
@@ -1152,11 +1021,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Riemann sums, derivatives, and guided discovery missions",
-      "renderedBytes": 24693,
+      "renderedBytes": 24696,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 29,
@@ -1167,21 +1036,10 @@
         "images": 0,
         "headings": 3,
         "links": 0,
-        "tinyTextClassHits": 3,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "calculus",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 3,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "cell",
@@ -1219,7 +1077,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 2-D Life-like worlds with custom B/S rules, predictive and scientific lenses, challenges, 17 classic patterns, dynamic grids, export, and population evidence - plus all 256 elementary 1-D Wolfram rules.",
-      "renderedBytes": 26644,
+      "renderedBytes": 26649,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1232,7 +1090,7 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 1,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1394,7 +1252,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Design a roller coaster in full 3-D, then earn the right to open it: predict speeds, g-forces, and bank angles from real physics, pass the inspection, ride onboard with checkpoint questions, and read your own telemetry like an engineer.",
-      "renderedBytes": 15383,
+      "renderedBytes": 25266,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1485,11 +1343,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Plot points, draw lines, calculate slope/distance/midpoint with sound effects and badges.",
-      "renderedBytes": 13317,
+      "renderedBytes": 13415,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 14,
@@ -1500,21 +1358,10 @@
         "images": 0,
         "headings": 2,
         "links": 0,
-        "tinyTextClassHits": 3,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "coordinate",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 3,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "cyberDefense",
@@ -1678,7 +1525,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 427316,
+      "renderedBytes": 430187,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -1713,20 +1560,20 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 24175,
+      "renderedBytes": 30437,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 38,
+        "buttons": 59,
         "roleButtons": 0,
         "fields": 7,
         "canvases": 1,
         "svgs": 1,
         "images": 0,
-        "headings": 8,
+        "headings": 9,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1944,7 +1791,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 25908,
+      "renderedBytes": 25882,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2189,6 +2036,34 @@
       "issues": []
     },
     {
+      "id": "galaxy",
+      "label": "Galaxy Explorer",
+      "category": "science",
+      "ready": true,
+      "lightBackground": false,
+      "aliases": [],
+      "desc": "Explore galaxy types, stellar lifecycles, star classification, and metallicity in an interactive 3D Milky Way simulation.",
+      "renderedBytes": 37364,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "noticeCount": 0,
+      "metrics": {
+        "buttons": 52,
+        "roleButtons": 0,
+        "fields": 3,
+        "canvases": 1,
+        "svgs": 4,
+        "images": 0,
+        "headings": 4,
+        "links": 0,
+        "tinyTextClassHits": 0,
+        "fixedWidthRiskCount": 0
+      },
+      "issues": []
+    },
+    {
       "id": "gameStudio",
       "label": "Game Design Studio",
       "category": "creativity",
@@ -2280,11 +2155,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 15244,
+      "renderedBytes": 15273,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 1,
       "metrics": {
         "buttons": 23,
@@ -2295,20 +2170,10 @@
         "images": 0,
         "headings": 2,
         "links": 0,
-        "tinyTextClassHits": 3,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
       "issues": [
-        {
-          "toolId": "geologyExplorer",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 3,
-          "classes": [
-            "text-[9px]"
-          ]
-        },
         {
           "toolId": "geologyExplorer",
           "severity": "notice",
@@ -2353,7 +2218,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1730,
+      "renderedBytes": 1735,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -2416,11 +2281,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Visualize inequalities on a number line with notation, quiz, solver, badges & AI tutor.",
-      "renderedBytes": 18722,
+      "renderedBytes": 18725,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 30,
@@ -2431,21 +2296,10 @@
         "images": 0,
         "headings": 4,
         "links": 0,
-        "tinyTextClassHits": 3,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "inequality",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 3,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "kitchenLab",
@@ -2595,7 +2449,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Study sources or analyze data in one evidence workspace where every claim stays connected to what supports it.",
-      "renderedBytes": 2658,
+      "renderedBytes": 2686,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2798,7 +2652,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13519,
+      "renderedBytes": 13493,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2826,11 +2680,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive 12×12 grid with quiz modes, speed runs, streaks, badges & AI tutor.",
-      "renderedBytes": 32501,
+      "renderedBytes": 32504,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 22,
@@ -2841,21 +2695,10 @@
         "images": 0,
         "headings": 3,
         "links": 0,
-        "tinyTextClassHits": 3,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "multtable",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 3,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "musicSynth",
@@ -3012,45 +2855,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Run fully 3D particle experiments with states of matter, gas laws, diffusion, adjustable collision cross sections, attraction, live measurements, and particle tracing.",
-      "renderedBytes": 36236,
+      "renderedBytes": 36740,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 42,
         "roleButtons": 0,
-        "fields": 9,
+        "fields": 10,
         "canvases": 1,
         "svgs": 5,
         "images": 0,
         "headings": 7,
         "links": 0,
-        "tinyTextClassHits": 30,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "particleLab3d",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div.max-w-7xl.mx-auto > div.grid.gap-4:nth-of-type(2) > section.overflow-hidden.border > div.relative.min-h-[380px]:nth-of-type(2) > canvas.h-full.w-full"
-        },
-        {
-          "toolId": "particleLab3d",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 30,
-          "classes": [
-            "text-[8px]",
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "petsLab",
@@ -3116,12 +2939,12 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore tectonic plates, earthquakes, volcanoes, and continental drift.",
-      "renderedBytes": 27444,
+      "renderedBytes": 27460,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
-      "noticeCount": 1,
+      "warningCount": 0,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 25,
         "roleButtons": 0,
@@ -3131,38 +2954,10 @@
         "images": 0,
         "headings": 7,
         "links": 0,
-        "tinyTextClassHits": 4,
-        "fixedWidthRiskCount": 2
+        "tinyTextClassHits": 0,
+        "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "plateTectonics",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 4,
-          "classes": [
-            "text-[9px]"
-          ]
-        },
-        {
-          "toolId": "plateTectonics",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "Tool includes fixed-width surfaces that need mobile visual review.",
-          "count": 2,
-          "examples": [
-            {
-              "selector": "div.pt-sim-shell.max-w-6xl > div.rounded-2xl.border-2:nth-of-type(9) > div.p-3.grid:nth-of-type(2) > div.md:col-span-2.rounded-xl:nth-of-type(1) > canvas",
-              "width": "540px"
-            },
-            {
-              "selector": "div.pt-sim-shell.max-w-6xl > div.rounded-2xl.border-2:nth-of-type(10) > div.p-3.grid:nth-of-type(2) > div.md:col-span-2.rounded-xl:nth-of-type(1) > canvas",
-              "width": "540px"
-            }
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "playlab",
@@ -3172,12 +2967,12 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 18057,
+      "renderedBytes": 18025,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 31,
         "roleButtons": 0,
@@ -3188,23 +2983,9 @@
         "headings": 8,
         "links": 0,
         "tinyTextClassHits": 0,
-        "fixedWidthRiskCount": 1
+        "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "playlab",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "Tool includes fixed-width surfaces that need mobile visual review.",
-          "count": 1,
-          "examples": [
-            {
-              "selector": "div.playlab-root > div.playlab-field-layout:nth-of-type(10) > div.playlab-field-column:nth-of-type(1) > section.playlab-field-shell:nth-of-type(1) > canvas.playlab-field-canvas",
-              "width": "720"
-            }
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "printingPress",
@@ -3270,11 +3051,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Measure and construct angles. Classify acute, right, obtuse, and reflex.",
-      "renderedBytes": 31688,
+      "renderedBytes": 31691,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 69,
@@ -3285,21 +3066,10 @@
         "images": 0,
         "headings": 4,
         "links": 0,
-        "tinyTextClassHits": 3,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "protractor",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 3,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "punnett",
@@ -3365,14 +3135,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore ratio tables, double number lines, unit rates, percents, and proportional relationships.",
-      "renderedBytes": 9972,
+      "renderedBytes": 10633,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 8,
+        "buttons": 11,
         "roleButtons": 0,
         "fields": 4,
         "canvases": 0,
@@ -3421,7 +3191,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Pseudo-3D driving simulator + US permit test + fuel efficiency physics. Maine state focus.",
-      "renderedBytes": 40780,
+      "renderedBytes": 40791,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3638,11 +3408,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Skate / BMX physics: kickflips, halfpipe pumps, and gap jumps. Same physics that lands a 720.",
-      "renderedBytes": 70634,
+      "renderedBytes": 70658,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 57,
@@ -3656,16 +3426,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "skatelab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div#sk-mode-panel > canvas"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "solarSystem",
@@ -3675,7 +3436,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore a 3D model of the Sun, 8 planets, and dwarf planets — fly to surfaces, view interiors, run missions, and learn Kepler's laws.",
-      "renderedBytes": 16898,
+      "renderedBytes": 16912,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3871,7 +3632,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 47825,
+      "renderedBytes": 47828,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3899,7 +3660,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Link analog and digital clocks, model elapsed time, reason about schedules, and convert 12/24-hour time.",
-      "renderedBytes": 20574,
+      "renderedBytes": 22462,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4018,36 +3779,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Convert units with visual comparison, quiz, AI word problems, badges & keyboard shortcuts",
-      "renderedBytes": 15160,
+      "renderedBytes": 15759,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 22,
         "roleButtons": 0,
-        "fields": 3,
+        "fields": 4,
         "canvases": 1,
         "svgs": 0,
         "images": 0,
         "headings": 4,
         "links": 0,
-        "tinyTextClassHits": 3,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "unitConvert",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 3,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "universe",
@@ -4057,11 +3807,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Journey through cosmic time from the Big Bang to heat death, exploring epochs, distance scales, galaxies, exoplanets, and dark matter.",
-      "renderedBytes": 65655,
+      "renderedBytes": 65672,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 78,
@@ -4072,21 +3822,10 @@
         "images": 0,
         "headings": 4,
         "links": 7,
-        "tinyTextClassHits": 17,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "universe",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 17,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "volume",
@@ -4096,14 +3835,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Build 3D solids, solve volume challenges, and measure irregular objects with water displacement.",
-      "renderedBytes": 36726,
+      "renderedBytes": 38276,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 28,
+        "buttons": 33,
         "roleButtons": 0,
         "fields": 11,
         "canvases": 1,
@@ -4111,21 +3850,10 @@
         "images": 0,
         "headings": 5,
         "links": 0,
-        "tinyTextClassHits": 3,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "volume",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 3,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "waterCycle",

@@ -47,6 +47,7 @@
   var MU0 = 1.25663706212e-6; // vacuum permeability (T·m/A)
   var _field3DCanvas = null;
   var _induction3DCanvas = null;
+  var _electro3DCanvas = null;
   var _induction3DRAF = null;
   var _induction3DRunToken = 0;
 
@@ -233,6 +234,91 @@
     return MU0 * n * current * (coreMult || 1);
   }
 
+  var CORE_MATERIALS = {
+    air: { name: 'Air', initialMu: 1, saturationT: Infinity },
+    soft: { name: 'Soft iron', initialMu: 600, saturationT: 1.6 },
+    steel: { name: 'Steel', initialMu: 200, saturationT: 1.3 }
+  };
+
+  // A finite solenoid's center field includes the coil radius instead of
+  // assuming an infinitely long coil. The optional core response saturates.
+  function coreAdjustedField(airField, materialKey) {
+    var material = CORE_MATERIALS[materialKey] || CORE_MATERIALS.air;
+    var sign = airField < 0 ? -1 : 1;
+    var air = Math.abs(Number(airField) || 0);
+    if (material.initialMu <= 1 || !Number.isFinite(material.saturationT)) return sign * air;
+    return sign * (air + material.saturationT * Math.tanh((material.initialMu - 1) * air / material.saturationT));
+  }
+
+  function finiteSolenoidCenterField(turns, current, lengthM, radiusM, materialKey) {
+    var nTurns = Math.max(0, Math.abs(Number(turns) || 0));
+    var amps = Math.abs(Number(current) || 0);
+    var length = Math.max(1e-5, Math.abs(Number(lengthM) || 0));
+    var radius = Math.max(1e-5, Math.abs(Number(radiusM) || 0));
+    var airField = MU0 * nTurns * amps / (2 * Math.sqrt(radius * radius + length * length / 4));
+    return coreAdjustedField(airField, materialKey);
+  }
+
+  function solenoidWireLength(turns, radiusM, lengthM) {
+    var nTurns = Math.max(0, Math.abs(Number(turns) || 0));
+    var circumferenceTravel = 2 * Math.PI * Math.max(0, Math.abs(Number(radiusM) || 0)) * nTurns;
+    return Math.sqrt(circumferenceTravel * circumferenceTravel + Math.pow(Math.max(0, Math.abs(Number(lengthM) || 0)), 2));
+  }
+
+  function solenoidHeatingIndex(turns, current, radiusM, lengthM) {
+    var wireLength = solenoidWireLength(turns, radiusM, lengthM);
+    return Math.pow(Math.abs(Number(current) || 0), 2) * wireLength;
+  }
+
+  // Qualitative off-axis finite-coil field: a stack of softened loop dipoles.
+  // It preserves superposition, closed-loop topology, geometry, and direction;
+  // the separate center-field helper supplies the quantitative measurement.
+  function solenoidFieldAt3D(px, py, pz, coil, opts) {
+    coil = coil || {}; opts = opts || {};
+    var turns = Math.max(0, Math.abs(Number(coil.turns) || 0));
+    var current = Math.max(0, Math.abs(Number(coil.current) || 0));
+    if (!turns || !current) return { x: 0, y: 0, z: 0 };
+    var length = Math.max(0.3, Math.abs(Number(coil.length) || 2.8));
+    var radius = Math.max(0.15, Math.abs(Number(coil.radius) || 1));
+    var segments = Math.max(3, Math.round(opts.segments || 11));
+    var direction = (coil.currentDir < 0 ? -1 : 1) * (coil.windingDir < 0 ? -1 : 1);
+    var physicalAir = finiteSolenoidCenterField(turns, current, Math.max(0.01, Number(coil.lengthM) || 0.12), Math.max(0.005, Number(coil.radiusM) || 0.03), 'air');
+    var physicalCore = finiteSolenoidCenterField(turns, current, Math.max(0.01, Number(coil.lengthM) || 0.12), Math.max(0.005, Number(coil.radiusM) || 0.03), coil.material || 'air');
+    var coreGain = physicalAir > 1e-12 ? Math.min(30, physicalCore / physicalAir) : 1;
+    var momentPerSegment = direction * turns * current * radius * radius * coreGain / (segments * 80);
+    var soften2 = Math.pow(Math.max(0.18, radius * 0.42), 2);
+    var bx = 0, by = 0, bz = 0;
+    for (var i = 0; i < segments; i++) {
+      var sx = -length / 2 + length * (i + 0.5) / segments;
+      var rx = px - sx, ry = py, rz = pz;
+      var geometricR2 = rx * rx + ry * ry + rz * rz;
+      var softenedR2 = geometricR2 + soften2;
+      var r = Math.sqrt(softenedR2), r5 = softenedR2 * softenedR2 * r;
+      var mdotr = momentPerSegment * rx;
+      bx += (3 * mdotr * rx - momentPerSegment * geometricR2) / r5;
+      by += 3 * mdotr * ry / r5;
+      bz += 3 * mdotr * rz / r5;
+    }
+    return { x: bx, y: by, z: bz };
+  }
+
+  function traceSolenoidLine3D(seed, coil, dir, opts) {
+    opts = opts || {};
+    var step = Math.max(0.02, Number(opts.step) || 0.12);
+    var maxSteps = Math.max(2, Math.round(opts.maxSteps || 220));
+    var bound = Math.max(1, Number(opts.bound) || 6.5);
+    var x = Number(seed.x) || 0, y = Number(seed.y) || 0, z = Number(seed.z) || 0;
+    var points = [{ x: x, y: y, z: z }], sign = dir < 0 ? -1 : 1;
+    for (var i = 0; i < maxSteps; i++) {
+      var field = solenoidFieldAt3D(x, y, z, coil);
+      var magnitude = Math.sqrt(field.x * field.x + field.y * field.y + field.z * field.z);
+      if (magnitude < 1e-10) break;
+      x += sign * step * field.x / magnitude; y += sign * step * field.y / magnitude; z += sign * step * field.z / magnitude;
+      if (Math.abs(x) > bound || Math.abs(y) > bound || Math.abs(z) > bound) break;
+      points.push({ x: x, y: y, z: z });
+    }
+    return points;
+  }
   // Force on one wire side of the motor loop: F = B · I · L (newtons).
   function wireForce(B, current, lengthM) { return B * current * lengthM; }
 
@@ -241,6 +327,48 @@
   function motorTorqueFactor(current, fieldStrength, angleDeg, currentDir, fieldDir) {
     var sign = (currentDir < 0 ? -1 : 1) * (fieldDir < 0 ? -1 : 1);
     return sign * Math.abs(current * fieldStrength) * Math.abs(Math.sin(angleDeg * Math.PI / 180));
+  }
+
+  // Steady-state energy model for a motor mechanically coupled to a generator.
+  // The motor torque falls linearly with speed, while the generator load creates
+  // an opposing torque proportional to k²ω/R. This makes heavier electrical
+  // loads slow the shared shaft and keeps useful output below electrical input.
+  function motorGeneratorBench(current, motorField, loadOhms, friction, turns, generatorField) {
+    var amps = Math.max(0, Math.abs(Number(current) || 0));
+    var field = Math.max(0, Math.abs(Number(motorField) || 0));
+    var resistance = Math.max(1, Math.abs(Number(loadOhms) || 40));
+    var frictionLevel = Math.max(0, Math.abs(Number(friction) || 0));
+    var genTurns = Math.max(1, Math.abs(Number(turns) || 80));
+    var genField = Math.max(0, Math.abs(Number(generatorField) || 0));
+    var inputVoltage = 12;
+    var inputPower = inputVoltage * amps;
+    var noLoadOmega = amps > 0 && field > 0 ? 20 + 8 * amps * field : 0;
+    var stallTorque = 0.04 * amps * field;
+    var frictionTorque = amps > 0 ? 0.005 + frictionLevel * 0.008 : 0;
+    var generatorConstant = 0.0008 * genTurns * genField;
+    var generatorEfficiency = 0.84;
+    var denominator = noLoadOmega > 0
+      ? stallTorque / noLoadOmega + generatorConstant * generatorConstant / (resistance * generatorEfficiency)
+      : 0;
+    var omega = denominator > 0
+      ? Math.max(0, Math.min(noLoadOmega, (stallTorque - frictionTorque) / denominator))
+      : 0;
+    var rpm = omega * 60 / (2 * Math.PI);
+    var motorTorque = noLoadOmega > 0 ? Math.max(0, stallTorque * (1 - omega / noLoadOmega)) : 0;
+    var generatedVoltage = generatorConstant * omega;
+    var loadCurrent = generatedVoltage / resistance;
+    var outputPower = Math.min(inputPower, generatedVoltage * loadCurrent);
+    var shaftPower = motorTorque * omega;
+    var losses = Math.max(0, inputPower - outputPower);
+    return {
+      inputVoltage: inputVoltage, inputCurrent: amps, inputPower: inputPower,
+      omega: omega, rpm: rpm, noLoadRPM: noLoadOmega * 60 / (2 * Math.PI),
+      stallTorque: stallTorque, motorTorque: motorTorque, frictionTorque: frictionTorque,
+      generatorConstant: generatorConstant, generatedVoltage: generatedVoltage,
+      loadCurrent: loadCurrent, loadOhms: resistance, outputPower: outputPower,
+      shaftPower: shaftPower, losses: losses,
+      efficiency: inputPower > 0 ? outputPower / inputPower : 0
+    };
   }
 
   // Far-field, axial dipole-pair force magnitude. The 60-unit reference keeps
@@ -600,6 +728,9 @@
       var SOFT = 'var(--allo-stem-text-soft, #94a3b8)';
       var BORDER = 'var(--allo-stem-border, #334155)';
       var INSTRUMENT = 'var(--allo-stem-instrument, var(--allo-stem-panel, #0b1220))';
+      // #be123c keeps white text on selected controls above WCAG AA's 4.5:1 threshold.
+      var ACTIVE = '#be123c';
+      var _sliderUid = 0;
 
       // Fresh per render so the defaults-merge below can never share (and
       // never mutate) a module-level object between renders.
@@ -615,9 +746,13 @@
         field3dVectors: true, field3dLines: true, field3dSlice: 'xz', field3dSliceOffset: 0, field3dNullFound: false,
         // Electromagnet
         turns: 20, current: 2, currentDir: 1, windingDir: 1, core: false, coilTouched: false, directionSeen: false,
+        electroView: '2d', electro3dStatus: 'loading', electro3dAttempt: 0, electro3dUsed: false,
+        electro3dLengthCm: 12, electro3dRadiusCm: 3, electro3dMaterial: 'air',
+        electro3dVectors: true, electro3dLines: true, electro3dProbe: { x: 0, y: 0, z: 0 },
         // Motor
         motorCurrent: 3, motorField: 4, motorCurrentDir: 1, motorFieldDir: 1,
         motorRunning: false, motorAngle: 90, motorRan: false, motorDirectionSeen: false,
+        benchLoadOhms: 40, benchFriction: 3, benchTurns: 80, benchField: 4, benchUsed: false,
         // Force bench + charged-particle beam
         pairDistance: 70, pairStrength1: 1, pairStrength2: 1, pairAttract: true,
         chargeSign: 1, chargeField: 1, chargeSpeed: 5, chargeB: 4,
@@ -633,7 +768,7 @@
         learningMode: 'guided', notebookOpen: false, notebookPrediction: '', notebookClaim: '',
         notebookTrials: [], notebookUsed: false, forceBenchUsed: false, lorentzUsed: false,
         // Earth
-        earthSeen: false, declination: 12,
+        earthSeen: false, declination: 12, earthSolarWind: 5,
         // Induction (generator)
         induceX: -100, inducePrevX: -100, induceTurns: 50, lastEMF: 0, peakEMF: 0,
         emfTrace: [], induceTrialMsg: '',
@@ -683,12 +818,28 @@
 
       function wcagStyles() {
         return h('style', { dangerouslySetInnerHTML: { __html:
-          '.mag-root button:focus-visible,.mag-root input:focus-visible,.mag-root select:focus-visible,.mag-root textarea:focus-visible,.mag-root [tabindex]:focus-visible{outline:3px solid #fbbf24;outline-offset:2px;border-radius:8px}' +
+          '.mag-root button:focus-visible,.mag-root input:focus-visible,.mag-root select:focus-visible,.mag-root textarea:focus-visible,.mag-root summary:focus-visible{outline:3px solid #fbbf24;outline-offset:2px;border-radius:8px}' +
           '.mag-root .mag-sronly{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}' +
-          '.mag-root{--mag-rose:#f43f5e;--mag-gold:#fbbf24;--mag-green:#34d399}' +
+          '.mag-root{--mag-rose:#f43f5e;--mag-active:#be123c;--mag-gold:#fbbf24;--mag-green:#34d399}' +
+          '.mag-root button{min-height:36px}' +
+          '.mag-root button:disabled{cursor:not-allowed!important;opacity:.55}' +
+          '.mag-root button:disabled:hover{transform:none!important}' +
+          '.mag-root .mag-pole-key{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 9px;color:' + SOFT + ';font-size:11.5px}' +
+          '.mag-root .mag-pole-key span{display:inline-flex;align-items:center;gap:5px}' +
+          '.mag-root .mag-pole-chip{display:inline-grid;place-items:center;width:22px;height:22px;border:2px solid currentColor;border-radius:5px;color:' + TEXT + ';font-style:normal;font-size:11px;font-weight:800}' +
+          '.mag-root .mag-scene-text{margin:7px 0 10px;color:' + SOFT + ';font-size:11.5px;line-height:1.45}' +
+          '.mag-root .mag-scene-text summary{color:' + TEXT + ';font-weight:700;cursor:pointer;min-height:28px;display:flex;align-items:center}' +
+          '.mag-root .mag-scene-frame{position:relative;margin-bottom:7px}' +
+          '.mag-root .mag-scene-frame canvas{box-shadow:inset 0 0 0 1px rgba(148,163,184,.12),0 14px 34px rgba(2,6,23,.24)}' +
+          '.mag-root .mag-scene-hud{position:absolute;left:10px;top:10px;right:48px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}' +
+          '.mag-root .mag-hud-chip{display:grid;grid-template-columns:auto auto;grid-template-areas:"dot label" "dot value";column-gap:6px;align-items:center;padding:6px 8px;border:1px solid ' + BORDER + ';border-radius:9px;background:' + INSTRUMENT + ';box-shadow:0 6px 18px rgba(2,6,23,.28);color:' + TEXT + '}' +
+          '.mag-root .mag-hud-dot{grid-area:dot;width:7px;height:7px;border-radius:50%;background:var(--mag-hud-tone);box-shadow:0 0 0 3px color-mix(in srgb,var(--mag-hud-tone) 20%,transparent)}' +
+          '.mag-root .mag-hud-label{grid-area:label;color:' + SOFT + ';font-size:11px;line-height:1.1}' +
+          '.mag-root .mag-hud-value{grid-area:value;color:' + TEXT + ';font-size:12.5px;font-weight:800;line-height:1.2;font-variant-numeric:tabular-nums}' +
+          '.mag-root .mag-scene-axis{position:absolute;right:10px;bottom:10px;padding:4px 7px;border:1px solid ' + BORDER + ';border-radius:7px;background:' + INSTRUMENT + ';color:' + SOFT + ';font-size:11px;font-weight:700;letter-spacing:.08em;pointer-events:none}' +
           '.mag-root .mag-hero{position:relative;overflow:hidden;padding:16px 18px;border:1px solid ' + BORDER + ';border-radius:16px;background:linear-gradient(135deg,rgba(244,63,94,.16),rgba(56,189,248,.06) 58%,transparent);margin-bottom:12px}' +
           '.mag-root .mag-hero:after{content:"";position:absolute;width:130px;height:130px;border:22px solid rgba(244,63,94,.08);border-radius:50%;right:-48px;top:-72px;pointer-events:none}' +
-          '.mag-root .mag-kicker{text-transform:uppercase;letter-spacing:.12em;font-size:10px;font-weight:800;color:var(--mag-rose);margin-bottom:3px}' +
+          '.mag-root .mag-kicker{text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:800;color:' + TEXT + ';margin-bottom:3px}' +
           '.mag-root .mag-card{position:relative;overflow:hidden;box-shadow:0 10px 28px rgba(2,6,23,.12)}' +
           '.mag-root .mag-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--mag-accent)}' +
           '.mag-root .mag-card-title{display:flex;align-items:center;gap:7px}' +
@@ -703,13 +854,18 @@
           '.mag-root .mag-legend{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;color:' + SOFT + ';font-size:11px;margin:-2px 0 10px}' +
           '.mag-root .mag-legend span{display:inline-flex;align-items:center;gap:5px}' +
           '.mag-root .mag-swatch{display:inline-block;width:18px;height:2px;background:currentColor}' +
+          '.mag-root .mag-strength-meter{display:inline-flex;align-items:flex-end;gap:3px;margin:0 4px;vertical-align:middle}' +
+          '.mag-root .mag-strength-meter i{display:block;width:8px;height:6px;border:1px solid ' + BORDER + ';border-radius:2px;background:transparent}' +
+          '.mag-root .mag-strength-meter i:nth-child(2){height:8px}.mag-root .mag-strength-meter i:nth-child(3){height:10px}.mag-root .mag-strength-meter i:nth-child(4){height:12px}.mag-root .mag-strength-meter i:nth-child(5){height:14px}.mag-root .mag-strength-meter i:nth-child(6){height:16px}' +
+          '.mag-root .mag-strength-meter i.is-on{border-color:#fb7185;background:#fb7185;box-shadow:0 0 7px rgba(251,113,133,.28)}' +
           '.mag-root .mag-observe{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start;padding:9px 10px;border-radius:10px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.24);margin:9px 0;color:' + SOFT + ';font-size:12px;line-height:1.45}' +
           '.mag-root .mag-observe b{color:' + TEXT + '}' +
-          '.mag-root .mag-field3d,.mag-root .mag-induction3d{height:410px}' +
-          '@media(max-width:480px){.mag-root .mag-sim-grid{grid-template-columns:1fr!important}.mag-root .mag-field3d,.mag-root .mag-induction3d{height:320px}}' +
+          '.mag-root .mag-field3d,.mag-root .mag-induction3d,.mag-root .mag-electro3d{height:410px}' +
+          '@media(max-width:480px){.mag-root .mag-sim-grid{grid-template-columns:1fr!important}.mag-root .mag-field3d,.mag-root .mag-induction3d,.mag-root .mag-electro3d{height:320px}.mag-root .mag-scene-hud{left:7px;top:7px;right:40px;gap:4px}.mag-root .mag-hud-chip{padding:5px 6px}.mag-root .mag-scene-axis{right:7px;bottom:7px}}' +
           '@media(max-width:640px){.mag-root .mag-station{grid-template-columns:1fr 1fr}.mag-root .mag-station-main{grid-column:1/-1}.mag-root .mag-cycle{border-left:0;border-top:2px solid ' + BORDER + '}.mag-root .mag-cycle:last-child{grid-column:1/-1}.mag-root .mag-hero{padding:14px}.mag-root .mag-tabs button{flex:1 1 145px}}' +
           '@media(max-width:390px){.mag-root .mag-station{grid-template-columns:1fr}.mag-root .mag-cycle:last-child{grid-column:auto}}' +
-          (_prefersReducedMotion ? '.mag-root *{animation:none!important;transition:none!important}' : '')
+          '@media(prefers-reduced-motion:reduce){.mag-root *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}' +
+          '@media(forced-colors:active){.mag-root .mag-card,.mag-root .mag-hero{box-shadow:none}.mag-root .mag-swatch,.mag-root .mag-pole-chip{border:1px solid CanvasText}.mag-root button[aria-pressed="true"],.mag-root button[aria-selected="true"]{outline:2px solid SelectedItem;outline-offset:1px}}'
         } });
       }
 
@@ -739,13 +895,34 @@
         quiz: { phase: 'Retrieve & reflect', icon: '🧠', goal: 'Use evidence from the lab, not memorized slogans.', predict: 'Commit to one answer.', test: 'Read the feedback after each choice.', explain: 'Revisit only the concepts you missed.' }
       };
       function tabBar() {
-        return h('div', { className: 'mag-tabs', role: 'tablist', 'aria-label': 'Magnetism sections', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
-          TABS.map(function (t) {
+        function activateTab(tab, moveFocus) {
+          upd(Object.assign({ tab: tab.id }, tab.id === 'earth' ? { earthSeen: true } : {}));
+          announceToSR(tab.label + ' section');
+          if (moveFocus && typeof document !== 'undefined') {
+            window.setTimeout(function () {
+              var nextTab = document.getElementById('mag-tab-' + tab.id);
+              if (nextTab && typeof nextTab.focus === 'function') nextTab.focus();
+            }, 0);
+          }
+        }
+        function onTabKeyDown(event, index) {
+          var nextIndex = null;
+          if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (index + 1) % TABS.length;
+          if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + TABS.length) % TABS.length;
+          if (event.key === 'Home') nextIndex = 0;
+          if (event.key === 'End') nextIndex = TABS.length - 1;
+          if (nextIndex == null) return;
+          event.preventDefault();
+          activateTab(TABS[nextIndex], true);
+        }
+        return h('div', { className: 'mag-tabs', role: 'tablist', 'aria-label': 'Magnetism sections', 'aria-orientation': 'horizontal', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+          TABS.map(function (t, index) {
             var on = d.tab === t.id;
-            return h('button', { key: t.id, role: 'tab', 'aria-selected': on ? 'true' : 'false',
+            return h('button', { key: t.id, id: 'mag-tab-' + t.id, type: 'button', role: 'tab', tabIndex: on ? 0 : -1, 'aria-selected': on ? 'true' : 'false',
               'aria-controls': 'mag-panel-' + t.id,
-              onClick: function () { upd(Object.assign({ tab: t.id }, t.id === 'earth' ? { earthSeen: true } : {})); announceToSR(t.label + ' section'); },
-              style: { padding: '8px 12px', borderRadius: 9, border: '1px solid ' + (on ? '#f43f5e' : BORDER), background: on ? '#f43f5e' : 'transparent', color: on ? '#fff' : SOFT, fontWeight: 700, fontSize: 13, cursor: 'pointer' } }, t.label);
+              onKeyDown: function (event) { onTabKeyDown(event, index); },
+              onClick: function () { activateTab(t, false); },
+              style: { padding: '8px 12px', borderRadius: 9, border: '1px solid ' + (on ? ACTIVE : BORDER), background: on ? ACTIVE : 'transparent', color: on ? '#fff' : TEXT, boxShadow: on ? 'inset 0 -3px 0 #fff' : 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer' } }, t.label);
           }));
       }
 
@@ -1061,6 +1238,17 @@
                 south.userData.magnetIndex = index;
                 group.add(north);
                 group.add(south);
+                // One bright stripe marks physical north; two mark physical south.
+                // The larger cross-section keeps the markers visible from oblique views.
+                var northSide = mag.polarity < 0 ? -1 : 1;
+                var stripeMaterial = new THREE.MeshBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.94 });
+                [northSide * 0.82, -northSide * 0.72, -northSide * 0.90].forEach(function (x, stripeIndex) {
+                  var stripe = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.73, 0.73), stripeMaterial);
+                  stripe.position.x = x;
+                  stripe.userData.magnetIndex = index;
+                  stripe.userData.poleStripe = stripeIndex === 0 ? 'north-one' : 'south-two';
+                  group.add(stripe);
+                });
                 if (index === state.selected) {
                   var edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(2.2, 0.88, 0.88));
                   var outline = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.95 }));
@@ -1364,20 +1552,26 @@
         return card('3D Magnetic Field Studio', h('div', null,
           h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } },
             'Orbit to see that a magnetic field fills space, not just a flat page. Drag a magnet across the ground plane, click open space to move the gold probe, or use the keyboard controls below.'),
-          h('canvas', {
+          sceneViewport(h('canvas', {
             key: 'field3d-' + (d.field3dAttempt || 0),
             ref: field3DCanvasRef,
             className: 'mag-field3d',
             role: 'img',
-            'aria-label': 'Interactive three-dimensional magnetic field. Two red and blue bar magnets create curved streamlines and sampled vector arrows. A gold probe at x ' + probe.x.toFixed(2) + ', y ' + probe.y.toFixed(2) + ', z ' + probe.z.toFixed(2) + ' shows the resultant field vector.',
+            'aria-label': 'Interactive three-dimensional magnetic field with bar magnets, streamlines, vectors, and a field probe.',
+            'aria-describedby': 'mag-field3d-instructions mag-field3d-status mag-field3d-summary',
             style: { display: 'block', width: '100%', borderRadius: 10, border: '1px solid ' + BORDER, background: INSTRUMENT, touchAction: 'none' }
-          }),
-          h('div', { role: 'status', style: { color: d.field3dStatus === 'error' ? '#fbbf24' : SOFT, fontSize: 11.5, lineHeight: 1.45, margin: '7px 0' } },
+          }), [
+            { label: 'Probe |B|', value: vectorValue(totalMagnitude), tone: '#fbbf24' },
+            { label: 'Net / sources', value: Math.round(cancellation * 100) + '%', tone: '#a78bfa' }
+          ], 'x · y · z'),
+          h('div', { id: 'mag-field3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: d.field3dStatus === 'error' ? '#fbbf24' : SOFT, fontSize: 11.5, lineHeight: 1.45, margin: '7px 0' } },
             d.field3dStatus === 'ready' ? '3D scene ready. Drag to orbit; drag a magnet to move it on the x-z plane.' :
             d.field3dStatus === 'error' ? h('span', null, '3D graphics did not load. The 2D map is still fully available. ',
               h('button', { onClick: function () { upd({ field3dStatus: 'loading', field3dAttempt: (d.field3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) :
               'Loading the 3D field engine...'),
-          h('p', { style: { color: SOFT, fontSize: 11.5, margin: '0 0 8px', lineHeight: 1.4 } }, 'Axis key: x = left/right, y = height, z = depth. Red is north; blue is south.'),
+          h('p', { id: 'mag-field3d-instructions', style: { color: SOFT, fontSize: 11.5, margin: '0 0 8px', lineHeight: 1.4 } }, 'Axis key: x = left/right, y = height, z = depth. Every pointer action has an equivalent labeled control below.'),
+          poleLegend('North pole — red; N or one bright stripe', 'South pole — blue; S or two bright stripes'),
+          sceneTextAlternative('mag-field3d-summary', magnets.length + ' bar magnets are present. Magnet ' + (selected + 1) + ' is selected at x ' + selectedMagnet.x.toFixed(2) + ', y ' + selectedMagnet.y.toFixed(2) + ', z ' + selectedMagnet.z.toFixed(2) + '. The probe is at x ' + probe.x.toFixed(2) + ', y ' + probe.y.toFixed(2) + ', z ' + probe.z.toFixed(2) + '. Its field magnitude is ' + vectorValue(totalMagnitude) + ', described as ' + strengthWords[strengthLevel] + '. Cancellation ratio is ' + Math.round(cancellation * 100) + ' percent.'),
           h('div', { role: 'group', 'aria-label': '3D camera views', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 } },
             h('span', { style: { color: SOFT, fontSize: 11.5, alignSelf: 'center', fontWeight: 700 } }, 'Camera'),
             viewButton('perspective', 'Perspective'), viewButton('front', 'Front'), viewButton('top', 'Top'), viewButton('side', 'Side')),
@@ -1389,9 +1583,9 @@
               h('option', { value: 'none' }, 'None'), h('option', { value: 'xy' }, 'XY plane'), h('option', { value: 'xz' }, 'XZ plane'), h('option', { value: 'yz' }, 'YZ plane'))),
           d.field3dSlice && d.field3dSlice !== 'none' ? slider('Slice offset', d.field3dSliceOffset, -3, 3, 0.25, function (v) { commitField3D({ field3dSliceOffset: v }); }) : null,
           h('div', { className: 'mag-legend', 'aria-label': '3D field legend', style: { marginTop: 3 } },
-            h('span', { style: { color: '#38bdf8' } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true' }), 'cyan arrows sample local direction'),
-            h('span', { style: { color: '#f43f5e' } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true' }), 'curves follow the field'),
-            h('span', { style: { color: '#fbbf24' } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true' }), 'gold arrow is the probe total')),
+            h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#38bdf8' } }), 'cyan arrows sample local direction'),
+            h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#f43f5e' } }), 'curves follow the field'),
+            h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#fbbf24' } }), 'gold arrow is the probe total')),
           h('div', { className: 'mag-observe' },
             h('span', { 'aria-hidden': 'true' }, '+'),
             h('span', null, h('b', null, 'Read superposition in 3D: '), 'the blue and violet arrows at the probe are the two source contributions. The gold resultant is their vector sum, including x, y, and z components.')),
@@ -1462,11 +1656,12 @@
             h('button', { 'aria-pressed': d.fieldView !== '3d' ? 'true' : 'false', onClick: function () { upd({ fieldView: '2d' }); announceToSR('Two-dimensional field map selected.'); }, style: btn(d.fieldView !== '3d') }, '2D field map'),
             h('button', { 'aria-pressed': d.fieldView === '3d' ? 'true' : 'false', onClick: function () { if (d.fieldView === '3d') return; upd({ fieldView: '3d', field3dStatus: 'loading', field3dUsed: true }); announceToSR('Three-dimensional field studio selected.'); }, style: btn(d.fieldView === '3d') }, '3D field studio')),
           d.fieldView === '3d' ? field3DCard() : card('Trace the invisible field', h('div', null,
-            h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'Field lines leave the ', h('b', { style: { color: '#ef4444' } }, 'north (red)'), ' pole and curve back into the ', h('b', { style: { color: '#3b82f6' } }, 'south (blue)'), ' pole. Click open space to move the compass, or drag a magnet to rebuild the field. The needle follows the local resultant field.'),
+            h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 8px', lineHeight: 1.5 } }, 'Field lines leave the ', h('b', { style: { color: TEXT } }, 'north (N/red)'), ' pole and curve back into the ', h('b', { style: { color: TEXT } }, 'south (S/blue)'), ' pole. Click open space to move the compass, or use the labeled controls to rebuild the field. The needle follows the local resultant field.'),
+            poleLegend('North pole — red; N or one bright stripe', 'South pole — blue; S or two bright stripes'),
             h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 8 } }, renderFieldSVG()),
             h('div', { className: 'mag-legend', 'aria-label': 'Field visual legend' },
-              h('span', { style: { color: '#fbbf24' } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true' }), 'arrows show N → S'),
-              h('span', { style: { color: '#f43f5e' } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true' }), 'closer lines = stronger field'),
+              h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#fbbf24' } }), 'arrows show N → S'),
+              h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#f43f5e' } }), 'closer lines = stronger field'),
               d.filings ? h('span', null, 'short grains align like tiny compasses') : null),
             two ? h('div', { className: 'mag-observe' },
               h('span', { 'aria-hidden': 'true' }, '+'),
@@ -1495,7 +1690,8 @@
               var words = ['barely there', 'faint', 'weak', 'moderate', 'strong', 'very strong'];
               return h('div', { role: 'status', style: { textAlign: 'center', marginBottom: 10, color: SOFT, fontSize: 12 } },
                 'Field here: ',
-                h('span', { 'aria-hidden': 'true', style: { letterSpacing: 1, color: '#f43f5e' } }, '▮'.repeat(level + 1) + '▯'.repeat(5 - level)),
+                h('span', { className: 'mag-strength-meter', 'aria-hidden': 'true' },
+                  [0, 1, 2, 3, 4, 5].map(function (bar) { return h('i', { key: bar, className: bar <= level ? 'is-on' : '' }); })),
                 ' ' + words[level] + ' — try moving closer to a pole');
             })(),
             h('div', { className: 'mag-observe' },
@@ -1620,6 +1816,281 @@
       }
 
       // ── Electromagnet ─────────────────────────────────────────────────
+      function currentElectro3DState() {
+        var lengthCm = Number(d.electro3dLengthCm) || 12, radiusCm = Number(d.electro3dRadiusCm) || 3;
+        var lengthScene = lengthCm / 4, radiusScene = radiusCm / 3;
+        var material = d.electro3dMaterial || 'air';
+        return {
+          turns: d.turns, current: d.current, currentDir: d.currentDir, windingDir: d.windingDir,
+          length: lengthScene, radius: radiusScene, lengthM: lengthCm / 100, radiusM: radiusCm / 100,
+          material: material, vectors: d.electro3dVectors !== false, lines: d.electro3dLines !== false,
+          probe: Object.assign({}, d.electro3dProbe || { x: 0, y: 0, z: 0 })
+        };
+      }
+
+      function commitElectro3D(patch, message) {
+        upd(Object.assign({ electro3dUsed: true, coilTouched: true }, patch));
+        if (message) announceToSR(message);
+      }
+
+      function electro3DSaturationGraph() {
+        var state = currentElectro3DState(), selected = state.material;
+        var airPoints = [], corePoints = [], W = 500, H = 170, left = 46, right = 12, top = 18, bottom = 30;
+        var values = [];
+        for (var amp = 0; amp <= 6.0001; amp += 0.15) {
+          var air = finiteSolenoidCenterField(state.turns, amp, state.lengthM, state.radiusM, 'air');
+          var core = finiteSolenoidCenterField(state.turns, amp, state.lengthM, state.radiusM, selected);
+          values.push({ amp: amp, air: air, core: core });
+        }
+        var maxB = Math.max(0.001, values.reduce(function (m, v) { return Math.max(m, v.air, v.core); }, 0));
+        function gx(amp) { return left + amp / 6 * (W - left - right); }
+        function gy(value) { return H - bottom - value / maxB * (H - top - bottom); }
+        values.forEach(function (v) { airPoints.push(gx(v.amp).toFixed(1) + ',' + gy(v.air).toFixed(1)); corePoints.push(gx(v.amp).toFixed(1) + ',' + gy(v.core).toFixed(1)); });
+        var currentB = finiteSolenoidCenterField(state.turns, state.current, state.lengthM, state.radiusM, selected);
+        return h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', style: { display: 'block', margin: '0 auto 8px' },
+          'aria-label': 'Center field versus current graph for air and ' + CORE_MATERIALS[selected].name + '. At ' + state.current + ' amps the selected field is ' + (currentB * 1000).toFixed(1) + ' millitesla.' },
+          h('rect', { x: 0, y: 0, width: W, height: H, rx: 10, fill: INSTRUMENT }),
+          h('line', { x1: left, y1: H - bottom, x2: W - right, y2: H - bottom, stroke: BORDER, strokeWidth: 1 }),
+          h('line', { x1: left, y1: top, x2: left, y2: H - bottom, stroke: BORDER, strokeWidth: 1 }),
+          h('polyline', { points: airPoints.join(' '), fill: 'none', stroke: '#38bdf8', strokeWidth: 2 }),
+          h('polyline', { points: corePoints.join(' '), fill: 'none', stroke: '#f59e0b', strokeWidth: 2.5 }),
+          h('line', { x1: gx(state.current), y1: top, x2: gx(state.current), y2: H - bottom, stroke: 'rgba(52,211,153,.58)', strokeDasharray: '4 3' }),
+          h('circle', { cx: gx(state.current), cy: gy(finiteSolenoidCenterField(state.turns, state.current, state.lengthM, state.radiusM, 'air')), r: 3.5, fill: INSTRUMENT, stroke: '#38bdf8', strokeWidth: 2 }),
+          h('circle', { cx: gx(state.current), cy: gy(currentB), r: 5, fill: INSTRUMENT, stroke: '#f59e0b', strokeWidth: 2.5 }),
+          h('line', { x1: left + 6, y1: top + 10, x2: left + 27, y2: top + 10, stroke: '#38bdf8', strokeWidth: 2 }),
+          h('text', { x: left + 33, y: top + 14, fill: TEXT, fontSize: 11 }, 'air · linear'),
+          h('line', { x1: W - right - 225, y1: top + 10, x2: W - right - 202, y2: top + 10, stroke: '#f59e0b', strokeWidth: 2.5 }),
+          h('text', { x: W - right, y: top + 14, fill: TEXT, fontSize: 11, textAnchor: 'end' }, CORE_MATERIALS[selected].name + (selected === 'air' ? '' : ' · bends toward saturation')),
+          h('text', { x: W - right, y: H - 8, fill: SOFT, fontSize: 11, textAnchor: 'end' }, 'current (A) →'),
+          h('text', { x: 10, y: 14, fill: SOFT, fontSize: 11 }, 'B'),
+          h('text', { x: gx(state.current) + 7, y: Math.max(top + 30, gy(currentB) - 8), fill: TEXT, fontSize: 11 }, (currentB * 1000).toFixed(1) + ' mT'));
+      }
+
+      function initElectro3DCanvas(cv) {
+        if (!cv || cv._electro3dInit) return;
+        if (!window.StemLab || typeof window.StemLab.ensureThree !== 'function') return;
+        cv._electro3dInit = true;
+        window.StemLab.ensureThree({ orbit: true, orbitRequired: true, failMessage: 'The 3D electromagnet engine could not load. The 2D coil investigation remains available.' })
+          .then(function (THREE) {
+            if (!cv.isConnected) { cv._electro3dInit = false; return; }
+            var renderer;
+            try { renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: false, powerPreference: 'high-performance' }); }
+            catch (error) { cv._electro3dInit = false; upd({ electro3dStatus: 'error' }); return; }
+            var scene = new THREE.Scene(), backgroundColor = new THREE.Color(0x07111f);
+            try { var themeBackground = window.getComputedStyle(cv).getPropertyValue('--allo-stem-instrument').trim(); if (themeBackground) backgroundColor.setStyle(themeBackground); } catch (themeError) {}
+            scene.background = backgroundColor; scene.fog = new THREE.FogExp2(backgroundColor.getHex(), 0.032);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6)); if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+            var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 70); camera.position.set(7.5, 4.8, 7.2);
+            var controls = new THREE.OrbitControls(camera, cv); controls.enableDamping = false; controls.minDistance = 5; controls.maxDistance = 20; controls.target.set(0, 0, 0);
+            scene.add(new THREE.HemisphereLight(0xdbeafe, 0x172554, 1.2));
+            var keyLight = new THREE.DirectionalLight(0xffffff, 1.25); keyLight.position.set(5, 8, 6); scene.add(keyLight);
+            var rimLight = new THREE.PointLight(0xf59e0b, 1.2, 20); rimLight.position.set(-4, 2, 5); scene.add(rimLight);
+            var grid = new THREE.GridHelper(10, 20, 0x64748b, 0x334155); grid.material.transparent = true; grid.material.opacity = 0.28; scene.add(grid);
+            var axes = new THREE.AxesHelper(4); axes.material.transparent = true; axes.material.opacity = 0.45; scene.add(axes);
+            var dynamicGroup = new THREE.Group(); scene.add(dynamicGroup);
+            var liveState = cv._electro3dState || currentElectro3DState();
+            var raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2(), probePlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+            var resizeObserver = null, disposed = false, pointerStart = null;
+            function disposeObject(obj) { obj.traverse(function (child) { if (child.geometry && child.geometry.dispose) child.geometry.dispose(); if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); }); }); }
+            function clearDynamic() { while (dynamicGroup.children.length) { var child = dynamicGroup.children[dynamicGroup.children.length - 1]; dynamicGroup.remove(child); disposeObject(child); } }
+            function resize() { var width = Math.max(1, cv.clientWidth || 680), height = Math.max(1, cv.clientHeight || 410); renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); }
+            function renderScene() { if (!disposed) { resize(); renderer.render(scene, camera); } }
+            function addArrow(origin, field, color, length, opacity) {
+              var magnitude = Math.hypot(field.x, field.y, field.z); if (magnitude < 1e-10) return;
+              var arrow = new THREE.ArrowHelper(new THREE.Vector3(field.x, field.y, field.z).normalize(), origin, length, color, Math.min(0.22, length * 0.3), Math.min(0.13, length * 0.18));
+              arrow.line.material.transparent = true; arrow.line.material.opacity = opacity; arrow.cone.material.transparent = true; arrow.cone.material.opacity = opacity; dynamicGroup.add(arrow);
+            }
+            function buildCoil(state) {
+              var visibleTurns = 5 + Math.round(Math.max(0, Math.min(195, state.turns - 5)) / 195 * 9);
+              var points = [], samples = visibleTurns * 18;
+              for (var i = 0; i <= samples; i++) {
+                var t = i / samples, angle = state.windingDir * t * visibleTurns * Math.PI * 2;
+                points.push(new THREE.Vector3(-state.length / 2 + t * state.length, Math.cos(angle) * state.radius, Math.sin(angle) * state.radius));
+              }
+              var curve = new THREE.CatmullRomCurve3(points);
+              var wire = new THREE.Mesh(new THREE.TubeGeometry(curve, samples, 0.035, 8, false), new THREE.MeshStandardMaterial({ color: state.current > 0 ? 0xf59e0b : 0x64748b, emissive: 0xf59e0b, emissiveIntensity: state.current > 0 ? 0.18 : 0, roughness: 0.42, metalness: 0.55 }));
+              dynamicGroup.add(wire);
+              if (state.current > 0) {
+                [0.14, 0.36, 0.58, 0.80].forEach(function (t) {
+                  var point = curve.getPointAt(t), tangent = curve.getTangentAt(t).multiplyScalar(state.currentDir < 0 ? -1 : 1);
+                  addArrow(point.clone().add(tangent.clone().multiplyScalar(-0.22)), tangent, 0xfbbf24, 0.48, 1);
+                });
+              }
+              if (state.material !== 'air') {
+                var coreColor = state.material === 'soft' ? 0x94a3b8 : 0x64748b;
+                var core = new THREE.Mesh(new THREE.CylinderGeometry(state.radius * 0.53, state.radius * 0.53, state.length * 1.12, 28), new THREE.MeshStandardMaterial({ color: coreColor, roughness: 0.34, metalness: 0.72, transparent: true, opacity: 0.86 }));
+                core.rotation.z = Math.PI / 2; dynamicGroup.add(core);
+              } else {
+                var airCore = new THREE.Mesh(new THREE.CylinderGeometry(state.radius * 0.52, state.radius * 0.52, state.length * 1.04, 20, 1, true), new THREE.MeshBasicMaterial({ color: 0x64748b, wireframe: true, transparent: true, opacity: 0.16 }));
+                airCore.rotation.z = Math.PI / 2; dynamicGroup.add(airCore);
+              }
+              if (state.current > 0) {
+                var direction = state.currentDir * state.windingDir > 0 ? 1 : -1;
+                [-1, 1].forEach(function (side) {
+                  var isNorth = side === direction;
+                  var pole = new THREE.Mesh(new THREE.CylinderGeometry(state.radius * 0.46, state.radius * 0.46, 0.055, 28), new THREE.MeshBasicMaterial({ color: isNorth ? 0xef4444 : 0x3b82f6, transparent: true, opacity: 0.72 }));
+                  pole.rotation.z = Math.PI / 2; pole.position.x = side * state.length * 0.57; dynamicGroup.add(pole);
+                  var ringRadii = isNorth ? [0.34] : [0.25, 0.42];
+                  ringRadii.forEach(function (radiusScale) {
+                    var ring = new THREE.Mesh(new THREE.TorusGeometry(state.radius * radiusScale, Math.max(0.018, state.radius * 0.025), 7, 30), new THREE.MeshBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.94 }));
+                    ring.rotation.y = Math.PI / 2;
+                    ring.position.x = side * state.length * 0.585;
+                    dynamicGroup.add(ring);
+                  });
+                });
+                addArrow(new THREE.Vector3(-direction * state.length * 0.28, 0, 0), { x: direction, y: 0, z: 0 }, 0xf43f5e, state.length * 0.56, 1);
+              }
+            }
+            function buildVectors(state) {
+              if (!state.vectors || state.current <= 0) return;
+              var xs = [-1.25, -0.62, 0, 0.62, 1.25].map(function (v) { return v * state.length; });
+              var side = [-1.7, 0, 1.7].map(function (v) { return v * state.radius; });
+              var magnitudes = [];
+              xs.forEach(function (x) { side.forEach(function (y) { side.forEach(function (z) { var field = solenoidFieldAt3D(x, y, z, state); magnitudes.push(Math.hypot(field.x, field.y, field.z)); }); }); });
+              var maxMagnitude = Math.max.apply(Math, magnitudes.concat([1e-9])), index = 0;
+              xs.forEach(function (x) { side.forEach(function (y) { side.forEach(function (z) {
+                var field = solenoidFieldAt3D(x, y, z, state), level = Math.sqrt(magnitudes[index++] / maxMagnitude);
+                addArrow(new THREE.Vector3(x, y, z), field, level > 0.55 ? 0xf43f5e : 0x38bdf8, 0.24 + level * 0.72, 0.38 + level * 0.5);
+              }); }); });
+            }
+            function buildLines(state) {
+              if (!state.lines || state.current <= 0) return;
+              var direction = state.currentDir * state.windingDir > 0 ? 1 : -1;
+              var northX = direction * state.length * 0.58;
+              for (var ring = 0; ring < 2; ring++) {
+                for (var i = 0; i < 8; i++) {
+                  var angle = i / 8 * Math.PI * 2 + ring * Math.PI / 8;
+                  var r = state.radius * (ring ? 0.72 : 0.32);
+                  var seed = { x: northX, y: Math.cos(angle) * r, z: Math.sin(angle) * r };
+                  var traced = traceSolenoidLine3D(seed, state, 1, { step: 0.11, maxSteps: 210, bound: 7 });
+                  if (traced.length < 3) continue;
+                  var points = traced.map(function (p) { return new THREE.Vector3(p.x, p.y, p.z); });
+                  dynamicGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: 0xf43f5e, transparent: true, opacity: 0.5 })));
+                  var mi = Math.min(points.length - 1, Math.max(1, Math.floor(points.length * 0.46))), mp = points[mi];
+                  addArrow(mp, solenoidFieldAt3D(mp.x, mp.y, mp.z, state), 0xfbbf24, 0.32, 0.88);
+                }
+              }
+            }
+            function buildProbe(state) {
+              var origin = new THREE.Vector3(state.probe.x, state.probe.y, state.probe.z);
+              var sphere = new THREE.Mesh(new THREE.SphereGeometry(0.14, 18, 12), new THREE.MeshBasicMaterial({ color: 0xfbbf24 })); sphere.position.copy(origin); dynamicGroup.add(sphere);
+              var field = solenoidFieldAt3D(origin.x, origin.y, origin.z, state); addArrow(origin, field, 0xfbbf24, Math.min(1.7, 0.55 + Math.log10(1 + Math.hypot(field.x, field.y, field.z)) * 0.5), 1);
+            }
+            function rebuild(state) {
+              if (disposed) return;
+              liveState = Object.assign({}, state, { probe: Object.assign({}, state.probe) });
+              clearDynamic(); buildLines(liveState); buildVectors(liveState); buildCoil(liveState); buildProbe(liveState); renderScene();
+            }
+            function setPointer(event) { var rect = cv.getBoundingClientRect(); pointer.x = ((event.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1; pointer.y = -((event.clientY - rect.top) / Math.max(1, rect.height)) * 2 + 1; raycaster.setFromCamera(pointer, camera); }
+            function onPointerDown(event) { pointerStart = { x: event.clientX, y: event.clientY }; }
+            function onPointerUp(event) {
+              if (!pointerStart || Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y) > 5) return;
+              setPointer(event); probePlane.set(new THREE.Vector3(0, 1, 0), 0); var point = new THREE.Vector3();
+              if (!raycaster.ray.intersectPlane(probePlane, point)) return;
+              var probe = { x: Math.max(-4, Math.min(4, point.x)), y: liveState.probe.y, z: Math.max(-3, Math.min(3, point.z)) };
+              if (cv._electro3dCommit) cv._electro3dCommit({ electro3dProbe: probe }, 'Moved the electromagnet field probe.');
+            }
+            function onContextLost(event) { event.preventDefault(); upd({ electro3dStatus: 'error' }); announceToSR('The 3D electromagnet graphics context was lost. The 2D coil investigation remains available.'); }
+            function setView(view) {
+              if (view === 'side') camera.position.set(0.01, 2.2, 10);
+              else if (view === 'end') camera.position.set(9, 0.6, 0.01);
+              else if (view === 'top') camera.position.set(0.01, 10, 0.01);
+              else camera.position.set(7.5, 4.8, 7.2);
+              controls.target.set(0, 0, 0); camera.lookAt(controls.target); controls.update(); renderScene();
+            }
+            function cleanup() {
+              if (disposed) return; disposed = true;
+              cv.removeEventListener('pointerdown', onPointerDown); cv.removeEventListener('pointerup', onPointerUp); cv.removeEventListener('webglcontextlost', onContextLost);
+              controls.removeEventListener('change', renderScene); window.removeEventListener('resize', renderScene); controls.dispose(); if (resizeObserver) resizeObserver.disconnect();
+              clearDynamic(); renderer.dispose(); cv._electro3dInit = false; cv._electro3dUpdate = null; cv._electro3dCleanup = null;
+            }
+            cv.addEventListener('pointerdown', onPointerDown); cv.addEventListener('pointerup', onPointerUp); cv.addEventListener('webglcontextlost', onContextLost); controls.addEventListener('change', renderScene);
+            if (typeof ResizeObserver !== 'undefined') { resizeObserver = new ResizeObserver(renderScene); resizeObserver.observe(cv); } else window.addEventListener('resize', renderScene, { passive: true });
+            cv._electro3dUpdate = rebuild; cv._electro3dSetView = setView; cv._electro3dCleanup = cleanup; rebuild(liveState); upd({ electro3dStatus: 'ready' });
+          }).catch(function () { cv._electro3dInit = false; if (cv.isConnected) { upd({ electro3dStatus: 'error' }); announceToSR('The 3D electromagnet engine could not load. Use the 2D coil investigation or retry.'); } });
+      }
+
+      function electro3DCanvasRef(cv) {
+        if (!cv) { var oldCanvas = _electro3DCanvas; window.setTimeout(function () { if (oldCanvas && !oldCanvas.isConnected && typeof oldCanvas._electro3dCleanup === 'function') oldCanvas._electro3dCleanup(); }, 0); return; }
+        _electro3DCanvas = cv; cv._electro3dState = currentElectro3DState(); cv._electro3dCommit = commitElectro3D;
+        if (typeof cv._electro3dUpdate === 'function') cv._electro3dUpdate(cv._electro3dState); else initElectro3DCanvas(cv);
+      }
+      function electro3DCard() {
+        var state = currentElectro3DState();
+        var material = CORE_MATERIALS[state.material] || CORE_MATERIALS.air;
+        var airB = finiteSolenoidCenterField(state.turns, state.current, state.lengthM, state.radiusM, 'air');
+        var centerB = finiteSolenoidCenterField(state.turns, state.current, state.lengthM, state.radiusM, state.material);
+        var idealAir = solenoidField(state.turns, state.current, state.lengthM, 1);
+        var gain = airB > 1e-12 ? centerB / airB : 1;
+        var saturation = state.material === 'air' || !Number.isFinite(material.saturationT) ? 0 : Math.max(0, Math.min(1, (centerB - airB) / material.saturationT));
+        var wireLength = solenoidWireLength(state.turns, state.radiusM, state.lengthM);
+        var heat = solenoidHeatingIndex(state.turns, state.current, state.radiusM, state.lengthM);
+        var probeField = solenoidFieldAt3D(state.probe.x, state.probe.y, state.probe.z, state);
+        var probeMagnitude = Math.hypot(probeField.x, probeField.y, probeField.z);
+        var fieldDir = state.currentDir * state.windingDir > 0 ? 'positive x; right end is north' : 'negative x; left end is north';
+        function cameraButton(id, label) { return h('button', { key: id, onClick: function () { if (_electro3DCanvas && typeof _electro3DCanvas._electro3dSetView === 'function') _electro3DCanvas._electro3dSetView(id); announceToSR(label + ' electromagnet view selected.'); }, style: btn() }, label); }
+        function setProbe(axis, value) { var next = Object.assign({}, state.probe); next[axis] = value; commitElectro3D({ electro3dProbe: next }); }
+        return card('3D Electromagnet Engineering Lab', h('div', null,
+          h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } },
+            'Watch the fields from many current loops superpose into one solenoid field. Orange arrows follow conventional current around the helix; rose field arrows point toward the electromagnetâ€™s north end.'),
+          sceneViewport(h('canvas', { key: 'electro3d-' + (d.electro3dAttempt || 0), ref: electro3DCanvasRef, className: 'mag-electro3d', role: 'img',
+            'aria-label': 'Interactive three-dimensional solenoid, current helix, field lines, pole markers, and movable field probe.',
+            'aria-describedby': 'mag-electro3d-status mag-electro3d-summary',
+            style: { display: 'block', width: '100%', borderRadius: 10, border: '1px solid ' + BORDER, background: INSTRUMENT, touchAction: 'none' } }), [
+              { label: 'Center field', value: (centerB * 1000).toFixed(centerB < 0.01 ? 2 : 0) + ' mT', tone: '#f59e0b' },
+              { label: 'Ampere-turns', value: (state.turns * state.current).toFixed(0) + ' A·turn', tone: '#38bdf8' }
+            ], 'coil axis · x'),
+          h('div', { id: 'mag-electro3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: d.electro3dStatus === 'error' ? '#fbbf24' : SOFT, fontSize: 11.5, lineHeight: 1.45, margin: '7px 0' } },
+            d.electro3dStatus === 'ready' ? 'Scene ready. Drag to orbit; click the ground plane to move the gold field probe.' :
+            d.electro3dStatus === 'error' ? h('span', null, '3D graphics did not load. The complete 2D coil investigation remains available. ', h('button', { onClick: function () { upd({ electro3dStatus: 'loading', electro3dAttempt: (d.electro3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) : 'Loading the 3D electromagnet engine...'),
+          poleLegend(fieldDir.indexOf('right end') >= 0 ? 'North pole — right end, one bright ring' : 'North pole — left end, one bright ring', fieldDir.indexOf('right end') >= 0 ? 'South pole — left end, two bright rings' : 'South pole — right end, two bright rings'),
+          sceneTextAlternative('mag-electro3d-summary', 'The coil has ' + state.turns + ' turns carrying ' + state.current + ' amps around a ' + material.name + ' core. The field points ' + fieldDir + '. The center field is ' + (centerB * 1000).toFixed(centerB < 0.01 ? 2 : 0) + ' millitesla. The field probe is at x ' + state.probe.x.toFixed(2) + ', y ' + state.probe.y.toFixed(2) + ', z ' + state.probe.z.toFixed(2) + ', with relative magnitude ' + probeMagnitude.toFixed(2) + '.'),
+          h('div', { role: 'group', 'aria-label': '3D electromagnet camera and layers', style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 9 } },
+            cameraButton('perspective', 'Perspective'), cameraButton('side', 'Side'), cameraButton('end', 'Look into coil'), cameraButton('top', 'Top'),
+            h('button', { 'aria-pressed': state.vectors ? 'true' : 'false', onClick: function () { commitElectro3D({ electro3dVectors: !state.vectors }); }, style: btn(state.vectors) }, 'Vectors: ' + (state.vectors ? 'on' : 'off')),
+            h('button', { 'aria-pressed': state.lines ? 'true' : 'false', onClick: function () { commitElectro3D({ electro3dLines: !state.lines }); }, style: btn(state.lines) }, 'Field lines: ' + (state.lines ? 'on' : 'off'))),
+          h('div', { className: 'mag-observe' },
+            h('span', { 'aria-hidden': 'true' }, 'âœ‹'),
+            h('span', null, h('b', null, 'Right-hand rule: '), 'curl your right-hand fingers with the orange current arrows. Your thumb points with the interior field toward the north pole. Reverse either current or winding and the poles swap; reverse both and they return.')),
+          electro3DSaturationGraph(),
+          h('div', { className: 'mag-observe' },
+            h('span', { 'aria-hidden': 'true' }, 'NI'),
+            h('div', null,
+              h('b', null, 'Equal ampere-turn engineering comparison: '), 'both setups make NI = 160 AÂ·turns in the same geometry, but their wire length and IÂ² heating differ.',
+              h('div', { role: 'group', 'aria-label': 'Compare equal ampere-turn coil designs', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 7 } },
+                h('button', { onClick: function () { commitElectro3D({ turns: 40, current: 4 }, 'Selected 40 turns at 4 amps: 160 ampere-turns.'); }, style: btn(state.turns === 40 && state.current === 4) }, '40 turns Ã— 4 A'),
+                h('button', { onClick: function () { commitElectro3D({ turns: 160, current: 1 }, 'Selected 160 turns at 1 amp: 160 ampere-turns.'); }, style: btn(state.turns === 160 && state.current === 1) }, '160 turns Ã— 1 A')))),
+          h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 12, alignItems: 'start' } },
+            h('section', { 'aria-label': 'Coil engineering controls' },
+              h('div', { style: { color: TEXT, fontSize: 12.5, fontWeight: 800, marginBottom: 7 } }, 'Engineer the coil'),
+              slider('Turns of wire (N)', state.turns, 5, 200, 5, function (v) { commitElectro3D({ turns: v }); }),
+              slider('Current (A)', state.current, 0, 6, 0.5, function (v) { commitElectro3D({ current: v }); }),
+              slider('Coil length (cm)', d.electro3dLengthCm, 6, 24, 1, function (v) { commitElectro3D({ electro3dLengthCm: v }); }),
+              slider('Coil radius (cm)', d.electro3dRadiusCm, 1.5, 5, 0.5, function (v) { commitElectro3D({ electro3dRadiusCm: v }); }),
+              h('div', { role: 'group', 'aria-label': 'Electromagnet direction', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 9 } },
+                h('button', { 'aria-pressed': state.currentDir < 0 ? 'true' : 'false', onClick: function () { commitElectro3D({ currentDir: -state.currentDir, directionSeen: true }, 'Current reversed; electromagnet poles swapped.'); }, style: btn(state.currentDir < 0) }, 'Reverse current'),
+                h('button', { 'aria-pressed': state.windingDir < 0 ? 'true' : 'false', onClick: function () { commitElectro3D({ windingDir: -state.windingDir, directionSeen: true }, 'Winding reversed; electromagnet poles swapped.'); }, style: btn(state.windingDir < 0) }, 'Reverse winding')),
+              h('div', { role: 'group', 'aria-label': 'Core material', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                Object.keys(CORE_MATERIALS).map(function (key) { return h('button', { key: key, 'aria-pressed': state.material === key ? 'true' : 'false', onClick: function () { commitElectro3D({ electro3dMaterial: key, core: key !== 'air' }, CORE_MATERIALS[key].name + ' core selected.'); }, style: btn(state.material === key) }, CORE_MATERIALS[key].name); }))),
+            h('section', { 'aria-label': 'Three-dimensional solenoid field probe' },
+              h('div', { style: { color: TEXT, fontSize: 12.5, fontWeight: 800, marginBottom: 7 } }, 'Measure around the coil'),
+              slider('Probe x', state.probe.x, -4, 4, 0.25, function (v) { setProbe('x', v); }),
+              slider('Probe y', state.probe.y, -3, 3, 0.25, function (v) { setProbe('y', v); }),
+              slider('Probe z', state.probe.z, -3, 3, 0.25, function (v) { setProbe('z', v); }),
+              h('div', { className: 'mag-observe', role: 'status' },
+                h('span', { 'aria-hidden': 'true' }, 'B'),
+                h('span', null, h('b', null, 'Probe vector (' + probeField.x.toFixed(2) + ', ' + probeField.y.toFixed(2) + ', ' + probeField.z.toFixed(2) + ')'),
+                  h('br'), 'Relative magnitude ' + probeMagnitude.toFixed(2) + '. Direction and return path are meaningful; this off-axis display uses a loop-dipole approximation.')))
+          ),
+          h('div', { className: 'mag-observe', role: 'status' },
+            h('span', { 'aria-hidden': 'true' }, 'âš™'),
+            h('span', null,
+              h('b', null, 'NI = ' + (state.turns * state.current).toFixed(0) + ' AÂ·turns Â· finite-coil center field ' + (centerB * 1000).toFixed(centerB < 0.01 ? 2 : 0) + ' mT Â· points ' + fieldDir + '.'),
+              h('br'), 'Air-core geometry gives ' + (airB * 1000).toFixed(2) + ' mT versus ' + (idealAir * 1000).toFixed(2) + ' mT from the long-solenoid approximation.',
+              h('br'), material.name + ' effective gain ' + gain.toFixed(1) + 'Ã—' + (state.material === 'air' ? '.' : ' Â· saturation ' + Math.round(saturation * 100) + '%.') + ' Wire length ' + wireLength.toFixed(1) + ' m; relative heating index ' + heat.toFixed(1) + ' (scales with IÂ² and wire length).')),
+          disclosure('The center-field calculation uses the finite-solenoid axis formula and a smooth saturation model for representative core materials. Exact core behavior depends on alloy, shape, air gaps, temperature, and magnetic history. The 3D off-axis field is a softened stack-of-loop-dipoles model for topology and direction, not precision magnet design.')
+        ), '#f59e0b');
+      }
       function electroTab() {
         var coreMult = d.core ? 600 : 1;
         var B = solenoidField(d.turns, d.current, 0.1, coreMult); // 10 cm coil
@@ -1627,7 +2098,11 @@
         var rel = B / solenoidField(20, 2, 0.1, 1); // strength vs the default air coil
         var bars = Math.max(1, Math.min(40, Math.round(rel * 4)));
         return h('div', null,
-          card('Build an electromagnet', h('div', null,
+          h('div', { role: 'group', 'aria-label': 'Electromagnet view', style: { display: 'flex', gap: 7, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 } },
+            h('span', { style: { color: SOFT, fontSize: 11.5, fontWeight: 700 } }, 'Explore the coil in'),
+            h('button', { 'aria-pressed': d.electroView !== '3d' ? 'true' : 'false', onClick: function () { upd({ electroView: '2d' }); announceToSR('Two-dimensional electromagnet investigation selected.'); }, style: btn(d.electroView !== '3d') }, '2D fair test'),
+            h('button', { 'aria-pressed': d.electroView === '3d' ? 'true' : 'false', onClick: function () { if (d.electroView === '3d') return; upd({ electroView: '3d', electro3dStatus: 'loading', electro3dUsed: true, coilTouched: true, electro3dMaterial: d.core ? (d.electro3dMaterial === 'air' ? 'soft' : d.electro3dMaterial) : 'air' }); announceToSR('Three-dimensional electromagnet engineering lab selected.'); }, style: btn(d.electroView === '3d') }, '3D engineering lab')),
+          d.electroView === '3d' ? electro3DCard() : card('Build an electromagnet', h('div', null,
             h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'A coil of wire carrying current becomes a magnet. Two things you control set its strength: how many ', h('b', null, 'turns'), ' of wire, and how much ', h('b', null, 'current'), ' flows. An iron core multiplies it.'),
             // schematic coil
             h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 10 } }, electroSVG(bars)),
@@ -1652,9 +2127,8 @@
               h('div', { style: { color: TEXT, fontSize: 13, fontWeight: 700 } }, 'Field strength ≈ ' + rel.toFixed(1) + '× the starting coil'),
               h('div', { style: { color: SOFT, fontSize: 12, marginTop: 4 } }, 'Calculated interior field ≈ ' + (B * 1000).toFixed(B < 0.01 ? 2 : 0) + ' mT · B = μ₀ · (N / L) · I' + (d.core ? ' × iron core' : '') + ' · field points ' + (fieldDir > 0 ? 'right' : 'left')),
               d.current === 0 ? h('div', { style: { color: '#fbbf24', fontSize: 12, marginTop: 4 } }, 'No current → no field. An electromagnet is only magnetic while the electricity flows.') : null)
-          )),
-          disclosure('B = μ₀·(N/L)·I is exact for a long ideal solenoid. The iron-core boost is shown as roughly ×600; real soft-iron cores range from about ×100 to a few thousand, depending on the metal and how hard you drive it.'),
-          '#f59e0b'
+          ), '#f59e0b'),
+          d.electroView !== '3d' ? disclosure('B = μ₀·(N/L)·I is exact for a long ideal solenoid. The iron-core boost is shown as roughly ×600; real soft-iron cores range from about ×100 to a few thousand, depending on the metal and how hard you drive it.') : null
         );
       }
 
@@ -1729,11 +2203,112 @@
               h('div', { style: { color: TEXT, fontSize: 13, fontWeight: 700 } }, 'Force on each active wire side ≈ ' + F.toFixed(3) + ' N · torque ≈ ' + torqueRel.toFixed(2) + '× baseline · ' + motorDirection),
               h('div', { style: { color: SOFT, fontSize: 12, marginTop: 4 } }, 'Torque grows with current, field, and sin θ. ' + (d.motorCurrent === 0 ? 'No current → no force → it will not turn.' : 'Reverse current OR field to reverse rotation; reverse both and the original direction returns.')))
           ), '#38bdf8'),
+          motorGeneratorBenchCard(),
           chargedParticleCard(),
           disclosure('The spin here is a teaching animation, not a timed simulation — angle advances at a steady rate so you can watch the commutator flip. The force law F = B·I·L and the "torque grows with B and I" relationship are real. The particle beam uses a uniform-field trajectory model with distance shown schematically.')
         );
       }
 
+      function motorGeneratorBenchSVG(model) {
+        var clockwise = d.motorCurrentDir * d.motorFieldDir > 0;
+        var usefulWidth = model.inputPower > 0 ? 440 * model.efficiency : 0;
+        var lossWidth = model.inputPower > 0 ? 440 - usefulWidth : 0;
+        var lampGlow = Math.min(0.9, 0.12 + model.outputPower / 18);
+        var shaftOpacity = model.rpm > 1 ? 1 : 0.28;
+        var aria = 'Motor generator energy bench. A 12 volt battery supplies ' + model.inputPower.toFixed(1) +
+          ' watts. The shared shaft turns at ' + Math.round(model.rpm) + ' RPM. The generator produces ' +
+          model.generatedVoltage.toFixed(1) + ' volts and ' + model.outputPower.toFixed(1) +
+          ' watts at a ' + Math.round(model.efficiency * 100) + ' percent overall efficiency.';
+        return h('svg', { viewBox: '0 0 520 230', width: '100%', style: { maxWidth: 760, display: 'block', margin: '0 auto 10px' }, role: 'img', 'aria-label': aria },
+          h('rect', { x: 0, y: 0, width: 520, height: 230, rx: 12, fill: INSTRUMENT }),
+          h('text', { x: 260, y: 21, fill: TEXT, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, 'electrical → magnetic force → shaft rotation → electrical'),
+
+          h('g', null,
+            h('rect', { x: 20, y: 73, width: 38, height: 56, rx: 5, fill: 'rgba(251,191,36,.14)', stroke: '#fbbf24', strokeWidth: 2 }),
+            h('line', { x1: 32, y1: 68, x2: 46, y2: 68, stroke: '#fbbf24', strokeWidth: 3 }),
+            h('line', { x1: 36, y1: 63, x2: 42, y2: 63, stroke: '#fbbf24', strokeWidth: 3 }),
+            h('text', { x: 39, y: 102, fill: TEXT, fontSize: 12, fontWeight: 900, textAnchor: 'middle' }, '12 V'),
+            h('text', { x: 39, y: 146, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, 'battery')),
+          h('line', { x1: 58, y1: 101, x2: 92, y2: 101, stroke: '#fbbf24', strokeWidth: 4, strokeLinecap: 'round' }),
+          h('polygon', { points: '98,101 87,95 87,107', fill: '#fbbf24' }),
+          h('text', { x: 77, y: 90, fill: SOFT, fontSize: 10, textAnchor: 'middle' }, model.inputPower.toFixed(1) + ' W in'),
+
+          h('g', null,
+            h('circle', { cx: 135, cy: 101, r: 38, fill: 'rgba(56,189,248,.10)', stroke: '#38bdf8', strokeWidth: 3 }),
+            h('circle', { cx: 135, cy: 101, r: 8, fill: '#0f172a', stroke: '#7dd3fc', strokeWidth: 2 }),
+            h('g', { transform: 'rotate(' + d.motorAngle + ' 135 101)' },
+              h('line', { x1: 109, y1: 101, x2: 161, y2: 101, stroke: '#fb7185', strokeWidth: 7, strokeLinecap: 'round' }),
+              h('circle', { cx: 109, cy: 101, r: 5, fill: '#fbbf24' }),
+              h('circle', { cx: 161, cy: 101, r: 5, fill: '#fbbf24' })),
+            h('path', { d: clockwise ? 'M 111 65 A 42 42 0 0 1 159 65' : 'M 159 65 A 42 42 0 0 0 111 65', fill: 'none', stroke: '#34d399', strokeWidth: 2.5, strokeLinecap: 'round', opacity: shaftOpacity }),
+            h('polygon', { points: clockwise ? '160,65 151,60 153,70' : '110,65 119,60 117,70', fill: '#34d399', opacity: shaftOpacity }),
+            h('text', { x: 135, y: 154, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, 'motor')),
+
+          h('line', { x1: 173, y1: 101, x2: 307, y2: 101, stroke: '#34d399', strokeWidth: 10, strokeLinecap: 'round', opacity: shaftOpacity }),
+          h('rect', { x: 234, y: 89, width: 20, height: 24, rx: 4, fill: '#064e3b', stroke: '#6ee7b7', strokeWidth: 2, opacity: shaftOpacity }),
+          h('line', { x1: 244, y1: 90, x2: 244, y2: 112, stroke: '#a7f3d0', strokeWidth: 2, opacity: shaftOpacity }),
+          h('text', { x: 240, y: 78, fill: TEXT, fontSize: 13, fontWeight: 900, textAnchor: 'middle' }, Math.round(model.rpm) + ' RPM'),
+          h('text', { x: 240, y: 126, fill: SOFT, fontSize: 10, textAnchor: 'middle' }, 'shared shaft'),
+
+          h('g', null,
+            h('circle', { cx: 345, cy: 101, r: 38, fill: 'rgba(245,158,11,.09)', stroke: '#f59e0b', strokeWidth: 3 }),
+            h('ellipse', { cx: 345, cy: 101, rx: 24, ry: 10, fill: 'none', stroke: '#fbbf24', strokeWidth: 2.4, transform: 'rotate(' + (-d.motorAngle) + ' 345 101)' }),
+            h('ellipse', { cx: 345, cy: 101, rx: 24, ry: 10, fill: 'none', stroke: '#fb7185', strokeWidth: 2.4, transform: 'rotate(' + (60 - d.motorAngle) + ' 345 101)' }),
+            h('circle', { cx: 345, cy: 101, r: 7, fill: '#0f172a', stroke: '#fde68a', strokeWidth: 2 }),
+            h('text', { x: 345, y: 154, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, 'generator')),
+          h('line', { x1: 383, y1: 101, x2: 420, y2: 101, stroke: '#fbbf24', strokeWidth: 4, strokeLinecap: 'round' }),
+          h('polygon', { points: '426,101 415,95 415,107', fill: '#fbbf24' }),
+          h('text', { x: 405, y: 88, fill: TEXT, fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, model.generatedVoltage.toFixed(1) + ' V'),
+
+          h('g', null,
+            h('circle', { cx: 461, cy: 101, r: 25, fill: 'rgba(250,204,21,' + lampGlow.toFixed(2) + ')', stroke: '#fde047', strokeWidth: 2.5 }),
+            h('path', { d: 'M 451 98 Q 461 87 471 98 M 452 104 Q 461 115 470 104', fill: 'none', stroke: '#713f12', strokeWidth: 2 }),
+            h('line', { x1: 453, y1: 126, x2: 469, y2: 126, stroke: '#fde047', strokeWidth: 3 }),
+            h('text', { x: 461, y: 146, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, 'load ' + Math.round(model.loadOhms) + ' Ω')),
+
+          h('text', { x: 40, y: 178, fill: SOFT, fontSize: 11 }, 'Energy ledger · input ' + model.inputPower.toFixed(1) + ' W'),
+          h('text', { x: 480, y: 178, fill: TEXT, fontSize: 11, fontWeight: 800, textAnchor: 'end' }, Math.round(model.efficiency * 100) + '% useful'),
+          h('rect', { x: 40, y: 188, width: 440, height: 14, rx: 7, fill: model.inputPower > 0 ? 'rgba(251,113,133,.58)' : 'rgba(148,163,184,.18)' }),
+          h('rect', { x: 40, y: 188, width: usefulWidth, height: 14, rx: Math.min(7, usefulWidth / 2), fill: '#34d399' }),
+          h('line', { x1: 40 + usefulWidth, y1: 186, x2: 40 + usefulWidth, y2: 204, stroke: TEXT, strokeWidth: usefulWidth > 1 && lossWidth > 1 ? 1.5 : 0 }),
+          h('text', { x: 40, y: 218, fill: TEXT, fontSize: 10 }, '■ useful output ' + model.outputPower.toFixed(1) + ' W'),
+          h('text', { x: 480, y: 218, fill: TEXT, fontSize: 10, textAnchor: 'end' }, '▨ losses ' + model.losses.toFixed(1) + ' W'));
+      }
+
+      function motorGeneratorBenchCard() {
+        var loadOhms = d.benchLoadOhms == null ? 40 : d.benchLoadOhms;
+        var friction = d.benchFriction == null ? 3 : d.benchFriction;
+        var turns = d.benchTurns == null ? 80 : d.benchTurns;
+        var field = d.benchField == null ? 4 : d.benchField;
+        var model = motorGeneratorBench(d.motorCurrent, d.motorField, loadOhms, friction, turns, field);
+        var loadName = loadOhms <= 20 ? 'heavy electrical load' : (loadOhms >= 120 ? 'light electrical load' : 'moderate electrical load');
+        var motionNote = model.rpm < 1 ? 'The shaft is stalled: available motor torque cannot overcome the selected drag.' :
+          'Lower resistance draws more generator current and pushes back harder on the shared shaft.';
+        return card('Coupled motor–generator engineering bench', h('div', null,
+          h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } },
+            'The motor above now drives a generator and real load model. Keep motor current and field fixed, then change one load variable to see where the energy goes.'),
+          motorGeneratorBenchSVG(model),
+          h('div', { role: 'group', 'aria-label': 'Generator load presets', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9 } },
+            h('button', { 'aria-pressed': loadOhms === 10 ? 'true' : 'false', onClick: function () { upd({ benchLoadOhms: 10, benchUsed: true }); }, style: btn(loadOhms === 10) }, 'Heavy load · 10 Ω'),
+            h('button', { 'aria-pressed': loadOhms === 40 ? 'true' : 'false', onClick: function () { upd({ benchLoadOhms: 40, benchUsed: true }); }, style: btn(loadOhms === 40) }, 'Balanced · 40 Ω'),
+            h('button', { 'aria-pressed': loadOhms === 160 ? 'true' : 'false', onClick: function () { upd({ benchLoadOhms: 160, benchUsed: true }); }, style: btn(loadOhms === 160) }, 'Light load · 160 Ω')),
+          h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
+            h('div', null,
+              slider('Generator load (Ω)', loadOhms, 10, 200, 10, function (v) { upd({ benchLoadOhms: v, benchUsed: true }); }),
+              slider('Shaft friction', friction, 0, 10, 1, function (v) { upd({ benchFriction: v, benchUsed: true }); })),
+            h('div', null,
+              slider('Generator turns', turns, 20, 160, 10, function (v) { upd({ benchTurns: v, benchUsed: true }); }),
+              slider('Generator field', field, 1, 8, 1, function (v) { upd({ benchField: v, benchUsed: true }); }))),
+          h('div', { className: 'mag-observe', role: 'status', 'aria-live': 'polite' },
+            h('span', { 'aria-hidden': 'true' }, '⚙️'),
+            h('span', null,
+              h('b', null, Math.round(model.rpm) + ' RPM · ' + model.generatedVoltage.toFixed(1) + ' V · ' + model.loadCurrent.toFixed(2) + ' A. '),
+              'Input ' + model.inputPower.toFixed(1) + ' W = useful output ' + model.outputPower.toFixed(1) + ' W + losses ' + model.losses.toFixed(1) + ' W. This is a ' + loadName + '. ' + motionNote)),
+          h('div', { style: { color: SOFT, fontSize: 12, marginTop: 8, lineHeight: 1.5 } },
+            h('b', { style: { color: TEXT } }, 'Engineering challenge: '),
+            'Compare 10 Ω with 160 Ω without changing the motor controls. Watch the shaft slow under load, then raise generator turns or field and look for the tradeoff between voltage and speed.')),
+        '#34d399');
+      }
       function chargedParticleCard() {
         var pts = chargedParticleTrajectory(d.chargeSign, d.chargeField, d.chargeSpeed, d.chargeB, 36);
         var path = pts.map(function (p) {
@@ -1811,13 +2386,16 @@
           'aria-label': 'Torque versus coil angle graph. Current angle ' + Math.round(d.motorAngle) + ' degrees, amplitude ' + Math.round(amplitudeScale * 100) + ' percent of graph scale, torque direction ' + (dir > 0 ? 'clockwise' : 'counter-clockwise') },
           h('rect', { x: 0, y: 0, width: 320, height: 82, fill: INSTRUMENT, rx: 9 }),
           h('text', { x: 18, y: 12, fill: SOFT, fontSize: 11 }, 'torque τ ∝ I·B·sin θ'),
-          h('line', { x1: 18, y1: 46, x2: 302, y2: 46, stroke: '#475569' }),
+          h('line', { x1: 18, y1: 46, x2: 302, y2: 46, stroke: BORDER }),
+          h('line', { x1: 18, y1: 16, x2: 18, y2: 68, stroke: 'rgba(251,113,133,.28)', strokeWidth: 4 }),
+          h('line', { x1: 160, y1: 16, x2: 160, y2: 68, stroke: 'rgba(251,113,133,.28)', strokeWidth: 4 }),
+          h('line', { x1: 302, y1: 16, x2: 302, y2: 68, stroke: 'rgba(251,113,133,.28)', strokeWidth: 4 }),
           h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#38bdf8', strokeWidth: 2.5 }),
           h('line', { x1: px, y1: 14, x2: px, y2: 70, stroke: 'rgba(251,191,36,.45)', strokeDasharray: '3 3' }),
           h('circle', { cx: px, cy: py, r: 4.5, fill: '#fbbf24', stroke: '#0b1220', strokeWidth: 1.5 }),
-          h('text', { x: 18, y: 76, fill: SOFT, fontSize: 8.5 }, '0°'),
-          h('text', { x: 160, y: 76, fill: SOFT, fontSize: 8.5, textAnchor: 'middle' }, '180°'),
-          h('text', { x: 302, y: 76, fill: SOFT, fontSize: 8.5, textAnchor: 'end' }, '360°'));
+          h('text', { x: 18, y: 76, fill: SOFT, fontSize: 11 }, '0°'),
+          h('text', { x: 160, y: 76, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, '180°'),
+          h('text', { x: 302, y: 76, fill: SOFT, fontSize: 11, textAnchor: 'end' }, '360°'));
       }
 
       function motorSVG() {
@@ -1825,6 +2403,8 @@
         var loopColor = d.motorCurrent > 0 ? '#f59e0b' : '#475569';
         var torqueDir = d.motorCurrentDir * d.motorFieldDir > 0 ? 1 : -1;
         var half = ((Math.floor(deg / 180) % 2 === 0) ? 1 : -1) * torqueDir; // commutator + supply/field direction
+        var rotationArc = torqueDir > 0 ? 'M 113 53 Q 150 27 187 53' : 'M 187 53 Q 150 27 113 53';
+        var rotationHead = torqueDir > 0 ? '187,53 176,48 181,59' : '113,53 124,48 119,59';
         return h('svg', { viewBox: '0 0 300 190', width: '100%', style: { maxWidth: 390 }, role: 'img', 'aria-label': 'Motor model with a ' + d.motorCurrent + ' amp current loop in field setting ' + d.motorField + ', rotated ' + Math.round(deg) + ' degrees; opposite wire forces create torque' },
           h('rect', { x: 0, y: 0, width: 300, height: 190, fill: INSTRUMENT, rx: 10 }),
           h('text', { x: 150, y: 18, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, 'magnetic field B flows from N → S'),
@@ -1841,6 +2421,10 @@
               h('line', { x1: fx1, y1: yy, x2: fx2, y2: yy, stroke: 'rgba(148,163,184,0.28)', strokeWidth: 1.2 }),
               h('polygon', { points: fhead + ',' + yy + ' ' + (fhead - d.motorFieldDir * 8) + ',' + (yy - 4) + ' ' + (fhead - d.motorFieldDir * 8) + ',' + (yy + 4), fill: 'rgba(148,163,184,0.55)' }));
           }),
+          d.motorCurrent > 0 ? h('g', { 'aria-hidden': 'true' },
+            h('path', { d: rotationArc, fill: 'none', stroke: '#fbbf24', strokeWidth: 2.3, strokeLinecap: 'round' }),
+            h('polygon', { points: rotationHead, fill: '#fbbf24' }),
+            h('text', { x: 150, y: 39, fill: TEXT, fontSize: 11, textAnchor: 'middle' }, torqueDir > 0 ? 'clockwise torque' : 'counter-clockwise torque')) : null,
           // rotating loop
           h('g', { transform: 'translate(150,95) rotate(' + deg.toFixed(1) + ')' },
             h('rect', { x: -50, y: -30, width: 100, height: 60, fill: 'none', stroke: loopColor, strokeWidth: 5, rx: 4 }),
@@ -2067,17 +2651,21 @@
         return h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', style: { display: 'block', margin: '0 auto 9px' }, role: 'img',
           'aria-label': 'Linked magnetic flux and induced voltage graph with ' + samples.length + ' samples. Current flux ' + currentFlux.toFixed(2) + ' and voltage ' + currentEMF.toFixed(2) + '.' },
           h('rect', { x: 0, y: 0, width: W, height: H, rx: 10, fill: INSTRUMENT }),
-          h('text', { x: 10, y: 16, fill: '#fb7185', fontSize: 11 }, 'flux Î¦'),
-          h('text', { x: 10, y: 101, fill: '#fbbf24', fontSize: 11 }, 'voltage Îµ'),
+          h('line', { x1: 9, y1: 12, x2: 27, y2: 12, stroke: '#fb7185', strokeWidth: 2.5 }),
+          h('text', { x: 31, y: 16, fill: TEXT, fontSize: 11 }, 'flux Φ · solid'),
+          h('line', { x1: 9, y1: 97, x2: 27, y2: 97, stroke: '#fbbf24', strokeWidth: 2.5, strokeDasharray: '5 3' }),
+          h('text', { x: 31, y: 101, fill: TEXT, fontSize: 11 }, 'voltage ε · dashed'),
           h('line', { x1: left, y1: topMid, x2: W - right, y2: topMid, stroke: BORDER, strokeWidth: 1 }),
           h('line', { x1: left, y1: bottomMid, x2: W - right, y2: bottomMid, stroke: BORDER, strokeWidth: 1 }),
           h('line', { x1: left, y1: 12, x2: left, y2: 177, stroke: BORDER, strokeWidth: 1 }),
           fluxPoints.length > 1 ? h('polyline', { points: fluxPoints.join(' '), fill: 'none', stroke: '#fb7185', strokeWidth: 2.5, strokeLinejoin: 'round' }) : h('circle', { cx: left, cy: topMid - currentFlux / maxFlux * 29, r: 4, fill: '#fb7185' }),
-          emfPoints.length > 1 ? h('polyline', { points: emfPoints.join(' '), fill: 'none', stroke: '#fbbf24', strokeWidth: 2.5, strokeLinejoin: 'round' }) : h('circle', { cx: left, cy: bottomMid - currentEMF / maxEMF * 29, r: 4, fill: '#fbbf24' }),
+          emfPoints.length > 1 ? h('polyline', { points: emfPoints.join(' '), fill: 'none', stroke: '#fbbf24', strokeWidth: 2.5, strokeLinejoin: 'round', strokeDasharray: '6 3' }) : h('rect', { x: left - 3.5, y: bottomMid - currentEMF / maxEMF * 29 - 3.5, width: 7, height: 7, fill: '#fbbf24', transform: 'rotate(45 ' + left + ' ' + (bottomMid - currentEMF / maxEMF * 29) + ')' }),
           h('line', { x1: xAt(samples.length - 1), y1: 12, x2: xAt(samples.length - 1), y2: 177, stroke: 'rgba(52,211,153,.55)', strokeWidth: 1, strokeDasharray: '4 3' }),
-          h('text', { x: W - right, y: 186, fill: SOFT, fontSize: 10, textAnchor: 'end' }, 'motion samples â†’'),
-          h('text', { x: W - right, y: 17, fill: SOFT, fontSize: 10, textAnchor: 'end' }, 'current ' + currentFlux.toFixed(2)),
-          h('text', { x: W - right, y: 102, fill: SOFT, fontSize: 10, textAnchor: 'end' }, 'current ' + currentEMF.toFixed(2)));
+          h('circle', { cx: xAt(samples.length - 1), cy: topMid - currentFlux / maxFlux * 29, r: 4, fill: INSTRUMENT, stroke: '#fb7185', strokeWidth: 2 }),
+          h('rect', { x: xAt(samples.length - 1) - 3.5, y: bottomMid - currentEMF / maxEMF * 29 - 3.5, width: 7, height: 7, fill: INSTRUMENT, stroke: '#fbbf24', strokeWidth: 2, transform: 'rotate(45 ' + xAt(samples.length - 1) + ' ' + (bottomMid - currentEMF / maxEMF * 29) + ')' }),
+          h('text', { x: W - right, y: 186, fill: SOFT, fontSize: 11, textAnchor: 'end' }, 'motion samples â†’'),
+          h('text', { x: W - right, y: 17, fill: SOFT, fontSize: 11, textAnchor: 'end' }, 'current ' + currentFlux.toFixed(2)),
+          h('text', { x: W - right, y: 102, fill: SOFT, fontSize: 11, textAnchor: 'end' }, 'current ' + currentEMF.toFixed(2)));
       }
       function induction3DCard() {
         var state = currentInduction3DState();
@@ -2090,15 +2678,21 @@
         return card('3D Induction Lab â€” field through a coil', h('div', null,
           h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } },
             'Move the magnet through a real three-dimensional coil surface. The translucent disk represents the area used to calculate magnetic flux; the gold arrow and bulb appear only while changing flux drives current.'),
-          h('canvas', {
+          sceneViewport(h('canvas', {
             key: 'induction3d-' + (d.ind3dAttempt || 0), ref: induction3DCanvasRef, className: 'mag-induction3d', role: 'img',
-            'aria-label': 'Interactive three-dimensional induction scene. A red and blue bar magnet at x ' + magnet.x.toFixed(2) + ', y ' + magnet.y.toFixed(2) + ', z ' + magnet.z.toFixed(2) + ' creates field lines through a circular coil. Current magnetic flux is ' + flux.toFixed(2) + ' and induced voltage is ' + emf.toFixed(2) + '.',
+            'aria-label': 'Interactive three-dimensional induction scene with a bar magnet, circular coil surface, field lines, and induced-current indicator.',
+            'aria-describedby': 'mag-induction3d-instructions mag-induction3d-status mag-induction3d-summary',
             style: { display: 'block', width: '100%', borderRadius: 10, border: '1px solid ' + BORDER, background: INSTRUMENT, touchAction: 'none' }
-          }),
-          h('div', { role: 'status', style: { color: d.ind3dStatus === 'error' ? '#fbbf24' : SOFT, fontSize: 11.5, lineHeight: 1.45, margin: '7px 0' } },
+          }), [
+            { label: 'Magnetic flux', value: flux.toFixed(2) + ' Φ', tone: '#fb7185' },
+            { label: 'Induced voltage', value: emf.toFixed(2) + ' V', tone: '#fbbf24' }
+          ], '−dΦ / dt'),
+          h('div', { id: 'mag-induction3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: d.ind3dStatus === 'error' ? '#fbbf24' : SOFT, fontSize: 11.5, lineHeight: 1.45, margin: '7px 0' } },
             d.ind3dStatus === 'ready' ? 'Scene ready. Drag to orbit; drag the magnet across the ground plane.' :
             d.ind3dStatus === 'error' ? h('span', null, '3D graphics did not load; every other generator mode remains available. ', h('button', { onClick: function () { upd({ ind3dStatus: 'loading', ind3dAttempt: (d.ind3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) : 'Loading the 3D induction engine...'),
-          h('p', { style: { color: SOFT, fontSize: 11.5, margin: '0 0 8px', lineHeight: 1.4 } }, 'Axis key: x passes through the coil, y is height, and z is sideways offset. The green arrow is the coil-area normal used for signed flux.'),
+          h('p', { id: 'mag-induction3d-instructions', style: { color: SOFT, fontSize: 11.5, margin: '0 0 8px', lineHeight: 1.4 } }, 'Axis key: x passes through the coil, y is height, and z is sideways offset. The green arrow is the coil-area normal used for signed flux. Every pointer action has a labeled control below.'),
+          poleLegend('North pole — red; N or one bright stripe', 'South pole — blue; S or two bright stripes'),
+          sceneTextAlternative('mag-induction3d-summary', 'The bar magnet is at x ' + magnet.x.toFixed(2) + ', y ' + magnet.y.toFixed(2) + ', z ' + magnet.z.toFixed(2) + '. The coil has ' + d.ind3dTurns + ' turns and radius ' + d.ind3dCoilRadius.toFixed(2) + '. Signed flux is ' + flux.toFixed(2) + ' and induced voltage is ' + emf.toFixed(2) + '. The induced-current interpretation is: ' + direction + '.'),
           h('div', { role: 'group', 'aria-label': '3D induction camera views', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 9 } },
             h('span', { style: { color: SOFT, fontSize: 11.5, alignSelf: 'center', fontWeight: 700 } }, 'Camera'),
             cameraButton('perspective', 'Perspective'), cameraButton('axis', 'Along coil axis'), cameraButton('side', 'Side'), cameraButton('top', 'Top')),
@@ -2229,7 +2823,17 @@
               var south = new THREE.Mesh(new THREE.BoxGeometry(1, 0.62, 0.62), new THREE.MeshStandardMaterial({ color: southColor, roughness: 0.35, metalness: 0.4, emissive: southColor, emissiveIntensity: 0.12 }));
               north.position.x = 0.5; south.position.x = -0.5;
               north.userData.inductionMagnet = true; south.userData.inductionMagnet = true;
-              magnetGroup.add(north); magnetGroup.add(south); dynamicGroup.add(magnetGroup);
+              magnetGroup.add(north); magnetGroup.add(south);
+              var northSide = magnet.polarity < 0 ? -1 : 1;
+              var stripeMaterial = new THREE.MeshBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.94 });
+              [northSide * 0.82, -northSide * 0.72, -northSide * 0.90].forEach(function (x, stripeIndex) {
+                var stripe = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.69, 0.69), stripeMaterial);
+                stripe.position.x = x;
+                stripe.userData.inductionMagnet = true;
+                stripe.userData.poleStripe = stripeIndex === 0 ? 'north-one' : 'south-two';
+                magnetGroup.add(stripe);
+              });
+              dynamicGroup.add(magnetGroup);
             }
             function buildFieldLines(state) {
               var magnet = state.magnet, moment = momentVector(magnet, true);
@@ -2391,12 +2995,12 @@
             h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'The motor’s mirror twin. ', h('b', null, 'Move'), ' the magnet through the coil and the changing flux pushes charge through the wire: ', h('b', null, 'ε = −N·ΔΦ/Δt'), '. Drag fast for a bright flash; hold still and you get exactly nothing.'),
             h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 10 } }, induceSVG()),
             h('div', { style: { marginBottom: 10 } },
-              h('label', { style: { display: 'flex', justifyContent: 'space-between', color: TEXT, fontSize: 13, fontWeight: 600, marginBottom: 4 } },
-                h('span', null, 'Magnet position — drag it through the coil'), h('span', { style: { color: '#f43f5e' } }, String(Math.round(d.induceX)))),
-              h('input', { type: 'range', min: -100, max: 100, step: 2, value: d.induceX,
-                'aria-label': 'Magnet position relative to the coil',
+              h('label', { htmlFor: 'mag-hand-generator-position', style: { display: 'flex', justifyContent: 'space-between', color: TEXT, fontSize: 13, fontWeight: 600, marginBottom: 4 } },
+                h('span', null, 'Magnet position — drag it through the coil'), h('span', { style: { color: TEXT, fontVariantNumeric: 'tabular-nums' } }, String(Math.round(d.induceX)))),
+              h('input', { id: 'mag-hand-generator-position', type: 'range', min: -100, max: 100, step: 2, value: d.induceX,
+                'aria-valuetext': 'Magnet position relative to the coil: ' + String(Math.round(d.induceX)),
                 onChange: function (e) { moveInduceMagnet(parseFloat(e.target.value)); },
-                style: { width: '100%', accentColor: '#f43f5e' } })),
+                style: { width: '100%', accentColor: ACTIVE } })),
             slider('Turns on the coil (N)', d.induceTurns, 10, 200, 10, function (v) { upd({ induceTurns: v }); }),
             h('div', { className: 'mag-observe' },
               h('span', { 'aria-hidden': 'true' }, '⏱️'),
@@ -2469,7 +3073,10 @@
                 h('line', { x1: 12, y1: yy, x2: 148, y2: yy, stroke: 'rgba(56,189,248,.35)', strokeWidth: 1.5 }),
                 h('polygon', { points: '148,' + yy + ' 139,' + (yy - 4) + ' 139,' + (yy + 4), fill: 'rgba(56,189,248,.60)' }));
             }),
-            h('text', { x: 18, y: 59, fill: '#7dd3fc', fontSize: 11 }, 'B'),
+            h('text', { x: 18, y: 59, fill: TEXT, fontSize: 11 }, 'B field'),
+            h('path', { d: 'M 46 50 Q 80 27 114 50', fill: 'none', stroke: '#fbbf24', strokeWidth: 2 }),
+            h('polygon', { points: '114,50 104,45 108,56', fill: '#fbbf24' }),
+            h('text', { x: 80, y: 38, fill: TEXT, fontSize: 11, textAnchor: 'middle' }, 'rotation ω'),
             h('g', { transform: 'translate(80,100) rotate(' + angle + ')' },
               h('ellipse', { cx: 0, cy: 0, rx: 8, ry: 39, fill: 'rgba(245,158,11,.10)', stroke: '#f59e0b', strokeWidth: 4 }),
               h('line', { x1: -8, y1: -39, x2: -8, y2: 39, stroke: '#fbbf24', strokeWidth: 1 }),
@@ -2479,17 +3086,19 @@
             h('text', { x: normalX + 5, y: normalY - 4, fill: '#34d399', fontSize: 11 }, 'normal'),
             h('text', { x: 80, y: 164, fill: '#fbbf24', fontSize: 11, textAnchor: 'middle' }, 'θ = ' + angle + '°'),
             h('line', { x1: 160, y1: 18, x2: 160, y2: 174, stroke: '#334155' }),
-            h('text', { x: 176, y: 24, fill: '#f43f5e', fontSize: 11 }, 'flux Φ · cos θ'),
+            h('line', { x1: 176, y1: 20, x2: 191, y2: 20, stroke: '#f43f5e', strokeWidth: 2 }),
+            h('text', { x: 196, y: 24, fill: TEXT, fontSize: 11 }, 'flux Φ · cos θ · solid'),
             h('line', { x1: 176, y1: 72, x2: 312, y2: 72, stroke: '#334155', strokeDasharray: '3 3' }),
             h('polyline', { points: fluxPts.join(' '), fill: 'none', stroke: '#f43f5e', strokeWidth: 2 }),
-            h('text', { x: 176, y: 112, fill: '#fbbf24', fontSize: 11 }, 'voltage ε · sin θ · speed'),
+            h('line', { x1: 176, y1: 108, x2: 191, y2: 108, stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '5 3' }),
+            h('text', { x: 196, y: 112, fill: TEXT, fontSize: 11 }, 'voltage ε · sin θ · dashed'),
             h('line', { x1: 176, y1: 148, x2: 312, y2: 148, stroke: '#334155', strokeDasharray: '3 3' }),
-            h('polyline', { points: emfPts.join(' '), fill: 'none', stroke: '#fbbf24', strokeWidth: 2 }),
+            h('polyline', { points: emfPts.join(' '), fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '6 3' }),
             h('line', { x1: cursorX, y1: 34, x2: cursorX, y2: 176, stroke: 'rgba(52,211,153,.55)', strokeDasharray: '3 3' }),
-            h('circle', { cx: cursorX, cy: 72 - fluxNorm * 25, r: 4, fill: '#f43f5e', stroke: '#fff', strokeWidth: 1 }),
-            h('circle', { cx: cursorX, cy: 148 - emfNorm * 25 * voltagePlotScale, r: 4, fill: '#fbbf24', stroke: '#fff', strokeWidth: 1 }),
-            h('text', { x: 176, y: 184, fill: SOFT, fontSize: 8.5 }, '0°'),
-            h('text', { x: 312, y: 184, fill: SOFT, fontSize: 8.5, textAnchor: 'end' }, '360°')),
+            h('circle', { cx: cursorX, cy: 72 - fluxNorm * 25, r: 4, fill: INSTRUMENT, stroke: '#f43f5e', strokeWidth: 2 }),
+            h('rect', { x: cursorX - 3.5, y: 148 - emfNorm * 25 * voltagePlotScale - 3.5, width: 7, height: 7, fill: INSTRUMENT, stroke: '#fbbf24', strokeWidth: 2, transform: 'rotate(45 ' + cursorX + ' ' + (148 - emfNorm * 25 * voltagePlotScale) + ')' }),
+            h('text', { x: 176, y: 184, fill: SOFT, fontSize: 11 }, '0°'),
+            h('text', { x: 312, y: 184, fill: SOFT, fontSize: 11, textAnchor: 'end' }, '360°')),
           slider('Coil angle (θ)', d.genAngle, 0, 360, 5, function (v) { upd({ genAngle: v, genPhaseSeen: true }); }),
           h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', margin: '-2px 0 8px' } },
             h('button', { onClick: function () { upd({ genAngle: 0, genPhaseSeen: true }); }, style: btn(Math.abs(angle) < 1) }, 'Flux maximum · 0°'),
@@ -2502,11 +3111,11 @@
           slider('Generator field strength (B)', d.genField, 1, 8, 1, function (v) { upd({ genField: v }); }),
           h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
             h('div', { style: { padding: 9, borderRadius: 9, background: 'rgba(244,63,94,.10)', border: '1px solid rgba(244,63,94,.28)' } },
-              h('div', { style: { color: SOFT, fontSize: 10.5 } }, 'Relative magnetic flux'),
-              h('div', { style: { color: '#fb7185', fontSize: 16, fontWeight: 800 } }, flux.toFixed(0) + ' Φ units')),
+              h('div', { style: { color: SOFT, fontSize: 11 } }, 'Relative magnetic flux · solid curve'),
+              h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, flux.toFixed(0) + ' Φ units')),
             h('div', { style: { padding: 9, borderRadius: 9, background: 'rgba(251,191,36,.10)', border: '1px solid rgba(251,191,36,.28)' } },
-              h('div', { style: { color: SOFT, fontSize: 10.5 } }, 'Relative induced voltage'),
-              h('div', { style: { color: '#fbbf24', fontSize: 16, fontWeight: 800 } }, emf.toFixed(0) + ' ε units'))),
+              h('div', { style: { color: SOFT, fontSize: 11 } }, 'Relative induced voltage · dashed curve'),
+              h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, emf.toFixed(0) + ' ε units'))),
           h('div', { className: 'mag-observe', role: 'status' },
             h('span', { 'aria-hidden': 'true' }, '〰️'),
             h('span', null, h('b', null, phaseNote + ' '), 'More turns or a stronger field increases flux and voltage; faster rotation increases voltage amplitude and frequency without changing the flux amplitude.'))
@@ -2644,15 +3253,15 @@
               var right = revealed && g === m.magnetic;
               var wrong = revealed && g != null && g !== m.magnetic;
               return h('div', { key: m.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 9, marginBottom: 6, background: right ? 'rgba(34,197,94,0.12)' : wrong ? 'rgba(239,68,68,0.12)' : 'rgba(148,163,184,0.06)', border: '1px solid ' + (right ? '#22c55e' : wrong ? '#ef4444' : BORDER) } },
-                h('span', { style: { fontSize: 18 } }, m.emoji),
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, m.emoji),
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { color: TEXT, fontSize: 13, fontWeight: 700 } }, m.name),
                   revealed ? h('div', { style: { color: SOFT, fontSize: 11, lineHeight: 1.4, marginTop: 2 } }, (m.magnetic ? '🧲 Sticks. ' : '🚫 No pull. ') + m.why) : null),
                 !revealed ? h('div', { style: { display: 'flex', gap: 4 } },
                   h('button', { 'aria-pressed': g === true ? 'true' : 'false', onClick: function () { var ng = Object.assign({}, guesses); ng[m.id] = true; upd({ matGuesses: ng }); },
-                    style: { padding: '5px 9px', borderRadius: 8, border: '1px solid ' + (g === true ? '#f43f5e' : BORDER), background: g === true ? '#f43f5e' : 'transparent', color: g === true ? '#fff' : SOFT, fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, 'Sticks'),
+                    style: Object.assign({}, btn(g === true), { padding: '5px 9px', fontSize: 12 }) }, 'Sticks'),
                   h('button', { 'aria-pressed': g === false ? 'true' : 'false', onClick: function () { var ng = Object.assign({}, guesses); ng[m.id] = false; upd({ matGuesses: ng }); },
-                    style: { padding: '5px 9px', borderRadius: 8, border: '1px solid ' + (g === false ? '#f43f5e' : BORDER), background: g === false ? '#f43f5e' : 'transparent', color: g === false ? '#fff' : SOFT, fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, 'No pull')
+                    style: Object.assign({}, btn(g === false), { padding: '5px 9px', fontSize: 12 }) }, 'No pull')
                 ) : h('span', { style: { fontSize: 16 } }, right ? '✓' : wrong ? '✗' : '·'));
             }),
             !d.matRevealed ? h('div', { style: { textAlign: 'center', marginTop: 8 } },
@@ -3050,6 +3659,18 @@
         kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: 320, height: 140, fill: INSTRUMENT, rx: 10 }));
         // shared iron core (the flux bridge between the two coils)
         kids.push(h('rect', { key: 'core', x: 120, y: 22, width: 80, height: 96, fill: 'none', stroke: '#94a3b8', strokeWidth: 12, rx: 8, opacity: 0.55 }));
+        if (d.xfmrAC) {
+          kids.push(h('path', { key: 'flux-path', d: 'M 132 31 H 188 V 109 H 132 Z', fill: 'none', stroke: '#fbbf24', strokeWidth: 1.8, strokeDasharray: '6 4', opacity: 0.82 }));
+          kids.push(h('polygon', { key: 'flux-head-top', points: '184,31 174,26 174,36', fill: '#fbbf24' }));
+          kids.push(h('polygon', { key: 'flux-head-bottom', points: '136,109 146,104 146,114', fill: '#fbbf24' }));
+          kids.push(h('text', { key: 'flux-label', x: 160, y: 74, fill: TEXT, fontSize: 11, textAnchor: 'middle' }, 'changing flux Φ'));
+        } else {
+          kids.push(h('text', { key: 'flux-label', x: 160, y: 74, fill: TEXT, fontSize: 11, textAnchor: 'middle' }, 'steady flux · no induction'));
+        }
+        kids.push(h('line', { key: 'input-wire', x1: 82, y1: 70, x2: 106, y2: 70, stroke: '#f59e0b', strokeWidth: 2 }));
+        kids.push(h('polygon', { key: 'input-head', points: '111,70 102,65 102,75', fill: '#f59e0b' }));
+        kids.push(h('line', { key: 'output-wire', x1: 214, y1: 70, x2: 238, y2: 70, stroke: '#38bdf8', strokeWidth: 2 }));
+        kids.push(h('polygon', { key: 'output-head', points: '243,70 234,65 234,75', fill: '#38bdf8' }));
         // primary loops (left leg)
         Array.from({ length: p }).forEach(function (_, i) {
           kids.push(h('ellipse', { key: 'p' + i, cx: 126, cy: 40 + i * (60 / Math.max(p - 1, 1)), rx: 16, ry: 5, fill: 'none', stroke: '#f59e0b', strokeWidth: 3 }));
@@ -3058,10 +3679,10 @@
         Array.from({ length: s2 }).forEach(function (_, i) {
           kids.push(h('ellipse', { key: 's' + i, cx: 194, cy: 36 + i * (68 / Math.max(s2 - 1, 1)), rx: 16, ry: 5, fill: 'none', stroke: '#38bdf8', strokeWidth: 3 }));
         });
-        kids.push(h('text', { key: 'lin', x: 60, y: 66, fill: '#f59e0b', fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, d.xfmrAC ? '120 V AC' : '120 V DC'));
+        kids.push(h('text', { key: 'lin', x: 60, y: 66, fill: TEXT, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, d.xfmrAC ? '120 V AC' : '120 V DC'));
         kids.push(h('text', { key: 'lp', x: 60, y: 82, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, 'primary N₁=' + d.xfmrN1));
         var vout = transformerOut(120, d.xfmrN1, d.xfmrN2, d.xfmrAC);
-        kids.push(h('text', { key: 'lout', x: 262, y: 66, fill: '#38bdf8', fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, vout.toFixed(0) + ' V'));
+        kids.push(h('text', { key: 'lout', x: 262, y: 66, fill: TEXT, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, vout.toFixed(0) + ' V'));
         kids.push(h('text', { key: 'ls', x: 262, y: 82, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, 'secondary N₂=' + d.xfmrN2));
         if (d.xfmrAC) {
           kids.push(h('text', { key: 'tag', x: 160, y: 14, fill: stepUp ? '#34d399' : '#fbbf24', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, stepUp ? 'STEP-UP ▲' : (d.xfmrN2 === d.xfmrN1 ? '1 : 1' : 'STEP-DOWN ▼')));
@@ -3138,14 +3759,19 @@
       // Earth's Field ─────────────────────────────────────────────────
       function earthTab() {
         var decDirection = d.declination === 0 ? 'no offset in this example' : (Math.abs(d.declination) + '° ' + (d.declination > 0 ? 'east' : 'west') + ' of true north');
+        var windLevel = Math.max(1, Math.min(10, Number(d.earthSolarWind) || 5));
+        var windWord = windLevel <= 3 ? 'quiet' : windLevel <= 7 ? 'active' : 'storm-level';
         return h('div', null,
           card('Earth’s dynamo and your compass', h('div', null,
             h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 10 } }, earthSVG()),
             h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 8px', lineHeight: 1.5 } }, 'Earth does not hide a bar magnet inside. Motion in its electrically conducting liquid outer core sustains a ', h('b', null, 'geodynamo'), ' whose large-scale field resembles a tilted dipole. A compass follows that magnetic field, not the geographic grid.'),
             slider('Example local declination (degrees)', d.declination, -30, 30, 1, function (v) { upd({ declination: v, earthSeen: true }); }),
+            slider('Solar-wind pressure', windLevel, 1, 10, 1, function (v) { upd({ earthSolarWind: v, earthSeen: true }); }),
             h('div', { className: 'mag-observe' },
               h('span', { 'aria-hidden': 'true' }, '🧭'),
-              h('span', null, h('b', null, 'Compass evidence: '), 'the red needle is ' + decDirection + '. Declination depends on location and changes slowly as Earth’s field changes, so navigators use a dated regional model or chart.'))
+              h('span', null,
+                h('b', null, 'Compass evidence: '), 'the red needle is ' + decDirection + '. ',
+                h('b', null, 'Space-weather state: '), windWord + ' solar wind at level ' + windLevel + ' of 10; higher pressure pushes the dayside boundary inward and lengthens the magnetotail. Declination depends on location and changes slowly, so navigators use a dated regional model or chart.'))
           ), '#22c55e'),
           card('The solar wind reshapes the field', h('div', null,
             h('p', { style: { color: SOFT, fontSize: 13, margin: 0, lineHeight: 1.5 } }, 'Charged particles streaming from the Sun compress the field on the daytime side and stretch it into a long ', h('b', null, 'magnetotail'), ' on the nighttime side. The magnetosphere deflects much of that flow; some particles funnel toward polar regions and help produce auroras. Mars has no strong global field today, leaving its upper atmosphere more exposed to solar-wind stripping alongside gravity and other processes.')
@@ -3157,21 +3783,33 @@
       function earthSVG() {
         var tilt = 11;
         var decLabel = (d.declination > 0 ? '+' : '') + d.declination + '°';
+        var windLevel = Math.max(1, Math.min(10, Number(d.earthSolarWind) || 5));
+        var daysideX = 60 + windLevel * 4;
+        var tailX = 250 + windLevel * 6;
+        var windAlpha = (0.34 + windLevel * 0.045).toFixed(2);
+        var boundaryPath = 'M 137 24 C ' + (daysideX + 14) + ' 38 ' + daysideX + ' 70 ' + daysideX + ' 100 C ' + daysideX + ' 130 ' + (daysideX + 14) + ' 162 137 176 C 205 170 ' + (tailX - 42) + ' 143 ' + tailX + ' 100 C ' + (tailX - 42) + ' 57 205 30 137 24 Z';
+        var shockPath = 'M 127 15 C ' + (daysideX - 18) + ' 31 ' + (daysideX - 28) + ' 67 ' + (daysideX - 28) + ' 100 C ' + (daysideX - 28) + ' 133 ' + (daysideX - 18) + ' 169 127 185';
         return h('svg', { viewBox: '0 0 320 200', width: '100%', style: { maxWidth: 440 }, role: 'img',
           'aria-label': 'Schematic magnetosphere: solar wind arrives from the left, compresses Earth’s dayside field, and stretches a magnetotail to the right. A compass example shows declination ' + decLabel },
           h('rect', { x: 0, y: 0, width: 320, height: 200, fill: INSTRUMENT, rx: 10 }),
-          h('text', { x: 12, y: 18, fill: '#fbbf24', fontSize: 11 }, 'SUN → solar wind'),
+          h('text', { x: 12, y: 18, fill: TEXT, fontSize: 11 }, 'SUN → solar wind · pressure ' + windLevel + '/10'),
+          h('path', { d: shockPath, fill: 'none', stroke: 'rgba(251,191,36,' + windAlpha + ')', strokeWidth: 1.5, strokeDasharray: '5 4' }),
+          h('text', { x: Math.max(12, daysideX - 42), y: 35, fill: TEXT, fontSize: 11 }, 'bow shock'),
           // Solar-wind streams and arrowheads.
           [48, 74, 100, 126, 152].map(function (yy, i) {
             return h('g', { key: 'wind' + i },
-              h('line', { x1: 10, y1: yy, x2: 74, y2: yy, stroke: 'rgba(251,191,36,0.55)', strokeWidth: 1.5 }),
-              h('polygon', { points: '74,' + yy + ' 66,' + (yy - 4) + ' 66,' + (yy + 4), fill: 'rgba(251,191,36,0.7)' }));
+              h('line', { x1: 10, y1: yy, x2: daysideX - 7, y2: yy, stroke: 'rgba(251,191,36,' + windAlpha + ')', strokeWidth: 1 + windLevel * 0.09 }),
+              h('polygon', { points: (daysideX - 7) + ',' + yy + ' ' + (daysideX - 15) + ',' + (yy - 4) + ' ' + (daysideX - 15) + ',' + (yy + 4), fill: 'rgba(251,191,36,' + windAlpha + ')' }));
           }),
           // Magnetopause: compressed at left (dayside), stretched to the right.
-          h('path', { d: 'M 137 24 C 92 38 78 70 78 100 C 78 130 92 162 137 176 C 205 170 267 143 310 100 C 267 57 205 30 137 24 Z',
-            fill: 'rgba(34,197,94,0.05)', stroke: 'rgba(34,197,94,0.48)', strokeWidth: 1.6 }),
-          h('text', { x: 246, y: 34, fill: '#34d399', fontSize: 11, textAnchor: 'middle' }, 'magnetotail'),
-          h('text', { x: 92, y: 184, fill: SOFT, fontSize: 11 }, 'compressed dayside'),
+          h('path', { d: boundaryPath,
+            fill: 'rgba(34,197,94,0.05)', stroke: 'rgba(34,197,94,0.58)', strokeWidth: 1.6 }),
+          h('path', { d: 'M ' + (daysideX - 3) + ' 64 Q ' + (daysideX + 25) + ' 42 120 42', fill: 'none', stroke: 'rgba(251,191,36,.46)', strokeWidth: 1.3 }),
+          h('path', { d: 'M ' + (daysideX - 3) + ' 136 Q ' + (daysideX + 25) + ' 158 120 158', fill: 'none', stroke: 'rgba(251,191,36,.46)', strokeWidth: 1.3 }),
+          h('line', { x1: 215, y1: 100, x2: tailX - 9, y2: 100, stroke: 'rgba(52,211,153,.45)', strokeWidth: 1.5 }),
+          h('polygon', { points: tailX + ',100 ' + (tailX - 10) + ',95 ' + (tailX - 10) + ',105', fill: 'rgba(52,211,153,.65)' }),
+          h('text', { x: Math.min(270, tailX - 40), y: 34, fill: TEXT, fontSize: 11, textAnchor: 'middle' }, 'magnetotail'),
+          h('text', { x: daysideX + 12, y: 184, fill: SOFT, fontSize: 11 }, 'compressed dayside'),
           // Nested dipole field loops near Earth.
           [32, 52, 72].map(function (rr, i) {
             return h('ellipse', { key: 'e' + i, cx: 150, cy: 100, rx: rr + 13, ry: rr, fill: 'none',
@@ -3179,11 +3817,14 @@
           }),
           h('circle', { cx: 150, cy: 100, r: 31, fill: '#1e3a5f', stroke: '#38bdf8', strokeWidth: 1.5 }),
           h('path', { d: 'M 125 97 Q 141 84 154 92 Q 164 100 176 91 L 180 106 Q 162 119 142 112 Z', fill: 'rgba(52,211,153,0.5)' }),
+          h('path', { d: 'M 130 79 Q 150 68 170 79', fill: 'none', stroke: '#a78bfa', strokeWidth: 3, strokeLinecap: 'round' }),
+          h('path', { d: 'M 130 121 Q 150 132 170 121', fill: 'none', stroke: '#a78bfa', strokeWidth: 3, strokeLinecap: 'round' }),
+          h('text', { x: 150, y: 69, fill: TEXT, fontSize: 11, textAnchor: 'middle' }, 'aurora zones'),
           // Geographic and magnetic axes.
           h('line', { x1: 150, y1: 55, x2: 150, y2: 145, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3 3' }),
           h('line', { x1: 150, y1: 55, x2: 150, y2: 145, stroke: '#f43f5e', strokeWidth: 1.6, transform: 'rotate(' + tilt + ' 150 100)' }),
-          h('text', { x: 150, y: 49, fill: '#94a3b8', fontSize: 8.5, textAnchor: 'middle' }, 'true N'),
-          h('text', { x: 164, y: 61, fill: '#f43f5e', fontSize: 8.5 }, 'magnetic axis ≈11°'),
+          h('text', { x: 150, y: 49, fill: TEXT, fontSize: 11, textAnchor: 'middle' }, 'true N'),
+          h('text', { x: 166, y: 61, fill: TEXT, fontSize: 11 }, 'magnetic axis ≈11°'),
           // Local compass inset: dashed true north vs red magnetic bearing.
           h('g', { transform: 'translate(265,103)' },
             h('circle', { r: 25, fill: 'rgba(15,23,42,0.82)', stroke: '#64748b', strokeWidth: 1 }),
@@ -3278,10 +3919,11 @@
       function askBox() {
         if (!aiOn) return null;
         return card('🤔 Stuck? Ask for a hint', h('div', null,
-          h('input', { type: 'text', 'aria-label': 'Ask the magnetism tutor for a guiding hint', value: d.askInput || '', placeholder: 'e.g. why does adding turns make it stronger?',
+          h('label', { htmlFor: 'mag-tutor-question', style: { display: 'block', color: TEXT, fontSize: 12.5, fontWeight: 700, marginBottom: 4 } }, 'Your magnetism question'),
+          h('input', { id: 'mag-tutor-question', type: 'text', value: d.askInput || '', placeholder: 'e.g. why does adding turns make it stronger?',
             onChange: function (e) { upd({ askInput: e.target.value }); },
             style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid ' + BORDER, background: '#0b1220', color: TEXT, fontSize: 13, marginBottom: 8, boxSizing: 'border-box' } }),
-          h('button', { disabled: d.askLoading || !(d.askInput || '').trim(),
+          h('button', { disabled: d.askLoading || !(d.askInput || '').trim(), 'aria-busy': d.askLoading ? 'true' : undefined,
             onClick: function () {
               upd({ askLoading: true, askAnswer: '' });
               var prompt = 'You are a Socratic physics tutor for a middle-school magnetism lab. The student asks: "' + (d.askInput || '') + '". Give ONE guiding hint or question, under 45 words, no final numeric answers, no em dashes. Nudge them toward the field-line or B = mu0*n*I idea if relevant.';
@@ -3289,22 +3931,47 @@
                 upd({ askAnswer: (r && (r.text || r)) || 'Try changing one thing at a time and watch the field respond.', askLoading: false });
               }).catch(function () { upd({ askAnswer: 'Try changing one slider at a time and watch which way the field or compass responds.', askLoading: false }); });
             }, style: btn(true) }, d.askLoading ? '…thinking' : 'Get a hint'),
-          d.askAnswer ? h('p', { style: { color: TEXT, fontSize: 13, lineHeight: 1.5, marginTop: 10, padding: 10, background: 'rgba(148,163,184,0.1)', borderRadius: 8 } }, d.askAnswer) : null
+          d.askAnswer ? h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: TEXT, fontSize: 13, lineHeight: 1.5, marginTop: 10, padding: 10, background: 'rgba(148,163,184,0.1)', borderRadius: 8 } }, d.askAnswer) : null
         ), '#a855f7');
       }
 
       // ── shared UI atoms ───────────────────────────────────────────────
+      function poleLegend(northLabel, southLabel) {
+        return h('div', { className: 'mag-pole-key', 'aria-label': 'Magnetic pole key' },
+          h('span', null, h('i', { className: 'mag-pole-chip', 'aria-hidden': 'true', style: { background: ACTIVE } }, 'N'), northLabel || 'North pole'),
+          h('span', null, h('i', { className: 'mag-pole-chip', 'aria-hidden': 'true', style: { background: '#1d4ed8' } }, 'S'), southLabel || 'South pole'));
+      }
+      function sceneTextAlternative(id, text) {
+        return h('div', null,
+          h('span', { id: id, className: 'mag-sronly' }, text),
+          h('details', { className: 'mag-scene-text' },
+            h('summary', null, 'Text description of the current 3D scene'),
+            h('p', { style: { margin: '5px 0 0' } }, text)));
+      }
+      function sceneViewport(canvas, readouts, axisText) {
+        return h('div', { className: 'mag-scene-frame' },
+          canvas,
+          h('div', { className: 'mag-scene-hud', 'aria-hidden': 'true' },
+            (readouts || []).map(function (readout, index) {
+              return h('span', { key: 'hud-' + index, className: 'mag-hud-chip' },
+                h('i', { className: 'mag-hud-dot', style: { '--mag-hud-tone': readout.tone || '#fbbf24' } }),
+                h('span', { className: 'mag-hud-label' }, readout.label),
+                h('b', { className: 'mag-hud-value' }, readout.value));
+            })),
+          axisText ? h('span', { className: 'mag-scene-axis', 'aria-hidden': 'true' }, axisText) : null);
+      }
       function btn(active) {
-        return { padding: '8px 12px', borderRadius: 9, border: '1px solid ' + (active ? '#f43f5e' : BORDER), background: active ? '#f43f5e' : PANEL, color: active ? '#fff' : TEXT, fontWeight: 700, fontSize: 13, cursor: 'pointer' };
+        return { minHeight: 36, padding: '8px 12px', borderRadius: 9, border: '1px solid ' + (active ? ACTIVE : BORDER), background: active ? ACTIVE : PANEL, color: active ? '#fff' : TEXT, boxShadow: active ? 'inset 0 -3px 0 #fff' : 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer' };
       }
       function slider(label, val, min, max, step, onChange) {
+        var sliderId = 'mag-slider-' + (++_sliderUid);
         return h('div', { style: { marginBottom: 10 } },
-          h('label', { style: { display: 'flex', justifyContent: 'space-between', color: TEXT, fontSize: 13, fontWeight: 600, marginBottom: 4 } },
-            h('span', null, label), h('span', { style: { color: '#f43f5e' } }, String(val))),
-          h('input', { type: 'range', min: min, max: max, step: step, value: val,
-            'aria-label': label,
+          h('label', { htmlFor: sliderId, style: { display: 'flex', justifyContent: 'space-between', color: TEXT, fontSize: 13, fontWeight: 600, marginBottom: 4 } },
+            h('span', null, label), h('span', { style: { color: TEXT, fontVariantNumeric: 'tabular-nums' } }, String(val))),
+          h('input', { id: sliderId, type: 'range', min: min, max: max, step: step, value: val,
+            'aria-valuetext': label + ': ' + String(val),
             onChange: function (e) { onChange(parseFloat(e.target.value)); },
-            style: { width: '100%', accentColor: '#f43f5e' } }));
+            style: { width: '100%', accentColor: ACTIVE } }));
       }
       function disclosure(text, accent) {
         return h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(148,163,184,0.08)', border: '1px dashed ' + BORDER, marginBottom: 12 } },
@@ -3333,11 +4000,21 @@
           return { station: station, setup: 'gap ' + d.pairDistance + ', strengths ' + d.pairStrength1 + ' and ' + d.pairStrength2 + ', ' + (d.pairAttract ? 'attract' : 'repel'),
             result: magnetPairForce(d.pairStrength1, d.pairStrength2, d.pairDistance).toFixed(3) + '× relative pair force' };
         }
-        if (d.tab === 'electro') {
+        if (d.tab === 'electro' && d.electroView === '3d') {
+          var e3 = currentElectro3DState();
+          var e3b = finiteSolenoidCenterField(e3.turns, e3.current, e3.lengthM, e3.radiusM, e3.material) * 1000;
+          return { station: '3D electromagnet engineering', setup: e3.turns + ' turns, ' + e3.current + ' A, ' + (e3.lengthM * 100).toFixed(0) + ' cm long, ' + CORE_MATERIALS[e3.material].name + ' core',
+            result: e3b.toFixed(e3b < 10 ? 2 : 0) + ' mT center field; probe (' + e3.probe.x.toFixed(1) + ', ' + e3.probe.y.toFixed(1) + ', ' + e3.probe.z.toFixed(1) + ')' };
+        }        if (d.tab === 'electro') {
           var eDir = d.currentDir * d.windingDir > 0 ? 'right' : 'left';
           var eB = solenoidField(d.turns, d.current, 0.1, d.core ? 600 : 1) * 1000;
           return { station: station, setup: d.turns + ' turns, ' + d.current + ' A, ' + (d.core ? 'iron' : 'air') + ' core, field ' + eDir,
             result: eB.toFixed(eB < 10 ? 2 : 0) + ' mT interior field' };
+        }
+        if (d.tab === 'motor' && d.benchUsed) {
+          var mb = motorGeneratorBench(d.motorCurrent, d.motorField, d.benchLoadOhms, d.benchFriction, d.benchTurns, d.benchField);
+          return { station: 'Motor–generator bench', setup: 'motor I ' + d.motorCurrent + ', motor B ' + d.motorField + ', load ' + d.benchLoadOhms + ' Ω, friction ' + d.benchFriction,
+            result: Math.round(mb.rpm) + ' RPM, ' + mb.generatedVoltage.toFixed(1) + ' V, ' + mb.outputPower.toFixed(1) + ' W useful of ' + mb.inputPower.toFixed(1) + ' W input' };
         }
         if (d.tab === 'motor') {
           var mt = motorTorqueFactor(d.motorCurrent, d.motorField, d.motorAngle, d.motorCurrentDir, d.motorFieldDir);
@@ -3378,8 +4055,8 @@
         var snap = notebookSnapshot();
         var needsPrediction = d.learningMode === 'challenge' && !(d.notebookPrediction || '').trim();
         return card('Investigation notebook — claim, evidence, reasoning', h('div', null,
-          h('label', { style: { display: 'block', color: TEXT, fontSize: 12.5, fontWeight: 700, marginBottom: 4 } }, 'Prediction before this trial'),
-          h('input', { type: 'text', 'aria-label': 'Prediction before recording the current trial', value: d.notebookPrediction || '',
+          h('label', { htmlFor: 'mag-notebook-prediction', style: { display: 'block', color: TEXT, fontSize: 12.5, fontWeight: 700, marginBottom: 4 } }, 'Prediction before this trial'),
+          h('input', { id: 'mag-notebook-prediction', type: 'text', value: d.notebookPrediction || '',
             onChange: function (e) { upd({ notebookPrediction: e.target.value }); },
             placeholder: 'If I change ___, then ___ because…',
             style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid ' + BORDER, background: '#0b1220', color: TEXT, fontSize: 13, marginBottom: 8, boxSizing: 'border-box' } }),
@@ -3400,8 +4077,8 @@
                 h('b', { style: { color: TEXT } }, t.station + ': '), t.setup + ' → ' + t.result,
                 h('span', { style: { display: 'block' } }, 'Prediction: ' + t.prediction));
             })) : h('p', { style: { color: SOFT, fontSize: 11.5, margin: '0 0 9px' } }, 'No evidence recorded yet. Change one variable, then save the result.'),
-          h('label', { style: { display: 'block', color: TEXT, fontSize: 12.5, fontWeight: 700, marginBottom: 4 } }, 'Claim supported by your evidence'),
-          h('textarea', { 'aria-label': 'Claim supported by recorded evidence', value: d.notebookClaim || '', rows: 2,
+          h('label', { htmlFor: 'mag-notebook-claim', style: { display: 'block', color: TEXT, fontSize: 12.5, fontWeight: 700, marginBottom: 4 } }, 'Claim supported by your evidence'),
+          h('textarea', { id: 'mag-notebook-claim', value: d.notebookClaim || '', rows: 2,
             onChange: function (e) { upd({ notebookClaim: e.target.value }); },
             placeholder: 'My evidence supports the claim that…',
             style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid ' + BORDER, background: '#0b1220', color: TEXT, fontSize: 13, boxSizing: 'border-box', resize: 'vertical' } })
@@ -3484,7 +4161,7 @@
         tabBar(),
         stationGuide(),
         d.tab !== 'quiz' ? investigationNotebook() : null,
-        h('div', { id: 'mag-panel-' + d.tab, role: 'tabpanel', 'aria-label': (STATION_GUIDES[d.tab] || STATION_GUIDES.field).phase }, body),
+        h('div', { id: 'mag-panel-' + d.tab, role: 'tabpanel', 'aria-labelledby': 'mag-tab-' + d.tab }, body),
         d.tab !== 'quiz' ? askBox() : null,
         factStrip()
       );
@@ -3493,6 +4170,6 @@
 
   // Expose pure helpers for the test suite (no-op in the browser bundle).
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { coilNormal3D: coilNormal3D, coilFlux3D: coilFlux3D, inducedVoltage3D: inducedVoltage3D, inductionPass3D: inductionPass3D, dipoleMoment3D: dipoleMoment3D, dipoleFieldAt3D: dipoleFieldAt3D, fieldAt3D: fieldAt3D, fieldComponentsAt3D: fieldComponentsAt3D, traceLine3D: traceLine3D, findFieldNull3D: findFieldNull3D, dipoleFieldAt: dipoleFieldAt, fieldAt: fieldAt, fieldComponentsAt: fieldComponentsAt, traceLine: traceLine, solenoidField: solenoidField, wireForce: wireForce, motorTorqueFactor: motorTorqueFactor, magnetPairForce: magnetPairForce, chargedParticleTrajectory: chargedParticleTrajectory, rotatingFlux: rotatingFlux, rotatingEMF: rotatingEMF, fluxAt: fluxAt, induceEMF: induceEMF, transformerOut: transformerOut, transformerLoad: transformerLoad, hysteresisMagnetization: hysteresisMagnetization, eddyBrakeFactor: eddyBrakeFactor, CRANE_ORDER: CRANE_ORDER, BIN_SLOT: BIN_SLOT, domainAngle: domainAngle, countCycles: countCycles, MAZE_ROUNDS: MAZE_ROUNDS, mazeCellToField: mazeCellToField, mazePoles: mazePoles, MATERIALS: MATERIALS, QUIZ: QUIZ, QUIZ_TABS: QUIZ_TABS, QUIZ_PASS: QUIZ_PASS, MU0: MU0 };
+    module.exports = { CORE_MATERIALS: CORE_MATERIALS, coreAdjustedField: coreAdjustedField, finiteSolenoidCenterField: finiteSolenoidCenterField, solenoidWireLength: solenoidWireLength, solenoidHeatingIndex: solenoidHeatingIndex, solenoidFieldAt3D: solenoidFieldAt3D, traceSolenoidLine3D: traceSolenoidLine3D, coilNormal3D: coilNormal3D, coilFlux3D: coilFlux3D, inducedVoltage3D: inducedVoltage3D, inductionPass3D: inductionPass3D, dipoleMoment3D: dipoleMoment3D, dipoleFieldAt3D: dipoleFieldAt3D, fieldAt3D: fieldAt3D, fieldComponentsAt3D: fieldComponentsAt3D, traceLine3D: traceLine3D, findFieldNull3D: findFieldNull3D, dipoleFieldAt: dipoleFieldAt, fieldAt: fieldAt, fieldComponentsAt: fieldComponentsAt, traceLine: traceLine, solenoidField: solenoidField, wireForce: wireForce, motorTorqueFactor: motorTorqueFactor, motorGeneratorBench: motorGeneratorBench, magnetPairForce: magnetPairForce, chargedParticleTrajectory: chargedParticleTrajectory, rotatingFlux: rotatingFlux, rotatingEMF: rotatingEMF, fluxAt: fluxAt, induceEMF: induceEMF, transformerOut: transformerOut, transformerLoad: transformerLoad, hysteresisMagnetization: hysteresisMagnetization, eddyBrakeFactor: eddyBrakeFactor, CRANE_ORDER: CRANE_ORDER, BIN_SLOT: BIN_SLOT, domainAngle: domainAngle, countCycles: countCycles, MAZE_ROUNDS: MAZE_ROUNDS, mazeCellToField: mazeCellToField, mazePoles: mazePoles, MATERIALS: MATERIALS, QUIZ: QUIZ, QUIZ_TABS: QUIZ_TABS, QUIZ_PASS: QUIZ_PASS, MU0: MU0 };
   }
 })();

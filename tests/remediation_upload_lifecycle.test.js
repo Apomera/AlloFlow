@@ -53,6 +53,7 @@ const makeUploadDeps = (overrides = {}) => ({
   setPendingPdfBase64: vi.fn(),
   setPendingPdfFile: vi.fn(),
   setPdfAuditResult: vi.fn(),
+  setPdfAuditLoading: vi.fn(),
   documentIntakeEpoch: 1,
   isPdfDocumentIntakeCurrent: vi.fn(() => true),
   ...overrides,
@@ -196,8 +197,16 @@ describe('document remediation upload routing', () => {
 describe('host document-selection lifecycle', () => {
   it('owns one monotonic epoch and startNewPdfAudit clears every stale document surface before returning it', () => {
     expect(host).toContain('const pdfDocumentSelectionEpochRef = useRef(0);');
+    const invalidation = section(host, '  const invalidatePdfDocumentOperations = () => {', '  const _closePdfAuditModal');
+    expect(invalidation).toContain('++pdfDocumentSelectionEpochRef.current');
+    expect(invalidation).toContain('window.__alloPdfRunGen = (window.__alloPdfRunGen || 0) + 1');
+    expect(invalidation).toContain('window.__alloPdfBatchAbortCtrl.abort()');
+    expect(invalidation).toContain('window.__alloflowCompareCropInsert = null');
+    expect(invalidation).toContain('window.__alloflowCompareGetTagged = null');
+    expect(invalidation).toContain('window.__alloflowExtractedImages = []');
+    expect(invalidation).toContain('window.__alloflowCropDescribe = null');
     const reset = section(host, '  const startNewPdfAudit = () => {', '  const ensurePdfBase64');
-    const epochIndex = reset.indexOf('++pdfDocumentSelectionEpochRef.current');
+    const epochIndex = reset.indexOf('invalidatePdfDocumentOperations()');
     expect(epochIndex).toBeGreaterThan(-1);
     for (const clear of [
       'lastPdfAuditResultRef.current = null',
@@ -206,11 +215,27 @@ describe('host document-selection lifecycle', () => {
       'setPendingPdfBase64(null)',
       'setPendingPdfFile(null)',
       'lastPdfBytesRef.current = null',
+      'setPdfPageRange(null)',
+      'setPdfMultiSession(null)',
+      'setPdfBatchProcessing(false)',
+      'setLiveChunkStream([])',
+      'setLiveChunkSessionActive(false)',
+      'setChunkResumePrompt(null)',
+      'setFixIssuesList(null)',
+      'setExtractionData(null)',
+      'setFidelityResult(null)',
+      'setImageReinsertionReport(null)',
+      'setExtractedImagesList([])',
+      'setAutoRestoreSummary(null)',
+      'setShowLargeFileModal(false)',
+      'setPendingLargeFile(null)',
     ]) {
       expect(reset.indexOf(clear), `${clear} must follow the epoch claim`).toBeGreaterThan(epochIndex);
     }
     const returnMatch = reset.match(/return\s+(?:documentIntakeEpoch|pdfDocumentSelectionEpochRef\.current)\s*;/);
     expect(returnMatch).not.toBeNull();
+    expect(host).toContain('const eventIsCurrent = (e) => Number.isInteger(e && e.detail && e.detail.documentEpoch)');
+    expect(host).toContain('if (!Number.isInteger(eventEpoch) || eventEpoch !== pdfDocumentSelectionEpochRef.current) return;');
     expect(reset.indexOf(returnMatch[0])).toBeGreaterThan(reset.indexOf('setPendingPdfFile(null)'));
   });
 
@@ -229,7 +254,14 @@ describe('host document-selection lifecycle', () => {
     expect(delegate).toBeGreaterThan(firstAwait);
     expect(upload).toContain('documentIntakeEpoch');
     expect(upload).toContain('isPdfDocumentIntakeCurrent');
+    expect(upload).toContain('attempt < 300');
     expect(upload).not.toContain('[handleFileUpload] MiscHandlers module not loaded - reload the page');
+    expect(host).toMatch(/setPdfAuditResult,\s*setPdfAuditLoading,\s*documentIntakeEpoch/);
+    const currentGuard = upload.indexOf('if (!isPdfDocumentIntakeCurrent(documentIntakeEpoch)) return;');
+    const delegationEnd = upload.indexOf('} catch (err)', currentGuard);
+    expect(currentGuard).toBeGreaterThan(-1);
+    expect(delegationEnd).toBeGreaterThan(currentGuard);
+    expect(upload.slice(currentGuard, delegationEnd)).not.toContain('setPdfAuditLoading(false)');
     expect(finalizer).toBeGreaterThan(delegate);
     expect(reset).toBeGreaterThan(finalizer);
   });
@@ -300,21 +332,58 @@ describe('host document-selection lifecycle', () => {
   });
 
   it('bounds a pending lazy module load so the audit UI can offer Retry', () => {
-    const loader = section(host, 'var moduleLoadWatchdog = setTimeout(function() {', 'var tryFallback = function() {');
+    const loader = section(host, 'var expireModuleLoad = function() {', 's.onload = () => {');
     expect(loader).toContain("entry.status === 'pending'");
+    expect(loader).toContain('entry.loadGeneration === loadGeneration');
+    expect(loader).toContain('s.remove()');
+    expect(loader).toContain('entry.fallbackScript.remove()');
+    expect(loader).toContain('entry.loadGeneration = loadGeneration + 1');
     expect(loader).toContain("__alloSetModuleStatus(name, 'failed')");
-    expect(loader).toContain('}, 30000);');
+    expect(loader.match(/setTimeout\(expireModuleLoad, 30000\)/g)).toHaveLength(2);
+    expect(host).toContain('if (!source) return;');
+    expect(host).not.toContain('window.onerror = function(msg, src, line, col, err)');
   });
 
   it('validates reattached PDF bytes against the active document and ignores stale reads', () => {
     const reattach = section(host, '  const ensurePdfBase64 = React.useCallback(() => {', '  const [pdfAutoSaveProject');
     expect(reattach).toContain('const documentIntakeEpoch = pdfDocumentSelectionEpochRef.current;');
     expect(reattach).toContain('const intakeIsCurrent = () => isPdfDocumentIntakeCurrent(documentIntakeEpoch);');
-    expect(reattach).toContain("base64.slice(0, 5) !== 'JVBER'");
+    expect(reattach).toContain("reattachHeader = atob(base64.slice(0, 2048))");
+    expect(reattach).toContain("reattachHeader.includes('%PDF-')");
     expect(reattach).toContain('pdfFixResultRef.current.documentDigest');
+    expect(reattach).toContain('lastPdfAuditResultRef.current && lastPdfAuditResultRef.current.documentDigest');
+    expect(reattach).toContain("if (settled || !intakeIsCurrent()) { finish(null); return; }");
     expect(reattach).toContain('actualDigest !== expectedDigest');
+    expect(reattach).toContain('pendingPdfFile && pendingPdfFile.documentDigest');
+    expect(reattach).toContain('documentDigest: expectedDigest || null');
     expect(reattach).toContain('reader.onabort');
+    expect(reattach).toContain('pdfReattachPendingRef.current');
+    expect(reattach).toContain("crypto.subtle.digest('SHA-256'");
+    expect(reattach).toContain('window.addEventListener(\'focus\'');
+    expect(reattach).toContain('}, 30000)');
+    expect(reattach).toContain('file.size > 30 * 1024 * 1024');
     expect(reattach).toContain('!!pendingPdfFile.name && file.name !== pendingPdfFile.name');
+  });
+
+  it('decodes LMS audit URLs once and bounds streamed downloads before buffering', () => {
+    const lmsSetup = section(host, '  const [lmsAuditUrls, setLmsAuditUrls] = useState([]);', '  const [wordSoundsAutoReview');
+    expect(lmsSetup).toContain("params.getAll('audit_url')");
+    expect(lmsSetup).toContain("part.slice(part.indexOf('=') + 1).split(',')");
+    expect(lmsSetup).not.toContain("params.get('audit_urls').split(',').map(u => decodeURIComponent(u))");
+    expect(host).toContain("fetch(url, fetchController ? { signal: fetchController.signal } : undefined)");
+    expect(host).toContain("resp.headers.get('content-length')");
+    expect(host).toContain("resp.body.getReader");
+    expect(host).toContain('received > maxBytes');
+    expect(host).toContain("fetchController?.signal.addEventListener('abort', onFetchAbort");
+    expect(host).toContain("readTimeout = setTimeout(() => failRead('The downloaded document could not be read within 30 seconds.')");
+    expect(host).toContain('await new Promise((resolveRead) => {');
+    const blobComplete = host.indexOf("if (blob.size > 30 * 1024 * 1024) throw new Error('The document is larger than the 30 MB safety limit.');");
+    const fetchTimerHandoff = host.indexOf('clearTimeout(fetchTimeout);', blobComplete);
+    const fileReaderStart = host.indexOf('await new Promise((resolveRead) => {', blobComplete);
+    expect(blobComplete).toBeGreaterThan(-1);
+    expect(fetchTimerHandoff).toBeGreaterThan(blobComplete);
+    expect(fetchTimerHandoff).toBeLessThan(fileReaderStart);
+    expect(host).toContain("if (isPdfDocumentIntakeCurrent(documentIntakeEpoch)) failRead('The downloaded document read was cancelled.'); else settleRead();");
   });
 });
 
@@ -346,7 +415,7 @@ describe('audit-only readiness and manual audit behavior', () => {
     const button = view.slice(buttonStart, buttonEnd);
     const containingRowPrefix = view.slice(Math.max(0, buttonStart - 700), buttonStart);
 
-    expect(button).toContain('auditReady');
+    expect(button).toContain('_auditInputReady');
     expect(button).toContain('disabled=');
     expect(button).not.toContain('remediationReady');
     expect(button).not.toContain('runAutoFixLoop');
@@ -357,7 +426,7 @@ describe('audit-only readiness and manual audit behavior', () => {
 
   it('releases the audit run token on cache and Office-document early completions', () => {
     const cached = section(docSource, '    if (_cacheKey) {', '    const _officeKind =');
-    expect(cached).toMatch(/_finishAuditUi\(\);\s*return _auditCancelled\(\) \? null : cached;/);
+    expect(cached).toMatch(/_finishAuditUi\(\);\s*return _auditCancelled\(\) \? null : cachedForDocument;/);
 
     const office = section(docSource, '    if (_officeKind) {', '    // Magic-byte intake gate');
     expect(office).toMatch(/_finishAuditUi\(\);\s*return _auditCancelled\(\) \? null : result;/);

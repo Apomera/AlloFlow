@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-19T17:49:13.665Z",
+  "generatedAt": "2026-07-23T17:25:04.427Z",
   "packId": "praxis-speech-language-pathology-5331",
   "standard": {
     "label": "AlloFlow independent 5331 source, structure, response-form, feedback, originality, safety, and linkage QA v2",
@@ -11596,7 +11596,7 @@
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
     "sourceItemsSha256": "a609f8a8a5d542804bf6c1fd6d76119cf147fbf3f3c0f33175eda9d2828c8761",
-    "learningLibrarySha256": "0465d7517407fad8e372ecf05e81beafcb43a95f397209703fe95883a3c5084d",
+    "learningLibrarySha256": "8caa46f8d363b5aaa43ef84e10e8213b531c10f766d442bc45ed1e5defc826f1",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   },
   "expansion": {

@@ -129,6 +129,31 @@ describe('anti-drift: all three modules ship the wiring', () => {
 // ── Mirror of the Step-1 OCR-skip seed gate (doc_pipeline) ──
 // Returns the text the pipeline would feed downstream given the deterministic-extraction
 // result + a parked resume seed. Born-digital (text already >100) ALWAYS wins; the seed
+describe('host remediation project restore hardening', () => {
+  it('host generic project loading accepts unfinished v2 files without inventing a score', () => {
+    expect(hostSrc).toContain("!_savedProject.version || (!_savedProject.accessibleHtml && !_savedProject.incomplete)");
+    expect(hostSrc).toContain('if (project.incomplete) {');
+    expect(hostSrc).toContain('documentDigest: _resumeDigest');
+    expect(hostSrc).toContain('documentDigest: project.auditResult.documentDigest || _resumeDigest');
+    expect(hostSrc).toContain('documentDigest: _resumeDigest, score: null');
+    expect(hostSrc).toContain('pendingPdfFile && pendingPdfFile.documentDigest');
+  });
+
+  it('restores canonical verification evidence and starts FileReader safely', () => {
+    expect(hostSrc).toContain('const _loadedVerificationCoverage = _derivedProjectVerification.coverage || _derivedProjectVerification.verificationCoverage || project.verificationCoverage || null;');
+    expect(hostSrc).toContain("const _loadedVerificationState = _derivedProjectVerification.verificationState || 'partial';");
+    expect(hostSrc).toContain('const _loadedAfterScoreVerified = _derivedProjectVerification.afterScoreVerified === true');
+    expect(hostSrc).toContain('size: Number(project.fileSize) || Number(project.multiSession && project.multiSession.fileSize) || 0');
+    expect(hostSrc).toContain('documentDigest: project.documentDigest || project.docKey || null');
+    expect(hostSrc).toMatch(/try \{\s*reader\.readAsText\(file\);\s*\} catch \(readError\)/);
+});
+
+  it('preserves the live HTML-binding proof after canonical view normalization', () => {
+    const proofCopies = viewSrc.match(/_viewAttachRuntimeBindingProof\(_normalizedLoadedFixResult, project\.accessibleHtml/g) || [];
+    expect(proofCopies).toHaveLength(2);
+    expect(viewSrc.match(/setPdfFixResult\(_normalizedLoadedFixResult\);/g) || []).toHaveLength(2);
+  });
+  });
 // only fills the scanned/empty case, and only on an exact filename match with real text.
 const textAfterSeed = (extracted, seed, fileName) => {
   let text = extracted || '';

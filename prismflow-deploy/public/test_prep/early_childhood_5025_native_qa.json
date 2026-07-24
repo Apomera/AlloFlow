@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-19T17:49:05.905Z",
+  "generatedAt": "2026-07-23T17:24:59.662Z",
   "packId": "praxis-early-childhood-5025",
   "standard": {
     "label": "AlloFlow Early Childhood 5025 source, semantic-link, option-feedback, and learning-library QA v2",
@@ -38,7 +38,7 @@
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
     "sourceItemsSha256": "ddfb76965550215cb268cfbeac296eab4f7af29a138d249f730bfbff0cc6943c",
-    "learningLibrarySha256": "970d383e9d78d76a6a7fb4f176eed65db0adf05dbcba4e867ac0e8a41712eb0e",
+    "learningLibrarySha256": "42b5e5611ab9cab622de555d051228ab79c978cb101649584295de69d6c42201",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   },
   "expansion": {

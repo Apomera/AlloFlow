@@ -11,6 +11,9 @@
   var React = window.React;
   if (!React) { console.error('[EducatorHubModal] React not found on window'); return; }
 
+const _EDUCATOR_BATCH_MAX_FILES = 60;
+const _EDUCATOR_BATCH_MAX_FILE_BYTES = 200 * 1024 * 1024;
+const _EDUCATOR_BATCH_MAX_TOTAL_BYTES = 300 * 1024 * 1024;
 function EducatorHubModal(props) {
   const {
     handleFileUpload,
@@ -81,6 +84,44 @@ function EducatorHubModal(props) {
     })
   } = props;
   const dialogRef = React.useRef(null);
+  const pdfBatchIntakeRef = React.useRef(null);
+  const educatorHubMountedRef = React.useRef(true);
+  const [pdfBatchIntakeProgress, setPdfBatchIntakeProgress] = React.useState(null);
+  const _setPdfBatchIntakeProgressIfMounted = (value) => {
+    if (educatorHubMountedRef.current) setPdfBatchIntakeProgress(value);
+  };
+  const _cancelPdfBatchIntake = (notify) => {
+    const job = pdfBatchIntakeRef.current;
+    if (!job) return;
+    job.cancelled = true;
+    if (job.reader && typeof job.reader.abort === "function") {
+      try {
+        job.reader.abort();
+      } catch (_) {
+      }
+    }
+    if (typeof job.cancelRead === "function") job.cancelRead();
+    if (pdfBatchIntakeRef.current === job) pdfBatchIntakeRef.current = null;
+    _setPdfBatchIntakeProgressIfMounted(null);
+    if (notify !== false) addToast("PDF batch preparation cancelled.", "info");
+  };
+  React.useEffect(function() {
+    educatorHubMountedRef.current = true;
+    return function() {
+      educatorHubMountedRef.current = false;
+      const job = pdfBatchIntakeRef.current;
+      if (!job) return;
+      job.cancelled = true;
+      if (job.reader && typeof job.reader.abort === "function") {
+        try {
+          job.reader.abort();
+        } catch (_) {
+        }
+      }
+      if (typeof job.cancelRead === "function") job.cancelRead();
+      if (pdfBatchIntakeRef.current === job) pdfBatchIntakeRef.current = null;
+    };
+  }, []);
   React.useEffect(function() {
     const dialog = dialogRef.current;
     if (!dialog) return void 0;
@@ -353,8 +394,7 @@ function EducatorHubModal(props) {
   }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-amber-800" }, t("educator_hub.lumen_title") || "Lumen"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-600 mt-1" }, t("educator_hub.lumen_desc") || "Study sources or analyze data in one evidence workspace. Grounded answers cite exact passages; data findings keep uncertainty and provenance visible."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_document_hub_card", onClick: () => {
     setShowEducatorHub(false);
     openExportPreview("print");
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F4C4}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-emerald-800" }, t("educator_hub.document_hub_title") || "Document Hub"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-600 mt-1" }, t("educator_hub.document_hub_desc") || "Document builder with themes, WYSIWYG editing, accessibility audit, and multi-format export (PDF, HTML, worksheet, slides)"))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_pdf_accessibility_card", onClick: () => {
-    setShowEducatorHub(false);
+  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F4C4}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-emerald-800" }, t("educator_hub.document_hub_title") || "Document Hub"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-600 mt-1" }, t("educator_hub.document_hub_desc") || "Document builder with themes, WYSIWYG editing, accessibility audit, and multi-format export (PDF, HTML, worksheet, slides)"))), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!pdfBatchIntakeProgress, "data-help-key": "educator_hub_pdf_accessibility_card", onClick: () => {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "application/pdf,.pdf,.docx,.pptx";
@@ -371,6 +411,7 @@ function EducatorHubModal(props) {
       }
       if (files.length === 0) return;
       if (files.length === 1) {
+        setShowEducatorHub(false);
         const singleTarget = { files: [files[0]], value: "" };
         try {
           await Promise.resolve(handleFileUpload({ target: singleTarget, currentTarget: singleTarget }));
@@ -387,47 +428,106 @@ function EducatorHubModal(props) {
         addToast("Select one DOCX or PPTX at a time, or select two or more PDFs for batch remediation.", "warning");
         return;
       }
+      const acceptedPdfFiles = [];
+      const oversizedNames = [];
+      let overCount = 0;
+      let overTotal = 0;
+      let acceptedBytes = 0;
+      for (const file of pdfFiles) {
+        const size = Math.max(0, Number(file && file.size) || 0);
+        if (acceptedPdfFiles.length >= _EDUCATOR_BATCH_MAX_FILES) {
+          overCount += 1;
+          continue;
+        }
+        if (size > _EDUCATOR_BATCH_MAX_FILE_BYTES) {
+          oversizedNames.push(file.name || "PDF");
+          continue;
+        }
+        if (acceptedBytes + size > _EDUCATOR_BATCH_MAX_TOTAL_BYTES) {
+          overTotal += 1;
+          continue;
+        }
+        acceptedBytes += size;
+        acceptedPdfFiles.push(file);
+      }
+      if (overCount) addToast("Batch limit is 60 PDFs; " + overCount + " file(s) were not added. Run them as a second batch.", "warning");
+      if (oversizedNames.length) addToast("Skipped " + oversizedNames.length + " PDF(s) over the 200 MB per-file limit: " + oversizedNames.slice(0, 3).join(", ") + (oversizedNames.length > 3 ? "\u2026" : ""), "warning");
+      if (overTotal) addToast("The 300 MB batch memory budget was reached; " + overTotal + " file(s) were not added. Run them as a second batch.", "warning");
+      if (acceptedPdfFiles.length <= 1) {
+        addToast("At least two PDFs must remain after the batch safety limits are applied.", "warning");
+        return;
+      }
       let intakeToken;
       try {
         intakeToken = await Promise.resolve(beginPdfDocumentIntake({
           source: "educator-hub",
           mode: "batch",
-          files: pdfFiles
+          files: acceptedPdfFiles
         }));
       } catch (error) {
         addToast("Could not start the PDF batch: " + String(error && error.message || error || "unknown error"), "error");
         return;
       }
+      const intakeJob = { token: intakeToken, reader: null, cancelRead: null, cancelled: false };
+      pdfBatchIntakeRef.current = intakeJob;
       const intakeIsCurrent = () => {
+        if (intakeJob.cancelled || pdfBatchIntakeRef.current !== intakeJob) return false;
         try {
           return isPdfDocumentIntakeCurrent(intakeToken);
         } catch (_) {
           return false;
         }
       };
-      if (!intakeIsCurrent()) return;
+      if (!intakeIsCurrent()) {
+        if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
+        return;
+      }
+      _setPdfBatchIntakeProgressIfMounted({ completed: 0, total: acceptedPdfFiles.length, currentIndex: 0, currentName: "", totalBytes: acceptedBytes });
+      addToast("Preparing " + acceptedPdfFiles.length + " PDFs for batch remediation\u2026", "info");
       const skippedCount = files.length - pdfFiles.length;
       if (skippedCount > 0) {
         addToast(skippedCount + " non-PDF file" + (skippedCount === 1 ? " was" : "s were") + " skipped; PDF batch remediation accepts PDFs only.", "warning");
       }
-      const batchFiles = new Array(pdfFiles.length);
-      for (let index = 0; index < pdfFiles.length; index += 1) {
-        if (!intakeIsCurrent()) return;
-        const file = pdfFiles[index];
+      const batchFiles = new Array(acceptedPdfFiles.length);
+      for (let index = 0; index < acceptedPdfFiles.length; index += 1) {
+        if (!intakeIsCurrent()) {
+          if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
+          _setPdfBatchIntakeProgressIfMounted(null);
+          return;
+        }
+        const file = acceptedPdfFiles[index];
+        _setPdfBatchIntakeProgressIfMounted({ completed: index, total: acceptedPdfFiles.length, currentIndex: index + 1, currentName: file.name || "PDF", totalBytes: acceptedBytes });
         const outcome = await new Promise((resolve) => {
           if (!intakeIsCurrent()) {
             resolve({ stale: true });
             return;
           }
           let reader;
+          let staleMonitor = null;
           let settled = false;
           const finish = (value) => {
             if (settled) return;
             settled = true;
+            if (staleMonitor) clearInterval(staleMonitor);
+            if (intakeJob.reader === reader) intakeJob.reader = null;
+            intakeJob.cancelRead = null;
             resolve(value);
           };
           try {
             reader = new FileReader();
+            intakeJob.reader = reader;
+            intakeJob.cancelRead = () => finish({ cancelled: true });
+            staleMonitor = setInterval(() => {
+              if (!intakeIsCurrent()) {
+                if (reader && typeof reader.abort === "function") {
+                  try {
+                    reader.abort();
+                  } catch (_) {
+                  }
+                }
+                finish({ stale: true });
+              }
+            }, 200);
             reader.onload = () => {
               if (!intakeIsCurrent()) {
                 finish({ stale: true });
@@ -457,8 +557,8 @@ function EducatorHubModal(props) {
               finish({ error: reader.error || new Error("The browser could not read this file.") });
             };
             reader.onabort = () => {
-              if (!intakeIsCurrent()) {
-                finish({ stale: true });
+              if (!intakeIsCurrent() || intakeJob.cancelled) {
+                finish({ cancelled: true });
                 return;
               }
               finish({ error: new Error("The file read was cancelled.") });
@@ -472,19 +572,33 @@ function EducatorHubModal(props) {
             finish({ error });
           }
         });
-        if (!intakeIsCurrent() || outcome.stale) return;
+        if (!intakeIsCurrent() || outcome.stale || outcome.cancelled) {
+          if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
+          _setPdfBatchIntakeProgressIfMounted(null);
+          return;
+        }
         if (outcome.error) {
           addToast('Could not read "' + (file.name || "PDF") + '": ' + String(outcome.error && outcome.error.message || outcome.error), "error");
+          _setPdfBatchIntakeProgressIfMounted({ completed: index + 1, total: acceptedPdfFiles.length, currentIndex: index + 1, currentName: file.name || "PDF", totalBytes: acceptedBytes });
           continue;
         }
         batchFiles[index] = outcome.entry;
+        _setPdfBatchIntakeProgressIfMounted({ completed: index + 1, total: acceptedPdfFiles.length, currentIndex: index + 1, currentName: file.name || "PDF", totalBytes: acceptedBytes });
       }
-      if (!intakeIsCurrent()) return;
+      if (!intakeIsCurrent()) {
+        if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
+        _setPdfBatchIntakeProgressIfMounted(null);
+        return;
+      }
       const readyFiles = batchFiles.filter(Boolean);
       if (readyFiles.length === 0) {
+        if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
+        _setPdfBatchIntakeProgressIfMounted(null);
         addToast("None of the selected PDFs could be read.", "error");
         return;
       }
+      if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
+      _setPdfBatchIntakeProgressIfMounted(null);
       setPdfBatchSummary(null);
       setPdfBatchQueue(readyFiles);
       setPdfBatchMode(true);
@@ -493,9 +607,11 @@ function EducatorHubModal(props) {
         fileName: readyFiles.length + " files",
         fileSize: readyFiles.reduce((sum, file) => sum + file.fileSize, 0)
       });
+      addToast(readyFiles.length + " PDFs are ready for batch remediation.", "success");
+      setShowEducatorHub(false);
     };
     input.click();
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u267F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-teal-800" }, t("educator_hub.pdf_accessibility_title") || "PDF Accessibility"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-teal-600 mt-1" }, t("educator_hub.pdf_accessibility_desc") || "Upload PDFs for WCAG accessibility audit & remediation with axe-core verification"))), pdfFixResult && !pdfFixLoading && !pdfAuditResult && /* @__PURE__ */ React.createElement(
+  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left disabled:opacity-60 disabled:cursor-wait disabled:hover:scale-100" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u267F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-teal-800" }, t("educator_hub.pdf_accessibility_title") || "PDF Accessibility"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-teal-600 mt-1" }, t("educator_hub.pdf_accessibility_desc") || "Upload PDFs for WCAG accessibility audit & remediation with axe-core verification"))), pdfBatchIntakeProgress && /* @__PURE__ */ React.createElement("div", { className: "col-span-full rounded-xl border border-teal-300 bg-teal-50 p-3", role: "status", "aria-live": "polite", "aria-label": "PDF batch preparation progress" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-teal-900" }, "Preparing PDF batch: ", pdfBatchIntakeProgress.completed, "/", pdfBatchIntakeProgress.total), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-teal-700 truncate" }, pdfBatchIntakeProgress.currentName ? "Reading " + pdfBatchIntakeProgress.currentIndex + " of " + pdfBatchIntakeProgress.total + ": " + pdfBatchIntakeProgress.currentName : "Starting\u2026")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => _cancelPdfBatchIntake(true), className: "min-h-11 px-3 py-2 rounded-lg border border-rose-300 bg-white text-rose-700 text-xs font-bold hover:bg-rose-50" }, "Cancel")), /* @__PURE__ */ React.createElement("progress", { className: "w-full mt-2 accent-teal-600", max: pdfBatchIntakeProgress.total, value: pdfBatchIntakeProgress.completed, "aria-label": "PDFs prepared" })), pdfFixResult && !pdfFixLoading && !pdfAuditResult && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

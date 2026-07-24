@@ -24,6 +24,133 @@ const fixture = (name) =>
   JSON.parse(readFileSync(resolve(process.cwd(), 'test_data/agent_core', name), 'utf-8'));
 
 const mkService = (deps = {}) => S.createBlueprintService({ contracts: C, ...deps });
+const commandCatalog = [
+  { id: 'generate_simplified' }, { id: 'generate_quiz' }, { id: 'open_learning_hub' },
+];
+const mkCommandService = (deps = {}) => S.createCommandWorkflowService({
+  contracts: C,
+  getCommands: () => commandCatalog,
+  sanitizeCommandParams: (command, params) => command.id === 'generate_simplified' ? (params.grade ? { grade: String(params.grade) } : {}) : {},
+  validatePlan: (_ctx, steps) => ({ ok: true, items: steps.map((step, index) => ({ index, commandId: step.commandId, status: 'ready', detail: '' })) }),
+  ...deps,
+});
+const memoryStorage = () => {
+  const data = {};
+  return {
+    getItem: (key) => Object.prototype.hasOwnProperty.call(data, key) ? data[key] : null,
+    setItem: (key, value) => { data[key] = String(value); },
+    raw: (key) => data[key],
+  };
+};
+
+describe('CommandWorkflow service', () => {
+  it('creates, dry-runs, approves, and plans a command workflow without executing it', () => {
+    const svc = mkCommandService();
+    const created = svc.createDraft({ workflowId: 'cw-service', audience: 'teacher', steps: [
+      { commandId: 'generate_simplified', params: { grade: '3', discarded: 'x' } },
+      { commandId: 'generate_quiz', params: {} },
+    ] }, {});
+    expect(created.ok).toBe(true);
+    expect(created.value.steps[0].params).toEqual({ grade: '3' });
+    expect(svc.dryRun(created.value, {}).steps.every((step) => step.readiness.status === 'ready')).toBe(true);
+    expect(svc.planExecution(created.value, {}).errors[0].code).toBe('approval-required');
+    const approved = svc.approve(created.value, 'teacher-ui', {}).value;
+    expect(svc.planExecution(approved, {}).steps.map((step) => step.commandId)).toEqual(['generate_simplified', 'generate_quiz']);
+  });
+
+  it('supports deterministic text edits and invalidates prior approval', () => {
+    const svc = mkCommandService();
+    const created = svc.createDraft({ workflowId: 'cw-edit', audience: 'teacher', steps: [
+      { commandId: 'generate_simplified', params: { grade: '3' } },
+      { commandId: 'generate_quiz', params: {} },
+      { commandId: 'open_learning_hub', params: {} },
+    ] }, {}).value;
+    const approved = svc.approve(created, 'teacher', {}).value;
+    const moved = svc.reviseFromText(approved, 'move step 3 first', {});
+    expect(moved.ok).toBe(true);
+    expect(moved.value.steps[0].commandId).toBe('open_learning_hub');
+    expect(moved.value.review.state).toBe('draft');
+    const updated = svc.reviseFromText(moved.value, 'set step 2 grade to 4', {});
+    expect(updated.ok).toBe(true);
+    expect(updated.value.steps[1].params.grade).toBe('4');
+    const removed = svc.reviseFromText(updated.value, 'remove step 3', {});
+    expect(removed.ok).toBe(true);
+    expect(removed.value.steps).toHaveLength(2);
+  });
+
+  it('reports blocked dry-run steps and refuses execution after approval', () => {
+    const svc = mkCommandService({
+      validatePlan: (_ctx, steps) => ({ ok: false, items: steps.map((step, index) => ({ index, commandId: step.commandId, status: index ? 'block' : 'ready', detail: index ? 'Needs source.' : '' })) }),
+    });
+    const workflow = svc.createDraft({ workflowId: 'cw-blocked', steps: [
+      { commandId: 'open_learning_hub' }, { commandId: 'generate_quiz' },
+    ] }, {}).value;
+    const dry = svc.dryRun(workflow, {});
+    expect(dry.ok).toBe(false);
+    expect(dry.steps[1].readiness).toMatchObject({ status: 'block', detail: 'Needs source.' });
+    const planned = svc.planExecution(svc.approve(workflow, 'teacher', {}).value, {});
+    expect(planned.ok).toBe(false);
+    expect(planned.errors[0].code).toBe('workflow-blocked');
+  });
+
+  it('supports before/after moves and typed numeric text edits', () => {
+    const svc = mkCommandService({ sanitizeCommandParams: (_command, params) => params });
+    const workflow = svc.createDraft({ workflowId: 'cw-regex', steps: [
+      { commandId: 'generate_simplified' },
+      { commandId: 'generate_quiz' },
+      { commandId: 'open_learning_hub' },
+    ] }, {}).value;
+    const moved = svc.reviseFromText(workflow, 'move step 3 before step 1', {});
+    expect(moved.ok).toBe(true);
+    expect(moved.value.steps.map((step) => step.commandId)).toEqual(['open_learning_hub', 'generate_simplified', 'generate_quiz']);
+    const updated = svc.reviseFromText(moved.value, 'set step 2 count to 4', {});
+    expect(updated.ok).toBe(true);
+    expect(updated.value.steps[1].params.count).toBe(4);
+  });
+
+  it('saves, lists, reloads, updates, and deletes local Command Blueprints as drafts', () => {
+    const storage = memoryStorage();
+    const svc = mkCommandService({ storage, getAudience: () => 'teacher', now: () => '2026-07-22T22:30:00.000Z' });
+    const draft = svc.createDraft({ workflowId: 'cw-saved', audience: 'teacher', steps: [
+      { commandId: 'generate_simplified', params: { grade: '3' } },
+      { commandId: 'generate_quiz' },
+    ] }, {}).value;
+    const approved = svc.approve(draft, 'teacher-ui', {}).value;
+    const saved = svc.saveSaved(approved, '  Weekly\u0000 review   flow  ', {});
+    expect(saved.ok).toBe(true);
+    expect(saved.value.name).toBe('Weekly review flow');
+    expect(saved.value.workflow.review.state).toBe('draft');
+    expect(JSON.parse(storage.raw(S.COMMAND_WORKFLOW_LIBRARY_KEY)).schemaVersion).toBe(C.SCHEMA_VERSION);
+    expect(svc.listSaved({}).items).toHaveLength(1);
+    const loaded = svc.loadSaved('cw-saved', {});
+    expect(loaded.ok).toBe(true);
+    expect(loaded.value.review).toEqual({ state: 'draft', reviewer: '' });
+    expect(loaded.value.steps.map((step) => step.commandId)).toEqual(['generate_simplified', 'generate_quiz']);
+    expect(svc.saveSaved(loaded.value, 'Updated weekly flow', {}).value.name).toBe('Updated weekly flow');
+    expect(svc.listSaved({}).items).toHaveLength(1);
+    expect(svc.deleteSaved('cw-saved', {}).ok).toBe(true);
+    expect(svc.listSaved({}).items).toHaveLength(0);
+  });
+
+  it('keeps saved workflows isolated by audience and fails closed on corrupt storage', () => {
+    const storage = memoryStorage();
+    const teacher = mkCommandService({ storage, getAudience: () => 'teacher' });
+    const workflow = teacher.createDraft({ workflowId: 'cw-teacher-only', audience: 'teacher', steps: [{ commandId: 'open_learning_hub' }] }, {}).value;
+    expect(teacher.saveSaved(workflow, 'Teacher flow', {}).ok).toBe(true);
+    const student = mkCommandService({ storage, getAudience: () => 'student' });
+    expect(student.listSaved({}).items).toHaveLength(0);
+    const studentWorkflow = student.createDraft({ workflowId: 'cw-teacher-only', audience: 'student', steps: [{ commandId: 'open_learning_hub' }] }, {}).value;
+    expect(student.saveSaved(studentWorkflow, 'Student flow', {}).ok).toBe(true);
+    expect(teacher.listSaved({}).items.map((item) => item.name)).toEqual(['Teacher flow']);
+    expect(student.listSaved({}).items.map((item) => item.name)).toEqual(['Student flow']);
+    expect(teacher.deleteSaved('cw-teacher-only', {}).ok).toBe(true);
+    expect(student.listSaved({}).items.map((item) => item.name)).toEqual(['Student flow']);
+    storage.setItem(S.COMMAND_WORKFLOW_LIBRARY_KEY, JSON.stringify({ schemaVersion: '99.0', items: [] }));
+    expect(student.listSaved({}).errors[0].code).toBe('library-version-unsupported');
+    storage.setItem(S.COMMAND_WORKFLOW_LIBRARY_KEY, '{bad json');
+    expect(teacher.listSaved({}).errors[0].code).toBe('library-corrupt');
+  });
+});
 
 describe('createDraft', () => {
   it('wraps an injected autoConfigure (the live phase_k seam) into a valid Blueprint', async () => {

@@ -173,7 +173,7 @@ describe('brain atlas canvas loops', () => {
       const stripCalls = source.match(/brainAtlasDrawInfoStrip\(/g) || [];
 
       expect(source).toContain('function brainAtlasDrawInfoStrip(x, y, w, h, text, accent)');
-      expect(stripCalls).toHaveLength(4);
+      expect(stripCalls).toHaveLength(5);
       expect(source).toContain('var stripX = Math.max(8, Math.min(W - w - 8, x));');
       expect(source).toContain('var stripY = Math.max(8, Math.min(H - h - 8, y));');
       expect(source).toContain('var lines = brainAtlasWrapCanvasLabel(text, maxTextWidth, 2);');
@@ -190,7 +190,7 @@ describe('brain atlas canvas loops', () => {
       const annotationCalls = source.match(/brainAtlasDrawAnnotationCard\(/g) || [];
 
       expect(source).toContain('function brainAtlasDrawAnnotationCard(x, y, w, h, title, body, color, active)');
-      expect(annotationCalls).toHaveLength(5);
+      expect(annotationCalls).toHaveLength(6);
       expect(source).toContain('var cardX = Math.max(8, Math.min(W - w - 8, x));');
       expect(source).toContain('var cardY = Math.max(8, Math.min(H - h - 8, y));');
       expect(source).toContain("var bodyText = Array.isArray(body) ? body.join(' ') : String(body || '');");
@@ -209,7 +209,7 @@ describe('brain atlas canvas loops', () => {
       const nodeLabelCalls = source.match(/brainAtlasDrawBoundedNodeLabel\(/g) || [];
 
       expect(source).toContain('function brainAtlasDrawBoundedNodeLabel(cx, cy, w, h, title, subtitle, titleColor, subtitleColor)');
-      expect(nodeLabelCalls).toHaveLength(18);
+      expect(nodeLabelCalls).toHaveLength(20);
       expect(source).toContain('var maxTextWidth = Math.max(32, w - 14);');
       expect(source).toContain('var titleLines = brainAtlasWrapCanvasLabel(title, maxTextWidth, 2);');
       expect(source).toContain('var subtitleLines = subtitle ? brainAtlasWrapCanvasLabel(subtitle, maxTextWidth, 2) : [];');
@@ -281,7 +281,7 @@ describe('brain atlas canvas loops', () => {
       const pathLabelCalls = source.match(/brainAtlasDrawPathLabel\(/g) || [];
 
       expect(source).toContain('function brainAtlasDrawPathLabel(cx, cy, text, color, maxWidth)');
-      expect(pathLabelCalls).toHaveLength(26);
+      expect(pathLabelCalls).toHaveLength(30);
       expect(source).toContain("var value = String(text || '').trim();");
       expect(source).toContain('var widthLimit = Math.max(48, maxWidth || W * 0.18);');
       expect(source).toContain('var safeText = brainAtlasEllipsizeCanvasText(value, widthLimit - 18);');

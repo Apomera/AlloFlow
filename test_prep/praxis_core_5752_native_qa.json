@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-19T17:49:12.515Z",
+  "generatedAt": "2026-07-23T17:25:02.472Z",
   "packId": "praxis-core-5752",
   "standard": {
     "label": "AlloFlow independent Praxis Core 5752 source, structure, feedback, originality, and linkage QA v1",
@@ -946,7 +946,7 @@
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
     "sourceItemsSha256": "3fbc133d48a1113a622a21cbee1285098a285b39c73c674fbce79cb13ba4f960",
-    "learningLibrarySha256": "c42cb111c8eb71e473758c177f38646f89fbbc6267d679e59cdee87ac7e9a55e",
+    "learningLibrarySha256": "3fe6cdbf980e06483b14194c8154433b43e68525138676772591ca76bf4c2a46",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   },
   "expansion": {

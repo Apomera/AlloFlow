@@ -32,7 +32,8 @@
   "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/books/us-history/pages/1-introduction"
+    "url": "https://openstax.org/books/us-history/pages/1-introduction",
+    "attributionUrl": "https://openstax.org/books/us-history/pages/1-introduction"
   },
   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Washington_Crossing_the_Delaware_by_Emanuel_Leutze%2C_MMA-NYC%2C_1851.jpg/960px-Washington_Crossing_the_Delaware_by_Emanuel_Leutze%2C_MMA-NYC%2C_1851.jpg",
   "audio": null,
@@ -51,5 +52,24 @@
   "stats": {
     "pages": 2,
     "words": 54
+  },
+  "usagePolicy": {
+    "access": "link-out",
+    "mirror": true,
+    "adapt": true,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": true,
+    "auditedAt": "2026-07-23",
+    "auditSource": "https://help.openstax.org/s/article/Licensing-information-of-OpenStax-textbooks",
+    "aiPermissionRequired": true,
+    "reason": "This book may not be used in the training of large language models or otherwise be ingested into large language models or generative AI offerings without OpenStax's permission.",
+    "aiRestrictionSource": "https://openstax.org/books/us-history/pages/1-introduction"
+  },
+  "licenseAudit": {
+    "auditedAt": "2026-07-23",
+    "source": "https://help.openstax.org/s/article/Licensing-information-of-OpenStax-textbooks",
+    "note": "OpenStax attribution, noncommercial, and share-alike requirements apply to adaptations. Generative-AI ingestion requires OpenStax permission."
   }
 }

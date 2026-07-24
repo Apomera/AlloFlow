@@ -1915,6 +1915,7 @@ function removeAnnotation(annotations, id) {
 // serializeForExport(annotations) for the doc_pipeline.
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.AnnotationSuite = {
+  InquiryBridge: window.AlloFlowAnnotationInquiryBridge || null,
   STICKER_ICONS: STICKER_ICONS,
   STICKER_TYPES: STICKER_TYPES,
   ANNOTATION_KINDS: ANNOTATION_KINDS,

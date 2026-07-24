@@ -377,3 +377,108 @@ describe('Guided banner - controlled journey UX', () => {
     c.cleanup();
   });
 });
+describe('Guided banner - data lifecycle and accountable navigation', () => {
+  const presets = [{ id: 'complete', label: 'Complete lesson pack', description: 'Use every step.', stepIds: null }];
+
+  it('confirms a forward jump and reports bypassed unfinished steps to the host', () => {
+    const handleGuidedJump = vi.fn();
+    const b = mountBanner(baseProps({ guidedStep: 0, inputText: 'A source passage that is definitely longer than twenty characters.', handleGuidedJump }));
+    const jump = b.host.querySelector('#guided-step-jump');
+    act(() => { jump.value = '2'; jump.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(b.text()).toContain('Jump forward?');
+    expect(handleGuidedJump).not.toHaveBeenCalled();
+    act(() => { b.button('Jump and mark skipped').click(); });
+    expect(handleGuidedJump).toHaveBeenCalledWith(2, ['analysis']);
+    b.cleanup();
+  });
+
+  it('rejects a malformed stored completion summary', () => {
+    localStorage.setItem('allo_guided_last_completion', JSON.stringify({ completedAt: 'not-a-date', completedCount: 5000 }));
+    const b = mountBanner(baseProps({ guidedStep: 0, guidedPresets: presets, applyGuidedPreset: vi.fn() }));
+    expect(b.text()).not.toContain('Last completed run');
+    expect(b.text()).not.toContain('Invalid Date');
+    b.cleanup();
+  });
+
+  it('clears Guided archives, timing, reflections, and preferences while preserving active progress', () => {
+    const removable = ['allo_guided_completed_runs', 'allo_guided_last_completion', 'allo_guided_duration_stats', 'allo_guided_feedback', 'allo_guided_ui_state', 'allo_guided_path_prompt_seen', 'allo_guided_auto_advance'];
+    removable.forEach(key => localStorage.setItem(key, key.includes('path_prompt') || key.includes('auto_advance') ? 'true' : '{}'));
+    localStorage.setItem('allo_guided_progress', JSON.stringify({ version: 1, guidedStep: 1 }));
+    const b = mountBanner(baseProps({ toggleGuidedStepId: vi.fn(), guidedAutoAdvance: true, setGuidedAutoAdvance: vi.fn() }));
+    act(() => { b.host.querySelector('[aria-controls="guided-step-picker"]').click(); });
+    act(() => { b.button('Clear Guided history & preferences').click(); });
+    expect(b.text()).toContain('Clear local Guided data?');
+    act(() => { b.button('Clear now').click(); });
+    removable.forEach(key => expect(localStorage.getItem(key), key).toBeNull());
+    expect(localStorage.getItem('allo_guided_progress')).not.toBeNull();
+    b.cleanup();
+  });
+
+  it('records only successful duration samples and caps history at twenty', () => {
+    const key = 'cloud:analysis';
+    localStorage.setItem('allo_guided_duration_stats', JSON.stringify({ [key]: { averageMs: 2000, samples: 20, values: Array(20).fill(2000) } }));
+    const now = vi.spyOn(Date, 'now').mockReturnValue(1000);
+    const b = mountBanner(baseProps({ guidedStep: 1, isGuidedRetrying: true, guidedProviderProfile: 'cloud', history: [] }));
+    now.mockReturnValue(4000);
+    b.render(baseProps({ guidedStep: 1, isGuidedRetrying: false, guidedProviderProfile: 'cloud', history: [{ id: 'a1', type: 'analysis' }] }));
+    const stats = JSON.parse(localStorage.getItem('allo_guided_duration_stats'))[key];
+    expect(stats.samples).toBe(20);
+    expect(stats.values).toHaveLength(20);
+    expect(stats.values.at(-1)).toBe(3000);
+    now.mockRestore();
+    b.cleanup();
+
+    localStorage.removeItem('allo_guided_duration_stats');
+    const failedNow = vi.spyOn(Date, 'now').mockReturnValue(1000);
+    const c = mountBanner(baseProps({ guidedStep: 1, isGuidedRetrying: true, guidedProviderProfile: 'cloud', history: [] }));
+    failedNow.mockReturnValue(5000);
+    c.render(baseProps({ guidedStep: 1, isGuidedRetrying: false, guidedProviderProfile: 'cloud', history: [], guidedStepError: new Error('failed') }));
+    expect(localStorage.getItem('allo_guided_duration_stats')).toBeNull();
+    failedNow.mockRestore();
+    c.cleanup();
+  });
+});
+describe('Guided banner - outcome phases and delivery actions', () => {
+  it('shows a phase-aware delivery recommender and completes only after verified delivery evidence', () => {
+    const deliverySteps = [
+      { id: 'package-deliver', phase: 'deliver', label: 'Preview, Package & Deliver', action: 'Choose a delivery route.', success: 'Delivery path reviewed.' },
+      { id: '_final', phase: 'finish', label: 'Review & Finish', action: 'Review the lesson.', success: 'All set.' },
+    ];
+    const markGuidedStepDone = vi.fn();
+    const openGuidedDocumentBuilder = vi.fn();
+    const b = mountBanner(baseProps({
+      GUIDED_STEPS: deliverySteps,
+      allGuidedSteps: deliverySteps,
+      GUIDED_TOUR_MAP: { 'package-deliver': 'tour-tool-fullpack', '_final': 'tour-tool-fullpack' },
+      guidedStep: 0,
+      guidedPhases: [{ id: 'deliver', label: 'Preview & deliver', description: 'Choose a route.' }, { id: 'finish', label: 'Review & finish', description: 'Finish.' }],
+      guidedDeliveryGroups: [{ id: 'print', label: 'Print & editable documents', options: ['PDF / Print', 'Accessible Word (.docx)'] }],
+      markGuidedStepDone,
+      openGuidedDocumentBuilder,
+      createGuidedHomeworkShare: vi.fn(),
+      startGuidedLiveSession: vi.fn(),
+      previewGuidedStudentAssignment: vi.fn(),
+      canPreviewGuidedStudentAssignment: false,
+    }));
+    expect(b.text()).toContain('Phase 1 of 2');
+    expect(b.text()).toContain('Print & editable documents');
+    expect(b.text()).toContain('Accessible Word (.docx)');
+    expect(b.text()).toContain('Help me choose');
+    expect(b.text()).toContain('Recommended');
+    expect(b.button('Test student link').disabled).toBe(true);
+    act(() => { b.button('Document Builder').click(); });
+    expect(markGuidedStepDone).not.toHaveBeenCalled();
+    expect(openGuidedDocumentBuilder).toHaveBeenCalledTimes(1);
+    b.render(baseProps({
+      GUIDED_STEPS: deliverySteps, allGuidedSteps: deliverySteps,
+      GUIDED_TOUR_MAP: { 'package-deliver': 'tour-tool-fullpack', '_final': 'tour-tool-fullpack' },
+      guidedStep: 0,
+      guidedPhases: [{ id: 'deliver', label: 'Preview & deliver' }, { id: 'finish', label: 'Review & finish' }],
+      guidedDeliveryGroups: [{ id: 'print', label: 'Print & editable documents', options: ['PDF / Print', 'Accessible Word (.docx)'] }],
+      markGuidedStepDone, openGuidedDocumentBuilder,
+      guidedDeliveryEvidence: { exportCreated: true },
+    }));
+    expect(markGuidedStepDone).toHaveBeenCalledWith('package-deliver');
+    b.cleanup();
+  });
+});

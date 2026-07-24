@@ -21,7 +21,9 @@ describe('dissection canvas animation loop', () => {
       expect(source).toContain('if (!dissAlive || dissMotionReduced || canvas._dissAnim || isDissectionHidden()) return;');
       expect(source).toContain('canvas._dissAnim = requestAnimationFrame(drawDissectionFrame);');
       expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
-      expect(source).toContain("var minFrameMs = drawState.animSpeed === 'fast' ? 16 : (drawState.animSpeed === 'slow' ? 66 : 33);");
+      expect(source).toContain("var liveRenderQuality = drawState.renderQuality || 'auto';");
+      expect(source).toContain("var autoBalanced = liveRenderQuality === 'auto'");
+      expect(source).toContain("var minFrameMs = liveRenderQuality === 'high' ? 16");
       expect(source).toContain('if (!dissMotionReduced) { dissLastDrawAt = arguments[0] || Date.now(); dissTick++; }');
       expect(source).toContain('var dissTimeTimer = setInterval(function ()');
       expect(source).toContain('if (dissTimeTimer) { clearInterval(dissTimeTimer); dissTimeTimer = null; }');

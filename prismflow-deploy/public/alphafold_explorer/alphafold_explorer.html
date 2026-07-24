@@ -416,6 +416,19 @@
   .coordinatePlot .variantLine { fill: none; stroke: #d8b4fe; stroke-width: 2; }
   .coordinatePlot text { fill: #cbd5e1; font: 11px system-ui, sans-serif; }
   .contactDifferenceCanvas { display: block; width: min(100%, 340px); height: auto; margin: 9px auto 0; border: 1px solid var(--line); background: #09111e; }
+  .coordinateMorphPanel { margin-top: 10px; }
+  .coordinateMorphCanvas { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px; background: #050b16; }
+  .morphReadout { display: inline-block; min-width: 42px; color: var(--text); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; text-align: right; }
+  .morphLegend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 6px 0; color: var(--muted); font-size: 11px; }
+  .morphLegend span { display: inline-flex; align-items: center; gap: 5px; }
+  .coordinateHotspotTour { margin-top: 9px; }
+  .hotspotRank { align-self: center; min-width: 118px; color: var(--text); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 11px; text-align: center; }
+  .coordinateMeasurementPanel { margin-top: 9px; }
+  .measurementOutput { margin-top: 7px; }
+  .morphDot { width: 10px; height: 10px; border-radius: 50%; }
+  .morphDot.low { background: #5eead4; }
+  .morphDot.medium { width: 13px; height: 13px; background: #fbbf24; }
+  .morphDot.high { width: 16px; height: 16px; background: #e879f9; }
   .coordinateLegend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 6px; color: var(--muted); font-size: 11px; }
   .coordinateLegend span { display: inline-flex; align-items: center; gap: 5px; }
   .coordinateSwatch { width: 12px; height: 12px; border-radius: 3px; }
@@ -1191,6 +1204,36 @@
           <div class="coordinateMetric"><b>C-alpha RMSD</b><output id="coordinateRmsd">-</output></div>
           <div class="coordinateMetric"><b>Contact changes</b><output id="contactChangeCount">-</output></div>
         </div>
+        <div class="coordinateMorphPanel" id="coordinateMorphPanel" hidden>
+          <canvas class="coordinateMorphCanvas" id="coordinateMorphCanvas" width="720" height="320" role="img" aria-describedby="coordinateMorphSummary">Aligned coordinate morph appears after analysis.</canvas>
+          <div class="morphLegend" aria-label="Displacement marker legend"><span><i class="morphDot low"></i>Lower displacement</span><span><i class="morphDot medium"></i>Moderate displacement</span><span><i class="morphDot high"></i>Higher displacement</span></div>
+          <div class="row">
+            <button class="secondary" id="coordinateMorphPlayBtn" type="button" aria-pressed="false">Play morph</button>
+            <div class="field"><label for="coordinateMorphFrameInput">Morph frame <output class="morphReadout" id="coordinateMorphFrameValue">0%</output></label><input id="coordinateMorphFrameInput" type="range" min="0" max="100" step="1" value="0"></div>
+            <div class="field"><label for="coordinateMorphAmplifyInput">Displacement emphasis <output class="morphReadout" id="coordinateMorphAmplifyValue">1.0x</output></label><input id="coordinateMorphAmplifyInput" type="range" min="1" max="4" step="0.25" value="1"></div>
+          </div>
+          <p class="help" id="coordinateMorphSummary">The morph interpolates aligned C-alpha positions; it is not a molecular-dynamics trajectory.</p>
+          <div class="coordinateHotspotTour" id="coordinateHotspotTour" hidden>
+            <div class="row">
+              <button class="secondary" id="previousCoordinateHotspotBtn" type="button" aria-label="Previous displacement hotspot">Previous hotspot</button>
+              <output class="hotspotRank" id="coordinateHotspotRank" aria-live="polite">Hotspot 1 of 1</output>
+              <button class="secondary" id="nextCoordinateHotspotBtn" type="button" aria-label="Next displacement hotspot">Next hotspot</button>
+            </div>
+            <div class="output" id="coordinateHotspotDetail">Run coordinate analysis to rank displacement hotspots.</div>
+          </div>
+          <div class="coordinateMeasurementPanel" id="coordinateMeasurementPanel" hidden>
+            <div class="row">
+              <div class="field"><label for="coordinateMeasureAInput">Measurement residue A</label><input id="coordinateMeasureAInput" type="number" min="1" max="1" value="1"></div>
+              <div class="field"><label for="coordinateMeasureBInput">Measurement residue B</label><input id="coordinateMeasureBInput" type="number" min="1" max="1" value="1"></div>
+            </div>
+            <div class="row">
+              <button class="secondary" id="setMeasurementABtn" type="button">Set A to selected residue</button>
+              <button class="secondary" id="setMeasurementBBtn" type="button">Set B to selected residue</button>
+              <button class="secondary" id="useMeasurementEvidenceBtn" type="button" disabled>Use measurement as evidence</button>
+            </div>
+            <div class="output measurementOutput" id="coordinateMeasurementOutput" role="status" aria-live="polite">Run coordinate analysis to compare residue-pair distances.</div>
+          </div>
+        </div>
         <svg class="coordinatePlot" id="confidenceComparisonPlot" viewBox="0 0 600 180" role="img" aria-label="Load and analyze two PDB files to compare residue confidence fields." hidden>
           <line class="axis" x1="42" y1="10" x2="42" y2="150"></line><line class="axis" x1="42" y1="150" x2="584" y2="150"></line>
           <line class="grid" x1="42" y1="80" x2="584" y2="80"></line>
@@ -1539,6 +1582,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/molstar@4.9.0/build/viewer/molstar.js"></script>
+<script src="../tool_integration_sdk.js"></script>
 <script>
 (function () {
   'use strict';
@@ -2134,6 +2178,12 @@
   var paeComparisonVersion = 0;
   var coordinateAnalysis = null;
   var coordinateAnalysisVersion = 0;
+  var coordinateMorphPlaying = false;
+  var coordinateMorphRaf = 0;
+  var coordinateMorphLastTime = 0;
+  var coordinateMorphDirection = 1;
+  var coordinateHotspotRankIndex = 0;
+  var coordinateMeasurementStatement = '';
   var notebookEntryState = [];
   var importedAnnotations = null;
   var annotationEvidenceStatement = '';
@@ -2195,6 +2245,26 @@
   var matchedResidueCount = document.getElementById('matchedResidueCount');
   var coordinateRmsd = document.getElementById('coordinateRmsd');
   var contactChangeCount = document.getElementById('contactChangeCount');
+  var coordinateMorphPanel = document.getElementById('coordinateMorphPanel');
+  var coordinateMorphCanvas = document.getElementById('coordinateMorphCanvas');
+  var coordinateMorphPlayBtn = document.getElementById('coordinateMorphPlayBtn');
+  var coordinateMorphFrameInput = document.getElementById('coordinateMorphFrameInput');
+  var coordinateMorphFrameValue = document.getElementById('coordinateMorphFrameValue');
+  var coordinateMorphAmplifyInput = document.getElementById('coordinateMorphAmplifyInput');
+  var coordinateMorphAmplifyValue = document.getElementById('coordinateMorphAmplifyValue');
+  var coordinateMorphSummary = document.getElementById('coordinateMorphSummary');
+  var coordinateHotspotTour = document.getElementById('coordinateHotspotTour');
+  var previousCoordinateHotspotBtn = document.getElementById('previousCoordinateHotspotBtn');
+  var nextCoordinateHotspotBtn = document.getElementById('nextCoordinateHotspotBtn');
+  var coordinateHotspotRank = document.getElementById('coordinateHotspotRank');
+  var coordinateHotspotDetail = document.getElementById('coordinateHotspotDetail');
+  var coordinateMeasurementPanel = document.getElementById('coordinateMeasurementPanel');
+  var coordinateMeasureAInput = document.getElementById('coordinateMeasureAInput');
+  var coordinateMeasureBInput = document.getElementById('coordinateMeasureBInput');
+  var setMeasurementABtn = document.getElementById('setMeasurementABtn');
+  var setMeasurementBBtn = document.getElementById('setMeasurementBBtn');
+  var useMeasurementEvidenceBtn = document.getElementById('useMeasurementEvidenceBtn');
+  var coordinateMeasurementOutput = document.getElementById('coordinateMeasurementOutput');
   var confidenceComparisonPlot = document.getElementById('confidenceComparisonPlot');
   var originalConfidencePath = document.getElementById('originalConfidencePath');
   var variantConfidencePath = document.getElementById('variantConfidencePath');
@@ -4404,9 +4474,259 @@
     interfaceComparisonOutput.textContent = lines.join('\n'); interfaceComparisonOutput.hidden = false;
   }
 
+  function stopCoordinateMorph() {
+    coordinateMorphPlaying = false;
+    coordinateMorphLastTime = 0;
+    if (coordinateMorphRaf && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(coordinateMorphRaf);
+    coordinateMorphRaf = 0;
+    coordinateMorphPlayBtn.setAttribute('aria-pressed', 'false');
+    coordinateMorphPlayBtn.textContent = 'Play morph';
+  }
+
+  function morphDisplacement(pair) {
+    return coordinateDistance(pair.original.point, pair.variantAligned.point);
+  }
+
+  function morphProjection(point) {
+    return [point[0] * 0.82 + point[2] * 0.38, point[1] * 0.88 - point[2] * 0.26];
+  }
+
+  function drawCoordinateMorph() {
+    if (!coordinateAnalysis) return;
+    var ctx = coordinateMorphCanvas.getContext('2d');
+    if (!ctx) return;
+    var pairs = coordinateAnalysis.pairs, frame = Math.max(0, Math.min(1, Number(coordinateMorphFrameInput.value) / 100 || 0));
+    var amplify = Math.max(1, Math.min(4, Number(coordinateMorphAmplifyInput.value) || 1));
+    var displacements = pairs.map(morphDisplacement), sorted = displacements.slice().sort(function (a, b) { return a - b; });
+    var maximum = sorted[sorted.length - 1] || 0, median = sorted[Math.floor(sorted.length / 2)] || 0;
+    var endpoints = [], currentPoints = [];
+    pairs.forEach(function (pair) {
+      var original = pair.original.point;
+      var emphasizedVariant = original.map(function (value, index) { return value + (pair.variantAligned.point[index] - value) * amplify; });
+      endpoints.push(morphProjection(original), morphProjection(emphasizedVariant));
+      currentPoints.push(morphProjection(original.map(function (value, index) { return value + (pair.variantAligned.point[index] - value) * frame * amplify; })));
+    });
+    var xs = endpoints.map(function (point) { return point[0]; }), ys = endpoints.map(function (point) { return point[1]; });
+    var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs), minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
+    var width = 720, height = 320, padX = 42, padY = 34, spanX = Math.max(1, maxX - minX), spanY = Math.max(1, maxY - minY);
+    var scale = Math.min((width - padX * 2) / spanX, (height - padY * 2) / spanY);
+    function screen(point) { return [width / 2 + (point[0] - (minX + maxX) / 2) * scale, height / 2 + (point[1] - (minY + maxY) / 2) * scale]; }
+    var originalScreen = pairs.map(function (pair) { return screen(morphProjection(pair.original.point)); });
+    var currentScreen = currentPoints.map(screen);
+    function connected(index) {
+      if (!index) return false;
+      return pairs[index - 1].original.chain === pairs[index].original.chain && coordinateDistance(pairs[index - 1].original.point, pairs[index].original.point) <= 12;
+    }
+    function displacementStyle(value) {
+      var ratio = maximum ? value / maximum : 0;
+      return ratio > 0.66 ? { color: '#e879f9', radius: 4.6 } : ratio > 0.33 ? { color: '#fbbf24', radius: 3.6 } : { color: '#5eead4', radius: 2.7 };
+    }
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = '#050b16'; ctx.fillRect(0, 0, width, height);
+    ctx.strokeStyle = '#182235'; ctx.lineWidth = 1;
+    for (var gx = 60; gx < width; gx += 60) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, height); ctx.stroke(); }
+    for (var gy = 40; gy < height; gy += 40) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(width, gy); ctx.stroke(); }
+    ctx.strokeStyle = 'rgba(94,234,212,0.28)'; ctx.lineWidth = 1.2;
+    for (var i = 1; i < pairs.length; i++) if (connected(i)) { ctx.beginPath(); ctx.moveTo(originalScreen[i - 1][0], originalScreen[i - 1][1]); ctx.lineTo(originalScreen[i][0], originalScreen[i][1]); ctx.stroke(); }
+    for (var j = 1; j < pairs.length; j++) if (connected(j)) {
+      var segmentStyle = displacementStyle(Math.max(displacements[j - 1], displacements[j]));
+      ctx.strokeStyle = segmentStyle.color; ctx.lineWidth = 2.2;
+      ctx.beginPath(); ctx.moveTo(currentScreen[j - 1][0], currentScreen[j - 1][1]); ctx.lineTo(currentScreen[j][0], currentScreen[j][1]); ctx.stroke();
+    }
+    var selectedIndex = Math.max(0, Math.min(pairs.length - 1, Math.round(Number(coordinateResidueInput.value) || 1) - 1));
+    currentScreen.forEach(function (point, index) {
+      var style = displacementStyle(displacements[index]);
+      ctx.beginPath(); ctx.fillStyle = style.color; ctx.arc(point[0], point[1], style.radius, 0, Math.PI * 2); ctx.fill();
+      if (index === selectedIndex) { ctx.beginPath(); ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 2; ctx.arc(point[0], point[1], style.radius + 4, 0, Math.PI * 2); ctx.stroke(); }
+    });
+    var measurementAria = '', measurement = coordinateMeasurementPanel.hidden ? null : coordinateMeasurementData();
+    if (measurement && !measurement.same) {
+      var pointA = currentScreen[measurement.aIndex], pointB = currentScreen[measurement.bIndex], middleX = (pointA[0] + pointB[0]) / 2, middleY = (pointA[1] + pointB[1]) / 2;
+      ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2.5;
+      if (typeof ctx.setLineDash === 'function') ctx.setLineDash([7, 5]);
+      ctx.beginPath(); ctx.moveTo(pointA[0], pointA[1]); ctx.lineTo(pointB[0], pointB[1]); ctx.stroke();
+      if (typeof ctx.setLineDash === 'function') ctx.setLineDash([]);
+      ctx.beginPath(); ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 2.5; ctx.arc(pointA[0], pointA[1], 7, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = '#f8fafc'; ctx.fillRect(pointB[0] - 6, pointB[1] - 6, 12, 12);
+      ctx.font = '11px system-ui, sans-serif'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = 'rgba(5,11,22,0.9)'; ctx.fillRect(Math.max(4, middleX - 48), Math.max(4, middleY - 11), 96, 22);
+      ctx.fillStyle = '#f8fafc'; ctx.fillText('A-B measurement', Math.max(8, middleX - 44), Math.max(15, middleY));
+      measurementAria = ' A dashed line connects measurement residue A, shown as a circle, and residue B, shown as a square.';
+    }
+    var ranked = displacements.map(function (value, index) { return { value: value, index: index }; }).sort(function (a, b) { return b.value - a.value; }).slice(0, 3);
+    ctx.font = '11px system-ui, sans-serif'; ctx.textBaseline = 'middle';
+    ranked.forEach(function (item, rank) {
+      var point = currentScreen[item.index], pair = pairs[item.index], label = pair.original.residue + ' ' + pair.original.key + '  ' + item.value.toFixed(1) + ' A';
+      var x = Math.max(6, Math.min(width - 132, point[0] + 8)), y = Math.max(12, Math.min(height - 12, point[1] + (rank - 1) * 15));
+      ctx.fillStyle = 'rgba(5,11,22,0.88)'; ctx.fillRect(x - 3, y - 9, 128, 18);
+      ctx.fillStyle = '#f8fafc'; ctx.fillText(label, x, y);
+    });
+    var phase = Math.round(frame * 100);
+    coordinateMorphFrameValue.value = phase + '%'; coordinateMorphFrameValue.textContent = phase + '%';
+    coordinateMorphAmplifyValue.value = amplify.toFixed(2).replace(/0$/, '') + 'x'; coordinateMorphAmplifyValue.textContent = coordinateMorphAmplifyValue.value;
+    coordinateMorphSummary.textContent = 'Interpolated frame: ' + phase + '% variant. Median aligned C-alpha displacement is ' + median.toFixed(2) + ' Angstroms; maximum is ' + maximum.toFixed(2) + ' Angstroms. ' + (amplify > 1 ? 'Positions are visually emphasized ' + amplify.toFixed(2).replace(/0$/, '') + ' times. ' : '') + 'This is a geometric interpolation, not a molecular-dynamics trajectory.';
+    coordinateMorphCanvas.setAttribute('aria-label', 'Aligned C-alpha coordinate morph at ' + phase + ' percent variant with ' + pairs.length + ' matched residues. Median displacement ' + median.toFixed(2) + ' Angstroms and maximum displacement ' + maximum.toFixed(2) + ' Angstroms. Larger circles mark larger displacement; the selected residue has a white ring.' + measurementAria);
+  }
+
+  function coordinateMorphTick(timestamp) {
+    if (!coordinateMorphPlaying || !coordinateAnalysis) return;
+    if (!coordinateMorphLastTime) coordinateMorphLastTime = timestamp;
+    var frame = Number(coordinateMorphFrameInput.value) / 100 + (timestamp - coordinateMorphLastTime) / 1800 * coordinateMorphDirection;
+    coordinateMorphLastTime = timestamp;
+    if (frame >= 1) { frame = 1; coordinateMorphDirection = -1; }
+    if (frame <= 0) { frame = 0; coordinateMorphDirection = 1; }
+    coordinateMorphFrameInput.value = String(Math.round(frame * 100));
+    drawCoordinateMorph();
+    coordinateMorphRaf = requestAnimationFrame(coordinateMorphTick);
+  }
+
+  function toggleCoordinateMorph() {
+    if (!coordinateAnalysis) return;
+    var reduced = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      stopCoordinateMorph();
+      var next = (Number(coordinateMorphFrameInput.value) + 25) % 125;
+      coordinateMorphFrameInput.value = String(next);
+      drawCoordinateMorph();
+      setStatus(coordinateAnalysisStatus, 'Reduced-motion mode: advanced the morph by one 25 percent step.', 'ok');
+      return;
+    }
+    if (coordinateMorphPlaying) { stopCoordinateMorph(); return; }
+    coordinateMorphPlaying = true; coordinateMorphLastTime = 0;
+    coordinateMorphPlayBtn.setAttribute('aria-pressed', 'true'); coordinateMorphPlayBtn.textContent = 'Pause morph';
+    coordinateMorphRaf = requestAnimationFrame(coordinateMorphTick);
+  }
+
+  function coordinateMeasurementData() {
+    if (!coordinateAnalysis) return null;
+    var count = coordinateAnalysis.pairs.length;
+    var aIndex = Math.max(0, Math.min(count - 1, Math.round(Number(coordinateMeasureAInput.value) || 1) - 1));
+    var bIndex = Math.max(0, Math.min(count - 1, Math.round(Number(coordinateMeasureBInput.value) || 1) - 1));
+    coordinateMeasureAInput.value = String(aIndex + 1); coordinateMeasureBInput.value = String(bIndex + 1);
+    if (aIndex === bIndex) return { same: true, aIndex: aIndex, bIndex: bIndex };
+    var a = coordinateAnalysis.pairs[aIndex], b = coordinateAnalysis.pairs[bIndex];
+    var original = coordinateDistance(a.original.point, b.original.point);
+    var variant = coordinateDistance(a.variantAligned.point, b.variantAligned.point);
+    return { same: false, aIndex: aIndex, bIndex: bIndex, a: a, b: b, original: original, variant: variant, delta: variant - original };
+  }
+
+  function updateCoordinateMeasurement(announce) {
+    var measurement = coordinateMeasurementData();
+    coordinateMeasurementStatement = '';
+    if (!measurement) { coordinateMeasurementPanel.hidden = true; useMeasurementEvidenceBtn.disabled = true; return; }
+    coordinateMeasurementPanel.hidden = false;
+    if (measurement.same) {
+      coordinateMeasurementOutput.textContent = 'Choose two different matched residues to measure a C-alpha separation.';
+      useMeasurementEvidenceBtn.disabled = true; drawCoordinateMorph(); return;
+    }
+    var deltaText = (measurement.delta > 0 ? '+' : '') + measurement.delta.toFixed(2);
+    coordinateMeasurementStatement = 'Residue-pair C-alpha measurement: ' + measurement.a.original.residue + ' ' + measurement.a.original.key + ' to ' + measurement.b.original.residue + ' ' + measurement.b.original.key + ' measured ' + measurement.original.toFixed(2) + ' Angstroms in the original model and ' + measurement.variant.toFixed(2) + ' Angstroms in the aligned variant model, a change of ' + deltaText + ' Angstroms. This is a model-coordinate measurement, not evidence of a physical trajectory, interaction strength, or functional effect.';
+    coordinateMeasurementOutput.textContent = coordinateMeasurementStatement;
+    useMeasurementEvidenceBtn.disabled = false;
+    drawCoordinateMorph();
+    if (announce) setStatus(coordinateAnalysisStatus, 'Updated the synchronized residue-pair measurement.', 'ok');
+  }
+
+  function initializeCoordinateMeasurement() {
+    if (!coordinateAnalysis) return;
+    var hotspots = rankedCoordinateHotspots(), aIndex = hotspots.length ? hotspots[0].index : 0;
+    var pairs = coordinateAnalysis.pairs, bestIndex = -1, bestChange = -1;
+    pairs.forEach(function (pair, index) {
+      if (index === aIndex) return;
+      var originalDistance = coordinateDistance(pairs[aIndex].original.point, pair.original.point);
+      var variantDistance = coordinateDistance(pairs[aIndex].variantAligned.point, pair.variantAligned.point);
+      if (Math.min(originalDistance, variantDistance) <= 12 && Math.abs(variantDistance - originalDistance) > bestChange) {
+        bestIndex = index; bestChange = Math.abs(variantDistance - originalDistance);
+      }
+    });
+    if (bestIndex < 0) bestIndex = aIndex === pairs.length - 1 ? Math.max(0, aIndex - 1) : aIndex + 1;
+    coordinateMeasureAInput.max = String(pairs.length); coordinateMeasureBInput.max = String(pairs.length);
+    coordinateMeasureAInput.value = String(aIndex + 1); coordinateMeasureBInput.value = String(bestIndex + 1);
+    coordinateMeasurementPanel.hidden = false;
+    updateCoordinateMeasurement(false);
+  }
+
+  function useCoordinateMeasurementEvidence() {
+    if (!coordinateMeasurementStatement) { setStatus(coordinateAnalysisStatus, 'Choose two different residues before adding a measurement.', 'warn'); return; }
+    var existing = evidenceInput.value.trim();
+    if (existing.indexOf(coordinateMeasurementStatement) < 0) evidenceInput.value = existing ? existing + '\n' + coordinateMeasurementStatement : coordinateMeasurementStatement;
+    renderGuide();
+    setStatus(coordinateAnalysisStatus, 'Residue-pair measurement added to evidence with its model-coordinate limitation.', 'ok');
+  }
+
+  function rankedCoordinateHotspots() {
+    if (!coordinateAnalysis) return [];
+    return coordinateAnalysis.pairs.map(function (pair, index) {
+      return { pair: pair, index: index, displacement: morphDisplacement(pair) };
+    }).sort(function (a, b) {
+      return b.displacement - a.displacement || a.index - b.index;
+    }).slice(0, Math.min(12, coordinateAnalysis.pairs.length));
+  }
+
+  function localHotspotContactChanges(pairIndex) {
+    var pairs = coordinateAnalysis.pairs, target = pairs[pairIndex], gained = 0, lost = 0, retained = 0;
+    pairs.forEach(function (pair, index) {
+      if (index === pairIndex) return;
+      if (target.original.chain === pair.original.chain && Math.abs(index - pairIndex) <= 2) return;
+      var state = contactState(target, pair).state;
+      if (state === 'gained') gained++; else if (state === 'lost') lost++; else if (state === 'retained') retained++;
+    });
+    return { gained: gained, lost: lost, retained: retained };
+  }
+
+  function selectCoordinateHotspot(rankIndex, announce) {
+    var hotspots = rankedCoordinateHotspots();
+    if (!hotspots.length) return;
+    coordinateHotspotRankIndex = ((rankIndex % hotspots.length) + hotspots.length) % hotspots.length;
+    var hotspot = hotspots[coordinateHotspotRankIndex], pair = hotspot.pair;
+    var contacts = localHotspotContactChanges(hotspot.index);
+    var originalConfidence = Number(pair.original.confidence), variantConfidence = Number(pair.variant.confidence);
+    var confidenceText = 'Confidence field unavailable for one or both models.';
+    if (Number.isFinite(originalConfidence) && Number.isFinite(variantConfidence)) {
+      var confidenceDelta = variantConfidence - originalConfidence;
+      confidenceText = 'Confidence field: original ' + originalConfidence.toFixed(1) + ', variant ' + variantConfidence.toFixed(1) + ', change ' + (confidenceDelta > 0 ? '+' : '') + confidenceDelta.toFixed(1) + '.';
+    }
+    stopCoordinateMorph();
+    coordinateMorphFrameInput.value = '100';
+    coordinateResidueInput.value = String(hotspot.index + 1);
+    renderCoordinateNeighborhood();
+    drawCoordinateMorph();
+    coordinateHotspotRank.value = 'Hotspot ' + (coordinateHotspotRankIndex + 1) + ' of ' + hotspots.length;
+    coordinateHotspotRank.textContent = coordinateHotspotRank.value;
+    coordinateHotspotDetail.textContent = [
+      pair.original.residue + ' ' + pair.original.key + ' ranks #' + (coordinateHotspotRankIndex + 1) + ' by aligned C-alpha displacement: ' + hotspot.displacement.toFixed(2) + ' Angstroms.',
+      confidenceText,
+      'Local 8 Angstrom C-alpha contacts: ' + contacts.gained + ' gained, ' + contacts.lost + ' lost, ' + contacts.retained + ' retained.',
+      'The morph is set to the variant endpoint and the selected residue is marked by a white ring. Ranking describes model geometry, not biological importance.'
+    ].join('\n');
+    if (announce) setStatus(coordinateAnalysisStatus, 'Showing displacement hotspot ' + (coordinateHotspotRankIndex + 1) + ' of ' + hotspots.length + ': ' + pair.original.residue + ' ' + pair.original.key + '.', 'ok');
+  }
+
+  function renderCoordinateHotspotTour() {
+    if (!coordinateAnalysis) { coordinateHotspotTour.hidden = true; return; }
+    coordinateHotspotRankIndex = 0;
+    coordinateHotspotTour.hidden = false;
+    selectCoordinateHotspot(0, false);
+  }
+
+  function coordinateResidueSelectionChanged() {
+    if (!coordinateAnalysis) return;
+    var selectedIndex = Math.max(0, Math.min(coordinateAnalysis.pairs.length - 1, Math.round(Number(coordinateResidueInput.value) || 1) - 1));
+    var hotspots = rankedCoordinateHotspots(), rank = hotspots.findIndex(function (item) { return item.index === selectedIndex; });
+    if (rank >= 0) { selectCoordinateHotspot(rank, false); return; }
+    renderCoordinateNeighborhood(); drawCoordinateMorph();
+    var pair = coordinateAnalysis.pairs[selectedIndex], contacts = localHotspotContactChanges(selectedIndex), displacement = morphDisplacement(pair);
+    coordinateHotspotRank.value = 'Custom residue'; coordinateHotspotRank.textContent = 'Custom residue';
+    coordinateHotspotDetail.textContent = pair.original.residue + ' ' + pair.original.key + ' has aligned C-alpha displacement ' + displacement.toFixed(2) + ' Angstroms and local 8 Angstrom contact changes of ' + contacts.gained + ' gained and ' + contacts.lost + ' lost. Use Previous or Next hotspot to return to the ranked tour.';
+  }
+
   function renderCoordinateAnalysis() {
     if (!coordinateAnalysis) return;
     var analysis = coordinateAnalysis;
+    stopCoordinateMorph();
+    coordinateMorphFrameInput.value = '0';
+    coordinateMorphPanel.hidden = false;
+    drawCoordinateMorph();
     coordinateMetrics.hidden = false; matchedResidueCount.value = String(analysis.pairs.length); coordinateRmsd.value = analysis.alignment.rmsd.toFixed(2) + ' A';
     contactChangeCount.value = '+' + analysis.contacts.gained + ' / -' + analysis.contacts.lost;
     originalConfidencePath.setAttribute('d', confidencePath(analysis.pairs, 'original')); variantConfidencePath.setAttribute('d', confidencePath(analysis.pairs, 'variant'));
@@ -4415,12 +4735,18 @@
     coordinateResidueInput.max = String(analysis.pairs.length);
     var suggested = variantChanges.length ? variantChanges[0].position : Number(variantPositionInput.value);
     coordinateResidueInput.value = String(Math.max(1, Math.min(analysis.pairs.length, suggested || 1)));
-    renderCoordinateNeighborhood(); drawContactDifference(); renderInterfaceComparison(); useCoordinateEvidenceBtn.disabled = false;
+    renderCoordinateNeighborhood(); drawContactDifference(); renderInterfaceComparison(); renderCoordinateHotspotTour(); initializeCoordinateMeasurement(); useCoordinateEvidenceBtn.disabled = false;
   }
 
   function resetCoordinateAnalysis() {
     coordinateAnalysisVersion += 1;
+    stopCoordinateMorph();
     coordinateAnalysis = null;
+    coordinateMorphPanel.hidden = true;
+    coordinateHotspotTour.hidden = true;
+    coordinateMeasurementStatement = '';
+    coordinateMeasurementPanel.hidden = true;
+    useMeasurementEvidenceBtn.disabled = true;
     coordinateMetrics.hidden = true;
     confidenceComparisonPlot.hidden = true;
     coordinateNeighborhoodOutput.hidden = true;
@@ -4441,7 +4767,9 @@
       setStatus(coordinateAnalysisStatus, 'Coordinate alignment currently requires PDB or ENT files for both structures.', 'err'); return;
     }
     var requestVersion = ++coordinateAnalysisVersion;
-    coordinateAnalysis = null; useCoordinateEvidenceBtn.disabled = true; analyzeCoordinatesBtn.disabled = true;
+    stopCoordinateMorph(); coordinateMorphPanel.hidden = true; coordinateMeasurementPanel.hidden = true;
+    coordinateMeasurementStatement = '';
+    coordinateAnalysis = null; useCoordinateEvidenceBtn.disabled = true; useMeasurementEvidenceBtn.disabled = true; analyzeCoordinatesBtn.disabled = true;
     setStatus(coordinateAnalysisStatus, 'Reading C-alpha coordinates and calculating the best-fit alignment...', '');
     Promise.all([readTextFile(originalFile), readTextFile(variantFile)]).then(function (texts) {
       if (requestVersion !== coordinateAnalysisVersion) return;
@@ -4471,7 +4799,9 @@
 
   function useCoordinateEvidence() {
     if (!coordinateAnalysis) { setStatus(coordinateAnalysisStatus, 'Run coordinate analysis before adding evidence.', 'warn'); return; }
-    var statement = 'Coordinate comparison: ' + coordinateAnalysis.pairs.length + ' matched C-alpha residues aligned with RMSD ' + coordinateAnalysis.alignment.rmsd.toFixed(2) + ' Angstroms; at an 8 Angstrom C-alpha threshold, ' + coordinateAnalysis.contacts.gained + ' contacts were gained and ' + coordinateAnalysis.contacts.lost + ' were lost in the variant model. These are model-geometry observations, not proof of changed function, binding, or stability.';
+    var peakHotspot = rankedCoordinateHotspots()[0];
+    var peakText = peakHotspot ? ' The largest matched-residue displacement was ' + peakHotspot.displacement.toFixed(2) + ' Angstroms at ' + peakHotspot.pair.original.residue + ' ' + peakHotspot.pair.original.key + '.' : '';
+    var statement = 'Coordinate comparison: ' + coordinateAnalysis.pairs.length + ' matched C-alpha residues aligned with RMSD ' + coordinateAnalysis.alignment.rmsd.toFixed(2) + ' Angstroms; at an 8 Angstrom C-alpha threshold, ' + coordinateAnalysis.contacts.gained + ' contacts were gained and ' + coordinateAnalysis.contacts.lost + ' were lost in the variant model.' + peakText + ' These are model-geometry observations, not proof of changed function, binding, or stability.';
     var existing = evidenceInput.value.trim();
     if (existing.indexOf(statement) < 0) evidenceInput.value = existing ? existing + '\n' + statement : statement;
     evidenceInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -4739,6 +5069,8 @@
     id: 'alphafold_explorer',
     name: 'AlphaFold Explorer',
     version: '2026.07',
+    reviewedAt: '2026-07-22',
+    reviewAfter: '2027-01-22',
     license: {
       name: 'GNU Affero General Public License v3.0',
       spdx: 'AGPL-3.0-only',
@@ -4750,7 +5082,7 @@
     },
     supportedMethodPacks: ['scientific_investigation','engineering_design'],
     capabilities: { captureArtifact: true, rawDataIncluded: false },
-    privacy: { learnerApprovalRequired: true, directIdentifiersAllowed: false, rawStructureFilesIncluded: false },
+    privacy: { learnerApprovalRequired: true, directIdentifiersAllowed: false, rawStructureFilesIncluded: false, sequenceLikeTextAllowed: false, sanitizerId: 'alphafold_sequence_redaction_v1', sanitizerRequired: false },
     reproducibility: { requiredFields: ['softwareVersion','sourceRecordId','parameters','randomSeed','limitations'] }
   };
   function redactSequenceLikeText(value) {
@@ -4759,14 +5091,29 @@
       .replace(/\b[ACDEFGHIKLMNPQRSTVWY]{40,}\b/gi, '[protein sequence omitted]');
   }
 
-  function researchHubCaptureHost() {
-    var candidates = [window.opener, window.parent, window];
-    for (var i = 0; i < candidates.length; i++) {
-      try {
-        if (candidates[i] && candidates[i].ResearchHub && typeof candidates[i].ResearchHub.captureArtifact === 'function') return candidates[i].ResearchHub;
-      } catch (_) {}
+  var alphaFoldResearchAdapter = null;
+  function sanitizeAlphaFoldCapture(value, depth) {
+    if (depth > 8) return '[nested value omitted]';
+    if (typeof value === 'string') return redactSequenceLikeText(value).slice(0, 4000);
+    if (Array.isArray(value)) return value.slice(0, 100).map(function (item) { return sanitizeAlphaFoldCapture(item, depth + 1); });
+    if (value && typeof value === 'object') {
+      var safe = {};
+      Object.keys(value).forEach(function (key) {
+        if (!/^(rawSequence|sequence|rawStructure|structureFile|fileContents)$/i.test(key)) safe[key] = sanitizeAlphaFoldCapture(value[key], depth + 1);
+      });
+      return safe;
     }
-    return null;
+    return value;
+  }
+  function getAlphaFoldResearchAdapter() {
+    if (alphaFoldResearchAdapter) return alphaFoldResearchAdapter;
+    if (!window.AlloFlowToolIntegration || typeof window.AlloFlowToolIntegration.createAdapter !== 'function') return null;
+    alphaFoldResearchAdapter = window.AlloFlowToolIntegration.createAdapter({
+      contract: ALPHAFOLD_RESEARCH_CONTRACT,
+      buildCapture: function (capture) { return capture; },
+      sanitizeCapture: function (capture) { return sanitizeAlphaFoldCapture(capture, 0); }
+    });
+    return alphaFoldResearchAdapter;
   }
 
   function sendWorkspaceToResearchHub() {
@@ -4776,9 +5123,9 @@
       setStatus(notebookStatus, 'Load a structure, add a note, or write reasoning before sending a snapshot.', 'warn');
       return;
     }
-    var host = researchHubCaptureHost();
-    if (!host) {
-      setStatus(notebookStatus, 'Open this explorer from AlloFlow, then open the Research Hub once so the portfolio bridge is available.', 'warn');
+    var adapter = getAlphaFoldResearchAdapter();
+    if (!adapter) {
+      setStatus(notebookStatus, 'The shared Tool Integration SDK did not load. Refresh this explorer before sending a snapshot.', 'warn');
       return;
     }
     var contextLabel = snapshot.context ? [snapshot.context.name, snapshot.context.accession].filter(Boolean).join(' / ') : 'No structure record loaded';
@@ -4792,18 +5139,15 @@
     if (safeReasoning.evidence) summaryParts.push('Evidence: ' + safeReasoning.evidence);
     if (safeReasoning.caution) summaryParts.push('Limit or next test: ' + safeReasoning.caution);
     if (snapshot.entries.length) summaryParts.push('Notebook entries: ' + snapshot.entries.length + '.');
-    var result = host.captureArtifact({
-      sourceToolId: 'alphafold_explorer',
-      sourceToolName: 'AlphaFold Explorer',
-      sourceToolVersion: '2026.07',
+    var result = adapter.capture({
       artifactKind: 'protein_structure_workspace',
-      integrationContract: ALPHAFOLD_RESEARCH_CONTRACT,
+
       title: snapshot.name || 'AlphaFold structure investigation',
       summary: summaryParts.join(' ').slice(0, 4000),
       sourceRecordId: snapshot.context && snapshot.context.accession || '',
       sourceUrl: current && current.dbUrl || '',
       generatedAt: snapshot.savedAt,
-      reproducibility: {
+      reproducibilityReceipt: {
         softwareName: 'AlphaFold Explorer',
         softwareVersion: ALPHAFOLD_RESEARCH_CONTRACT.version,
         sourceRecordId: snapshot.context && snapshot.context.accession || '',
@@ -5684,7 +6028,17 @@
   comparisonComparedResidue.addEventListener('input', renderPaeComparison);
   usePaeComparisonEvidenceBtn.addEventListener('click', usePaeComparisonEvidence);
   analyzeCoordinatesBtn.addEventListener('click', analyzeCoordinatePair);
-  coordinateResidueInput.addEventListener('input', renderCoordinateNeighborhood);
+  coordinateResidueInput.addEventListener('input', coordinateResidueSelectionChanged);
+  previousCoordinateHotspotBtn.addEventListener('click', function () { selectCoordinateHotspot(coordinateHotspotRankIndex - 1, true); });
+  nextCoordinateHotspotBtn.addEventListener('click', function () { selectCoordinateHotspot(coordinateHotspotRankIndex + 1, true); });
+  coordinateMorphPlayBtn.addEventListener('click', toggleCoordinateMorph);
+  coordinateMorphFrameInput.addEventListener('input', function () { stopCoordinateMorph(); drawCoordinateMorph(); });
+  coordinateMorphAmplifyInput.addEventListener('input', drawCoordinateMorph);
+  coordinateMeasureAInput.addEventListener('input', function () { updateCoordinateMeasurement(false); });
+  coordinateMeasureBInput.addEventListener('input', function () { updateCoordinateMeasurement(false); });
+  setMeasurementABtn.addEventListener('click', function () { coordinateMeasureAInput.value = coordinateResidueInput.value; updateCoordinateMeasurement(true); });
+  setMeasurementBBtn.addEventListener('click', function () { coordinateMeasureBInput.value = coordinateResidueInput.value; updateCoordinateMeasurement(true); });
+  useMeasurementEvidenceBtn.addEventListener('click', useCoordinateMeasurementEvidence);
   coordinateRadiusInput.addEventListener('input', renderCoordinateNeighborhood);
   useCoordinateEvidenceBtn.addEventListener('click', useCoordinateEvidence);
   sequenceInput.addEventListener('input', function () { syncVariantBase(true); updateSequenceStatus(); });
@@ -5791,6 +6145,7 @@
   setTimeout(hello, 900);
   setTimeout(renderAiState, 2600);
   window.addEventListener('beforeunload', function () {
+    stopCoordinateMorph();
     stopComparisonCameraSync();
     if (lookupController) lookupController.abort();
     if (paeController) paeController.abort();

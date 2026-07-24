@@ -9,7 +9,7 @@ const startClassSession = async (deps) => {
   try { if (window._DEBUG_PHASE_O) console.log("[PhaseO] startClassSession fired"); } catch(_) {}
     if (history.length === 0) {
         addToast(t('session.error_no_resources'), "error");
-        return;
+        return false;
     }
     const code = generateSessionCode();
     const aiPolicy = {
@@ -75,6 +75,7 @@ const startClassSession = async (deps) => {
         setShowSessionModal(true);
         setActiveSidebarTab('history');
         addToast(t('session.live', { code }), "success");
+        return true;
     } catch (e) {
         warnLog("Session Start Error:", e);
         console.error("[SESSION DEBUG] Full error object:", e);
@@ -125,8 +126,10 @@ const startClassSession = async (deps) => {
             setShowSessionModal(true);
             setActiveSidebarTab('history');
             addToast(t('session.local_mode_warning') || "⚠️ Running in local preview mode (Firebase unavailable)", "warning");
+            return true;
         } else {
             addToast(t('session.error_generic'), "error");
+            return false;
         }
     }
 };

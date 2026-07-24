@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-19T17:48:50.651Z",
+  "generatedAt": "2026-07-23T17:24:35.227Z",
   "libraryId": "praxis-audiology-5343-learning-library",
   "standard": {
     "label": "AlloFlow Praxis Audiology 5343 learning-library source and editorial review v1",
@@ -150,7 +150,7 @@
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
     "sourceItemsSha256": "b84e05fcec77dcc4ab8ac0d6cdc758c02f0e930c997cbc15d329bb05d60fc89d",
-    "learningLibrarySha256": "1911f012381eede6de8dfb61244ce66e9fb44d3d0243244e55a7980000a4f8d7",
+    "learningLibrarySha256": "00957d259aeceea1258f503904301f30671ca9651d9e7dd9f4a794be5b6e1afb",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

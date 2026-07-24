@@ -7072,6 +7072,116 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
   // ───────────────────────────────────────────────────────────
   // STATE
   // ───────────────────────────────────────────────────────────
+  var MISSION_SCENARIOS = {
+    'mission-2': {
+      prompt: 'A heat wave is creating different conditions from the surface to the bottom. Your crew has time for one monitoring plan before the tide turns.',
+      reflection: 'Which evidence would make you change stocking depth or density?',
+      choices: [
+        { label: 'Sample the surface once', consequence: 'Fast, but a single surface reading can hide low oxygen below the thermocline.' },
+        { label: 'Probe three depths and compare trends', consequence: 'This costs more tide-window time but reveals the vertical pattern needed for a defensible decision.' },
+        { label: 'Wait for the regional buoy report', consequence: 'Regional data adds context, but it may not represent conditions inside your lease.' }
+      ]
+    },
+    'mission-3': {
+      prompt: 'A buyer wants the full crop today, but the tide window is short and a portion of the mussels are below grade.',
+      reflection: 'How would your choice affect quality, revenue, and the next crop?',
+      choices: [
+        { label: 'Harvest everything now', consequence: 'Volume rises today, but undersized product can weaken price, reputation, and future yield.' },
+        { label: 'Grade carefully and return undersized stock', consequence: 'The trip takes longer, but quality and future growth are protected.' },
+        { label: 'Delay the entire harvest', consequence: 'More growth is possible, but weather, fouling, and buyer reliability become new risks.' }
+      ]
+    },
+    'mission-4': {
+      prompt: 'An abutter raises navigation and viewshed concerns two weeks before your standard-lease hearing.',
+      reflection: 'What evidence and relationship work would make your response credible?',
+      choices: [
+        { label: 'Rely only on the written application', consequence: 'The record matters, but unanswered local concerns can harden opposition.' },
+        { label: 'Meet early and bring sight-line and channel evidence', consequence: 'Direct engagement does not guarantee agreement, but it improves clarity and trust.' },
+        { label: 'Redesign the site immediately', consequence: 'Adaptation may help, but changing the plan before validating the concern can create new technical problems.' }
+      ]
+    },
+    'mission-5': {
+      prompt: 'A PSP closure begins the day before a scheduled harvest. Buyers are waiting and cash flow is tight.',
+      reflection: 'How will you protect public health while managing customers and cash flow?',
+      choices: [
+        { label: 'Harvest because the order was already placed', consequence: 'A closure prohibits sale. This choice creates a severe food-safety and compliance failure.' },
+        { label: 'Hold the crop, notify buyers, and monitor reopening data', consequence: 'Revenue is delayed, but compliance, customer trust, and traceability are protected.' },
+        { label: 'Move product to another growing area', consequence: 'Moving live stock may spread risk and requires authorization, records, and biosecurity review.' }
+      ]
+    },
+    'mission-6': {
+      prompt: 'Kelp is market-ready, but wind is building and the processor has a narrow receiving window.',
+      reflection: 'What conditions define a safe and marketable harvest window?',
+      choices: [
+        { label: 'Leave immediately to protect the sale', consequence: 'The delivery window is met only if the crew and gear remain safe; rising weather can erase the value of the crop.' },
+        { label: 'Confirm marine conditions and negotiate the pickup window', consequence: 'Coordination protects safety and product quality while keeping the buyer informed.' },
+        { label: 'Harvest now and store the kelp on the dock', consequence: 'Unplanned warm holding can rapidly reduce quality and processor acceptance.' }
+      ]
+    },
+    'mission-7': {
+      prompt: 'Three-depth probes show dissolved oxygen falling fastest at the current sock depth during an August heat wave.',
+      reflection: 'Which follow-up measurements would show whether your intervention worked?',
+      choices: [
+        { label: 'Thin density and monitor again', consequence: 'Lower biomass can reduce oxygen demand, but the crop and labor trade-offs must be tracked.' },
+        { label: 'Move all socks deeper immediately', consequence: 'Deeper water may be cooler, but it can also have lower oxygen; depth data must guide the move.' },
+        { label: 'Wait without additional monitoring', consequence: 'Avoiding disturbance saves labor, but removes the evidence needed to catch a worsening event.' }
+      ]
+    },
+    'mission-8': {
+      prompt: 'Seed pickup is ready, but a traffic delay threatens the nursery transfer window.',
+      reflection: 'What controls would you document from hatchery pickup through nursery placement?',
+      choices: [
+        { label: 'Keep the original route and hope', consequence: 'The plan stays simple, but temperature and oxygen exposure may exceed the safe window.' },
+        { label: 'Confirm packing limits, add monitoring, and prepare the nursery first', consequence: 'Coordination reduces transition time and creates a traceable handling record.' },
+        { label: 'Open the containers repeatedly to inspect seed', consequence: 'Frequent checks can disrupt temperature and moisture control without improving the transfer plan.' }
+      ]
+    },
+    'mission-9': {
+      prompt: 'A nor’easter is forecast in 36 hours. You cannot reinforce every line and retrieve every exposed cage.',
+      reflection: 'How would you prioritize gear, worker safety, and post-storm evidence?',
+      choices: [
+        { label: 'Protect the highest-risk and highest-consequence assets first', consequence: 'Risk-based triage accepts some exposure while protecting people, anchors, vessels, and critical stock.' },
+        { label: 'Work until every item is secured', consequence: 'Completeness sounds ideal, but fatigue and worsening conditions can create a larger emergency.' },
+        { label: 'Do nothing because forecasts change', consequence: 'Avoiding unnecessary labor also forfeits the preparation window for a known high-consequence risk.' }
+      ]
+    },
+    'mission-10': {
+      prompt: 'Your first oyster subscription has strong interest, but weekly volume and delivery costs are uncertain.',
+      reflection: 'What promise can the farm deliver consistently without sacrificing quality or margin?',
+      choices: [
+        { label: 'Sell unlimited subscriptions at a low launch price', consequence: 'Demand grows quickly, but capacity and cold-chain costs can turn popularity into losses.' },
+        { label: 'Pilot a capped tier with clear pickup dates', consequence: 'A smaller pilot tests demand, labor, packaging, and margin before expansion.' },
+        { label: 'Invest in a large campaign before testing delivery', consequence: 'Brand awareness rises, but the untested fulfillment system carries most of the risk.' }
+      ]
+    },
+    'mission-11': {
+      prompt: 'Ten years of records show warmer summers, longer closure risk, and storm damage at your primary site.',
+      reflection: 'Which indicators will tell you whether the five-year adaptation plan is working?',
+      choices: [
+        { label: 'Change species but keep every other assumption', consequence: 'Diversification may help, but site exposure and market fit remain unresolved.' },
+        { label: 'Trial species, compare sites, and set review thresholds', consequence: 'A staged portfolio approach creates evidence before committing the whole farm.' },
+        { label: 'Wait for certainty in the climate forecast', consequence: 'Perfect certainty is unlikely, and delayed learning can narrow future options.' }
+      ]
+    },
+    'mission-12': {
+      prompt: 'An apprentice can follow procedures but has not yet learned how to make an independent farm decision.',
+      reflection: 'How will you know the apprentice can transfer the skill to a new situation?',
+      choices: [
+        { label: 'Demonstrate every task while they watch', consequence: 'Observation builds familiarity, but gives little evidence of independent judgment.' },
+        { label: 'Model once, coach practice, then ask for a reasoned plan', consequence: 'Gradual release combines safety, practice, feedback, and learner ownership.' },
+        { label: 'Assign the hardest task without support', consequence: 'Independence is tested, but unnecessary risk can overwhelm learning and farm safety.' }
+      ]
+    },
+    'mission-13': {
+      prompt: 'You have an open week on the Bagaduce farm. Choose the operating goal that will guide your free-sim plan.',
+      reflection: 'What will you measure, and what result would make you change the plan?',
+      choices: [
+        { label: 'Maximize deployment speed', consequence: 'Speed is measurable, but can conflict with navigation, placement quality, and fuel use.' },
+        { label: 'Build a balanced work plan with safety and monitoring thresholds', consequence: 'The plan links operations to evidence and defines when adaptation is required.' },
+        { label: 'Explore without recording decisions', consequence: 'Open exploration can reveal ideas, but the learning is difficult to compare or repeat.' }
+      ]
+    }
+  };
   var AQ_KEY = 'aquacultureLab.state.v1';
   function loadState() {
     try {
@@ -7088,14 +7198,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         visitedTopics: {},
         recentTopics: [],
         bookmarkedTopics: [],
+        completedTopics: {},
         topicNotes: {},
+        quizCheckpointResults: {},
         a11y: { staticCamera: false }
       }, s);
     } catch (_) {
-      return { region: DEFAULT_REGION, completedMissions: {}, harvests: [], droppersDeployed: 0, probeReadings: [], a11y: {} };
+      return { region: DEFAULT_REGION, completedMissions: {}, harvests: [], droppersDeployed: 0, probeReadings: [], completedTopics: {}, quizCheckpointResults: {}, a11y: {} };
     }
   }
-  function saveState(s) { try { window.localStorage.setItem(AQ_KEY, JSON.stringify(s)); } catch (_) {} }
+  function saveState(s) {
+    try { window.localStorage.setItem(AQ_KEY, JSON.stringify(s)); return true; }
+    catch (_) { return false; }
+  }
 
   // ───────────────────────────────────────────────────────────
   // THREE.JS LOADER
@@ -7615,11 +7730,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       visitedTopics: stateInit.visitedTopics && typeof stateInit.visitedTopics === 'object' ? stateInit.visitedTopics : {},
       recentTopics: Array.isArray(stateInit.recentTopics) ? stateInit.recentTopics : [],
       bookmarkedTopics: Array.isArray(stateInit.bookmarkedTopics) ? stateInit.bookmarkedTopics : [],
+      completedTopics: stateInit.completedTopics && typeof stateInit.completedTopics === 'object' ? stateInit.completedTopics : {},
       topicNotes: stateInit.topicNotes && typeof stateInit.topicNotes === 'object' ? stateInit.topicNotes : {}
     });
     var learningProgress = learningProgressHook[0], setLearningProgress = learningProgressHook[1];
     var noteDraftHook = useState('');
     var noteDraft = noteDraftHook[0], setNoteDraft = noteDraftHook[1];
+    var learningNoticeHook = useState({ kind: 'info', message: 'Learning data is stored on this device. Download a backup if you need to move it.' });
+    var learningNotice = learningNoticeHook[0], setLearningNotice = learningNoticeHook[1];
+    var completedMissionsHook = useState(stateInit.completedMissions && typeof stateInit.completedMissions === 'object' ? stateInit.completedMissions : {});
+    var completedMissions = completedMissionsHook[0], setCompletedMissions = completedMissionsHook[1];
+    var scenarioHook = useState({ missionId: null, choiceIndex: null, reflection: '' });
+    var activeScenario = scenarioHook[0], setActiveScenario = scenarioHook[1];
+    var quizCheckpointResultsHook = useState(stateInit.quizCheckpointResults && typeof stateInit.quizCheckpointResults === 'object' ? stateInit.quizCheckpointResults : {});
+    var quizCheckpointResults = quizCheckpointResultsHook[0], setQuizCheckpointResults = quizCheckpointResultsHook[1];
     var regionHook = useState(stateInit.region);
     var region = regionHook[0], setRegion = regionHook[1];
     var simHook = useState({ active: false, threeLoaded: !!window.THREE, threeError: false, loading: false });
@@ -7708,8 +7832,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       if (ev.type === 'complete') {
         var s3 = loadState();
         s3.completedMissions = s3.completedMissions || {};
-        s3.completedMissions['mission-1'] = { completedAt: Date.now() };
+        s3.completedMissions['mission-1'] = { completedAt: Date.now(), mode: '3d' };
         saveState(s3);
+        setCompletedMissions(Object.assign({}, s3.completedMissions));
       }
     }
 
@@ -7785,7 +7910,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       };
     }, []);
 
-    var cardStyle = { background: 'linear-gradient(135deg, rgba(8,30,28,0.92), rgba(4,18,18,0.92))', border: '1px solid rgba(20,184,166,0.22)', borderRadius: 12, padding: 14, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 12 };
+    var cardStyle = { background: 'linear-gradient(135deg, rgba(8,30,28,0.94), rgba(4,18,18,0.94))', border: '1px solid rgba(94,234,212,0.24)', borderRadius: 12, padding: 14, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 12 };
     var headerStyle = { fontSize: 13, fontWeight: 900, color: '#a7f3d0', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 };
 
     // ── Tab groups: 139 tabs organized into 12 cohesive groups so the bar
@@ -7963,6 +8088,347 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       ] }
     ];
 
+    var GROUP_SEARCH_KEYWORDS = {
+      start: 'begin overview dashboard mission simulation map chart navigation',
+      species: 'biology organisms cultivation grow out seed larvae broodstock shellfish finfish seaweed algae genetics',
+      water: 'environment chemistry monitoring ocean coastal conditions health testing',
+      operations: 'farm work grower gear management production schedule workflow',
+      safety: 'health welfare hazard emergency food handling worker protection',
+      boating: 'vessel marine navigation seamanship route rules',
+      regulation: 'law policy permit license government compliance enforcement',
+      business: 'money finance cost revenue market planning management',
+      market: 'sales food restaurant chef culinary distribution customer',
+      community: 'people culture heritage history waterfront industry maine',
+      climate: 'sustainability environment warming carbon technology future research',
+      learn: 'student teacher classroom curriculum lesson study career reference'
+    };
+
+    var TOPIC_SEARCH_META = {
+      sim: { summary: 'Pilot the skiff, deploy droppers, and collect probe readings.', keywords: 'interactive game boat mission lease controls wasd probe' },
+      chart: { summary: 'Read channels, buoy marks, hazards, and the route to the lease.', keywords: 'map nautical red right returning depth course plot' },
+      species: { summary: 'Compare cultured organisms and the methods used to grow them.', keywords: 'oyster mussel kelp salmon scallop clam finfish seaweed methods' },
+      hatchery: { summary: 'Follow broodstock, spawning, larvae, setting, and nursery work.', keywords: 'seed spat spawn eggs larvae nursery upweller algae' },
+      hatcherygear: { summary: 'Explore tanks, filtration, pumps, microscopes, and culture equipment.', keywords: 'tank filter pump uv microscope aeration gear' },
+      hatchwf: { summary: 'Trace the complete hatchery production workflow.', keywords: 'workflow spawn fertilization larval rearing settlement nursery' },
+      hatcherydeep: { summary: 'Study hatchery biology, bottlenecks, staffing, and facility systems.', keywords: 'deep facility algae room biosecurity seed production' },
+      hatchprot: { summary: 'Review repeatable hatchery operating and sanitation protocols.', keywords: 'sop cleaning disinfection quarantine procedure checklist' },
+      deepdives: { summary: 'Compare detailed life histories and cultivation needs by species.', keywords: 'profile biology habitat lifecycle growth' },
+      oysterdeep: { summary: 'Study oyster biology, spat, grow-out, harvest, and markets.', keywords: 'crassostrea virginica spat cultch cage bag tumbling' },
+      musseldeep: { summary: 'Study mussel settlement, rope culture, socking, and harvest.', keywords: 'mytilus edulis rope sock longline byssal' },
+      kelpdeep: { summary: 'Explore Maine kelp production from seed string to market.', keywords: 'sugar kelp seaweed nursery line harvest processing' },
+      kelpdeep2: { summary: 'Investigate kelp ecology, cultivation, products, and constraints.', keywords: 'macroalgae spores gametophyte blue carbon' },
+      salmondeep: { summary: 'Examine salmon farming systems, welfare, feed, and disease.', keywords: 'finfish net pen ras feed lice welfare' },
+      scallopdeep: { summary: 'Compare scallop and urchin aquaculture methods.', keywords: 'ear hanging lantern net roe echinoderm' },
+      aqgenomics: { summary: 'Explore selective breeding, genetics, and resilient stock.', keywords: 'dna genetics genome selection triploid broodstock resistance' },
+      microalgae: { summary: 'Learn how live microalgae cultures feed larvae and spat.', keywords: 'phytoplankton isochrysis tetraselmis pavlova feed culture' },
+      water: { summary: 'Interpret temperature, salinity, pH, oxygen, and water-quality readings.', keywords: 'dissolved oxygen do hypoxia ph salinity temperature probe chemistry' },
+      watercol: { summary: 'Study how physical and biological conditions change with depth.', keywords: 'depth stratification thermocline pycnocline plankton turbidity' },
+      weatheraq: { summary: 'Connect forecasts, wind, storms, and seasonal conditions to farm decisions.', keywords: 'forecast wind wave storm fog ice heat' },
+      neracoos: { summary: 'Use regional buoy observations and coastal monitoring data.', keywords: 'buoy data station real time gulf of maine observation' },
+      wqthresh: { summary: 'Compare healthy, warning, and critical water-quality thresholds.', keywords: 'limits ranges dissolved oxygen hypoxia ph ammonia nitrate temperature' },
+      wqindex: { summary: 'Combine multiple measurements into a water-quality index.', keywords: 'score indicator monitoring calculation threshold' },
+      tidestations: { summary: 'Read tide stations, predictions, currents, and tidal windows.', keywords: 'high tide low tide current slack water station' },
+      aqchemicals: { summary: 'Review approved treatments, restrictions, and safe handling.', keywords: 'medicine disinfectant peroxide formalin antibiotic treatment' },
+      disease: { summary: 'Recognize common diseases, parasites, pests, and response actions.', keywords: 'pathogen infection mortality parasite lice vibrio dermo' },
+      diseaseatlas: { summary: 'Browse diseases by host, symptoms, diagnosis, and treatment.', keywords: 'pathology atlas pathogen symptom diagnostic' },
+      aqlaboratory: { summary: 'Explore sampling, microscopy, diagnostics, and pathology workflows.', keywords: 'lab microscope pcr sample necropsy histology diagnostic' },
+      stockHunt: { summary: 'Discover how stocking pressure changes oxygen and animal health.', keywords: 'density biomass carrying capacity overstock hypoxia welfare' },
+      site: { summary: 'Evaluate depth, flushing, access, habitat, and community fit.', keywords: 'site selection location current bottom access eelgrass conflict' },
+      lease: { summary: 'Compare aquaculture lease types, limits, and application requirements.', keywords: 'lpa standard experimental acre permit application dmr' },
+      hearing: { summary: 'Prepare evidence and testimony for a public lease hearing.', keywords: 'public comment testimony stakeholder objection evidence' },
+      mooring: { summary: 'Understand anchors, lines, floats, loads, and farm layout.', keywords: 'anchor rope buoy longline tension storm gear' },
+      calendar: { summary: 'Plan major farm tasks across the year.', keywords: 'month season schedule planting harvest maintenance' },
+      techniques: { summary: 'Compare practical cultivation and handling techniques.', keywords: 'method grading tumbling socking seeding husbandry' },
+      dailyops: { summary: 'Walk through the daily operating rhythm of a working farm.', keywords: 'checklist inspection feeding records weather harvest' },
+      growcycles: { summary: 'Trace production stages from seed to market size.', keywords: 'lifecycle cohort nursery grow out harvest timeline' },
+      failures: { summary: 'Diagnose equipment, weather, biological, and business failures.', keywords: 'failure troubleshooting risk outage storm mortality response' },
+      scenarios: { summary: 'Practice decisions through realistic farm scenarios.', keywords: 'case decision challenge response tradeoff' },
+      equipment: { summary: 'Study specifications, uses, and costs for core farm equipment.', keywords: 'gear tool pump cage boat line cost' },
+      safety: { summary: 'Review high-priority hazards and safe work practices.', keywords: 'pfd cold water injury weather hazard ppe' },
+      foodsafety: { summary: 'Follow sanitation, closures, temperature, and shellfish handling rules.', keywords: 'nssp vibrio refrigeration tag harvest closure contamination' },
+      emergency: { summary: 'Use emergency plans for people, vessels, weather, and stock.', keywords: 'mayday rescue spill storm mortality first aid' },
+      boats: { summary: 'Compare vessels and features used for aquaculture work.', keywords: 'skiff workboat barge engine deck' },
+      buoyage: { summary: 'Interpret navigation aids using IALA-B conventions.', keywords: 'red nun green can marker lateral aid navigation' },
+      colregs: { summary: 'Apply collision regulations and right-of-way rules.', keywords: 'rules road crossing overtaking give way stand on lights' },
+      knots: { summary: 'Learn practical knots for lines, fenders, and farm gear.', keywords: 'bowline cleat hitch clove sheet bend rope' },
+      nssp: { summary: 'Understand the National Shellfish Sanitation Program.', keywords: 'food safety shellfish tag closure sanitation federal' },
+      permitwf: { summary: 'Follow an aquaculture permit from concept through decision.', keywords: 'application review hearing agency approval workflow' },
+      econ: { summary: 'Explore startup costs, operating costs, revenue, and break-even.', keywords: 'economics money cost profit cash flow break even price' },
+      businessplan: { summary: 'Build a farm business case, budget, market, and operating plan.', keywords: 'business plan budget customer revenue expense forecast' },
+      aqloans: { summary: 'Compare loans, grants, and funding pathways.', keywords: 'finance funding credit grant lender startup capital' },
+      marketing: { summary: 'Develop products, customers, pricing, and a farm story.', keywords: 'brand sales price customer wholesale direct market' },
+      coldchain: { summary: 'Protect seafood quality through temperature-controlled handling.', keywords: 'refrigeration ice storage transport temperature traceability' },
+      wabanaki: { summary: 'Learn from Wabanaki relationships with shellfish and coastal waters.', keywords: 'indigenous heritage penobscot passamaquoddy maliseet mi kmaq' },
+      history: { summary: 'Trace the history of aquaculture and Maine working waterfronts.', keywords: 'timeline colonial indigenous industry past' },
+      climate: { summary: 'Examine warming, acidification, storms, and farm adaptation.', keywords: 'climate change ocean acidification warming resilience adaptation' },
+      bluecarbon: { summary: 'Explore carbon storage and ecosystem services from seaweed and shellfish.', keywords: 'carbon sequestration kelp climate ecosystem service' },
+      imta: { summary: 'Study integrated multi-trophic aquaculture and nutrient cycling.', keywords: 'integrated fish shellfish seaweed waste nutrients polyculture' },
+      rasdeep: { summary: 'Investigate recirculating aquaculture systems and indoor production.', keywords: 'ras tank biofilter recirculation ammonia oxygen indoor' },
+      lessonplans: { summary: 'Use ready-to-teach aquaculture lesson plans.', keywords: 'teacher classroom curriculum activity assessment' },
+      activities: { summary: 'Choose hands-on student investigations and projects.', keywords: 'student lab project experiment fieldwork' },
+      careers: { summary: 'Explore roles across farms, hatcheries, science, regulation, and markets.', keywords: 'job occupation career salary training workforce' },
+      glossary: { summary: 'Look up essential aquaculture and marine terms.', keywords: 'definition vocabulary term reference' },
+      bibliography: { summary: 'Find books, agencies, reports, and research sources.', keywords: 'citation source reference research reading' },
+      quiz: { summary: 'Check understanding across aquaculture topics.', keywords: 'assessment questions test review practice' }
+    };
+
+    function aqNormalizeSearchText(value) {
+      var normalized = String(value || '').toLowerCase();
+      try { normalized = normalized.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (_) {}
+      return normalized.replace(/[^a-z0-9]+/g, ' ').replace(/s+/g, ' ').trim();
+    }
+
+    function aqSearchTopicCatalog(groups, query) {
+      var normalizedQuery = aqNormalizeSearchText(query);
+      if (!normalizedQuery) return [];
+      var tokens = normalizedQuery.split(' ').filter(Boolean);
+      var matches = [];
+      (groups || []).forEach(function(group, groupIndex) {
+        var groupLabel = aqNormalizeSearchText(group.label);
+        var groupKeywords = aqNormalizeSearchText(GROUP_SEARCH_KEYWORDS[group.id] || '');
+        (group.tabs || []).forEach(function(topic, topicIndex) {
+          var meta = TOPIC_SEARCH_META[topic.id] || {};
+          var label = aqNormalizeSearchText(topic.label);
+          var keywords = aqNormalizeSearchText(meta.keywords || '');
+          var summary = meta.summary || ('Explore ' + String(topic.label || '').replace(/[^ -~]/g, '').trim() + ' in ' + group.label + '.');
+          var documentText = [topic.id, label, group.id, groupLabel, groupKeywords, keywords, aqNormalizeSearchText(summary)].join(' ');
+          var paddedDocument = ' ' + documentText + ' ';
+          var allTokensMatch = tokens.every(function(token) {
+            return token.length <= 2 ? paddedDocument.indexOf(' ' + token + ' ') !== -1 : documentText.indexOf(token) !== -1;
+          });
+          if (!allTokensMatch) return;
+          var score = 0;
+          if (label === normalizedQuery) score += 140;
+          else if (label.indexOf(normalizedQuery) === 0) score += 100;
+          else if (label.indexOf(normalizedQuery) !== -1) score += 80;
+          if (keywords.indexOf(normalizedQuery) !== -1) score += 65;
+          if (aqNormalizeSearchText(summary).indexOf(normalizedQuery) !== -1) score += 55;
+          if (groupLabel.indexOf(normalizedQuery) !== -1) score += 35;
+          if (groupKeywords.indexOf(normalizedQuery) !== -1) score += 15;
+          score += tokens.reduce(function(total, token) {
+            return total + (label.indexOf(token) !== -1 ? 12 : 0) + (keywords.indexOf(token) !== -1 ? 8 : 0);
+          }, 0);
+          matches.push({ topic: topic, group: group, summary: summary, score: score, order: groupIndex * 1000 + topicIndex });
+        });
+      });
+      return matches.sort(function(a, b) { return b.score - a.score || a.order - b.order; });
+    }
+
+    function aqBuildTopicLookup(groups) {
+      var lookup = {};
+      (groups || []).forEach(function(group) {
+        (group.tabs || []).forEach(function(topic) {
+          lookup[topic.id] = { id: topic.id, label: String(topic.label || '').replace(/[^ -~]/g, '').trim(), area: group.label };
+        });
+      });
+      return lookup;
+    }
+
+    function aqSanitizeLearningData(raw, validTopicIds) {
+      var valid = {};
+      (validTopicIds || []).forEach(function(topicId) { valid[topicId] = true; });
+      var source = raw && typeof raw === 'object' ? raw : {};
+      var visitedTopics = {};
+      Object.keys(source.visitedTopics || {}).forEach(function(topicId) {
+        var timestamp = Number(source.visitedTopics[topicId]);
+        if (valid[topicId] && Number.isFinite(timestamp) && timestamp >= 0) visitedTopics[topicId] = timestamp;
+      });
+      var completedTopics = {};
+      Object.keys(source.completedTopics || {}).forEach(function(topicId) {
+        var timestamp = Number(source.completedTopics[topicId]);
+        if (valid[topicId] && Number.isFinite(timestamp) && timestamp >= 0) completedTopics[topicId] = timestamp;
+      });
+      function uniqueTopics(values, limit) {
+        var seen = {};
+        return (Array.isArray(values) ? values : []).filter(function(topicId) {
+          if (!valid[topicId] || seen[topicId]) return false;
+          seen[topicId] = true;
+          return true;
+        }).slice(0, limit);
+      }
+      var topicNotes = {};
+      Object.keys(source.topicNotes || {}).forEach(function(topicId) {
+        if (!valid[topicId]) return;
+        var note = String(source.topicNotes[topicId] || '').slice(0, 600);
+        if (note.trim()) topicNotes[topicId] = note;
+      });
+      var completedMissions = {};
+      Object.keys(source.completedMissions || {}).forEach(function(missionId) {
+        if (!/^mission-(?:[1-9]|1[0-3])$/.test(missionId)) return;
+        var record = source.completedMissions[missionId] || {};
+        var completedAt = Number(record.completedAt);
+        if (!Number.isFinite(completedAt) || completedAt < 0) return;
+        completedMissions[missionId] = {
+          completedAt: completedAt,
+          mode: String(record.mode || '').slice(0, 30),
+          choiceIndex: typeof record.choiceIndex === 'number' ? record.choiceIndex : undefined,
+          choice: String(record.choice || '').slice(0, 160),
+          reflection: String(record.reflection || '').slice(0, 600)
+        };
+      });
+      var quizCheckpointResults = {};
+      Object.keys(source.quizCheckpointResults || {}).forEach(function(checkpointId) {
+        if (!/^checkpoint-[1-7]$/.test(checkpointId)) return;
+        var result = source.quizCheckpointResults[checkpointId] || {};
+        var total = Math.max(1, Math.min(10, Number(result.total) || 10));
+        quizCheckpointResults[checkpointId] = {
+          bestScore: Math.max(0, Math.min(total, Number(result.bestScore) || 0)),
+          latestScore: Math.max(0, Math.min(total, Number(result.latestScore) || 0)),
+          total: total,
+          completedAt: Math.max(0, Number(result.completedAt) || 0)
+        };
+      });
+      return {
+        visitedTopics: visitedTopics,
+        completedTopics: completedTopics,
+        recentTopics: uniqueTopics(source.recentTopics, 8),
+        bookmarkedTopics: uniqueTopics(source.bookmarkedTopics, 24),
+        topicNotes: topicNotes,
+        completedMissions: completedMissions,
+        quizCheckpointResults: quizCheckpointResults
+      };
+    }
+
+    function aqBuildLearningPortfolio(state, groups, journeys, now) {
+      var lookup = aqBuildTopicLookup(groups);
+      var validIds = Object.keys(lookup);
+      var learning = aqSanitizeLearningData(state, validIds);
+      function topicRecord(topicId, extra) {
+        var topic = lookup[topicId] || { id: topicId, label: topicId, area: 'Aquaculture Lab' };
+        return Object.assign({ id: topic.id, label: topic.label, area: topic.area }, extra || {});
+      }
+      var visited = Object.keys(learning.visitedTopics).sort(function(a, b) {
+        return learning.visitedTopics[b] - learning.visitedTopics[a];
+      }).map(function(topicId) { return topicRecord(topicId, { visitedAt: learning.visitedTopics[topicId] }); });
+      var completed = Object.keys(learning.completedTopics).sort(function(a, b) {
+        return learning.completedTopics[b] - learning.completedTopics[a];
+      }).map(function(topicId) { return topicRecord(topicId, { completedAt: learning.completedTopics[topicId] }); });
+      var saved = learning.bookmarkedTopics.map(function(topicId) { return topicRecord(topicId); });
+      var notes = Object.keys(learning.topicNotes).map(function(topicId) {
+        return topicRecord(topicId, { note: learning.topicNotes[topicId] });
+      });
+      var missions = Object.keys(learning.completedMissions).sort().map(function(missionId) {
+        return Object.assign({ id: missionId }, learning.completedMissions[missionId]);
+      });
+      var paths = (journeys || []).map(function(journey) {
+        var visitedCount = journey.topics.filter(function(topicId) { return !!learning.visitedTopics[topicId]; }).length;
+        var completedCount = journey.topics.filter(function(topicId) { return !!learning.completedTopics[topicId]; }).length;
+        return { id: journey.id, title: journey.title, visited: visitedCount, completed: completedCount, total: journey.topics.length };
+      });
+      return {
+        kind: 'aquaculture-learning-portfolio',
+        version: 1,
+        exportedAt: new Date(now || Date.now()).toISOString(),
+        lab: 'Aquaculture Lab',
+        summary: {
+          topicsVisited: visited.length,
+          topicsCompleted: completed.length,
+          topicsSaved: saved.length,
+          reflections: notes.length,
+          missionsCompleted: missions.length,
+          pathsFullyVisited: paths.filter(function(path) { return path.visited === path.total; }).length,
+          pathsCompleted: paths.filter(function(path) { return path.completed === path.total; }).length
+        },
+        learning: learning,
+        visited: visited,
+        completed: completed,
+        saved: saved,
+        notes: notes,
+        missions: missions,
+        paths: paths
+      };
+    }
+
+    function aqMergeLearningPortfolio(currentState, payload, validTopicIds) {
+      if (!payload || payload.kind !== 'aquaculture-learning-portfolio' || payload.version !== 1 || !payload.learning) {
+        throw new Error('This is not a valid Aquaculture Lab portfolio backup.');
+      }
+      var current = aqSanitizeLearningData(currentState, validTopicIds);
+      var imported = aqSanitizeLearningData(payload.learning, validTopicIds);
+      var mergedVisited = Object.assign({}, current.visitedTopics);
+      Object.keys(imported.visitedTopics).forEach(function(topicId) {
+        mergedVisited[topicId] = Math.max(mergedVisited[topicId] || 0, imported.visitedTopics[topicId]);
+      });
+      var mergedCompleted = Object.assign({}, current.completedTopics);
+      Object.keys(imported.completedTopics).forEach(function(topicId) {
+        mergedCompleted[topicId] = Math.max(mergedCompleted[topicId] || 0, imported.completedTopics[topicId]);
+      });
+      var mergedMissions = Object.assign({}, current.completedMissions);
+      Object.keys(imported.completedMissions).forEach(function(missionId) {
+        var existing = mergedMissions[missionId];
+        var incoming = imported.completedMissions[missionId];
+        if (!existing || incoming.completedAt >= existing.completedAt) mergedMissions[missionId] = incoming;
+      });
+      var mergedQuizResults = Object.assign({}, current.quizCheckpointResults);
+      Object.keys(imported.quizCheckpointResults).forEach(function(checkpointId) {
+        var existing = mergedQuizResults[checkpointId] || {};
+        var incoming = imported.quizCheckpointResults[checkpointId];
+        mergedQuizResults[checkpointId] = {
+          bestScore: Math.max(Number(existing.bestScore) || 0, incoming.bestScore),
+          latestScore: incoming.latestScore,
+          total: incoming.total,
+          completedAt: Math.max(Number(existing.completedAt) || 0, incoming.completedAt)
+        };
+      });
+      function mergeLists(first, second, limit) {
+        var seen = {};
+        return first.concat(second).filter(function(topicId) {
+          if (seen[topicId]) return false;
+          seen[topicId] = true;
+          return true;
+        }).slice(0, limit);
+      }
+      return Object.assign({}, currentState || {}, {
+        visitedTopics: mergedVisited,
+        completedTopics: mergedCompleted,
+        recentTopics: mergeLists(imported.recentTopics, current.recentTopics, 8),
+        bookmarkedTopics: mergeLists(imported.bookmarkedTopics, current.bookmarkedTopics, 24),
+        topicNotes: Object.assign({}, current.topicNotes, imported.topicNotes),
+        completedMissions: mergedMissions,
+        quizCheckpointResults: mergedQuizResults
+      });
+    }
+
+    function aqEscapeHtml(value) {
+      return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function aqPortfolioToHtml(portfolio) {
+      if (!portfolio || portfolio.kind !== 'aquaculture-learning-portfolio') throw new Error('Portfolio data is unavailable.');
+      var noteMarkup = portfolio.notes.length ? portfolio.notes.map(function(item) {
+        return '<article><h3>' + aqEscapeHtml(item.label) + '</h3><p class="area">' + aqEscapeHtml(item.area) + '</p><p>' + aqEscapeHtml(item.note).replace(/\n/g, '<br>') + '</p></article>';
+      }).join('') : '<p>No reflections saved yet.</p>';
+      var savedMarkup = portfolio.saved.length ? '<ul>' + portfolio.saved.map(function(item) {
+        return '<li><strong>' + aqEscapeHtml(item.label) + '</strong> <span>' + aqEscapeHtml(item.area) + '</span></li>';
+      }).join('') + '</ul>' : '<p>No saved topics yet.</p>';
+      var completedMarkup = portfolio.completed.length ? '<ul>' + portfolio.completed.map(function(item) {
+        return '<li><strong>' + aqEscapeHtml(item.label) + '</strong> <span>' + aqEscapeHtml(item.area) + '</span></li>';
+      }).join('') + '</ul>' : '<p>No lessons marked complete yet.</p>';
+      var missionMarkup = portfolio.missions.length ? portfolio.missions.map(function(item) {
+        return '<article><h3>' + aqEscapeHtml(item.id.replace('mission-', 'Mission ')) + '</h3>' +
+          (item.choice ? '<p><strong>Decision:</strong> ' + aqEscapeHtml(item.choice) + '</p>' : '') +
+          (item.reflection ? '<p><strong>Evidence:</strong> ' + aqEscapeHtml(item.reflection).replace(/\n/g, '<br>') + '</p>' : '') + '</article>';
+      }).join('') : '<p>No missions completed yet.</p>';
+      var pathMarkup = '<ul>' + portfolio.paths.map(function(path) {
+        return '<li><strong>' + aqEscapeHtml(path.title) + '</strong>: ' + path.completed + ' completed, ' + path.visited + ' visited, ' + path.total + ' total</li>';
+      }).join('') + '</ul>';
+      return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+        '<title>Aquaculture Lab Learning Portfolio</title><style>body{font-family:Arial,sans-serif;max-width:850px;margin:36px auto;padding:0 22px;color:#102a2a;line-height:1.55}h1,h2,h3{color:#064e3b}header{border-bottom:4px solid #0f766e;margin-bottom:24px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat,article{border:1px solid #99b8b3;border-radius:10px;padding:12px}.stat b{display:block;font-size:24px;color:#0f766e}.area,li span{color:#475569;font-size:13px}@media(max-width:650px){.stats{grid-template-columns:repeat(2,1fr)}}@media print{body{margin:0;max-width:none}.stat,article{break-inside:avoid}}</style></head><body>' +
+        '<header><h1>Aquaculture Lab Learning Portfolio</h1><p>Exported ' + aqEscapeHtml(portfolio.exportedAt) + '</p></header>' +
+        '<section class="stats"><div class="stat"><b>' + portfolio.summary.topicsVisited + '</b>Topics visited</div><div class="stat"><b>' + portfolio.summary.topicsCompleted + '</b>Lessons completed</div><div class="stat"><b>' + portfolio.summary.missionsCompleted + '</b>Missions completed</div><div class="stat"><b>' + portfolio.summary.topicsSaved + '</b>Saved topics</div><div class="stat"><b>' + portfolio.summary.reflections + '</b>Reflections</div><div class="stat"><b>' + portfolio.summary.pathsCompleted + '</b>Paths completed</div></section>' +
+        '<section><h2>Guided paths</h2>' + pathMarkup + '</section><section><h2>Completed lessons</h2>' + completedMarkup + '</section><section><h2>Mission evidence</h2>' + missionMarkup + '</section><section><h2>Saved topics</h2>' + savedMarkup + '</section><section><h2>Reflections</h2>' + noteMarkup + '</section></body></html>';
+    }
+
+    window.AquacultureLearningHelpers = {
+      normalizeSearchText: aqNormalizeSearchText,
+      searchTopicCatalog: aqSearchTopicCatalog,
+      buildLearningPortfolio: aqBuildLearningPortfolio,
+      mergeLearningPortfolio: aqMergeLearningPortfolio,
+      portfolioToHtml: aqPortfolioToHtml,
+      sanitizeLearningData: aqSanitizeLearningData
+    };
     var allTopicIds = [];
     TAB_GROUPS.forEach(function(group) {
       group.tabs.forEach(function(topic) { allTopicIds.push(topic.id); });
@@ -8013,11 +8479,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       if (nowBookmarked) bookmarks = [topicId].concat(bookmarks).slice(0, 24);
       else bookmarks.splice(existingIndex, 1);
       savedNavigation.bookmarkedTopics = bookmarks;
-      saveState(savedNavigation);
+      var bookmarkSaved = saveState(savedNavigation);
       setLearningProgress(function(previous) {
         return Object.assign({}, previous, { bookmarkedTopics: bookmarks });
       });
-      aqAnnounce(getTopicLocation(topicId).topic.label + (nowBookmarked ? ' saved for later.' : ' removed from saved topics.'));
+      if (!bookmarkSaved) {
+        setLearningNotice({ kind: 'error', message: 'This browser could not save the bookmark. Download a backup and check storage permissions.' });
+        aqAnnounce('Bookmark changed for now, but this browser could not save it.');
+      } else {
+        setLearningNotice({ kind: 'success', message: 'Bookmark saved on this device.' });
+        aqAnnounce(getTopicLocation(topicId).topic.label + (nowBookmarked ? ' saved for later.' : ' removed from saved topics.'));
+      }
     }
 
     function updateTopicNote(value) {
@@ -8029,10 +8501,182 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       if (nextValue.trim()) nextNotes[tab] = nextValue;
       else delete nextNotes[tab];
       savedNavigation.topicNotes = nextNotes;
-      saveState(savedNavigation);
+      var noteSaved = saveState(savedNavigation);
       setLearningProgress(function(previous) {
         return Object.assign({}, previous, { topicNotes: nextNotes });
       });
+      if (!noteSaved) setLearningNotice({ kind: 'error', message: 'This browser could not save the reflection. Download a backup and check storage permissions.' });
+      else if (learningNotice.kind === 'error') setLearningNotice({ kind: 'success', message: 'Reflection storage is working again.' });
+    }
+
+    function toggleTopicCompletion(topicId) {
+      if (!isKnownTopicId(topicId) || topicId === 'home') return;
+      var savedState = loadState();
+      var nextCompleted = Object.assign({}, savedState.completedTopics || {});
+      var nowComplete = !nextCompleted[topicId];
+      if (nowComplete) nextCompleted[topicId] = Date.now();
+      else delete nextCompleted[topicId];
+      savedState.completedTopics = nextCompleted;
+      var completionSaved = saveState(savedState);
+      setLearningProgress(function(previous) {
+        return Object.assign({}, previous, { completedTopics: nextCompleted });
+      });
+      if (!completionSaved) {
+        setLearningNotice({ kind: 'error', message: 'This browser could not save lesson completion. Download a backup and check storage permissions.' });
+        aqAnnounce('Lesson completion could not be saved.');
+      } else {
+        aqAnnounce(getTopicLocation(topicId).topic.label + (nowComplete ? ' marked complete.' : ' marked incomplete.'));
+      }
+    }
+
+    function openScenarioMission(missionId) {
+      if (!MISSION_SCENARIOS[missionId]) return;
+      if (activeScenario.missionId === missionId) {
+        setActiveScenario({ missionId: null, choiceIndex: null, reflection: '' });
+        return;
+      }
+      var existing = completedMissions[missionId] || {};
+      setActiveScenario({
+        missionId: missionId,
+        choiceIndex: typeof existing.choiceIndex === 'number' ? existing.choiceIndex : null,
+        reflection: String(existing.reflection || '').slice(0, 600)
+      });
+      aqAnnounce('Decision scenario opened.');
+    }
+
+    function completeScenarioMission(missionId) {
+      var scenario = MISSION_SCENARIOS[missionId];
+      var choiceIndex = activeScenario.missionId === missionId ? activeScenario.choiceIndex : null;
+      var reflection = activeScenario.missionId === missionId ? String(activeScenario.reflection || '').trim() : '';
+      if (!scenario || typeof choiceIndex !== 'number' || !scenario.choices[choiceIndex] || reflection.length < 20) {
+        aqAnnounce('Choose a response and add a reflection of at least 20 characters.');
+        return;
+      }
+      var savedState = loadState();
+      var nextCompleted = Object.assign({}, savedState.completedMissions || {});
+      nextCompleted[missionId] = {
+        completedAt: Date.now(),
+        mode: 'decision-scenario',
+        choiceIndex: choiceIndex,
+        choice: scenario.choices[choiceIndex].label,
+        reflection: reflection.slice(0, 600)
+      };
+      savedState.completedMissions = nextCompleted;
+      var missionSaved = saveState(savedState);
+      setCompletedMissions(nextCompleted);
+      if (missionSaved) {
+        setLearningNotice({ kind: 'success', message: 'Mission evidence saved on this device.' });
+        aqAnnounce('Mission completed with decision evidence saved.');
+      } else {
+        setLearningNotice({ kind: 'error', message: 'The mission was completed, but this browser could not save the evidence.' });
+        aqAnnounce('Mission evidence could not be saved.');
+      }
+    }
+
+    function saveQuizCheckpointResult(checkpointId, score, total) {
+      var savedState = loadState();
+      var nextResults = Object.assign({}, savedState.quizCheckpointResults || {});
+      var previous = nextResults[checkpointId] || {};
+      nextResults[checkpointId] = {
+        bestScore: Math.max(Number(previous.bestScore) || 0, score),
+        latestScore: score,
+        total: total,
+        completedAt: Date.now()
+      };
+      savedState.quizCheckpointResults = nextResults;
+      saveState(savedState);
+      setQuizCheckpointResults(nextResults);
+    }
+    function currentLearningPortfolio() {
+      return aqBuildLearningPortfolio(loadState(), TAB_GROUPS, LEARNING_JOURNEYS);
+    }
+
+    function downloadLearningFile(filename, contents, contentType) {
+      try {
+        var blob = new Blob([contents], { type: contentType });
+        var objectUrl = window.URL.createObjectURL(blob);
+        var link = document.createElement('a');
+        link.href = objectUrl;
+        link.download = filename;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(function() { try { window.URL.revokeObjectURL(objectUrl); } catch (_) {} }, 0);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function exportPortfolioBackup() {
+      var portfolio = currentLearningPortfolio();
+      var filename = 'aquaculture-learning-backup-' + portfolio.exportedAt.slice(0, 10) + '.json';
+      var downloaded = downloadLearningFile(filename, JSON.stringify(portfolio, null, 2), 'application/json');
+      setLearningNotice(downloaded
+        ? { kind: 'success', message: 'Learning backup downloaded. Keep it somewhere safe.' }
+        : { kind: 'error', message: 'The backup could not be downloaded in this browser.' });
+      aqAnnounce(downloaded ? 'Aquaculture learning backup downloaded.' : 'Backup download failed.');
+    }
+
+    function exportPrintablePortfolio() {
+      try {
+        var portfolio = currentLearningPortfolio();
+        var filename = 'aquaculture-learning-portfolio-' + portfolio.exportedAt.slice(0, 10) + '.html';
+        var downloaded = downloadLearningFile(filename, aqPortfolioToHtml(portfolio), 'text/html');
+        setLearningNotice(downloaded
+          ? { kind: 'success', message: 'Printable portfolio downloaded. Open the HTML file to print or save as PDF.' }
+          : { kind: 'error', message: 'The printable portfolio could not be downloaded in this browser.' });
+        aqAnnounce(downloaded ? 'Printable Aquaculture portfolio downloaded.' : 'Printable portfolio download failed.');
+      } catch (_) {
+        setLearningNotice({ kind: 'error', message: 'The printable portfolio could not be prepared.' });
+        aqAnnounce('Printable portfolio preparation failed.');
+      }
+    }
+
+    function handlePortfolioImport(event) {
+      var input = event.target;
+      var file = input && input.files && input.files[0];
+      if (!file) return;
+      if (file.size > 1024 * 1024) {
+        setLearningNotice({ kind: 'error', message: 'That backup is larger than 1 MB and was not imported.' });
+        aqAnnounce('Portfolio import rejected because the file is too large.');
+        try { input.value = ''; } catch (_) {}
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function() {
+        try {
+          var payload = JSON.parse(String(reader.result || ''));
+          var currentState = loadState();
+          var mergedState = aqMergeLearningPortfolio(currentState, payload, allTopicIds);
+          if (!saveState(mergedState)) throw new Error('storage');
+          setLearningProgress({
+            visitedTopics: mergedState.visitedTopics,
+            recentTopics: mergedState.recentTopics,
+            bookmarkedTopics: mergedState.bookmarkedTopics,
+            completedTopics: mergedState.completedTopics,
+            topicNotes: mergedState.topicNotes
+          });
+          setCompletedMissions(mergedState.completedMissions || {});
+          setQuizCheckpointResults(mergedState.quizCheckpointResults || {});
+          if (tab !== 'home') setNoteDraft(String((mergedState.topicNotes || {})[tab] || '').slice(0, 600));
+          setLearningNotice({ kind: 'success', message: 'Backup merged successfully. Existing learning data was preserved.' });
+          aqAnnounce('Aquaculture learning backup merged successfully.');
+        } catch (error) {
+          setLearningNotice({ kind: 'error', message: error && error.message === 'storage'
+            ? 'The backup was valid, but this browser could not save it.'
+            : 'That file is not a valid Aquaculture Lab portfolio backup.' });
+          aqAnnounce('Aquaculture learning backup import failed.');
+        }
+        try { input.value = ''; } catch (_) {}
+      };
+      reader.onerror = function() {
+        setLearningNotice({ kind: 'error', message: 'The selected backup file could not be read.' });
+        aqAnnounce('Aquaculture learning backup file could not be read.');
+        try { input.value = ''; } catch (_) {}
+      };
+      reader.readAsText(file);
     }
 
     useEffect(function() {
@@ -8055,6 +8699,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var nextVisited = Object.assign({}, savedNavigation.visitedTopics || {});
       var nextRecent = Array.isArray(savedNavigation.recentTopics) ? savedNavigation.recentTopics.filter(isKnownTopicId) : [];
       var nextBookmarks = Array.isArray(savedNavigation.bookmarkedTopics) ? savedNavigation.bookmarkedTopics.filter(isKnownTopicId) : [];
+      var nextCompleted = Object.keys(savedNavigation.completedTopics || {}).reduce(function(result, topicId) {
+        if (isKnownTopicId(topicId)) result[topicId] = savedNavigation.completedTopics[topicId];
+        return result;
+      }, {});
       var nextNotes = Object.assign({}, savedNavigation.topicNotes || {});
       setNoteDraft(tab === 'home' ? '' : String(nextNotes[tab] || '').slice(0, 600));
       savedNavigation.lastTopic = tab;
@@ -8066,9 +8714,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       savedNavigation.visitedTopics = nextVisited;
       savedNavigation.recentTopics = nextRecent;
       savedNavigation.bookmarkedTopics = nextBookmarks;
+      savedNavigation.completedTopics = nextCompleted;
       savedNavigation.topicNotes = nextNotes;
       saveState(savedNavigation);
-      setLearningProgress({ visitedTopics: nextVisited, recentTopics: nextRecent, bookmarkedTopics: nextBookmarks, topicNotes: nextNotes });
+      setLearningProgress({ visitedTopics: nextVisited, recentTopics: nextRecent, bookmarkedTopics: nextBookmarks, completedTopics: nextCompleted, topicNotes: nextNotes });
     }, [tab]);
     function getTopicLocation(topicId) {
       var location = { group: TAB_GROUPS[0], topic: TAB_GROUPS[0].tabs[0] };
@@ -8101,17 +8750,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         });
       });
       var totalTopics = TAB_GROUPS.reduce(function(total, group) { return total + group.tabs.length; }, 0);
-      var query = navSearch.trim().toLowerCase();
-      var searchMatches = [];
-      if (query) {
-        TAB_GROUPS.forEach(function(group) {
-          group.tabs.forEach(function(topic) {
-            if ((topic.label + ' ' + group.label).toLowerCase().indexOf(query) !== -1) {
-              searchMatches.push({ topic: topic, group: group });
-            }
-          });
-        });
-      }
+      var query = navSearch.trim();
+      var searchMatches = query ? aqSearchTopicCatalog(TAB_GROUPS, query) : [];
       var shownMatches = searchMatches.slice(0, 30);
       var topicSequence = [];
       TAB_GROUPS.forEach(function(group) {
@@ -8134,7 +8774,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
       }
 
-      function topicButton(topic, group, showGroup) {
+      function topicButton(topic, group, showGroup, searchSummary) {
         var selected = tab === topic.id;
         return h('button', { key: group.id + '-' + topic.id, type: 'button', className: 'aq-btn',
           'aria-current': selected ? 'page' : undefined,
@@ -8147,7 +8787,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             border: '1px solid ' + (selected ? group.color : '#5c8580'), fontSize: 13, fontWeight: 750 } },
           topic.label,
           showGroup ? h('span', { style: { display: 'block', marginTop: 3, fontSize: 10.5, fontWeight: 700,
-            color: selected ? '#173f3a' : '#bfdbfe' } }, group.label) : null);
+            color: selected ? '#173f3a' : '#bfdbfe' } }, group.label) : null,
+          searchSummary ? h('span', { style: { display: 'block', marginTop: 5, color: selected ? '#173f3a' : '#cbd5e1',
+            fontSize: 11.5, fontWeight: 650, lineHeight: 1.45 } }, searchSummary) : null);
       }
 
       function shortcutTopicButton(topicId, collectionLabel) {
@@ -8162,8 +8804,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       }
 
       return h('nav', { className: 'aq-topic-nav', 'aria-label': 'AquacultureLab sections', style: {
-        marginBottom: 16, padding: 12, borderRadius: 14, background: '#071f1d',
-        border: '1px solid #4f7c76', boxShadow: '0 10px 26px rgba(0,0,0,0.18)'
+        marginBottom: 16, padding: 12, borderRadius: 14, background: 'linear-gradient(145deg, rgba(7,31,29,0.98), rgba(6,26,24,0.95))',
+        border: '1px solid #527a75', boxShadow: '0 16px 36px rgba(0,0,0,0.24)'
       } },
         h('div', { className: 'aq-nav-heading', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
           h('div', null,
@@ -8215,7 +8857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         h('details', { open: libraryOpen,
           onToggle: function(event) { setLibraryOpen(event.currentTarget.open); },
           style: { borderTop: '1px solid #527a75', paddingTop: 9 } },
-          h('summary', { 'aria-keyshortcuts': '/', style: { minHeight: 42, boxSizing: 'border-box', padding: '10px 11px', borderRadius: 8,
+          h('summary', { className: 'aq-library-summary', 'aria-keyshortcuts': '/', style: { minHeight: 42, boxSizing: 'border-box', padding: '10px 11px', borderRadius: 8,
             cursor: 'pointer', color: '#f8fafc', background: '#123a36', border: '1px solid #66928d',
             fontSize: 13, fontWeight: 850, listStylePosition: 'inside' } },
             'Browse all topics · ' + totalTopics + ' topics in ' + TAB_GROUPS.length + ' areas'),
@@ -8248,11 +8890,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                       aqAnnounce('Topic search cleared');
                     }
                   },
-                  placeholder: 'Search permits, hatchery, climate, careers…',
+                  placeholder: 'Search oxygen, startup costs, boat rules, careers…',
                   style: { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 11px',
                     borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 14 } }),
                 h('div', { id: 'aq-topic-search-help', style: { marginTop: 5, color: '#cbd5e1', fontSize: 11.5 } },
-                  'Searches topic names and all 12 topic areas. Press / to open search and Escape to clear or close.')),
+                  'Searches topic names, summaries, curriculum keywords, and all 12 topic areas. Use several words to narrow results. Press / to open and Escape to clear or close.')),
               navSearch ? h('button', { type: 'button', className: 'aq-btn aq-topic-search-clear',
                 'aria-label': 'Clear topic search', onClick: function() { setNavSearch(''); aqAnnounce('Topic search cleared'); },
                 style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: 'pointer',
@@ -8261,7 +8903,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               query ? searchMatches.length + (searchMatches.length === 1 ? ' topic found' : ' topics found') : 'Choose a topic area or search across the full library.'),
             query ? (
               searchMatches.length ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 } },
-                shownMatches.map(function(item) { return topicButton(item.topic, item.group, true); }),
+                shownMatches.map(function(item) { return topicButton(item.topic, item.group, true, item.summary); }),
                 searchMatches.length > shownMatches.length ? h('div', { style: { gridColumn: '1 / -1', padding: 9, color: '#cbd5e1', fontSize: 11.5 } },
                   'Showing the first ' + shownMatches.length + ' results. Add another word to narrow the list.') : null
               ) : h('div', { role: 'status', style: { padding: 12, borderRadius: 8, background: '#0b2b28',
@@ -8270,11 +8912,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             ) : h('div', { style: { display: 'grid', gap: 8 } },
               TAB_GROUPS.map(function(group) {
                 var currentArea = activeGroup.id === group.id;
-                return h('details', { key: group.id, style: {
+                return h('details', { key: group.id, className: 'aq-topic-group', style: {
                   borderRadius: 9, border: '1px solid ' + (currentArea ? group.color : '#416c67'),
                   background: '#061a18', overflow: 'hidden'
                 } },
-                  h('summary', { style: { minHeight: 42, boxSizing: 'border-box', padding: '10px 12px',
+                  h('summary', { className: 'aq-topic-group-summary', style: { minHeight: 42, boxSizing: 'border-box', padding: '10px 12px',
                     cursor: 'pointer', color: group.color, fontSize: 13, fontWeight: 850 } },
                     group.label + ' · ' + group.tabs.length + (currentArea ? ' · Current area' : '')),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -8297,32 +8939,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     function homeTab() {
       var st = loadState();
-      var interactiveMissions = MISSIONS.filter(function(mission) { return mission.interactive === true; });
-      var completedCount = Object.keys(st.completedMissions || {}).filter(function(missionId) {
-        return interactiveMissions.some(function(mission) { return mission.id === missionId; });
+      var completedCount = Object.keys(completedMissions || {}).filter(function(missionId) {
+        return MISSIONS.some(function(mission) { return mission.id === missionId; });
       }).length;
       var lastContentTopicId = isKnownTopicId(st.lastContentTopic) ? st.lastContentTopic : null;
       var lastContentLocation = lastContentTopicId ? getTopicLocation(lastContentTopicId) : null;
       var visitedTopicMap = learningProgress.visitedTopics || {};
+      var completedTopicMap = learningProgress.completedTopics || {};
       var journeySummaries = LEARNING_JOURNEYS.map(function(journey) {
-        var completedTopics = journey.topics.filter(function(topicId) { return !!visitedTopicMap[topicId]; });
-        var nextTopic = journey.topics.find(function(topicId) { return !visitedTopicMap[topicId]; }) || journey.topics[0];
+        var completedJourneyTopics = journey.topics.filter(function(topicId) { return !!completedTopicMap[topicId]; });
+        var nextTopic = journey.topics.find(function(topicId) { return !completedTopicMap[topicId]; }) || journey.topics[0];
         return {
           journey: journey,
-          completed: completedTopics.length,
-          percent: Math.round((completedTopics.length / journey.topics.length) * 100),
+          completed: completedJourneyTopics.length,
+          percent: Math.round((completedJourneyTopics.length / journey.topics.length) * 100),
           nextTopic: nextTopic,
-          complete: completedTopics.length === journey.topics.length
+          complete: completedJourneyTopics.length === journey.topics.length
         };
       });
       var visitedTopicCount = Object.keys(visitedTopicMap).filter(function(topicId) {
+        return topicId !== 'home' && isKnownTopicId(topicId);
+      }).length;
+      var completedTopicCount = Object.keys(completedTopicMap).filter(function(topicId) {
         return topicId !== 'home' && isKnownTopicId(topicId);
       }).length;
       var savedTopicCount = (learningProgress.bookmarkedTopics || []).filter(isKnownTopicId).length;
       var noteCount = Object.keys(learningProgress.topicNotes || {}).filter(function(topicId) {
         return isKnownTopicId(topicId) && String(learningProgress.topicNotes[topicId] || '').trim();
       }).length;
-      var fullyVisitedJourneyCount = journeySummaries.filter(function(summary) { return summary.complete; }).length;
+      var fullyCompletedJourneyCount = journeySummaries.filter(function(summary) { return summary.complete; }).length;
       var recommendedJourney = journeySummaries.find(function(summary) { return !summary.complete; }) || journeySummaries[0];
       var recommendedLocation = getTopicLocation(recommendedJourney.nextTopic);
       var opsRoutes = [
@@ -8332,22 +8977,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         { id: 'permits', label: 'Build the farm case', detail: 'Review lease tiers, hearings, costs, safety, and market choices.', tab: 'lease', tone: '#fbbf24' }
       ];
       return h('div', null,
-        lastContentLocation && h('section', { role: 'status', 'aria-label': 'Resume aquaculture learning',
-          style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: '11px 13px', marginBottom: 12, borderRadius: 12, background: '#0b2b28', border: '1px solid #5c8580' } },
+        lastContentLocation && h('section', { className: 'aq-resume-card', role: 'status', 'aria-label': 'Resume aquaculture learning',
+          style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: '11px 13px', marginBottom: 12, borderRadius: 12, background: 'linear-gradient(110deg, rgba(11,43,40,0.98), rgba(7,31,29,0.96))', border: '1px solid #5c8580' } },
           h('div', null,
             h('div', { style: { color: '#99f6e4', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.07em' } }, 'Continue learning'),
             h('div', { style: { marginTop: 3, color: '#f8fafc', fontSize: 14, fontWeight: 850 } }, lastContentLocation.topic.label),
             h('div', { style: { marginTop: 2, color: '#cbd5e1', fontSize: 12 } }, lastContentLocation.group.label)),
           h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic(lastContentTopicId, 'Resuming ' + lastContentLocation.topic.label); },
             style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: 'pointer', background: '#5eead4', color: '#032522', border: '1px solid #99f6e4', fontSize: 13, fontWeight: 900 } }, 'Resume topic \u2192')),
-        h('section', { 'aria-labelledby': 'aq-my-learning-heading',
-          style: { marginBottom: 12, padding: 13, borderRadius: 12, background: '#0b2b28', border: '1px solid #5c8580' } },
+        h('section', { className: 'aq-home-card aq-learning-card', 'aria-labelledby': 'aq-my-learning-heading',
+          style: { marginBottom: 12, padding: 13, borderRadius: 12, background: 'linear-gradient(145deg, rgba(11,43,40,0.98), rgba(6,26,24,0.96))', border: '1px solid #5c8580' } },
           h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
             h('div', null,
               h('div', { style: { color: '#99f6e4', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.07em' } }, 'Your workspace'),
               h('h2', { id: 'aq-my-learning-heading', style: { margin: '3px 0 4px', color: '#f8fafc', fontSize: 18, lineHeight: 1.2 } }, 'My learning'),
               h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5 } },
-                'A private, device-local snapshot of topics explored and ideas saved.')),
+                'A private, device-local snapshot of lessons explored, completed, and supported with evidence.')),
             h('button', { type: 'button', className: 'aq-btn',
               onClick: function() { navigateToTopic(recommendedJourney.nextTopic, 'Recommended next: ' + recommendedLocation.topic.label); },
               style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', textAlign: 'left',
@@ -8356,50 +9001,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(125px, 1fr))', gap: 8, marginTop: 11 } },
             [
               ['Topics visited', visitedTopicCount + '/' + (allTopicIds.length - 1), '#99f6e4'],
+              ['Lessons completed', completedTopicCount, '#86efac'],
+              ['Missions completed', completedCount + '/' + MISSIONS.length, '#5eead4'],
               ['Saved topics', savedTopicCount, '#fde68a'],
               ['Reflections', noteCount, '#bfdbfe'],
-              ['Paths fully visited', fullyVisitedJourneyCount + '/' + LEARNING_JOURNEYS.length, '#c4b5fd']
+              ['Paths completed', fullyCompletedJourneyCount + '/' + LEARNING_JOURNEYS.length, '#c4b5fd']
             ].map(function(metric) {
-              return h('div', { key: metric[0], style: { padding: '8px 9px', borderRadius: 9, background: '#061a18', border: '1px solid #416c67' } },
+              return h('div', { key: metric[0], className: 'aq-metric-card', style: { padding: '8px 9px', borderRadius: 9, background: '#061a18', border: '1px solid #416c67' } },
                 h('div', { style: { color: '#cbd5e1', fontSize: 10.5, fontWeight: 800 } }, metric[0]),
                 h('div', { style: { marginTop: 2, color: metric[2], fontSize: 17, fontWeight: 900 } }, metric[1]));
-            }))),
-        h('section', { 'aria-labelledby': 'aq-learning-journeys-heading',
-          style: { marginBottom: 12, padding: 14, borderRadius: 14, background: '#071f1d', border: '1px solid #527a75' } },
+            })),
+          h('details', { className: 'aq-portfolio-tools',
+            style: { marginTop: 11, borderRadius: 9, background: '#061a18', border: '1px solid #527a75', overflow: 'hidden' } },
+            h('summary', { style: { minHeight: 44, boxSizing: 'border-box', padding: '10px 11px', cursor: 'pointer',
+              color: '#f8fafc', fontSize: 12, fontWeight: 900, listStylePosition: 'inside' } }, 'Portfolio & backup'),
+            h('div', { style: { padding: '0 11px 11px' } },
+              h('p', { id: 'aq-portfolio-help', style: { margin: '0 0 9px', color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5 } },
+                'Download a printable learning portfolio or a JSON backup. Import merges validated learning data and keeps existing work.'),
+              h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
+                h('button', { type: 'button', className: 'aq-btn', onClick: exportPrintablePortfolio,
+                  'aria-describedby': 'aq-portfolio-help',
+                  style: { minHeight: 44, padding: '9px 11px', borderRadius: 8, cursor: 'pointer',
+                    background: '#99f6e4', color: '#032522', border: '1px solid #ccfbf1', fontSize: 12, fontWeight: 900 } },
+                  'Printable portfolio'),
+                h('button', { type: 'button', className: 'aq-btn', onClick: exportPortfolioBackup,
+                  'aria-describedby': 'aq-portfolio-help',
+                  style: { minHeight: 44, padding: '9px 11px', borderRadius: 8, cursor: 'pointer',
+                    background: '#fde68a', color: '#2a1900', border: '1px solid #fef3c7', fontSize: 12, fontWeight: 900 } },
+                  'Download backup'),
+                h('label', { className: 'aq-btn', role: 'button', tabIndex: 0,
+                  onKeyDown: function(event) {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      var fileInput = document.getElementById('aq-portfolio-import');
+                      if (fileInput) fileInput.click();
+                    }
+                  },
+                  style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, boxSizing: 'border-box', padding: '9px 11px',
+                    borderRadius: 8, cursor: 'pointer', background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12, fontWeight: 900 } },
+                  'Import & merge',
+                  h('input', { id: 'aq-portfolio-import', type: 'file', accept: '.json,application/json',
+                    'aria-label': 'Import and merge an Aquaculture learning backup', onChange: handlePortfolioImport,
+                    style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }))),
+              h('div', { role: 'status', 'aria-live': 'polite',
+                style: { marginTop: 8, color: learningNotice.kind === 'error' ? '#fecaca' : (learningNotice.kind === 'success' ? '#bbf7d0' : '#bfdbfe'),
+                  fontSize: 11.5, fontWeight: 750, lineHeight: 1.45 } }, learningNotice.message)))),
+        h('section', { className: 'aq-home-card aq-journeys-card', 'aria-labelledby': 'aq-learning-journeys-heading',
+          style: { marginBottom: 12, padding: 14, borderRadius: 14, background: 'linear-gradient(145deg, rgba(7,31,29,0.98), rgba(4,24,23,0.96))', border: '1px solid #527a75' } },
           h('div', { style: { marginBottom: 11 } },
             h('div', { style: { color: '#99f6e4', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.07em' } }, 'Choose a pathway'),
             h('h2', { id: 'aq-learning-journeys-heading', style: { margin: '3px 0 4px', color: '#f8fafc', fontSize: 20, lineHeight: 1.2 } }, 'Guided learning journeys'),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.55 } }, 'Four short paths connect the library into purposeful sequences. Progress tracks topics visited, not mastery. Open a lesson to add it to the path.')),
+            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12.5, lineHeight: 1.55 } }, 'Four short paths connect the library into purposeful sequences. Visiting shows exploration; marking a lesson complete records intentional progress.')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 10 } },
             journeySummaries.map(function(summary) {
               var journey = summary.journey;
               var nextLocation = getTopicLocation(summary.nextTopic);
-              return h('article', { key: journey.id,
+              return h('article', { key: journey.id, className: 'aq-journey-card',
                 style: { display: 'flex', flexDirection: 'column', minHeight: 250, padding: 12, borderRadius: 12, background: '#061a18', border: '1px solid #416c67', borderTop: '4px solid ' + journey.tone } },
                 h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 } },
                   h('h3', { style: { margin: 0, color: '#f8fafc', fontSize: 15, lineHeight: 1.3 } },
                     h('span', { 'aria-hidden': 'true', style: { marginRight: 7 } }, journey.icon), journey.title),
                   h('span', { style: { color: journey.tone, fontSize: 11, fontWeight: 900, whiteSpace: 'nowrap' } },
-                    summary.completed + '/' + journey.topics.length + ' visited')),
+                    summary.completed + '/' + journey.topics.length + ' completed')),
                 h('p', { style: { margin: '8px 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, journey.description),
-                h('div', { role: 'progressbar', 'aria-label': journey.title + ' topics visited', 'aria-valuemin': 0, 'aria-valuemax': journey.topics.length, 'aria-valuenow': summary.completed,
-                  'aria-valuetext': summary.completed + ' of ' + journey.topics.length + ' topics visited',
+                h('div', { className: 'aq-progress-track', role: 'progressbar', 'aria-label': journey.title + ' lessons completed', 'aria-valuemin': 0, 'aria-valuemax': journey.topics.length, 'aria-valuenow': summary.completed,
+                  'aria-valuetext': summary.completed + ' of ' + journey.topics.length + ' lessons completed',
                   style: { height: 8, marginBottom: 10, overflow: 'hidden', borderRadius: 999, background: '#173f3a', border: '1px solid #527a75' } },
-                  h('div', { style: { width: summary.percent + '%', height: '100%', background: journey.tone } })),
-                h('ol', { style: { display: 'grid', gap: 5, margin: '0 0 12px', padding: 0, listStyle: 'none' } },
+                  h('div', { className: 'aq-progress-fill', style: { width: summary.percent + '%', height: '100%', background: journey.tone } })),
+                h('ol', { className: 'aq-journey-steps', style: { display: 'grid', gap: 5, margin: '0 0 12px', padding: 0, listStyle: 'none' } },
                   journey.topics.map(function(topicId, index) {
                     var location = getTopicLocation(topicId);
                     var visited = !!visitedTopicMap[topicId];
-                    return h('li', { key: topicId, style: { display: 'flex', gap: 7, alignItems: 'center', color: visited ? '#d1fae5' : '#dbeafe', fontSize: 11.5, fontWeight: 750 } },
-                      h('span', { 'aria-hidden': 'true', style: { color: visited ? '#86efac' : '#94a3b8', fontWeight: 900 } }, visited ? '✓' : (index + 1)),
-                      location.topic.label);
+                    var completed = !!completedTopicMap[topicId];
+                    return h('li', { key: topicId, style: { display: 'flex', gap: 7, alignItems: 'center', color: completed ? '#d1fae5' : (visited ? '#bfdbfe' : '#dbeafe'), fontSize: 11.5, fontWeight: 750 } },
+                      h('span', { 'aria-hidden': 'true', style: { color: completed ? '#86efac' : (visited ? '#7dd3fc' : '#94a3b8'), fontWeight: 900 } }, completed ? '✓' : (visited ? '•' : (index + 1))),
+                      location.topic.label,
+                      visited && !completed ? h('span', { style: { marginLeft: 'auto', color: '#7dd3fc', fontSize: 9.5, fontWeight: 850 } }, 'Visited') : null);
                   })),
                 h('button', { type: 'button', className: 'aq-btn',
                   onClick: function() { navigateToTopic(summary.nextTopic, (summary.complete ? 'Reviewing ' : 'Continuing ') + nextLocation.topic.label); },
                   style: { minHeight: 44, marginTop: 'auto', padding: '9px 11px', borderRadius: 8, cursor: 'pointer', textAlign: 'left', background: journey.tone, color: '#032522', border: '1px solid #f8fafc', fontSize: 12, fontWeight: 900 } },
                   summary.complete ? 'Review path →' : (summary.completed ? 'Continue: ' : 'Start: ') + nextLocation.topic.label + ' →'));
             }))),
-        h('section', { 'data-aquaculture-command': 'true', 'aria-label': 'Aquaculture operations dashboard',
+        h('section', { className: 'aq-home-card aq-operations-card', 'data-aquaculture-command': 'true', 'aria-label': 'Aquaculture operations dashboard',
           style: { background: 'linear-gradient(135deg, rgba(4,47,46,0.95), rgba(15,23,42,0.92))', border: '1px solid rgba(94,234,212,0.30)', borderRadius: 16, padding: 16, marginBottom: 12, boxShadow: '0 18px 38px rgba(0,0,0,0.24)' } },
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, alignItems: 'stretch' } },
             h('div', { style: { padding: 14, borderRadius: 14, background: 'rgba(15,23,42,0.54)', border: '1px solid rgba(148,163,184,0.18)' } },
@@ -8408,7 +9092,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               h('p', { style: { margin: 0, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, lineHeight: 1.55 } }, 'AquacultureLab has deep reference material, but students start best from the work loop: navigate, monitor, grow, and defend the site plan.'),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8, marginTop: 14 } },
                 [
-                  ['Interactive mission', completedCount + '/' + interactiveMissions.length, '#86efac'],
+                  ['Missions', completedCount + '/' + MISSIONS.length, '#86efac'],
                   ['Droppers', droppersDeployed + '/5', '#fbbf24'],
                   ['Probes', (probes || []).length, '#5eead4']
                 ].map(function(item) {
@@ -8421,7 +9105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 } },
               opsRoutes.map(function(route) {
-                return h('button', { key: route.id, className: 'aq-btn',
+                return h('button', { key: route.id, className: 'aq-btn aq-operation-tile',
                   onClick: function() { navigateToTopic(route.tab, route.label); },
                   style: { textAlign: 'left', minHeight: 116, cursor: 'pointer', padding: 12, borderRadius: 12, border: '1px solid rgba(148,163,184,0.20)', borderTop: '4px solid ' + route.tone, background: 'rgba(15,23,42,0.58)', color: '#e2e8f0' } },
                   h('div', { style: { fontSize: 14, fontWeight: 900, color: route.tone, marginBottom: 5 } }, route.label),
@@ -8432,8 +9116,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             )
           )
         ),
-        h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, '🦪 AquacultureLab — Mussel Farm Sim'),
+        h('div', { className: 'aq-content-card', style: cardStyle },
+          h('div', { className: 'aq-section-kicker', style: headerStyle }, '🦪 AquacultureLab — Mussel Farm Sim'),
           h('p', { style: { fontSize: 13, lineHeight: 1.6, margin: '0 0 10px' } },
             'You own a 1-acre Limited Purpose Aquaculture (LPA) lease on the Bagaduce River. Pilot your skiff out, deploy seeded longlines, monitor water quality (temp, salinity, DO, pH, chlorophyll-a), harvest at 18-24 months, navigate weather and tides. Learn boating navigation (IALA-B, COLREGS, charts) alongside the full shellfish farming cycle.'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '0 0 10px', fontStyle: 'italic' } },
@@ -8441,33 +9125,98 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('div', { style: { display: 'flex', gap: 18, flexWrap: 'wrap', marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(20,184,166,0.18)' } },
             h('div', null,
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#86efac' } }, completedCount),
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Interactive mission complete')),
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Missions completed')),
             h('div', null,
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#fbbf24' } }, droppersDeployed + '/5'),
               h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Droppers deployed')),
             h('div', null,
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#5eead4' } }, (probes || []).length),
               h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Probe readings')))),
-        h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, 'Mission progression'),
+        h('div', { className: 'aq-content-card', style: cardStyle },
+          h('div', { className: 'aq-section-kicker', style: headerStyle }, 'Mission studio'),
           h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } },
-            'Mission 1 is interactive now. Missions 2\u201313 are clearly marked scenario previews; their listed rewards and progression are not active yet.'),
+            'Mission 1 uses the 3D farm. Missions 2–13 are decision scenarios: choose a response, inspect the trade-off, and save a short reflection as evidence. There is not always one perfect answer.'),
           MISSIONS.map(function(m, i) {
-            var interactive = m.interactive === true;
-            var done = interactive && !!(st.completedMissions || {})[m.id];
-            var missionTone = done ? '#86efac' : interactive ? '#5eead4' : '#94a3b8';
-            return h('div', { key: m.id, style: { padding: 10, marginBottom: 8, background: interactive ? 'rgba(15,23,42,0.55)' : 'rgba(30,41,59,0.38)', borderRadius: 8, borderLeft: '3px solid ' + missionTone } },
+            var is3D = m.id === 'mission-1';
+            var scenario = MISSION_SCENARIOS[m.id];
+            var doneRecord = completedMissions[m.id];
+            var done = !!doneRecord;
+            var scenarioOpen = activeScenario.missionId === m.id;
+            var selectedChoice = scenarioOpen && typeof activeScenario.choiceIndex === 'number' && scenario
+              ? scenario.choices[activeScenario.choiceIndex] : null;
+            var missionTone = done ? '#86efac' : (is3D ? '#5eead4' : '#c4b5fd');
+            return h('article', { key: m.id, className: 'aq-mission-card', style: {
+              padding: 11, marginBottom: 9, background: 'rgba(15,23,42,0.55)', borderRadius: 10,
+              border: '1px solid rgba(148,163,184,0.2)', borderLeft: '4px solid ' + missionTone
+            } },
               h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 4 } },
-                h('div', { style: { fontSize: 13, fontWeight: 900, color: missionTone } }, (done ? '\u2713 ' : (i + 1) + '. ') + m.title),
-                h('span', { style: { padding: '2px 7px', borderRadius: 999, background: interactive ? 'rgba(94,234,212,0.14)' : 'rgba(148,163,184,0.14)', color: missionTone, border: '1px solid ' + missionTone, fontSize: 10, fontWeight: 900 } }, interactive ? (done ? 'Completed' : 'Interactive now') : 'Scenario preview')),
+                h('div', { style: { fontSize: 13, fontWeight: 900, color: missionTone } }, (done ? '✓ ' : (i + 1) + '. ') + m.title),
+                h('span', { style: { padding: '2px 7px', borderRadius: 999, background: done ? 'rgba(134,239,172,0.14)' : 'rgba(196,181,253,0.12)',
+                  color: missionTone, border: '1px solid ' + missionTone, fontSize: 10, fontWeight: 900 } },
+                  done ? 'Evidence saved' : (is3D ? '3D mission' : 'Decision scenario'))),
               h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5, marginBottom: 6 } }, m.brief),
-              !interactive && h('div', { role: 'note', style: { marginBottom: 6, color: '#dbeafe', fontSize: 11, fontWeight: 800 } }, 'Preview only \u2014 completion and rewards are not active yet.'),
-              h('ul', { style: { margin: '4px 0 0 18px', padding: 0, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+              h('ul', { style: { margin: '4px 0 8px 18px', padding: 0, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
                 m.objectives.map(function(o, oi) { return h('li', { key: oi }, o); })),
-              interactive && h('div', { style: { marginTop: 7, color: '#a7f3d0', fontSize: 11, fontWeight: 800 } }, m.reward));
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+                h('button', { type: 'button', className: 'aq-btn',
+                  'aria-expanded': !is3D ? scenarioOpen : undefined,
+                  onClick: function() {
+                    if (is3D) navigateToTopic('sim', 'Opening the 3D farm mission');
+                    else openScenarioMission(m.id);
+                  },
+                  style: { minHeight: 42, padding: '8px 11px', borderRadius: 8, cursor: 'pointer',
+                    background: missionTone, color: '#032522', border: '1px solid #f8fafc', fontSize: 11.5, fontWeight: 900 } },
+                  is3D ? (done ? 'Review 3D mission →' : 'Launch 3D mission →') : (scenarioOpen ? 'Close decision lab' : (done ? 'Review decision evidence' : 'Open decision lab'))),
+                h('span', { style: { color: '#a7f3d0', fontSize: 10.5, fontWeight: 800 } }, m.reward)),
+              scenarioOpen && scenario ? h('div', { className: 'aq-scenario-panel', style: {
+                marginTop: 10, padding: 11, borderRadius: 9, background: '#031714', border: '1px solid #527a75'
+              } },
+                h('h4', { style: { margin: '0 0 6px', color: '#e9d5ff', fontSize: 13 } }, 'Decision point'),
+                h('p', { style: { margin: '0 0 9px', color: '#e2e8f0', fontSize: 12, lineHeight: 1.55 } }, scenario.prompt),
+                h('div', { role: 'group', 'aria-label': 'Choose a response for ' + m.title, style: { display: 'grid', gap: 7 } },
+                  scenario.choices.map(function(choice, choiceIndex) {
+                    var selected = activeScenario.choiceIndex === choiceIndex;
+                    return h('button', { key: choiceIndex, type: 'button', className: 'aq-btn aq-scenario-choice',
+                      'aria-pressed': selected,
+                      onClick: function() {
+                        setActiveScenario(function(previous) {
+                          return Object.assign({}, previous, { missionId: m.id, choiceIndex: choiceIndex });
+                        });
+                        aqAnnounce('Response selected. Review its trade-off, then add evidence.');
+                      },
+                      style: { minHeight: 44, padding: '9px 11px', textAlign: 'left', borderRadius: 8, cursor: 'pointer',
+                        background: selected ? '#c4b5fd' : '#0b2b28', color: selected ? '#24133f' : '#f8fafc',
+                        border: '1px solid ' + (selected ? '#e9d5ff' : '#527a75'), fontSize: 11.5, fontWeight: 800 } },
+                      choice.label);
+                  })),
+                selectedChoice ? h('div', { role: 'status', className: 'aq-scenario-consequence', style: {
+                  marginTop: 9, padding: 9, borderRadius: 8, background: 'rgba(96,165,250,0.1)', border: '1px solid rgba(125,211,252,0.35)',
+                  color: '#dbeafe', fontSize: 11.5, lineHeight: 1.5
+                } }, h('b', { style: { color: '#7dd3fc' } }, 'Trade-off: '), selectedChoice.consequence) : null,
+                h('label', { htmlFor: 'aq-scenario-reflection-' + m.id, style: { display: 'block', margin: '10px 0 5px', color: '#e9d5ff', fontSize: 11.5, fontWeight: 850 } },
+                  scenario.reflection),
+                h('textarea', { id: 'aq-scenario-reflection-' + m.id, rows: 3, maxLength: 600,
+                  value: activeScenario.reflection,
+                  onChange: function(event) {
+                    var value = String(event.target.value || '').slice(0, 600);
+                    setActiveScenario(function(previous) { return Object.assign({}, previous, { missionId: m.id, reflection: value }); });
+                  },
+                  placeholder: 'Use observations, constraints, or measurements to explain your reasoning.',
+                  style: { width: '100%', minHeight: 82, padding: '9px 10px', resize: 'vertical', borderRadius: 8,
+                    background: '#071f1d', color: '#f8fafc', border: '1px solid #789b97', fontSize: 13 } }),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 7 } },
+                  h('span', { style: { color: activeScenario.reflection.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 10.5, fontWeight: 750 } },
+                    activeScenario.reflection.trim().length + '/600 characters · 20 needed'),
+                  h('button', { type: 'button', className: 'aq-btn', disabled: !selectedChoice || activeScenario.reflection.trim().length < 20,
+                    onClick: function() { completeScenarioMission(m.id); },
+                    style: { minHeight: 42, padding: '8px 11px', borderRadius: 8,
+                      cursor: selectedChoice && activeScenario.reflection.trim().length >= 20 ? 'pointer' : 'not-allowed',
+                      opacity: selectedChoice && activeScenario.reflection.trim().length >= 20 ? 1 : 0.55,
+                      background: '#86efac', color: '#052e24', border: '1px solid #bbf7d0', fontSize: 11.5, fontWeight: 900 } },
+                    done ? 'Update mission evidence' : 'Complete mission'))) : null);
           })),
-        h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, 'How to play'),
+        h('div', { className: 'aq-content-card', style: cardStyle },
+          h('div', { className: 'aq-section-kicker', style: headerStyle }, 'How to play'),
           h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
             h('p', null, h('b', null, 'Steering: '), 'WASD/arrows. W/Up = throttle, S/Down = reverse, A/D = turn, Space = boost.'),
             h('p', null, h('b', null, 'Farm work: '), 'When you reach your lease (yellow buoys mark the 1-acre rectangle), press F to drop a seeded mussel line. Press P to take a water-quality probe reading.'),
@@ -8478,8 +9227,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     function simTab() {
       return h('div', null,
         regionBar(),
-        h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, '3D Farm Simulator'),
+        h('div', { className: 'aq-content-card', style: cardStyle },
+          h('div', { className: 'aq-section-kicker', style: headerStyle }, '3D Farm Simulator'),
           !sim.threeLoaded && !sim.threeError && !sim.loading ? h('div', { style: { textAlign: 'center', padding: 20 } },
             h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 14 } }, 'three.js r128 loads from cdnjs (~600 KB) on demand.'),
             h('button', { className: 'aq-btn', onClick: startSim,
@@ -8571,8 +9320,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             h('button', { onClick: stopSim, className: 'aq-btn',
               style: { position: 'absolute', bottom: 10, right: 10, padding: '6px 12px', background: 'rgba(220,38,38,0.85)', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '✕ Exit sim')) : null
         ),
-        h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, 'Controls'),
+        h('div', { className: 'aq-content-card', style: cardStyle },
+          h('div', { className: 'aq-section-kicker', style: headerStyle }, 'Controls'),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 8, fontSize: 11 } },
             [
               { k: 'W / ↑', d: 'Throttle forward', c: '#86efac' },
@@ -8590,8 +9339,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     }
 
     function chartTab() {
-      return h('div', null, regionBar(), h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🗺 Chart Room (Bagaduce River)'),
+      return h('div', null, regionBar(), h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🗺 Chart Room (Bagaduce River)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } }, 'Stylized Bagaduce River chart. In a real sim, you\'d use NOAA chart 13309 (Penobscot Bay). Narrow channels — set + drift on river current matters as much as wind.'),
         h('svg', { viewBox: '0 0 600 400', style: { width: '100%', maxWidth: 720, background: '#dbe7ef', borderRadius: 8, border: '1px solid rgba(20,184,166,0.3)' }, 'aria-label': 'Bagaduce River chart showing channel buoys and lease area' },
           h('rect', { x: 0, y: 0, width: 600, height: 60, fill: '#a8c595' }),
@@ -8632,8 +9381,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     function speciesTab() {
       return h('div', null,
         regionBar(),
-        h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, '🦪 Species & Methods'),
+        h('div', { className: 'aq-content-card', style: cardStyle },
+          h('div', { className: 'aq-section-kicker', style: headerStyle }, '🦪 Species & Methods'),
           SPECIES.map(function(s, i) {
             return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'var(--allo-stem-deeper, rgba(15,23,42,0.55))', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
               h('div', { style: { display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 6 } },
@@ -8655,8 +9404,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     function waterTab() {
       return h('div', null,
-        h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, '💧 Water Quality Parameters'),
+        h('div', { className: 'aq-content-card', style: cardStyle },
+          h('div', { className: 'aq-section-kicker', style: headerStyle }, '💧 Water Quality Parameters'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } }, 'Six parameters every shellfish farmer monitors. NERACOOS + Bigelow + Maine DMR all provide near-real-time data along the coast.'),
           WATER_QUALITY.map(function(p, i) {
             return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'var(--allo-stem-deeper, rgba(15,23,42,0.55))', borderRadius: 8 } },
@@ -8666,8 +9415,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Monitor: '), p.monitor),
               h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Action: '), p.action));
           })),
-        probes && probes.length ? h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, 'Your probe readings (' + probes.length + ')'),
+        probes && probes.length ? h('div', { className: 'aq-content-card', style: cardStyle },
+          h('div', { className: 'aq-section-kicker', style: headerStyle }, 'Your probe readings (' + probes.length + ')'),
           probes.slice(-10).reverse().map(function(r, i) {
             var ts = new Date(r.timestamp);
             return h('div', { key: i, style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 6, fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11 } },
@@ -8684,8 +9433,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     function leaseTab() {
       return h('div', null,
-        h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, '📋 Maine Lease Tiers'),
+        h('div', { className: 'aq-content-card', style: cardStyle },
+          h('div', { className: 'aq-section-kicker', style: headerStyle }, '📋 Maine Lease Tiers'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
             'Maine aquaculture leases come in three tiers. The right tier depends on scale + capital + tolerance for public process.'),
           LEASE_TIERS.map(function(l, i) {
@@ -8702,8 +9451,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     function econTab() {
       return h('div', null,
-        h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, '💰 Starter Farm Economics (1-acre LPA)'),
+        h('div', { className: 'aq-content-card', style: cardStyle },
+          h('div', { className: 'aq-section-kicker', style: headerStyle }, '💰 Starter Farm Economics (1-acre LPA)'),
           h('p', { style: { fontSize: 11, color: '#fb923c', fontStyle: 'italic', marginBottom: 10 } },
             'Order-of-magnitude only. Real numbers vary by zone, used vs new gear, market price, fuel, weather. Verify with Maine Aquaculture Association before signing checks.'),
           h('h4', { style: { fontSize: 12, color: '#5eead4', marginBottom: 6 } }, 'Startup capital'),
@@ -8735,8 +9484,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     }
 
     function buoyageTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🟢 IALA Region B Buoyage'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🟢 IALA Region B Buoyage'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           'Same convention you use lobstering or fishing — ', h('b', { style: { color: '#fbbf24' } }, '"Red Right Returning."'), ' Heading INTO river / harbor: keep red on starboard. Reversed when leaving. The Bagaduce up-river counts as "returning."'),
         BUOYAGE_LATERAL.map(function(b, i) {
@@ -8747,8 +9496,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     }
 
     function colregsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '⚓ COLREGS — Rules of the Road'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '⚓ COLREGS — Rules of the Road'),
         COLREGS.map(function(r, i) {
           return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '3px solid #14b8a6' } },
             h('div', { style: { fontSize: 11, fontWeight: 700, color: '#5eead4', marginBottom: 4 } }, r.rule + ' · ' + r.title),
@@ -8757,8 +9506,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     }
 
     function careersTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🧰 Career Pathways'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🧰 Career Pathways'),
         CAREERS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, c.title),
@@ -8827,8 +9576,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function maineTownsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏘 Maine Aquaculture Towns Index'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏘 Maine Aquaculture Towns Index'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '~50 Maine coastal towns with active aquaculture leases. Counts + character notes drawn from Maine DMR lease data + Maine Aquaculture Association + place-based observation. The map of Maine aquaculture mirrors the map of Maine working waterfront — Cumberland to Washington counties, with the densest activity in Lincoln + Hancock counties.'),
         MAINE_AQUACULTURE_TOWNS.map(function(t, i) {
@@ -8870,8 +9619,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function equipmentCatalogTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🧰 Equipment Catalog'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🧰 Equipment Catalog'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '26 categories + specific items used in modern Maine aquaculture, with specifications, costs, suppliers, lifespan, + practical notes. Prices 2026; suppliers + product names are illustrative — verify with current Maine Aquaculture Association supplier directory.'),
         EQUIPMENT_CATALOG.map(function(e, i) {
@@ -8906,8 +9655,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function diseaseAtlasTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🦠 Disease Atlas'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🦠 Disease Atlas'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '~17 major diseases + pathogens affecting Maine aquaculture species. Drawn from Maine DMR Pathology Lab references, USDA APHIS Veterinary Services bulletins, + scholarly aquaculture-pathology literature. Each entry includes pathogen, symptoms, diagnosis methods, treatment, impact, + Maine-specific note.'),
         DISEASE_ATLAS.map(function(d, i) {
@@ -8944,8 +9693,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function wqIndexTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📏 Water Quality Index'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📏 Water Quality Index'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '16 water quality parameters with healthy / warning / critical / mortality thresholds. Reference values drawn from Maine DMR water quality standards, NSSP guidance, NOAA EcoCast methodology, + standard aquaculture chemistry texts. Use as starting point — actual operational thresholds may vary by site + species + season.'),
         WQ_INDEX.map(function(w, i) {
@@ -8988,8 +9737,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function permitsByStateTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🗺️ US Aquaculture Permits by State'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🗺️ US Aquaculture Permits by State'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '24 US states + federal jurisdiction with marine aquaculture permitting overviews. Each includes agency, lease types, special features, common species, typical wait, + web. Verify all info before applying — programs change. Maine listed first for reference.'),
         PERMITS_BY_STATE.map(function(p, i) {
@@ -9019,8 +9768,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function hatchProtocolsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🧪 Hatchery + Production Protocols'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🧪 Hatchery + Production Protocols'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '12-phase hatchery + production protocol for Maine bivalve shellfish (oyster, mussel). Drawn from Maine DMR aquaculture guidance + Mook Sea Farm (Damariscotta) + Maine Sea Grant hatchery operations references. Timeline approximate; varies by species + facility.'),
         HATCHERY_PROTOCOLS.map(function(p, i) {
@@ -9046,8 +9795,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function aqBoatsCatalogTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🚤 Aquaculture Boats Catalog'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🚤 Aquaculture Boats Catalog'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '10 boat types used in Maine + East Coast aquaculture, with builders, engines, features, costs. Maine lobster boats are common workhorses (many converted from fishing to aquaculture). Purpose-built aquaculture barges are increasingly common for mid-large operations.'),
         AQ_BOATS.map(function(b, i) {
@@ -9077,8 +9826,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function tideStationsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌊 Maine Tide Stations'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌊 Maine Tide Stations'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '12 Maine tide reference stations. NOAA station IDs are usable in any modern tide app or tides.gov website. Tide range matters for aquaculture: greater range means greater flushing (good for water quality) but more dramatic exposure of intertidal gear.'),
         TIDE_STATIONS.map(function(t, i) {
@@ -9105,8 +9854,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function aqChemicalsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '⚗️ Approved Chemicals in Aquaculture'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '⚗️ Approved Chemicals in Aquaculture'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '11 chemicals approved (or restricted) for use in Maine + US aquaculture. CRITICAL distinction: shellfish aquaculture (oysters, mussels, scallops) generally does NOT permit chemical treatments — animals are filter feeders + would concentrate contaminants. Salmon aquaculture has approved veterinary products under strict regulation.'),
         AQ_CHEMICALS.map(function(c, i) {
@@ -9134,8 +9883,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function aqLawsuitsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '⚖️ Notable Maine Aquaculture Lawsuits + Disputes'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '⚖️ Notable Maine Aquaculture Lawsuits + Disputes'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '10 categories of legal + regulatory disputes shaping Maine aquaculture. Each case has reshaped the regulatory + community context. Compiled from Maine Public Radio + Bangor Daily News + Press Herald reporting. Consult attorney for current legal status before acting on this info.'),
         AQ_LAWSUITS.map(function(c, i) {
@@ -9162,8 +9911,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function climProjTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌡 Climate Projections for Maine Aquaculture'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌡 Climate Projections for Maine Aquaculture'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '10 climate metrics with current + projected 2030 / 2050 / 2100 values. Drawn from Maine Climate Council Scientific + Technical Subcommittee reports, Bigelow Labs, NOAA, Maine Geological Survey, + IPCC AR6. Note: trajectories assume continued BAU (business-as-usual) — aggressive mitigation could change.'),
         CLIM_PROJECTIONS.map(function(c, i) {
@@ -9194,8 +9943,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function intlMarketsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌐 International Aquaculture Markets'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌐 International Aquaculture Markets'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '12 major global aquaculture-producing countries + regions. Each entry notes industry size, species, market focus, + Maine relevance. Data from FAO + national fisheries agencies. Drives understanding of where Maine product fits in global trade.'),
         INTL_MARKETS.map(function(c, i) {
@@ -9312,8 +10061,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function aqInsuranceTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🛡 Aquaculture Insurance'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🛡 Aquaculture Insurance'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '10 categories of insurance + risk-management products relevant to Maine aquaculture operations. Maine aquaculture insurance has been a significant industry gap; many small operations carry inadequate coverage. Sea Grant + Maine Aquaculture Association periodically run education campaigns on this.'),
         AQ_INSURANCE.map(function(c, i) {
@@ -9412,8 +10161,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function aqLoansTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '💰 Aquaculture Loans + Funding Programs'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '💰 Aquaculture Loans + Funding Programs'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '10 funding sources + loan programs for Maine aquaculture. Includes federal (USDA, SBA), state (FAME, CEI), tribal, cooperative, + crowdfunding options. Most successful Maine farms combine multiple funding sources across phases.'),
         AQ_LOANS.map(function(c, i) {
@@ -9516,8 +10265,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function researchStationsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔬 Maine Aquaculture Research Stations'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔬 Maine Aquaculture Research Stations'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '12 Maine + adjacent research stations + academic facilities supporting aquaculture science + industry. Maine has surprisingly dense marine + aquaculture research infrastructure for its population — Bigelow Labs, GMRI, UMaine\'s CCAR, Darling Marine Center, + others. Many open to industry collaboration + student internships.'),
         RESEARCH_STATIONS.map(function(c, i) {
@@ -9595,8 +10344,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function aqGenomicsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🧬 Selective Breeding + Genomics in Maine Aquaculture'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🧬 Selective Breeding + Genomics in Maine Aquaculture'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '10 selective-breeding + genomics programs shaping Maine aquaculture species. From MSX-resistant oysters (transformed industry) to triploid oysters (premium product) to disease-resistant salmon to controversial GMO salmon (AquaBounty). Genetics work is one of the most-leveraged interventions in modern aquaculture.'),
         AQ_GENOMICS.map(function(c, i) {
@@ -9624,8 +10373,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function microalgaeTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌱 Microalgae for Hatcheries'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌱 Microalgae for Hatcheries'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '10 microalgae species used as feed in Maine + global shellfish hatcheries. Microalgae are the LARVAL FEED — without quality live algae, shellfish hatchery is impossible. Most hatcheries grow several species + mix them for balanced nutrition. Provasoli-Guillard Center at Bigelow Labs (East Boothbay) supplies cultures globally.'),
         MICROALGAE.map(function(c, i) {
@@ -9653,8 +10402,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function aqConferencesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🎤 Trade Shows + Conferences'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🎤 Trade Shows + Conferences'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '11 major aquaculture + seafood industry conferences + trade shows relevant to Maine industry. From local (Maine Fishermen\'s Forum, MOFGA) to national (Aquaculture America, Boston Seafood Expo) to international (World Aquaculture, EAS). Industry attends to network, learn, sell, + recruit.'),
         AQ_CONFERENCES.map(function(c, i) {
@@ -9685,8 +10434,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function waterfront2Tab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '⚓ Working Waterfront Access — Maine Town Detail'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '⚓ Working Waterfront Access — Maine Town Detail'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '14 Maine coastal towns with detailed working-waterfront analysis. Each entry covers wharves, public access, lease structures, concerns. Working waterfront access is the limiting factor for many Maine aquaculture operations — real-estate value pressures + tourism crowd out commercial uses in many towns.'),
         WATERFRONT_DETAIL.map(function(c, i) {
@@ -9716,8 +10465,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function lcaCarbonTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌍 Carbon LCA (Life Cycle Assessment) Studies'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌍 Carbon LCA (Life Cycle Assessment) Studies'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '12 species + foods compared by carbon footprint (kg CO2e per 100g edible). Maine aquaculture species (mussels, oysters, kelp) rank among the LOWEST-impact protein sources globally — sometimes net carbon-negative for kelp. Critical marketing + climate story for Maine aquaculture industry.'),
         LCA_CARBON.map(function(c, i) {
@@ -9744,8 +10493,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function pairingsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🍷 Restaurant + Beverage Pairings'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🍷 Restaurant + Beverage Pairings'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '10 Maine aquaculture products with wine, beer, cocktail, + flavor pairings. Helps farmers + chefs + retail customers understand the dining context for Maine seafood. Useful for marketing to restaurants + for product positioning.'),
         PAIRINGS.map(function(c, i) {
@@ -9775,8 +10524,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function aqSoftwareTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '💻 Industry Software + Apps'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '💻 Industry Software + Apps'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '12 software + app categories used in Maine aquaculture operations. Aquaculture-specific software industry is still small; most Maine operations rely on a mix of general business tools, water-quality sensor apps, navigation apps, + spreadsheets. Emerging integrated platforms are starting to consolidate functions.'),
         AQ_SOFTWARE.map(function(c, i) {
@@ -9802,8 +10551,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function mroEnforcementTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '👮 Marine Patrol + Enforcement Structure'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '👮 Marine Patrol + Enforcement Structure'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '9 enforcement jurisdictions relevant to Maine aquaculture. Marine Patrol officers enforce lease compliance + fishing regulations; NOAA OLE handles federal issues; USCG handles vessel safety; Bureau of Public Health classifies waters. Knowing the right contact saves time when issues arise.'),
         MARINE_PATROL.map(function(c, i) {
@@ -9830,8 +10579,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function aqMediaTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🎬 Aquaculture Media Library'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🎬 Aquaculture Media Library'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '10 categories of aquaculture media + resources for Maine industry + students. Continuous learning + industry awareness require following multiple media channels.'),
         AQ_MEDIA.map(function(c, i) {
@@ -9857,8 +10606,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function aqLaboratoryTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔬 Pathology + Water Quality Lab Workflow'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔬 Pathology + Water Quality Lab Workflow'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } },
           '10 laboratory tests routinely used in Maine aquaculture operations. Maine DMR Pathology Lab (Boothbay) is principal Maine shellfish-disease lab; commercial labs handle water quality + heavy metals; Bigelow Labs handles phytoplankton. Many farms send weekly samples during high-risk seasons.'),
         AQ_LABORATORY.map(function(c, i) {
@@ -9898,8 +10647,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function maineFarmsDetailTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏢 Maine Aquaculture Farms — Detailed Profiles'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏢 Maine Aquaculture Farms — Detailed Profiles'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twenty profile dossiers of working Maine farms + key advocacy groups. Founding year, ownership, species, gear type, employees, and origin story. Use this to find which farm matches the model you\'re considering, or which farms welcome school tours.'),
         MAINE_FARMS_DETAIL.map(function(f, i) {
@@ -9928,8 +10677,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function oysterMethodDetailTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🦪 Oyster Growing Methods — Detailed Comparison'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🦪 Oyster Growing Methods — Detailed Comparison'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten growing methods compared. Bottom culture is cheapest gear but slowest growth and highest predation. FlipFarm is highest gear cost but lowest labor. Choose based on your site (intertidal vs subtidal), labor availability, and target market price tier.'),
         OYSTER_METHOD_DETAIL.map(function(m, i) {
@@ -9960,8 +10709,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function musselMethodDetailTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🪨 Mussel Growing Methods — Detailed Comparison'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🪨 Mussel Growing Methods — Detailed Comparison'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten methods for cultivating blue mussels (Mytilus edulis). Raft culture (Bangs Island model) gives highest yield per acre. Submerged longlines are storm-proof but cost more. Bouchot poles are protected as AOC in France — Maine\'s ice precludes the model.'),
         MUSSEL_METHOD_DETAIL.map(function(m, i) {
@@ -9993,8 +10742,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function kelpProtocolTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌿 Sugar Kelp Cultivation — 12-Step Protocol'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌿 Sugar Kelp Cultivation — 12-Step Protocol'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Year-in-the-life of a Maine kelp crop. Follows Atlantic Sea Farms / GMRI / Sarah Redmond (Springtide) protocols. Sugar kelp is winter-grown, harvested in spring before water warms past 10°C. Anyone with a winter lobster boat can run a kelp crop using these steps.'),
         KELP_PROTOCOL_STEPS.map(function(s, i) {
@@ -10020,8 +10769,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function salmonAscTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🐟 Salmon ASC Certification — Key Standards'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🐟 Salmon ASC Certification — Key Standards'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'ASC (Aquaculture Stewardship Council) is the leading third-party sustainability certification for farmed salmon. Standards cover sea lice, escapes, feed, benthic impact, worker welfare, and community engagement. Cooke Aquaculture certifies some Maine sites; not all.'),
         SALMON_ASC_STANDARDS.map(function(s, i) {
@@ -10050,8 +10799,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function rasEngineeringTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏭 RAS Engineering — Equipment Specifications'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏭 RAS Engineering — Equipment Specifications'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Recirculating Aquaculture System (RAS) is the future of land-based salmon farming. This is the equipment catalog used by Whole Oceans (Bucksport, planned), Nordic Aquafarms (Belfast, paused), and Atlantic Sapphire (Florida). Total CAPEX for a 5K MT/year facility is typically $100-200M.'),
         RAS_ENGINEERING.map(function(s, i) {
@@ -10083,8 +10832,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function netPenDesignTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏗 Salmon Net Pen Design + Specifications'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏗 Salmon Net Pen Design + Specifications'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Net pen engineering used by Cooke Aquaculture at its 7 remaining Maine sites. Each pen costs $500K-1M fully equipped. Pen group typically 6-10 pens per site.'),
         NET_PEN_DESIGN.map(function(n, i) {
@@ -10109,8 +10858,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function vaccineCatalogTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '💉 Aquaculture Vaccine Catalog'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '💉 Aquaculture Vaccine Catalog'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Commercial fish vaccines used in finfish aquaculture worldwide. Most modern salmon hatcheries vaccinate pre-smolt with a multivalent injection (Pentium, Aquavac). Vaccination has dramatically reduced antibiotic use in salmon farming since the 1990s.'),
         VACCINE_CATALOG.map(function(v, i) {
@@ -10140,8 +10889,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function predatorControlTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🦅 Predator Management — Maine Coastal Species'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🦅 Predator Management — Maine Coastal Species'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve predator species relevant to Maine aquaculture. Most are federally protected, so non-lethal methods are required first. Birds (cormorants, eiders, gulls, ospreys, eagles, loons) all fall under the Migratory Bird Treaty Act. Marine mammals (seals) are protected under the MMPA.'),
         PREDATOR_CONTROL.map(function(p, i) {
@@ -10171,8 +10920,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function biofilterDesignTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🧬 Biofilter Design + Nitrification'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🧬 Biofilter Design + Nitrification'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'The biofilter is the heart of a Recirculating Aquaculture System. Without functional nitrification, fish die in days. Twelve topics cover sizing, startup, chemistry, and failure modes. Reference: Timmons + Ebeling "Recirculating Aquaculture" (3rd ed.) chapters 6-7.'),
         BIOFILTER_DESIGN.map(function(b, i) {
@@ -10196,8 +10945,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function uvOzoneTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '☢ UV, Ozone + Disinfection Technologies'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '☢ UV, Ozone + Disinfection Technologies'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Disinfection technology specifications for hatcheries + RAS. UV is the workhorse — cheap, effective for incoming water + recirculation. Ozone adds clarity + biosecurity but requires residual destruction. Hydrogen peroxide doubles as sea lice treatment in net pens.'),
         UV_OZONE_SPECS.map(function(u, i) {
@@ -10223,8 +10972,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function biotoxinProtocolsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '⚠️ Biotoxin Monitoring + Closure Protocols'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '⚠️ Biotoxin Monitoring + Closure Protocols'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Shellfish biotoxin testing under the NSSP (National Shellfish Sanitation Program). PSP is the dominant concern in Maine — "red tide" closures shut growing areas in spring + late summer. DSP is increasing along Northeast coast (warmer waters, Dinophysis blooms). Closure decisions made by Maine DMR Shellfish Sanitation Lab.'),
         BIOTOXIN_PROTOCOLS.map(function(b, i) {
@@ -10256,8 +11005,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function quarantineSopTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔬 Quarantine SOP — Incoming Fish/Eggs'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔬 Quarantine SOP — Incoming Fish/Eggs'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Standard Operating Procedure for receiving new fish or eggs into a hatchery or grow-out. The single biggest biosecurity risk is unscreened incoming stock. Follow this 13-step protocol to prevent introducing pathogens that could devastate production stock.'),
         QUARANTINE_SOP.map(function(s, i) {
@@ -10289,8 +11038,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function harvestDayTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌅 Harvest Day — Hour by Hour'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌅 Harvest Day — Hour by Hour'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'A typical Maine shellfish harvest day timeline. Cold-chain integrity is everything: from harvest to truck in under 4 hours is the gold standard. Start time is dictated by tide. This schedule is for oyster + mussel; salmon harvest is more complex.'),
         HARVEST_DAY_TIMELINE.map(function(t, i) {
@@ -10319,8 +11068,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function tastingNotesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🍴 Tasting Notes — Maine Aquaculture Products'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🍴 Tasting Notes — Maine Aquaculture Products'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Sensory notes from Maine farm-to-table tastings. Brine intensity reflects salinity of growing site. Meat texture reflects growing method (bottom = firm; floating = plump). Match flavor profile to recipe + wine.'),
         TASTING_NOTES.map(function(t, i) {
@@ -10353,8 +11102,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function restaurantCasesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🍽 Restaurant Case Studies — Maine Aquaculture Buyers'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🍽 Restaurant Case Studies — Maine Aquaculture Buyers'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Fifteen Maine restaurants and their relationship with local aquaculture. From Eventide\'s farm-rotation oyster bar to small-town bistros, these are the in-state demand engines. Direct-to-restaurant sales bypass distributor markup + build brand recognition for the farm.'),
         RESTAURANT_CASE_STUDIES.map(function(r, i) {
@@ -10384,8 +11133,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function distributorNetworkTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🚚 Distributor Network — Maine Aquaculture'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🚚 Distributor Network — Maine Aquaculture'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve players in the Maine aquaculture distribution + branding ecosystem. From Browne Trading\'s premium "Pemaquid" oyster brand to Atlantic Sea Farms\' contract-farming model for kelp, distribution shapes farmer take-home prices as much as production cost.'),
         DISTRIBUTOR_NETWORK.map(function(d, i) {
@@ -10414,8 +11163,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function coldChainDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '❄️ Cold Chain — Deep Dive'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '❄️ Cold Chain — Deep Dive'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'From harvest tote to customer plate, every stop has a temperature target. Bivalve shellfish are alive at sale and die above ~55°F. Vibrio bacteria grow exponentially above 55°F in summer. The cold chain is the single biggest food safety system in Maine aquaculture.'),
         COLD_CHAIN_DEEP.map(function(c, i) {
@@ -10444,8 +11193,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function priceHistoryTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '💵 Maine Wholesale Price History (2014-2026)'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '💵 Maine Wholesale Price History (2014-2026)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Approximate 13-year wholesale price history. Oyster prices nearly doubled; mussel + kelp grew steadily. Salmon peaked 2023 then softened. 2020 COVID dip was sharp but short-lived. All prices in US$ for high-quality grade Maine product. Sources: USDA, MAA, ASF reports.'),
         h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)' } },
@@ -10485,8 +11234,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function workingCapitalTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '💰 Working Capital + Cash Flow'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '💰 Working Capital + Cash Flow'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve cash-flow topics for aquaculture business plans. Most new farmers underestimate the time between cash-out (gear, seed) and cash-in (harvest). Oyster farms typically need 3 years to break even; raft mussel 1.5-2 yr; kelp under a year. RAS salmon requires institutional capital.'),
         WORKING_CAPITAL.map(function(w, i) {
@@ -10510,8 +11259,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function stormStoriesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌪 Storm, Market + Climate Stories'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌪 Storm, Market + Climate Stories'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Real events that shaped Maine aquaculture. Storms, escapes, market crashes, closures. Each story has a lesson encoded. Use these in business planning: what happens when something goes wrong, and how did operators respond?'),
         STORM_STORIES.map(function(s, i) {
@@ -10541,8 +11290,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function survivalGearTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🛟 Marine Survival + Safety Gear'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🛟 Marine Survival + Safety Gear'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Personal + vessel safety gear for aquaculture operators. USCG inspection requirements specify minimum gear for commercial vessels. Cold-water immersion (Maine winter water = ~3-5°C) kills in 30-60 minutes without survival gear. Float-coats + PFDs are the difference between a survivor and a casualty.'),
         SURVIVAL_GEAR.map(function(g, i) {
@@ -10569,8 +11318,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function coldWaterTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🧊 Cold-Water Immersion — Survival Protocols'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🧊 Cold-Water Immersion — Survival Protocols'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine coastal water is 35-45°F most of the year. Without protective gear, immersion is rapidly disabling. Following 4-phase model from US Coast Guard cold-water immersion training. Survival training + drills are required for commercial vessel crews.'),
         COLD_WATER_PROTOCOLS.map(function(p, i) {
@@ -10595,8 +11344,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function insuranceClaimsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '⚖️ Insurance Claims — Case Studies'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '⚖️ Insurance Claims — Case Studies'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Real-world (some composite) insurance claim scenarios from Maine aquaculture. Stock loss, gear damage, worker injury, theft, pollution — each shows what the policy covered, what it didn\'t, and the lesson learned. Use these in business planning to size your insurance program.'),
         INSURANCE_CLAIMS.map(function(c, i) {
@@ -10622,8 +11371,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function exportDocsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌐 Export Documentation Requirements'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌐 Export Documentation Requirements'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine seafood exports to EU, Japan, China + other major markets require multiple parallel certifications. Health certificates expire 30 days. Live shipments add USDA APHIS layer. Plan paperwork 2-3 weeks ahead of shipment date.'),
         EXPORT_DOCS.map(function(d, i) {
@@ -10656,8 +11405,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function brandingPlaybookTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🎨 Branding Playbook — Maine Aquaculture'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🎨 Branding Playbook — Maine Aquaculture'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Fifteen branding lessons from Maine farms that have built recognized brands. Pemaquid, Glidden Point, Bangs Island, Atlantic Sea Farms — these names earn 30-100% premium over generic. The premium is the brand. Build deliberately.'),
         BRANDING_PLAYBOOK.map(function(b, i) {
@@ -10681,8 +11430,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function schoolLunchTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏫 School Lunch + Farm-to-School Programs'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏫 School Lunch + Farm-to-School Programs'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'How Maine aquaculture enters schools. Mussels are the easiest entry (kid-palatable + low cost). Kelp is emerging. Oyster + scallop programs are rare due to cost + cultural perception. Farm-to-school program reimburses local sourcing.'),
         SCHOOL_LUNCH.map(function(s, i) {
@@ -10708,8 +11457,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function workerInjuryTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🚑 Worker Injury — Case Studies + Prevention'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🚑 Worker Injury — Case Studies + Prevention'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Real (some composite) injury scenarios from Maine aquaculture work. Each shows cause, outcome, prevention. OSHA + USCG require injury logs (OSHA 300 form for shore-based, USCG CG-2692 for vessel). Common patterns: hauler/cage mechanical injuries, line snap-back, cold water exposure, slip-and-fall.'),
         WORKER_INJURY_CASES.map(function(c, i) {
@@ -10737,8 +11486,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function seaweedSpeciesDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌿 Seaweed Species Deep Dive — 10 Cultivated Species'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌿 Seaweed Species Deep Dive — 10 Cultivated Species'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten cultivated + harvested seaweed species relevant to Maine + emerging US aquaculture. Sugar kelp is the dominant Maine farmed species. Asian-origin species (nori, wakame, kombu) drive the global $5B+ seaweed industry but face climate + invasion concerns for US cultivation.'),
         SEAWEED_SPECIES_DEEP.map(function(s, i) {
@@ -10770,8 +11519,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function scallopDeepCultTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🐚 Scallop Aquaculture — Deep Dive'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🐚 Scallop Aquaculture — Deep Dive'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Scallop aquaculture is an emerging Maine industry. Wild fishery has declined sharply; aquaculture could restore supply + provide premium whole-shell products. Hurricane Island Center + UMaine lead training + research.'),
         SCALLOP_DEEP_CULT.map(function(s, i) {
@@ -10795,8 +11544,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function urchinAquacultureTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🦔 Sea Urchin Aquaculture'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🦔 Sea Urchin Aquaculture'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Sea urchin (Strongylocentrotus droebachiensis) aquaculture is in pilot phase in Maine. Wild fishery collapsed in 1990s; aquaculture could provide restoration + commercial supply for the uni market.'),
         URCHIN_AQUACULTURE.map(function(u, i) {
@@ -10820,8 +11569,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function clamDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🐚 Clam Species + Aquaculture'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🐚 Clam Species + Aquaculture'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine clams — soft-shell, hard-shell quahog, razor, surf. Soft-shell is the dominant fishery, now severely pressured by invasive green crabs. Aquaculture restoration via municipal seeding programs led by Down East Institute hatchery.'),
         CLAM_DEEP.map(function(c, i) {
@@ -10847,8 +11596,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function oysterLifeCycleTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🦪 Oyster Life Cycle — Egg to Plate'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🦪 Oyster Life Cycle — Egg to Plate'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve stages from spawn to plate. Hatcheries control stages 1-7; farms take over from spat (stage 7+). Most oysters reach market in 18-30 months in Maine\'s cold water; faster in warmer southern waters.'),
         OYSTER_LIFE_CYCLE.map(function(s, i) {
@@ -10874,8 +11623,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function geneticBreedingTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🧬 Genetic Breeding + Genomics'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🧬 Genetic Breeding + Genomics'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve topics in aquaculture genetics. Triploid oysters dominate premium markets. Atlantic salmon has the most advanced breeding program of any aquaculture species. Transgenic + genome-edited species exist but face regulatory + market challenges.'),
         GENETIC_BREEDING.map(function(g, i) {
@@ -10899,8 +11648,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function blueEconomyDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '💙 Maine Blue Economy — Sector Breakdown'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '💙 Maine Blue Economy — Sector Breakdown'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine\'s "Blue Economy" — all ocean-related economic activity. ~$5B+/yr total. Aquaculture is one sector among many; understanding the ecosystem helps position aquaculture for cross-sector cooperation (e.g., kelp + offshore wind co-location).'),
         BLUE_ECONOMY_DEEP.map(function(s, i) {
@@ -10928,8 +11677,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function socialLicenseTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🤝 Social License to Operate — Maine Lessons'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🤝 Social License to Operate — Maine Lessons'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve lessons on earning + keeping community approval. In Maine, where working waterfront has powerful political weight, social license is as critical as legal permits. American Aquafarms\' rejection in Frenchman Bay (2022) shows what happens without it.'),
         SOCIAL_LICENSE.map(function(l, i) {
@@ -10953,8 +11702,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function benthicMonitoringTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏛 Benthic Monitoring Protocols'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏛 Benthic Monitoring Protocols'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten methods for assessing seafloor impacts of aquaculture. Required for salmon (high-density) operations; recommended for all farms. State + ASC use this data to identify Allowable Zone of Effect (AZE) and trigger fallowing.'),
         BENTHIC_MONITORING.map(function(s, i) {
@@ -10981,8 +11730,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function feedFormulationsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🍽 Feed Formulations by Species'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🍽 Feed Formulations by Species'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Aquaculture feed varies dramatically by species. Salmon needs high-fat, high-protein "marine" diet. Tilapia + carp thrive on grain-based diets. Bivalves + seaweed need NO feed input — they\'re net nutrient removers, making them the most sustainable farmed species.'),
         FEED_FORMULATIONS.map(function(f, i) {
@@ -11017,8 +11766,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function waterTestingTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🧪 Water Quality Testing — Methods + Equipment'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🧪 Water Quality Testing — Methods + Equipment'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Fifteen water quality tests used in aquaculture. RAS systems require continuous monitoring of DO, temp, pH, NH3, NO2. Shellfish growing areas require coliform + biotoxin testing under NSSP. Equipment costs range from $200 (basic kits) to $10K+ (multi-parameter sondes).'),
         WATER_TESTING_METHODS.map(function(t, i) {
@@ -11047,8 +11796,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function seaLiceTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🐛 Sea Lice Management — Salmon Farming'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🐛 Sea Lice Management — Salmon Farming'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Sea lice are the dominant disease challenge in salmon farming worldwide. Maine\'s low salmon-farm density + cold water keeps lice pressure lower than Norway or BC, but management is still required. Wild Atlantic salmon protection drives stricter thresholds in Maine during spring out-migration.'),
         SEA_LICE_MANAGEMENT.map(function(s, i) {
@@ -11072,8 +11821,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function bivalveFiltrationTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '💧 Bivalve Filtration + Ecosystem Services'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '💧 Bivalve Filtration + Ecosystem Services'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Filter-feeding bivalves are nature\'s water purifiers. An adult oyster filters 50 gallons/day. Large-scale shellfish aquaculture can measurably improve water clarity + remove nutrient loading. Some states are creating "nutrient credit" markets where oyster farmers are paid for ecosystem services.'),
         BIVALVE_FILTRATION.map(function(b, i) {
@@ -11102,8 +11851,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function imtaDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔄 IMTA Deep Dive'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔄 IMTA Deep Dive'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Integrated Multi-Trophic Aquaculture — combining species across trophic levels. Bangs Island Mussels pioneered IMTA in Maine with mussel + kelp pairing. Future RAS facilities may extend IMTA to land-based systems treating effluent with secondary crops.'),
         IMTA_DEEP.map(function(i_, i) {
@@ -11129,8 +11878,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function shrimpCultureTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🦐 Shrimp Aquaculture Globally + Maine Relevance'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🦐 Shrimp Aquaculture Globally + Maine Relevance'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Shrimp is the largest farmed-seafood category globally. Maine\'s cold water precludes traditional outdoor culture, but indoor RAS shrimp is emerging. Disease pressure + import dependency are key US industry drivers.'),
         SHRIMP_CULTURE.map(function(s, i) {
@@ -11154,8 +11903,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function carbonSeqTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌍 Carbon Sequestration + Aquaculture Footprints'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌍 Carbon Sequestration + Aquaculture Footprints'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Carbon math by aquaculture system. Bivalves + kelp can be net sequesters; finfish are net emitters. Blue carbon markets are emerging but verification is still developing. For climate-conscious investors, shellfish + seaweed offer real positive impact.'),
         CARBON_SEQUESTRATION.map(function(c, i) {
@@ -11183,8 +11932,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function gomOceanographyTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌊 Gulf of Maine Oceanography'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌊 Gulf of Maine Oceanography'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'The Gulf of Maine\'s physical oceanography shapes everything about Maine aquaculture. Large tides, cold water, strong mixing, and high productivity have historically supported a rich fishery. Rapid warming + acidification are now the dominant climate adaptation challenges.'),
         GOM_OCEANOGRAPHY.map(function(g, i) {
@@ -11213,8 +11962,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function equipmentCareTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔧 Equipment Care + Lifespan Reference'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔧 Equipment Care + Lifespan Reference'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maintenance schedules + expected lifespans for 15 categories of aquaculture gear. Proper care doubles equipment lifespan + reduces replacement CAPEX dramatically. Track equipment hours + age in your management software.'),
         EQUIPMENT_CARE.map(function(e, i) {
@@ -11241,8 +11990,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function workforcePipelineTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🎓 Workforce + Education Pipeline'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🎓 Workforce + Education Pipeline'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve entry points into Maine aquaculture careers. From 4-year UMaine science degrees to 1-year EMCC technician certificates to farm-to-farm apprenticeships. Maine has built a coordinated workforce pipeline that other states reference.'),
         WORKFORCE_PIPELINE.map(function(w, i) {
@@ -11268,8 +12017,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function deepFarmTypesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏗 Aquaculture Business Models — 10 Types'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏗 Aquaculture Business Models — 10 Types'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten models from hobby-scale to industrial scale. Staffing, revenue, capital, and growth path for each. Use this to identify which model best matches your goals + resources.'),
         DEEP_FARM_TYPES.map(function(f, i) {
@@ -11301,8 +12050,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function regulatoryTimelineTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📋 Regulatory Timeline — Maine Lease Process'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📋 Regulatory Timeline — Maine Lease Process'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Thirteen phases from initial site research to lease termination. Typical timeline: 12-24 months from idea to operations. Community engagement is required + can extend timeline if mismanaged. Cooke + Atlantic Sea Farms have streamlined their permit process through prior community goodwill.'),
         REGULATORY_TIMELINE.map(function(r, i) {
@@ -11326,8 +12075,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function invasiveSpeciesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🦀 Invasive Species + Aquaculture Impact'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🦀 Invasive Species + Aquaculture Impact'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten invasive species relevant to Maine aquaculture. Green crab is the dominant threat to native clam fishery + young shellfish. Tunicate mat fouling devastates aquaculture gear. Biosecurity in gear movement + bilge water is critical for limiting spread.'),
         INVASIVE_SPECIES.map(function(s, i) {
@@ -11395,8 +12144,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function deepGlossaryTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📖 Aquaculture Deep Glossary (52 Terms)'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📖 Aquaculture Deep Glossary (52 Terms)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Fifty-two technical terms used in Maine + global aquaculture. Cross-reference when reading farm reports, permit applications, scientific literature.'),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
@@ -11415,8 +12164,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function dailySchedulesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📆 Seasonal Daily Schedules'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📆 Seasonal Daily Schedules'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'What a typical day looks like in each season for a multi-species Maine aquaculture operation.'),
         DAILY_SCHEDULES.map(function(s, i) {
@@ -11440,8 +12189,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function sampleLessonsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📚 Sample Lesson Plans — Teacher Resource'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📚 Sample Lesson Plans — Teacher Resource'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten classroom-ready lesson plans across science, math, business, civics. Designed for middle + high school. Each includes objectives, materials, activity. Adapt to your local context + standards.'),
         SAMPLE_LESSON_PLANS.map(function(l, i) {
@@ -11475,8 +12224,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function maineBaysTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏝 Maine Bays + Estuaries — Aquaculture Atlas'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏝 Maine Bays + Estuaries — Aquaculture Atlas'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Fifteen major Maine bays + estuaries. Each has its own hydrography, depth, dominant species, and political-social context. Damariscotta is the oyster heartland; Cobscook + Machias are salmon territory; Casco Bay leads in mussel + diverse small-scale operations.'),
         MAINE_BAYS.map(function(b, i) {
@@ -11508,8 +12257,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function finfishSpeciesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🐟 Finfish Aquaculture Species — Global + Maine'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🐟 Finfish Aquaculture Species — Global + Maine'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Fifteen finfish species cultivated globally. Atlantic salmon dominates Maine + most US production. Yellowtail + Arctic char are emerging cold-water RAS species. Most tropical species (tilapia, catfish) are limited to RAS in Maine\'s cold climate.'),
         FINFISH_SPECIES.map(function(s, i) {
@@ -11539,8 +12288,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function hatcheryOpsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🧪 Hatchery Operations — 12 Stages'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🧪 Hatchery Operations — 12 Stages'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve stages of hatchery operations from broodstock conditioning to field deployment. Each stage has specific protocols + risk points. Hatchery operations are the technical foundation of farmed shellfish + finfish supply.'),
         HATCHERY_OPS.map(function(s, i) {
@@ -11565,8 +12314,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function boatTypesDetailTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🚤 Aquaculture Vessel Types'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🚤 Aquaculture Vessel Types'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten vessel types used in Maine aquaculture. The Maine lobster boat is the most common general-purpose platform. Specialized vessels (mussel service, salmon service, smolt wellboat) are required for industrial scale.'),
         BOAT_TYPES_DETAIL.map(function(b, i) {
@@ -11595,8 +12344,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function regsCrosswalkTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '⚖️ Maine vs US vs International Regulations'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '⚖️ Maine vs US vs International Regulations'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve regulatory topics compared across Maine, federal US, and international (Norway, Chile, Canada, EU) frameworks. Maine + US generally have stricter community engagement + ESA protection. Norway + EU lead in worker welfare + carbon disclosure.'),
         REGS_CROSSWALK.map(function(r, i) {
@@ -11622,8 +12371,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function tideForFarmersTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌊 Tides — Practical Guide for Farmers'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌊 Tides — Practical Guide for Farmers'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten practical topics on tides. Tides dictate aquaculture work schedules + intertidal access + gear stress. Spring tides are biggest swings; neap tides are calmest. Knowing your tide cycle is foundational.'),
         TIDE_FOR_FARMERS.map(function(t, i) {
@@ -11647,8 +12396,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function forecastingTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '☁️ Weather + Marine Forecasting Tools'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '☁️ Weather + Marine Forecasting Tools'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten tools for weather + marine forecasting. NOAA Marine Forecast + NERACOOS buoys are free + most-used. Subscription tools (PredictWind, Windy Pro) offer higher resolution.'),
         FORECASTING.map(function(f, i) {
@@ -11675,8 +12424,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function mainePortDataTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '⚓ Maine Ports + Working Waterfront'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '⚓ Maine Ports + Working Waterfront'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve major Maine ports + their aquaculture relevance. Portland is the distribution + restaurant hub. Damariscotta is the oyster capital. Stonington dominates lobster. Working waterfront access is increasingly threatened by waterfront residential development.'),
         MAINE_PORT_DATA.map(function(p, i) {
@@ -11704,8 +12453,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function enviMonitoringTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📊 Environmental Monitoring Requirements'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📊 Environmental Monitoring Requirements'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve monitoring categories. Finfish (especially salmon) has the heaviest reporting burden. Shellfish requires biotoxin + water-quality monitoring primarily. ASC + BAP certifications add voluntary requirements.'),
         ENVI_MONITORING.map(function(e, i) {
@@ -11733,8 +12482,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function yearPlanTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📅 Annual Aquaculture Calendar — Month by Month'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📅 Annual Aquaculture Calendar — Month by Month'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve months of Maine aquaculture seasonality. Kelp = winter + early-spring crop. Oyster + mussel = year-round but spring-summer growth peak. Salmon = continuous with seasonal harvest peaks.'),
         YEAR_PLAN.map(function(m, i) {
@@ -11759,8 +12508,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function deployCaseStudiesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏗 Aquaculture Deployment Case Studies'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏗 Aquaculture Deployment Case Studies'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten case studies of Maine aquaculture ventures + their lessons. Success stories (Bangs Island, Atlantic Sea Farms) + cautionary tales (American Aquafarms, Nordic Aquafarms). Together they map the strategy space.'),
         DEPLOY_CASE_STUDIES.map(function(c, i) {
@@ -11785,8 +12534,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function moreLessonsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📚 More Lesson Plans (Lessons 11-20)'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📚 More Lesson Plans (Lessons 11-20)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten more lesson plans extending the curriculum. Together with Lessons 1-10, gives 20 ready-to-use classroom activities for middle + high school students.'),
         MORE_LESSONS.map(function(l, i) {
@@ -11817,8 +12566,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function aquacultureHistoryTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📜 Maine Aquaculture History'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📜 Maine Aquaculture History'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Fifteen eras of Maine aquaculture history. From Wabanaki shellfish flats (millennia) through colonial depletion through modern industry. Each era shaped what came after.'),
         AQUACULTURE_HISTORY.map(function(e, i) {
@@ -11874,8 +12623,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function technicalGlossaryTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📒 Technical Glossary (42 More Terms, P-Z)'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📒 Technical Glossary (42 More Terms, P-Z)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Forty-two more technical terms (P through Z). Combined with the Deep Glossary (A-O), provides ~95 terms total — comprehensive reference for permit applications, scientific literature, and industry communication.'),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
@@ -11918,8 +12667,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function globalAquacultureProfilesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌍 Global Aquaculture Country Profiles — 26 Nations'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌍 Global Aquaculture Country Profiles — 26 Nations'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twenty-six countries with significant aquaculture industries. China dominates (~60% of global). Norway leads salmon globally. Vietnam + Indonesia + India + Ecuador + Bangladesh are major shrimp + tropical fish producers. US ranks lower despite vast coastline; Maine is among the leading US states.'),
         GLOBAL_AQUACULTURE_PROFILES.map(function(c, i) {
@@ -11952,8 +12701,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function diseaseDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🦠 Aquaculture Disease Deep Dive — 15 Pathogens'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🦠 Aquaculture Disease Deep Dive — 15 Pathogens'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Fifteen major aquaculture pathogens worldwide. MSX + Dermo + OsHV affect oysters; IPN + ISA + Furunculosis + BKD affect salmonids; WSSV + EMS devastate shrimp. Most have no treatment — prevention through vaccination, biosecurity, and selective breeding is the model.'),
         DISEASE_DEEP.map(function(d, i) {
@@ -11983,8 +12732,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function careerInterviewsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🎤 Career Interviews — Day in the Life'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🎤 Career Interviews — Day in the Life'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten profiles of Maine aquaculture professionals across roles: hatchery, farm, diver, scientist, chef, extension, vet, distributor, engineer, regulator. Each shares background + daily work + advice for newcomers.'),
         CAREER_INTERVIEWS.map(function(c, i) {
@@ -12020,8 +12769,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function climateDeepDiveTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌡 Climate Change + Maine Aquaculture — Deep Dive'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌡 Climate Change + Maine Aquaculture — Deep Dive'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twenty topics covering the climate-aquaculture intersection. Maine\'s Gulf of Maine is warming faster than 99% of world oceans. Some species (lobster) shifting north; others (soft-shell clam, sea urchin) declining. Aquaculture is both at risk + part of the climate solution.'),
         CLIMATE_DEEP_DIVE.map(function(c, i) {
@@ -12047,8 +12796,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function businessPlanTemplateTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📝 Business Plan Template'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📝 Business Plan Template'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve-section business plan template for aquaculture startup. Most lenders + investors expect this structure. Adapt to your specific situation; emphasize what\'s distinctive about your team + opportunity.'),
         BUSINESS_PLAN_TEMPLATE.map(function(s, i) {
@@ -12089,8 +12838,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function keyTextbooksTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📚 Key Textbooks + References'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📚 Key Textbooks + References'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twenty-six foundational textbooks + references for aquaculture professionals + students. Timmons + Ebeling is the RAS bible. FAO has many free downloadable manuals. Marine Ecology Progress Series + Aquaculture (Elsevier) are the leading peer-reviewed journals.'),
         KEY_TEXTBOOKS.map(function(b, i) {
@@ -12125,8 +12874,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function famousAquaFiguresTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '👥 Notable Figures in Maine Aquaculture'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '👥 Notable Figures in Maine Aquaculture'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twenty individuals who shaped Maine aquaculture. Farmers (Newell, Mook, Moretti, Sevigny, Warner, Redmond, McPherson, Howell) + scientists (Bricknell, Cohen, Adey, Steneck) + advocates (Belle, Hayden, Libby, McLaughlin) + extension (Morse). Together they built the modern industry.'),
         FAMOUS_AQUA_FIGURES.map(function(f, i) {
@@ -12252,8 +13001,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function completeSpeciesCatalogTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🧬 Complete Aquaculture Species Catalog (108 species)'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🧬 Complete Aquaculture Species Catalog (108 species)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'One hundred eight aquaculture species worldwide. Bivalves, finfish, crustaceans, seaweed, microalgae, echinoderms, gastropods. Each shown with category + region + current status. Use as quick reference for any species discussion.'),
         ['Bivalve', 'Fish', 'Crustacean', 'Seaweed', 'Microalgae', 'Echinoderm', 'Gastropod'].map(function(cat) {
@@ -12390,8 +13139,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function completeTerminologyTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📚 Complete Aquaculture Terminology (118 Terms)'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📚 Complete Aquaculture Terminology (118 Terms)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'One hundred eighteen specialized aquaculture terms. Reproduction, genetics, immunology, larviculture, hatchery, and farming operations vocabulary. Combined with the prior glossaries (52 + 42), this gives 200+ terms total.'),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 8 } },
@@ -12421,8 +13170,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function detailedFarmsPart2Tab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏢 Maine Farms Part 2 — Small + Emerging'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏢 Maine Farms Part 2 — Small + Emerging'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Fifteen smaller + emerging Maine aquaculture operations. Most are 1-5 staff family or partnership farms. Together these and the major farms (Bangs Island, Pemaquid, Glidden Point, Mook, Cooke) compose Maine\'s ~150-farm aquaculture industry.'),
         DETAILED_FARM_PROFILES_PART2.map(function(f, i) {
@@ -12462,8 +13211,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function gearVendorTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏪 Gear Vendor Directory'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏪 Gear Vendor Directory'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twenty-five gear + equipment vendors used by Maine aquaculture. Mix of US national, Maine-local, and international suppliers. Cage gear: OysterGro + FlipFarm dominant. Water quality: Hach + YSI + In-Situ. RAS: AKVA + Veolia + PRA + DSO.'),
         GEAR_VENDOR_DIRECTORY.map(function(v, i) {
@@ -12597,8 +13346,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function acronymDirectoryTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔤 Aquaculture Acronyms (115)'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔤 Aquaculture Acronyms (115)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'One hundred fifteen aquaculture, regulatory, and Maine-specific acronyms. Use as quick lookup when reading reports, papers, or permits.'),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 6 } },
@@ -12750,8 +13499,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function maineRegsDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '⚖️ Maine Aquaculture Regulatory Deep Dive'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '⚖️ Maine Aquaculture Regulatory Deep Dive'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Fifteen permits + regulatory frameworks affecting Maine aquaculture. State lease types (Standard, LPA, LPA Permit, Pilot) + federal permits (NPDES, ESA, ACOE, FDA NSSP, USDA APHIS) + worker safety (OSHA, USCG). Most farms need 4-8 separate permits/approvals.'),
         MAINE_AQUACULTURE_REGS_DEEP.map(function(r, i) {
@@ -12842,8 +13591,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function detailedHatcheryTimelineTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🧪 Detailed Hatchery Timeline — 26-Week Walkthrough'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🧪 Detailed Hatchery Timeline — 26-Week Walkthrough'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve major phases of a 26-week oyster hatchery cycle, week-by-week. From broodstock conditioning through field deployment. Use as planning + training tool for hatchery operators. Adapt for mussel, scallop, or other shellfish.'),
         DETAILED_HATCHERY_TIMELINE.map(function(t, i) {
@@ -12901,8 +13650,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function salmonProductionCycleTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🐟 Atlantic Salmon Production Cycle — 6 Phases'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🐟 Atlantic Salmon Production Cycle — 6 Phases'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Six phases of a 30-month Atlantic salmon production cycle. From egg to harvest plus site recovery. RAS salmon collapses this into single facility; net-pen production splits between freshwater hatchery + seawater grow-out.'),
         SALMON_PRODUCTION_CYCLE.map(function(p, i) {
@@ -13005,8 +13754,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function policyIssuesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏛 Policy + Industry Issues'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏛 Policy + Industry Issues'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve major policy issues facing Maine aquaculture. Working waterfront access, permitting complexity, capital access, indigenous rights, climate, workforce, tourism conflict. Each issue has current status + why it matters + proposed solutions.'),
         POLICY_ISSUES.map(function(p, i) {
@@ -13173,8 +13922,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function engineeringSpecsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🛠 Engineering Specifications — 15 Components'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🛠 Engineering Specifications — 15 Components'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Detailed engineering specifications for fifteen aquaculture components. Material, dimensions, weight, flotation, installation, maintenance, cost. From massive HDPE salmon pens to small plastic floats. Reference for engineering + procurement.'),
         ENGINEERING_SPECS.map(function(e, i) {
@@ -13285,8 +14034,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function defensiveAquacultureTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🛡 Defensive Aquaculture — Threat + Mitigation Reference'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🛡 Defensive Aquaculture — Threat + Mitigation Reference'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Thirteen threat categories with prevention + mitigation strategies. Storms, predators, disease, biotoxins, theft, climate. Use for risk assessment + insurance + business planning.'),
         DEFENSIVE_AQUACULTURE.map(function(d, i) {
@@ -13401,8 +14150,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function economicIndicatorsMaineTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📊 Maine Aquaculture Economic Indicators'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📊 Maine Aquaculture Economic Indicators'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve key economic indicators for Maine aquaculture. ~$200M farm-gate value, ~700 direct jobs, ~150 farms. The industry has doubled since 2010 and continues growing as a complement to traditional fisheries.'),
         ECONOMIC_INDICATORS_MAINE.map(function(e, i) {
@@ -13510,8 +14259,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function aquacultureAccountingTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '💰 Aquaculture Accounting Topics — 13 Concepts'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '💰 Aquaculture Accounting Topics — 13 Concepts'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Thirteen accounting + finance concepts every aquaculture operator should understand. From basic COGS + Gross Margin through tax-specific items like Section 179 + NOL carryforward. Use this as foundation for building business plan + working with an accountant.'),
         AQUACULTURE_ACCOUNTING_TOPICS.map(function(a, i) {
@@ -13624,8 +14373,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function deepScienceTopicsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔬 Aquaculture Science Deep Topics — 12 Areas'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔬 Aquaculture Science Deep Topics — 12 Areas'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve aquaculture science topics with chemistry, stoichiometry, kinetic constants, and practical applications. Nitrification, oxygen, ammonia, carbonate buffering, smoltification, bivalve filtration, photosynthesis, carbon, microalgae, Vibrio.'),
         DEEP_SCIENCE_TOPICS.map(function(t, i) {
@@ -13775,8 +14524,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function investmentProfilesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '💼 Investment Profiles — 12 Business Models'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '💼 Investment Profiles — 12 Business Models'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve aquaculture business models with capital + revenue + profit + risk profile. From hobby scale ($30K) through RAS salmon ($200M+). Different fits for different operators + investors.'),
         INVESTMENT_PROFILES.map(function(p, i) {
@@ -13913,8 +14662,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function deepCaseStudiesLargeTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📖 Deep Case Studies — 7 Maine Aquaculture Stories'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📖 Deep Case Studies — 7 Maine Aquaculture Stories'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Seven detailed case studies. Bangs Island\'s 15-year scale-up; Atlantic Sea Farms\' buyer-led kelp industry; Cooke\'s industrial salmon; American Aquafarms\' loss of social license; Mook\'s pivot to hatchery; Pemaquid\'s brand building; Whole Oceans\' RAS stall. Each tells a different lesson.'),
         DEEP_CASE_STUDIES_LARGE.map(function(c, i) {
@@ -14056,8 +14805,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function dailyFarmOpsDetailedTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🕐 Daily Farm Operations — Hour-by-Hour Detail'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🕐 Daily Farm Operations — Hour-by-Hour Detail'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Hour-by-hour daily operations for summer harvest day + winter inspection day. Each task with the details + why-it-matters reasoning. Use as training reference for new crew + crew rotation planning.'),
         DAILY_FARM_OPS_DETAILED.map(function(o, i) {
@@ -14222,8 +14971,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function comprehensiveChecklistsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '✅ Comprehensive Operational Checklists'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '✅ Comprehensive Operational Checklists'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Seven detailed checklists covering pre-departure, lease compliance, hatchery + RAS operations, net pen inspection, storm preparation, and worker safety. Print + post in your operation; review periodically.'),
         COMPREHENSIVE_CHECKLISTS.map(function(c, i) {
@@ -14371,8 +15120,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function troubleshootingGuideTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔧 Troubleshooting Guide — Common Problems'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔧 Troubleshooting Guide — Common Problems'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Seven detailed troubleshooting guides for common operational problems. Symptoms → possible causes → immediate actions → prevention. Use during incidents + as training reference.'),
         TROUBLESHOOTING_GUIDE.map(function(t, i) {
@@ -14486,8 +15235,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function deepOysterTrainingTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🎓 Deep Oyster Training — 5 Core Skills'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🎓 Deep Oyster Training — 5 Core Skills'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Five core skills every oyster aquaculture professional should master. Each with key indicators + common mistakes + when to apply. Use as training curriculum for new employees + assessment for promotions.'),
         DEEP_OYSTER_TRAINING.map(function(s, i) {
@@ -14592,8 +15341,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function culinaryDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🍴 Culinary Deep Dive — 12 Preparations'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🍴 Culinary Deep Dive — 12 Preparations'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve preparations for Maine aquaculture products. From raw oyster bar through cedar-plank salmon. Each with the right ingredient grade, technique, chef tips, and common errors.'),
         CULINARY_DEEP.map(function(c, i) {
@@ -14682,8 +15431,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function farmDesignPatternsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏗 Farm Design Patterns — 10 Layouts'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏗 Farm Design Patterns — 10 Layouts'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten farm design patterns from simple concentrated production through emerging multi-use offshore wind co-location. Each pattern has different capital + risk + scale characteristics.'),
         FARM_DESIGN_PATTERNS.map(function(p, i) {
@@ -14829,8 +15578,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function studentProjectIdeasTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🎒 Student Project Ideas — 8 Hands-On Activities'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🎒 Student Project Ideas — 8 Hands-On Activities'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Eight detailed student project ideas spanning hatchery, climate, water quality, engineering, careers, civics, and sustainability. Each with materials, steps, learning outcomes, and science connections. Adaptable to middle + high school.'),
         STUDENT_PROJECT_IDEAS.map(function(p, i) {
@@ -14950,8 +15699,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function sustainabilityCertsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '✅ Sustainability Certifications — Detailed Reference'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '✅ Sustainability Certifications — Detailed Reference'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten major sustainability certifications relevant to aquaculture. ASC + BAP dominate the salmon market. Organic + Fair Trade serve premium niches. Choose certifications based on your market + audit budget.'),
         SUSTAINABILITY_CERTIFICATIONS.map(function(c, i) {
@@ -15092,8 +15841,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function infrastructureNeedsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏗 Infrastructure Needs by Category'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏗 Infrastructure Needs by Category'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Seven infrastructure categories with detailed equipment lists + CAPEX + scale ranges. Use for business planning, lender presentations, and project scoping.'),
         INFRASTRUCTURE_NEEDS.map(function(c, i) {
@@ -15240,8 +15989,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function yearAheadPlanningTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📆 Year-Ahead Planning Calendar — Month-by-Month'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📆 Year-Ahead Planning Calendar — Month-by-Month'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Nine periods of the year with strategic focus + key actions + deliverables. Use as planning calendar for medium + large operations. Adapt timing for species + region.'),
         YEAR_AHEAD_PLANNING.map(function(y, i) {
@@ -15295,8 +16044,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function annualEconomicProjectionTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📈 Maine Aquaculture Economic Projections (2026-2030)'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📈 Maine Aquaculture Economic Projections (2026-2030)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Four-year economic projection by species. Conservative growth scenarios; actual numbers may differ. Industry estimated to grow from ~$113M (2026) to ~$224M (2030) per these projections — doubling in 5 years.'),
         ANNUAL_ECONOMIC_PROJECTION.map(function(y, i) {
@@ -15481,8 +16230,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function speciesProfilesDetailTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌊 Species Profiles — 10 Detailed Cards'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌊 Species Profiles — 10 Detailed Cards'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten detailed species cards. Each includes habitat, diet, life cycle, diseases, farming methods, economics, Maine significance, sustainability, and a fun fact. Use as reference for any species discussion.'),
         SPECIES_PROFILES_DETAIL.map(function(s, i) {
@@ -15588,8 +16337,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function equipmentTroubleshootingTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔨 Equipment Troubleshooting — 10 Common Problems'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔨 Equipment Troubleshooting — 10 Common Problems'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten equipment troubleshooting scenarios. For each: symptom, possible causes, diagnosis steps, repair, and prevention. Use during operational incidents + as training reference for new technicians.'),
         EQUIPMENT_TROUBLESHOOTING_DETAIL.map(function(t, i) {
@@ -15692,8 +16441,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function coastalPartnershipsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🤝 Coastal Community Partnerships'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🤝 Coastal Community Partnerships'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve key partnership relationships shaping Maine aquaculture. Lobstermen, tourism, indigenous nations, environmental groups, schools, restaurants, universities, insurance, finance, tribes. Strong partnerships strengthen industry; weak partnerships create blockers.'),
         COASTAL_COMMUNITY_PARTNERSHIPS.map(function(p, i) {
@@ -15760,8 +16509,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function aquacultureVoicesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🗣 Voices from Maine Aquaculture'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🗣 Voices from Maine Aquaculture'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten voices from Maine aquaculture: industry founders, advocates, scientists, new entrants, educators, indigenous leaders. (Quotes are paraphrased from public statements, interviews, + industry conferences. Direct quotes attributed only when verified.)'),
         AQUACULTURE_VOICES.map(function(v, i) {
@@ -15796,8 +16545,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function aquacultureGlobalStatsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌐 Aquaculture Global Statistics'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌐 Aquaculture Global Statistics'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twenty key statistics on global + US + Maine aquaculture. Global production exceeded wild capture in 2014. China dominates with ~60% of production. Maine is among the leading US aquaculture states despite small absolute numbers.'),
         AQUACULTURE_GLOBAL_STATS.map(function(s, i) {
@@ -15878,8 +16627,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function deepRecipeCollectionTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🍳 Deep Recipe Collection — 8 Detailed Recipes'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🍳 Deep Recipe Collection — 8 Detailed Recipes'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Eight detailed recipes featuring Maine aquaculture products. Each with ingredients, instructions, serving size, wine pairing, and chef notes. From classic oyster stew to modern kelp + lobster risotto.'),
         DEEP_RECIPE_COLLECTION.map(function(r, i) {
@@ -15961,8 +16710,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function scientificPapersNotesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📚 Key Scientific Papers + Notes'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📚 Key Scientific Papers + Notes'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Eight foundational scientific papers + reports relevant to Maine aquaculture. Climate (Pershing), fishery transitions (Knapp), aquaculture ecology (Costa-Pierce), disease (Stentiford), policy frameworks (Krause). Reference for academic + business context.'),
         SCIENTIFIC_PAPERS_NOTES.map(function(p, i) {
@@ -16021,8 +16770,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function forwardScenariosTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔮 Forward-Looking Scenarios'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔮 Forward-Looking Scenarios'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Six future scenarios for Maine aquaculture: mature industry (2030), adapted industry (2040), transformed industry (2050), plus decline scenario, innovation boom, and climate-driven transformation. Use for strategic planning + community discussion.'),
         FORWARD_LOOKING_SCENARIOS.map(function(s, i) {
@@ -16095,8 +16844,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function communityBenefitTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🤝 Community Benefit Agreements'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🤝 Community Benefit Agreements'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Eight components of Community Benefit Agreements for Maine aquaculture. Local hiring, indigenous participation, working waterfront protection, community funds, environmental stewardship, worker welfare, transparency, indigenous knowledge. These often determine whether projects succeed or fail.'),
         COMMUNITY_BENEFIT_AGREEMENTS.map(function(c, i) {
@@ -16205,8 +16954,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function startupGuideDetailedTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🚀 Aquaculture Startup Guide — 7 Phases'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🚀 Aquaculture Startup Guide — 7 Phases'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Seven-phase guide for starting a Maine aquaculture operation. From self-education through scale-up. Each phase with key activities, budget estimate, and common pitfalls. Realistic timeline: 5-7 years from "I\'m thinking about it" to "established operation."'),
         STARTUP_GUIDE_DETAILED.map(function(p, i) {
@@ -16266,8 +17015,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function finalReflectionsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '💭 Final Reflections'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '💭 Final Reflections'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Seven reflections on Maine aquaculture: the renaissance, climate, equity, working waterfront, education, branding, community engagement. These themes thread through every operational + policy decision. Use for strategic discussion + reflection.'),
         FINAL_REFLECTIONS.map(function(r, i) {
@@ -16332,8 +17081,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function expandedTimelineTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📜 Maine Aquaculture Extended Timeline (1600 BCE - 2026)'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📜 Maine Aquaculture Extended Timeline (1600 BCE - 2026)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Forty-seven historic events shaping Maine aquaculture, from Wabanaki shellfish management through modern industry. Use as reference for context + lineage.'),
         EXPANDED_TIMELINE.map(function(t, i) {
@@ -16463,8 +17212,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function essentialOperationsGuideTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '⭐ Essential Operations Guide — 8 Key Areas'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '⭐ Essential Operations Guide — 8 Key Areas'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Eight key operational areas every aquaculture business must master. Site selection, stock tracking, cold chain, customer relationships, financial discipline, community engagement, worker safety, equipment maintenance. Each with detailed steps + common mistakes.'),
         ESSENTIAL_OPERATIONS_GUIDE.map(function(o, i) {
@@ -16546,8 +17295,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function completeBuyerGuideTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🛒 Buyer Channel Guide — 8 Customer Types'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🛒 Buyer Channel Guide — 8 Customer Types'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Eight buyer channels for Maine aquaculture products. Fine dining, mid-tier restaurant, premium retail, D2C, farmers market, wholesale distributor, international export, school + hospital. Different volumes, margins, relationship models, requirements.'),
         COMPLETE_BUYER_GUIDE.map(function(b, i) {
@@ -16702,8 +17451,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function scienceConnectionsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🎓 Aquaculture Science Connections by Discipline'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🎓 Aquaculture Science Connections by Discipline'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten academic disciplines with their aquaculture connections. Use to design integrated curriculum or to identify which subjects bring aquaculture context. Aquaculture is rich integrated STEM + Social Studies content.'),
         SCIENCE_CONNECTIONS_BY_DISCIPLINE.map(function(d, i) {
@@ -16766,8 +17515,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function finalCallToActionTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌟 Call to Action — 8 Stakeholder Audiences'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌟 Call to Action — 8 Stakeholder Audiences'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Eight calls to action for different stakeholders in Maine aquaculture: student, entrepreneur, educator, investor, community member, indigenous community, policymaker, restaurateur. Each has a clear next step + time frame.'),
         FINAL_CALL_TO_ACTION.map(function(a, i) {
@@ -16805,8 +17554,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function finalResourcesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔗 Complete Resources Directory'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔗 Complete Resources Directory'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twenty-two key resources for Maine aquaculture practitioners + learners. State + federal agencies, research institutions, industry organizations, commercial operators, certifications, news sources. Bookmark these for ongoing reference.'),
         FINAL_RESOURCES.map(function(r, i) {
@@ -16873,8 +17622,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function equipmentDeepInventoryTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📋 Equipment Deep Inventory (50 items)'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📋 Equipment Deep Inventory (50 items)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Fifty pieces of aquaculture equipment with specs, cost, and maintenance requirements. Use for inventory planning, CAPEX budgeting, replacement scheduling, and procurement.'),
         ['Mooring', 'Navigation', 'Identification', 'Grow-out', 'Hatchery + Wild Set', 'Hatchery', 'Hatchery + Nursery', 'Equipment', 'Vessel', 'Vessel Safety', 'Worker Safety', 'Vessel Communication', 'Vessel Navigation', 'Cold Chain', 'Cold Chain Audit', 'RAS', 'RAS Backup', 'Monitoring', 'Benthic Monitoring'].map(function(cat) {
@@ -17003,8 +17752,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function summaryPageTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📑 AquacultureLab Comprehensive Summary'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📑 AquacultureLab Comprehensive Summary'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten-section summary of Maine aquaculture: industry overview, key species, regulations, business models, operations, climate, community, workforce, distribution, and future outlook. Use as quick reference or executive briefing.'),
         SUMMARY_PAGE.map(function(s, i) {
@@ -17132,8 +17881,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function glossaryExtendedTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📒 Final Glossary Extension (108 More Terms)'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📒 Final Glossary Extension (108 More Terms)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'One hundred eight more glossary terms — combined with prior glossaries gives ~300 terms. Comprehensive vocabulary for aquaculture practice + literature.'),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 6 } },
@@ -17177,8 +17926,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function bibliographyComprehensiveTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📚 Comprehensive Bibliography'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📚 Comprehensive Bibliography'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twenty-seven foundational books + manuals + reports for Maine aquaculture practitioners + students. Mix of technical (Timmons + Ebeling RAS), cultural (Kurlansky\'s Cod), and Maine-specific (DMR Atlas, Lobster Coast).'),
         BIBLIOGRAPHY_COMPREHENSIVE.map(function(b, i) {
@@ -17255,8 +18004,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function keyTakeawaysDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🎯 Twelve Key Takeaways'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🎯 Twelve Key Takeaways'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Twelve key takeaways synthesized from the entire AquacultureLab content. Use these as executive summary points, strategic framing, or starting points for further exploration.'),
         KEY_TAKEAWAYS_DEEP.map(function(t, i) {
@@ -17433,8 +18182,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function cheatSheetsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📝 Operational Cheat Sheets'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📝 Operational Cheat Sheets'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten quick-reference cheat sheets for common operational areas. Print + post at relevant work stations. Review periodically with staff.'),
         CHEAT_SHEETS.map(function(c, i) {
@@ -17481,8 +18230,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function closingNotesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌟 Closing Notes'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌟 Closing Notes'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Eight closing notes covering how to use this tool, sources + acknowledgements, limitations, contributing + feedback, AlloFlow connections, audience guidance, and future versions.'),
         CLOSING_NOTES.map(function(n, i) {
@@ -17528,8 +18277,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function comprehensiveFaqFinalTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '❓ Comprehensive FAQ — 30 Questions'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '❓ Comprehensive FAQ — 30 Questions'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Thirty frequently asked questions about Maine aquaculture, from "how do I start" through "what\'s the future of the industry." Use as quick reference for newcomers + as starting point for deeper exploration.'),
         COMPREHENSIVE_FAQ_FINAL.map(function(faq, i) {
@@ -17593,8 +18342,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function keyInsightsFinalTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '💡 Ten Key Insights'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '💡 Ten Key Insights'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten key insights synthesized from comprehensive Maine aquaculture analysis. Each with evidence + implications. Use as strategic framing for industry, policy, and personal decisions.'),
         KEY_INSIGHTS_FINAL.map(function(insight, i) {
@@ -17619,8 +18368,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function globalTraditionsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌍 Aquaculture Traditions — Global Heritage'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌍 Aquaculture Traditions — Global Heritage'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten global aquaculture traditions, from Chinese carp farming (4000+ years) to Maine\'s contemporary aquaculture renaissance. Each tradition contributes to modern industry knowledge + practice.'),
         AQUACULTURE_TRADITIONS_GLOBAL.map(function(t, i) {
@@ -17675,8 +18424,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function thankYouNotesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🙏 Thank You Notes'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🙏 Thank You Notes'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten thank-you notes to the people + communities who make Maine aquaculture possible. From farmers + researchers to indigenous nations + regulators to coastal communities + chefs to students + educators.'),
         THANK_YOU_NOTES.map(function(t, i) {
@@ -17734,8 +18483,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function expandedReflectionsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📖 Industry Reflections — 7 Chapters'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📖 Industry Reflections — 7 Chapters'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Seven chapters telling the story of Maine aquaculture from indigenous beginnings through the 2020s + into the future. Each chapter with narrative, key lessons, and modern connection.'),
         EXPANDED_INDUSTRY_REFLECTIONS.map(function(c, i) {
@@ -17848,8 +18597,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function completeGlossaryRound3Tab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📒 Final Glossary Round 3 (94 More Terms)'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📒 Final Glossary Round 3 (94 More Terms)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ninety-four more glossary terms. Combined with prior glossaries (52 + 42 + 118 + 108) gives ~400 terms total — comprehensive aquaculture vocabulary reference.'),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 6 } },
@@ -17924,8 +18673,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function futureIndustryTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔮 Future Industry Topics'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔮 Future Industry Topics'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten emerging topics shaping the next 10-20 years of Maine aquaculture. Offshore, AI, carbon credits, cellular, plant-based alternatives, climate-resilient breeding, regenerative standards, indigenous leadership, workforce pipeline, international exchange.'),
         FUTURE_INDUSTRY_TOPICS.map(function(t, i) {
@@ -17991,8 +18740,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function scenarioPlanningTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🎯 Scenario Planning — 8 Futures'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🎯 Scenario Planning — 8 Futures'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Eight scenario plans for Maine aquaculture\'s future. Best case, worst case, middle case, disruption, climate acceleration, indigenous leadership, global crisis, convergence. Use for strategic planning + risk assessment.'),
         SCENARIO_PLANNING_DEEP.map(function(s, i) {
@@ -18066,8 +18815,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function equityDeepDiveTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '⚖️ Equity Deep Dive — 8 Dimensions'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '⚖️ Equity Deep Dive — 8 Dimensions'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Eight dimensions of equity in Maine aquaculture: capital, permits, knowledge, workforce, indigenous, geographic, income, education. Each with current state, gaps, solutions, and success examples.'),
         EQUITY_DEEP_DIVE.map(function(e, i) {
@@ -18124,8 +18873,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function grandFinaleTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌅 Grand Finale — Reflections + Invitations'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌅 Grand Finale — Reflections + Invitations'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Eight reflections + invitations to close this comprehensive AquacultureLab. Each section invites engagement + action.'),
         GRAND_FINALE_REFLECTION.map(function(g, i) {
@@ -18158,8 +18907,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function statsDashboardTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📊 AquacultureLab Stats Dashboard'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📊 AquacultureLab Stats Dashboard'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Eighteen quick statistics summarizing the scope of this comprehensive AquacultureLab tool and Maine aquaculture industry.'),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
@@ -18227,8 +18976,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function appendixDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📚 Appendices — Specialized Topics'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📚 Appendices — Specialized Topics'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten appendices covering specialized topics: NSSP sampling, Vibrio control, sustainable feed, trade, insurance, cooperatives, research, permitting consultants, international comparison, K-12 curriculum. Reference for advanced topics.'),
         APPENDIX_DEEP.map(function(a, i) {
@@ -18283,8 +19032,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function signOffTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '✉️ Sign-Off Notes'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '✉️ Sign-Off Notes'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ten closing notes. Read them as you would letters to a friend continuing a long conversation.'),
         SIGN_OFF_NOTES.map(function(s, i) {
@@ -18441,8 +19190,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function ultimateOperationalRefTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🎯 Ultimate Operational Reference'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🎯 Ultimate Operational Reference'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Four comprehensive operational reference checklists: 60-point site assessment, pre-operation compliance, daily operational excellence, emergency response. Print + post at work stations.'),
         ULTIMATE_OPERATIONAL_REFERENCE.map(function(c, i) {
@@ -18492,8 +19241,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function completeIndustryOutlookTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔭 Complete Industry Outlook'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔭 Complete Industry Outlook'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Seven comprehensive outlook sections covering 2026 snapshot, climate adaptation, workforce, regulatory + community, financial health, technology + innovation, and 2030-2040 trajectory.'),
         COMPLETE_INDUSTRY_OUTLOOK.map(function(o, i) {
@@ -18540,8 +19289,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function finalThanksTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🙏 Final Thanks + Credits'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🙏 Final Thanks + Credits'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Thirty-two thanks + credits to the people + organizations + community + ecosystem that make Maine aquaculture possible.'),
         h('ul', { style: { margin: '0 0 0 20px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.8 } },
@@ -18704,8 +19453,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function ultimateGlossaryFinalTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📚 Ultimate Final Glossary (140+ More Terms)'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📚 Ultimate Final Glossary (140+ More Terms)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'One hundred forty more glossary terms. Combined with prior glossaries (52 + 42 + 118 + 108 + 94) gives 550+ terms total — truly comprehensive aquaculture vocabulary reference.'),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 6 } },
@@ -18871,8 +19620,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function finalGlossaryCrossingTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📚 Final Crossing Glossary (140 More Terms)'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📚 Final Crossing Glossary (140 More Terms)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'One hundred forty more glossary terms (F-L). Combined with all prior glossaries, AquacultureLab now contains 700+ defined aquaculture terms — likely the most comprehensive single-source aquaculture vocabulary reference.'),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 6 } },
@@ -18887,8 +19636,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     function milestoneTab() {
       return h('div', null,
-        h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, '🏆 AquacultureLab 20K+ Lines Milestone'),
+        h('div', { className: 'aq-content-card', style: cardStyle },
+          h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏆 AquacultureLab 20K+ Lines Milestone'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 10, lineHeight: 1.6 } },
             'AquacultureLab now contains 20,000+ lines of comprehensive content covering Maine + global aquaculture across 200+ topical tabs.'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 10, lineHeight: 1.6 } },
@@ -18900,8 +19649,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     }
 
     function glossaryTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📖 Glossary'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📖 Glossary'),
         GLOSSARY.map(function(g, i) {
           return h('div', { key: i, style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 6 } },
             h('div', { style: { fontSize: 12, fontWeight: 800, color: '#5eead4', marginBottom: 2 } }, g.term),
@@ -18909,64 +19658,141 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         })));
     }
 
-    var quizStateHook = useState({ idx: 0, answers: {}, finished: false, score: 0 });
+    var QUIZ_CHECKPOINTS = [
+      { id: 'checkpoint-1', title: 'Aquaculture Foundations', detail: 'Core concepts, Maine context, and essential vocabulary.', start: 0, tone: '#5eead4' },
+      { id: 'checkpoint-2', title: 'Species & Hatchery', detail: 'Biology, seed, grow-out methods, and organism needs.', start: 10, tone: '#86efac' },
+      { id: 'checkpoint-3', title: 'Water & Environment', detail: 'Water chemistry, monitoring, climate, and ecosystem effects.', start: 20, tone: '#67e8f9' },
+      { id: 'checkpoint-4', title: 'Farm Operations', detail: 'Gear, harvest, food safety, and daily decisions.', start: 30, tone: '#fbbf24' },
+      { id: 'checkpoint-5', title: 'Boating & Safety', detail: 'Navigation, buoyage, weather, and vessel practice.', start: 40, tone: '#fb923c' },
+      { id: 'checkpoint-6', title: 'Business & Regulation', detail: 'Leases, hearings, economics, markets, and compliance.', start: 50, tone: '#c4b5fd' },
+      { id: 'checkpoint-7', title: 'Careers & Systems', detail: 'Workforce, communities, global systems, and future pathways.', start: 60, tone: '#f9a8d4' }
+    ];
+    var quizStateHook = useState({ checkpointId: null, idx: 0, answers: {}, finished: false, score: 0 });
     var quizState = quizStateHook[0], setQuizState = quizStateHook[1];
 
-    function quizTab() {
-      if (quizState.finished) {
-        return h('div', null, h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, '✅ Quiz Results'),
-          h('div', { style: { fontSize: 28, fontWeight: 900, color: '#5eead4', marginBottom: 8 } },
-            quizState.score + ' / ' + QUIZ_QUESTIONS.length),
-          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
-            quizState.score >= QUIZ_QUESTIONS.length * 0.85 ? '🏆 Mastery — ready for your own lease.' :
-            quizState.score >= QUIZ_QUESTIONS.length * 0.7 ? '✓ Solid — review missed items + retry.' :
-            '⚠ Keep studying — review Species, Water Quality, Lease tabs.'),
-          h('div', { style: { marginTop: 10 } },
-            QUIZ_QUESTIONS.map(function(q, qi) {
-              var picked = quizState.answers[qi];
-              var correct = picked === q.correct;
-              return h('div', { key: qi, style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 6, borderLeft: '3px solid ' + (correct ? '#86efac' : '#fb923c') } },
-                h('div', { style: { fontSize: 11, fontWeight: 700, color: correct ? '#86efac' : '#fb923c', marginBottom: 4 } }, (correct ? '✓ ' : '✕ ') + 'Q' + (qi + 1) + ': ' + q.q),
-                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Your answer: ' + (typeof picked === 'number' ? q.a[picked] : 'skipped')),
-                !correct ? h('div', { style: { fontSize: 11, color: '#86efac', marginTop: 2 } }, 'Correct: ' + q.a[q.correct]) : null,
-                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, q.explain));
-            })),
-          h('button', { className: 'aq-btn', onClick: function() { setQuizState({ idx: 0, answers: {}, finished: false, score: 0 }); },
-            style: { marginTop: 14, padding: '10px 20px', background: '#14b8a6', color: '#04141f', border: 'none', borderRadius: 8, fontWeight: 800, cursor: 'pointer' } }, 'Retake quiz')));
-      }
-      var q = QUIZ_QUESTIONS[quizState.idx];
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '✅ AquacultureLab Quiz — Q' + (quizState.idx + 1) + ' of ' + QUIZ_QUESTIONS.length),
-        h('p', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 12 } }, q.q),
-        q.a.map(function(opt, oi) {
-          return h('button', { key: oi, className: 'aq-btn',
-            onClick: function() {
-              var newAnswers = Object.assign({}, quizState.answers);
-              newAnswers[quizState.idx] = oi;
-              var nextIdx = quizState.idx + 1;
-              if (nextIdx >= QUIZ_QUESTIONS.length) {
-                var sc = 0;
-                for (var qq = 0; qq < QUIZ_QUESTIONS.length; qq++) {
-                  if (newAnswers[qq] === QUIZ_QUESTIONS[qq].correct) sc++;
-                }
-                setQuizState({ idx: nextIdx, answers: newAnswers, finished: true, score: sc });
-                aqAnnounce('Quiz complete. Score ' + sc + ' of ' + QUIZ_QUESTIONS.length);
-              } else {
-                setQuizState({ idx: nextIdx, answers: newAnswers, finished: false, score: 0 });
-              }
-            },
-            style: { display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 6,
-              background: 'rgba(15,23,42,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid rgba(20,184,166,0.3)',
-              borderRadius: 8, fontSize: 12, cursor: 'pointer' } },
-            String.fromCharCode(65 + oi) + '. ' + opt);
-        })));
+    function startQuizCheckpoint(checkpointId) {
+      if (!QUIZ_CHECKPOINTS.some(function(checkpoint) { return checkpoint.id === checkpointId; })) return;
+      setQuizState({ checkpointId: checkpointId, idx: 0, answers: {}, finished: false, score: 0 });
+      aqAnnounce('Quiz checkpoint started.');
     }
 
-    // ─── SITE SELECTION tab
+    function quizTab() {
+      var checkpoint = QUIZ_CHECKPOINTS.find(function(item) { return item.id === quizState.checkpointId; });
+      if (!checkpoint) {
+        var completedCheckpointCount = QUIZ_CHECKPOINTS.filter(function(item) { return !!quizCheckpointResults[item.id]; }).length;
+        return h('div', null,
+          h('div', { className: 'aq-content-card', style: cardStyle },
+            h('div', { className: 'aq-section-kicker', style: headerStyle }, 'Knowledge checkpoints'),
+            h('p', { style: { margin: '0 0 8px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } },
+              'The full review is divided into seven focused checkpoints of ten questions each. Choose any checkpoint, move backward, skip when unsure, and review explanations at the end.'),
+            h('div', { style: { color: '#99f6e4', fontSize: 11.5, fontWeight: 850 } },
+              completedCheckpointCount + ' of ' + QUIZ_CHECKPOINTS.length + ' checkpoints attempted')),
+          h('div', { className: 'aq-checkpoint-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+            QUIZ_CHECKPOINTS.map(function(item, index) {
+              var result = quizCheckpointResults[item.id];
+              return h('article', { key: item.id, className: 'aq-checkpoint-card', style: {
+                display: 'flex', flexDirection: 'column', minHeight: 180, padding: 12, borderRadius: 12,
+                background: '#061a18', border: '1px solid #416c67', borderTop: '4px solid ' + item.tone
+              } },
+                h('div', { style: { color: item.tone, fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em' } },
+                  'Checkpoint ' + (index + 1)),
+                h('h2', { style: { margin: '5px 0 6px', color: '#f8fafc', fontSize: 16, lineHeight: 1.25 } }, item.title),
+                h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5 } }, item.detail),
+                result ? h('div', { style: { marginBottom: 9, color: '#d1fae5', fontSize: 11.5, fontWeight: 850 } },
+                  'Best: ' + result.bestScore + '/' + result.total + ' · Latest: ' + result.latestScore + '/' + result.total) :
+                  h('div', { style: { marginBottom: 9, color: '#bfdbfe', fontSize: 11.5, fontWeight: 750 } }, 'Not attempted yet'),
+                h('button', { type: 'button', className: 'aq-btn', onClick: function() { startQuizCheckpoint(item.id); },
+                  style: { minHeight: 44, marginTop: 'auto', padding: '9px 11px', borderRadius: 8, cursor: 'pointer',
+                    background: item.tone, color: '#032522', border: '1px solid #f8fafc', fontSize: 12, fontWeight: 900 } },
+                  result ? 'Retake checkpoint' : 'Start checkpoint'));
+            })));
+      }
+
+      var checkpointQuestions = QUIZ_QUESTIONS.slice(checkpoint.start, checkpoint.start + 10);
+      if (quizState.finished) {
+        return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+          h('div', { className: 'aq-section-kicker', style: headerStyle }, checkpoint.title + ' results'),
+          h('div', { style: { fontSize: 28, fontWeight: 900, color: checkpoint.tone, marginBottom: 8 } },
+            quizState.score + ' / ' + checkpointQuestions.length),
+          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
+            quizState.score >= 9 ? 'Strong evidence. Explain one answer to someone else to reinforce it.' :
+            quizState.score >= 7 ? 'Solid foundation. Review the explanations below and retry when ready.' :
+            'Use the explanations as a study guide, revisit related lessons, and try again.'),
+          h('div', { style: { marginTop: 10 } },
+            checkpointQuestions.map(function(question, questionIndex) {
+              var picked = quizState.answers[questionIndex];
+              var correct = picked === question.correct;
+              return h('div', { key: questionIndex, style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 6, borderLeft: '3px solid ' + (correct ? '#86efac' : '#fb923c') } },
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: correct ? '#86efac' : '#fb923c', marginBottom: 4 } },
+                  (correct ? '✓ ' : '✕ ') + 'Q' + (questionIndex + 1) + ': ' + question.q),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
+                  'Your answer: ' + (typeof picked === 'number' ? question.a[picked] : 'skipped')),
+                !correct ? h('div', { style: { fontSize: 11, color: '#86efac', marginTop: 2 } }, 'Correct: ' + question.a[question.correct]) : null,
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, question.explain));
+            })),
+          h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 14 } },
+            h('button', { type: 'button', className: 'aq-btn', onClick: function() { startQuizCheckpoint(checkpoint.id); },
+              style: { minHeight: 44, padding: '9px 13px', background: checkpoint.tone, color: '#032522', border: '1px solid #f8fafc', borderRadius: 8, fontWeight: 900, cursor: 'pointer' } },
+              'Retake checkpoint'),
+            h('button', { type: 'button', className: 'aq-btn',
+              onClick: function() { setQuizState({ checkpointId: null, idx: 0, answers: {}, finished: false, score: 0 }); },
+              style: { minHeight: 44, padding: '9px 13px', background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', borderRadius: 8, fontWeight: 900, cursor: 'pointer' } },
+              'All checkpoints'))));
+      }
+
+      var q = checkpointQuestions[quizState.idx];
+      var selectedAnswer = quizState.answers[quizState.idx];
+      var isLastQuestion = quizState.idx === checkpointQuestions.length - 1;
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle },
+          checkpoint.title + ' · Question ' + (quizState.idx + 1) + ' of ' + checkpointQuestions.length),
+        h('div', { role: 'progressbar', 'aria-label': checkpoint.title + ' checkpoint progress', 'aria-valuemin': 1,
+          'aria-valuemax': checkpointQuestions.length, 'aria-valuenow': quizState.idx + 1,
+          style: { height: 8, marginBottom: 12, overflow: 'hidden', borderRadius: 999, background: '#173f3a', border: '1px solid #527a75' } },
+          h('div', { className: 'aq-progress-fill', style: { width: ((quizState.idx + 1) / checkpointQuestions.length * 100) + '%', height: '100%', background: checkpoint.tone } })),
+        h('p', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 12 } }, q.q),
+        q.a.map(function(option, optionIndex) {
+          var selected = selectedAnswer === optionIndex;
+          return h('button', { key: optionIndex, type: 'button', className: 'aq-btn aq-quiz-option', 'aria-pressed': selected,
+            onClick: function() {
+              setQuizState(function(previous) {
+                var nextAnswers = Object.assign({}, previous.answers);
+                nextAnswers[previous.idx] = optionIndex;
+                return Object.assign({}, previous, { answers: nextAnswers });
+              });
+            },
+            style: { display: 'block', width: '100%', minHeight: 44, textAlign: 'left', padding: '10px 14px', marginBottom: 6,
+              background: selected ? checkpoint.tone : 'rgba(15,23,42,0.7)', color: selected ? '#032522' : 'var(--allo-stem-text, #e2e8f0)',
+              border: '1px solid ' + (selected ? '#f8fafc' : 'rgba(20,184,166,0.3)'), borderRadius: 8, fontSize: 12, fontWeight: selected ? 850 : 650, cursor: 'pointer' } },
+            String.fromCharCode(65 + optionIndex) + '. ' + option);
+        }),
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginTop: 12 } },
+          h('button', { type: 'button', className: 'aq-btn', disabled: quizState.idx === 0,
+            onClick: function() { setQuizState(function(previous) { return Object.assign({}, previous, { idx: Math.max(0, previous.idx - 1) }); }); },
+            style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, opacity: quizState.idx === 0 ? 0.5 : 1,
+              cursor: quizState.idx === 0 ? 'not-allowed' : 'pointer', background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', fontWeight: 850 } },
+            '← Back'),
+          h('button', { type: 'button', className: 'aq-btn',
+            onClick: function() {
+              if (!isLastQuestion) {
+                setQuizState(function(previous) { return Object.assign({}, previous, { idx: previous.idx + 1 }); });
+                return;
+              }
+              var score = 0;
+              for (var questionIndex = 0; questionIndex < checkpointQuestions.length; questionIndex++) {
+                if (quizState.answers[questionIndex] === checkpointQuestions[questionIndex].correct) score++;
+              }
+              saveQuizCheckpointResult(checkpoint.id, score, checkpointQuestions.length);
+              setQuizState(function(previous) { return Object.assign({}, previous, { finished: true, score: score }); });
+              aqAnnounce('Checkpoint complete. Score ' + score + ' of ' + checkpointQuestions.length);
+            },
+            style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer',
+              background: checkpoint.tone, color: '#032522', border: '1px solid #f8fafc', fontWeight: 900 } },
+            isLastQuestion ? 'Finish checkpoint' : (typeof selectedAnswer === 'number' ? 'Next →' : 'Skip for now →')))));
+    }
     function siteTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📍 Site Selection — 12 Factors'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📍 Site Selection — 12 Factors'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Choosing the right lease site is the single biggest determinant of farm success. These 12 factors should be evaluated BEFORE submitting an application.'),
         SITE_SELECTION.map(function(s, i) {
@@ -18980,8 +19806,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── PUBLIC HEARING tab
     function hearingTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏛 Public Hearing — Navigating the Process'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏛 Public Hearing — Navigating the Process'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Public hearings can make or break a standard lease application. Preparation matters more than presentation.'),
         PUBLIC_HEARING.map(function(p, i) {
@@ -18993,8 +19819,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── HATCHERY tab
     function hatcheryTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🧫 Hatchery Operations Deep Dive'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🧫 Hatchery Operations Deep Dive'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'The hatchery is where the production cycle begins. Maine\'s industry depends on a handful of hatcheries.'),
         HATCHERY.map(function(hs, i) {
@@ -19007,8 +19833,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── DISEASE tab
     function diseaseTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🦠 Diseases + Pests'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🦠 Diseases + Pests'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Every aquaculture species faces specific disease + pest pressures. Understanding them is preventive management.'),
         DISEASES.map(function(d, i) {
@@ -19024,8 +19850,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── CLIMATE DEEP DIVE tab
     function climateTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌡 Climate Impacts — Deep Dive'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌡 Climate Impacts — Deep Dive'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine\'s coast is warming ~4× faster than the global ocean. Climate-adapted aquaculture is the only path forward.'),
         CLIMATE_DEEP.map(function(c, i) {
@@ -19039,8 +19865,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── HISTORY tab
     function historyTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📜 Maine Aquaculture History'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📜 Maine Aquaculture History'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine\'s aquaculture industry is younger than its commercial fisheries — but builds on 12,000+ years of Indigenous shellfish stewardship.'),
         HISTORY.map(function(hh, i) {
@@ -19054,8 +19880,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── NSSP tab
     function nsspTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🛡 NSSP — Shellfish Sanitation'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🛡 NSSP — Shellfish Sanitation'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'National Shellfish Sanitation Program. Federal-state framework governing shellfish safety. Every aquaculture farm operates under NSSP.'),
         NSSP.map(function(n, i) {
@@ -19067,8 +19893,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── NERACOOS tab
     function neracoosTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📡 NERACOOS — Real-Time Ocean Data'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📡 NERACOOS — Real-Time Ocean Data'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Northeast Regional Association of Coastal Ocean Observing Systems. Free real-time buoy + sensor data Maine farmers depend on.'),
         NERACOOS.map(function(nn, i) {
@@ -19080,8 +19906,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── MOORING tab
     function mooringTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '⚓ Mooring + Gear Anchoring'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '⚓ Mooring + Gear Anchoring'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine winters + nor\'easters stress gear. Anchor system design is do-or-die.'),
         MOORING.map(function(m, i) {
@@ -19093,8 +19919,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── MARKETING tab
     function marketingTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '💰 Marketing + Direct-to-Consumer'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '💰 Marketing + Direct-to-Consumer'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Where you sell + how you tell your story can double your effective income vs commodity wholesale.'),
         MARKETING.map(function(mk, i) {
@@ -19106,8 +19932,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── KNOTS tab
     function knotsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🪢 Mariner Knots'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🪢 Mariner Knots'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Same knots a lobsterman needs, an aquaculture farmer needs. Mooring + dropper + gear lashing all rely on these 8.'),
         KNOTS.map(function(k, i) {
@@ -19120,8 +19946,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── WABANAKI tab
     function wabanakiTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🪶 Wabanaki Shellfish Heritage'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🪶 Wabanaki Shellfish Heritage'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine\'s shellfish industry rests on 12,000+ years of Wabanaki stewardship. Modern aquaculture interacts with ongoing tribal sovereignty issues.'),
         WABANAKI.map(function(w, i) {
@@ -19137,8 +19963,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var st = loadState();
       var unlocked = st.achievements || {};
       return h('div', null,
-        h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, '🏆 Achievements (' + Object.keys(unlocked).length + ' / ' + ACHIEVEMENTS.length + ')'),
+        h('div', { className: 'aq-content-card', style: cardStyle },
+          h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏆 Achievements (' + Object.keys(unlocked).length + ' / ' + ACHIEVEMENTS.length + ')'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
             'Unlock by playing missions, completing the quiz, reading curriculum modules.'),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 } },
@@ -19153,8 +19979,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── SAFETY tab
     function safetyTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🦺 Aquaculture Safety Equipment'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🦺 Aquaculture Safety Equipment'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Aquaculture means working from boats in cold water. Federal minimums + best-practice additions:'),
         SAFETY.map(function(s, i) {
@@ -19167,8 +19993,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── BOATS tab
     function boatsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🚤 Aquaculture Work Boats'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🚤 Aquaculture Work Boats'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'From small punts to custom mussel harvesters — Maine aquaculture uses a wide range of boats.'),
         BOATS.map(function(b, i) {
@@ -19184,8 +20010,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── BLUE CARBON tab
     function blueCarbonTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌳 Blue Carbon + Ecosystem Services'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌳 Blue Carbon + Ecosystem Services'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine aquaculture isn\'t just neutral environmental impact — it can provide real ecosystem services. Here\'s the science.'),
         BLUE_CARBON.map(function(b, i) {
@@ -19197,8 +20023,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── WATER COLUMN tab
     function waterColumnTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏛 Water Column Biology'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏛 Water Column Biology'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Where in the water column you grow determines what you can grow + how well.'),
         WATER_COLUMN_AQ.map(function(z, i) {
@@ -19211,8 +20037,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── WEATHER AQ tab
     function weatherAqTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌦 Aquaculture Weather Scenarios'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌦 Aquaculture Weather Scenarios'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Weather threats specific to aquaculture operations. Each requires a response playbook.'),
         WEATHER_AQ.map(function(w, i) {
@@ -19225,8 +20051,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── OPERATOR PROFILES tab
     function profilesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏢 Notable Maine Aquaculture Operators'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏢 Notable Maine Aquaculture Operators'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'The operators who built Maine\'s aquaculture industry. Their stories illustrate the diversity of approaches + lessons.'),
         OPERATOR_PROFILES.map(function(p, i) {
@@ -19241,8 +20067,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── LESSON PLANS tab
     function lessonPlansTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📓 Lesson Plans'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📓 Lesson Plans'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Ready-to-use templates aligned to Maine + EL Education + NGSS. Build on these for your context.'),
         LESSON_PLANS.map(function(lp, i) {
@@ -19262,8 +20088,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── BIBLIOGRAPHY tab
     function bibliographyTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📚 Bibliography'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📚 Bibliography'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'All claims in AquacultureLab trace to one of these sources.'),
         BIBLIOGRAPHY.map(function(b, i) {
@@ -19280,8 +20106,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── FARM CALENDAR tab
     function calendarTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📅 Annual Farm Calendar'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📅 Annual Farm Calendar'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'A month-by-month rhythm of Maine aquaculture work. Mussel + oyster + kelp seasons interlock.'),
         FARM_CALENDAR.map(function(m, i) {
@@ -19296,8 +20122,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── IMTA tab
     function imtaTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔄 IMTA — Integrated Multi-Trophic Aquaculture'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔄 IMTA — Integrated Multi-Trophic Aquaculture'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Combining species so waste of one feeds another. Maine has active IMTA research + small-scale trials.'),
         IMTA.map(function(i, idx) {
@@ -19311,8 +20137,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── FOOD SAFETY tab
     function foodSafetyTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🦠 Aquaculture Food Safety'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🦠 Aquaculture Food Safety'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Shellfish food safety is rigorously regulated. Understanding the framework is essential business knowledge.'),
         FOOD_SAFETY.map(function(f, i) {
@@ -19326,8 +20152,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── COOPERATIVES tab
     function coopsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🤝 Cooperative + Industry Models'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🤝 Cooperative + Industry Models'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine has a rich tradition of cooperative + collaborative business models. New aquaculture cooperatives are emerging.'),
         COOPERATIVES.map(function(c, i) {
@@ -19340,8 +20166,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── BUSINESS PLAN tab
     function businessPlanTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📝 Aquaculture Business Plan Template'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📝 Aquaculture Business Plan Template'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'A complete business plan covers all the dimensions of an aquaculture operation. Use this as a checklist.'),
         BUSINESS_PLAN.map(function(b, i) {
@@ -19353,8 +20179,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── GLOBAL CONTEXT tab
     function globalTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌍 Maine Aquaculture in Global Context'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌍 Maine Aquaculture in Global Context'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'How does Maine fit into the world aquaculture picture? Small scale, but distinctive niche.'),
         GLOBAL_CONTEXT.map(function(g, i) {
@@ -19367,8 +20193,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── AGENCIES tab
     function agenciesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏛 Regulatory Agencies'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏛 Regulatory Agencies'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine aquaculture intersects with many regulators. Knowing who does what is essential.'),
         REGULATORY.map(function(r, i) {
@@ -19382,8 +20208,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── CARBON DETAIL tab
     function carbonTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📊 Carbon Accounting — Honest Detail'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📊 Carbon Accounting — Honest Detail'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'The science behind aquaculture\'s climate claims. Most are positive but honesty matters more than marketing.'),
         CARBON_DETAIL.map(function(c, i) {
@@ -19397,8 +20223,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── CAREER PROFILES tab
     function careerProfilesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '👤 Aquaculture Career Profiles'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '👤 Aquaculture Career Profiles'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Detailed "day in the life" profiles of real Maine aquaculture roles. Composite portraits.'),
         CAREER_PROFILES.map(function(p, i) {
@@ -19415,8 +20241,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── STUDY GUIDE tab
     function studyGuideTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🎓 Comprehensive Study Guide'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🎓 Comprehensive Study Guide'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Unit-by-unit study guide with essential questions + key concepts + suggested assessments.'),
         STUDY_GUIDE.map(function(u, i) {
@@ -19432,8 +20258,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── FAILURE MODES tab
     function failuresTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '⚠️ Top 10 Aquaculture Failure Modes — What Kills Farms'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '⚠️ Top 10 Aquaculture Failure Modes — What Kills Farms'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Honest look at how Maine aquaculture operations fail. Each mode includes mitigation. Knowing what kills farms is part of knowing how to build resilient ones.'),
         FAILURE_MODES.map(function(f, i) {
@@ -19445,8 +20271,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── AQ METRICS tab
     function aqMetricsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📊 Maine Aquaculture — Key Metrics At-A-Glance'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📊 Maine Aquaculture — Key Metrics At-A-Glance'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Headline numbers for understanding Maine\'s aquaculture industry scale + trends. Values approximate + drawn from DMR, Maine Aquaculture Association, Sea Grant, NOAA, and university sources.'),
         AQ_KEY_METRICS.map(function(m, i) {
@@ -19460,8 +20286,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── AQ TIMELINE tab
     function aqTimelineTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📅 Maine Aquaculture Timeline — 13,000 Years to Today'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📅 Maine Aquaculture Timeline — 13,000 Years to Today'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine\'s aquaculture history reaches deep — from Wabanaki shellfish stewardship through colonial extraction, 20th-century industrialization, late-1900s commercial aquaculture emergence, and 21st-century climate-driven transformation.'),
         AQ_TIMELINE.map(function(t, i) {
@@ -19473,8 +20299,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── STUDENT FAQ tab
     function studentFaqAqTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '❓ Student FAQ — Common Questions About Aquaculture'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '❓ Student FAQ — Common Questions About Aquaculture'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Real questions middle-schoolers ask about shellfish farming + kelp + careers in Maine aquaculture. Plain-language answers.'),
         STUDENT_FAQ_AQ.map(function(f, i) {
@@ -19486,8 +20312,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── HATCHERY DEEP DIVE tab
     function hatcheryDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏭 Bivalve Hatchery Operations — Deep Dive'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏭 Bivalve Hatchery Operations — Deep Dive'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine aquaculture depends on hatcheries producing reliable seed. This module covers broodstock selection, spawning, larval rearing, algae culture, settlement, nursery, triploid production, disease management, climate-forward breeding, economics, and careers.'),
         HATCHERY_DEEP.map(function(d, i) {
@@ -19546,8 +20372,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── GROW CYCLES tab
     function growCyclesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔄 Composite 18-Month Grow-Season Cycles'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔄 Composite 18-Month Grow-Season Cycles'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Eight composite grow-season narratives walking through full Maine aquaculture cycles — site, gear, month-by-month decisions, real numbers. Composite = assembled from realistic operations, not a single farm.'),
         COMPOSITE_GROW_SEASONS.map(function(c, i) {
@@ -19566,8 +20392,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── KELP DEEP DIVE tab
     function kelpDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌿 Kelp Aquaculture — Deep Dive'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌿 Kelp Aquaculture — Deep Dive'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Kelp is Maine\'s fastest-growing aquaculture sector + most climate-positive. Sugar kelp (Saccharina latissima) dominates; winged kelp (Alaria) is a specialty. This module covers biology, hatchery, climate co-benefits, polyculture, buyers, regulations, and economics.'),
         KELP_DEEP.map(function(k, i) {
@@ -19609,8 +20435,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── AQUACULTURE FAMILIES tab
     function aquaFamiliesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '👨‍👩‍👧 Maine Aquaculture Family Profiles'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '👨‍👩‍👧 Maine Aquaculture Family Profiles'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Composite profiles representing Maine aquaculture operators + families. Diverse experiences + paths.'),
         AQUA_FAMILIES.map(function(f, i) {
@@ -19624,8 +20450,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── STUDENT CAREER tab
     function studCareerTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🎓 Aquaculture Student Career Decision Guide'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🎓 Aquaculture Student Career Decision Guide'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Questions to help students decide if aquaculture is their path + how to pursue it.'),
         STUDENT_CAREER.map(function(s, i) {
@@ -19640,8 +20466,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── COOPERATIVE DEEP tab
     function coopDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🤝 Cooperative Models in Maine Aquaculture'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🤝 Cooperative Models in Maine Aquaculture'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Cooperative + partnership models building Maine aquaculture industry.'),
         COOP_DEEP.map(function(c, i) {
@@ -19654,8 +20480,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── WATERFRONT DEEP tab
     function waterfrontDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '⚓ Maine Working Waterfront — Deep Case Study'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '⚓ Maine Working Waterfront — Deep Case Study'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Industry-essential infrastructure + ongoing preservation efforts.'),
         WATERFRONT_DEEP.map(function(w, i) {
@@ -19668,8 +20494,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── HEARING DEEP tab
     function hearingDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏛 Aquaculture Public Hearing — Deep Case Study'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏛 Aquaculture Public Hearing — Deep Case Study'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Navigating Maine\'s public hearing process for standard + experimental aquaculture leases.'),
         HEARING_DEEP.map(function(h_, i) {
@@ -19682,8 +20508,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── FAMILY OPERATIONS tab
     function familyDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '👨‍👩‍👧 Aquaculture Family Operations'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '👨‍👩‍👧 Aquaculture Family Operations'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Family + multi-generation aquaculture in Maine.'),
         FAMILY_OPERATIONS.map(function(f, i) {
@@ -19696,8 +20522,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── SCALLOP + URCHIN DEEP tab
     function scallopDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🐚 Scallop + Urchin + Niche Species — Deep Case Study'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🐚 Scallop + Urchin + Niche Species — Deep Case Study'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Emerging niche aquaculture species in Maine.'),
         SCALLOP_URCHIN.map(function(s, i) {
@@ -19710,8 +20536,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── RAS DEEP tab
     function rasDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏭 Land-Based RAS — Future of Maine Finfish Aquaculture'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏭 Land-Based RAS — Future of Maine Finfish Aquaculture'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Climate-resilient + biosecure alternative to sea cages. Whole Oceans Bucksport is leading Maine.'),
         RAS_DEEP.map(function(r, i) {
@@ -19724,8 +20550,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── TECHNICAL DEEP tab
     function techDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔬 Aquaculture Technical Details'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔬 Aquaculture Technical Details'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Technical details of Maine aquaculture operations. Foundation of skilled practice.'),
         TECHNICAL_DEEP.map(function(t, i) {
@@ -19738,8 +20564,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── KELP INDUSTRY DEEP tab
     function kelpIndustryTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌿 Maine Kelp Industry — Deep Case Study'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌿 Maine Kelp Industry — Deep Case Study'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Emerging climate-friendly Maine aquaculture industry.'),
         KELP_INDUSTRY.map(function(k, i) {
@@ -19752,8 +20578,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── SALMON INDUSTRY DEEP tab
     function salmonDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🐟 Maine Salmon Industry — Deep Case Study'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🐟 Maine Salmon Industry — Deep Case Study'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine salmon aquaculture transition: sea-cage to RAS; environmental + tribal considerations.'),
         SALMON_INDUSTRY.map(function(s, i) {
@@ -19766,8 +20592,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── OYSTER INDUSTRY DEEP tab
     function oysterDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🦪 Maine Oyster Industry — Deep Case Study'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🦪 Maine Oyster Industry — Deep Case Study'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'From extinct wild reefs to nationally-recognized premium aquaculture industry.'),
         OYSTER_INDUSTRY.map(function(o, i) {
@@ -19780,8 +20606,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── MUSSEL INDUSTRY DEEP tab
     function musselDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🪨 Maine Mussel Industry — Deep Case Study'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🪨 Maine Mussel Industry — Deep Case Study'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine mussel industry status + trajectory.'),
         MUSSEL_INDUSTRY.map(function(m, i) {
@@ -19794,8 +20620,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── ADVANCED ECONOMICS tab
     function advEconTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📈 Advanced Economics — Business Metrics'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📈 Advanced Economics — Business Metrics'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Detailed business metrics for Maine aquaculture operations.'),
         ADVANCED_ECONOMICS.map(function(e, i) {
@@ -19809,8 +20635,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── CERTIFICATIONS tab
     function certificationsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '✅ Sustainability Certifications + Standards'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '✅ Sustainability Certifications + Standards'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Certifications available to Maine aquaculture operators. Market access + retail premium.'),
         CERTIFICATIONS.map(function(c, i) {
@@ -19826,8 +20652,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── NOTABLE PEOPLE tab
     function notablePeopleTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '👤 Notable Maine Aquaculture People'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '👤 Notable Maine Aquaculture People'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'People shaping Maine aquaculture industry. Industry leaders, scientists, advocates, tribal coordinators.'),
         NOTABLE_PEOPLE.map(function(p, i) {
@@ -19842,8 +20668,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── GLOBAL PERSPECTIVES tab
     function globalPerspectivesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌍 Global Aquaculture Perspectives'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌍 Global Aquaculture Perspectives'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'How Maine compares to global aquaculture regions. Lessons from + comparison with other producers.'),
         GLOBAL_PERSPECTIVES.map(function(g, i) {
@@ -19857,8 +20683,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── TRIBAL INITIATIVES tab
     function tribalInitTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🪶 Tribal-Led Aquaculture Initiatives'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🪶 Tribal-Led Aquaculture Initiatives'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Wabanaki nation-led aquaculture + sea-run fish + cultural revitalization initiatives.'),
         TRIBAL_INITIATIVES.map(function(t, i) {
@@ -19872,8 +20698,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── INDUSTRY GROUPS tab
     function indGroupsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🤝 Maine Aquaculture Industry Groups + Associations'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🤝 Maine Aquaculture Industry Groups + Associations'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Trade groups, associations, agencies, NGOs supporting Maine aquaculture.'),
         INDUSTRY_GROUPS.map(function(g, i) {
@@ -19888,8 +20714,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── TERMINOLOGY ESSAYS tab
     function termEssaysTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📖 Aquaculture Term Essays'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📖 Aquaculture Term Essays'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Expanded explanations of common aquaculture terminology.'),
         TERMINOLOGY_ESSAYS.map(function(t, i) {
@@ -19901,8 +20727,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── GEAR MASTER LIST tab
     function gearMasterTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🧰 Comprehensive Aquaculture Gear + Equipment Master List'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🧰 Comprehensive Aquaculture Gear + Equipment Master List'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Every piece of gear for Maine aquaculture operations.'),
         GEAR_MASTER.map(function(g, i) {
@@ -19915,8 +20741,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── VOICES tab
     function voicesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🗣️ Voices from Maine Aquaculture'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🗣️ Voices from Maine Aquaculture'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Composite quotes representing Maine aquaculture operators, scientists, advocates, tribal voices.'),
         VOICES.map(function(v, i) {
@@ -19929,8 +20755,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── MENTORSHIP tab
     function mentorshipTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🎓 Aquaculture Mentorship Guide'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🎓 Aquaculture Mentorship Guide'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'How mentorship works in Maine aquaculture. For mentors + mentees.'),
         MENTORSHIP_GUIDE.map(function(m, i) {
@@ -19943,8 +20769,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── FUTURE OUTLOOK tab
     function futureTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔮 Aquaculture Future Outlook + Research Frontiers'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔮 Aquaculture Future Outlook + Research Frontiers'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Where Maine aquaculture is heading. Research + technology + climate + sovereignty + community.'),
         FUTURE_OUTLOOK.map(function(f, i) {
@@ -19957,8 +20783,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── ECONOMICS DEEP DIVE tab
     function econDeepTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📊 Economics Deep Dive'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📊 Economics Deep Dive'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Detailed economic metrics for Maine aquaculture industry. For business planning + advocacy.'),
         ECONOMICS_DEEP.map(function(e, i) {
@@ -19973,8 +20799,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── SAFETY MANUAL tab
     function safetyManTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🛟 Aquaculture Safety Manual'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🛟 Aquaculture Safety Manual'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Detailed safety topics for Maine aquaculture work. Cold water + heavy gear = preparation matters.'),
         SAFETY_MANUAL.map(function(s, i) {
@@ -19988,8 +20814,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── PLAYBOOKS tab
     function playbooksTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📕 Aquaculture Operational Playbooks'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📕 Aquaculture Operational Playbooks'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Detailed step-by-step walkthroughs of common Maine aquaculture operations.'),
         PLAYBOOKS.map(function(p, i) {
@@ -20003,8 +20829,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── BIBLIOGRAPHY EXT tab
     function bibExtTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📚 Extended Bibliography'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📚 Extended Bibliography'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Comprehensive reading list — books, papers, websites, organizations.'),
         BIBLIOGRAPHY_EXT.map(function(b, i) {
@@ -20021,8 +20847,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── REFERENCE NUMBERS tab
     function refNumbersTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔢 Key Maine Aquaculture Reference Numbers'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔢 Key Maine Aquaculture Reference Numbers'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Important quantitative facts. Memorize these for industry literacy.'),
         REFERENCE_NUMBERS.map(function(r, i) {
@@ -20036,8 +20862,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── NOTABLE EVENTS tab
     function eventsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📅 Notable Events in Maine Aquaculture History'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📅 Notable Events in Maine Aquaculture History'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Major events shaping Maine aquaculture industry.'),
         NOTABLE_EVENTS.map(function(e, i) {
@@ -20053,8 +20879,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── CULINARY tab
     function culinaryTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🍽 Culinary Uses of Maine Aquaculture'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🍽 Culinary Uses of Maine Aquaculture'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Where the farm meets the kitchen. Maine aquaculture products + culinary applications.'),
         CULINARY.map(function(c, i) {
@@ -20071,8 +20897,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── WORKFORCE PIPELINE tab
     function workforceTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🎓 Maine Aquaculture Workforce Pipeline'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🎓 Maine Aquaculture Workforce Pipeline'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Educational + career pipeline for Maine aquaculture industry.'),
         WORKFORCE_PIPELINE.map(function(s, i) {
@@ -20086,8 +20912,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── EMERGENCY tab
     function emergencyTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🚨 Aquaculture Emergency Procedures'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🚨 Aquaculture Emergency Procedures'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Standard response procedures for aquaculture emergencies. Practice + document.'),
         EMERGENCY_PROCEDURES.map(function(e, i) {
@@ -20101,8 +20927,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── REG FRAMEWORK tab
     function regFrameworkTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '⚖️ Aquaculture Regulatory Framework'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '⚖️ Aquaculture Regulatory Framework'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Federal + state + tribal laws shaping Maine aquaculture.'),
         REG_FRAMEWORK.map(function(r, i) {
@@ -20117,8 +20943,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── MAINTENANCE SCHEDULES tab
     function maintenanceTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔧 Equipment Maintenance Schedules'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔧 Equipment Maintenance Schedules'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Daily + weekly + monthly + annual maintenance for aquaculture equipment.'),
         MAINTENANCE_SCHEDULES.map(function(m, i) {
@@ -20134,8 +20960,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── PUBLIC FAQ tab
     function faqPubTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '❓ Public Frequently Asked Questions'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '❓ Public Frequently Asked Questions'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Common questions about Maine aquaculture from public + students + chefs.'),
         FAQ_PUBLIC.map(function(f, i) {
@@ -20147,8 +20973,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── TRAINING CHECKLIST tab
     function trainingTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📚 Comprehensive Training Checklist'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📚 Comprehensive Training Checklist'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           '10-module training program covering all aspects of Maine aquaculture operation.'),
         TRAINING_CHECKLIST.map(function(m, i) {
@@ -20164,8 +20990,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── STUDENT ACTIVITIES tab
     function activitiesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🎯 Student Hands-On Activities'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🎯 Student Hands-On Activities'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Practical hands-on activities for grades 6-12 + community education.'),
         STUDENT_ACTIVITIES.map(function(a, i) {
@@ -20182,8 +21008,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── COMMUNITY MODELS tab
     function communityTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🤝 Maine Community Governance Models'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🤝 Maine Community Governance Models'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'How Maine aquaculture communities organize + govern. Models of cooperation + sovereignty + partnership.'),
         COMMUNITY_MODELS.map(function(c, i) {
@@ -20199,8 +21025,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── SUCCESS STORIES tab
     function successTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🏆 Aquaculture Success Stories'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🏆 Aquaculture Success Stories'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine aquaculture restoration + industry-building stories. Proof that long-term investment works.'),
         SUCCESS_STORIES.map(function(s, i) {
@@ -20219,8 +21045,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       allEntries.sort(function(a, b) {
         return a.letter.charCodeAt(0) - b.letter.charCodeAt(0);
       });
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📒 Extended Aquaculture Glossary (A-S)'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📒 Extended Aquaculture Glossary (A-S)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Comprehensive alphabetical glossary. Continuation of main Glossary tab.'),
         allEntries.map(function(g, i) {
@@ -20233,8 +21059,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── FACTS tab
     function aqFactsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '💡 Key Maine Aquaculture Facts'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '💡 Key Maine Aquaculture Facts'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Surprising + important facts about Maine aquaculture — for quick reference + classroom discussion.'),
         AQ_FACTS.map(function(f, i) {
@@ -20247,8 +21073,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── PROCEDURES MANUAL tab
     function proceduresTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📝 Procedures Manual — Step-by-Step'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📝 Procedures Manual — Step-by-Step'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Detailed step-by-step procedures for core aquaculture operations. Use as checklist + training tool.'),
         PROCEDURES.map(function(p, i) {
@@ -20261,8 +21087,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── TEXTBOOK CHAPTERS tab
     function textbookTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📘 Aquaculture Textbook Chapters'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📘 Aquaculture Textbook Chapters'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Comprehensive multi-section chapters covering the full aquaculture curriculum. Suitable for high school + community college courses.'),
         TEXTBOOK_CHAPTERS.map(function(c, i) {
@@ -20277,8 +21103,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── EXTENDED ESSAYS tab
     function extEssaysTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📜 Extended Aquaculture Essays'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📜 Extended Aquaculture Essays'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Multi-paragraph essays on key aquaculture topics. Deep pedagogical content for educators + advanced learners.'),
         EXTENDED_ESSAYS.map(function(e, i) {
@@ -20291,8 +21117,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── HATCHERY WORKFLOW tab
     function hatchWfTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🧪 Hatchery Workflow — Stage by Stage'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🧪 Hatchery Workflow — Stage by Stage'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'A working hatchery is a 10-stage cycle from broodstock to grower-ready spat. Each stage has its own challenges.'),
         HATCHERY_WORKFLOW.map(function(s, i) {
@@ -20306,8 +21132,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── EQUIPMENT tab
     function equipmentTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔧 Aquaculture Equipment — Detail'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔧 Aquaculture Equipment — Detail'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Equipment used in Maine aquaculture, with costs + lifespan + maintenance.'),
         EQUIPMENT_DETAIL.map(function(e, i) {
@@ -20322,8 +21148,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── DAILY OPS tab
     function dailyOpsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📋 Daily Operations Log Templates'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📋 Daily Operations Log Templates'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'What does a working farm day look like? Routine + meticulous.'),
         DAILY_OPS.map(function(d, i) {
@@ -20336,8 +21162,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── FAQ tab
     function faqTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '❓ Common Questions from Public + Chefs'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '❓ Common Questions from Public + Chefs'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Questions you\'ll get asked. Memorize answers.'),
         FAQ.map(function(f, i) {
@@ -20349,8 +21175,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── SEASONAL TASKS tab
     function seasonalTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🌗 Seasonal Tasks by Species'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🌗 Seasonal Tasks by Species'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Each species has its own seasonal rhythm. Below: what to do when by species.'),
         SEASONAL_TASKS.map(function(s, i) {
@@ -20365,8 +21191,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── MISTAKES tab
     function mistakesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '⚠️ Common First-Year Mistakes (+ How to Avoid)'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '⚠️ Common First-Year Mistakes (+ How to Avoid)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Learn from others\' mistakes. Most are preventable.'),
         COMMON_MISTAKES.map(function(m, i) {
@@ -20379,8 +21205,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── COLD CHAIN tab
     function coldChainTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '❄️ Cold Chain + Logistics'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '❄️ Cold Chain + Logistics'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Shellfish are perishable + temperature-sensitive. Every stage of post-harvest matters.'),
         COLD_CHAIN.map(function(c, i) {
@@ -20395,8 +21221,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── CHEFS tab
     function chefsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '👨‍🍳 Restaurant + Chef Partnerships'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '👨‍🍳 Restaurant + Chef Partnerships'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'How to build profitable restaurant relationships. The story of farm-to-table starts with relationships.'),
         RESTAURANT_PARTNERSHIPS.map(function(p, i) {
@@ -20409,8 +21235,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── CARBON MATH tab
     function carbonMathTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🧮 Carbon Math — Worked Examples'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🧮 Carbon Math — Worked Examples'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Quantitative examples of aquaculture\'s climate + economic impact. Math made concrete.'),
         CARBON_EXAMPLES.map(function(c, i) {
@@ -20424,8 +21250,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── EXTRA LESSON PLANS tab
     function extraLpTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📚 More Lesson Plans (K-12)'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📚 More Lesson Plans (K-12)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Additional lesson plan templates across grades + topics.'),
         EXTRA_LESSON_PLANS.map(function(lp, i) {
@@ -20445,8 +21271,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── NEWS tab
     function newsTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📰 Current Events + Live Topics'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📰 Current Events + Live Topics'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Hot topics in Maine aquaculture. Discussion-starters + research-paper topics.'),
         CURRENT_EVENTS.map(function(c, i) {
@@ -20459,8 +21285,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── HATCHERY GEAR tab
     function hatcheryGearTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🧪 Hatchery Equipment + Costs'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🧪 Hatchery Equipment + Costs'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'A working hatchery is capital-intensive. Below are typical equipment + costs.'),
         HATCHERY_GEAR.map(function(g, i) {
@@ -20474,8 +21300,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── NSSP RULES DETAIL tab
     function nsspRulesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📋 NSSP Rules — Detailed'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📋 NSSP Rules — Detailed'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'National Shellfish Sanitation Program rules in working detail. Every commercial harvest operates under these.'),
         NSSP_RULES.map(function(r, i) {
@@ -20488,8 +21314,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── PERMIT WORKFLOW tab
     function permitWfTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🪪 LPA Permit Workflow — Step by Step'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🪪 LPA Permit Workflow — Step by Step'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'The complete workflow for an LPA (Limited Purpose Aquaculture) lease application. Standard leases follow similar steps + add public hearing.'),
         PERMIT_WORKFLOW.map(function(p, i) {
@@ -20503,8 +21329,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── REGS DETAIL tab
     function regsDetailTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '⚖️ Maine Aquaculture Regulations — Detail'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '⚖️ Maine Aquaculture Regulations — Detail'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'The regulatory landscape of Maine aquaculture. Multi-layered: state + federal + tribal.'),
         REGS_DETAIL.map(function(r, i) {
@@ -20517,8 +21343,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── WATER QUALITY THRESHOLDS tab
     function wqThreshTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📏 Water Quality Thresholds by Species'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '📏 Water Quality Thresholds by Species'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Species-specific water-quality parameters + thresholds. Cross-check your probe readings against species needs.'),
         WQ_THRESHOLDS.map(function(w, i) {
@@ -20534,8 +21360,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── SPECIES DEEP DIVES tab
     function deepDivesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🔬 Aquaculture Species Deep Dives'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🔬 Aquaculture Species Deep Dives'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Multi-paragraph essays on Maine\'s top aquaculture species. Taxonomy, life history, biology, aquaculture method, market, stressors, stewardship.'),
         SPECIES_DEEP_DIVES.map(function(s, i) {
@@ -20554,8 +21380,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── TECHNIQUES tab
     function techniquesTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🛠 Practical Techniques'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🛠 Practical Techniques'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Hands-on skills every Maine aquaculture operator needs.'),
         TECHNIQUES.map(function(t, i) {
@@ -20569,8 +21395,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // ─── SCENARIOS tab
     function scenariosTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '🧠 Decision Scenarios'),
+      return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🧠 Decision Scenarios'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Decision-tree exercises. What would you do? Compare your reasoning to the "best" + "worst" outcomes.'),
         SCENARIOS.map(function(s, i) {
@@ -20736,14 +21562,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     var currentTopicLocation = getTopicLocation(tab);
     var currentTopicBookmarked = (learningProgress.bookmarkedTopics || []).indexOf(tab) !== -1;
+    var currentTopicCompleted = !!(learningProgress.completedTopics || {})[tab];
     var currentTopicHasNote = !!String((learningProgress.topicNotes || {})[tab] || '').trim();
 
     return h('div', { className: 'aq-lab-shell' + (comfortableReading ? ' aq-comfortable-reading' : ''), style: {
-      position: 'relative', padding: 16, background: '#021816', minHeight: 400, color: '#f8fafc', colorScheme: 'dark',
-      '--allo-stem-text': '#f8fafc', '--allo-stem-text-soft': '#cbd5e1'
+      position: 'relative', isolation: 'isolate', padding: 16, borderRadius: 18, background: 'radial-gradient(circle at 8% 0%, rgba(45,212,191,0.15), transparent 30%), radial-gradient(circle at 96% 10%, rgba(59,130,246,0.12), transparent 24%), linear-gradient(180deg, #021816 0%, #031b1a 42%, #020f12 100%)', minHeight: 400, color: '#f8fafc', colorScheme: 'dark',
+      '--allo-stem-text': '#f8fafc', '--allo-stem-text-soft': '#cbd5e1', '--aq-surface': '#071f1d', '--aq-surface-raised': '#0b2b28', '--aq-line': '#527a75', '--aq-accent': '#5eead4', '--aq-muted': '#cbd5e1'
     } },
       h('style', null,
-        '.aq-lab-shell{line-height:1.5;overflow-wrap:anywhere;}' +
+        '.aq-lab-shell{line-height:1.5;overflow-wrap:anywhere;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:inset 0 1px 0 rgba(255,255,255,0.04),0 24px 60px rgba(0,0,0,0.18);}' +
+        '.aq-lab-shell:before{content:"";position:absolute;z-index:-1;inset:0 0 auto;height:180px;border-radius:inherit;background:linear-gradient(180deg,rgba(153,246,228,0.045),transparent);pointer-events:none;}' +
         '.aq-comfortable-reading p,.aq-comfortable-reading li,.aq-comfortable-reading td,.aq-comfortable-reading th,.aq-comfortable-reading label,.aq-comfortable-reading summary,.aq-comfortable-reading button{font-size:14px!important;line-height:1.65!important;}' +
         '.aq-comfortable-reading [style*="font-size: 10px"],.aq-comfortable-reading [style*="font-size: 10.5px"],.aq-comfortable-reading [style*="font-size: 11px"],.aq-comfortable-reading [style*="font-size: 11.5px"],.aq-comfortable-reading [style*="font-size: 12px"],.aq-comfortable-reading [style*="font-size: 13px"]{font-size:14px!important;line-height:1.65!important;}' +
         '.aq-comfortable-reading [style*="color: #94a3b8"],.aq-comfortable-reading [style*="color:#94a3b8"]{color:#cbd5e1!important;}' +
@@ -20756,28 +21584,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         '.aq-topic-content{scroll-margin-top:12px;}' +
         '.aq-topic-content:focus{outline:3px solid #fbbf24;outline-offset:4px;}' +
         '.aq-lab-shell summary,.aq-lab-shell button{touch-action:manipulation;}' +
+        '.aq-btn{transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,filter .16s ease;}' +
+        '.aq-btn:not(:disabled):hover{transform:translateY(-1px);filter:brightness(1.06);box-shadow:0 8px 20px rgba(0,0,0,0.22);}' +
+        '.aq-btn:not(:disabled):active{transform:translateY(0);}' +
+        '.aq-topic-nav{position:relative;overflow:hidden;backdrop-filter:blur(10px);}' +
+        '.aq-topic-nav:before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#5eead4,#60a5fa,#c4b5fd);}' +
+        '.aq-library-summary{transition:background .16s ease,border-color .16s ease;}' +
+        '.aq-library-summary:hover{background:#184943!important;border-color:#99b9b5!important;}' +
+        '.aq-home-card,.aq-resume-card,.aq-lesson-header,.aq-topic-reflection,.aq-portfolio-tools{position:relative;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,0.18);}' +
+        '.aq-content-card{position:relative;overflow:hidden;box-shadow:0 10px 26px rgba(0,0,0,0.16);transition:border-color .18s ease,box-shadow .18s ease;}' +
+        '.aq-content-card:hover{border-color:rgba(94,234,212,0.42)!important;box-shadow:0 14px 30px rgba(0,0,0,0.2);}' +
+        '.aq-section-kicker{display:flex;align-items:center;gap:10px;}' +
+        '.aq-section-kicker:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,rgba(94,234,212,0.46),transparent);}' +
+        '.aq-content-card p{max-width:82ch;}' +
+        '.aq-content-card li{margin-block:.16em;}' +
+        '.aq-topic-group{transition:border-color .16s ease,box-shadow .16s ease;}' +
+        '.aq-topic-group[open]{box-shadow:0 10px 24px rgba(0,0,0,0.18);}' +
+        '.aq-topic-group-summary{transition:background .16s ease;}' +
+        '.aq-topic-group-summary:hover{background:#0b2b28;}' +
+        '.aq-topic-content table{max-width:100%;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,0.14);}' +
+        '.aq-topic-content tbody tr{transition:background-color .14s ease,outline-color .14s ease;}' +
+        '.aq-topic-content tbody tr:hover{outline:1px solid rgba(94,234,212,0.38);outline-offset:-1px;}' +
+        '.aq-topic-content input:not([type="range"]):not([type="checkbox"]),.aq-topic-content textarea,.aq-topic-content select{box-sizing:border-box;max-width:100%;transition:border-color .16s ease,box-shadow .16s ease,background .16s ease;}' +
+        '.aq-topic-content input:not([type="range"]):not([type="checkbox"]):hover,.aq-topic-content textarea:hover,.aq-topic-content select:hover{border-color:#789b97!important;}' +
+        '.aq-topic-content textarea{line-height:1.55;}' +
+        '.aq-topic-content input[type="range"]{accent-color:#2dd4bf;cursor:pointer;}' +
+        '.aq-topic-content input[type="checkbox"]{accent-color:#14b8a6;cursor:pointer;}' +
+        '.aq-home-card:before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:linear-gradient(180deg,#5eead4,rgba(96,165,250,0.2));}' +
+        '.aq-metric-card,.aq-journey-card,.aq-operation-tile,.aq-mission-card,.aq-checkpoint-card{transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;box-shadow:0 8px 18px rgba(0,0,0,0.14);}' +
+        '.aq-metric-card{min-height:58px;}' +
+        '.aq-metric-card:hover,.aq-journey-card:hover,.aq-operation-tile:hover,.aq-mission-card:hover,.aq-checkpoint-card:hover{transform:translateY(-2px);border-color:#789b97!important;box-shadow:0 14px 28px rgba(0,0,0,0.22);}' +
+        '.aq-progress-fill{transition:width .35s ease;}' +
+        '.aq-topic-reflection[open],.aq-portfolio-tools[open]{border-color:#789b97!important;}.aq-scenario-panel{box-shadow:inset 0 1px 0 rgba(255,255,255,0.03),0 10px 24px rgba(0,0,0,0.2);}' +
         '.aq-topic-search-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;}' +
-        '@media(max-width:620px){.aq-lab-shell{padding:10px!important}.aq-topic-nav{padding:10px!important}.aq-primary-nav button{flex:1 1 125px}.aq-topic-search-row{grid-template-columns:1fr}.aq-topic-search-clear{width:100%}.aq-topic-pager{grid-template-columns:1fr!important}.aq-topic-pager button{text-align:left!important}.aq-reading-toggle{width:100%}}'),
+        '@media(prefers-reduced-motion:reduce){.aq-lab-shell *{scroll-behavior:auto!important}.aq-btn,.aq-library-summary,.aq-metric-card,.aq-journey-card,.aq-operation-tile,.aq-mission-card,.aq-checkpoint-card,.aq-progress-fill,.aq-content-card,.aq-topic-group,.aq-topic-group-summary,.aq-topic-content tbody tr,.aq-topic-content input,.aq-topic-content textarea,.aq-topic-content select{transition:none!important}.aq-btn:hover,.aq-metric-card:hover,.aq-journey-card:hover,.aq-operation-tile:hover{transform:none!important}}' +
+        '@media(max-width:620px){.aq-lab-shell{padding:10px!important;border-radius:12px!important}.aq-topic-nav{padding:10px!important}.aq-nav-heading{align-items:stretch!important}.aq-primary-nav{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))}.aq-primary-nav button{width:100%}.aq-topic-search-row{grid-template-columns:1fr}.aq-topic-search-clear{width:100%}.aq-topic-pager{grid-template-columns:1fr!important}.aq-topic-pager button{text-align:left!important}.aq-reading-toggle{width:100%}.aq-lesson-header{align-items:stretch!important}.aq-lesson-actions{width:100%;display:grid!important;grid-template-columns:1fr}.aq-lesson-actions .aq-btn{width:100%}.aq-home-card{padding:12px!important}.aq-content-card{padding:12px!important}.aq-section-kicker:after{display:none}.aq-topic-content table{display:block;overflow-x:auto}.aq-journey-card{min-height:0!important}}'),
       h('a', { href: '#aq-topic-content', className: 'aq-skip-link' }, 'Skip to lesson content'),
       tabBar(),
       h('main', { id: 'aq-topic-content', ref: contentRef, tabIndex: -1,
         className: 'aq-topic-content', 'aria-labelledby': 'aq-topic-heading' },
-        h('header', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
+        h('header', { className: 'aq-lesson-header', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
           margin: '0 0 12px', padding: '10px 12px', borderRadius: 10,
-          background: '#061a18', borderLeft: '4px solid ' + currentTopicLocation.group.color } },
+          background: 'linear-gradient(90deg, #061a18, rgba(11,43,40,0.92))', border: '1px solid #416c67', borderLeft: '4px solid ' + currentTopicLocation.group.color } },
           h('div', null,
             h('div', { style: { color: '#cbd5e1', fontSize: 11, fontWeight: 850, textTransform: 'uppercase', letterSpacing: '0.07em' } },
               currentTopicLocation.group.label),
             h('h1', { id: 'aq-topic-heading', style: { margin: '3px 0 0', color: '#f8fafc', fontSize: 22, lineHeight: 1.2 } },
               currentTopicLocation.topic.label)),
-          tab !== 'home' ? h('button', { type: 'button', className: 'aq-btn', 'aria-pressed': currentTopicBookmarked,
-            'aria-label': (currentTopicBookmarked ? 'Remove ' : 'Save ') + currentTopicLocation.topic.label + (currentTopicBookmarked ? ' from saved topics' : ' for later'),
-            onClick: function() { toggleTopicBookmark(tab); },
-            style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer',
-              background: currentTopicBookmarked ? '#fbbf24' : '#163f3b', color: currentTopicBookmarked ? '#2a1900' : '#f8fafc',
-              border: '1px solid ' + (currentTopicBookmarked ? '#fde68a' : '#789b97'), fontSize: 12, fontWeight: 900 } },
-            currentTopicBookmarked ? '★ Saved' : '☆ Save topic') : null),
-        tab !== 'home' ? h('details', { className: 'aq-topic-reflection',
+          tab !== 'home' ? h('div', { className: 'aq-lesson-actions', style: { display: 'flex', gap: 7, alignItems: 'center', flexWrap: 'wrap' } },
+            h('button', { type: 'button', className: 'aq-btn aq-complete-topic', 'aria-pressed': currentTopicCompleted,
+              'aria-label': (currentTopicCompleted ? 'Mark ' : 'Mark ') + currentTopicLocation.topic.label + (currentTopicCompleted ? ' incomplete' : ' complete'),
+              onClick: function() { toggleTopicCompletion(tab); },
+              style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer',
+                background: currentTopicCompleted ? '#86efac' : '#123a36', color: currentTopicCompleted ? '#052e24' : '#f8fafc',
+                border: '1px solid ' + (currentTopicCompleted ? '#bbf7d0' : '#66928d'), fontSize: 12, fontWeight: 900 } },
+              currentTopicCompleted ? '✓ Completed' : 'Mark complete'),
+            h('button', { type: 'button', className: 'aq-btn', 'aria-pressed': currentTopicBookmarked,
+              'aria-label': (currentTopicBookmarked ? 'Remove ' : 'Save ') + currentTopicLocation.topic.label + (currentTopicBookmarked ? ' from saved topics' : ' for later'),
+              onClick: function() { toggleTopicBookmark(tab); },
+              style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer',
+                background: currentTopicBookmarked ? '#fbbf24' : '#163f3b', color: currentTopicBookmarked ? '#2a1900' : '#f8fafc',
+                border: '1px solid ' + (currentTopicBookmarked ? '#fde68a' : '#789b97'), fontSize: 12, fontWeight: 900 } },
+              currentTopicBookmarked ? '★ Saved' : '☆ Save topic')) : null),        tab !== 'home' ? h('details', { className: 'aq-topic-reflection',
           style: { margin: '-2px 0 12px', borderRadius: 10, background: '#071f1d', border: '1px solid #527a75', overflow: 'hidden' } },
           h('summary', { style: { minHeight: 44, boxSizing: 'border-box', padding: '10px 12px', cursor: 'pointer',
             color: '#f8fafc', fontSize: 12.5, fontWeight: 850, listStylePosition: 'inside' } },
@@ -20794,8 +21662,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               style: { boxSizing: 'border-box', width: '100%', minHeight: 96, resize: 'vertical', padding: '9px 10px',
                 borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 14, lineHeight: 1.5 } }),
             h('div', { id: 'aq-topic-note-status',
-              style: { marginTop: 5, color: '#bfdbfe', fontSize: 10.5, fontWeight: 750 } },
-              noteDraft.length + '/600 characters · Saved on this device'))) : null,
+              style: { marginTop: 5, color: learningNotice.kind === 'error' ? '#fecaca' : '#bfdbfe', fontSize: 10.5, fontWeight: 750 } },
+              noteDraft.length + '/600 characters · ' + (learningNotice.kind === 'error' ? 'Not saved — check Portfolio & backup on Home.' : 'Saved on this device')))) : null,
         tab === 'home' ? homeTab() :
       tab === 'sim' ? simTab() :
       tab === 'chart' ? chartTab() :

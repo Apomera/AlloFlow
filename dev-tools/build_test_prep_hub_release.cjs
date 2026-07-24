@@ -201,6 +201,7 @@ if(!fs.existsSync(plt7125624SourcePath))throw Error('PLT Grades 7–12 5624 sour
 if(!fs.existsSync(schoolLibrarian5312SourcePath))throw Error('School Librarian 5312 source missing');
 const skipPackRebuild=process.argv.includes('--skip-pack-rebuild');
 const skipEpppPreviewRebuild=process.argv.includes('--skip-eppp-preview-rebuild');
+const skipReviewRefresh=process.argv.includes('--skip-review-refresh');
 if(skipPackRebuild){
   const packs=fs.readdirSync(path.join(root,'test_prep')).filter(name=>name.endsWith('_pack.json')&&!name.startsWith('eppp'));
   if(packs.length!==22)throw Error('Current-snapshot build requires 22 non-EPPP packs');
@@ -287,10 +288,12 @@ if (!skipEpppPreviewRebuild) {
   execFileSync(process.execPath, [eppp2027PreviewQaPath], { cwd: root, stdio: 'inherit' });
 }
 }
+if(!skipReviewRefresh){
 execFileSync(process.execPath,[buildTestPrepReferenceCatalogPath],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath,[writeTestPrepAssistantReviewPath],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath,[reviewNonEpppAgainstEpppPath],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath,[verifyTestPrepAssistantReviewPath],{cwd:root,stdio:'inherit'});
+}
 
 const originalSource = fs.readFileSync(sourcePath, 'utf8');
 if (!originalSource.includes(registrationMarker)) throw new Error('Test Prep Hub registration marker changed; review the ParaPro release injection.');
@@ -482,6 +485,12 @@ ${compiled}
     buildTargetedSet: testPrepBuildTargetedSet,
     buildCustomQuiz: testPrepBuildCustomQuiz,
     buildSimulationSet: testPrepBuildSimulationSet,
+    questionSpeechText: testPrepQuestionSpeechText,
+    feedbackSpeechText: testPrepFeedbackSpeechText,
+    parseHandsFreeCommand: testPrepParseHandsFreeCommand,
+    buildClarificationPrompt: testPrepBuildClarificationPrompt,
+    repoAssetCandidates: testPrepRepoAssetCandidates,
+    fetchRepoJson: testPrepFetchRepoJson,
     searchPack: testPrepSearchPack,
     normalizeFlashcardSchedule: normalizeTestPrepFlashcardSchedule,
     rateFlashcard: testPrepRateFlashcard,

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-19T17:48:49.578Z",
+  "generatedAt": "2026-07-23T17:24:11.414Z",
   "libraryId": "praxis-special-education-5355-learning-library",
   "standard": {
     "label": "AlloFlow Praxis Special Education 5355 learning-library source and editorial review v1",
@@ -150,7 +150,7 @@
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
     "sourceItemsSha256": "4476ab084d22baa502240b4d32df9ac17593a94e3c20ce9fe126196e3c66aaf8",
-    "learningLibrarySha256": "fc160e74cdd969319fb0654fe341a7b2b67516348e9c35877abea22ad20086e5",
+    "learningLibrarySha256": "207545f2097a698ae9dd9a0d1d4a2919414ff0c67e8fb808f1041b4e58124057",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

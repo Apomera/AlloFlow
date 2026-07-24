@@ -103,8 +103,8 @@
     {
       id: 'study',
       label: 'Textbooks & study guides',
-      sourceLine: 'OpenStax open textbooks',
-      summary: 'Open textbooks and course-aligned chapters for high school and beyond.',
+      sourceLine: 'OpenStax chapters & CK-12 FlexBook links',
+      summary: 'Accessible open-textbook chapters plus curated course-aligned study links.',
       sourceIds: ['openstax', 'libretexts', 'ck12'],
       defaultLanguage: 'English',
       accent: 'indigo',
@@ -491,6 +491,20 @@
     return /card/.test(String((book && book.contentType) || ''));
   }
 
+  // Provider rights are data-driven on full book records. The source-based
+  // fallbacks also protect older/stale indexes that predate usagePolicy.
+  function bookUsagePolicy(book) {
+    if (book && book.usagePolicy && typeof book.usagePolicy === 'object') return book.usagePolicy;
+    var source = bookSourceId(book);
+    if (source === 'ck12') return { access: 'link-only', mirror: false, adapt: false, ai: false, commercial: false };
+    if (source === 'openstax') return { access: isCardContent(book) ? 'link-out' : 'mirrored', mirror: true, adapt: true, ai: false, commercial: false, attributionRequired: true, shareAlike: true, aiPermissionRequired: true };
+    return { access: isCardContent(book) ? 'link-out' : 'mirrored', ai: true };
+  }
+
+  function bookAllowsAi(book) {
+    return bookUsagePolicy(book).ai !== false;
+  }
+
   // Bloom talking books: the ordered clip URLs recorded for one page.
   function pageAudioClips(page) {
     return ((page && page.audio) || []).map(function (c) { return c && c.src; }).filter(Boolean);
@@ -650,8 +664,12 @@
     return parts.join('\n\n').trim();
   }
 
-  function bookPlainText(book) {
+  function bookPlainText(book, options) {
     if (!book) return '';
+    // Book-aware extraction is the public pipeline boundary. Providers that
+    // prohibit generative-AI ingestion return no text unless the caller
+    // explicitly identifies a local, non-AI accessibility rendering.
+    if (!bookAllowsAi(book) && !(options && options.localAccessibility === true)) return '';
     return bookPlainTextFromPages(book.title, book.pages);
   }
 
@@ -1103,7 +1121,7 @@
     var displayPageText = txReady ? cleanReadingText(translation.pages[pageIdx] || '') : pageTextForPipeline(page);
     var displayPlainText = txReady
       ? bookPlainTextFromPages(displayTitle, translation.pages)
-      : bookPlainText(book);
+      : bookPlainText(book, { localAccessibility: true });
     var sourcePages = txReady
       ? translation.pages.map(function (text, idx) { return { n: idx + 1, img: null, text: text }; })
       : pages;
@@ -1125,7 +1143,14 @@
     );
     var bookSourceName = (book.source && book.source.name) || sourceLabel(bookSourceId(book));
     var bookSourceUrl = (book.source && book.source.url) || '#';
-    var bookSourceHref = bookSourceUrl && bookSourceUrl !== '#' ? bookSourceUrl : '';
+    var bookAttributionUrl = (book.source && book.source.attributionUrl) || bookSourceUrl;
+    var pageSourceUrl = (page && page.sourceUrl) || bookSourceUrl;
+    var pageSourceHref = pageSourceUrl && pageSourceUrl !== '#' ? pageSourceUrl : '';
+    var usagePolicy = bookUsagePolicy(book);
+    var allowsAi = bookAllowsAi(book);
+    var externalSourceText = allowsAi ? selectedSource.text : '';
+    var linkOnly = usagePolicy.access === 'link-only';
+    var isMirroredOpenStax = bookSourceId(book) === 'openstax' && !isCardContent(book);
 
     // Reading-support derivations. Theme colors go on the page area + text;
     // font class re-applies the accessibility font inside this fixed modal.
@@ -1449,6 +1474,10 @@
     // the normal language picker instead.
     var generate = function (type, label) {
       setGenOpen(false);
+      if (!allowsAi) {
+        props.addToast && props.addToast(tr('readinglib_provider_ai_blocked', 'This provider requires permission for generative-AI use, so Extract to Source and AI handoffs are blocked.'), 'info');
+        return;
+      }
       if (typeof props.handleGenerate !== 'function') {
         props.addToast && props.addToast(tr('readinglib_generate_unavailable', 'Generation is not available right now.'), 'error');
         return;
@@ -1459,9 +1488,9 @@
         // more tools from it afterward, and register the book itself as a
         // resource-pack entry (host dedupes by slug) — the generated resource
         // and its source book both live in the lesson.
-        if (typeof props.setInputText === 'function') props.setInputText(selectedSource.text);
+        if (typeof props.setInputText === 'function') props.setInputText(externalSourceText);
         if (typeof props.onSaveToLesson === 'function') props.onSaveToLesson(bookRef());
-        props.handleGenerate(type, langOverride, false, selectedSource.text);
+        props.handleGenerate(type, langOverride, false, externalSourceText);
         props.addToast && props.addToast(tr('readinglib_generating', 'Creating') + ' ' + label + ' - "' + displayTitle + '" (' + selectedSource.label + ')', 'success');
         props.onExit && props.onExit(true);
       } catch (err) {
@@ -1474,11 +1503,15 @@
     // not just the four in this menu — can work from the book.
     var openAsDocument = function () {
       setGenOpen(false);
+      if (!allowsAi) {
+        props.addToast && props.addToast(tr('readinglib_provider_ai_blocked', 'This provider requires permission for generative-AI use, so Extract to Source and AI handoffs are blocked.'), 'info');
+        return;
+      }
       if (typeof props.setInputText !== 'function') {
         props.addToast && props.addToast(tr('readinglib_generate_unavailable', 'Generation is not available right now.'), 'error');
         return;
       }
-      props.setInputText(selectedSource.text);
+      props.setInputText(externalSourceText);
       props.addToast && props.addToast('"' + displayTitle + '" (' + selectedSource.label + ') ' + tr('readinglib_loaded_doc', 'is loaded as your source text - all the create tools can use it now.'), 'success');
       props.onExit && props.onExit(true);
     };
@@ -1507,7 +1540,8 @@
           return '<p>' + escapeHtml(par).replace(/\n/g, '<br>') + '</p>';
         }).join('');
       }).join('');
-      var srcLine = escapeHtml(bookSourceName) + ' — ' + escapeHtml(book.license || 'CC BY 4.0');
+      var srcLine = escapeHtml(bookSourceName) + ' — ' + escapeHtml(book.license || 'CC BY 4.0') +
+        (isMirroredOpenStax ? '<br>Access for free at ' + escapeHtml(bookAttributionUrl) : '');
       var aiNote = txReady ? '<p class="ai">🤖 ' + escapeHtml(tr('readinglib_attr_ai_translated', 'AI-translated into') + ' ' + translation.language + ' — ' + tr('readinglib_print_ai_note', 'AI translation, not reviewed by the publisher.')) + '</p>' : '';
       var html = '<!doctype html><html' + (displayRtl ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><title>' + escapeHtml(displayTitle) + '</title>' +
         '<style>body{font-family:Georgia,"Times New Roman",serif;max-width:720px;margin:32px auto;padding:0 20px;line-height:1.65;color:#111}' +
@@ -1533,6 +1567,7 @@
         if (attributionLine(book)) parts.push(attributionLine(book));
         exportPageTexts().forEach(function (t) { parts.push(t); });
         parts.push('— ' + bookSourceName + ' (' + (book.license || 'CC BY 4.0') + ')' + (txReady ? ' · AI-translated into ' + translation.language : ''));
+        if (isMirroredOpenStax) parts.push('Access for free at ' + bookAttributionUrl);
         var blob = new Blob([parts.join('\n\n')], { type: 'text/plain;charset=utf-8' });
         var url = URL.createObjectURL(blob);
         var a = document.createElement('a');
@@ -1548,9 +1583,13 @@
     // Open the displayed scope directly in Lingua Practice. The host owns the
     // cross-tool transition; Reading Library only emits clean text + context.
     var openInLingua = function () {
+      if (!allowsAi) {
+        props.addToast && props.addToast(tr('readinglib_provider_ai_blocked', 'This provider requires permission for generative-AI use, so Extract to Source and AI handoffs are blocked.'), 'info');
+        return;
+      }
       if (typeof props.onPracticeLanguage !== 'function') return;
       props.onPracticeLanguage({
-        text: selectedSource.text,
+        text: externalSourceText,
         title: displayTitle,
         selectionLabel: selectedSource.label,
         language: displayLanguage || book.language || '',
@@ -1563,6 +1602,10 @@
     // pages). Page count must round-trip exactly so page turns stay aligned
     // with the artwork; parseTranslation rejects anything else.
     var translateBook = function (target) {
+      if (!allowsAi) {
+        props.addToast && props.addToast(tr('readinglib_provider_ai_blocked', 'This provider requires permission for generative-AI use, so Extract to Source and AI handoffs are blocked.'), 'info');
+        return;
+      }
       var lang = String(target || '').trim();
       setTxMenuOpen(false);
       if (!lang) return;
@@ -1614,6 +1657,7 @@
         sourceId: bookSourceId(book),
         sourceName: sourceLabel(bookSourceId(book)),
         license: book.license || '',
+        usagePolicy: usagePolicy,
       };
     };
 
@@ -1659,12 +1703,12 @@
           onClick: function () { stopAll(); props.onExit && props.onExit(false); },
         }, '← ' + tr('readinglib_back', 'Library')),
         e('div', { className: 'font-bold text-slate-800 truncate flex-1 min-w-0', dir: 'auto', title: displayTitle }, displayTitle),
-        bookSourceHref ? e('a', {
+        pageSourceHref ? e('a', {
           className: 'px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100',
-          href: bookSourceHref,
+          href: pageSourceHref,
           target: '_blank',
           rel: 'noopener noreferrer',
-          title: tr('readinglib_open_original_hint', 'Open the official source page for this text'),
+          title: tr('readinglib_open_original_hint', 'Open the official source page for this section'),
         }, tr('readinglib_open_original', 'Open original')) : null,
         (hasAudioTrack || hasPageAudio) && !txReady ? e('button', {
           className: 'px-3 py-1.5 rounded-lg text-sm font-semibold ' + (narrating ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'),
@@ -1691,8 +1735,8 @@
           'aria-pressed': autoRead,
           title: tr('readinglib_read_aloud_hint', 'Read the book aloud and turn the pages automatically'),
         }, autoRead ? '⏸ ' + tr('readinglib_stop_reading', 'Stop') : '▶ ' + tr('readinglib_read_aloud', 'Read aloud')) : null,
-        modeBtn('define', '📖', tr('readinglib_mode_define', 'Define')),
-        modeBtn('phonics', '🔤', tr('readinglib_mode_phonics', 'Sounds')),
+        allowsAi ? modeBtn('define', '📖', tr('readinglib_mode_define', 'Define')) : null,
+        allowsAi ? modeBtn('phonics', '🔤', tr('readinglib_mode_phonics', 'Sounds')) : null,
         e('button', {
           className: 'px-2 py-1 rounded-lg text-sm font-semibold border bg-white text-slate-700 border-slate-200 hover:bg-slate-100',
           onClick: function () { setWordsOpen(true); setPopup(null); },
@@ -1835,7 +1879,7 @@
           ) : null
         ) : null,
         // AI translation menu — fills languages StoryWeaver doesn't cover.
-        e('div', { className: 'relative', 'data-rl-menu': 'tx' },
+        allowsAi ? e('div', { className: 'relative', 'data-rl-menu': 'tx' },
           e('button', {
             className: 'px-2 py-1 rounded-lg text-sm font-semibold border ' +
               (txReady ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
@@ -1876,13 +1920,13 @@
               }, tr('readinglib_go', 'Go'))
             )
           ) : null
-        ),
-        e('button', {
+        ) : null,
+        allowsAi ? e('button', {
           className: 'px-2 py-1 rounded-lg text-sm font-semibold border bg-white text-slate-700 border-slate-200 hover:bg-slate-100',
           onClick: function () { setShowPractice(!showPractice); },
           'aria-pressed': showPractice,
-        }, '🎙️ ' + tr('readinglib_practice', 'Practice')),
-        typeof props.onPracticeLanguage === 'function' ? e('button', {
+        }, '🎙️ ' + tr('readinglib_practice', 'Practice')) : null,
+        allowsAi && typeof props.onPracticeLanguage === 'function' ? e('button', {
           className: 'px-2 py-1 rounded-lg text-sm font-semibold border bg-emerald-50 text-emerald-900 border-emerald-300 hover:bg-emerald-100',
           onClick: openInLingua,
           title: tr('readinglib_lingua_hint', 'Practice this reading with vocabulary, speaking, and conversation activities'),
@@ -1892,7 +1936,7 @@
           onClick: saveToLesson,
           title: tr('readinglib_save_lesson_hint', 'Students who load this lesson can open the book from Resources'),
         }, '📌 ' + tr('readinglib_save_lesson', 'Save to lesson')) : null,
-        e('div', { className: 'relative', 'data-rl-menu': 'create' },
+        allowsAi ? e('div', { className: 'relative', 'data-rl-menu': 'create' },
           e('button', {
             className: 'px-2 py-1 rounded-lg text-sm font-semibold border bg-indigo-50 text-indigo-800 border-indigo-200 hover:bg-indigo-100',
             onClick: function () { var v = !genOpen; closeMenus(); setGenOpen(v); },
@@ -1965,7 +2009,7 @@
                 props.onOpenInDocBuilder({
                   slug: book.slug,
                   title: displayTitle,
-                  text: selectedSource.text,
+                  text: externalSourceText,
                   scopeLabel: selectedSource.label,
                   attribution: [
                     attributionLine(book),
@@ -1990,6 +2034,24 @@
               title: tr('readinglib_download_hint', 'Save the book text as a plain-text file'),
               onClick: downloadText,
             }, '⤓ ' + tr('readinglib_download_txt', 'Download text (.txt)')) : null
+          ) : null
+        ) : linkOnly ? e('span', {
+          className: 'px-2 py-1 rounded-lg text-xs font-semibold border bg-slate-50 text-slate-700 border-slate-300',
+          title: tr('readinglib_link_only_hint', 'Open the official provider site to use this material. Mirroring and AI tools are disabled for this source.')
+        }, '↗ ' + tr('readinglib_link_only', 'Link only · AI off')) : e('div', { className: 'relative', 'data-rl-menu': 'export' },
+          e('button', {
+            className: 'px-2 py-1 rounded-lg text-sm font-semibold border bg-indigo-50 text-indigo-800 border-indigo-200 hover:bg-indigo-100',
+            onClick: function () { var v = !genOpen; closeMenus(); setGenOpen(v); },
+            'aria-expanded': genOpen,
+            title: tr('readinglib_export_hint', 'Print or download this non-AI accessible copy')
+          }, '⤓ ' + tr('readinglib_export', 'Export') + ' ▾'),
+          genOpen ? e('div', { className: 'absolute right-0 top-full mt-1 w-56 bg-white rounded-xl shadow-xl border border-slate-200 p-1 z-20' },
+            e('div', { className: 'px-3 py-2 text-[11px] text-slate-600 bg-slate-50 rounded-lg mb-1' },
+              tr('readinglib_openstax_ai_off', 'OpenStax AI handoffs are off; non-AI accessibility and export remain available.')),
+            e('button', { role: 'menuitem', className: 'block w-full text-left px-3 py-1.5 rounded-lg text-sm text-slate-700 hover:bg-indigo-50', onClick: printBook },
+              '🖨 ' + tr('readinglib_print', 'Print…')),
+            e('button', { role: 'menuitem', className: 'block w-full text-left px-3 py-1.5 rounded-lg text-sm text-slate-700 hover:bg-indigo-50', onClick: downloadText },
+              '⤓ ' + tr('readinglib_download_txt', 'Download text (.txt)'))
           ) : null
         )
       ),
@@ -2024,7 +2086,7 @@
               // Vocabulary handout: the word bank rides the same Document
               // Builder bridge as book passages — a markdown list becomes an
               // editable 'simplified' section, no extra host wiring needed.
-              (wordBank.length && props.isTeacherMode && typeof props.onOpenInDocBuilder === 'function') ? e('button', {
+              (allowsAi && wordBank.length && props.isTeacherMode && typeof props.onOpenInDocBuilder === 'function') ? e('button', {
                 className: 'px-2 py-1 rounded-lg text-[12px] font-semibold text-teal-700 border border-teal-200 hover:bg-teal-50',
                 title: tr('readinglib_words_handout_hint', 'Turn these words into an editable vocabulary handout in the Document Builder'),
                 onClick: function () {
@@ -2093,8 +2155,12 @@
       },
       e('div', { className: 'h-full overflow-y-auto py-3 flex flex-col' },
         e('div', { className: 'w-full max-w-3xl m-auto' },
+          linkOnly ? e('div', { className: 'mb-3 mx-auto max-w-xl text-[12px] text-slate-800 bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-center' },
+            '↗ ' + tr('readinglib_link_only_notice', 'CK-12 remains link-only under its current terms. This card contains an AlloFlow-authored overview; open the official source to read or assign the curriculum. AI and mirroring are disabled.')) :
           isCardContent(book) ? e('div', { className: 'mb-3 mx-auto max-w-xl text-[12px] text-sky-900 bg-sky-50 border border-sky-200 rounded-lg px-3 py-2 text-center' },
-            '🔗 ' + tr('readinglib_card_notice', 'This is a source card — a short overview with a link to the real thing. Use “Open original” above to read the full text at the source.')) : null,
+            '🔗 ' + tr('readinglib_card_notice', 'This is a source card — a short overview with a link to the real thing. Use “Open original” above to read the full text at the source.')) :
+          isMirroredOpenStax ? e('div', { className: 'mb-3 mx-auto max-w-xl text-[12px] text-indigo-900 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2 text-center' },
+            '✓ ' + tr('readinglib_openstax_mirror_notice', 'Accessibility-ready OpenStax chapter mirror · CC BY-NC-SA 4.0 · reading and non-AI accessibility stay available · Extract to Source and generative-AI handoffs are blocked unless OpenStax grants permission.')) : null,
           // Same work, other languages (multilingual Bloom records) — one tap
           // switches editions, so a family can read in both languages.
           (props.editions && props.editions.length) ? e('div', { className: 'mb-3 mx-auto max-w-xl flex flex-wrap items-center justify-center gap-1 text-[12px]' },
@@ -2276,11 +2342,13 @@
         ) : null,
         e('p', { className: 'text-[11px] text-slate-500 text-center mt-1.5' },
           attributionLine(book) + (txReady ? ' · 🤖 ' + tr('readinglib_attr_ai_translated', 'AI-translated into') + ' ' + translation.language : '') + ' · ',
-          e('a', { href: bookSourceUrl, target: '_blank', rel: 'noopener noreferrer', className: 'underline hover:text-indigo-700' },
+          e('a', { href: pageSourceUrl, target: '_blank', rel: 'noopener noreferrer', className: 'underline hover:text-indigo-700' },
             bookSourceName),
           ' · ',
           e('a', { href: book.licenseUrl || 'https://creativecommons.org/licenses/by/4.0/', target: '_blank', rel: 'noopener noreferrer', className: 'underline hover:text-indigo-700' },
             book.license || 'CC BY 4.0'),
+          isMirroredOpenStax ? e('span', null, ' · Access for free at ',
+            e('a', { href: bookAttributionUrl, target: '_blank', rel: 'noopener noreferrer', className: 'underline hover:text-indigo-700' }, bookAttributionUrl)) : null,
           readingTimeLabel(book) ? ' · ⏱ ' + readingTimeLabel(book) + ' ' + tr('readinglib_read_time', 'read') : ''
         )
       ),
@@ -2358,6 +2426,12 @@
       e('div', { className: 'flex flex-wrap gap-1' },
         bookSourceId(b) !== 'storyweaver' ? e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[11px] font-semibold' },
           sourceLabel(bookSourceId(b))) : null,
+        bookSourceId(b) === 'openstax' && !isCardContent(b) ? e('span', { className: 'px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-[11px] font-semibold' },
+          '✓ ' + tr('readinglib_mirrored_chapter', 'Mirrored chapter')) : null,
+        bookSourceId(b) === 'openstax' ? e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-50 border border-slate-300 text-slate-700 text-[11px] font-semibold' },
+          'AI off') : null,
+        bookSourceId(b) === 'ck12' ? e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-50 border border-slate-300 text-slate-700 text-[11px] font-semibold' },
+          '↗ ' + tr('readinglib_link_only', 'Link only · AI off')) : null,
         // Source cards carry a hardcoded audience level with no text behind
         // it — showing a Level chip there implies a measurement we never
         // made. The 🔗 Source card badge already says what these are.
@@ -3417,6 +3491,9 @@
   ReadingLibrary._isLongFormBook = isLongFormBook;
   ReadingLibrary._bookPlainTextForScope = bookPlainTextForScope;
   ReadingLibrary._bookPlainText = bookPlainText;
+  ReadingLibrary._bookPlainTextForLocalAccessibility = function (book) {
+    return bookPlainText(book, { localAccessibility: true });
+  };
   ReadingLibrary._textLayoutClass = textLayoutClass;
   ReadingLibrary._chromeThemeClass = chromeThemeClass;
   ReadingLibrary._readingTimeLabel = readingTimeLabel;

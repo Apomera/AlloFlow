@@ -641,6 +641,18 @@
       </Panel>
     );
   }
+  function PortfolioStoragePanel(props) {
+    var helper = window.ResearchHub && window.ResearchHub.helpers && window.ResearchHub.helpers.researchStorageHealth;
+    if (typeof helper !== 'function') return null;
+    var health = helper(props.journal);
+    var color = health.status === 'healthy' ? '#2563eb' : health.status === 'warning' ? '#d97706' : '#dc2626';
+    return (
+      <Panel title="Local portfolio storage" subtitle={health.percent + '% of 4 MB safety budget'}>
+        <div data-educator-storage-health="true" style={{ height: '7px', borderRadius: '999px', overflow: 'hidden', background: '#e2e8f0' }}><div style={{ height: '100%', width: Math.min(100, health.percent) + '%', background: color }} /></div>
+        <div style={{ marginTop: '6px', fontSize: '10px', color: health.status === 'healthy' ? '#475569' : color }}>{health.status === 'healthy' ? 'Storage is within the local safety budget.' : 'Recommend portfolio export or artifact archiving before additional audio or tool captures.'}</div>
+      </Panel>
+    );
+  }
   function IntegrationHealthPanel(props) {
     var artifacts = props.journal.capturedArtifacts || [];
     var helper = window.ResearchHub && window.ResearchHub.helpers && window.ResearchHub.helpers.assessResearchArtifactIntegration;
@@ -668,8 +680,11 @@
                 </div>
                 <div style={{ marginTop: '3px', fontSize: '9px', color: '#64748b' }}>
                   Contract v{contract.schemaVersion || '?'} · license: {(contract.license && (contract.license.spdx || contract.license.name)) || 'missing'} · citation: {contract.citation && contract.citation.text ? 'declared' : 'missing'} · reproducibility: {receipt.status || 'missing'}
+                  <span> · review after: {contract.reviewAfter || 'unknown'}</span>
                 </div>
                 {receipt.missingFields && receipt.missingFields.length > 0 && <div style={{ marginTop: '3px', fontSize: '9px', color: '#92400e' }}><strong>Receipt gaps:</strong> {receipt.missingFields.join(', ')}</div>}
+                {artifact.privacyFindings && artifact.privacyFindings.length > 0 && <div style={{ marginTop: '3px', fontSize: '9px', color: '#5b21b6' }}><strong>Privacy controls:</strong> {artifact.privacyFindings.map(function (finding) { return finding.code; }).join(', ')}</div>}
+                {artifact.legacyProvenance && <div style={{ marginTop: '3px', fontSize: '9px', color: '#92400e' }}><strong>Legacy metadata:</strong> {artifact.legacyProvenance.reason}{artifact.legacyContextNote ? ' Learner context attached.' : ''}</div>}
                 {row.health.issues && row.health.issues.length > 0 && <ul style={{ margin: '4px 0 0', paddingLeft: '17px', fontSize: '9px', color: '#475569' }}>{row.health.issues.map(function (issue) { return <li key={issue.code}>{issue.message}</li>; })}</ul>}
               </div>
             );
@@ -699,6 +714,7 @@
 
         <GradingPrincipleBanner />
         <MethodProvenancePanel journal={j} />
+        <PortfolioStoragePanel journal={j} />
         <IntegrationHealthPanel journal={j} />
 
         {/* Lane-specific trajectory */}

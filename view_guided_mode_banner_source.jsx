@@ -442,22 +442,56 @@ const GUIDED_DETAIL = {
     "example": "ESSENTIAL QUESTION\nHow does a plant turn sunlight, air, and water into the food it needs — and why does that matter for us?\n\nOBJECTIVES\n• SWBAT explain that plants use sunlight to make their own food through photosynthesis.\n• SWBAT identify the inputs (sunlight, carbon dioxide, water) and outputs (glucose, oxygen).\n• SWBAT describe the roles of chlorophyll, stomata, and roots.\n\nHOOK (2–3 min)\nDisplay the [Inside a Leaf Diagram](resource:img-9912). Teacher says: \"Every bite of food you've ever eaten started with a leaf catching sunlight. Where do you think the plant's food gets made?\" Take a few predictions.\n\nDIRECT INSTRUCTION (12–15 min)\nRead the [Leveled Text](resource:lt-3481). Step 1 — chlorophyll captures the sun's energy. Step 2 — the plant takes in carbon dioxide through stomata and water through its roots (CFU: which gas comes IN, and where does water come from?). Step 3 — it combines them into glucose, \"a charged battery the plant saves.\" Step 4 — it releases oxygen, the same oxygen we breathe (CFU: why should an animal be glad a plant is doing photosynthesis?).\n\nGUIDED PRACTICE (10 min)\nAs a class, work the [Inputs vs. Outputs Concept Sort](resource:cs-5530), pausing on 'chlorophyll' — a tool, not an input.\n\nINDEPENDENT PRACTICE (8 min)\nStudents draw a labeled leaf with arrows for CO₂, water, sunlight, and oxygen, then finish: \"A plant makes glucose by ______.\"\n\nCLOSURE (5 min)\nAssign the [Exit Ticket Quiz](resource:qz-7741), then discuss: \"Without photosynthesis, most life on Earth could not survive — explain why in one sentence.\"\n\nRECOMMENDED STEM LAB TOOLS\n• cellInterior — see the chloroplasts where chlorophyll captures light.\n• moleculeBuilder — assemble CO₂ and H₂O and watch glucose and O₂ form."
   },
 
-  "_final": {
-    "headline": "Export the full pack with a readiness report",
+  "directions": {
+    "headline": "Write the assignment in a student's voice",
     "inputs": [
-      "The entire history[] of kept artifacts (serialized to a ~30K-char audit context)",
-      "Target standards / standardsPromptString + gradeLevel",
-      "DOK-tagged quiz items",
-      "Export config (getExportableHistory, isWorksheet, isTeacher answer-key gating)"
+      "Student-facing task steps and learning goal",
+      "Due information, materials, and submission expectations",
+      "Success criteria and optional auto-checking goals",
+      "The resources students should open or complete"
     ],
     "outputs": [
-      "A Standards & Readiness Report (reports[] + comprehensive{} across 9 dimensions)",
-      "comprehensive.overall: readiness score 0–100, status, blockingIssues[]",
-      "Status points: Aligned=20, Partially=12, Not Aligned=0 (a Not-Aligned dimension blocks auto-Pass)",
-      "A single self-contained .html file bundling every kept artifact"
+      "A Directions resource students see with the assignment",
+      "Clear sequence, purpose, and completion criteria",
+      "A reusable teacher-authored companion to the generated lesson"
     ],
-    "how": "Two things happen at the final step. The Standards Report runs a holistic audit — serializing every prior artifact, optionally checking each target standard, then scoring nine comprehensive dimensions into a 0–100 readiness roll-up. Separately, the teacher downloads the Full Resource Pack: one offline HTML file bundling every kept artifact.",
-    "example": "STANDARDS & READINESS REPORT — \"How Plants Make Food: Photosynthesis\" (Grade 5)\n\nCURRICULUM READINESS SCORE: 78 / 100 — Pass with notes\nDimensions evaluated: 8 of 9 (Cultural responsiveness: Not applicable)\n\nSTANDARDS ALIGNMENT (NGSS 5-LS1-1 / 5-PS3-1) — Revise\n  Text · Aligned: the Simplified Text and Glossary teach that chlorophyll captures the sun's energy and the plant combines CO₂ and water to make glucose.\n  Activities · Partially Aligned: the Visual Organizer maps sunlight → glucose → oxygen, but no artifact asks students to MODEL the matter-and-energy transfer.\n  Assessment · Partially Aligned: exit-ticket items check recall; none trace energy from the Sun.\n  Recommendation: add a diagram/constructed-response item tracing energy from sunlight to stored glucose.\n\nVOCABULARY FIT · Partially Aligned — Tier 3 strong (chlorophyll, stomata, glucose, photosynthesis); add Tier-2 words (absorb, release, convert).\nENGAGEMENT VARIETY · Aligned — 6 artifact types, diversity 0.81; mix skews recall-heavy.\nACCESSIBILITY · Partially Aligned — 1 image with no alt text; 1 color-only reference (\"green pigment\").\nCONTENT ACCURACY · Aligned — 7 verified facts, 0 discrepancies.\nUDL · Partially Aligned — most pressing pillar: Action & Expression (only multiple-choice available).\nDIFFERENTIATION · Partially Aligned — add sentence frames for ELLs.\nCOGNITIVE LOAD · Aligned — claimed 45 min, estimated 41 min.\nCULTURAL RESPONSIVENESS · Not applicable.\n\nFULL RESOURCE PACK DOWNLOAD\nOne self-contained .html file bundling every kept artifact (Analysis, Glossary, Simplified Text, Visual Organizer, Exit Ticket, Lesson Plan) + this report, ready to open or print offline; students can save their answers to a file to hand in. (Answer keys and rubrics render only in the teacher answer-key section, which is included when the export's teacher-key option is on.)"
+    "how": "Directions are intentionally teacher-authored rather than AI-generated. Open the composer, name the goal, write the steps in the order students will encounter them, and read the result once as a learner before sharing.",
+    "example": "LEARNING GOAL\nI can explain how sunlight, water, and carbon dioxide help a plant make glucose and release oxygen.\n\nDO THIS\n1. Read the adapted photosynthesis text.\n2. Use the glossary when you meet a bold word.\n3. Complete the inputs-and-outputs concept sort.\n4. Answer the exit ticket in complete sentences.\n\nSUCCESS LOOKS LIKE\n• I identify all three inputs and both outputs.\n• I use photosynthesis vocabulary accurately.\n• I explain where the Sun's energy goes.\n\nTURN IN\nSubmit the exit ticket by Friday at 3:00 PM."
+  },
+
+  "package-deliver": {
+    "headline": "Preview the learner experience and choose delivery routes",
+    "inputs": [
+      "The resources kept in History and the editable Builder document",
+      "Audience, destination, answer-key policy, branding, and accessibility needs",
+      "A quiz for QTI; compatible quiz or study-card content for H5P",
+      "Assignment expiry, mailbox deployment, or live-session choice"
+    ],
+    "outputs": [
+      "Print/editable: PDF, Worksheet, Slides, accessible DOCX, ODT",
+      "Web/access: interactive HTML, EPUB, TXT, Markdown, NotebookLM Markdown, BRF",
+      "LMS: QTI, H5P, and IMS content packages",
+      "Assign/share: Homework QR or self-contained link, Class Mailbox QR, live session, editable project",
+      "Resource-specific: Adventure Storybook HTML and Persona JSON/HTML transcript"
+    ],
+    "how": "Start by opening Document Builder to preflight, edit, theme, and choose the main file format. Use Homework QR or Class Mailbox for asynchronous learners, Live Session for synchronous delivery, and Test latest student link to verify the exact learner view. Conditional formats appear only when their source content is compatible.",
+    "example": "DELIVERY PLAN — PHOTOSYNTHESIS\n\n1. Accessible Word (.docx) for students who annotate in Microsoft 365.\n2. Homework QR with a 1-week expiry for independent completion.\n3. QTI quiz package for the LMS gradebook.\n4. Teacher keeps the editable AlloFlow project and the full offline HTML pack.\n5. Open the student link in a new tab and verify directions, answer-key privacy, images, and submission flow before publishing."
+  },
+
+  "_final": {
+    "headline": "Review the finished lesson before leaving Guided Mode",
+    "inputs": [
+      "Completed and skipped Guided milestones",
+      "Resources created during this Guided run",
+      "The chosen export, sharing, or live-session route"
+    ],
+    "outputs": [
+      "A completion summary saved locally on this device",
+      "Quick links back to created resources and skipped milestones",
+      "An optional private reflection to improve the next Guided run"
+    ],
+    "how": "The final step is a review, not another generator. Confirm that students have directions, that the learner-facing link or file was tested, and that at least one usable delivery artifact was created. You can revisit skipped steps before finishing.",
+    "example": "FINAL CHECK\n✓ Source and learning goal match.\n✓ Student directions name the task and success criteria.\n✓ Answer keys are teacher-only.\n✓ Accessibility preflight has been reviewed.\n✓ Student link opens and the first task is obvious.\n✓ A backup format is available for students who cannot use the primary route."
   }
 };
 
@@ -483,18 +517,32 @@ function GuidedModeBanner({
   guidedCompletedIds,
   guidedSkippedIds,
   guidedCreatedHistoryIds,
+  guidedDeliveryEvidence,
   wordSoundsHistory,
   currentUiLanguage,
   markGuidedStepDone,
   resetGuidedProgress,
   guidedPresets,
   applyGuidedPreset,
+  guidedPhases,
+  guidedDeliveryGroups,
+  openGuidedDocumentBuilder,
+  createGuidedHomeworkShare,
+  startGuidedLiveSession,
+  canPreviewGuidedStudentAssignment,
+  previewGuidedStudentAssignment,
   guidedStepError,
   retryGuidedStep,
   isGuidedRetrying,
   openGuidedHistoryItem,
   guidedAutoAdvance,
   setGuidedAutoAdvance,
+  handleCompleteGuidedMode,
+  handleGuidedJump,
+  focusGuidedTarget,
+  processingProgress,
+  generationStep,
+  guidedProviderProfile,
 }) {
   // Every Guided step declares the existing translated tour strings it reuses.
   // This avoids heuristic title/text lookup and prevents English step content
@@ -521,6 +569,8 @@ function GuidedModeBanner({
     'quiz': ['tour.quiz_title', 'tour.quiz_text'],
     'alignment': ['tour.alignment_title', 'tour.alignment_text'],
     'lesson-plan': ['tour.lesson_plan_title', 'tour.lesson_plan_text'],
+    'directions': ['directions.title', 'directions.subtitle'],
+    'package-deliver': ['tour.fullpack_title', 'tour.fullpack_text'],
     '_final': ['tour.fullpack_title', 'tour.fullpack_text'],
   };
   const localizeStep = (sourceStep, field) => {
@@ -542,9 +592,27 @@ function GuidedModeBanner({
     }
     return sourceStep[field] || '';
   };
+  const normalizeCompletionSummary = (value) => {
+    if (!value || typeof value !== 'object') return null;
+    const completedAt = typeof value.completedAt === 'string' && Number.isFinite(Date.parse(value.completedAt)) ? value.completedAt : null;
+    if (!completedAt) return null;
+    const cleanCount = (item) => Math.max(0, Math.min(999, Number.isFinite(Number(item)) ? Math.floor(Number(item)) : 0));
+    return { ...value, completedAt, completedCount: cleanCount(value.completedCount), skippedCount: cleanCount(value.skippedCount), resourceCount: cleanCount(value.resourceCount) };
+  };
   const rawStep = GUIDED_STEPS[guidedStep] || {};
   const step = { ...rawStep, label: localizeStep(rawStep, 'label'), action: localizeStep(rawStep, 'action'), success: localizeStep(rawStep, 'success') };
   const isLast = guidedStep >= GUIDED_STEPS.length - 1;
+  const phaseDefinitions = Array.isArray(guidedPhases) ? guidedPhases : [];
+  const activePhaseIds = Array.from(new Set((GUIDED_STEPS || []).map(item => item?.phase).filter(Boolean)));
+  const activePhaseDefinitions = activePhaseIds.map(id => phaseDefinitions.find(item => item.id === id) || { id, label: id, description: '' });
+  const currentPhase = activePhaseDefinitions.find(item => item.id === step.phase) || null;
+  const currentPhaseIndex = currentPhase ? activePhaseDefinitions.findIndex(item => item.id === currentPhase.id) : -1;
+  const phaseLabelKey = currentPhase ? 'guided.phase_' + currentPhase.id : '';
+  const translatedPhaseLabel = phaseLabelKey ? t(phaseLabelKey) : '';
+  const currentPhaseLabel = currentPhase ? ((translatedPhaseLabel && translatedPhaseLabel !== phaseLabelKey) ? translatedPhaseLabel : currentPhase.label) : '';
+  const phaseDescriptionKey = currentPhase ? 'guided.phase_' + currentPhase.id + '_description' : '';
+  const translatedPhaseDescription = phaseDescriptionKey ? t(phaseDescriptionKey) : '';
+  const currentPhaseDescription = currentPhase ? ((translatedPhaseDescription && translatedPhaseDescription !== phaseDescriptionKey) ? translatedPhaseDescription : currentPhase.description) : '';
   const _savedUiState = React.useRef((() => { try { return JSON.parse(localStorage.getItem('allo_guided_ui_state') || '{}'); } catch (_) { return {}; } })()).current;
   const [showPicker, setShowPicker] = React.useState(!!_savedUiState.showPicker);
   const [infoTab, setInfoTab] = React.useState(['how', 'example'].includes(_savedUiState.infoTab) ? _savedUiState.infoTab : null); // null | 'how' | 'example'
@@ -555,11 +623,24 @@ function GuidedModeBanner({
   const [feedbackSaved, setFeedbackSaved] = React.useState(false);
   const [pendingPreset, setPendingPreset] = React.useState(null);
   const [pendingStepId, setPendingStepId] = React.useState(null);
+  const [pendingJump, setPendingJump] = React.useState(null);
+  const [pendingClearGuidedData, setPendingClearGuidedData] = React.useState(false);
   const [showErrorDetails, setShowErrorDetails] = React.useState(false);
+  const [showInitialPath, setShowInitialPath] = React.useState(() => { try { return !!normalizeCompletionSummary(JSON.parse(localStorage.getItem('allo_guided_last_completion') || 'null')) || !localStorage.getItem('allo_guided_path_prompt_seen'); } catch (_) { return true; } });
+  const [showFeedbackHistory, setShowFeedbackHistory] = React.useState(false);
+  const [feedbackEntries, setFeedbackEntries] = React.useState(() => { try { const value = JSON.parse(localStorage.getItem('allo_guided_feedback') || '[]'); return Array.isArray(value) ? value : []; } catch (_) { return []; } });
+  const [lastCompletion, setLastCompletion] = React.useState(() => { try { return normalizeCompletionSummary(JSON.parse(localStorage.getItem('allo_guided_last_completion') || 'null')); } catch (_) { return null; } });
+  const [durationStats, setDurationStats] = React.useState(() => { try { const value = JSON.parse(localStorage.getItem('allo_guided_duration_stats') || '{}'); return value && typeof value === 'object' ? value : {}; } catch (_) { return {}; } });
+  const [deliverySetting, setDeliverySetting] = React.useState('take-home');
+  const [deliveryPriority, setDeliveryPriority] = React.useState('accessible');
+  const [readinessChecks, setReadinessChecks] = React.useState(() => { try { const value = JSON.parse(localStorage.getItem('allo_guided_readiness_checks') || '{}'); return value && typeof value === 'object' ? value : {}; } catch (_) { return {}; } });
+  const _busyTimingRef = React.useRef(null);
+  const _skipUiPersistRef = React.useRef(false);
   const guidedBusy = !!isGuidedRetrying;
   const _sourceBaselineRef = React.useRef(String(inputText || '').trim());
-  React.useEffect(() => { try { localStorage.setItem('allo_guided_ui_state', JSON.stringify({ collapsed: isCollapsed, showPicker, showAbout: !!showGuidedTip, infoTab })); } catch (_) {} }, [isCollapsed, showPicker, showGuidedTip, infoTab]);
+  React.useEffect(() => { if (_skipUiPersistRef.current) { _skipUiPersistRef.current = false; return; } try { localStorage.setItem('allo_guided_ui_state', JSON.stringify({ collapsed: isCollapsed, showPicker, showAbout: !!showGuidedTip, infoTab })); } catch (_) {} }, [isCollapsed, showPicker, showGuidedTip, infoTab]);
   React.useEffect(() => { if (_savedUiState.showAbout && !showGuidedTip) setShowGuidedTip(true); }, []);
+  React.useEffect(() => { try { localStorage.setItem('allo_guided_readiness_checks', JSON.stringify(readinessChecks)); } catch (_) {} }, [readinessChecks]);
   React.useEffect(() => {
     const current = String(inputText || '').trim();
     const hasResources = Array.isArray(guidedCreatedHistoryIds) && guidedCreatedHistoryIds.length > 0;
@@ -619,7 +700,7 @@ function GuidedModeBanner({
     'faq': ['faq'], 'sentence-frames': ['sentence-frames'], 'note-taking': ['note-taking'],
     'brainstorm': ['brainstorm'], 'persona': ['persona'], 'timeline': ['timeline'],
     'concept-sort': ['concept-sort'], 'dbq': ['dbq'], 'adventure': ['adventure'], 'quiz': ['quiz'],
-    'alignment': ['alignment-report'], 'lesson-plan': ['lesson-plan'],
+    'alignment': ['alignment-report'], 'lesson-plan': ['lesson-plan'], 'directions': ['directions'],
   };
   const _histLen = Array.isArray(history) ? history.length : 0;
   const _stepBaseRef = React.useRef(_histLen);
@@ -635,9 +716,11 @@ function GuidedModeBanner({
     : (_histLen > _stepBaseRef.current); // unknown future steps keep the coarse growth signal
   const _wordSoundsBaseRef = React.useRef(Array.isArray(wordSoundsHistory) ? wordSoundsHistory.length : 0);
   const _wordSoundsDone = Array.isArray(wordSoundsHistory) && wordSoundsHistory.length > _wordSoundsBaseRef.current;
+  const _deliveryOutcomeDone = !!(guidedDeliveryEvidence?.exportCreated || guidedDeliveryEvidence?.shareCreated || guidedDeliveryEvidence?.liveStarted);
   const _computedDone =
     step.id === 'source-input' ? ((inputText || '').trim().length > 20) :
     step.id === 'ui-tool-wordsounds' ? _wordSoundsDone :
+    step.id === 'package-deliver' ? _deliveryOutcomeDone :
     GUIDED_CLICK_STEPS.indexOf(step.id) !== -1 ? !!guidedEngaged :
     _generatedDone;
   // Completion survives navigation: once a step's tool produced output, revisiting it via
@@ -686,7 +769,7 @@ function GuidedModeBanner({
   };
   const allSteps = allGuidedSteps || GUIDED_STEPS;
   // null selection = every step on; source-input is always on (the pipeline needs it).
-  const isStepOn = (id) => !guidedSelectedIds || id === 'source-input' || guidedSelectedIds.indexOf(id) !== -1;
+  const isStepOn = (id) => !guidedSelectedIds || id === 'source-input' || id === 'package-deliver' || id === '_final' || guidedSelectedIds.indexOf(id) !== -1;
   // End-of-flow recap: what the teacher actually built (from history).
   const humanize = (type) => (getDefaultTitle ? getDefaultTitle(type) : String(type || '').replace(/[-_]/g, ' '));
   const _createdIdSet = new Set(Array.isArray(guidedCreatedHistoryIds) ? guidedCreatedHistoryIds : []);
@@ -698,40 +781,112 @@ function GuidedModeBanner({
   const completedCount = _effectiveCompletedSet.size;
   const skippedCount = (guidedSkippedIds || []).filter(id => _activeIdSet.has(id)).length;
   const hasGuidedProgress = completedCount > 0 || skippedCount > 0 || (guidedCreatedHistoryIds || []).length > 0;
+  const hasSavedDirections = !!guidedDeliveryEvidence?.directionsSaved || (history || []).some(item => item?.type === 'directions');
+  const hasDeliveryOutcome = _deliveryOutcomeDone;
+  const hasStudentPreview = !!guidedDeliveryEvidence?.studentPreviewed;
+  const readinessItems = [
+    { id: 'directions', label: t('guided.readiness_directions') || 'Student directions are saved', verified: hasSavedDirections },
+    { id: 'delivery', label: t('guided.readiness_delivery') || 'A delivery file, link, or session was created', verified: hasDeliveryOutcome },
+    { id: 'learner-view', label: t('guided.readiness_learner_view') || 'The learner view was tested', verified: hasStudentPreview },
+    { id: 'answer-keys', label: t('guided.readiness_answers') || 'Answer keys and teacher-only notes are hidden', verified: false },
+    { id: 'accessibility', label: t('guided.readiness_accessibility') || 'Accessibility and reading order were reviewed', verified: false },
+    { id: 'backup', label: t('guided.readiness_backup') || 'A backup access route is ready', verified: false },
+  ];
+  const readinessCount = readinessItems.filter(item => item.verified || readinessChecks[item.id]).length;
+  const readinessTotal = readinessItems.length;
+  const deliveryRecommendation = (() => {
+    if (deliveryPriority === 'low-connectivity') return { primary: 'Self-contained HTML', backup: 'PDF / Print', why: 'Both routes can be used without a continuous connection.' };
+    if (deliveryPriority === 'editable') return { primary: 'Accessible Word (.docx)', backup: 'OpenDocument (.odt)', why: 'Both preserve an editable teacher copy.' };
+    if (deliveryPriority === 'assessment') return { primary: deliverySetting === 'lms' ? 'QTI quiz package' : 'PDF / Print', backup: deliverySetting === 'lms' ? 'IMS content package' : 'Accessible Word (.docx)', why: 'This keeps scoring or review practical in the selected setting.' };
+    if (deliveryPriority === 'interactive') return { primary: deliverySetting === 'lms' ? 'H5P interactive activity' : (deliverySetting === 'live' ? 'Live class session' : 'Interactive HTML'), backup: deliverySetting === 'lms' ? 'IMS content package' : 'PDF / Print', why: 'Students get an interactive route plus a broadly compatible fallback.' };
+    if (deliverySetting === 'print') return { primary: 'PDF / Print', backup: 'Accessible Word (.docx)', why: 'Print is predictable, while Word supports zoom, reflow, and editing.' };
+    if (deliverySetting === 'live') return { primary: 'Live class session', backup: 'Class Mailbox / hosted QR', why: 'The class can participate together and still reconnect asynchronously.' };
+    if (deliverySetting === 'lms') return { primary: 'IMS content package', backup: 'Accessible Word (.docx)', why: 'IMS fits most LMS imports and Word provides an accessible fallback.' };
+    return { primary: 'Homework QR / self-contained link', backup: 'PDF / Print', why: 'Students get a simple take-home route with an offline fallback.' };
+  })();
   const detailEntry = (typeof GUIDED_DETAIL !== 'undefined' && GUIDED_DETAIL[step.id]) || null;
   const _gdTab = (on) => ({ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', padding: '7px 8px', fontSize: '12px', fontWeight: 700, color: on ? '#fde68a' : '#c7d2fe', background: on ? 'rgba(251,191,36,0.16)' : 'rgba(255,255,255,0.06)', border: '1px solid ' + (on ? 'rgba(251,191,36,0.55)' : 'rgba(165,180,252,0.3)'), borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' });
   const _gdPanel = { marginBottom: '10px', padding: '11px 13px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' };
   const _gdIo = { fontSize: '12px', fontWeight: 800, color: 'rgba(129,140,248,0.95)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '8px 0 4px' };
   const _gdLi = { fontSize: '12px', color: 'rgba(203,213,225,0.92)', lineHeight: '1.5', marginBottom: '3px', display: 'flex', gap: '6px' };
   const _gdPre = { margin: '6px 0 0', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '12px', lineHeight: '1.6', color: 'rgba(226,232,240,0.92)', fontFamily: 'inherit', background: 'rgba(15,23,42,0.55)', borderRadius: '8px', padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)' };
-  const STEP_META = { 'source-input': ['1–2 min', 'manual'], 'ui-tool-wordsounds': ['2–4 min', 'interactive'], math: ['3–8 min', 'interactive'], image: ['1–3 min', 'image_ai'], '_final': ['1 min', 'export'] };
-  const stepMeta = STEP_META[step.id] || ['1–2 min', 'ai_generation'];
+  const STEP_META = { 'source-input': ['1–2 min', 'manual'], 'ui-tool-wordsounds': ['2–4 min', 'interactive'], math: ['3–8 min', 'interactive'], image: ['1–3 min', 'image_ai'], directions: ['2–4 min', 'manual'], 'package-deliver': ['2–5 min', 'export'], '_final': ['1 min', 'manual'] };
+  const _durationKey = String(guidedProviderProfile || 'default') + ':' + step.id;
+  const _rawObservedDuration = Number(durationStats[_durationKey]?.averageMs);
+  const _observedDuration = Number.isFinite(_rawObservedDuration) && _rawObservedDuration >= 1000 && _rawObservedDuration <= 20 * 60 * 1000 ? _rawObservedDuration : 0;
+  const stepMeta = _observedDuration > 0 ? [Math.max(1, Math.round(_observedDuration / 60000)) + ' min observed', (STEP_META[step.id] || [null, 'ai_generation'])[1]] : (STEP_META[step.id] || ['1–2 min', 'ai_generation']);
+  React.useEffect(() => {
+    if (guidedBusy && !_busyTimingRef.current) { _busyTimingRef.current = { at: Date.now(), key: _durationKey }; return; }
+    if (!guidedBusy && _busyTimingRef.current) {
+      const finished = _busyTimingRef.current; _busyTimingRef.current = null;
+      if (!_computedDone) return; // failures and stopped/abandoned requests must not skew future estimates
+      const sample = Date.now() - finished.at;
+      if (sample < 1000 || sample > 20 * 60 * 1000) return;
+      setDurationStats(previous => {
+        const old = previous[finished.key] || {};
+        const priorValues = Array.isArray(old.values) ? old.values.filter(value => Number.isFinite(value) && value >= 1000).slice(-19) : (Number.isFinite(Number(old.averageMs)) ? [Number(old.averageMs)] : []);
+        const values = [...priorValues, sample].slice(-20);
+        const next = { ...previous, [finished.key]: { averageMs: Math.round(values.reduce((sum, value) => sum + value, 0) / values.length), samples: values.length, values } };
+        try { localStorage.setItem('allo_guided_duration_stats', JSON.stringify(next)); } catch (_) {}
+        return next;
+      });
+    }
+  }, [guidedBusy, _durationKey, _computedDone]);
   const guidedErrorText = !guidedStepError ? '' : typeof guidedStepError === 'string' ? guidedStepError : guidedStepError.message || (() => { try { return JSON.stringify(guidedStepError); } catch (_) { return String(guidedStepError); } })();
   const _errorLower = guidedErrorText.toLowerCase();
   const guidedErrorGuidance = _errorLower.includes('network') || _errorLower.includes('fetch') || _errorLower.includes('connection') ? (t('guided.error_network') || 'Check your connection, then try again.') : _errorLower.includes('rate') || _errorLower.includes('quota') ? (t('guided.error_rate_limit') || 'The service is busy. Wait a moment, then retry.') : step.id === 'image' ? (t('guided.error_image') || 'Check the image settings or try a simpler visual request.') : (t('guided.error_default') || 'Review the source and settings, then retry. Your completed work is safe.');
-  const presetStepIds = (preset) => Array.isArray(preset?.stepIds) ? Array.from(new Set(['source-input', ...preset.stepIds, '_final'])) : allSteps.map(item => item.id);
+  const presetStepIds = (preset) => Array.isArray(preset?.stepIds) ? Array.from(new Set(['source-input', ...preset.stepIds, 'package-deliver', '_final'])) : allSteps.map(item => item.id);
   const isPresetActive = (preset) => { const a = presetStepIds(preset).slice().sort(); const b = (guidedSelectedIds || allSteps.map(item => item.id)).slice().sort(); return a.length === b.length && a.every((id, index) => id === b[index]); };
-  const choosePreset = (preset) => { if (guidedBusy) return; if (hasGuidedProgress && !isPresetActive(preset)) setPendingPreset(preset); else { applyGuidedPreset(preset); setShowPicker(false); } };
-  const confirmPreset = () => { if (!pendingPreset) return; applyGuidedPreset(pendingPreset); setPendingPreset(null); setShowPicker(false); };
+  const rememberPathChoice = () => { setShowInitialPath(false); try { localStorage.setItem('allo_guided_path_prompt_seen', 'true'); } catch (_) {} };
+  const choosePreset = (preset) => { if (guidedBusy) return; if (hasGuidedProgress && !isPresetActive(preset)) setPendingPreset(preset); else { applyGuidedPreset(preset); setShowPicker(false); rememberPathChoice(); } };
+  const confirmPreset = () => { if (!pendingPreset) return; applyGuidedPreset(pendingPreset); setPendingPreset(null); setShowPicker(false); rememberPathChoice(); };
   const chooseStepToggle = (id) => { if (guidedBusy) return; if (hasGuidedProgress) setPendingStepId(id); else toggleGuidedStepId(id); };
   const confirmStepToggle = () => { if (!pendingStepId) return; toggleGuidedStepId(pendingStepId); setPendingStepId(null); };
+  const requestGuidedJump = (targetIndex) => {
+    const target = Number(targetIndex);
+    if (target <= guidedStep) { (handleGuidedJump || setGuidedStep)(target); return; }
+    const bypassedIds = GUIDED_STEPS.slice(guidedStep, target).map(item => item.id).filter(id => !_effectiveCompletedSet.has(id) && !(guidedSkippedIds || []).includes(id));
+    if (!bypassedIds.length) { (handleGuidedJump || setGuidedStep)(target); return; }
+    setPendingJump({ target, bypassedIds });
+  };
+  const confirmGuidedJump = () => { if (!pendingJump) return; if (handleGuidedJump) handleGuidedJump(pendingJump.target, pendingJump.bypassedIds); else setGuidedStep(pendingJump.target); setPendingJump(null); };
+  const currentResultItem = _matchTypes ? [...(history || [])].reverse().find(item => item && _matchTypes.includes(item.type) && (!_createdIdSet.size || _createdIdSet.has(item.id))) : null;
   const saveFeedback = () => {
     if (!feedbackStepId) return;
-    try { const prior = JSON.parse(localStorage.getItem('allo_guided_feedback') || '[]'); const entry = { stepId: feedbackStepId === 'none' ? null : feedbackStepId, completedCount, skippedCount, at: new Date().toISOString() }; localStorage.setItem('allo_guided_feedback', JSON.stringify([...(Array.isArray(prior) ? prior : []), entry].slice(-50))); setFeedbackSaved(true); } catch (_) {}
+    try { const entry = { stepId: feedbackStepId === 'none' ? null : feedbackStepId, completedCount, skippedCount, at: new Date().toISOString() }; const next = [...feedbackEntries, entry].slice(-50); localStorage.setItem('allo_guided_feedback', JSON.stringify(next)); setFeedbackEntries(next); setFeedbackSaved(true); } catch (_) {}
+  };
+  const clearFeedback = () => { try { localStorage.removeItem('allo_guided_feedback'); } catch (_) {} setFeedbackEntries([]); setShowFeedbackHistory(false); };
+  const clearGuidedLocalData = () => {
+    _skipUiPersistRef.current = true;
+    try { ['allo_guided_completed_runs', 'allo_guided_last_completion', 'allo_guided_duration_stats', 'allo_guided_feedback', 'allo_guided_ui_state', 'allo_guided_path_prompt_seen', 'allo_guided_auto_advance', 'allo_guided_readiness_checks'].forEach(key => localStorage.removeItem(key)); } catch (_) {}
+    setLastCompletion(null); setDurationStats({}); setFeedbackEntries([]); setFeedbackStepId(''); setFeedbackSaved(false); setShowFeedbackHistory(false); setReadinessChecks({}); setShowPicker(false); setInfoTab(null); setIsCollapsed(false); setPendingClearGuidedData(false);
+    if (typeof setGuidedAutoAdvance === 'function') setGuidedAutoAdvance(false);
+    if (typeof setShowGuidedTip === 'function') setShowGuidedTip(false);
   };
   return (
     <>
-      <style>{`@keyframes alloGuidedTargetPulse{0%,100%{outline-color:rgba(99,102,241,.8);box-shadow:0 0 0 2px rgba(99,102,241,.7),0 0 22px rgba(99,102,241,.45)}50%{outline-color:rgba(129,140,248,1);box-shadow:0 0 0 3px rgba(129,140,248,.95),0 0 36px rgba(99,102,241,.65)}}.allo-guided-target{outline:3px solid rgba(99,102,241,.8)!important;outline-offset:3px;animation:alloGuidedTargetPulse 2s ease-in-out infinite}.allo-guided-banner button,.allo-guided-banner select{min-height:40px}.allo-guided-banner button:disabled,.allo-guided-banner select:disabled{cursor:not-allowed!important;opacity:.58!important}body:has([aria-modal="true"]) .allo-guided-target{animation-play-state:paused!important;outline-color:transparent!important;box-shadow:none!important}@media (forced-colors:active){.allo-guided-target{outline:3px solid Highlight!important;box-shadow:none!important}.allo-guided-banner{border:1px solid CanvasText!important}}@media (max-width:480px){.allo-guided-banner{padding:12px!important;border-radius:14px!important;overflow-wrap:anywhere}}@media (prefers-reduced-motion: reduce){.allo-guided-target{animation:none !important}.allo-guided-banner *,.allo-guided-dialog *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}}`}</style>
+      <style>{`@keyframes alloGuidedTargetPulse{0%,100%{outline-color:rgba(99,102,241,.8);box-shadow:0 0 0 2px rgba(99,102,241,.7),0 0 22px rgba(99,102,241,.45)}50%{outline-color:rgba(129,140,248,1);box-shadow:0 0 0 3px rgba(129,140,248,.95),0 0 36px rgba(99,102,241,.65)}}:where(.allo-guided-target,[data-allo-guided-target="true"]){outline:3px solid rgba(99,102,241,.8)!important;outline-offset:3px;animation:alloGuidedTargetPulse 2s ease-in-out infinite}.allo-guided-banner button,.allo-guided-banner select{min-height:40px}.allo-guided-banner button:disabled,.allo-guided-banner select:disabled{cursor:not-allowed!important;opacity:.58!important}body:has([aria-modal="true"]) :where(.allo-guided-target,[data-allo-guided-target="true"]){animation-play-state:paused!important;outline-color:transparent!important;box-shadow:none!important}@media (forced-colors:active){:where(.allo-guided-target,[data-allo-guided-target="true"]){outline:3px solid Highlight!important;box-shadow:none!important}.allo-guided-banner{border:1px solid CanvasText!important}}@media (max-width:480px){.allo-guided-banner{padding:12px!important;border-radius:14px!important;overflow-wrap:anywhere}}@media (prefers-reduced-motion: reduce){:where(.allo-guided-target,[data-allo-guided-target="true"]){animation:none !important}.allo-guided-banner *,.allo-guided-dialog *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}}`}</style>
       <div className="allo-guided-banner" role="region" aria-label={t('guided.indicator_title') || 'Guided mode'} style={{ background: 'linear-gradient(135deg, #312e81, #1e3a5f)', borderRadius: '20px', padding: '16px', marginBottom: '16px', border: '1px solid rgba(99,102,241,0.3)', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: isCollapsed ? 0 : '8px' }}>
           <div style={{ minWidth: 0 }}><span style={{ fontSize: '13px', fontWeight: 800, color: 'white', display: 'block' }}>{t('guided.indicator_title')}</span>{isCollapsed && <span style={{ display: 'block', fontSize: '12px', color: '#c7d2fe', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{step.label || 'Complete!'}</span>}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}><span style={{ fontSize: '12px', color: '#c7d2fe', fontWeight: 600 }}>{t('guided.step_of').replace('{current}', Math.min(guidedStep + 1, GUIDED_STEPS.length)).replace('{total}', GUIDED_STEPS.length)}</span><button type="button" aria-expanded={!isCollapsed} aria-controls="guided-banner-details" aria-label={isCollapsed ? (t('guided.expand') || 'Expand Guided Mode') : (t('guided.collapse') || 'Collapse Guided Mode')} onClick={() => setIsCollapsed(v => !v)} style={{ minWidth: '38px', minHeight: '38px', padding: '6px 9px', color: 'white', background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.2)', borderRadius: '9px', cursor: 'pointer' }}>{isCollapsed ? '▾' : '▴'}</button></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}><span style={{ fontSize: '12px', color: '#c7d2fe', fontWeight: 600 }}>{(t('guided.step_of') || 'Step {current} of {total}').replace('{current}', Math.min(guidedStep + 1, GUIDED_STEPS.length)).replace('{total}', GUIDED_STEPS.length)}</span><button type="button" aria-expanded={!isCollapsed} aria-controls="guided-banner-details" aria-label={isCollapsed ? (t('guided.expand') || 'Expand Guided Mode') : (t('guided.collapse') || 'Collapse Guided Mode')} onClick={() => setIsCollapsed(v => !v)} style={{ minWidth: '38px', minHeight: '38px', padding: '6px 9px', color: 'white', background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.2)', borderRadius: '9px', cursor: 'pointer' }}>{isCollapsed ? '▾' : '▴'}</button></div>
         </div>
         {!isCollapsed && <div id="guided-banner-details">
+        {showInitialPath && !hasGuidedProgress && Array.isArray(guidedPresets) && (
+          <div role="region" aria-labelledby="guided-path-title" style={{ marginBottom: '11px', padding: '11px', borderRadius: '12px', background: 'rgba(15,23,42,.45)', border: '1px solid rgba(167,243,208,.4)' }}>
+            <strong id="guided-path-title" style={{ display: 'block', color: 'white', fontSize: '13px', marginBottom: '3px' }}>{t('guided.choose_goal_title') || 'What would you like to build?'}</strong>
+            <span style={{ display: 'block', color: '#c7d2fe', fontSize: '12px', lineHeight: 1.45, marginBottom: '8px' }}>{t('guided.choose_goal_hint') || 'Choose a focused path now, or keep the complete tour.'}</span>
+            {lastCompletion && <div style={{ marginBottom: '8px', padding: '8px', borderRadius: '8px', background: 'rgba(16,185,129,.12)', border: '1px solid rgba(110,231,183,.3)', color: '#d1fae5', fontSize: '12px' }}><strong style={{ display: 'block', color: 'white' }}>{t('guided.last_completion') || 'Last completed run'}</strong>{new Date(lastCompletion.completedAt).toLocaleDateString()} · {Number(lastCompletion.completedCount) || 0} {t('guided.summary_completed') || 'completed'} · {Number(lastCompletion.resourceCount) || 0} {t('guided.summary_resources') || 'resources'}<button type="button" onClick={() => { try { localStorage.removeItem('allo_guided_last_completion'); } catch (_) {} setLastCompletion(null); }} style={{ display: 'block', marginTop: '5px', padding: '5px 7px', borderRadius: '6px', border: '1px solid rgba(255,255,255,.2)', background: 'transparent', color: '#d1fae5' }}>{t('guided.dismiss_summary') || 'Dismiss summary'}</button></div>}
+            <div style={{ display: 'grid', gap: '6px' }}>{guidedPresets.map(preset => <button type="button" key={preset.id} onClick={() => choosePreset(preset)} style={{ textAlign: 'left', padding: '8px 9px', borderRadius: '8px', border: '1px solid rgba(129,140,248,.4)', background: 'rgba(99,102,241,.16)', color: 'white' }}><strong style={{ display: 'block', fontSize: '12px' }}>{t('guided.preset_' + preset.id + '_label') || preset.label}</strong><span style={{ display: 'block', color: '#c7d2fe', fontSize: '12px', marginTop: '2px' }}>{t('guided.preset_' + preset.id + '_description') || preset.description}</span></button>)}</div>
+            <button type="button" onClick={rememberPathChoice} style={{ width: '100%', marginTop: '7px', padding: '7px', borderRadius: '8px', border: '1px solid rgba(255,255,255,.2)', background: 'transparent', color: '#e0e7ff' }}>{t('guided.decide_later') || 'Decide later'}</button>
+          </div>
+        )}
+        {currentPhase && <div role="group" aria-label={t('guided.phase_context') || 'Guided phase'} title={currentPhaseDescription} style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', margin: '0 0 6px' }}><span style={{ fontSize: '11px', fontWeight: 900, color: '#312e81', background: '#c7d2fe', borderRadius: '999px', padding: '3px 8px' }}>{(t('guided.phase_of') || 'Phase {current} of {total}').replace('{current}', currentPhaseIndex + 1).replace('{total}', activePhaseDefinitions.length)}</span><span style={{ color: '#a7f3d0', fontSize: '12px', fontWeight: 800 }}>{currentPhaseLabel}</span></div>}
         <p style={{ fontSize: '13px', color: '#e0e7ff', margin: '0 0 6px', fontWeight: 700 }}>{step.label || (t('guided.complete') || 'Complete!')}</p>
         <div role="group" aria-label={t('guided.estimate_label') || 'Step estimate'} style={{ display: 'flex', gap: '6px', marginBottom: '10px', flexWrap: 'wrap' }}><span style={{ fontSize: '12px', color: '#e0e7ff', background: 'rgba(255,255,255,.08)', borderRadius: '999px', padding: '3px 8px' }}>{stepMeta[0]}</span><span style={{ fontSize: '12px', color: '#e0e7ff', background: 'rgba(255,255,255,.08)', borderRadius: '999px', padding: '3px 8px' }}>{t('guided.kind_' + stepMeta[1]) || stepMeta[1]}</span></div>
         <label htmlFor="guided-step-jump" style={{ display: 'block', fontSize: '12px', color: '#c7d2fe', marginBottom: '4px', fontWeight: 700 }}>{t('guided.jump_to_step') || 'Jump to step'}</label>
-        <select id="guided-step-jump" value={guidedStep} disabled={guidedBusy} onChange={(event) => setGuidedStep(Number(event.target.value))} style={{ width: '100%', minHeight: '40px', marginBottom: '10px', padding: '7px 9px', borderRadius: '9px', border: '1px solid rgba(165,180,252,.45)', background: '#172554', color: 'white', fontSize: '13px', opacity: guidedBusy ? .65 : 1 }}>{GUIDED_STEPS.map((item, index) => <option key={item.id} value={index}>{index + 1}. {localizeStep(item, 'label')}</option>)}</select>
+        <select id="guided-step-jump" value={guidedStep} disabled={guidedBusy} onChange={(event) => requestGuidedJump(event.target.value)} style={{ width: '100%', minHeight: '40px', marginBottom: pendingJump ? '6px' : '10px', padding: '7px 9px', borderRadius: '9px', border: '1px solid rgba(165,180,252,.45)', background: '#172554', color: 'white', fontSize: '13px', opacity: guidedBusy ? .65 : 1 }}>{GUIDED_STEPS.map((item, index) => <option key={item.id} value={index}>{index + 1}. {localizeStep(item, 'label')}</option>)}</select>
+        {pendingJump && <div role="alert" style={{ marginBottom: '10px', padding: '9px', borderRadius: '9px', border: '1px solid rgba(251,191,36,.5)', background: 'rgba(120,53,15,.3)', color: '#fef3c7', fontSize: '12px' }}><strong style={{ display: 'block', color: 'white', marginBottom: '3px' }}>{t('guided.jump_confirm_title') || 'Jump forward?'}</strong>{(t('guided.jump_confirm_text') || '{count} unfinished steps will be marked skipped.').replace('{count}', pendingJump.bypassedIds.length)}<div style={{ display: 'flex', gap: '7px', marginTop: '7px' }}><button type="button" onClick={confirmGuidedJump} style={{ flex: 1, border: 0, borderRadius: '7px', fontWeight: 800 }}>{t('guided.jump_and_skip') || 'Jump and mark skipped'}</button><button type="button" onClick={() => setPendingJump(null)} style={{ flex: 1, borderRadius: '7px', border: '1px solid rgba(255,255,255,.25)', background: 'transparent', color: 'white' }}>{t('common.cancel') || 'Cancel'}</button></div></div>}
         {/* Segmented progress: one tick per active step — completed (green) / current (glowing indigo) /
             upcoming (dim). Makes "you've finished N steps" visible, especially after resuming a saved tour
             (mirrors the persisted completedSteps = steps before the current index). */}
@@ -749,7 +904,32 @@ function GuidedModeBanner({
             <span style={{ fontSize: '13px', color: 'white', fontWeight: 600, lineHeight: '1.5' }}>{stepDone ? (step.success || step.action) : step.action}</span>
           </div>
         )}
-        {guidedBusy && <div role="status" aria-live="polite" style={{ marginBottom: '10px', padding: '9px 11px', borderRadius: '10px', background: 'rgba(59,130,246,.18)', border: '1px solid rgba(147,197,253,.4)', color: '#dbeafe', fontSize: '12px', fontWeight: 700 }}>{t('guided.generating_lock') || 'Generating this resource. Step navigation is paused until it finishes.'}</div>}
+        {typeof focusGuidedTarget === 'function' && !isLast && <button type="button" disabled={guidedBusy} onClick={focusGuidedTarget} style={{ width: '100%', marginBottom: '10px', padding: '7px 10px', borderRadius: '9px', border: '1px solid rgba(165,180,252,.4)', background: 'rgba(255,255,255,.06)', color: '#e0e7ff', fontWeight: 800 }}>{t('guided.focus_tool') || 'Focus highlighted tool'}</button>}
+{step.id === 'package-deliver' && Array.isArray(guidedDeliveryGroups) && (
+          <div role="region" aria-labelledby="guided-delivery-title" style={{ marginBottom: '10px', padding: '11px 12px', borderRadius: '12px', background: 'rgba(15,23,42,.38)', border: '1px solid rgba(167,243,208,.35)' }}>
+            <strong id="guided-delivery-title" style={{ display: 'block', color: 'white', fontSize: '13px', marginBottom: '3px' }}>{t('guided.delivery_title') || 'Choose delivery by purpose'}</strong>
+            <span style={{ display: 'block', color: '#c7d2fe', fontSize: '12px', lineHeight: 1.45, marginBottom: '8px' }}>{t('guided.delivery_hint') || 'Use one primary route and a backup when access needs differ.'}</span>
+            <div role="group" aria-labelledby="guided-delivery-recommender-title" style={{ marginBottom: '9px', padding: '9px', borderRadius: '9px', background: 'rgba(99,102,241,.14)', border: '1px solid rgba(165,180,252,.35)' }}>
+              <strong id="guided-delivery-recommender-title" style={{ display: 'block', color: '#fef3c7', fontSize: '12px', marginBottom: '6px' }}>{t('guided.delivery_recommender_title') || 'Help me choose'}</strong>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '6px' }}>
+                <label style={{ color: '#e0e7ff', fontSize: '11px' }}>{t('guided.delivery_setting') || 'Teaching setting'}<select value={deliverySetting} onChange={event => setDeliverySetting(event.target.value)} style={{ display: 'block', width: '100%', marginTop: '3px', padding: '6px', borderRadius: '7px', background: '#172554', color: 'white', border: '1px solid rgba(165,180,252,.45)' }}><option value="take-home">{t('guided.delivery_setting_take_home') || 'Take-home'}</option><option value="print">{t('guided.delivery_setting_print') || 'Print / paper'}</option><option value="live">{t('guided.delivery_setting_live') || 'Live class'}</option><option value="lms">{t('guided.delivery_setting_lms') || 'LMS'}</option></select></label>
+                <label style={{ color: '#e0e7ff', fontSize: '11px' }}>{t('guided.delivery_priority') || 'Top priority'}<select value={deliveryPriority} onChange={event => setDeliveryPriority(event.target.value)} style={{ display: 'block', width: '100%', marginTop: '3px', padding: '6px', borderRadius: '7px', background: '#172554', color: 'white', border: '1px solid rgba(165,180,252,.45)' }}><option value="accessible">{t('guided.delivery_priority_accessible') || 'Accessibility'}</option><option value="editable">{t('guided.delivery_priority_editable') || 'Editable'}</option><option value="assessment">{t('guided.delivery_priority_assessment') || 'Assessment'}</option><option value="interactive">{t('guided.delivery_priority_interactive') || 'Interactive'}</option><option value="low-connectivity">{t('guided.delivery_priority_offline') || 'Low connectivity'}</option></select></label>
+              </div>
+              <div role="status" aria-live="polite" style={{ marginTop: '7px', padding: '7px 8px', borderRadius: '7px', background: 'rgba(15,23,42,.45)', color: '#e0e7ff', fontSize: '11px', lineHeight: 1.45 }}><strong style={{ color: '#a7f3d0' }}>{t('guided.delivery_recommended') || 'Recommended'}:</strong> {deliveryRecommendation.primary} <span aria-hidden="true">→</span> <strong>{t('guided.delivery_backup') || 'Backup'}:</strong> {deliveryRecommendation.backup}<span style={{ display: 'block', color: '#c7d2fe', marginTop: '2px' }}>{deliveryRecommendation.why}</span></div>
+            </div>
+            <div role="list" aria-label={t('guided.delivery_options_label') || 'Export and delivery options'} style={{ display: 'grid', gap: '6px' }}>
+              {guidedDeliveryGroups.map(group => <div role="listitem" key={group.id} style={{ padding: '7px 8px', borderRadius: '8px', background: 'rgba(255,255,255,.06)' }}><strong style={{ display: 'block', color: '#a7f3d0', fontSize: '12px' }}>{group.label}</strong><span style={{ display: 'block', marginTop: '2px', color: '#e0e7ff', fontSize: '12px', lineHeight: 1.45 }}>{(group.options || []).join(' · ')}</span></div>)}
+            </div>
+            <div style={{ marginTop: '8px', color: '#fde68a', fontSize: '11px', lineHeight: 1.45 }}>{t('guided.delivery_conditions') || 'QTI needs a quiz. H5P needs compatible content and destination libraries. Storybook and Persona exports stay in their resource views. Homework expiry and hosting vary by deployment.'}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '6px', marginTop: '9px' }}>
+              {typeof openGuidedDocumentBuilder === 'function' && <button type="button" disabled={guidedBusy} onClick={openGuidedDocumentBuilder} style={{ padding: '7px 8px', border: 0, borderRadius: '8px', background: '#4f46e5', color: 'white', fontWeight: 800, fontSize: '12px' }}>{t('guided.open_builder') || 'Document Builder'}</button>}
+              {typeof createGuidedHomeworkShare === 'function' && <button type="button" disabled={guidedBusy} onClick={createGuidedHomeworkShare} style={{ padding: '7px 8px', border: '1px solid rgba(165,180,252,.45)', borderRadius: '8px', background: 'rgba(255,255,255,.08)', color: 'white', fontWeight: 800, fontSize: '12px' }}>{t('guided.create_homework_qr') || 'Homework QR'}</button>}
+              {typeof startGuidedLiveSession === 'function' && <button type="button" disabled={guidedBusy} onClick={startGuidedLiveSession} style={{ padding: '7px 8px', border: '1px solid rgba(110,231,183,.45)', borderRadius: '8px', background: 'rgba(16,185,129,.14)', color: '#d1fae5', fontWeight: 800, fontSize: '12px' }}>{t('guided.start_live_session') || 'Live session'}</button>}
+              {typeof previewGuidedStudentAssignment === 'function' && <button type="button" disabled={guidedBusy || !canPreviewGuidedStudentAssignment} onClick={previewGuidedStudentAssignment} title={!canPreviewGuidedStudentAssignment ? (t('guided.preview_requires_share') || 'Create a student link first') : undefined} style={{ padding: '7px 8px', border: '1px solid rgba(252,211,77,.45)', borderRadius: '8px', background: 'rgba(245,158,11,.12)', color: '#fef3c7', fontWeight: 800, fontSize: '12px' }}>{t('guided.test_student_link') || 'Test student link'}</button>}
+            </div>
+          </div>
+        )}
+        {guidedBusy && <div role="status" aria-live="polite" style={{ marginBottom: '10px', padding: '9px 11px', borderRadius: '10px', background: 'rgba(59,130,246,.18)', border: '1px solid rgba(147,197,253,.4)', color: '#dbeafe', fontSize: '12px', fontWeight: 700 }}><div>{generationStep || t('guided.generating_lock') || 'Generating this resource. Step navigation is paused until it finishes.'}</div>{processingProgress?.total > 0 && <div role="progressbar" aria-label={t('guided.generation_progress') || 'Generation progress'} aria-valuemin={0} aria-valuemax={processingProgress.total} aria-valuenow={processingProgress.current} style={{ height: '7px', marginTop: '7px', overflow: 'hidden', borderRadius: '999px', background: 'rgba(15,23,42,.55)' }}><span style={{ display: 'block', width: Math.min(100, Math.max(0, processingProgress.current / processingProgress.total * 100)) + '%', height: '100%', background: '#60a5fa', transition: 'width .2s' }} /></div>}</div>}
         {guidedStepError && (
           <div role="alert" style={{ marginBottom: '10px', padding: '11px 12px', background: 'rgba(127,29,29,.35)', border: '1px solid rgba(248,113,113,.65)', borderRadius: '12px' }}>
             <div style={{ color: 'white', fontSize: '13px', fontWeight: 800 }}>{t('guided.error_title') || 'This step did not finish'}</div>
@@ -800,6 +980,15 @@ function GuidedModeBanner({
           </div>
         )}
         {isLast && (
+          <div role="region" aria-labelledby="guided-readiness-title" style={{ marginBottom: '10px', padding: '11px 13px', background: 'rgba(59,130,246,.13)', border: '1px solid rgba(147,197,253,.38)', borderRadius: '12px' }}>
+            <strong id="guided-readiness-title" style={{ display: 'block', color: 'white', fontSize: '13px' }}>{t('guided.readiness_title') || 'Student-ready preflight'}</strong>
+            <span style={{ display: 'block', color: '#c7d2fe', fontSize: '12px', lineHeight: 1.45, margin: '3px 0 8px' }}>{t('guided.readiness_hint') || 'Verified actions are checked automatically. Confirm the remaining classroom checks before launch.'}</span>
+            <div role="progressbar" aria-label={t('guided.readiness_progress') || 'Learner readiness progress'} aria-valuemin={0} aria-valuemax={readinessTotal} aria-valuenow={readinessCount} style={{ height: '7px', overflow: 'hidden', borderRadius: '999px', background: 'rgba(15,23,42,.55)', marginBottom: '8px' }}><span style={{ display: 'block', width: (readinessCount / Math.max(1, readinessTotal) * 100) + '%', height: '100%', background: readinessCount === readinessTotal ? '#34d399' : '#60a5fa', transition: 'width .2s' }} /></div>
+            <div style={{ display: 'grid', gap: '5px' }}>{readinessItems.map(item => { const checked = !!(item.verified || readinessChecks[item.id]); return <label key={item.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '7px', padding: '6px 7px', borderRadius: '7px', background: checked ? 'rgba(16,185,129,.12)' : 'rgba(15,23,42,.32)', color: checked ? '#d1fae5' : '#e0e7ff', fontSize: '12px', lineHeight: 1.4 }}><input type="checkbox" checked={checked} onChange={event => setReadinessChecks(previous => ({ ...(previous || {}), [item.id]: event.target.checked }))} style={{ marginTop: '2px' }} /><span style={{ flex: 1 }}>{item.label}</span><span style={{ color: item.verified ? '#6ee7b7' : '#c7d2fe', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase' }}>{item.verified ? (t('guided.readiness_verified') || 'Verified') : (t('guided.readiness_confirm') || 'Confirm')}</span></label>; })}</div>
+            <div role="status" aria-live="polite" style={{ marginTop: '8px', color: readinessCount === readinessTotal ? '#6ee7b7' : '#fde68a', fontSize: '12px', fontWeight: 800 }}>{readinessCount}/{readinessTotal} {readinessCount === readinessTotal ? (t('guided.readiness_ready') || 'ready for learners') : (t('guided.readiness_remaining') || 'checks complete')}</div>
+          </div>
+        )}
+        {isLast && (
           <div role="status" style={{ marginBottom: '10px', padding: '11px 13px', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(74,222,128,0.35)', borderRadius: '12px' }}>
             <div style={{ fontSize: '12px', fontWeight: 800, color: 'white', marginBottom: '6px' }}>🎉 {t('guided.recap_title') || 'Your lesson is built'}</div>
             <div role="list" aria-label={t('guided.summary_label') || 'Guided Mode completion summary'} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '6px', marginBottom: '9px' }}>
@@ -831,15 +1020,18 @@ function GuidedModeBanner({
             )}
             {skippedStepEntries.length > 0 && <div style={{ marginTop: '10px' }}><div style={{ color: '#fde68a', fontSize: '12px', fontWeight: 800, marginBottom: '5px' }}>{t('guided.review_skipped') || 'Review skipped steps'}</div><div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>{skippedStepEntries.map(entry => <button type="button" disabled={guidedBusy} key={entry.item.id} onClick={() => setGuidedStep(entry.index)} style={{ padding: '7px 9px', borderRadius: '7px', border: '1px solid rgba(251,191,36,.35)', background: 'rgba(251,191,36,.08)', color: '#fef3c7', fontSize: '12px' }}>{localizeStep(entry.item, 'label')}</button>)}</div></div>}
             <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,.1)' }}><label htmlFor="guided-feedback-step" style={{ display: 'block', color: '#c7d2fe', fontSize: '12px', marginBottom: '5px', lineHeight: 1.45 }}>{t('guided.feedback_prompt') || 'Optional reflection (saved only on this device): which step was most confusing?'}</label><div style={{ display: 'flex', gap: '7px', flexWrap: 'wrap' }}><select id="guided-feedback-step" value={feedbackStepId} onChange={e => { setFeedbackStepId(e.target.value); setFeedbackSaved(false); }} style={{ minWidth: '160px', flex: 1, padding: '7px', borderRadius: '7px' }}><option value="">{t('guided.feedback_choose') || 'Choose a step'}</option><option value="none">{t('guided.feedback_none') || 'No confusing step'}</option>{GUIDED_STEPS.map(item => <option key={item.id} value={item.id}>{localizeStep(item, 'label')}</option>)}</select><button type="button" disabled={!feedbackStepId || guidedBusy} onClick={saveFeedback} style={{ padding: '7px 10px', borderRadius: '7px', border: 0, fontWeight: 800 }}>{t('guided.feedback_save') || 'Save reflection'}</button></div>{feedbackSaved && <div role="status" style={{ color: '#6ee7b7', fontSize: '12px', marginTop: '5px' }}>{t('guided.feedback_saved') || 'Thanks — your reflection is saved only on this device.'}</div>}</div>
+            <div style={{ display: 'flex', gap: '7px', marginTop: '8px', flexWrap: 'wrap' }}><button type="button" onClick={() => setShowFeedbackHistory(value => !value)} style={{ borderRadius: '7px', border: '1px solid rgba(255,255,255,.2)', background: 'transparent', color: '#c7d2fe', padding: '6px 9px' }}>{showFeedbackHistory ? (t('guided.hide_reflections') || 'Hide saved reflections') : (t('guided.view_reflections') || 'View saved reflections')} ({feedbackEntries.length})</button>{feedbackEntries.length > 0 && <button type="button" onClick={clearFeedback} style={{ borderRadius: '7px', border: '1px solid rgba(248,113,113,.4)', background: 'transparent', color: '#fecaca', padding: '6px 9px' }}>{t('guided.clear_reflections') || 'Clear local reflections'}</button>}</div>
+            {showFeedbackHistory && <div role="region" aria-label={t('guided.saved_reflections') || 'Saved Guided reflections'} style={{ marginTop: '7px', padding: '8px', maxHeight: '100px', overflowY: 'auto', borderRadius: '8px', background: 'rgba(15,23,42,.4)', color: '#cbd5e1', fontSize: '12px' }}>{feedbackEntries.length ? feedbackEntries.slice().reverse().map((entry, index) => <div key={entry.at || index} style={{ marginBottom: '4px' }}>{new Date(entry.at).toLocaleDateString()}: {entry.stepId ? localizeStep(allSteps.find(item => item.id === entry.stepId) || { id: entry.stepId, label: entry.stepId }, 'label') : (t('guided.feedback_none') || 'No confusing step')}</div>) : (t('guided.no_reflections') || 'No reflections saved on this device.')}</div>}
             <div style={{ fontSize: '12px', color: 'rgba(203,213,225,0.8)', marginTop: '8px', fontStyle: 'italic' }}>{t('guided.recap_hub') || 'Looking for more? The Learning Hub has StoryForge, PoetTree, and LitLab.'}</div>
           </div>
         )}
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {guidedStep > 0 && <button type="button" disabled={guidedBusy} onClick={() => setGuidedStep(s => Math.max(0, s - 1))} aria-label={t('guided.back') || 'Back'} title={t('guided.back') || 'Back'} style={{ padding: '6px 10px', fontSize: '12px', fontWeight: 800, color: '#c7d2fe', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s', flexShrink: 0 }}>{t('guided.back') || '← Back'}</button>}
           {step.id === 'source-input' && !stepDone && <span style={{ flex: 1, padding: '6px 12px', fontSize: '12px', fontWeight: 700, color: 'rgba(199,210,254,0.85)', fontStyle: 'italic', textAlign: 'center' }}>{t('guided.source_prompt')}</span>}
+          {!isLast && stepDone && currentResultItem && openGuidedHistoryItem && <button type="button" disabled={guidedBusy} onClick={() => openGuidedHistoryItem(currentResultItem)} style={{ flex: 1, padding: '6px 12px', fontSize: '12px', fontWeight: 800, color: '#e0e7ff', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(165,180,252,.35)', borderRadius: '10px' }}>{t('guided.review_result') || 'Review result'}</button>}
           {!isLast && stepDone && <button type="button" disabled={guidedBusy} onClick={() => handleGuidedSkip(false)} style={{ flex: 1, padding: '6px 12px', fontSize: '12px', fontWeight: 800, color: 'white', background: 'linear-gradient(135deg, #818cf8, #6366f1)', border: '1px solid rgba(129,140,248,0.45)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.next_step') || 'Next step →'}</button>}
           {!isLast && !stepDone && guidedStep > 0 && <button type="button" disabled={guidedBusy} onClick={() => handleGuidedSkip(true)} style={{ flex: 1, padding: '6px 12px', fontSize: '12px', fontWeight: 800, color: '#c7d2fe', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.skip_step') || t('guided.skip') || 'Skip step'}</button>}
-          {isLast && <button type="button" disabled={guidedBusy} onClick={() => { if (typeof resetGuidedProgress === 'function') resetGuidedProgress(); else setGuidedStep(0); handleExitGuidedMode(); }} style={{ flex: 1, padding: '6px 12px', fontSize: '12px', fontWeight: 700, color: 'white', background: 'linear-gradient(135deg, #818cf8, #6366f1)', border: 'none', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.all_done')}</button>}
+          {isLast && <button type="button" disabled={guidedBusy} onClick={() => { const summary = { completedCount, skippedCount, resourceCount: recapItems.length, readinessCount, readinessTotal, stepLabels: GUIDED_STEPS.map(item => localizeStep(item, 'label')) }; if (typeof handleCompleteGuidedMode === 'function') handleCompleteGuidedMode(summary); else { if (typeof resetGuidedProgress === 'function') resetGuidedProgress(); handleExitGuidedMode(); } }} style={{ flex: 1, padding: '6px 12px', fontSize: '12px', fontWeight: 700, color: 'white', background: 'linear-gradient(135deg, #818cf8, #6366f1)', border: 'none', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{readinessCount === readinessTotal ? (t('guided.all_done') || 'Finish Guided Mode') : (t('guided.finish_with_checks_remaining') || 'Finish with checks remaining')}</button>}
           {toggleGuidedStepId && <button type="button" disabled={guidedBusy} onClick={() => setShowPicker(p => !p)} aria-label={t('guided.customize') || 'Choose which steps to include'} aria-expanded={showPicker} aria-controls="guided-step-picker" title={t('guided.customize') || 'Choose which steps to include'} style={{ padding: '6px 10px', fontSize: '12px', fontWeight: 700, color: showPicker ? 'white' : '#c7d2fe', background: showPicker ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>⚙</button>}
           <button type="button" onClick={() => setShowGuidedTip(p => !p)} aria-expanded={showGuidedTip} aria-controls="guided-about-panel" style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 700, color: showGuidedTip ? 'white' : '#c7d2fe', background: showGuidedTip ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{showGuidedTip ? '✕' : 'ℹ️'} {t('guided.about')}</button>
           <button type="button" disabled={guidedBusy} onClick={handleExitGuidedMode} title={t('guided.resume_later_hint') || 'Save your place and return from Setup'} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 700, color: '#fde68a', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.resume_later') || 'Resume later'}</button>
@@ -850,17 +1042,30 @@ function GuidedModeBanner({
             {Array.isArray(guidedPresets) && typeof applyGuidedPreset === 'function' && <div role="group" aria-label={t('guided.preset_group') || 'Goal-based Guided Mode paths'} style={{ display: 'grid', gap: '7px', marginBottom: '10px' }}>{guidedPresets.map(preset => { const active = isPresetActive(preset); const count = presetStepIds(preset).length; return <button type="button" key={preset.id} disabled={guidedBusy} aria-pressed={active} onClick={() => choosePreset(preset)} style={{ textAlign: 'left', padding: '9px 10px', borderRadius: '9px', border: '1px solid ' + (active ? '#6ee7b7' : 'rgba(129,140,248,.35)'), background: active ? 'rgba(16,185,129,.18)' : 'rgba(99,102,241,.12)', color: 'white' }}><strong style={{ display: 'block', fontSize: '13px' }}>{t('guided.preset_' + preset.id + '_label') || preset.label}{active ? ' ' + (t('guided.preset_active') || '(active)') : ''}</strong><span style={{ display: 'block', color: '#c7d2fe', fontSize: '12px', marginTop: '3px', lineHeight: 1.4 }}>{t('guided.preset_' + preset.id + '_description') || preset.description}</span><span style={{ display: 'block', color: '#a7f3d0', fontSize: '12px', marginTop: '4px' }}>{(t('guided.preset_meta') || '{count} steps · about {minutes} min').replace('{count}', count).replace('{minutes}', Math.max(4, count * 2))}</span></button>; })}</div>}
             {pendingPreset && <div role="alert" style={{ marginBottom: '10px', padding: '10px', borderRadius: '9px', border: '1px solid rgba(251,191,36,.55)', background: 'rgba(120,53,15,.3)', color: '#fef3c7', fontSize: '12px' }}><strong style={{ display: 'block', color: 'white', marginBottom: '4px' }}>{t('guided.preset_confirm_title') || 'Change Guided path?'}</strong>{t('guided.preset_confirm_text') || 'This restarts Guided progress. Your generated resources remain in History.'}<div style={{ display: 'flex', gap: '7px', marginTop: '8px' }}><button type="button" onClick={confirmPreset} style={{ flex: 1, padding: '7px', borderRadius: '7px', border: 0, fontWeight: 800 }}>{t('guided.change_path') || 'Change path'}</button><button type="button" onClick={() => setPendingPreset(null)} style={{ flex: 1, padding: '7px', borderRadius: '7px', border: '1px solid rgba(255,255,255,.25)', background: 'transparent', color: 'white' }}>{t('common.cancel') || 'Cancel'}</button></div></div>}
             {pendingStepId && <div role="alert" style={{ marginBottom: '10px', padding: '10px', borderRadius: '9px', border: '1px solid rgba(251,191,36,.55)', background: 'rgba(120,53,15,.3)', color: '#fef3c7', fontSize: '12px' }}><strong style={{ display: 'block', color: 'white', marginBottom: '4px' }}>{t('guided.step_change_confirm_title') || 'Change included steps?'}</strong>{t('guided.step_change_confirm_text') || 'This returns Guided Mode to step 1. Completed resources remain in History.'}<div style={{ display: 'flex', gap: '7px', marginTop: '8px' }}><button type="button" onClick={confirmStepToggle} style={{ flex: 1, padding: '7px', borderRadius: '7px', border: 0, fontWeight: 800 }}>{t('guided.change_steps') || 'Change steps'}</button><button type="button" onClick={() => setPendingStepId(null)} style={{ flex: 1, padding: '7px', borderRadius: '7px', border: '1px solid rgba(255,255,255,.25)', background: 'transparent', color: 'white' }}>{t('common.cancel') || 'Cancel'}</button></div></div>}            {typeof setGuidedAutoAdvance === 'function' && <button type="button" role="switch" aria-checked={!!guidedAutoAdvance} disabled={guidedBusy} onClick={() => setGuidedAutoAdvance(value => !value)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', width: '100%', padding: '9px 10px', marginBottom: '10px', borderRadius: '9px', border: '1px solid rgba(165,180,252,.35)', background: 'rgba(255,255,255,.06)', color: 'white', textAlign: 'left' }}><span><strong style={{ display: 'block', fontSize: '13px' }}>{t('guided.auto_advance') || 'Automatically continue'}</strong><span style={{ display: 'block', color: '#c7d2fe', fontSize: '12px', marginTop: '2px' }}>{t('guided.auto_advance_hint') || 'Move to the next step after a resource finishes.'}</span></span><span aria-hidden="true" style={{ flexShrink: 0, width: '34px', height: '20px', borderRadius: '999px', padding: '2px', background: guidedAutoAdvance ? '#10b981' : '#475569' }}><span style={{ display: 'block', width: '16px', height: '16px', borderRadius: '50%', background: 'white', transform: guidedAutoAdvance ? 'translateX(14px)' : 'translateX(0)', transition: 'transform .15s' }} /></span></button>}
-            {allSteps.map(s => {
+            <div style={{ marginBottom: '10px', padding: '9px 10px', borderRadius: '9px', border: '1px solid rgba(148,163,184,.28)', background: 'rgba(15,23,42,.25)' }}>
+              <strong style={{ display: 'block', color: 'white', fontSize: '13px' }}>{t('guided.local_data_title') || 'Local Guided data'}</strong>
+              <span style={{ display: 'block', margin: '3px 0 7px', color: '#c7d2fe', fontSize: '12px', lineHeight: 1.4 }}>{t('guided.local_data_hint') || 'Clear completed-run summaries, timing history, reflections, and Guided preferences stored on this device. Your current lesson and generated resources stay intact.'}</span>
+              {!pendingClearGuidedData ? <button type="button" onClick={() => setPendingClearGuidedData(true)} style={{ width: '100%', borderRadius: '7px', border: '1px solid rgba(248,113,113,.45)', background: 'transparent', color: '#fecaca', padding: '7px 9px', fontWeight: 800 }}>{t('guided.clear_local_data') || 'Clear Guided history & preferences'}</button> : <div role="alert" style={{ padding: '8px', borderRadius: '8px', background: 'rgba(127,29,29,.3)', color: '#fecaca', fontSize: '12px' }}><strong style={{ display: 'block', color: 'white', marginBottom: '5px' }}>{t('guided.clear_local_confirm') || 'Clear local Guided data?'}</strong><div style={{ display: 'flex', gap: '7px' }}><button type="button" onClick={clearGuidedLocalData} style={{ flex: 1, border: 0, borderRadius: '7px', fontWeight: 800 }}>{t('guided.clear_now') || 'Clear now'}</button><button type="button" onClick={() => setPendingClearGuidedData(false)} style={{ flex: 1, borderRadius: '7px', border: '1px solid rgba(255,255,255,.25)', background: 'transparent', color: 'white' }}>{t('common.cancel') || 'Cancel'}</button></div></div>}
+            </div>
+            {allSteps.map((s, index) => {
               const on = isStepOn(s.id);
-              const locked = s.id === 'source-input' || s.id === '_final';
+              const locked = s.id === 'source-input' || s.id === 'package-deliver' || s.id === '_final';
+              const phaseDef = phaseDefinitions.find(item => item.id === s.phase) || { id: s.phase || 'other', label: s.phase || 'Other' };
+              const previousPhase = index > 0 ? allSteps[index - 1]?.phase : null;
+              const showPhaseHeading = index === 0 || previousPhase !== s.phase;
+              const pickerPhaseKey = 'guided.phase_' + phaseDef.id;
+              const pickerPhaseTranslation = t(pickerPhaseKey);
+              const pickerPhaseLabel = pickerPhaseTranslation && pickerPhaseTranslation !== pickerPhaseKey ? pickerPhaseTranslation : phaseDef.label;
               return (
-                <button type="button" key={s.id} role="checkbox" aria-checked={on} disabled={locked || guidedBusy} onClick={() => { if (!locked && !guidedBusy) chooseStepToggle(s.id); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', textAlign: 'left', padding: '5px 6px', marginBottom: '2px', background: on ? 'rgba(99,102,241,0.16)' : 'transparent', border: 'none', borderRadius: '8px', cursor: locked ? 'default' : 'pointer', opacity: locked ? 0.6 : 1 }}>
-                  <span aria-hidden="true" style={{ width: '14px', height: '14px', borderRadius: '4px', border: '1.5px solid ' + (on ? '#818cf8' : 'rgba(255,255,255,0.3)'), background: on ? '#6366f1' : 'transparent', color: 'white', fontSize: '12px', lineHeight: '12px', textAlign: 'center', flexShrink: 0 }}>{on ? '✓' : ''}</span>
-                  <span style={{ fontSize: '12px', color: on ? 'white' : 'rgba(203,213,225,0.75)', fontWeight: 600 }}>{localizeStep(s, 'label')}{locked ? ' ' + (t('guided.required') || '(required)') : ''}</span>
-                </button>
+                <React.Fragment key={s.id}>
+                  {showPhaseHeading && <div role="heading" aria-level={3} style={{ margin: index ? '10px 5px 4px' : '2px 5px 4px', color: '#a7f3d0', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.07em' }}>{pickerPhaseLabel}</div>}
+                  <button type="button" role="checkbox" aria-checked={on} disabled={locked || guidedBusy} onClick={() => { if (!locked && !guidedBusy) chooseStepToggle(s.id); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', textAlign: 'left', padding: '5px 6px', marginBottom: '2px', background: on ? 'rgba(99,102,241,0.16)' : 'transparent', border: 'none', borderRadius: '8px', cursor: locked ? 'default' : 'pointer', opacity: locked ? 0.6 : 1 }}>
+                    <span aria-hidden="true" style={{ width: '14px', height: '14px', borderRadius: '4px', border: '1.5px solid ' + (on ? '#818cf8' : 'rgba(255,255,255,0.3)'), background: on ? '#6366f1' : 'transparent', color: 'white', fontSize: '12px', lineHeight: '12px', textAlign: 'center', flexShrink: 0 }}>{on ? '✓' : ''}</span>
+                    <span style={{ fontSize: '12px', color: on ? 'white' : 'rgba(203,213,225,0.75)', fontWeight: 600 }}>{localizeStep(s, 'label')}{locked ? ' ' + (t('guided.required') || '(required)') : ''}</span>
+                  </button>
+                </React.Fragment>
               );
-            })}
-          </div>
+            })}          </div>
         )}
         {showGuidedTip && (() => {
           const stepId = GUIDED_STEPS[guidedStep]?.id;

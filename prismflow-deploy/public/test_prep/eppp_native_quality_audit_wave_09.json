@@ -1,0 +1,186 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-09",
+  "reviewedAt": "2026-07-23",
+  "reportType": "source-checked-native-item-repair",
+  "scope": "Deep-rewrite the next eight unreviewed items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.",
+  "challengeCriteria": [
+    "replace definition completion with application or analysis where difficulty warrants",
+    "use adjacent, instructionally plausible distractors without stacked absolute cues",
+    "avoid keyed lexical echoes that allow answer selection without construct knowledge",
+    "separate intentionally related coverage by decision, context, or cognitive demand",
+    "verify the key and rationale against an item-specific authoritative or peer-reviewed source",
+    "provide four substantive, option-specific explanations and preserve answer positions"
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 8,
+    "domainsCovered": 5,
+    "appliedOrAnalysisItems": 8,
+    "keyPositionsPreserved": 8,
+    "optionSpecificExplanations": 32,
+    "selectedItemsWithWarningsAfter": 0,
+    "selectedWarningIdsAfter": [],
+    "warningCountsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 175,
+      "asymmetricExtremeDistractorCandidates": 353,
+      "advancedDirectRecallCandidates": 25,
+      "semanticConceptDuplicatePairs": 309,
+      "semanticConceptDuplicateClusters": 131,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "warningCountsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 168,
+      "asymmetricExtremeDistractorCandidates": 346,
+      "advancedDirectRecallCandidates": 24,
+      "semanticConceptDuplicatePairs": 303,
+      "semanticConceptDuplicateClusters": 130,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-v2-social-cultural-036",
+      "domainId": "social-cultural",
+      "difficulty": "advanced",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "social-cultural-sdo-policy-hierarchy",
+      "sourceCheck": "The foundational scale article defines the construct around preference for group-based hierarchy and connects higher scores with hierarchy-enhancing attitudes, directly supporting the policy-response application.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "advanced-direct-recall"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-assessment-033",
+      "domainId": "assessment",
+      "difficulty": "intermediate",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "assessment-invalid-performance-versus-malingering",
+      "sourceCheck": "The AACN statement recommends multiple performance- and symptom-validity methods and cautions that invalid test performance is not equivalent to malingering, which requires additional evidence and context.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-biological-046",
+      "domainId": "biological",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "biological-lateralization-distributed-language-network",
+      "sourceCheck": "The neuroscience chapter describes left-hemisphere specialization for major language functions while treating lateralization as functional organization across specialized cortical systems rather than a whole-brain dichotomy.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-intervention-031",
+      "domainId": "intervention",
+      "difficulty": "intermediate",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-cultural-adaptation-core-mechanisms",
+      "sourceCheck": "The meta-analysis reports a moderate average benefit across 76 studies and stronger effects for targeted and native-language interventions, supporting purposeful contextual adaptation rather than a universal recipe.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-professional-041",
+      "domainId": "professional",
+      "difficulty": "intermediate",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "professional-standard-9-06-contextual-interpretation",
+      "sourceCheck": "The official standard explicitly directs psychologists to consider purpose, test factors, abilities, and situational, personal, linguistic, and cultural differences that may reduce judgment accuracy.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-professional-074",
+      "domainId": "professional",
+      "difficulty": "intermediate",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "professional-standard-2-03-ongoing-competence",
+      "sourceCheck": "The official APA standard states a continuing duty to develop and maintain competence; the revised scenario applies that stable principle to changed methods without asserting a jurisdiction-specific requirement.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-social-cultural-025",
+      "domainId": "social-cultural",
+      "difficulty": "advanced",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "social-cultural-expectancy-effort-performance-link",
+      "sourceCheck": "OpenStax distinguishes effort-to-performance expectancy, performance-to-outcome expectancy, and outcome valence; the broken-equipment scenario selectively weakens the first link.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-intervention-044",
+      "domainId": "intervention",
+      "difficulty": "intermediate",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-ipt-role-transition-task",
+      "sourceCheck": "The review identifies role transitions as a core interpersonal focus and describes therapy as helping patients change interactions between depressive symptoms and current interpersonal difficulties.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    }
+  ],
+  "limitations": [
+    "Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation."
+  ]
+}

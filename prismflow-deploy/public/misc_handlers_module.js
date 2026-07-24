@@ -5,8 +5,152 @@ if (window.AlloModules && window.AlloModules.MiscHandlersModule) { console.log('
 // handleFileUpload + handleLoadProject + detectClimaxArchetype
 // extracted from AlloFlowANTI.txt 2026-04-25.
 
+const _MISC_MIB = 1024 * 1024;
+const _MISC_INLINE_LIMIT_BYTES = 15 * _MISC_MIB;
+const _MISC_DOCUMENT_LIMIT_BYTES = 30 * _MISC_MIB;
+const _MISC_MEDIA_LIMIT_BYTES = 300 * _MISC_MIB;
+const _MISC_EXTENSIONS = Object.freeze({
+    pdf: ['pdf'],
+    docx: ['docx'],
+    pptx: ['pptx'],
+    spreadsheet: ['xlsx', 'xls', 'xlsb', 'ods'],
+    transcript: ['md', 'markdown', 'csv', 'tsv'],
+    text: ['txt', 'json', 'html', 'htm', 'xml', 'js', 'css', 'py'],
+    audio: ['mp3', 'wav', 'ogg', 'oga', 'm4a', 'aac', 'flac', 'opus', 'weba'],
+    video: ['mp4', 'webm', 'mov', 'm4v', 'avi', 'mkv', 'mpeg', 'mpg', 'ogv'],
+    image: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'tif', 'tiff', 'heic', 'heif'],
+});
+const _MISC_DEFAULT_MIME = Object.freeze({
+    pdf: 'application/pdf',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    audio: 'audio/mpeg',
+    video: 'video/mp4',
+    image: 'image/jpeg',
+});
+const _MISC_EXTENSION_MIME = Object.freeze({
+    pdf: 'application/pdf', docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    mp3: 'audio/mpeg', wav: 'audio/wav', ogg: 'audio/ogg', oga: 'audio/ogg', m4a: 'audio/mp4', aac: 'audio/aac', flac: 'audio/flac', opus: 'audio/ogg', weba: 'audio/webm',
+    mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime', m4v: 'video/mp4', avi: 'video/x-msvideo', mkv: 'video/x-matroska', mpeg: 'video/mpeg', mpg: 'video/mpeg', ogv: 'video/ogg',
+    png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp', bmp: 'image/bmp', tif: 'image/tiff', tiff: 'image/tiff', heic: 'image/heic', heif: 'image/heif',
+});
+const _miscUploadExtension = (file) => {
+    const match = String(file && file.name || '').toLowerCase().match(/\.([a-z0-9]+)$/);
+    return match ? match[1] : '';
+};
+const _classifyMiscUpload = (file) => {
+    const mime = String(file && file.type || '').trim().toLowerCase();
+    const ext = _miscUploadExtension(file);
+    let kind = 'unknown';
+    if (mime === 'application/pdf') kind = 'pdf';
+    else if (mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') kind = 'docx';
+    else if (mime === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') kind = 'pptx';
+    else if (mime.startsWith('audio/')) kind = 'audio';
+    else if (mime.startsWith('video/')) kind = 'video';
+    else if (mime.startsWith('image/')) kind = 'image';
+    else {
+        for (const candidate of Object.keys(_MISC_EXTENSIONS)) {
+            if (_MISC_EXTENSIONS[candidate].includes(ext)) { kind = candidate; break; }
+        }
+        if (kind === 'unknown' && (mime.startsWith('text/') || mime === 'application/json' || mime === 'application/xml')) kind = 'text';
+    }
+    const originalMimeMatchesKind = (kind === 'audio' && mime.startsWith('audio/'))
+        || (kind === 'video' && mime.startsWith('video/'))
+        || (kind === 'image' && mime.startsWith('image/'))
+        || kind === 'text' || kind === 'spreadsheet' || kind === 'transcript';
+    return {
+        kind,
+        ext,
+        mime: originalMimeMatchesKind ? mime : (_MISC_EXTENSION_MIME[ext] || _MISC_DEFAULT_MIME[kind] || mime || 'application/octet-stream'),
+        size: Math.max(0, Number(file && file.size) || 0),
+    };
+};
+
+// FileReader events, workbook conversion, and vision extraction can all outlive
+// the input event that started them. Retain every concrete resource under one
+// generation owner so selecting B or invalidating the document actually aborts
+// A's work instead of merely suppressing A's eventual React writes.
+function _createFileIntakeOperationManager(controllerFactory) {
+    let generation = 0;
+    let active = null;
+    const makeController = () => {
+        if (typeof controllerFactory === 'function') return controllerFactory();
+        if (typeof AbortController !== 'undefined') return new AbortController();
+        const signal = { aborted: false };
+        return { signal, abort: () => { signal.aborted = true; } };
+    };
+    const isCurrent = (owner) => !!(owner
+        && active === owner
+        && owner.generation === generation
+        && !(owner.signal && owner.signal.aborted));
+    const abortOwner = (owner) => {
+        if (!owner) return;
+        try { if (owner.controller && typeof owner.controller.abort === 'function') owner.controller.abort(); } catch (_) {}
+        const readers = owner.readers ? Array.from(owner.readers) : [];
+        if (owner.readers) owner.readers.clear();
+        readers.forEach((reader) => {
+            try {
+                if (reader && typeof reader.abort === 'function'
+                    && reader.readyState !== 2) reader.abort();
+            } catch (_) {}
+        });
+    };
+    const cancelActive = () => {
+        const owner = active;
+        if (!owner) return false;
+        // Revoke publication before abort() synchronously emits onabort.
+        active = null;
+        generation += 1;
+        abortOwner(owner);
+        return true;
+    };
+    return {
+        begin(documentEpoch) {
+            cancelActive();
+            const controller = makeController();
+            const owner = {
+                generation: ++generation,
+                documentEpoch,
+                controller,
+                signal: controller && controller.signal ? controller.signal : null,
+                readers: new Set(),
+            };
+            active = owner;
+            return owner;
+        },
+        isCurrent,
+        attachReader(owner, reader) {
+            if (!isCurrent(owner)) {
+                try { if (reader && typeof reader.abort === 'function') reader.abort(); } catch (_) {}
+                return false;
+            }
+            owner.readers.add(reader);
+            return true;
+        },
+        releaseReader(owner, reader) {
+            if (!owner || !owner.readers) return false;
+            return owner.readers.delete(reader);
+        },
+        finish(owner) {
+            if (!isCurrent(owner)) return false;
+            active = null;
+            generation += 1;
+            if (owner.readers) owner.readers.clear();
+            return true;
+        },
+        cancel(owner) {
+            if (owner && active !== owner) return false;
+            return cancelActive();
+        },
+        getActive() { return active; },
+    };
+}
+
+const _fileIntakeOperations = _createFileIntakeOperationManager();
+const cancelFileIntakeOperations = () => _fileIntakeOperations.cancel(null);
+
 const handleFileUpload = async (e, deps) => {
-  const { LargeFileHandler, callGeminiVision, convertXlsxToMarkdownTables, addToast, t, warnLog, setShowLargeFileModal, setPendingLargeFile, setError, setIsExtracting, setGenerationStep, setInputText, recordSourceProvenance, setPendingPdfBase64, setPendingPdfFile, setPdfAuditResult, documentIntakeEpoch, isPdfDocumentIntakeCurrent } = deps;
+  const { callGeminiVision, convertXlsxToMarkdownTables, addToast, t, warnLog, setShowLargeFileModal, setPendingLargeFile, setError, setIsExtracting, setGenerationStep, setInputText, recordSourceProvenance, setPendingPdfBase64, setPendingPdfFile, setPdfAuditResult, setPdfAuditLoading = (() => {}), documentIntakeEpoch, isPdfDocumentIntakeCurrent } = deps;
   try { if (window._DEBUG_MISC_HANDLERS) console.log("[MiscHandlers] handleFileUpload fired"); } catch(_) {}
     const input = e && (e.currentTarget || e.target);
     const file = input && input.files && input.files[0];
@@ -14,9 +158,32 @@ const handleFileUpload = async (e, deps) => {
     // picker value is reset. Capture the File first because clearing the input
     // also clears its live FileList.
     try { if (input) input.value = ''; } catch (_) {}
-    if (!file) return;
-    const intakeIsCurrent = () => typeof isPdfDocumentIntakeCurrent !== 'function'
-        || isPdfDocumentIntakeCurrent(documentIntakeEpoch);
+    const intakeOwner = _fileIntakeOperations.begin(documentIntakeEpoch);
+    const intakeSignal = intakeOwner.signal;
+    const intakeIsCurrent = () => _fileIntakeOperations.isCurrent(intakeOwner)
+        && (typeof isPdfDocumentIntakeCurrent !== 'function'
+            || isPdfDocumentIntakeCurrent(documentIntakeEpoch));
+    const ownReader = () => {
+        const reader = new FileReader();
+        _fileIntakeOperations.attachReader(intakeOwner, reader);
+        return reader;
+    };
+    const releaseReader = (reader) => _fileIntakeOperations.releaseReader(intakeOwner, reader);
+    const finishExtraction = () => {
+        if (!intakeIsCurrent()) return false;
+        setIsExtracting(false);
+        setGenerationStep('');
+        // The host turns this on before waiting for the lazy intake module. Keep
+        // it on through the actual FileReader lifecycle so the remediation modal
+        // cannot disappear between module handoff and the chooser result. Because
+        // finishExtraction is epoch-owned, an old reader can never clear a newer
+        // upload's loading state.
+        setPdfAuditLoading(false);
+        _fileIntakeOperations.finish(intakeOwner);
+        return true;
+    };
+    const fileInfo = _classifyMiscUpload(file);
+    if (!file) { finishExtraction(); return; }
     const readBase64 = (reader) => {
         const result = reader && reader.result;
         if (typeof result !== 'string') return '';
@@ -26,7 +193,7 @@ const handleFileUpload = async (e, deps) => {
     const failRead = (message) => {
         if (!intakeIsCurrent()) return;
         setError(message || t('quick_start.error_read_file'));
-        setIsExtracting(false);
+        finishExtraction();
     };
     const rememberImportedSource = (text) => {
         if (!intakeIsCurrent()) return;
@@ -37,8 +204,23 @@ const handleFileUpload = async (e, deps) => {
             importMethod: 'file-upload'
         }, text);
     };
-    if (LargeFileHandler.needsChunking(file)) {
-        const fileType = LargeFileHandler.getFileType(file);
+    // These guards deliberately do not depend on LargeFileModule. On a cold load its
+    // host proxy reports needsChunking=false; consulting that proxy here used to let
+    // an arbitrarily large file reach FileReader/base64 expansion before any limit ran.
+    const isMedia = fileInfo.kind === 'audio' || fileInfo.kind === 'video';
+    const hardLimit = isMedia ? _MISC_MEDIA_LIMIT_BYTES : _MISC_DOCUMENT_LIMIT_BYTES;
+    if (fileInfo.size > hardLimit) {
+        if (intakeIsCurrent()) {
+            setError(isMedia
+                ? 'Recording is too large (>300MB). Trim it or split it into smaller recordings.'
+                : (t('toasts.file_large') || 'This file is too large (>30MB). Split it into smaller sections.'));
+            finishExtraction();
+        }
+        return;
+    }
+    const needsChunking = fileInfo.size > _MISC_INLINE_LIMIT_BYTES;
+    if (needsChunking) {
+        const fileType = fileInfo.kind;
         if (fileType === 'audio' || fileType === 'video') {
             if (!intakeIsCurrent()) return;
             // Long recordings route to the PIPELINE triage too (2026-06-10):
@@ -48,17 +230,15 @@ const handleFileUpload = async (e, deps) => {
             // memory; the File object rides pendingPdfFile instead.
             setPendingPdfFile(file);
             setPendingPdfBase64(null);
-            setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size, _mediaPending: { mime: file.type || '', isVideo: fileType === 'video', chunked: true } });
+            setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size, _mediaPending: { mime: fileInfo.mime, isVideo: fileType === 'video', chunked: true } });
+            finishExtraction();
             addToast(t('toasts.media_choose_digestion_long') || '🎙 Long recording loaded — it will be transcribed in segments (speech analysis). Start from the digestion card.', 'info');
             return;
         } else if (fileType === 'pdf') {
-            if (file.size > 30 * 1024 * 1024) {
-                setError(t('toasts.file_large') || 'PDF is too large (>30MB). Try splitting into smaller sections.');
-                return;
-            }
             addToast('Processing large PDF — this may take a moment...', 'info');
         } else {
             setError(t('toasts.file_large'));
+            finishExtraction();
             return;
         }
     }
@@ -79,16 +259,17 @@ const handleFileUpload = async (e, deps) => {
     // ── Spreadsheets (.xlsx/.xls/.xlsb/.ods) → pipeline (2026-06-11) ──
     // SheetJS (Lumen's lazy-CDN pattern) converts each sheet to a markdown
     // pipe-table; the transcript lane builds REAL scoped tables from them.
-    if (/\.(xlsx|xls|xlsb|ods)$/i.test(file.name) && typeof convertXlsxToMarkdownTables === 'function') {
+    if (fileInfo.kind === 'spreadsheet' && typeof convertXlsxToMarkdownTables === 'function') {
         setIsExtracting(true);
-        const reader = new FileReader();
+        const reader = ownReader();
         reader.onload = async () => {
+            releaseReader(reader);
             if (!intakeIsCurrent()) return;
             try {
                 const b64 = readBase64(reader);
                 if (!b64) throw new Error('The workbook could not be read.');
                 addToast(t('toasts.spreadsheet_converting') || '📊 Reading the workbook…', 'info');
-                const conv = await convertXlsxToMarkdownTables(b64);
+                const conv = await convertXlsxToMarkdownTables(b64, { signal: intakeSignal });
                 if (!intakeIsCurrent()) return;
                 const text = '# ' + file.name.replace(/\.(xlsx|xls|xlsb|ods)$/i, '') + '\n\n' + conv.text
                     + (conv.truncatedRows ? ('\n\n*Note: ' + conv.truncatedRows + ' row(s) beyond the first 200 per sheet were not included.*') : '');
@@ -99,23 +280,24 @@ const handleFileUpload = async (e, deps) => {
                 setPendingPdfBase64(btoa(bin));
                 setPendingPdfFile(file);
                 setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size, _transcriptSource: true });
-                setIsExtracting(false);
+                finishExtraction();
                 addToast('✅ ' + (conv.sheets > 1 ? conv.sheets + ' sheets' : '1 sheet') + (t('toasts.spreadsheet_ready') || ' loaded as accessible tables — Make Accessible for the full treatment (tagged PDF included).'), 'success');
             } catch (err) {
                 if (!intakeIsCurrent()) return;
                 warnLog('[Spreadsheet→Pipeline] failed:', err?.message || err);
                 setError((t('toasts.spreadsheet_failed') || 'Could not read the spreadsheet: ') + (err?.message || 'unknown') + ' — export it as CSV and try again.');
-                setIsExtracting(false);
+                finishExtraction();
             }
         };
-        reader.onerror = () => failRead(t('quick_start.error_read_file'));
-        reader.onabort = reader.onerror;
+        reader.onerror = () => { releaseReader(reader); failRead(t('quick_start.error_read_file')); };
+        reader.onabort = () => { releaseReader(reader); if (intakeIsCurrent()) failRead(t('quick_start.error_read_file')); };
         try { reader.readAsDataURL(file); } catch (err) { failRead(err?.message || t('quick_start.error_read_file')); }
         return;
     }
-    if (/\.(md|markdown|csv|tsv)$/i.test(file.name)) {
-        const reader = new FileReader();
+    if (fileInfo.kind === 'transcript') {
+        const reader = ownReader();
         reader.onload = (event) => {
+            releaseReader(reader);
             if (!intakeIsCurrent()) return;
             let text = String(event.target.result || '');
             if (/\.(csv|tsv)$/i.test(file.name)) {
@@ -138,7 +320,7 @@ const handleFileUpload = async (e, deps) => {
                         + rows.map((r, i) => '| ' + r.map((c) => c.replace(/\|/g, '/')).join(' | ') + ' |' + (i === 0 ? ('\n|' + r.map(() => ' --- ').join('|') + '|') : '')).join('\n');
                 }
             }
-            if (text.trim().length < 5) { setError(t('toasts.file_process_error')); setIsExtracting(false); return; }
+            if (text.trim().length < 5) { setError(t('toasts.file_process_error')); finishExtraction(); return; }
             const MAGIC = 'ALLOTRANSCRIPT:v1\n';
             const bytes = new TextEncoder().encode(MAGIC + text.trim());
             let bin = '';
@@ -146,48 +328,47 @@ const handleFileUpload = async (e, deps) => {
             setPendingPdfBase64(btoa(bin));
             setPendingPdfFile(file);
             setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size, _transcriptSource: true });
-            setIsExtracting(false);
+            finishExtraction();
             addToast(t('toasts.textdoc_pipeline_ready') || '📄 Loaded into the accessibility pipeline — Make Accessible for the full treatment, or Skip to Text Extraction to use as source material.', 'success');
         };
-        reader.onerror = () => failRead(t('quick_start.error_read_file'));
-        reader.onabort = reader.onerror;
+        reader.onerror = () => { releaseReader(reader); failRead(t('quick_start.error_read_file')); };
+        reader.onabort = () => { releaseReader(reader); if (intakeIsCurrent()) failRead(t('quick_start.error_read_file')); };
         setIsExtracting(true);
         try { reader.readAsText(file); } catch (err) { failRead(err?.message || t('quick_start.error_read_file')); }
         return;
     }
-    const isTextFile = textMimeTypes.includes(file.type) ||
-                       /\.(txt|md|csv|json|html|xml|js|css|py)$/i.test(file.name);
+    const isTextFile = fileInfo.kind === 'text' || textMimeTypes.includes(String(file.type || '').toLowerCase());
     if (isTextFile) {
-        const reader = new FileReader();
+        const reader = ownReader();
         reader.onload = (event) => {
+            releaseReader(reader);
             if (!intakeIsCurrent()) return;
             setInputText(event.target.result);
             rememberImportedSource(event.target.result);
-            setIsExtracting(false);
+            finishExtraction();
         };
-        reader.onerror = () => failRead(t('quick_start.error_read_file'));
-        reader.onabort = reader.onerror;
+        reader.onerror = () => { releaseReader(reader); failRead(t('quick_start.error_read_file')); };
+        reader.onabort = () => { releaseReader(reader); if (intakeIsCurrent()) failRead(t('quick_start.error_read_file')); };
         try { reader.readAsText(file); } catch (err) { failRead(err?.message || t('quick_start.error_read_file')); }
         return;
     }
-    const normalizedName = String(file.name || '').toLowerCase();
-    const normalizedType = String(file.type || '').toLowerCase();
-    const isPdf = normalizedType === 'application/pdf' || normalizedName.endsWith('.pdf');
-    const isDocx = normalizedType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || normalizedName.endsWith('.docx');
-    const isPptx = normalizedType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' || normalizedName.endsWith('.pptx');
+    const isPdf = fileInfo.kind === 'pdf';
+    const isDocx = fileInfo.kind === 'docx';
+    const isPptx = fileInfo.kind === 'pptx';
     if (isPdf || isDocx || isPptx) {
-        const auditReader = new FileReader();
+        const auditReader = ownReader();
         auditReader.onload = () => {
+            releaseReader(auditReader);
             if (!intakeIsCurrent()) return;
             const base64 = readBase64(auditReader);
             if (!base64) { failRead(t('quick_start.error_read_file')); return; }
             setPendingPdfBase64(base64);
             setPendingPdfFile(file);
             setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size });
-            setIsExtracting(false);
+            finishExtraction();
         };
-        auditReader.onerror = () => failRead(t('quick_start.error_read_file'));
-        auditReader.onabort = auditReader.onerror;
+        auditReader.onerror = () => { releaseReader(auditReader); failRead(t('quick_start.error_read_file')); };
+        auditReader.onabort = () => { releaseReader(auditReader); if (intakeIsCurrent()) failRead(t('quick_start.error_read_file')); };
         try { auditReader.readAsDataURL(file); } catch (err) { failRead(err?.message || t('quick_start.error_read_file')); }
         return;
     }
@@ -200,33 +381,36 @@ const handleFileUpload = async (e, deps) => {
     // Text Extraction' covers the old put-it-in-the-source-box behavior.
     // Files needing chunking (>15MB) keep the existing chunked-transcription
     // modal (content path) — they never reach this branch.
-    if ((file.type.startsWith('audio/') || file.type.startsWith('video/')) && !LargeFileHandler.needsChunking(file)) {
+    if (isMedia && !needsChunking) {
         // Stash the RAW media and open the triage with a digestion card —
         // the teacher chooses HOW to digest (speech-only / visuals-only /
         // dual-track / synthesized narrative + custom instructions) BEFORE
         // any transcription runs. The view calls transcribeMediaToPayload
         // and swaps in the ALLOTRANSCRIPT payload.
-        const reader = new FileReader();
+        const reader = ownReader();
         reader.onload = () => {
+            releaseReader(reader);
             if (!intakeIsCurrent()) return;
             const base64String = readBase64(reader);
             if (!base64String) { failRead(t('quick_start.error_read_file')); return; }
             setPendingPdfBase64(base64String);
             setPendingPdfFile(file);
-            setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size, _mediaPending: { mime: file.type || 'audio/mpeg', isVideo: file.type.startsWith('video/') } });
-            setIsExtracting(false);
+            setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size, _mediaPending: { mime: fileInfo.mime, isVideo: fileInfo.kind === 'video' } });
+            finishExtraction();
             addToast(t('toasts.media_choose_digestion') || '🎙 Recording loaded — choose how to digest it (speech, visuals, both) before remediation.', 'info');
         };
-        reader.onerror = () => failRead(t('quick_start.error_read_file'));
-        reader.onabort = reader.onerror;
+        reader.onerror = () => { releaseReader(reader); failRead(t('quick_start.error_read_file')); };
+        reader.onabort = () => { releaseReader(reader); if (intakeIsCurrent()) failRead(t('quick_start.error_read_file')); };
         try { reader.readAsDataURL(file); } catch (err) { failRead(err?.message || t('quick_start.error_read_file')); }
         return;
     }
-    if (file.type.startsWith('image/') || file.type.startsWith('video/') || file.type.startsWith('audio/')) {
+    if (fileInfo.kind === 'image' || fileInfo.kind === 'video' || fileInfo.kind === 'audio') {
         try {
             if (false) { // PDF handling now goes through audit route above
-                const pdfReader = new FileReader();
+                const pdfReader = ownReader();
                 pdfReader.onloadend = async () => {
+                    releaseReader(pdfReader);
+                    if (!intakeIsCurrent()) return;
                     const base64Full = pdfReader.result.split(',')[1];
                     const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
                     setGenerationStep(`Processing ${sizeMB}MB PDF in sections...`);
@@ -240,7 +424,8 @@ const handleFileUpload = async (e, deps) => {
                         for (let i = 0; i < sectionPrompts.length; i++) {
                             setGenerationStep(`Extracting section ${i + 1} of ${sectionPrompts.length}...`);
                             try {
-                                const chunkText = await callGeminiVision(sectionPrompts[i], base64Full, 'application/pdf');
+                                const chunkText = await callGeminiVision(sectionPrompts[i], base64Full, 'application/pdf', { signal: intakeSignal });
+                                if (!intakeIsCurrent()) return;
                                 if (chunkText && chunkText.trim().length > 20) chunks.push(chunkText);
                             } catch (chunkErr) {
                                 warnLog(`[PDF Chunk ${i + 1}] Failed:`, chunkErr?.message);
@@ -251,24 +436,25 @@ const handleFileUpload = async (e, deps) => {
                         if (fullText.trim().length < 50) throw new Error('PDF extraction returned insufficient text');
                         setInputText(fullText);
                         rememberImportedSource(fullText);
-                        setIsExtracting(false);
+                        finishExtraction();
                         addToast(`PDF extracted successfully (${chunks.length} sections)`, 'success');
                     } catch (pdfErr) {
                         warnLog('[PDF Chunked] All extraction failed:', pdfErr);
                         setError('PDF extraction failed — the document may be too complex or image-heavy. Try copying and pasting the text directly.');
-                        setIsExtracting(false);
+                        finishExtraction();
                     }
                 };
                 pdfReader.readAsDataURL(file);
                 return;
             }
-            const reader = new FileReader();
+            const reader = ownReader();
             reader.onload = async () => {
+                releaseReader(reader);
                 if (!intakeIsCurrent()) return;
                 try {
                 const base64String = readBase64(reader);
                 if (!base64String) throw new Error('The file could not be read.');
-                const mimeType = file.type;
+                const mimeType = fileInfo.mime;
                 let prompt = "";
                 if (mimeType.startsWith('image/') || mimeType === 'application/pdf') {
                     prompt = `
@@ -297,40 +483,144 @@ const handleFileUpload = async (e, deps) => {
                         Format it as clear text suitable for use as source material.
                     `;
                 }
-                const text = await callGeminiVision(prompt, base64String, mimeType);
+                const text = await callGeminiVision(prompt, base64String, mimeType, { signal: intakeSignal });
                 if (!intakeIsCurrent()) return;
                 setInputText(text);
                 rememberImportedSource(text);
-                setIsExtracting(false);
+                finishExtraction();
                 } catch (err) {
                     if (!intakeIsCurrent()) return;
                     warnLog('File extraction failed:', err?.message || err);
                     failRead(t('toasts.file_process_error'));
                 }
             };
-            reader.onerror = () => failRead(t('quick_start.error_read_file'));
-            reader.onabort = reader.onerror;
+            reader.onerror = () => { releaseReader(reader); failRead(t('quick_start.error_read_file')); };
+            reader.onabort = () => { releaseReader(reader); if (intakeIsCurrent()) failRead(t('quick_start.error_read_file')); };
             try { reader.readAsDataURL(file); } catch (err) { failRead(err?.message || t('quick_start.error_read_file')); }
         } catch (err) {
             warnLog("Unhandled error:", err);
             setError(t('toasts.file_process_error'));
-            setIsExtracting(false);
+            finishExtraction();
         }
         return;
     }
     setError(t('toasts.unsupported_file_type'));
-    setIsExtracting(false);
+    finishExtraction();
 };
+
+// A file input and React loading flag cannot own an asynchronous project load:
+// password prompts, authenticated decryption, and Builder-draft unpacking can
+// all yield long enough for a newer file to take over. This manager gives the
+// newest load exclusive generation ownership, aborts an unread FileReader, and
+// completes a started host lifecycle exactly once when a newer load cancels it.
+function _createProjectLoadOperationManager(controllerFactory) {
+    let generation = 0;
+    let active = null;
+    const makeController = () => {
+        if (typeof controllerFactory === 'function') return controllerFactory();
+        if (typeof AbortController !== 'undefined') return new AbortController();
+        const signal = { aborted: false };
+        return { signal, abort: () => { signal.aborted = true; } };
+    };
+    const isCurrent = (owner) => !!(owner
+        && active === owner
+        && owner.generation === generation
+        && !(owner.controller && owner.controller.signal && owner.controller.signal.aborted));
+    const completeLifecycle = (owner, payload) => {
+        if (!owner || !owner.lifecycleStarted || owner.lifecycleCompleted) return;
+        owner.lifecycleCompleted = true;
+        if (typeof owner.onComplete === 'function') {
+            try { owner.onComplete(payload); } catch (_) {}
+        }
+    };
+    const abortOwner = (owner, notifyLifecycle) => {
+        if (!owner) return;
+        try { if (owner.controller && typeof owner.controller.abort === 'function') owner.controller.abort(); } catch (_) {}
+        try { if (owner.reader && typeof owner.reader.abort === 'function') owner.reader.abort(); } catch (_) {}
+        if (notifyLifecycle !== false) completeLifecycle(owner, { success: false, cancelled: true });
+    };
+    const cancelActive = (options) => {
+        const owner = active;
+        if (!owner) return false;
+        active = null;
+        generation += 1;
+        abortOwner(owner, !options || options.notifyLifecycle !== false);
+        return true;
+    };
+    return {
+        begin(options) {
+            cancelActive({ notifyLifecycle: true });
+            const opts = options || {};
+            const controller = makeController();
+            const owner = {
+                generation: ++generation,
+                controller,
+                signal: controller && controller.signal ? controller.signal : null,
+                reader: null,
+                lifecycleStarted: false,
+                lifecycleCompleted: false,
+                onStart: opts.onStart,
+                onComplete: opts.onComplete,
+            };
+            active = owner;
+            return owner;
+        },
+        attachReader(owner, reader) {
+            if (!isCurrent(owner)) {
+                try { if (reader && typeof reader.abort === 'function') reader.abort(); } catch (_) {}
+                return false;
+            }
+            owner.reader = reader;
+            return true;
+        },
+        isCurrent,
+        startLifecycle(owner, payload) {
+            if (!isCurrent(owner)) return false;
+            if (typeof owner.onStart === 'function') owner.onStart(payload);
+            if (!isCurrent(owner)) return false;
+            owner.lifecycleStarted = true;
+            return true;
+        },
+        finish(owner, success) {
+            if (!isCurrent(owner)) return false;
+            active = null;
+            generation += 1;
+            completeLifecycle(owner, { success: success === true });
+            return true;
+        },
+        cancel(owner, options) {
+            if (owner && active !== owner) return false;
+            return cancelActive(options || {});
+        },
+        getActive() {
+            return active;
+        },
+    };
+}
+
+const _projectLoadOperations = _createProjectLoadOperationManager();
+const cancelProjectLoad = (options) => _projectLoadOperations.cancel(null, options || {});
 
 const handleLoadProject = (e, deps) => {
   const { setStudentProgressLog, setStudentProjectSettings, setIsIndependentMode, setIsTeacherMode, setIsParentMode, setIsStudentLinkMode, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureCustomInstructions, setAdventureChanceMode, setAdventureFreeResponseEnabled, setAdventureConsistentCharacters, setIsAdventureStoryMode, setIsSocialStoryMode, setSocialStoryFocus, setAdventureArtStyle, setAdventureCustomArtStyle, setUseLowQualityVisuals, setEnableFactionResources, setFactionResourceMode, setStudentNickname, setAdventureState, setHasSavedAdventure, setGameCompletions, setLabelChallengeResults, setSocraticMessages, setWordSoundsHistory, setWordSoundsFamilies, setWordSoundsAudioLibrary, setWordSoundsBadges, setPhonemeMastery, setWordSoundsDailyProgress, setWordSoundsConfusionPatterns, setFluencyAssessments, setFlashcardEngagement, setTimeOnTask, setGlobalPoints, setPointHistory, setCompletedActivities, setProbeHistory, setInterventionLogs, setSurveyResponses, setFidelityLog, setSessionCounter, setExternalCBMScores, setResearchMode, setHistory, setGeneratedContent, setActiveView, setIsMapLocked, setIsFullscreen, setLeftWidth, projectFileInputRef, t, addToast, warnLog, hydrateHistory, setStickers, setConceptMasteryLocal, bankImportedConceptMastery, onProjectLoadStart, onProjectLoadComplete } = deps;
   try { if (window._DEBUG_MISC_HANDLERS) console.log("[MiscHandlers] handleLoadProject fired"); } catch(_) {}
     const file = e.target.files[0];
     if (!file) return;
+    const projectLoadOwner = _projectLoadOperations.begin({
+        onStart: onProjectLoadStart,
+        onComplete: onProjectLoadComplete,
+    });
     const reader = new FileReader();
-        let projectLifecycleStarted = false;
-        let projectLoadSucceeded = false;
+    _projectLoadOperations.attachReader(projectLoadOwner, reader);
+    let projectLoadSucceeded = false;
+    const projectLoadIsCurrent = () => _projectLoadOperations.isCurrent(projectLoadOwner);
+    const finishCurrentProjectLoad = (success) => {
+        const finished = _projectLoadOperations.finish(projectLoadOwner, success);
+        if (finished && projectFileInputRef && projectFileInputRef.current) projectFileInputRef.current.value = '';
+        return finished;
+    };
     reader.onload = async (event) => {
+        if (!projectLoadIsCurrent()) return;
         try {
             let rawData = JSON.parse(event.target.result);
             // Encrypted educator project: ask for the password and decrypt before anything else.
@@ -352,16 +642,21 @@ const handleLoadProject = (e, deps) => {
                         maxLength: 1024,
                     }
                 );
+                if (!projectLoadIsCurrent()) return;
                 if (!_pw) { return; }
-                try { rawData = await window.AlloModules.AlloCrypto.decryptJSON(rawData, _pw); }
-                catch (_e) { if (addToast) addToast(t('save.decrypt_failed') || 'Wrong password, or the file is corrupt.', 'error'); return; }
+                try {
+                    rawData = await window.AlloModules.AlloCrypto.decryptJSON(rawData, _pw);
+                    if (!projectLoadIsCurrent()) return;
+                } catch (_e) {
+                    if (!projectLoadIsCurrent()) return;
+                    if (addToast) addToast(t('save.decrypt_failed') || 'Wrong password, or the file is corrupt.', 'error');
+                    return;
+                }
             }
+            if (!projectLoadIsCurrent()) return;
             const lifecycleHistory = Array.isArray(rawData) ? rawData : rawData?.history;
             if (!Array.isArray(lifecycleHistory)) throw new Error('Project JSON does not contain a history array.');
-            projectLifecycleStarted = true;
-            if (typeof onProjectLoadStart === 'function') {
-                onProjectLoadStart({ rawData, history: lifecycleHistory });
-            }
+            if (!_projectLoadOperations.startLifecycle(projectLoadOwner, { rawData, history: lifecycleHistory })) return;
             if (rawData.progressLog && Array.isArray(rawData.progressLog)) {
                 setStudentProgressLog(rawData.progressLog);
             }
@@ -393,6 +688,11 @@ const handleLoadProject = (e, deps) => {
                     if (deps.setGuidedCompletedIds) deps.setGuidedCompletedIds(_cleanIds(_gtp.completedSteps));
                     if (deps.setGuidedSkippedIds) deps.setGuidedSkippedIds(_cleanIds(_gtp.skippedSteps));
                     if (deps.setGuidedCreatedHistoryIds) deps.setGuidedCreatedHistoryIds(Array.isArray(_gtp.createdHistoryIds) ? Array.from(new Set(_gtp.createdHistoryIds.filter(id => typeof id === 'string' && id))) : []);
+                    if (deps.setGuidedDeliveryEvidence) {
+                        const _evidenceKeys = ['directionsSaved', 'exportCreated', 'shareCreated', 'liveStarted', 'studentPreviewed'];
+                        const _rawEvidence = _gtp.deliveryEvidence && typeof _gtp.deliveryEvidence === 'object' ? _gtp.deliveryEvidence : {};
+                        deps.setGuidedDeliveryEvidence(_evidenceKeys.reduce((result, key) => { if (_rawEvidence[key] === true) result[key] = true; return result; }, {}));
+                    }
                     if (deps.setGuidedMode) deps.setGuidedMode(true);
                     if (addToast) addToast(t('guided.resumed') || 'Resumed your guided tutorial.', 'success');
                 } else if (addToast) {
@@ -751,8 +1051,12 @@ const handleLoadProject = (e, deps) => {
                 // host validates the draft envelope against this exact history,
                 // sanitizes imported HTML, and clears any previous-project draft.
                 if (typeof deps.restoreBuilderDraft === 'function') {
-                    await deps.restoreBuilderDraft(rawData && rawData.builderDraft, hydratedHistory);
+                    await deps.restoreBuilderDraft(rawData && rawData.builderDraft, hydratedHistory, {
+                        signal: projectLoadOwner.signal,
+                        isCurrent: projectLoadIsCurrent,
+                    });
                 }
+                if (!projectLoadIsCurrent()) return;
                 if (isStudentSave) {
                     setIsStudentLinkMode(true);
                     setIsTeacherMode(false);
@@ -777,17 +1081,33 @@ const handleLoadProject = (e, deps) => {
 
             }
         } catch (err) {
+            if (!projectLoadIsCurrent()) return;
             warnLog("Failed to parse project file", err);
             addToast(t('errors.project_file_load_failed') || t('toasts.project_load_failed') || 'The project file could not be loaded.', 'error');
 
         } finally {
-            if (projectLifecycleStarted && typeof onProjectLoadComplete === 'function') {
-                try { onProjectLoadComplete({ success: projectLoadSucceeded }); } catch (_) {}
-            }
-            if (projectFileInputRef.current) projectFileInputRef.current.value = '';
+            finishCurrentProjectLoad(projectLoadSucceeded);
         }
     };
-    reader.readAsText(file);
+    reader.onerror = () => {
+        if (!projectLoadIsCurrent()) return;
+        if (warnLog) warnLog('Failed to read project file', reader.error || new Error('FileReader failed'));
+        if (addToast) addToast(t('errors.project_file_load_failed') || t('toasts.project_load_failed') || 'The project file could not be loaded.', 'error');
+        finishCurrentProjectLoad(false);
+    };
+    reader.onabort = () => {
+        if (projectLoadIsCurrent()) finishCurrentProjectLoad(false);
+    };
+    try {
+        reader.readAsText(file);
+    } catch (err) {
+        if (projectLoadIsCurrent()) {
+            if (warnLog) warnLog('Failed to read project file', err);
+            if (addToast) addToast(t('errors.project_file_load_failed') || t('toasts.project_load_failed') || 'The project file could not be loaded.', 'error');
+            finishCurrentProjectLoad(false);
+        }
+    }
+    return projectLoadOwner;
 };
 
 const detectClimaxArchetype = async (text, instructions, deps) => {
@@ -825,6 +1145,8 @@ window.AlloModules = window.AlloModules || {};
 window.AlloModules.MiscHandlers = { runAutoFixLoop,
   handleFileUpload,
   handleLoadProject,
+  cancelProjectLoad,
+  cancelFileIntakeOperations,
   detectClimaxArchetype,
 };
 // The script loader tracks this file as `MiscHandlersModule`, while legacy
@@ -859,7 +1181,19 @@ async function runAutoFixLoop(maxRounds, deps) {
     // guard — runAutoFixLoop did not, so a post-watchdog round could stomp a teacher's next document.
     const _myRunGen = (typeof window !== 'undefined') ? (window.__alloPdfRunGen || 0) : 0;
     const _genStale = () => (typeof window !== 'undefined') && ((window.__alloPdfRunGen || 0) !== _myRunGen);
-    setPdfAutoContinueRunning(true);
+    // Shared stop flags are intentionally reset by a replacement run, so they cannot
+    // prove that this async continuation still owns the UI. Publication requires both
+    // the exact controller slot and the captured generation.
+    const _ownsRunSlot = () => pdfAutoContinueAbortCtrlRef.current === _abortCtrl;
+    const _canPublish = () => _ownsRunSlot() && !_genStale();
+    const _canContinue = () => _canPublish()
+      && !pdfAutoContinueAbortRef.current
+      && !(_abortCtrl.signal && _abortCtrl.signal.aborted);
+    const _setStepIfOwned = (step) => { if (_canPublish()) setPdfFixStep(step); };
+    const _toastIfOwned = (...args) => {
+      if (_canPublish() && typeof addToast === 'function') addToast(...args);
+    };
+    if (_canPublish()) setPdfAutoContinueRunning(true);
     let cur = pdfFixResultRef.current;
     const _aiIssuesOf = (c) => (c && c.verificationAudit && Array.isArray(c.verificationAudit.issues)) ? c.verificationAudit.issues : [];
     const _plainTextOf = (html) => { try { const d = new DOMParser().parseFromString(html || '', 'text/html'); return (d.body && d.body.textContent || '').trim(); } catch (_) { return null; } };
@@ -871,7 +1205,7 @@ async function runAutoFixLoop(maxRounds, deps) {
       let lastIssues = Infinity;
       let stagnantRounds = 0;
       for (let round = 0; round < maxRounds; round++) {
-        if (pdfAutoContinueAbortRef.current || _genStale()) break;
+        if (!_canContinue()) break;
         if (!cur || !cur.accessibleHtml) break;
         const _roundHtmlRevision = pdfHtmlRevisionRef.current;
         // A high score may stop accessibility work, but it is celebratory only
@@ -916,7 +1250,7 @@ async function runAutoFixLoop(maxRounds, deps) {
         lastScore = cur.afterScore || 0;
         lastDet = _curDet;
         lastIssues = _aiIssues.length;
-        setPdfFixLoading(true);
+        if (_canPublish()) setPdfFixLoading(true);
         // Storm-aware WAIT-not-stop (2026-07-05, maintainer): never fire a round into an active
         // Canvas rate-limit storm — on the 7/5 run those calls each failed after ~150s AND extended
         // the throttle window, until the 12-min dead-man switch killed the whole loop. Waiting is not
@@ -924,16 +1258,17 @@ async function runAutoFixLoop(maxRounds, deps) {
         // once the storm passes (bounded, then it proceeds regardless, only ever slower). The ticking
         // status ALSO keeps the dead-man switch (a frozen-step detector) from false-firing meanwhile.
         try {
-          await waitForGeminiCalm({ maxWaitMs: 240000, shouldAbort: () => pdfAutoContinueAbortRef.current || _genStale(), onTick: (w) => {
+          await waitForGeminiCalm({ maxWaitMs: 240000, shouldAbort: () => !_canContinue(), onTick: (w) => {
+            if (!_canContinue()) return;
             const _ws = Math.max(1, Math.ceil((((w && w.cooldownRemainingMs) || 5000)) / 1000));
-            setPdfFixStep(t('pdf_audit.storm_wait_round', { round: round + 1, max: maxRounds, s: _ws }) || ('Canvas is rate-limiting — pausing before round ' + (round + 1) + '/' + maxRounds + ' so calls are not wasted (rechecking in ~' + _ws + 's; nothing is skipped, the run just takes longer)'));
+            _setStepIfOwned(t('pdf_audit.storm_wait_round', { round: round + 1, max: maxRounds, s: _ws }) || ('Canvas is rate-limiting — pausing before round ' + (round + 1) + '/' + maxRounds + ' so calls are not wasted (rechecking in ~' + _ws + 's; nothing is skipped, the run just takes longer)'));
           } });
         } catch (_) {}
         // H3 (deep dive 2026-07-09): the storm wait can hold this spot for up to 4 minutes — a Stop
         // press or watchdog invalidation DURING it used to go unnoticed until AFTER the next full
         // round had fired into the storm (and the post-round check then discarded its work anyway).
         // Re-check before firing; shouldAbort above also exits the wait itself within seconds.
-        if (pdfAutoContinueAbortRef.current || _genStale()
+        if (!_canContinue()
             || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
           cur = pdfFixResultRef.current;
           break;
@@ -957,7 +1292,7 @@ async function runAutoFixLoop(maxRounds, deps) {
           : (_vio > 0
             ? (t(_vio === 1 ? 'pdf_audit.violation_one' : 'pdf_audit.violation_other', { count: _vio }) || (_vio + ' violation' + (_vio !== 1 ? 's' : '')))
             : (t(_aiIssues.length === 1 ? 'pdf_audit.ai_issue_one' : 'pdf_audit.ai_issue_other', { count: _aiIssues.length }) || (_aiIssues.length + ' AI-flagged issue' + (_aiIssues.length !== 1 ? 's' : ''))));
-        setPdfFixStep(t('pdf_audit.auto_continue_round', { round: round + 1, max: maxRounds, detail: _acDetail, score: cur.afterScore || 0, target: pdfTargetScore }) || ('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + _acDetail + ', score ' + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')...'));
+        _setStepIfOwned(t('pdf_audit.auto_continue_round', { round: round + 1, max: maxRounds, detail: _acDetail, score: cur.afterScore || 0, target: pdfTargetScore }) || ('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + _acDetail + ', score ' + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')...'));
         let result;
         if (_vio > 0) {
           result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses);
@@ -974,6 +1309,10 @@ async function runAutoFixLoop(maxRounds, deps) {
             .map((f) => 'EQUAL-ACCESS-CONFIRMED: ' + String((f && (f.message || f.ruleId || f.reasonId)) || JSON.stringify(f)).slice(0, 200));
           const _instr = _aiIssues.slice(0, 25).map((i) => 'AI-FLAGGED: ' + (typeof i === 'string' ? i : (i.issue || i.description || JSON.stringify(i)))).concat(_eaLines).join('\n');
           let _fixedHtml = await aiFixChunked(cur.accessibleHtml, _instr, 'auto-continue-ai-round-' + (round + 1));
+          if (!_canContinue() || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
+            cur = pdfFixResultRef.current;
+            break;
+          }
           // CONTRAST ROUTING (loop fix, 2026-06-15): a WCAG 1.4.3 contrast issue is a CSS/style
           // problem the generic chunk rewriter rarely fixes — route it to the deterministic,
           // background-aware contrast fixer (sanitizeStyleForWCAG -> fixContrastViolations) as the
@@ -984,16 +1323,17 @@ async function runAutoFixLoop(maxRounds, deps) {
           const _freshAxe = await runAxeAudit(_fixedHtml);
           result = { html: _fixedHtml, axe: _freshAxe, passes: 1 };
         }
-        if (pdfAutoContinueAbortRef.current || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
+        if (!_canContinue() || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
           cur = pdfFixResultRef.current;
           break;
         }
         const reVerify = await auditOutputAccessibility(result.html);
+        if (!_canContinue() || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
+          cur = pdfFixResultRef.current; break;
+        }
         if (!reVerify) {
           warnLog('[AutoContinue] AI re-verification returned null; preserving prior state and stopping loop.');
-          if (typeof addToast === 'function') {
-            addToast(t('toasts.accessibility_verification_unavailable_auto_contin'), 'warning');
-          }
+          _toastIfOwned(t('toasts.accessibility_verification_unavailable_auto_contin'), 'warning');
           break;
         }
         // Sweep 2026-06-11 [1]: keep afterScore's SEMANTICS stable across rounds. fixAndVerifyPdf writes
@@ -1004,6 +1344,9 @@ async function runAutoFixLoop(maxRounds, deps) {
         // deterministic runs each round.
         let _ea = null;
         try { _ea = runEqualAccessAudit ? await runEqualAccessAudit(result.html) : null; } catch (_) {}
+        if (!_canContinue() || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
+          cur = pdfFixResultRef.current; break;
+        }
         // #6-full (2026-07-16): ALL round-evidence assembly — scored-audit validity gating,
         // audit-only inheritance (C6), weakest-layer score, fidelity recompute-and-merge,
         // verification snapshot + SHA binding, expert-review base separation — now happens in
@@ -1029,8 +1372,12 @@ async function runAutoFixLoop(maxRounds, deps) {
             plainText: _plainTextOf(result.html), passes: result.passes || 0,
             chunkState: result.chunkState, chunkWeightedScore: result.chunkWeightedScore,
           });
+          if (!_canContinue() || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
+            cur = pdfFixResultRef.current;
+            break;
+          }
         } catch (_finErr) {
-          warnLog('[AutoContinue] round merge failed (' + ((_finErr && _finErr.message) || _finErr) + ') — preserving prior state and stopping the loop.');
+          if (_canPublish()) warnLog('[AutoContinue] round merge failed (' + ((_finErr && _finErr.message) || _finErr) + ') — preserving prior state and stopping the loop.');
           break;
         }
         const _det = _mergedRound._detScore;
@@ -1060,7 +1407,7 @@ async function runAutoFixLoop(maxRounds, deps) {
         const snapshot = cur;
         // Gen guard (acl-1): a fresh run started while this round was in flight → discard this stale
         // round's writes instead of stomping the new run's state, and stop looping.
-        if (_genStale() || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
+        if (!_canContinue() || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
           cur = pdfFixResultRef.current;
           break;
         }
@@ -1072,16 +1419,20 @@ async function runAutoFixLoop(maxRounds, deps) {
         // full evidence or remained partial, the final branch gives the honest result.
         if (result._auditOnly) break;
       }
+      // Terminal outcomes belong only to the exact controller and generation.
+      // A replacement run resets the shared abort flag, so that flag alone cannot
+      // stop stale run A from announcing over run B.
+      if (!_canPublish()) return;
       const _canonicalComplete = _isCanonicalComplete(cur);
       const _expertOrFidelityReview = !!(cur && (cur.needsExpertReview || cur.fidelityLimited));
       const _humanReviewRequired = !!(cur && (!_canonicalComplete || _expertOrFidelityReview));
-      if (pdfAutoContinueAbortRef.current) {
-        addToast(t('toasts.auto_continue_stopped'), 'info');
+      if (pdfAutoContinueAbortRef.current || (_abortCtrl.signal && _abortCtrl.signal.aborted)) {
+        _toastIfOwned(t('toasts.auto_continue_stopped'), 'info');
       } else if (cur && (cur.afterScore || 0) >= pdfTargetScore && _canonicalComplete && !_expertOrFidelityReview) {
         if (cur.axeAudit && cur.axeAudit.totalViolations === 0) {
-          addToast(t('toasts.all_violations_resolved_score') + (cur.afterScore || 0) + ')', 'success');
+          _toastIfOwned(t('toasts.all_violations_resolved_score') + (cur.afterScore || 0) + ')', 'success');
         } else {
-          addToast(t('toasts.target_score_reached') + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')', 'success');
+          _toastIfOwned(t('toasts.target_score_reached') + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')', 'success');
         }
       } else if (cur && _humanReviewRequired) {
         const _reviewReasons = Array.isArray(cur.verificationReasons) ? cur.verificationReasons.filter(Boolean) : [];
@@ -1093,34 +1444,51 @@ async function runAutoFixLoop(maxRounds, deps) {
         const _reviewDetail = _readableReasons.length
           ? ' ' + Array.from(new Set(_readableReasons)).slice(0, 3).join(' ')
           : ' Review the verification and fidelity details before distributing this document.';
-        addToast('Human review required at score ' + (cur.afterScore == null ? 'not available' : (cur.afterScore + '/100')) + (_reviewCount > 0 ? ' (' + _reviewCount + ' review item' + (_reviewCount === 1 ? '' : 's') + ').' : '.') + _reviewDetail, 'warning');
+        _toastIfOwned('Human review required at score ' + (cur.afterScore == null ? 'not available' : (cur.afterScore + '/100')) + (_reviewCount > 0 ? ' (' + _reviewCount + ' review item' + (_reviewCount === 1 ? '' : 's') + ').' : '.') + _reviewDetail, 'warning');
       } else if (cur) {
         const _axeClean = cur.axeAudit && cur.axeAudit.totalViolations === 0;
-        addToast('🔁 ' + (t('toasts.below_target_stop') || 'Stopped at ') + (cur.afterScore || 0) + '/' + pdfTargetScore + (_axeClean ? (t('toasts.below_target_axe_clean') || ' — automated checks are clean; the remaining gap is AI-rubric issues that likely need a human (see Remaining Issues).') : (t('toasts.below_target_stop2') || ' — recent rounds stopped improving (the remaining issues likely need a human: see Remaining Issues). You can run Fix again to retry, or review the issues list.')), 'info');
+        _toastIfOwned('🔁 ' + (t('toasts.below_target_stop') || 'Stopped at ') + (cur.afterScore || 0) + '/' + pdfTargetScore + (_axeClean ? (t('toasts.below_target_axe_clean') || ' — automated checks are clean; the remaining gap is AI-rubric issues that likely need a human (see Remaining Issues).') : (t('toasts.below_target_stop2') || ' — recent rounds stopped improving (the remaining issues likely need a human: see Remaining Issues). You can run Fix again to retry, or review the issues list.')), 'info');
+      }
+    } catch (error) {
+      const _wasCancelled = pdfAutoContinueAbortRef.current
+        || (_abortCtrl.signal && _abortCtrl.signal.aborted)
+        || (error && error.name === 'AbortError');
+      if (!_canPublish()) {
+        warnLog('[AutoContinue] Stale loop rejected after a newer document/run took ownership:', error && (error.message || error));
+      } else if (_wasCancelled) {
+        _toastIfOwned(t('toasts.auto_continue_stopped') || 'Auto-continue stopped.', 'info');
+      } else {
+        warnLog('[AutoContinue] Loop failed:', error && (error.stack || error.message || error));
+        _toastIfOwned((t('toasts.auto_continue_failed') || 'Auto-remediation stopped after an unexpected error: ') + String((error && error.message) || error || 'unknown error'), 'error');
       }
     } finally {
+      const _staleAtExit = _genStale();
+      const _ownsExit = pdfAutoContinueAbortCtrlRef.current === _abortCtrl;
       // M9 (deep dive 2026-07-09): guard the UI writes — a STALE loop's exit (watchdog invalidated
       // it, teacher already started run B) used to wipe B's spinner and status line mid-run, and
       // because the 8-min watchdog effect is gated on pdfFixLoading, B silently lost its watchdog
-      // too. The running flag clears on OWNERSHIP (this loop's ctrl, or a vacant slot), not gen — a
-      // fresh loop that has already taken the slot owns the flag; with no successor it must still
-      // clear so the results buttons don't stay latched.
-      if (!_genStale()) {
+      // too. Only the exact controller may clear run state; a vacant shared slot
+      // means invalidation already revoked this continuation's ownership.
+      if (!_staleAtExit && _ownsExit) {
         setPdfFixLoading(false);
         setPdfFixStep('');
-      } else {
+      } else if (_staleAtExit) {
         warnLog('[AutoContinue] Stale loop exiting (gen bump) — leaving the fresh run\'s UI untouched.');
       }
-      if (pdfAutoContinueAbortCtrlRef.current === _abortCtrl || pdfAutoContinueAbortCtrlRef.current === null) {
+      if (_ownsExit) {
         setPdfAutoContinueRunning(false);
-      }
-      if (pdfAutoContinueAbortCtrlRef.current === _abortCtrl) {
         pdfAutoContinueAbortCtrlRef.current = null;
       }
       if (typeof window !== 'undefined' && window.__alloPdfAbortSignal === _abortCtrl.signal) {
         window.__alloPdfAbortSignal = _prevAbortSlot || null; // M11: hand the slot back to the overlapping origin (an aborted prev correctly aborts its own remaining calls)
       }
-      if (pdfAutoSaveProject) { try { saveProjectToFile(true); } catch (e) { /* non-fatal */ } }
+      // A stale loop must never save whichever document now occupies the shared refs.
+      if (pdfAutoSaveProject && !_staleAtExit && _ownsExit) {
+        try {
+          const _saveResult = saveProjectToFile(true);
+          if (_saveResult && typeof _saveResult.catch === 'function') _saveResult.catch((error) => warnLog('[AutoContinue] Autosave failed:', error && (error.message || error)));
+        } catch (error) { warnLog('[AutoContinue] Autosave failed:', error && (error.message || error)); }
+      }
     }
 }
 

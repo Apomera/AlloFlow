@@ -35,7 +35,10 @@ describe('source-pins: B — cooldown-aware deferred final re-audit', () => {
     expect(bBlock).toContain('Date.now() + 600000,');
     expect(bBlock).toContain('_perFileDeadlineTs ? _perFileDeadlineTs - 30000 : Infinity');
     expect(bBlock).toContain('await _withTimeout(waitForGeminiCalm({'); // M2: budget-clamped wait (pulses the watchdog internally)
-    expect(bBlock).toContain('_reFinalAudit = await _withTimeout(auditOutputAccessibility(accessibleHtml)');
+    // Capture the exact bytes before the await so the adopted audit cannot silently
+    // attest to a different HTML revision.
+    expect(bBlock).toContain('const _reFinalAuditHtml = accessibleHtml;');
+    expect(bBlock).toContain('_reFinalAudit = await _withTimeout(auditOutputAccessibility(_reFinalAuditHtml)');
     // fail-soft: keep the best result on any error (incl. a budget timeout)
     expect(bBlock).toMatch(/catch\s*\(_reErr\)/);
   });

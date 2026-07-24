@@ -8,6 +8,17 @@
  * Extracted from AlloFlowANTI.txt lines 23679-23791 (May 2026).
  * ~113 lines, 17 deps.
  */
+const _EDUCATOR_BATCH_MAX_FILES = 60;
+function _educatorBatchMemoryBudget() {
+  // Base64, hashing, and pdf.js can temporarily retain several byte copies.
+  const deviceGb = typeof navigator !== 'undefined' && Number.isFinite(Number(navigator.deviceMemory))
+    ? Math.max(1, Number(navigator.deviceMemory))
+    : 4;
+  const totalMb = Math.max(48, Math.min(128, Math.floor(deviceGb * 24)));
+  const fileMb = Math.min(64, totalMb);
+  return { perFileBytes: fileMb * 1024 * 1024, totalBytes: totalMb * 1024 * 1024 };
+}
+
 function EducatorHubModal(props) {
   const {
     handleFileUpload, openExportPreview, pdfAuditResult, pdfFixLoading, pdfFixResult,
@@ -51,6 +62,38 @@ function EducatorHubModal(props) {
     openWhiteboard = (() => {}),
   } = props;
   const dialogRef = React.useRef(null);
+  const pdfBatchIntakeRef = React.useRef(null);
+  const educatorHubMountedRef = React.useRef(true);
+  const [pdfBatchIntakeProgress, setPdfBatchIntakeProgress] = React.useState(null);
+  const _setPdfBatchIntakeProgressIfMounted = (value) => {
+    if (educatorHubMountedRef.current) setPdfBatchIntakeProgress(value);
+  };
+  const _cancelPdfBatchIntake = (notify) => {
+    const job = pdfBatchIntakeRef.current;
+    if (!job) return;
+    job.cancelled = true;
+    if (job.reader && typeof job.reader.abort === 'function') {
+      try { job.reader.abort(); } catch (_) {}
+    }
+    if (typeof job.cancelRead === 'function') job.cancelRead();
+    if (pdfBatchIntakeRef.current === job) pdfBatchIntakeRef.current = null;
+    _setPdfBatchIntakeProgressIfMounted(null);
+    if (notify !== false) addToast('PDF batch preparation cancelled.', 'info');
+  };
+  React.useEffect(function () {
+    educatorHubMountedRef.current = true;
+    return function () {
+      educatorHubMountedRef.current = false;
+      const job = pdfBatchIntakeRef.current;
+      if (!job) return;
+      job.cancelled = true;
+      if (job.reader && typeof job.reader.abort === 'function') {
+        try { job.reader.abort(); } catch (_) {}
+      }
+      if (typeof job.cancelRead === 'function') job.cancelRead();
+      if (pdfBatchIntakeRef.current === job) pdfBatchIntakeRef.current = null;
+    };
+  }, []);
   React.useEffect(function () {
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
@@ -300,8 +343,7 @@ function EducatorHubModal(props) {
                   <p className="text-xs text-emerald-600 mt-1">{t('educator_hub.document_hub_desc') || 'Document builder with themes, WYSIWYG editing, accessibility audit, and multi-format export (PDF, HTML, worksheet, slides)'}</p>
                 </div>
               </button>
-              <button type="button" data-help-key="educator_hub_pdf_accessibility_card" onClick={() => {
-                  setShowEducatorHub(false);
+              <button type="button" disabled={!!pdfBatchIntakeProgress} data-help-key="educator_hub_pdf_accessibility_card" onClick={() => {
                   const input = document.createElement('input');
                   input.type = 'file';
                   // PDF / DOCX / PPTX only. image/* was previously offered here but a lone image
@@ -324,6 +366,7 @@ function EducatorHubModal(props) {
                       // Single-document intake must use the host handler. It owns the shared
                       // selection epoch, hard reset, type validation, and initial audit launch.
                       if (files.length === 1) {
+                          setShowEducatorHub(false);
                           const singleTarget = { files: [files[0]], value: '' };
                           try {
                               await Promise.resolve(handleFileUpload({ target: singleTarget, currentTarget: singleTarget }));
@@ -342,22 +385,54 @@ function EducatorHubModal(props) {
                           return;
                       }
 
+                      // Match the remediation view's browser-safe queue budgets before
+                      // FileReader expands any bytes into base64/UTF-16 strings.
+                      const batchBudget = _educatorBatchMemoryBudget();
+                      const acceptedPdfFiles = [];
+                      const oversizedNames = [];
+                      let overCount = 0;
+                      let overTotal = 0;
+                      let acceptedBytes = 0;
+                      for (const file of pdfFiles) {
+                          const size = Math.max(0, Number(file && file.size) || 0);
+                          if (acceptedPdfFiles.length >= _EDUCATOR_BATCH_MAX_FILES) { overCount += 1; continue; }
+                          if (size > batchBudget.perFileBytes) { oversizedNames.push(file.name || 'PDF'); continue; }
+                          if (acceptedBytes + size > batchBudget.totalBytes) { overTotal += 1; continue; }
+                          acceptedBytes += size;
+                          acceptedPdfFiles.push(file);
+                      }
+                      if (overCount) addToast('Batch limit is 60 PDFs; ' + overCount + ' file(s) were not added. Run them as a second batch.', 'warning');
+                      if (oversizedNames.length) addToast('Skipped ' + oversizedNames.length + ' PDF(s) over this device\'s ' + Math.round(batchBudget.perFileBytes / 1048576) + ' MB per-file safety limit: ' + oversizedNames.slice(0, 3).join(', ') + (oversizedNames.length > 3 ? '…' : ''), 'warning');
+                      if (overTotal) addToast('This device\'s ' + Math.round(batchBudget.totalBytes / 1048576) + ' MB batch memory budget was reached; ' + overTotal + ' file(s) were not added. Run them as a second batch.', 'warning');
+                      if (acceptedPdfFiles.length <= 1) {
+                          addToast('At least two PDFs must remain after the batch safety limits are applied.', 'warning');
+                          return;
+                      }
+
                       let intakeToken;
                       try {
                           intakeToken = await Promise.resolve(beginPdfDocumentIntake({
                               source: 'educator-hub',
                               mode: 'batch',
-                              files: pdfFiles
+                              files: acceptedPdfFiles
                           }));
                       } catch (error) {
                           addToast('Could not start the PDF batch: ' + String((error && error.message) || error || 'unknown error'), 'error');
                           return;
                       }
+                      const intakeJob = { token: intakeToken, reader: null, cancelRead: null, cancelled: false };
+                      pdfBatchIntakeRef.current = intakeJob;
                       const intakeIsCurrent = () => {
+                          if (intakeJob.cancelled || pdfBatchIntakeRef.current !== intakeJob) return false;
                           try { return isPdfDocumentIntakeCurrent(intakeToken); }
                           catch (_) { return false; }
                       };
-                      if (!intakeIsCurrent()) return;
+                      if (!intakeIsCurrent()) {
+                          if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
+                          return;
+                      }
+                      _setPdfBatchIntakeProgressIfMounted({ completed: 0, total: acceptedPdfFiles.length, currentIndex: 0, currentName: '', totalBytes: acceptedBytes });
+                      addToast('Preparing ' + acceptedPdfFiles.length + ' PDFs for batch remediation…', 'info');
 
                       const skippedCount = files.length - pdfFiles.length;
                       if (skippedCount > 0) {
@@ -366,21 +441,40 @@ function EducatorHubModal(props) {
 
                       // Read sequentially so selection order is deterministic and only one
                       // large data URL is being materialized by FileReader at a time.
-                      const batchFiles = new Array(pdfFiles.length);
-                      for (let index = 0; index < pdfFiles.length; index += 1) {
-                          if (!intakeIsCurrent()) return;
-                          const file = pdfFiles[index];
+                      const batchFiles = new Array(acceptedPdfFiles.length);
+                      for (let index = 0; index < acceptedPdfFiles.length; index += 1) {
+                          if (!intakeIsCurrent()) {
+                              if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
+                              _setPdfBatchIntakeProgressIfMounted(null);
+                              return;
+                          }
+                          const file = acceptedPdfFiles[index];
+                          _setPdfBatchIntakeProgressIfMounted({ completed: index, total: acceptedPdfFiles.length, currentIndex: index + 1, currentName: file.name || 'PDF', totalBytes: acceptedBytes });
                           const outcome = await new Promise((resolve) => {
                               if (!intakeIsCurrent()) { resolve({ stale: true }); return; }
                               let reader;
+                              let staleMonitor = null;
                               let settled = false;
                               const finish = (value) => {
                                   if (settled) return;
                                   settled = true;
+                                  if (staleMonitor) clearInterval(staleMonitor);
+                                  if (intakeJob.reader === reader) intakeJob.reader = null;
+                                  intakeJob.cancelRead = null;
                                   resolve(value);
                               };
                               try {
                                   reader = new FileReader();
+                                  intakeJob.reader = reader;
+                                  intakeJob.cancelRead = () => finish({ cancelled: true });
+                                  staleMonitor = setInterval(() => {
+                                      if (!intakeIsCurrent()) {
+                                          if (reader && typeof reader.abort === 'function') {
+                                              try { reader.abort(); } catch (_) {}
+                                          }
+                                          finish({ stale: true });
+                                      }
+                                  }, 200);
                                   reader.onload = () => {
                                       if (!intakeIsCurrent()) { finish({ stale: true }); return; }
                                       const result = reader.result;
@@ -404,7 +498,7 @@ function EducatorHubModal(props) {
                                       finish({ error: reader.error || new Error('The browser could not read this file.') });
                                   };
                                   reader.onabort = () => {
-                                      if (!intakeIsCurrent()) { finish({ stale: true }); return; }
+                                      if (!intakeIsCurrent() || intakeJob.cancelled) { finish({ cancelled: true }); return; }
                                       finish({ error: new Error('The file read was cancelled.') });
                                   };
                                   reader.readAsDataURL(file);
@@ -413,20 +507,34 @@ function EducatorHubModal(props) {
                                   finish({ error });
                               }
                           });
-                          if (!intakeIsCurrent() || outcome.stale) return;
+                          if (!intakeIsCurrent() || outcome.stale || outcome.cancelled) {
+                              if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
+                              _setPdfBatchIntakeProgressIfMounted(null);
+                              return;
+                          }
                           if (outcome.error) {
                               addToast('Could not read "' + (file.name || 'PDF') + '": ' + String((outcome.error && outcome.error.message) || outcome.error), 'error');
+                              _setPdfBatchIntakeProgressIfMounted({ completed: index + 1, total: acceptedPdfFiles.length, currentIndex: index + 1, currentName: file.name || 'PDF', totalBytes: acceptedBytes });
                               continue;
                           }
                           batchFiles[index] = outcome.entry;
+                          _setPdfBatchIntakeProgressIfMounted({ completed: index + 1, total: acceptedPdfFiles.length, currentIndex: index + 1, currentName: file.name || 'PDF', totalBytes: acceptedBytes });
                       }
 
-                      if (!intakeIsCurrent()) return;
+                      if (!intakeIsCurrent()) {
+                          if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
+                          _setPdfBatchIntakeProgressIfMounted(null);
+                          return;
+                      }
                       const readyFiles = batchFiles.filter(Boolean);
                       if (readyFiles.length === 0) {
+                          if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
+                          _setPdfBatchIntakeProgressIfMounted(null);
                           addToast('None of the selected PDFs could be read.', 'error');
                           return;
                       }
+                      if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
+                      _setPdfBatchIntakeProgressIfMounted(null);
                       setPdfBatchSummary(null);
                       setPdfBatchQueue(readyFiles);
                       setPdfBatchMode(true);
@@ -435,15 +543,29 @@ function EducatorHubModal(props) {
                           fileName: readyFiles.length + ' files',
                           fileSize: readyFiles.reduce((sum, file) => sum + file.fileSize, 0)
                       });
+                      addToast(readyFiles.length + ' PDFs are ready for batch remediation.', 'success');
+                      setShowEducatorHub(false);
                   };
                   input.click();
-              }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+              }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left disabled:opacity-60 disabled:cursor-wait disabled:hover:scale-100">
                 <span className="text-3xl mt-1" aria-hidden="true">♿</span>
                 <div>
                   <h3 className="font-bold text-teal-800">{t('educator_hub.pdf_accessibility_title') || 'PDF Accessibility'}</h3>
                   <p className="text-xs text-teal-600 mt-1">{t('educator_hub.pdf_accessibility_desc') || 'Upload PDFs for WCAG accessibility audit & remediation with axe-core verification'}</p>
                 </div>
               </button>
+              {pdfBatchIntakeProgress && (
+                <div className="col-span-full rounded-xl border border-teal-300 bg-teal-50 p-3" role="status" aria-live="polite" aria-label="PDF batch preparation progress">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-teal-900">Preparing PDF batch: {pdfBatchIntakeProgress.completed}/{pdfBatchIntakeProgress.total}</p>
+                      <p className="text-xs text-teal-700 truncate">{pdfBatchIntakeProgress.currentName ? ('Reading ' + pdfBatchIntakeProgress.currentIndex + ' of ' + pdfBatchIntakeProgress.total + ': ' + pdfBatchIntakeProgress.currentName) : 'Starting…'}</p>
+                    </div>
+                    <button type="button" onClick={() => _cancelPdfBatchIntake(true)} className="min-h-11 px-3 py-2 rounded-lg border border-rose-300 bg-white text-rose-700 text-xs font-bold hover:bg-rose-50">Cancel</button>
+                  </div>
+                  <progress className="w-full mt-2 accent-teal-600" max={pdfBatchIntakeProgress.total} value={pdfBatchIntakeProgress.completed} aria-label="PDFs prepared" />
+                </div>
+              )}
               {pdfFixResult && !pdfFixLoading && !pdfAuditResult && (
                 <button type="button"
                   onClick={() => { setShowEducatorHub(false); setPdfAuditResult({ _restored: true }); }}

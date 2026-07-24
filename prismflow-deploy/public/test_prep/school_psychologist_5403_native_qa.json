@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-19T17:49:12.904Z",
+  "generatedAt": "2026-07-23T17:25:03.100Z",
   "packId": "praxis-school-psychologist-5403",
   "standard": {
     "label": "AlloFlow independent 5403 source, structure, feedback, originality, safety, and linkage QA v1",
@@ -10384,7 +10384,7 @@
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
     "sourceItemsSha256": "14bbc0fd643fc81b7def3ebe9351ce432c1da66ec7131db85e68ed8c9ae497a4",
-    "learningLibrarySha256": "c4a3e6c33d8f7c3b2cd634b796c82d76f3cfac94bfa887f5d43deab7fa0d32f1",
+    "learningLibrarySha256": "ef57f67e06d49bc3b7f201ec92d28940d76f20c4adb8373697e96d4ad1490f8e",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   },
   "expansion": {

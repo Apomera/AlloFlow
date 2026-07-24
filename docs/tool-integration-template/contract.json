@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "example_text_tool",
+  "name": "Example Text Tool",
+  "version": "2026.07",
+  "reviewedAt": "2026-07-22",
+  "reviewAfter": "2027-01-22",
+  "license": { "name": "Replace with the tool license", "spdx": "MIT" },
+  "citation": { "text": "Cite the analyzed source edition and disclose the software/version used." },
+  "supportedMethodPacks": ["humanistic_interpretation"],
+  "capabilities": { "captureArtifact": true, "rawDataIncluded": false },
+  "privacy": { "learnerApprovalRequired": true, "directIdentifiersAllowed": false, "sequenceLikeTextAllowed": false, "sanitizerId": "example_excerpt_guard_v1", "sanitizerRequired": false },
+  "reproducibility": { "requiredFields": ["softwareVersion", "sourceRecordId", "parameters", "randomSeed", "limitations", "transformations"] }
+}

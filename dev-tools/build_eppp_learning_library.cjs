@@ -69,6 +69,7 @@ const overridesPath = path.join(root, 'test_prep', 'eppp_learning_review_overrid
 const reviewOverrides = fs.existsSync(overridesPath) ? JSON.parse(fs.readFileSync(overridesPath, 'utf8')) : { memoryAids: {} };
 const flashcardWavePattern = /^eppp_flashcard_review_wave_\d+\.json$/i;
 const memoryAidWavePattern = /^eppp_memory_aid_review_wave_\d+\.json$/i;
+const knowledgeCheckWavePattern = /^eppp_knowledge_check_review_wave_\d+\.json$/i;
 const flashcardWaveRecords = new Map();
 for (const filename of fs.readdirSync(path.join(root, 'test_prep')).filter((entry) => flashcardWavePattern.test(entry)).sort()) {
   const wave = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', filename), 'utf8'));
@@ -90,16 +91,83 @@ for (const filename of fs.readdirSync(path.join(root, 'test_prep')).filter((entr
     memoryAidWaveRecords.set(legacyId, { ...item, reviewArtifact: filename });
   }
 }
+const knowledgeCheckWaveRecords = new Map();
+for (const filename of fs.readdirSync(path.join(root, 'test_prep')).filter((entry) => knowledgeCheckWavePattern.test(entry)).sort()) {
+  const wave = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', filename), 'utf8'));
+  for (const item of (Array.isArray(wave.items) ? wave.items : [])) {
+    const legacyId = String(item && item.legacyId || '');
+    if (!legacyId) throw new Error(`Knowledge-check review wave ${filename} has an item without a legacyId.`);
+    if (knowledgeCheckWaveRecords.has(legacyId)) throw new Error(`Knowledge check ${legacyId} appears in more than one review wave.`);
+    knowledgeCheckWaveRecords.set(legacyId, { ...item, reviewArtifact: filename });
+  }
+}
 const domainByNumber = new Map(domains.map((domain) => [Number(domain.id), String(domain.name)]));
 const reviewChecks = ['source-support', 'accuracy-and-currency', 'instructional-quality', 'accessibility', 'bias-and-context', 'expert-review'];
 
+const knowledgeCheckRecords = [];
+const discoveredKnowledgeCheckIds = new Set();
 const chapterRecords = chapters.map((chapter, chapterIndex) => {
   const override = reviewOverrides.chapters && reviewOverrides.chapters[String(chapter.id || '')] || {};
+  const releasedKnowledgeChecks = [];
   const sections = (Array.isArray(chapter.sections) ? chapter.sections : []).map((section, sectionIndex) => {
     const chapterId = String(chapter.id || 'chapter-' + (chapterIndex + 1));
     const id = chapterId + '-section-' + (sectionIndex + 1);
     const runtimeSectionId = chapterId + '-section-' + sectionIndex;
     const placement = diagramPlacementBySectionId.get(runtimeSectionId);
+    const legacyCheck = section && section.knowledgeCheck;
+    let knowledgeCheckId = null;
+    let knowledgeCheckReviewStatus = null;
+    if (legacyCheck) {
+      const legacyPrompt = cleanText(legacyCheck.question);
+      const legacyChoices = (Array.isArray(legacyCheck.options) ? legacyCheck.options : []).map(cleanText);
+      knowledgeCheckId = stableId('knowledge-check', [chapterId, sectionIndex, legacyPrompt, ...legacyChoices]);
+      if (discoveredKnowledgeCheckIds.has(knowledgeCheckId)) throw new Error(`Duplicate knowledge-check id ${knowledgeCheckId}.`);
+      discoveredKnowledgeCheckIds.add(knowledgeCheckId);
+      const waveOverride = knowledgeCheckWaveRecords.get(knowledgeCheckId) || {};
+      const prompt = cleanText(waveOverride.prompt || legacyPrompt);
+      const choices = (Array.isArray(waveOverride.choices) ? waveOverride.choices : legacyChoices).map(cleanText);
+      const answerIndex = Number(waveOverride.answerIndex ?? legacyCheck.answer);
+      if (!prompt || choices.length < 2 || !Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex >= choices.length) {
+        throw new Error(`Knowledge check ${knowledgeCheckId} has an invalid prompt, choices, or answer index.`);
+      }
+      knowledgeCheckReviewStatus = cleanText(waveOverride.reviewStatus) || 'review-required';
+      const isSourceReviewed = knowledgeCheckReviewStatus === 'source-reviewed-editorial-pass';
+      const record = {
+        id: knowledgeCheckId,
+        legacyId: knowledgeCheckId,
+        chapterId,
+        sectionId: id,
+        runtimeSectionId,
+        domainId: Number(chapter.domainNumber) || null,
+        domain: cleanText(chapter.domain) || domainByNumber.get(Number(chapter.domainNumber)) || 'Unassigned',
+        prompt,
+        choices,
+        answerIndex,
+        rationale: cleanText(waveOverride.rationale || legacyCheck.rationale),
+        reviewStatus: knowledgeCheckReviewStatus,
+        references: Array.isArray(waveOverride.references) ? waveOverride.references.map(cleanText).filter(Boolean) : [],
+        sourceDetails: Array.isArray(waveOverride.sourceDetails) ? waveOverride.sourceDetails.map((source) => ({
+          title: cleanText(source && source.title),
+          organization: cleanText(source && source.organization),
+          url: cleanText(source && source.url),
+          whyReputable: cleanText(source && source.whyReputable),
+        })).filter((source) => source.title && source.url && source.whyReputable) : [],
+        reviewNote: cleanText(waveOverride.reviewNote),
+        reviewMode: cleanText(waveOverride.reviewMode),
+        reviewWave: cleanText(waveOverride.reviewWave),
+        reviewDate: cleanText(waveOverride.reviewDate),
+        reviewArtifact: cleanText(waveOverride.reviewArtifact),
+        checks: {
+          answerKey: isSourceReviewed ? 'pass' : 'pending',
+          distractors: isSourceReviewed ? 'pass' : 'pending',
+          rationale: isSourceReviewed ? 'pass' : 'pending',
+          sourceSupport: isSourceReviewed ? 'pass' : 'pending',
+          biasAndContext: isSourceReviewed ? 'pass' : 'pending',
+        },
+      };
+      knowledgeCheckRecords.push(record);
+      if (isSourceReviewed) releasedKnowledgeChecks.push(record);
+    }
     return {
       id,
       runtimeSectionId,
@@ -112,7 +180,9 @@ const chapterRecords = chapters.map((chapter, chapterIndex) => {
       diagramOrigin: placement ? placement.origin : null,
       diagramTemplateKey: placement ? placement.templateKey : null,
       diagramDescription: placement ? placement.description : '',
-      hasKnowledgeCheck: !!(section && section.knowledgeCheck),
+      hasKnowledgeCheck: !!legacyCheck,
+      knowledgeCheckId,
+      knowledgeCheckReviewStatus,
       hasExpandableCase: !!(section && section.expandableCase),
       reviewStatus: 'review-required',
     };
@@ -126,6 +196,7 @@ const chapterRecords = chapters.map((chapter, chapterIndex) => {
     sectionCount: sections.length,
     diagramCount: sections.filter((section) => section.hasDiagram).length,
     knowledgeCheckCount: sections.filter((section) => section.hasKnowledgeCheck).length,
+    releasedKnowledgeCheckCount: releasedKnowledgeChecks.length,
     referenceCount: Array.isArray(chapter.references) ? chapter.references.length : 0,
     hasAiReflectiveCoda: !!chapter.aiCoda,
     legacySource: chapterSourceById.get(String(chapter.id || '')) || '',
@@ -133,9 +204,13 @@ const chapterRecords = chapters.map((chapter, chapterIndex) => {
     reviewNote: cleanText(override.reviewNote),
     reviewReferences: Array.isArray(override.references) ? override.references.map(cleanText).filter(Boolean) : [],
     checks: Object.fromEntries(reviewChecks.map((check) => [check, override.checks && override.checks[check] || (check === 'accessibility' ? 'shared-renderer-pass-content-review-pending' : 'pending')])),
+    knowledgeChecks: releasedKnowledgeChecks,
     sections,
   };
 });
+for (const legacyId of knowledgeCheckWaveRecords.keys()) {
+  if (!discoveredKnowledgeCheckIds.has(legacyId)) throw new Error(`Knowledge-check review wave references unknown legacyId ${legacyId}.`);
+}
 
 const flashcards = [];
 for (const domain of domains) {
@@ -246,7 +321,7 @@ const catalog = {
     sections: chapterRecords.reduce((sum, chapter) => sum + chapter.sectionCount, 0),
     diagrams: diagramRecords.length,
     ...diagramCatalog.summary,
-    knowledgeChecks: chapterRecords.reduce((sum, chapter) => sum + chapter.knowledgeCheckCount, 0),
+    knowledgeChecks: knowledgeCheckRecords.length,
     flashcards: flashcards.length,
     memoryAids: aidRecords.length,
     qaPassedChapters: chapterRecords.filter((chapter) => chapter.reviewStatus === 'qa-passed').length,
@@ -256,12 +331,17 @@ const catalog = {
     retainedReviewedFlashcards: flashcards.filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass' && card.contentDisposition !== 'retire-redundant').length,
     retiredRedundantFlashcards: flashcards.filter((card) => card.contentDisposition === 'retire-redundant').length,
     qaPassedMemoryAids: aidRecords.filter((aid) => aid.reviewStatus === 'qa-passed').length,
+    qaPassedKnowledgeChecks: knowledgeCheckRecords.filter((item) => item.reviewStatus === 'qa-passed').length,
+    sourceReviewedKnowledgeChecks: knowledgeCheckRecords.filter((item) => item.reviewStatus === 'source-reviewed-editorial-pass').length,
+    releasedKnowledgeChecks: knowledgeCheckRecords.filter((item) => item.reviewStatus === 'source-reviewed-editorial-pass').length,
+    reviewRequiredKnowledgeChecks: knowledgeCheckRecords.filter((item) => item.reviewStatus === 'review-required').length,
     sourceReviewedMemoryAids: aidRecords.filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass').length,
     releasedMemoryAids: aidRecords.filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass').length,
     releasedFlashcards: flashcards.filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass' && card.contentDisposition !== 'retire-redundant').length,
     editorialReviewedSourcePendingMemoryAids: aidRecords.filter((aid) => aid.reviewStatus === 'editorial-reviewed-source-pending').length,
   },
   chapters: chapterRecords,
+  knowledgeChecks: knowledgeCheckRecords,
   diagrams: diagramRecords,
   diagramPlacements: diagramPlacementRecords,
   flashcards,
@@ -281,6 +361,7 @@ const report = {
     `${catalog.summary.diagramPlacements} learner-visible diagram placements are cataloged: ${catalog.summary.sharedTemplateDiagramPlacements} use shared templates and ${catalog.summary.inlineDiagramPlacements} are inline chapter diagrams. ${catalog.summary.unusedDiagramTemplates} shared templates are currently unused.`,
     `${catalog.summary.sourceReviewedFlashcards} of ${catalog.summary.flashcards} flashcards have source-review records; ${catalog.summary.flashcards - catalog.summary.sourceReviewedFlashcards} remain in first-pass review, and independent qualified expert validation is still pending.`,
     `${catalog.summary.retiredRedundantFlashcards} source-reviewed duplicate flashcards are explicitly retired from future learner release rather than counted as distinct study targets.`,
+    `${catalog.summary.sourceReviewedKnowledgeChecks} of ${catalog.summary.knowledgeChecks} knowledge checks have source-review records and are released to their chapter payloads; ${catalog.summary.reviewRequiredKnowledgeChecks} remain gated for review.`,
   ],
 };
 

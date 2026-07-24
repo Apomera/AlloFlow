@@ -36,8 +36,8 @@ describe('Guided Mode banner accessibility', () => {
   });
 
   it('styles the real target instead of rendering a detached fixed overlay', () => {
-    expect(component).toContain('.allo-guided-target{outline:3px solid');
-    expect(component).toContain('.allo-guided-target{animation:none !important}');
+    expect(component).toContain(':where(.allo-guided-target,[data-allo-guided-target="true"]){outline:3px solid');
+    expect(component).toContain(':where(.allo-guided-target,[data-allo-guided-target="true"]){animation:none !important}');
     expect(component).not.toContain('className="allo-guided-ring"');
     expect(component).not.toContain("position: 'fixed', top: guidedRect.top");
   });
@@ -45,6 +45,7 @@ describe('Guided Mode banner accessibility', () => {
   it('reports one-based progress and distinguishes skipped steps', () => {
     expect(component).toContain('aria-valuenow={Math.min(guidedStep + 1, GUIDED_STEPS.length)}');
     expect(component).toContain('aria-valuemin={1}');
+    expect(component).toContain("(t('guided.step_of') || 'Step {current} of {total}').replace");
     expect(component).toContain('guidedSkippedIds.includes(s.id)');
     expect(component).toContain("repeating-linear-gradient(135deg");
   });
@@ -52,11 +53,21 @@ describe('Guided Mode banner accessibility', () => {
   it('allows the action controls to wrap in narrow or translated layouts', () => {
     expect(component).toContain("display: 'flex', gap: '8px', flexWrap: 'wrap'");
   });
+  it('names phase context and delivery choices and preserves required milestones', () => {
+    expect(component).toContain('aria-label={t(\'guided.phase_context\')');
+    expect(component).toContain("'Phase {current} of {total}'");
+    expect(component).toContain('role="region" aria-labelledby="guided-delivery-title"');
+    expect(component).toContain("aria-label={t('guided.delivery_options_label')");
+    expect(component).toContain("const locked = s.id === 'source-input' || s.id === 'package-deliver' || s.id === '_final'");
+    expect(component).toContain('role="heading" aria-level={3}');
+  });
 });
 
 describe('Guided Mode banner follow-up safeguards', () => {
   it('declares localization keys for every Guided step and localizes non-English success state', () => {
     expect(component).toContain('const GUIDED_STEP_I18N_KEYS = {');
+    expect(component).toContain("'directions': ['directions.title', 'directions.subtitle']");
+    expect(component).toContain("'package-deliver': ['tour.fullpack_title', 'tour.fullpack_text']");
     expect(component).toContain("'_final': ['tour.fullpack_title', 'tour.fullpack_text']");
     expect(component).toContain("return localizeStep(sourceStep, 'label') + ' ✓'");
   });
@@ -70,7 +81,7 @@ describe('Guided Mode banner follow-up safeguards', () => {
 });
 describe('Guided Mode resilience and responsive safeguards', () => {
   it('suspends its target highlight behind modal surfaces and supports forced colors', () => {
-    expect(component).toContain('body:has([aria-modal="true"]) .allo-guided-target');
+    expect(component).toContain('body:has([aria-modal="true"]) :where(.allo-guided-target,[data-allo-guided-target="true"])');
     expect(component).toContain('animation-play-state:paused!important');
     expect(component).toContain('@media (forced-colors:active)');
     expect(component).toContain('outline:3px solid Highlight!important');

@@ -15,6 +15,7 @@
 */
 import React, { useState, useEffect, useRef, useCallback, useContext, useMemo, useReducer } from 'react';
 import ReactDOM from 'react-dom';
+import * as VexFlow from 'vexflow';
 import { ArrowRight, ArrowLeft, ArrowUp, ArrowDown, ArrowUpRight, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Move, ExternalLink, DoorOpen, Link } from 'lucide-react';
 import { CheckCircle, CheckCircle2, CheckSquare, Check, AlertCircle, AlertTriangle, XCircle, Info, Lightbulb, ShieldCheck, Loader2, Ban, Octagon, X } from 'lucide-react';
 import { Save, SaveAll, Download, Upload, Copy, Send, Search, Plus, Trash2, Pencil, Edit, Edit2, PenTool, Bold, Italic, Highlighter, RefreshCw, Filter, Lock, Unlock, Wrench, Wand2, Scissors, GripVertical, GripHorizontal } from 'lucide-react';
@@ -34,6 +35,13 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously as _fbSignInAnonymously, signInWithCustomToken, onAuthStateChanged as _fbOnAuthStateChanged } from 'firebase/auth';
 import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken as _fbGetAppCheckToken } from 'firebase/app-check';
 import { getFirestore, terminate as terminateFirestore, doc as _fbDoc, setDoc as _fbSetDoc, onSnapshot as _fbOnSnapshot, updateDoc as _fbUpdateDoc, getDoc as _fbGetDoc, deleteDoc as _fbDeleteDoc, deleteField as _fbDeleteField, collection as _fbCollection, query as _fbQuery, where as _fbWhere, getDocs as _fbGetDocs, writeBatch as _fbWriteBatch, limit as _fbLimit } from 'firebase/firestore';
+
+const _openGrooveVexFlowRuntime = VexFlow && (VexFlow.Flow || VexFlow.default && (VexFlow.default.Flow || VexFlow.default) || VexFlow);
+if (typeof window !== 'undefined' && _openGrooveVexFlowRuntime) {
+  window.VexFlow = window.VexFlow || _openGrooveVexFlowRuntime;
+  window.Vex = window.Vex || {};
+  window.Vex.Flow = window.Vex.Flow || _openGrooveVexFlowRuntime;
+}
 
 let doc = (...args) => _fbDoc(...args);
 let setDoc = (ref, data, opts) => _fbSetDoc(ref, data, opts);
@@ -3744,7 +3752,17 @@ const LargeFileHandler = new Proxy({}, {
     get(target, prop) {
         const real = (typeof window !== 'undefined') && window.AlloModules && window.AlloModules.LargeFileHandler;
         if (real && prop in real) return real[prop];
-        if (prop === 'needsChunking' || prop === 'getFileType') return () => false;
+        if (prop === 'needsChunking') return (file) => !!(file && Number(file.size) > 15 * 1024 * 1024);
+        if (prop === 'getFileType') return (file) => {
+            const name = String(file && file.name || '').toLowerCase();
+            const type = String(file && file.type || '').toLowerCase();
+            if (type === 'application/pdf' || /\.pdf$/.test(name)) return 'pdf';
+            if (type.startsWith('video/') || /\.(mp4|mov|m4v|webm|avi|mkv)$/.test(name)) return 'video';
+            if (type.startsWith('audio/') || /\.(mp3|m4a|wav|aac|ogg|oga|flac|opus|wma)$/.test(name)) return 'audio';
+            if (type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|tiff?|heic|avif)$/.test(name)) return 'image';
+            if (/\.(docx?|pptx?|xlsx?|ods|odt|odp)$/.test(name)) return 'document';
+            return 'unknown';
+        };
         if (prop === 'cancel') return () => {};
         if (prop === 'isProcessing' || prop === 'cancelRequested') return false;
         return undefined;
@@ -4261,8 +4279,111 @@ const _DNT_REGEX_PATTERNS = [
   /#[A-Fa-f0-9]{3,8}\b/g,                            // #fff, #f97316
   /https?:\/\/[^\s\)\]]+/g                           // URLs
 ];
-async function _loadTranslationGlossary() {
+function _translationAbortError(message = 'Translation request cancelled') {
+  try {
+    return new DOMException(message, 'AbortError');
+  } catch (_) {
+    const error = new Error(message);
+    error.name = 'AbortError';
+    return error;
+  }
+}
+function _translationThrowIfAborted(signal) {
+  if (signal && signal.aborted) throw _translationAbortError();
+}
+async function _translationFetchWithTimeout(url, options = {}, parentSignal = null, timeoutMs = 15000) {
+  const controller = new AbortController();
+  let timedOut = false;
+  const abortFromParent = () => controller.abort();
+  if (parentSignal) {
+    if (parentSignal.aborted) controller.abort();
+    else parentSignal.addEventListener('abort', abortFromParent, { once: true });
+  }
+  const timeoutId = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, Math.max(1, Number(timeoutMs) || 15000));
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (error) {
+    if (timedOut && !(parentSignal && parentSignal.aborted)) {
+      const timeoutError = new Error('Translation request timed out');
+      timeoutError.name = 'TimeoutError';
+      throw timeoutError;
+    }
+    if (controller.signal.aborted) throw _translationAbortError();
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+    if (parentSignal) parentSignal.removeEventListener('abort', abortFromParent);
+  }
+}
+function _translationAbortableDelay(ms, signal) {
+  _translationThrowIfAborted(signal);
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(done, Math.max(0, Number(ms) || 0));
+    function done() {
+      if (signal) signal.removeEventListener('abort', aborted);
+      resolve();
+    }
+    function aborted() {
+      clearTimeout(timeoutId);
+      if (signal) signal.removeEventListener('abort', aborted);
+      reject(_translationAbortError());
+    }
+    if (signal) signal.addEventListener('abort', aborted, { once: true });
+  });
+}
+function _alloQueueSequencedWrite(owner, sequence, task) {
+  const previous = owner && owner.chain ? owner.chain : Promise.resolve();
+  const run = previous.catch(() => undefined).then(() => {
+    if (!owner || owner.sequence !== sequence) return { skipped: true };
+    return task();
+  });
+  if (owner) {
+    // Keep the serialization chain alive after a failed write while returning
+    // the original promise so the caller can still report that failure.
+    owner.chain = run.catch(() => undefined);
+  }
+  return run;
+}
+function _alloBeginOwnedAsync(ownerRef, identity) {
+  const previous = ownerRef && ownerRef.current ? ownerRef.current : {};
+  if (previous.controller) {
+    try { previous.controller.abort(); } catch (_) {}
+  }
+  const token = {
+    generation: Number(previous.generation || 0) + 1,
+    identity: String(identity == null ? '' : identity),
+    controller: new AbortController()
+  };
+  ownerRef.current = token;
+  return token;
+}
+function _alloOwnedAsyncIsCurrent(ownerRef, token, liveIdentity) {
+  const current = ownerRef && ownerRef.current;
+  return !!current
+    && !!token
+    && current.generation === token.generation
+    && current.controller === token.controller
+    && current.identity === token.identity
+    && token.identity === String(liveIdentity == null ? '' : liveIdentity)
+    && !token.controller.signal.aborted;
+}
+function _alloInvalidateOwnedAsync(ownerRef) {
+  const previous = ownerRef && ownerRef.current ? ownerRef.current : {};
+  if (previous.controller) {
+    try { previous.controller.abort(); } catch (_) {}
+  }
+  ownerRef.current = {
+    generation: Number(previous.generation || 0) + 1,
+    identity: '',
+    controller: null
+  };
+}
+async function _loadTranslationGlossary(signal) {
   if (_TRANSLATION_GLOSSARY) return _TRANSLATION_GLOSSARY;
+  _translationThrowIfAborted(signal);
   try {
     const cached = typeof localStorage !== 'undefined' && localStorage.getItem('alloflow_translation_glossary_v1');
     if (cached) {
@@ -4271,14 +4392,20 @@ async function _loadTranslationGlossary() {
     }
   } catch (_) {}
   try {
-    const resp = await fetch('https://raw.githubusercontent.com/Apomera/AlloFlow/main/translation_glossary.js');
+    const resp = await _translationFetchWithTimeout('https://raw.githubusercontent.com/Apomera/AlloFlow/main/translation_glossary.js', {}, signal);
+    _translationThrowIfAborted(signal);
     if (resp.ok) {
       const text = (await resp.text()).replace(/^\s*\/\/.*$/gm, '').trim();
+      _translationThrowIfAborted(signal);
       _TRANSLATION_GLOSSARY = JSON.parse(text);
       try { localStorage.setItem('alloflow_translation_glossary_v1', JSON.stringify(_TRANSLATION_GLOSSARY)); } catch (_) {}
       return _TRANSLATION_GLOSSARY;
     }
-  } catch (e) { warnLog('Translation glossary fetch failed; using minimal fallback:', e?.message); }
+  } catch (e) {
+    if (e && e.name === 'AbortError') throw e;
+    warnLog('Translation glossary fetch failed; using minimal fallback:', e?.message);
+  }
+  _translationThrowIfAborted(signal);
   // Fallback: minimal inline glossary
   _TRANSLATION_GLOSSARY = { version: 0, DO_NOT_TRANSLATE: _MIN_DNT_FALLBACK, DOMAIN_GLOSSARY: {} };
   return _TRANSLATION_GLOSSARY;
@@ -4350,8 +4477,9 @@ function _buildGlossaryPreamble(glossary, targetLanguage) {
     ''
   ].join('\n');
 }
-const translateChunk = async (chunkData, targetLanguage, apiKey) => {
-  const glossary = await _loadTranslationGlossary();
+const translateChunk = async (chunkData, targetLanguage, apiKey, signal) => {
+  const glossary = await _loadTranslationGlossary(signal);
+  _translationThrowIfAborted(signal);
   const { masked, tokens } = _maskDNT(chunkData, glossary);
   const glossaryPreamble = _buildGlossaryPreamble(glossary, targetLanguage);
   const prompt = [
@@ -4382,14 +4510,20 @@ const translateChunk = async (chunkData, targetLanguage, apiKey) => {
                 maxOutputTokens: 65536
             }
           };
-          const response = await fetch(url, {
+          const response = await _translationFetchWithTimeout(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
-          });
+          }, signal);
+          if (!response.ok) throw new Error('Translation API request failed (' + response.status + ')');
           const data = await response.json();
+          _translationThrowIfAborted(signal);
           return data.candidates?.[0]?.content?.parts?.[0]?.text;
-      } catch (e) { warnLog("Unhandled error in callApi:", e); }
+      } catch (e) {
+          if (e && e.name === 'AbortError') throw e;
+          warnLog("Unhandled error in callApi:", e);
+          return null;
+      }
   };
   try {
     const text = await callApi(prompt);
@@ -4409,6 +4543,7 @@ const translateChunk = async (chunkData, targetLanguage, apiKey) => {
     // Restore DNT tokens to their original verbatim values
     return _unmaskDNT(parsed, tokens);
   } catch (e) {
+    if (e && e.name === 'AbortError') throw e;
     warnLog(`translateChunk failed for ${targetLanguage}`, e);
     return null;
   }
@@ -4419,7 +4554,15 @@ const useTranslation = (targetLanguage, apiKey) => {
   const [progress, setProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState("");
   const [trigger, setTrigger] = useState(0);
+  const translationRunRef = useRef({ generation: 0, identity: '', controller: null });
   const regenerateLanguage = useCallback(() => {
+      const activeRun = translationRunRef.current;
+      if (activeRun && activeRun.controller) activeRun.controller.abort();
+      translationRunRef.current = {
+          generation: Number(activeRun && activeRun.generation || 0) + 1,
+          identity: '',
+          controller: null
+      };
       setTrigger(prev => prev + 1);
   }, []);
   const exportLanguagePack = useCallback(() => {
@@ -4441,20 +4584,30 @@ const useTranslation = (targetLanguage, apiKey) => {
   }, [languagePack, targetLanguage]);
   const importLanguagePack = useCallback((file) => {
     if (!file) return;
+    const activeRun = translationRunRef.current;
+    if (activeRun && activeRun.controller) activeRun.controller.abort();
+    const importGeneration = Number(activeRun && activeRun.generation || 0) + 1;
+    translationRunRef.current = {
+      generation: importGeneration,
+      identity: 'manual-import',
+      controller: null
+    };
     const reader = new FileReader();
     reader.onload = (e) => {
+      if (!translationRunRef.current || translationRunRef.current.generation !== importGeneration) return;
       try {
         const json = JSON.parse(e.target.result);
+        if (!translationRunRef.current || translationRunRef.current.generation !== importGeneration) return;
         if (typeof json === 'object' && json !== null) {
           setLanguagePack(json);
           setStatusMessage(t('language_selector.status_custom_loaded'));
-          setIsTranslating(false);
           setIsTranslating(false);
         } else {
           if (window.AlloFlowUX) window.AlloFlowUX.toast(t('language_selector.alert_invalid_json'), 'error');
           else alert(t('language_selector.alert_invalid_json'));
         }
       } catch (err) {
+        if (!translationRunRef.current || translationRunRef.current.generation !== importGeneration) return;
         warnLog("Import failed", err);
         if (window.AlloFlowUX) window.AlloFlowUX.toast(t('language_selector.alert_parse_error'), 'error');
         else alert(t('language_selector.alert_parse_error'));
@@ -4463,11 +4616,45 @@ const useTranslation = (targetLanguage, apiKey) => {
     reader.readAsText(file);
   }, []);
 
+  const _setOwnedLanguagePack = setLanguagePack;
+  const _setOwnedIsTranslating = setIsTranslating;
+  const _setOwnedProgress = setProgress;
+  const _setOwnedStatusMessage = setStatusMessage;
   useEffect(() => {
+    const previousRun = translationRunRef.current;
+    if (previousRun && previousRun.controller) previousRun.controller.abort();
+    const run = {
+      generation: Number(previousRun && previousRun.generation || 0) + 1,
+      identity: String(targetLanguage || '') + '|' + String(trigger),
+      controller: new AbortController()
+    };
+    translationRunRef.current = run;
+    const signal = run.controller.signal;
+    const ownsRun = () => {
+      const current = translationRunRef.current;
+      return !!current
+        && current.generation === run.generation
+        && current.controller === run.controller
+        && current.identity === run.identity;
+    };
+    const isCurrent = () => ownsRun() && !signal.aborted;
+    const setLanguagePack = (value) => { if (isCurrent()) _setOwnedLanguagePack(value); };
+    const setIsTranslating = (value) => { if (isCurrent()) _setOwnedIsTranslating(value); };
+    const setProgress = (value) => { if (isCurrent()) _setOwnedProgress(value); };
+    const setStatusMessage = (value) => { if (isCurrent()) _setOwnedStatusMessage(value); };
+    const setOwnedStorage = async (key, value) => {
+      _translationThrowIfAborted(signal);
+      if (!isCurrent()) throw _translationAbortError();
+      await storageDB.set(key, value);
+      _translationThrowIfAborted(signal);
+      if (!isCurrent()) throw _translationAbortError();
+    };
     if (!targetLanguage || targetLanguage === 'English') {
       setLanguagePack(null);
       setIsTranslating(false);
-      return;
+      return () => {
+        if (ownsRun()) run.controller.abort();
+      };
     }
     const loadLanguage = async (forceRefresh = false) => {
       const storageKey = `allo_lang_${targetLanguage}_${TRANSLATION_VERSION}`;
@@ -4476,6 +4663,7 @@ const useTranslation = (targetLanguage, apiKey) => {
             try {
                 if (typeof window !== 'undefined' && window.idbKeyval) {
                     const cachedPack = await storageDB.get(storageKey);
+                    _translationThrowIfAborted(signal);
                     if (cachedPack) {
                         debugLog(`[useTranslation] Loaded ${targetLanguage} from local device.`);
                         setLanguagePack(cachedPack);
@@ -4499,6 +4687,7 @@ const useTranslation = (targetLanguage, apiKey) => {
         try {
             if (window.AlloLangMatcher && typeof window.AlloLangMatcher.match === 'function') {
                 const matched = await window.AlloLangMatcher.match(targetLanguage);
+                _translationThrowIfAborted(signal);
                 if (matched && matched.slug) {
                     langSlug = matched.slug;
                     resolvedDisplay = matched.display || targetLanguage;
@@ -4517,9 +4706,10 @@ const useTranslation = (targetLanguage, apiKey) => {
         let loaded = false;
         for (const packUrl of PACK_URLS) {
             try {
-                const resp = await fetch(packUrl);
+                const resp = await _translationFetchWithTimeout(packUrl, {}, signal);
                 if (!resp.ok) continue;
                 const text = await resp.text();
+                _translationThrowIfAborted(signal);
                 let pack = null;
                 try {
                     pack = JSON.parse(text);
@@ -4540,7 +4730,7 @@ const useTranslation = (targetLanguage, apiKey) => {
                     debugLog('[useTranslation] Loaded ' + resolvedDisplay + ' from ' + packUrl);
                     setLanguagePack(pack);
                     setIsTranslating(false);
-                    try { await storageDB.set(storageKey, pack); } catch(e) { warnLog('Cache save error:', e?.message || e); }
+                    try { await setOwnedStorage(storageKey, pack); } catch(e) { if (e?.name !== 'AbortError') warnLog('Cache save error:', e?.message || e); }
                     loaded = true;
                     break;
                 }
@@ -4556,9 +4746,10 @@ const useTranslation = (targetLanguage, apiKey) => {
           const hsCached = localStorage.getItem('alloflow_help_strings_cache');
           if (hsCached) { _helpStrings = JSON.parse(hsCached); }
           else {
-            const hsResp = await fetch('https://raw.githubusercontent.com/Apomera/AlloFlow/main/help_strings.js');
+            const hsResp = await _translationFetchWithTimeout('https://raw.githubusercontent.com/Apomera/AlloFlow/main/help_strings.js', {}, signal);
             if (hsResp.ok) {
               const hsText = (await hsResp.text()).replace(/^\s*\/\/.*$/gm, '').trim();
+              _translationThrowIfAborted(signal);
               try {
                 _helpStrings = JSON.parse(hsText);
               } catch (e) {
@@ -4569,7 +4760,7 @@ const useTranslation = (targetLanguage, apiKey) => {
                   _helpStrings = {};
                 }
               }
-              try { localStorage.setItem('alloflow_help_strings_cache', JSON.stringify(_helpStrings)); } catch {}
+              try { if (isCurrent()) localStorage.setItem('alloflow_help_strings_cache', JSON.stringify(_helpStrings)); } catch {}
             }
           }
         } catch (hsErr) { warnLog('Help strings fetch for translation skipped:', hsErr?.message); }
@@ -4587,6 +4778,7 @@ const useTranslation = (targetLanguage, apiKey) => {
         let resumeFromFlatPack = {};
         try {
             const existing = await storageDB.get(storageKey);
+            _translationThrowIfAborted(signal);
             if (existing && typeof existing === 'object') {
                 resumeFromFlatPack = flattenObject(existing);
             }
@@ -4605,7 +4797,8 @@ const useTranslation = (targetLanguage, apiKey) => {
             const finalPack = unflattenObject(resumeFromFlatPack);
             setLanguagePack(finalPack);
             setStatusMessage(t('language_selector.status_complete'));
-            setTimeout(() => setIsTranslating(false), 500);
+            await _translationAbortableDelay(500, signal);
+            setIsTranslating(false);
             return;
         }
         if (resumeCount > 0 && missingCount > 0) {
@@ -4627,19 +4820,21 @@ const useTranslation = (targetLanguage, apiKey) => {
             setProgress(Math.round((resumeCount / expectedCount) * 100));
         }
         const processChunk = async (chunk, i) => {
-            let translatedChunk = null;
-            let chunkAttempt = 0;
-            while (!translatedChunk) {
-                chunkAttempt++;
+            const maxAttempts = 3;
+            for (let chunkAttempt = 1; chunkAttempt <= maxAttempts; chunkAttempt++) {
+                _translationThrowIfAborted(signal);
                 if (chunkAttempt > 1) {
-                    warnLog(`Chunk ${i+1} failed. Retry attempt ${chunkAttempt-1}...`);
-                    await new Promise(r => setTimeout(r, 2000 * Math.min(chunkAttempt, 5)));
+                    warnLog(`Chunk ${i+1} failed. Retry attempt ${chunkAttempt-1}/${maxAttempts-1}...`);
+                    await _translationAbortableDelay(2000 * Math.min(chunkAttempt, 5), signal);
                 }
-                translatedChunk = await translateChunk(chunk, targetLanguage, apiKey);
+                const translatedChunk = await translateChunk(chunk, targetLanguage, apiKey, signal);
+                _translationThrowIfAborted(signal);
+                if (translatedChunk) return translatedChunk;
             }
-            return translatedChunk;
+            throw new Error(`Translation chunk ${i+1} failed after ${maxAttempts} attempts.`);
         };
         for (let w = 0; w < chunks.length; w += CONCURRENCY) {
+            _translationThrowIfAborted(signal);
             const windowChunks = chunks.slice(w, w + CONCURRENCY);
             setStatusMessage(t('language_selector.status_translating_part', { current: Math.min(w + CONCURRENCY, chunks.length), total: chunks.length }));
             const windowResults = await Promise.all(windowChunks.map((chunk, j) => processChunk(chunk, w + j)));
@@ -4658,31 +4853,43 @@ const useTranslation = (targetLanguage, apiKey) => {
             // user can resume from the last successful batch on next load.
             try {
                 const partialPack = unflattenObject(accumulatedFlatPack);
-                await storageDB.set(storageKey, partialPack);
+                await setOwnedStorage(storageKey, partialPack);
                 // Also surface the partial pack to the UI so newly-translated
                 // keys start rendering as they're filled in.
                 setLanguagePack(partialPack);
-            } catch (e) { warnLog('Incremental save failed:', e?.message || e); }
+            } catch (e) {
+                if (e?.name === 'AbortError') throw e;
+                warnLog('Incremental save failed:', e?.message || e);
+            }
 
-            if (w + CONCURRENCY < chunks.length) await new Promise(r => setTimeout(r, 300));
+            if (w + CONCURRENCY < chunks.length) await _translationAbortableDelay(300, signal);
         }
         const accumulatedPack = unflattenObject(accumulatedFlatPack);
         if (Object.keys(accumulatedPack).length > 50) {
             setLanguagePack(accumulatedPack);
             setStatusMessage(t('language_selector.status_complete'));
-            try { await storageDB.set(storageKey, accumulatedPack); } catch(e) { warnLog('Caught error:', e?.message || e); }
+            try { await setOwnedStorage(storageKey, accumulatedPack); } catch(e) {
+                if (e?.name === 'AbortError') throw e;
+                warnLog('Caught error:', e?.message || e);
+            }
         } else {
             throw new Error("Translation yielded insufficient data.");
         }
-        setTimeout(() => setIsTranslating(false), 500);
+        await _translationAbortableDelay(500, signal);
+        setIsTranslating(false);
       } catch (e) {
+        if (!ownsRun() || (e && e.name === 'AbortError')) return;
         warnLog("[useTranslation] Load Error:", e);
         setIsTranslating(false);
         setStatusMessage(t('language_selector.status_error'));
         setLanguagePack(null);
+        run.controller.abort();
       }
     };
     loadLanguage(trigger > 0);
+    return () => {
+      if (ownsRun()) run.controller.abort();
+    };
   }, [targetLanguage, apiKey, trigger]);
   const t = useCallback((keyString, params = {}) => {
       if (!keyString) return "";
@@ -5533,32 +5740,192 @@ const _alloCanvasSelAuthoringFingerprint = () => {
   try { return JSON.stringify(_alloCaptureCanvasSelAuthoringState()); } catch (_) { return ''; }
 };
 
+const _alloCreateDialogStateController = (commit) => {
+  let current = null;
+  let disposed = false;
+  const invoke = (entry, callbackName, args = []) => {
+    if (!entry || entry.__alloDialogSettled) return false;
+    entry.__alloDialogSettled = true;
+    const callbacks = entry.__alloDialogCallbacks || {};
+    entry.__alloDialogCallbacks = null;
+    const callback = callbacks[callbackName];
+    if (typeof callback === 'function') {
+      try { callback(...args); } catch (_) {}
+    }
+    return true;
+  };
+  const wrap = (dialog) => {
+    const callbacks = {
+      onConfirm: dialog.onConfirm,
+      onSubmit: dialog.onSubmit,
+      onCancel: dialog.onCancel,
+    };
+    const entry = {
+      ...dialog,
+      __alloDialogSettled: false,
+      __alloDialogCallbacks: callbacks,
+    };
+    if (typeof callbacks.onConfirm === 'function') {
+      entry.onConfirm = (...args) => invoke(entry, 'onConfirm', args);
+    }
+    if (typeof callbacks.onSubmit === 'function') {
+      entry.onSubmit = (...args) => invoke(entry, 'onSubmit', args);
+    }
+    entry.onCancel = (...args) => invoke(entry, 'onCancel', args);
+    return entry;
+  };
+  return {
+    activate() {
+      disposed = false;
+      return true;
+    },
+    set(next) {
+      if (disposed) return null;
+      const resolved = typeof next === 'function' ? next(current) : next;
+      if (resolved === current) return current;
+      if (current) invoke(current, 'onCancel');
+      if (!resolved) {
+        current = null;
+        commit(null);
+        return null;
+      }
+      const entry = wrap(resolved);
+      current = entry;
+      commit(entry);
+      return entry;
+    },
+    dispose() {
+      if (disposed) return false;
+      disposed = true;
+      const didCancel = current ? invoke(current, 'onCancel') : false;
+      current = null;
+      return didCancel;
+    },
+    getCurrent() {
+      return current;
+    },
+  };
+};
+
+const ALLO_STORAGE_SCRIPT_TIMEOUT_MS = 12000;
+const ALLO_STORAGE_READY_TIMEOUT_MS = 15000;
+const _alloWithWatchdog = (promise, timeoutMs, message) => new Promise((resolve, reject) => {
+  let settled = false;
+  const finish = (callback, value) => {
+    if (settled) return;
+    settled = true;
+    clearTimeout(timer);
+    callback(value);
+  };
+  const timer = setTimeout(
+    () => finish(reject, new Error(message || 'The storage operation timed out.')),
+    Math.max(1, Number(timeoutMs) || ALLO_STORAGE_SCRIPT_TIMEOUT_MS)
+  );
+  Promise.resolve(promise).then(
+    value => finish(resolve, value),
+    error => finish(reject, error)
+  );
+});
+
+const _alloLoadScriptGlobal = (url, readGlobal, options = {}) => {
+  try {
+    const existing = readGlobal();
+    if (existing) return Promise.resolve(existing);
+  } catch (_) {}
+  const cacheKey = options.cacheKey ? String(options.cacheKey) : '';
+  const sharedCache = cacheKey && typeof window !== 'undefined'
+    ? (window.__alloStorageDependencyPromises || (window.__alloStorageDependencyPromises = {}))
+    : null;
+  if (sharedCache && sharedCache[cacheKey]) return sharedCache[cacheKey];
+  const label = options.label || 'Storage dependency';
+  const timeoutMs = Math.max(1, Number(options.timeoutMs) || ALLO_STORAGE_SCRIPT_TIMEOUT_MS);
+  const operation = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    let settled = false;
+    let timer = null;
+    const finish = (error, value) => {
+      if (settled) return;
+      settled = true;
+      if (timer) clearTimeout(timer);
+      script.onload = null;
+      script.onerror = null;
+      if (error && script.parentNode) {
+        try { script.parentNode.removeChild(script); } catch (_) {}
+      }
+      if (error) reject(error);
+      else resolve(value);
+    };
+    script.src = url;
+    script.async = true;
+    script.onload = () => {
+      let registered = null;
+      try { registered = readGlobal(); } catch (_) {}
+      finish(
+        registered ? null : new Error(`${label} did not register after loading ${url}`),
+        registered
+      );
+    };
+    script.onerror = () => finish(new Error(`${label} could not load from ${url}`));
+    timer = setTimeout(
+      () => finish(new Error(`${label} timed out while loading ${url}`)),
+      timeoutMs
+    );
+    const parent = options.parent || document.head || document.body;
+    if (!parent || typeof parent.appendChild !== 'function') {
+      finish(new Error(`${label} could not be attached to the document.`));
+      return;
+    }
+    try { parent.appendChild(script); }
+    catch (error) { finish(error); }
+  });
+  if (!sharedCache) return operation;
+  const sharedOperation = operation.catch((error) => {
+    if (sharedCache[cacheKey] === sharedOperation) delete sharedCache[cacheKey];
+    throw error;
+  });
+  sharedCache[cacheKey] = sharedOperation;
+  return sharedOperation;
+};
+
+const _alloClearCachedDeviceStoragePromises = () => {
+  try { delete window.__alloDeviceStoragePromise; } catch (_) { window.__alloDeviceStoragePromise = null; }
+  try { delete window.__alloDeviceStorageReadyPromise; } catch (_) { window.__alloDeviceStorageReadyPromise = null; }
+};
+
 const _alloGetCanvasDeviceStorage = async () => {
   if (typeof window === 'undefined') throw new Error('Device storage is unavailable outside the browser.');
   if (!window.__alloDeviceStoragePromise) {
     window.__alloDeviceStoragePromise = window.alloDeviceStorage
       ? Promise.resolve(window.alloDeviceStorage)
-      : new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds2-slots8';
-          script.onload = () => window.alloDeviceStorage
-            ? resolve(window.alloDeviceStorage)
-            : reject(new Error('Device storage module did not register.'));
-          script.onerror = () => reject(new Error('Device storage module could not load.'));
-          document.head.appendChild(script);
-        });
+      : _alloLoadScriptGlobal(
+          'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds2-slots8',
+          () => window.alloDeviceStorage,
+          { label: 'Device storage module', timeoutMs: ALLO_STORAGE_SCRIPT_TIMEOUT_MS }
+        );
   }
   try {
-    if (!window.__alloDeviceStorageReadyPromise) {
-      window.__alloDeviceStorageReadyPromise = window.__alloDeviceStoragePromise.then(async (deviceStorage) => {
-        await deviceStorage.ready();
-        return deviceStorage;
-      });
+    const deviceStorage = await _alloWithWatchdog(
+      window.__alloDeviceStoragePromise,
+      ALLO_STORAGE_SCRIPT_TIMEOUT_MS,
+      'Device storage module loading timed out.'
+    );
+    if (!deviceStorage || typeof deviceStorage.ready !== 'function') {
+      throw new Error('Device storage module is unavailable.');
     }
-    return await window.__alloDeviceStorageReadyPromise;
+    if (!window.__alloDeviceStorageReadyPromise) {
+      window.__alloDeviceStorageReadyPromise = _alloWithWatchdog(
+        Promise.resolve().then(() => deviceStorage.ready()).then(() => deviceStorage),
+        ALLO_STORAGE_READY_TIMEOUT_MS,
+        'Device storage did not become ready in time.'
+      );
+    }
+    return await _alloWithWatchdog(
+      window.__alloDeviceStorageReadyPromise,
+      ALLO_STORAGE_READY_TIMEOUT_MS,
+      'Device storage readiness timed out.'
+    );
   } catch (error) {
-    try { delete window.__alloDeviceStoragePromise; } catch (_) { window.__alloDeviceStoragePromise = null; }
-    try { delete window.__alloDeviceStorageReadyPromise; } catch (_) { window.__alloDeviceStorageReadyPromise = null; }
+    _alloClearCachedDeviceStoragePromises();
     throw error;
   }
 };
@@ -5744,7 +6111,61 @@ const countWords = (text) => {
   return clean.trim().split(/\s+/).filter(w => w.length > 0).length;
 };
 const normalizeRosterSessionCodename = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-const buildRosterSessionSummary = ({ sessionCode, sessionData, rosterKey, mode, endedAt = new Date().toISOString() }) => {
+const summarizeRosterLiveActivities = (activitySnapshots, liveRoster, rosterByNormalizedName) => {
+    const allowedKinds = new Set(['rating', 'multiple_choice', 'free_text', 'word_cloud', 'feedback_response', 'pictionary', 'sketch_response', 'quiz']);
+    const allowedPhases = new Set(['collecting', 'paused', 'review', 'revealed', 'closed']);
+    const roster = liveRoster && typeof liveRoster === 'object' ? liveRoster : {};
+    const byName = rosterByNormalizedName && typeof rosterByNormalizedName === 'object' ? rosterByNormalizedName : {};
+    const participantTotals = {};
+    const activities = [];
+    const clampCount = (value, max = 10000) => {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? Math.max(0, Math.min(max, Math.floor(parsed))) : 0;
+    };
+    (Array.isArray(activitySnapshots) ? activitySnapshots : []).slice(-60).forEach(snapshot => {
+        if (!snapshot || typeof snapshot !== 'object' || !allowedKinds.has(snapshot.kind)) return;
+        const audienceUids = Array.from(new Set((Array.isArray(snapshot.audienceUids) ? snapshot.audienceUids : []).map(String).filter(Boolean))).slice(0, 250);
+        const statuses = snapshot.participantStatus && typeof snapshot.participantStatus === 'object' ? snapshot.participantStatus : {};
+        let submitted = 0;
+        let revised = 0;
+        audienceUids.forEach(uid => {
+            const status = statuses[uid] === 'revised'
+                ? 'revised'
+                : statuses[uid] === 'submitted'
+                    ? 'submitted'
+                    : statuses[uid] === 'working'
+                        ? 'working'
+                        : 'waiting';
+            if (status === 'submitted' || status === 'revised') submitted += 1;
+            if (status === 'revised') revised += 1;
+            const liveName = String(roster[uid]?.name || '').trim();
+            const rosterName = byName[normalizeRosterSessionCodename(liveName)];
+            if (!rosterName) return;
+            const current = participantTotals[rosterName] || { liveActivityCount: 0, liveSubmissionCount: 0, liveRevisionCount: 0 };
+            current.liveActivityCount += 1;
+            if (status === 'submitted' || status === 'revised') current.liveSubmissionCount += 1;
+            if (status === 'revised') current.liveRevisionCount += 1;
+            participantTotals[rosterName] = current;
+        });
+        const counts = snapshot.counts && typeof snapshot.counts === 'object' ? snapshot.counts : {};
+        activities.push({
+            kind: snapshot.kind,
+            phase: allowedPhases.has(snapshot.phase) ? snapshot.phase : 'closed',
+            invited: audienceUids.length,
+            submitted,
+            revised,
+            approved: clampCount(counts.approved),
+            hidden: clampCount(counts.hidden),
+            revealed: clampCount(counts.revealed),
+            feedbackSent: clampCount(counts.feedbackSent),
+            guesses: clampCount(counts.guesses),
+            startedAt: clampCount(snapshot.startedAt, Number.MAX_SAFE_INTEGER),
+            endedAt: clampCount(snapshot.endedAt, Number.MAX_SAFE_INTEGER),
+        });
+    });
+    return { activities, participantTotals };
+};
+const buildRosterSessionSummary = ({ sessionCode, sessionData, rosterKey, mode, activitySnapshots = [], endedAt = new Date().toISOString() }) => {
     const rosterStudents = rosterKey?.students && typeof rosterKey.students === 'object' ? rosterKey.students : {};
     const rosterByNormalizedName = {};
     Object.keys(rosterStudents).forEach(name => {
@@ -5786,7 +6207,17 @@ const buildRosterSessionSummary = ({ sessionCode, sessionData, rosterKey, mode, 
             delivered: Math.max(0, Math.floor(Number(entry.delivered) || 0)),
             at: Number(entry.at) || 0,
         }));
-    return { schemaVersion: 1, id: String(sessionCode || ('session-' + endMs)), startedAt: createdAt, endedAt, durationMinutes, mode: mode === 'mailbox' ? 'mailbox' : 'firebase', resourceTitles, participants, unmatchedCodenames, absentCodenames, classGoals };
+    const liveActivityEvidence = summarizeRosterLiveActivities(activitySnapshots, liveRoster, rosterByNormalizedName);
+    Object.entries(liveActivityEvidence.participantTotals).forEach(([rosterName, totals]) => {
+        if (!participants[rosterName]) return;
+        participants[rosterName] = {
+            ...participants[rosterName],
+            liveActivityCount: totals.liveActivityCount,
+            liveSubmissionCount: totals.liveSubmissionCount,
+            liveRevisionCount: totals.liveRevisionCount,
+        };
+    });
+    return { schemaVersion: 2, id: String(sessionCode || ('session-' + endMs)), startedAt: createdAt, endedAt, durationMinutes, mode: mode === 'mailbox' ? 'mailbox' : 'firebase', resourceTitles, participants, unmatchedCodenames, absentCodenames, classGoals, liveActivities: liveActivityEvidence.activities };
 };
 const saveRosterSessionSummary = (rosterKey, summary, note = '', retentionLimit = 30) => {
     if (!rosterKey || !summary?.id) return rosterKey;
@@ -5797,7 +6228,16 @@ const saveRosterSessionSummary = (rosterKey, summary, note = '', retentionLimit 
     const progressHistory = { ...(rosterKey.progressHistory || {}) };
     Object.entries(savedSummary.participants || {}).forEach(([codename, participant]) => {
         const previous = Array.isArray(progressHistory[codename]) ? progressHistory[codename] : [];
-        const entry = { sessionId: savedSummary.id, timestamp: savedSummary.endedAt, groupId: participant.groupId || null, responseCount: participant.responseCount || 0, resourcesOpened: participant.resourcesOpened || 0 };
+        const entry = {
+            sessionId: savedSummary.id,
+            timestamp: savedSummary.endedAt,
+            groupId: participant.groupId || null,
+            responseCount: participant.responseCount || 0,
+            resourcesOpened: participant.resourcesOpened || 0,
+            liveActivityCount: participant.liveActivityCount || 0,
+            liveSubmissionCount: participant.liveSubmissionCount || 0,
+            liveRevisionCount: participant.liveRevisionCount || 0,
+        };
         progressHistory[codename] = [...previous.filter(item => item?.sessionId !== savedSummary.id), entry].slice(-Math.max(1, retentionLimit));
     });
     return { ...rosterKey, sessionHistory, progressHistory };
@@ -6959,6 +7399,7 @@ const AlloFlowContent = () => {
   }, []);
   const [lmsSession, setLmsSession] = useState(null);
   const [lmsAuditUrls, setLmsAuditUrls] = useState([]);
+  const lmsAuditFetchControllerRef = useRef(null);
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
@@ -6968,13 +7409,24 @@ const AlloFlowContent = () => {
       ['lti', 'session', 'course', 'role', 'user'].forEach((key) => cleanUrl.searchParams.delete(key));
       window.history.replaceState({}, '', cleanUrl.toString());
     }
-    if (params.get('audit_urls')) {
-      const urls = params.get('audit_urls').split(',').map(u => decodeURIComponent(u)).filter(Boolean);
+    if (params.has('audit_url') || params.has('audit_urls')) {
+      // URLSearchParams values are already decoded. For the legacy comma list,
+      // split the raw value first so an encoded comma inside a signed URL is
+      // never mistaken for a document separator.
+      const repeated = params.getAll('audit_url').filter(Boolean);
+      const rawSearch = String(window.location.search || '').replace(/^\?/, '');
+      const legacy = rawSearch.split('&')
+        .filter(part => part.split('=')[0] === 'audit_urls')
+        .flatMap(part => part.slice(part.indexOf('=') + 1).split(','))
+        .map(raw => { try { return decodeURIComponent(raw.replace(/\+/g, ' ')); } catch (_) { return ''; } })
+        .filter(Boolean);
+      const urls = Array.from(new Set([...repeated, ...legacy]));
       if (urls.length > 0) {
         setLmsAuditUrls(urls);
         debugLog('[LMS Bookmarklet] Audit URLs received:', urls.length);
       }
       const cleanUrl = new URL(window.location);
+      cleanUrl.searchParams.delete('audit_url');
       cleanUrl.searchParams.delete('audit_urls');
       window.history.replaceState({}, '', cleanUrl.toString());
     }
@@ -7055,56 +7507,79 @@ const AlloFlowContent = () => {
              host.includes('run.app');
   }, []);
   useEffect(() => {
+    let cancelled = false;
+    let initInFlight = null;
     const loadScriptSequence = async (urls, globalCheck) => {
-        if (typeof window !== 'undefined' && window[globalCheck]) return;
+        if (typeof window !== 'undefined' && window[globalCheck]) return window[globalCheck];
         for (const url of urls) {
             try {
-                await new Promise((resolve, reject) => {
-                    const script = document.createElement('script');
-                    script.src = url;
-                    script.async = true;
-                    script.onload = () => {
-                        if (window[globalCheck]) resolve();
-                        else reject(new Error(`Global ${globalCheck} not found after loading ${url}`));
-                    };
-                    script.onerror = () => reject(new Error(`Failed to load ${url}`));
-                    document.body.appendChild(script);
-                });
+                const loaded = await _alloLoadScriptGlobal(
+                    url,
+                    () => window[globalCheck],
+                    {
+                      cacheKey: globalCheck,
+                      label: `Storage dependency ${globalCheck}`,
+                      timeoutMs: ALLO_STORAGE_SCRIPT_TIMEOUT_MS,
+                      parent: document.body,
+                    }
+                );
+                if (cancelled) return null;
                 debugLog(`Loaded ${globalCheck} from ${url}`);
-                return;
+                return loaded;
             } catch (e) {
+                if (cancelled) return null;
                 debugLog(`[CDN fallback] ${e.message}`);
             }
         }
         throw new Error(`All content delivery networks failed for ${globalCheck}`);
     };
-    const initStorage = async () => {
-        try {
-            await Promise.all([
-                loadScriptSequence([
-                    "https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js",
-                    "https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js",
-                    "https://unpkg.com/lz-string@1.4.4/libs/lz-string.min.js"
-                ], "LZString"),
-                loadScriptSequence([
-                    "https://unpkg.com/idb-keyval@6.2.0/dist/iife/index.js",
-                    "https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/iife/index.js",
-                    "https://cdnjs.cloudflare.com/ajax/libs/idb-keyval/6.2.1/umd.js"
-                ], "idbKeyval"),
-                Promise.resolve()
-            ]);
-            setLzLoaded(true);
-            setIsStorageDisabled(false);
-        } catch (e) {
-            warnLog("Critical: Storage libraries failed to load.", e);
-            setIsStorageDisabled(true);
-            setLzLoaded(true);
-            if (addToastRef.current) {
-                                addToastRef.current(t('toasts.storage_disabled'), "error");
+    const initStorage = () => {
+        if (cancelled) return Promise.resolve(false);
+        if (initInFlight) return initInFlight;
+        const attempt = (async () => {
+            try {
+                await Promise.all([
+                    loadScriptSequence([
+                        "https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+                        "https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js",
+                        "https://unpkg.com/lz-string@1.4.4/libs/lz-string.min.js"
+                    ], "LZString"),
+                    loadScriptSequence([
+                        "https://unpkg.com/idb-keyval@6.2.0/dist/iife/index.js",
+                        "https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/iife/index.js",
+                        "https://cdnjs.cloudflare.com/ajax/libs/idb-keyval/6.2.1/umd.js"
+                    ], "idbKeyval")
+                ]);
+                if (cancelled) return false;
+                setLzLoaded(true);
+                setIsStorageDisabled(false);
+                return true;
+            } catch (e) {
+                if (cancelled) return false;
+                warnLog("Critical: Storage libraries failed to load.", e);
+                setIsStorageDisabled(true);
+                setLzLoaded(true);
+                if (addToastRef.current) {
+                    addToastRef.current(t('toasts.storage_disabled'), "error");
+                }
+                return false;
             }
-        }
+        })();
+        initInFlight = attempt;
+        attempt.finally(() => { if (initInFlight === attempt) initInFlight = null; });
+        return attempt;
     };
+    const retryStorageBootstrap = () => { if (!cancelled) initStorage(); };
+    window.__alloRetryStorageBootstrap = retryStorageBootstrap;
+    window.addEventListener('online', retryStorageBootstrap);
     initStorage();
+    return () => {
+      cancelled = true;
+      window.removeEventListener('online', retryStorageBootstrap);
+      if (window.__alloRetryStorageBootstrap === retryStorageBootstrap) {
+        try { delete window.__alloRetryStorageBootstrap; } catch (_) { window.__alloRetryStorageBootstrap = null; }
+      }
+    };
   }, []);
   const adventureImageDB = React.useMemo(() => {
     // Lazy-method shim: every call re-checks window.AlloModules so first-render
@@ -7406,19 +7881,26 @@ const AlloFlowContent = () => {
     } catch (e) { setMicPermissionStatus('denied'); setMicBannerDismissed(true); }
   }, []);
   const [guidedMode, setGuidedMode] = useState(false);
-  const GUIDED_STEP_IDS = ['source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'anchor-chart', 'image', 'faq', 'sentence-frames', 'note-taking', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'alignment', 'lesson-plan', '_final'];
+  const GUIDED_STEP_IDS = ['source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'anchor-chart', 'image', 'faq', 'sentence-frames', 'note-taking', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'alignment', 'lesson-plan', 'directions', 'package-deliver', '_final'];
+  const GUIDED_DELIVERY_EVIDENCE_KEYS = ['directionsSaved', 'exportCreated', 'shareCreated', 'liveStarted', 'studentPreviewed'];
   const normalizeGuidedProgress = (raw = {}) => {
     const valid = new Set(GUIDED_STEP_IDS);
-    const selectedIds = Array.isArray(raw.selectedIds) ? Array.from(new Set(['source-input', ...raw.selectedIds.filter(id => valid.has(id)), '_final'])) : null;
-    const activeIds = selectedIds ? GUIDED_STEP_IDS.filter(id => id === 'source-input' || selectedIds.includes(id)) : GUIDED_STEP_IDS;
-    const rawStep = Number.isInteger(raw.guidedStep) ? raw.guidedStep : (Number.isInteger(raw.step) ? raw.step : 0);
+    const selectedIds = Array.isArray(raw.selectedIds) ? Array.from(new Set(['source-input', ...raw.selectedIds.filter(id => valid.has(id)), 'package-deliver', '_final'])) : null;
+    const activeIds = selectedIds ? GUIDED_STEP_IDS.filter(id => id === 'source-input' || id === 'package-deliver' || id === '_final' || selectedIds.includes(id)) : GUIDED_STEP_IDS;
+    const rawStep = typeof raw.stepId === 'string' && activeIds.includes(raw.stepId) ? activeIds.indexOf(raw.stepId) : (Number.isInteger(raw.guidedStep) ? raw.guidedStep : (Number.isInteger(raw.step) ? raw.step : 0));
     const cleanIds = (value) => Array.isArray(value) ? Array.from(new Set(value.filter(id => valid.has(id)))) : [];
+    const rawEvidence = raw.deliveryEvidence && typeof raw.deliveryEvidence === 'object' ? raw.deliveryEvidence : {};
+    const deliveryEvidence = GUIDED_DELIVERY_EVIDENCE_KEYS.reduce((result, key) => {
+      if (rawEvidence[key] === true) result[key] = true;
+      return result;
+    }, {});
     return {
       guidedStep: Math.max(0, Math.min(rawStep, Math.max(0, activeIds.length - 1))),
       selectedIds,
       completedSteps: cleanIds(raw.completedSteps || raw.completedIds),
       skippedSteps: cleanIds(raw.skippedSteps || raw.skippedIds),
       createdHistoryIds: Array.isArray(raw.createdHistoryIds) ? Array.from(new Set(raw.createdHistoryIds.filter(id => typeof id === 'string' && id))) : [],
+      deliveryEvidence,
     };
   };
   // Cross-refresh resume: guided progress previously lived ONLY inside project saves, so a
@@ -7439,6 +7921,7 @@ const AlloFlowContent = () => {
   const [guidedCompletedIds, setGuidedCompletedIds] = useState(_guidedSaved ? _guidedSaved.completedSteps : []);
   const [guidedSkippedIds, setGuidedSkippedIds] = useState(_guidedSaved ? _guidedSaved.skippedSteps : []);
   const [guidedCreatedHistoryIds, setGuidedCreatedHistoryIds] = useState(_guidedSaved ? _guidedSaved.createdHistoryIds : []);
+  const [guidedDeliveryEvidence, setGuidedDeliveryEvidence] = useState(_guidedSaved ? _guidedSaved.deliveryEvidence : {});
   const [guidedTargetEpoch, setGuidedTargetEpoch] = useState(0);
   const [guidedAutoAdvance, setGuidedAutoAdvance] = useState(() => { try { return localStorage.getItem('allo_guided_auto_advance') === 'true'; } catch (_) { return false; } });
   useEffect(() => { try { localStorage.setItem('allo_guided_auto_advance', String(!!guidedAutoAdvance)); } catch (_) {} }, [guidedAutoAdvance]);
@@ -7447,54 +7930,76 @@ const AlloFlowContent = () => {
     setGuidedCompletedIds(prev => (prev && prev.includes(id)) ? prev : [...(prev || []), id]);
     setGuidedSkippedIds(prev => (prev || []).filter(stepId => stepId !== id));
   };
-  // Finish ("All done") and the header's "Start over" both wipe progress; plain Exit keeps
-  // it so the teacher can resume.
+  // Start over clears the active run. Completed tours are archived separately so teachers
+  // can retain a lightweight local summary without keeping stale active progress.
   const resetGuidedProgress = () => {
-    setGuidedStep(0); setGuidedSelectedIds(null); setGuidedCompletedIds([]); setGuidedSkippedIds([]); setGuidedCreatedHistoryIds([]);
-    try { localStorage.removeItem('allo_guided_progress'); } catch (_) {}
+    setGuidedStep(0); setGuidedSelectedIds(null); setGuidedCompletedIds([]); setGuidedSkippedIds([]); setGuidedCreatedHistoryIds([]); setGuidedDeliveryEvidence({});
+    try { localStorage.removeItem('allo_guided_progress'); localStorage.removeItem('allo_guided_path_prompt_seen'); localStorage.removeItem('allo_guided_readiness_checks'); } catch (_) {}
   };
   useEffect(() => {
     if (!guidedMode) return; // keep the last snapshot across exit so re-entry resumes it
-    try { localStorage.setItem('allo_guided_progress', JSON.stringify({ version: 1, guidedStep, selectedIds: guidedSelectedIds, completedSteps: guidedCompletedIds, skippedSteps: guidedSkippedIds, createdHistoryIds: guidedCreatedHistoryIds })); } catch (_) {}
-  }, [guidedMode, guidedStep, guidedSelectedIds, guidedCompletedIds, guidedSkippedIds, guidedCreatedHistoryIds]);
+    try { localStorage.setItem('allo_guided_progress', JSON.stringify({ version: 1, guidedStep, stepId: guidedActiveSteps[guidedStep]?.id || null, selectedIds: guidedSelectedIds, completedSteps: guidedCompletedIds, skippedSteps: guidedSkippedIds, createdHistoryIds: guidedCreatedHistoryIds, deliveryEvidence: guidedDeliveryEvidence })); } catch (_) {}
+  }, [guidedMode, guidedStep, guidedSelectedIds, guidedCompletedIds, guidedSkippedIds, guidedCreatedHistoryIds, guidedDeliveryEvidence]);
   const _guidedWizardOpenRef = useRef(false); // mirrors "QuickStart Wizard visible" for the guided effect (declared before showWizard, so it can't read it directly)
   // Each step carries teaching content for the hands-on guided tutorial:
   //   action  = the short imperative shown in the banner ("do this now"), pointing
   //             at the highlighted tool. success = the encouraging note shown once
   //             the teacher engages that tool. (English here; banner chrome is i18n.)
+  const GUIDED_PHASES = [
+    { id: 'plan', label: 'Plan', description: 'Choose the source and intended outcome.' },
+    { id: 'understand', label: 'Understand', description: 'Find barriers, concepts, and instructional priorities.' },
+    { id: 'access', label: 'Make accessible', description: 'Build multiple ways for students to perceive and understand the content.' },
+    { id: 'participate', label: 'Build participation', description: 'Add ways to practice, discuss, explore, and create.' },
+    { id: 'assess', label: 'Check learning', description: 'Gather evidence and verify standards and UDL alignment.' },
+    { id: 'organize', label: 'Organize', description: 'Connect the resources into a teachable sequence.' },
+    { id: 'assign', label: 'Assign', description: 'Write clear student-facing directions, goals, and success criteria.' },
+    { id: 'deliver', label: 'Preview & deliver', description: 'Choose the right export, sharing, or live-session route.' },
+    { id: 'finish', label: 'Review & finish', description: 'Review the finished lesson and save the completion summary.' },
+  ];
+  const GUIDED_DELIVERY_GROUPS = [
+    { id: 'print-editable', label: 'Print & editable documents', options: ['PDF / Print', 'Worksheet', 'Slides (.pptx)', 'Accessible Word (.docx)', 'OpenDocument (.odt)'] },
+    { id: 'web-accessible', label: 'Web, reading & accessibility', options: ['Interactive HTML', 'EPUB (.epub)', 'Plain text (.txt)', 'Markdown (.md)', 'NotebookLM source (.md)', 'Electronic Braille (.brf)'] },
+    { id: 'lms-interactive', label: 'LMS & interactive packages', options: ['QTI quiz package', 'H5P interactive activity (.h5p)', 'IMS content package'] },
+    { id: 'assign-share', label: 'Assign & share', options: ['Homework QR / self-contained link', 'Class Mailbox / hosted printable QR', 'Live class session', 'Editable AlloFlow project'] },
+    { id: 'resource-specific', label: 'Resource-specific exports', options: ['Adventure Storybook HTML (optional narration)', 'Persona private-session JSON + HTML transcript'] },
+  ];
   const GUIDED_STEPS = [
-    { id: 'source-input', label: 'Source Material', action: 'Paste or type the text you want to adapt. Everything else builds from it.', success: 'Source captured. Now let us find what students will struggle with.' },
-    { id: 'analysis', label: 'Analyze Source Material', action: 'Run Analyze to scan the reading level, key concepts, and tricky vocabulary.', success: 'Analysis done. That shows you where to scaffold.' },
-    { id: 'glossary', label: 'Glossary & Language Selection', action: 'Generate a glossary of the key terms, in your students’ languages if needed.', success: 'Glossary ready. Front-loading vocabulary helps multilingual learners most.' },
-    { id: 'simplified', label: 'Text Adaptation', action: 'Create a simplified version at a reading level your students can access.', success: 'Adapted text ready. Keep the original on hand for your stronger readers.' },
-    { id: 'ui-tool-wordsounds', label: 'Word Sounds', action: 'Build Word Sounds practice for the decoding and phonics targets.', success: 'Word Sounds set. Great support for your emerging readers.' },
-    { id: 'outline', label: 'Visual Organizer', action: 'Generate a visual organizer so students can see how the ideas connect.', success: 'Organizer ready. Structure helps content stick.' },
-    { id: 'anchor-chart', label: 'Anchor Charts', action: 'Make an anchor chart of the big ideas to keep on display.', success: 'Anchor chart ready to post.' },
-    { id: 'image', label: 'Visual Support', action: 'Add a visual so abstract ideas get a concrete picture.', success: 'Visual added. Dual coding helps recall.' },
-    { id: 'faq', label: 'FAQ Generator', action: 'Generate an FAQ that answers the questions students actually ask.', success: 'FAQ ready.' },
-    { id: 'sentence-frames', label: 'Writing Scaffolds', action: 'Create writing scaffolds and sentence frames to lower the writing bar.', success: 'Scaffolds ready. They free up working memory for ideas.' },
-    { id: 'note-taking', label: 'Note-Taking Templates', action: 'Build a note-taking template students fill in as they read.', success: 'Template ready.' },
-    { id: 'brainstorm', label: 'Brainstorm Activity Ideas', action: 'Brainstorm activity ideas tuned to this content.', success: 'Ideas generated. Pick what fits your class.' },
-    { id: 'persona', label: 'Interview Mode', action: 'Set up Interview Mode so students can question a historical or expert persona.', success: 'Interview ready. Great for perspective-taking.' },
-    { id: 'timeline', label: 'Sequence Builder', action: 'Build a sequence so students can order events or steps.', success: 'Sequence ready.' },
-    { id: 'concept-sort', label: 'Concept Sort', action: 'Create a Concept Sort to surface how students group ideas.', success: 'Concept Sort ready.' },
-    { id: 'dbq', label: 'Document-Based Question', action: 'Generate a Document-Based Question to push analysis with evidence.', success: 'DBQ ready.' },
-    { id: 'math', label: 'STEM Lab', action: 'Open the STEM Lab to explore a hands-on math or science tool.', success: 'STEM Lab explored. Choose the tool that best fits your lesson.' },
-    { id: 'adventure', label: 'Adventure Mode', action: 'Turn the lesson into an Adventure students can play through.', success: 'Adventure ready.' },
-    { id: 'quiz', label: 'Assess', action: 'Create an assessment to check what stuck.', success: 'Assessment ready. Use it to plan tomorrow.' },
-    { id: 'alignment', label: 'Standards & UDL Alignment', action: 'Check Standards and UDL alignment so the lesson maps to your goals.', success: 'Alignment checked.' },
-    { id: 'lesson-plan', label: 'Lesson Plan', action: 'Generate a Lesson Plan that ties the pieces together.', success: 'Lesson plan ready.' },
-    { id: '_final', label: 'Full Resource Pack & Standards Report', action: 'Download the full Resource Pack and Standards Report whenever you are happy with it.', success: 'All set. Nice work building this lesson.' },
+    { id: 'source-input', phase: 'plan', label: 'Source Material', action: 'Paste or type the text you want to adapt. Everything else builds from it.', success: 'Source captured. Now let us find what students will struggle with.' },
+    { id: 'analysis', phase: 'understand', label: 'Analyze Source Material', action: 'Run Analyze to scan the reading level, key concepts, and tricky vocabulary.', success: 'Analysis done. That shows you where to scaffold.' },
+    { id: 'glossary', phase: 'access', label: 'Glossary & Language Selection', action: 'Generate a glossary of the key terms, in your students’ languages if needed.', success: 'Glossary ready. Front-loading vocabulary helps multilingual learners most.' },
+    { id: 'simplified', phase: 'access', label: 'Text Adaptation', action: 'Create a simplified version at a reading level your students can access.', success: 'Adapted text ready. Keep the original on hand for your stronger readers.' },
+    { id: 'ui-tool-wordsounds', phase: 'access', label: 'Word Sounds', action: 'Build Word Sounds practice for the decoding and phonics targets.', success: 'Word Sounds set. Great support for your emerging readers.' },
+    { id: 'outline', phase: 'access', label: 'Visual Organizer', action: 'Generate a visual organizer so students can see how the ideas connect.', success: 'Organizer ready. Structure helps content stick.' },
+    { id: 'anchor-chart', phase: 'access', label: 'Anchor Charts', action: 'Make an anchor chart of the big ideas to keep on display.', success: 'Anchor chart ready to post.' },
+    { id: 'image', phase: 'access', label: 'Visual Support', action: 'Add a visual so abstract ideas get a concrete picture.', success: 'Visual added. Dual coding helps recall.' },
+    { id: 'faq', phase: 'access', label: 'FAQ Generator', action: 'Generate an FAQ that answers the questions students actually ask.', success: 'FAQ ready.' },
+    { id: 'sentence-frames', phase: 'access', label: 'Writing Scaffolds', action: 'Create writing scaffolds and sentence frames to lower the writing bar.', success: 'Scaffolds ready. They free up working memory for ideas.' },
+    { id: 'note-taking', phase: 'participate', label: 'Note-Taking Templates', action: 'Build a note-taking template students fill in as they read.', success: 'Template ready.' },
+    { id: 'brainstorm', phase: 'participate', label: 'Brainstorm Activity Ideas', action: 'Brainstorm activity ideas tuned to this content.', success: 'Ideas generated. Pick what fits your class.' },
+    { id: 'persona', phase: 'participate', label: 'Interview Mode', action: 'Set up Interview Mode so students can question a historical or expert persona.', success: 'Interview ready. Great for perspective-taking.' },
+    { id: 'timeline', phase: 'participate', label: 'Sequence Builder', action: 'Build a sequence so students can order events or steps.', success: 'Sequence ready.' },
+    { id: 'concept-sort', phase: 'participate', label: 'Concept Sort', action: 'Create a Concept Sort to surface how students group ideas.', success: 'Concept Sort ready.' },
+    { id: 'dbq', phase: 'assess', label: 'Document-Based Question', action: 'Generate a Document-Based Question to push analysis with evidence.', success: 'DBQ ready.' },
+    { id: 'math', phase: 'participate', label: 'STEM Lab', action: 'Open the STEM Lab to explore a hands-on math or science tool.', success: 'STEM Lab explored. Choose the tool that best fits your lesson.' },
+    { id: 'adventure', phase: 'participate', label: 'Adventure Mode', action: 'Turn the lesson into an Adventure students can play through.', success: 'Adventure ready.' },
+    { id: 'quiz', phase: 'assess', label: 'Assess', action: 'Create an assessment to check what stuck.', success: 'Assessment ready. Use it to plan tomorrow.' },
+    { id: 'alignment', phase: 'assess', label: 'Standards & UDL Alignment', action: 'Check Standards and UDL alignment so the lesson maps to your goals.', success: 'Alignment checked.' },
+    { id: 'lesson-plan', phase: 'organize', label: 'Lesson Plan', action: 'Generate a Lesson Plan that ties the pieces together.', success: 'Lesson plan ready.' },
+    { id: 'directions', phase: 'assign', label: 'Assignment Directions & Goals', action: 'Draft the student-facing steps, learning goal, due information, and success criteria. Read them once as a learner.', success: 'Directions reviewed. Students now know what to do and what success looks like.' },
+    { id: 'package-deliver', phase: 'deliver', label: 'Preview, Package & Deliver', action: 'Preview the learner experience, then choose the document, LMS package, QR, mailbox, project, or live-session route that fits this lesson.', success: 'Delivery path reviewed. Use one or more formats below, then continue to the final check.' },
+    { id: '_final', phase: 'finish', label: 'Review & Finish', action: 'Review what you created, revisit anything skipped, and finish when the lesson is ready to use.', success: 'All set. Nice work building this lesson.' },
   ];
   const GUIDED_PRESETS = [
-    { id: 'reading-access', label: 'Adapt a reading', description: 'Analyze, simplify, add vocabulary and writing support.', stepIds: ['analysis', 'glossary', 'simplified', 'outline', 'image', 'sentence-frames', 'quiz', 'lesson-plan'] },
-    { id: 'assessment', label: 'Build an assessment', description: 'Create questions, evidence tasks, and standards alignment.', stepIds: ['analysis', 'faq', 'dbq', 'quiz', 'alignment', 'lesson-plan'] },
-    { id: 'engagement', label: 'Boost engagement', description: 'Add visuals, discussion, interactive, and game-based options.', stepIds: ['image', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'math', 'adventure', 'quiz'] },
-    { id: 'complete', label: 'Complete lesson pack', description: 'Use every Guided Mode step.', stepIds: null },
-  ];
-  const applyGuidedPreset = (preset) => {
-    const ids = Array.isArray(preset?.stepIds) ? Array.from(new Set(['source-input', ...preset.stepIds, '_final'])) : null;
-    setGuidedSelectedIds(ids); setGuidedStep(0); setGuidedCompletedIds([]); setGuidedSkippedIds([]); setGuidedCreatedHistoryIds([]);
+    { id: 'core-lesson', label: 'Build a core lesson', description: 'A balanced path from analysis through directions and delivery.', stepIds: ['analysis', 'glossary', 'simplified', 'image', 'quiz', 'lesson-plan', 'directions'] },
+    { id: 'reading-access', label: 'Adapt a reading', description: 'Analyze, simplify, add vocabulary and writing support, then assign it.', stepIds: ['analysis', 'glossary', 'simplified', 'outline', 'image', 'sentence-frames', 'quiz', 'lesson-plan', 'directions'] },
+    { id: 'assessment', label: 'Build an assessment', description: 'Create questions, evidence tasks, alignment, directions, and a delivery-ready package.', stepIds: ['analysis', 'faq', 'dbq', 'quiz', 'alignment', 'lesson-plan', 'directions'] },
+    { id: 'engagement', label: 'Boost engagement', description: 'Add visual, discussion, interactive, and game-based options, then assign and deliver.', stepIds: ['image', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'math', 'adventure', 'quiz', 'directions'] },
+    { id: 'take-home', label: 'Create take-home work', description: 'Build accessible independent work with directions, assessment, and a shareable delivery path.', stepIds: ['analysis', 'glossary', 'simplified', 'sentence-frames', 'quiz', 'lesson-plan', 'directions'] },
+    { id: 'complete', label: 'Complete lesson pack', description: 'Use every Guided Mode step, including assignment directions and delivery.', stepIds: null },
+  ];  const applyGuidedPreset = (preset) => {
+    const ids = Array.isArray(preset?.stepIds) ? Array.from(new Set(['source-input', ...preset.stepIds, 'package-deliver', '_final'])) : null;
+    setGuidedSelectedIds(ids); setGuidedStep(0); setGuidedCompletedIds([]); setGuidedSkippedIds([]); setGuidedCreatedHistoryIds([]); setGuidedDeliveryEvidence({});
+    try { localStorage.removeItem('allo_guided_readiness_checks'); } catch (_) {}
   };
   // Static, illustrative examples for the guided "Show an example" button. DISPLAY-ONLY: each is
   // rendered into a clearly-badged "Example" card that is NEVER written to history/generatedContent,
@@ -7503,9 +8008,18 @@ const AlloFlowContent = () => {
   // the whole tour reads as one coherent worked example. English-only like GUIDED_STEPS above. (2026-06-30)
   // Right-sizing: a teacher can pick a subset of steps; the tour runs over the
   // selected steps only (source-input is always included). null = the full 22.
-  const guidedActiveSteps = guidedSelectedIds ? GUIDED_STEPS.filter(s => s.id === 'source-input' || s.id === '_final' || guidedSelectedIds.includes(s.id)) : GUIDED_STEPS;
+  const guidedActiveSteps = guidedSelectedIds ? GUIDED_STEPS.filter(s => s.id === 'source-input' || s.id === 'package-deliver' || s.id === '_final' || guidedSelectedIds.includes(s.id)) : GUIDED_STEPS;
+  const markGuidedDeliveryEvidence = (key) => {
+    if (!guidedMode || !GUIDED_DELIVERY_EVIDENCE_KEYS.includes(key)) return;
+    setGuidedDeliveryEvidence(prev => prev?.[key] ? prev : { ...(prev || {}), [key]: true });
+  };
+  const completeGuidedDelivery = (key) => {
+    if (!guidedMode) return;
+    markGuidedDeliveryEvidence(key);
+    if (guidedActiveSteps[guidedStep]?.id === 'package-deliver') markGuidedStepDone('package-deliver');
+  };
   const toggleGuidedStepId = (id) => {
-    if (id === 'source-input' || id === '_final') return; // source and final recap are required bookends
+    if (id === 'source-input' || id === 'package-deliver' || id === '_final') return; // source, delivery, and final recap are required milestones
     setGuidedSelectedIds(prev => {
       const base = prev || GUIDED_STEPS.map(s => s.id);
       return base.includes(id) ? base.filter(x => x !== id) : [...base, id];
@@ -7516,13 +8030,48 @@ const AlloFlowContent = () => {
     if (!guidedMode) return true;
     const currentStep = guidedActiveSteps[guidedStep];
     if (!currentStep) return false;
-    if (currentStep.id === '_final') return toolId === 'lesson-plan';
+    if (currentStep.id === '_final') return false;
     return toolId === currentStep.id;
   };
   const handleGuidedSkip = (wasSkipped = false) => {
     const current = guidedActiveSteps[guidedStep];
     if (wasSkipped && current?.id) setGuidedSkippedIds(prev => prev.includes(current.id) ? prev : [...prev, current.id]);
     if (guidedStep < guidedActiveSteps.length - 1) setGuidedStep(s => s + 1);
+  };
+  const handleGuidedJump = (targetIndex, bypassedIds = []) => {
+    const target = Math.max(0, Math.min(Number(targetIndex) || 0, Math.max(0, guidedActiveSteps.length - 1)));
+    if (Array.isArray(bypassedIds) && bypassedIds.length) {
+      setGuidedSkippedIds(prev => Array.from(new Set([...(prev || []), ...bypassedIds])).filter(id => !(guidedCompletedIds || []).includes(id)));
+    }
+    setGuidedStep(target);
+  };
+  const focusGuidedTarget = () => {
+    const targetId = GUIDED_TOUR_MAP[guidedActiveSteps[guidedStep]?.id];
+    const target = targetId && document.getElementById(targetId);
+    if (!target) return;
+    target.scrollIntoView({ behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+    const focusable = target.matches?.('button,input,textarea,select,a[href],[tabindex]:not([tabindex="-1"])') ? target : target.querySelector?.('button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])');
+    if (focusable?.focus) focusable.focus({ preventScroll: true });
+    else {
+      const previousTabIndex = target.getAttribute('tabindex');
+      target.setAttribute('tabindex', '-1');
+      const restoreTabIndex = () => { if (!target.isConnected) return; if (previousTabIndex == null) target.removeAttribute('tabindex'); else target.setAttribute('tabindex', previousTabIndex); };
+      target.addEventListener('blur', restoreTabIndex, { once: true });
+      try { target.focus({ preventScroll: true }); } catch (_) { target.focus(); }
+    }
+  };
+  const handleCompleteGuidedMode = (summary = {}) => {
+    const completedAt = new Date().toISOString();
+    const entry = { version: 1, completedAt, selectedIds: guidedSelectedIds, completedSteps: guidedCompletedIds, skippedSteps: guidedSkippedIds, createdHistoryIds: guidedCreatedHistoryIds, deliveryEvidence: guidedDeliveryEvidence, ...summary };
+    try {
+      const prior = JSON.parse(localStorage.getItem('allo_guided_completed_runs') || '[]');
+      localStorage.setItem('allo_guided_completed_runs', JSON.stringify([entry, ...(Array.isArray(prior) ? prior : [])].slice(0, 10)));
+      localStorage.setItem('allo_guided_last_completion', JSON.stringify(entry));
+      localStorage.removeItem('allo_guided_progress');
+      localStorage.removeItem('allo_guided_readiness_checks');
+    } catch (_) {}
+    setGuidedMode(false); setGuidedStep(0); setGuidedSelectedIds(null); setGuidedCompletedIds([]); setGuidedSkippedIds([]); setGuidedCreatedHistoryIds([]); setGuidedDeliveryEvidence({});
+    addToast(t('guided.completed_toast') || 'Guided lesson completed. Your summary is saved on this device.', 'success');
   };
   const handleExitGuidedMode = () => {
     setGuidedMode(false);
@@ -7558,22 +8107,32 @@ const AlloFlowContent = () => {
     'quiz': 'ui-tool-quiz',
     'alignment': 'tour-tool-alignment',
     'lesson-plan': 'tour-tool-lesson-plan',
+    'directions': 'tour-tool-directions',
+    'package-deliver': 'tour-tool-fullpack',
     '_final': 'tour-tool-fullpack',
   };
   // Hands-on guided tutorial: anchor the active step to its real tool — scroll it into
   // view, ring it, announce it, and notice when the teacher actually uses it (engaged).
   useEffect(() => {
-    // Guided mode can be enabled at mode-selection, before the user has picked a role
-    // and entered the workspace. Don't ring anything until they're actually in it,
-    // or the ring floats over the welcome/role-selection screen (tour-input-panel
-    // exists in the DOM behind that modal).
-    if (!guidedMode || !hasSelectedRole) return;
+    // Bind the marker as soon as Guided Mode owns a real panel. Modal-aware CSS keeps it
+    // visually suppressed during onboarding, while role readiness still gates announcements.
+    if (!guidedMode) return;
     const step = guidedActiveSteps[guidedStep];
     const domId = step && GUIDED_TOUR_MAP[step.id];
     const el = domId ? document.getElementById(domId) : null;
     setGuidedEngaged(false);
-    if (!el) return;
+    if (!el) {
+      const targetRetryTimer = setTimeout(() => setGuidedTargetEpoch(epoch => epoch + 1), 200);
+      return () => clearTimeout(targetRetryTimer);
+    }
     el.classList.add('allo-guided-target');
+    el.setAttribute('data-allo-guided-target', 'true');
+    // React can replace a panel's declarative className during unrelated parent renders.
+    // Keep the transient Guided marker attached without touching any other classes.
+    const targetClassObserver = typeof MutationObserver !== 'undefined' ? new MutationObserver(() => {
+      if (el.isConnected && !el.classList.contains('allo-guided-target')) el.classList.add('allo-guided-target');
+    }) : null;
+    if (targetClassObserver) targetClassObserver.observe(el, { attributes: true, attributeFilter: ['class'] });
     // Auto-expand the step's tool so its features actually mount — otherwise later steps render only a
     // collapsed header and the ring highlights an empty bar (the controls aren't even in the DOM).
     let _autoExpanded = false;
@@ -7592,7 +8151,7 @@ const AlloFlowContent = () => {
       if (typeof window !== 'undefined' && window.alloAnnounce) window.alloAnnounce(t('guided.engaged_announcement') || 'Nice. When you are ready, continue to the next step.', 'polite');
     };
     el.addEventListener('click', onEngage);
-    if (typeof window !== 'undefined' && window.alloAnnounce && step && !_guidedWizardOpenRef.current) {
+    if (typeof window !== 'undefined' && window.alloAnnounce && step && hasSelectedRole && !_guidedWizardOpenRef.current) {
       const n = Math.min(guidedStep + 1, guidedActiveSteps.length);
       const labelKey = 'guided.steps.' + step.id + '.label';
       const actionKey = 'guided.steps.' + step.id + '.action';
@@ -7601,7 +8160,9 @@ const AlloFlowContent = () => {
       window.alloAnnounce((t('guided.step_announcement') || 'Step {current} of {total}. {label}. {action}').replace('{current}', n).replace('{total}', guidedActiveSteps.length).replace('{label}', localizedLabel).replace('{action}', localizedAction), 'polite');
     }
     return () => {
+      if (targetClassObserver) targetClassObserver.disconnect();
       el.classList.remove('allo-guided-target');
+      el.removeAttribute('data-allo-guided-target');
       el.removeEventListener('click', onEngage);
     };
   }, [guidedMode, guidedStep, hasSelectedRole, guidedSelectedIds, guidedTargetEpoch]);
@@ -8376,7 +8937,19 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     return () => { cancelled = true; };
   }, []);
   const [isAccessibilityLabOpen, setIsAccessibilityLabOpen] = useState(false);
-  const [isAuditRemediatorOpen, setIsAuditRemediatorOpen] = useState(false);
+  const ACCESSIBILITY_REVIEW_SESSION_KEY = 'alloflow_accessibility_review_session_v1';
+  const [accessibilityReviewSession, setAccessibilityReviewSession] = useState(() => {
+      try {
+          const parsed = JSON.parse(localStorage.getItem(ACCESSIBILITY_REVIEW_SESSION_KEY) || 'null');
+          return parsed && parsed.itemId ? parsed : null;
+      } catch (_) { return null; }
+  });
+  useEffect(() => {
+      try {
+          if (accessibilityReviewSession) localStorage.setItem(ACCESSIBILITY_REVIEW_SESSION_KEY, JSON.stringify(accessibilityReviewSession));
+          else localStorage.removeItem(ACCESSIBILITY_REVIEW_SESSION_KEY);
+      } catch (_) {}
+  }, [accessibilityReviewSession]);  const [isAuditRemediatorOpen, setIsAuditRemediatorOpen] = useState(false);
   // Plan S: Quiz mode (exit-ticket | pre-check | formative | review).
   // Defaults to exit-ticket so existing behavior is preserved for any user
   // who doesn't change it. Read by handleGenerate('quiz', ..., {quizMode}).
@@ -8558,7 +9131,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '1b07421f4';
+    var pluginCdnVersion = '1784842107314';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -8682,11 +9255,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         url = url + '&v=' + pluginCdnVersion;
       }
       var entry = __alloModuleRegistry[name] || (__alloModuleRegistry[name] = {});
+      var loadGeneration = (entry.loadGeneration || 0) + 1;
+      entry.loadGeneration = loadGeneration;
       entry.originalUrl = originalUrl;
       __alloSetModuleStatus(name, 'pending');
       console.log('[CDN] Attempting to load ' + name + ' from: ' + url);
-      const prevOnError = window.onerror;
-      window.onerror = function(msg, src, line, col, err) {
+      const onModuleWindowError = function(msg, src, line, col, err) {
         // Skip known-benign browser warnings that fire through window.onerror.
         // ResizeObserver loop messages are NOT real errors — the browser fires
         // them when a resize callback schedules another resize, then aborts the
@@ -8694,50 +9268,78 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // resizes; it's not actionable and pollutes the [CDN-ERROR] log + the
         // user-facing bug-report card. Pass-through to prevOnError unchanged.
         if (typeof msg === 'string' && /ResizeObserver loop /.test(msg)) {
-          return prevOnError ? prevOnError(msg, src, line, col, err) : false;
+          return false;
         }
         console.error('[CDN-ERROR] ' + name + ': ' + msg);
         console.error('[CDN-ERROR] Source: ' + src + ' Line: ' + line + ' Col: ' + col);
         if (err && err.stack) console.error('[CDN-STACK] ' + err.stack);
-        window.onerror = prevOnError;
         return false;
       };
       const s = document.createElement('script');
       s.src = url;
       s.crossOrigin = "anonymous";
+      entry.script = s;
+      const moduleWindowErrorListener = function(event) {
+        var source = String((event && (event.filename || (event.target && event.target.src))) || '');
+        if (!source) return;
+        if (source && source !== s.src && source.indexOf(originalUrl) === -1) return;
+        onModuleWindowError(event && event.message, source, event && event.lineno, event && event.colno, event && event.error);
+      };
+      window.addEventListener('error', moduleWindowErrorListener);
+      const cleanupModuleListener = function() {
+        try { window.removeEventListener('error', moduleWindowErrorListener); } catch (_) {}
+      };
       entry.startedAt = Date.now();
       // A stalled script request fires neither load nor error in some embedded
       // browsers. Bound that state so the registry can expose Retry instead of
       // leaving upload/audit UI pending forever.
-      var moduleLoadWatchdog = setTimeout(function() {
-        if (entry.status === 'pending' && !(window.AlloModules && window.AlloModules[name])) {
+      var expireModuleLoad = function() {
+        if (entry.loadGeneration === loadGeneration && entry.status === 'pending' && !(window.AlloModules && window.AlloModules[name])) {
           console.error('[CDN-TIMEOUT] ' + name + ' did not settle within 30 seconds');
+          cleanupModuleListener();
+          try { s.onload = null; s.onerror = null; s.remove(); } catch (_) {}
+          try { if (entry.fallbackScript) { entry.fallbackScript.onload = null; entry.fallbackScript.onerror = null; entry.fallbackScript.remove(); } } catch (_) {}
+          if (entry.script === s) entry.script = null;
+          entry.fallbackScript = null;
+          // Invalidate every callback owned by the timed-out request before a retry.
+          entry.loadGeneration = loadGeneration + 1;
           __alloSetModuleStatus(name, 'failed');
         }
-      }, 30000);
+      };
+      var moduleLoadWatchdog = setTimeout(expireModuleLoad, 30000);
       var clearModuleLoadWatchdog = function() {
         if (moduleLoadWatchdog) { clearTimeout(moduleLoadWatchdog); moduleLoadWatchdog = null; }
       };
       // One fallback path for both failure shapes (network error, or executed
       // but never registered): try GitHub raw, then settle the registry.
       var tryFallback = function() {
+        if (entry.loadGeneration !== loadGeneration || entry.fallbackGeneration === loadGeneration) return;
+        entry.fallbackGeneration = loadGeneration;
+        clearModuleLoadWatchdog();
+        moduleLoadWatchdog = setTimeout(expireModuleLoad, 30000);
         var fb = moduleFallbackUrl(originalUrl, url);
         console.log('[CDN-FALLBACK] URL:', fb);
         var s2 = document.createElement('script'); s2.src = fb;
+        entry.fallbackScript = s2;
         s2.onload = function() {
+          if (entry.loadGeneration !== loadGeneration) { try { s2.remove(); } catch (_) {} return; }
           clearModuleLoadWatchdog();
+          cleanupModuleListener();
           var f2 = window.AlloModules && window.AlloModules[name];
           console.log('[CDN-FALLBACK] ' + name + ': ' + (f2 ? 'SUCCESS' : 'FAILED'));
           __alloSetModuleStatus(name, f2 ? 'loaded' : 'failed');
         };
         s2.onerror = function() {
+          if (entry.loadGeneration !== loadGeneration) return;
           clearModuleLoadWatchdog();
+          cleanupModuleListener();
           console.error('[CDN-FALLBACK-FAIL] ' + name + ' fallback also unreachable');
           __alloSetModuleStatus(name, 'failed');
         };
         document.head.appendChild(s2);
       };
       s.onload = () => {
+        if (entry.loadGeneration !== loadGeneration) return;
         const found = window.AlloModules && window.AlloModules[name];
         console.log('[CDN] ' + name + ' script executed. Registration: ' + (found ? 'SUCCESS' : 'FAILED'));
         if (!found) {
@@ -8753,14 +9355,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           clearModuleLoadWatchdog();
           __alloSetModuleStatus(name, 'loaded');
         }
-        window.onerror = prevOnError;
+        cleanupModuleListener();
       };
       s.onerror = (e) => {
+        if (entry.loadGeneration !== loadGeneration) return;
         console.error('[CDN-FAIL] ' + name + ' network error, trying GitHub raw fallback:', e);
         // Same fallback regex as the onload path above — recognizes both
         // Cloudflare Pages and legacy jsdelivr URLs.
         tryFallback();
-        window.onerror = prevOnError;
       };
       document.head.appendChild(s);
     };
@@ -8769,6 +9371,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       Object.keys(__alloModuleRegistry).forEach(function(name) {
         var entry = __alloModuleRegistry[name];
         if (entry.status === 'failed' && entry.originalUrl) {
+          try { if (entry.script) { entry.script.onload = null; entry.script.onerror = null; entry.script.remove(); } } catch (_) {}
+          try { if (entry.fallbackScript) { entry.fallbackScript.onload = null; entry.fallbackScript.onerror = null; entry.fallbackScript.remove(); } } catch (_) {}
+          entry.script = null;
+          entry.fallbackScript = null;
           entry.status = 'idle'; // allow the pending-dedup to pass
           loadModule(name, entry.originalUrl);
           retried += 1;
@@ -8816,127 +9422,128 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=1b07421f4');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=1b07421f4');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=1b07421f4');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=1b07421f4');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=1b07421f4');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=04c6710a');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=1b07421f4');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=1b07421f4');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=1b07421f4');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=1b07421f4');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=1b07421f4');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=1b07421f4');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=a95056e3');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=0e96a73e');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=6d41dc65');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=1b07421f4');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=1b07421f4');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=1b07421f4');
-    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=1b07421f4');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=1b07421f4');
-    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=1b07421f4');
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=1b07421f4');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=1b07421f4');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=1b07421f4');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('ToolCatalog', './tool_catalog_module.js');
+    loadModule('SubmissionCrypto', './submission_crypto_module.js');
+    loadModule('AlloCrypto', './allo_crypto_module.js');
+    loadModule('SubmissionInbox', './view_submission_inbox_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('SafetyChecker', './safety_checker_module.js');
+    loadModule('Fluency', './fluency_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('ReportWriter', './report_writer_module.js');
+    loadModule('CinematicStudio', './cinematic_studio_module.js');
+    loadModule('BrandProfile', './brand_profile_module.js');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=1b07421f4'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', './symbol_studio_module.js'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=1b07421f4'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=1b07421f4'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', './studio_module.js'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', './allohaven_module.js'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
     window.__alloLazyDynamicAssessment = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DynamicAssessment', 'https://alloflow-cdn.pages.dev/dynamic_assessment_module.js'); }; })();
     // Seating Chart (Ring 0+1, July 21 2026) — teacher-only roster tool,
     // lazy-loaded from the Roster panel's Seating Chart button.
-    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=1b07421f4'); }; })();
+    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', './seating_chart_module.js'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=1b07421f4');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=1b07421f4');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=1b07421f4');
-    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=1b07421f4');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=1b07421f4');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=1b07421f4');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=1b07421f4');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=1b07421f4');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=1b07421f4');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=1b07421f4');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=1b07421f4');
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=1b07421f4');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=1b07421f4');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=1b07421f4'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=1b07421f4'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=1b07421f4'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=1b07421f4'); }; })();
+    loadModule('Voice', './voice_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', './catalog_module.js');
+    loadModule('ReadingLibrary', './reading_library_module.js');
+    loadModule('AccessibilityLab', './accessibility_lab_module.js');
+    loadModule('AuditRemediator', './audit_remediator_module.js');
+    loadModule('QuizModeStrategies', './quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', './quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', './quiz_live_aggregators.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', './story_forge_module.js'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', './story_stage_module.js'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', './mind_map_module.js'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', './poet_tree_module.js'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=1b07421f4');
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=1b07421f4');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=1b07421f4');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=216a1867');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=1b07421f4');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=1b07421f4');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=1b07421f4');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=1b07421f4');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=1b07421f4');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('MathFluency', './math_fluency_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('UIFontLibrary', './ui_font_library_module.js');
+    loadModule('VoiceConfig', './voice_config_module.js');
+    loadModule('CanvasTips', './canvas_tips_module.js');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=1b07421f4'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', './view_kokoro_offer_modal_module.js'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=1b07421f4');
+    loadModule('ConfirmDialog', './view_confirm_dialog_module.js');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=1b07421f4');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=1b07421f4'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=1b07421f4'); }; })();
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=059104c5'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=1b07421f4'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=1b07421f4'); }; })();
-    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=e7423298'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=1b07421f4'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=1b07421f4');
-    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=1b07421f4');
-    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ea313f84');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=1b07421f4');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=1b07421f4');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=1b07421f4');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=1b07421f4');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=1b07421f4');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=1b07421f4'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=1b07421f4'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=1b07421f4'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=1b07421f4'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=1b07421f4'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=1b07421f4'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=1b07421f4'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=1b07421f4'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=1b07421f4'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=1b07421f4'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=1b07421f4'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=1b07421f4'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=1b07421f4');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=1b07421f4');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=1b07421f4');
+    loadModule('PromptDialog', './view_prompt_dialog_module.js');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', './view_hints_modal_module.js'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', './view_xp_modal_module.js'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', './view_storybook_export_modal_module.js'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', './view_info_modal_module.js'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', './view_session_modal_module.js'); }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', './view_socratic_chat_module.js'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', './view_global_level_up_module.js'); }; })();
+    loadModule('HeaderBar', './view_header_module.js');
+    loadModule('GuidedModeBanner', './view_guided_mode_banner_module.js');
+    loadModule('LiveLessonRun', './view_live_lesson_run_module.js');
+    loadModule('StudentJoinPanel', './view_student_join_panel_module.js');
+    loadModule('StudentSaveAdventurePanel', './view_student_save_adventure_module.js');
+    loadModule('SidebarTabsNav', './view_sidebar_tabs_nav_module.js');
+    loadModule('UDLGuideButton', './view_udl_guide_button_module.js');
+    loadModule('TeacherHistoryTab', './view_teacher_history_tab_module.js');
+    loadModule('HistoryPanel', './view_history_panel_module.js');
+    loadModule('FabStack', './view_fab_stack_module.js');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', './view_study_timer_modal_module.js'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', './view_educator_hub_modal_module.js'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', './brand_profile_editor_module.js'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', './view_visual_supports_modal_module.js'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', './view_learning_hub_modal_module.js'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', './music_studio/open_groove_core.js'); loadModule('OpenGrooveScheduler', './music_studio/open_groove_scheduler.js'); loadModule('OpenGrooveAudio', './music_studio/open_groove_audio.js'); loadModule('OpenGrooveStudio', './music_studio/open_groove_module.js'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', './timeline_studio_module.js'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', './lingua_practice_module.js'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', './test_prep_hub_module.js'); }; })();
+    loadModule('ClozeInteractionPanel', './view_cloze_interaction_panel_module.js');
+    loadModule('LabelPositions', './label_positions_module.js');
+    loadModule('UILanguageSelector', './ui_language_selector_module.js');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=1b07421f4');
-    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=1b07421f4');
-    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=1b07421f4');
-    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=1b07421f4');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=1b07421f4');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=1b07421f4');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=1b07421f4');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=1b07421f4');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=1b07421f4');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=1b07421f4');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=1b07421f4');
+    loadModule('AudioBanks', './audio_banks_module.js');
+    loadModule('VerificationPolicy', './verification_policy_module.js');
+    loadModule('DocBuilderRenderer', './doc_builder_renderer_module.js');
+    loadModule('PdfAuditView', './view_pdf_audit_module.js');
+    loadModule('ExportPreviewView', './view_export_preview_module.js');
+    loadModule('MiscModals', './view_misc_modals_module.js');
+    loadModule('GeminiBridge', './view_gemini_bridge_module.js');
+    loadModule('MiscPanels', './view_misc_panels_module.js');
+    loadModule('UIPolish', './ui_polish_module.js');
+    loadModule('SidebarPanels', './view_sidebar_panels_module.js');
+    loadModule('ModuleScopeExtras', './module_scope_extras_module.js');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
     // upgrade-on-parse calls at lines ~693 and ~2002 fire before the CDN script
@@ -8973,75 +9580,75 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=d4205d9b');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=1b07421f4');
-    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=1b07421f4');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=1b07421f4');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=1b07421f4');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=1b07421f4');
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=1b07421f4');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=1b07421f4');
-    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=1b07421f4');
-    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=1b07421f4');
-    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=1b07421f4');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=1b07421f4');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=1b07421f4');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=1b07421f4');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=1b07421f4');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=1b07421f4');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=d1304d57');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('AgentCoreContracts', './agent_core_contracts_module.js');
+    loadModule('AgentCoreBlueprintService', './agent_core_blueprint_service_module.js');
+    loadModule('AgentCoreUIAdapter', './agent_core_ui_adapter_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
+    loadModule('KaraokeAudioStoreModule', './karaoke_audio_store_module.js');
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
-    loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
+    loadModule('WordTimingModule', './word_timing_module.js');
     // Unified live-session content channel (SessionTransport stage 1).
-    loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=415b9b14');
-    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=7abdb2f4');
-    loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=501639a2');
-    loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
-    loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=b41bcb0a');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=1b07421f4');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=1b07421f4');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=1b07421f4');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=1b07421f4');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=1b07421f4');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=1b07421f4');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=59174db7');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=1b07421f4');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=1b07421f4');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=1b07421f4');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=1b07421f4');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=1b07421f4');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=1b07421f4');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=2c2f5ff1');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=1b07421f4');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=1b07421f4');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=1b07421f4');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=1b07421f4');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=1b07421f4');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=5bd0659f');
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=1b07421f4');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=1b07421f4');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=1b07421f4');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=1b07421f4');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=1b07421f4');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=1b07421f4');
-    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=d12e82b7');
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=1b07421f4');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=1b07421f4');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=1b07421f4');
+    loadModule('SessionTransportModule', './session_transport_module.js');
+    loadModule('ReadAloudAudioServiceModule', './read_aloud_audio_service_module.js');
+    loadModule('ReadAloudArtifactContractModule', './read_aloud_artifact_contract_module.js');
+    loadModule('ReadAloudArtifactAudioModule', './read_aloud_artifact_audio_module.js');
+    loadModule('PersonaSessionArtifactModule', './persona_session_artifact_module.js');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', './view_simplified_module.js');
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', './view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=1b07421f4');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=1b07421f4');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=1b07421f4');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=1b07421f4');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=1b07421f4');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=1b07421f4');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=1b07421f4');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=1b07421f4');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=1b07421f4');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=1b07421f4');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
+    loadModule('PhaseNHelpersModule', './phase_n_misc_helpers_module.js');
+    loadModule('PhaseOHandlersModule', './phase_o_misc_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
+    loadModule('AnnotationSuiteModule', './annotation_suite_module.js');
+    loadModule('NoteTakingTemplatesModule', './note_taking_templates_module.js');
+    loadModule('AnchorChartsModule', './anchor_charts_module.js');
+    loadModule('LivePolling', './live_polling_module.js');
+    loadModule('ConceptPictionaryModule', './concept_pictionary_module.js');
+    loadModule('EscapeRoomModule', './escape_room_module.js');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -9064,7 +9671,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
         'stem_lab/stem_tool_datastudio.js', 'stem_lab/stem_tool_coding.js', 'stem_lab/stem_tool_applab.js',
-        'stem_lab/stem_tool_dataplot.js', 'stem_lab/stem_tool_geo.js', 'stem_lab/stem_tool_titration.js',
+        'stem_lab/stem_tool_dataplot.js', 'stem_lab/stem_tool_geo.js', 'stem_lab/stem_tool_gisstudio.js', 'stem_lab/stem_tool_titration.js',
         'stem_lab/stem_tool_volume.js', 'stem_lab/stem_tool_numberline.js', 'stem_lab/stem_tool_areamodel.js',
         'stem_lab/stem_tool_arithmetic.js',
         'stem_lab/stem_tool_ratios.js',
@@ -11091,7 +11698,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isBingoGame, setIsBingoGame] = useState(false);
   const [isStudentBingoGame, setIsStudentBingoGame] = useState(false);
   const [isWordScrambleGame, setIsWordScrambleGame] = useState(false);
-  const [confirmDialog, setConfirmDialog] = useState(null);
+  const [confirmDialog, _setConfirmDialogState] = useState(null);
+  const confirmDialogControllerRef = useRef(null);
+  if (!confirmDialogControllerRef.current) {
+      confirmDialogControllerRef.current = _alloCreateDialogStateController(_setConfirmDialogState);
+  }
+  const setConfirmDialog = useCallback((next) => confirmDialogControllerRef.current.set(next), []);
   const [endSessionPreview, setEndSessionPreview] = useState(null);
   const [endSessionNote, setEndSessionNote] = useState('');
   const endSessionPreviewRef = useRef(null);
@@ -11110,7 +11722,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       dialog.addEventListener('keydown', onKeyDown);
       return () => { dialog.removeEventListener('keydown', onKeyDown); if (previousFocus?.focus) previousFocus.focus(); };
   }, [endSessionPreview]);
-  const [promptDialog, setPromptDialog] = useState(null);
+  const [promptDialog, _setPromptDialogState] = useState(null);
+  const promptDialogControllerRef = useRef(null);
+  if (!promptDialogControllerRef.current) {
+      promptDialogControllerRef.current = _alloCreateDialogStateController(_setPromptDialogState);
+  }
+  const setPromptDialog = useCallback((next) => promptDialogControllerRef.current.set(next), []);
   const [bingoSettings, setBingoSettings] = useState({
       gridSize: 5,
       mode: 'term',
@@ -11676,6 +12293,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
 
   const [showLivePollingPanel, setShowLivePollingPanel] = useState(false);
   const [showPictionaryHost, setShowPictionaryHost] = useState(false);
+  const [pictionaryInitialMode, setPictionaryInitialMode] = useState('pictionary');
   const [showPictionaryGuest, setShowPictionaryGuest] = useState(false);
   // Anchor Chart -> Pictionary bridge: when a teacher clicks "Play Pictionary"
   // from an anchor chart, the chart's section labels land here and seed the
@@ -11684,11 +12302,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const handlePlayPictionaryFromAnchorChart = React.useCallback((payload) => {
     const concepts = (payload && Array.isArray(payload.concepts)) ? payload.concepts.filter(c => c && c.trim()) : [];
     if (concepts.length > 0) setPictionaryIncomingConcepts(concepts);
+    setPictionaryInitialMode('pictionary');
     setShowPictionaryHost(true);
   }, []);
   // Live Session Center dock (teacher) + help signals (student). The dock is
   // the single entry point for live activities; livePollPreset seeds the
-  // polling HostPanel composer for one-tap presets like Quick Check.
+  // polling HostPanel composer for one-tap presets like Quick Check and Word Cloud.
   const [showLiveDock, setShowLiveDock] = useState(false);
   const [havenRewardReasonId, setHavenRewardReasonId] = useState('ready_to_learn');
   const [havenRewardAmount, setHavenRewardAmount] = useState(1);
@@ -11703,6 +12322,36 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // Notify-confirm (§4.6): one prompt per tracked goal per session.
   const classGoalNotifiedRef = useRef({});
   const [livePollPreset, setLivePollPreset] = useState(null);
+  // Teacher-memory-only coordination metadata. Activity owners publish a
+  // bounded status/count snapshot; raw responses, prompts, drawings, guesses,
+  // feedback, and codenames never enter this state or the session document.
+  const [liveActivitySnapshots, setLiveActivitySnapshots] = useState([]);
+  const recordLiveActivitySnapshot = React.useCallback((snapshot) => {
+    try {
+      const api = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.LiveLessonRun;
+      if (!api || typeof api.upsertLiveActivitySnapshot !== 'function') return;
+      setLiveActivitySnapshots(prev => api.upsertLiveActivitySnapshot(prev, snapshot, 60));
+    } catch (error) {
+      console.warn('[LiveActivitySnapshot] rejected:', error && error.message);
+    }
+  }, []);
+  const openLiveActivityDashboard = React.useCallback((snapshot) => {
+    if (!snapshot || typeof snapshot !== 'object') return;
+    if (snapshot.family === 'polling') {
+      setLivePollPreset(null);
+      setShowLivePollingPanel(true);
+      setShowLiveDock(false);
+      return;
+    }
+    if (snapshot.family === 'pictionary') {
+      setPictionaryInitialMode(snapshot.kind === 'sketch_response' ? 'sketch' : 'pictionary');
+      setShowPictionaryHost(true);
+      setShowLiveDock(false);
+    }
+  }, []);
+  useEffect(() => {
+    setLiveActivitySnapshots([]);
+  }, [activeSessionCode]);
   const [showStudentSignals, setShowStudentSignals] = useState(false);
   // sessionData useState moved up here (was at line ~5868) so the
   // _picMyRoleRaw / _picRoundActive const declarations below can reference
@@ -11716,10 +12365,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // Tier-1 roster.{uid}.role field via the existing sessionData snapshot.
   const _picMyRoleRaw = (!isTeacherMode && user && user.uid && sessionData && sessionData.roster && sessionData.roster[user.uid] && sessionData.roster[user.uid].role) || null;
   const _picRoundActive = !!(sessionData && sessionData.pictionaryRound && sessionData.pictionaryRound.active);
+  const _picRoundMode = (sessionData && sessionData.pictionaryRound && sessionData.pictionaryRound.mode) || 'pictionary';
   // Late-joiner default: if a round is active but the student doesn't have a
   // role yet (they joined the session AFTER the teacher started the round),
   // treat them as a guesser so they can still watch + guess.
-  const _picMyRole = _picMyRoleRaw || (_picRoundActive ? 'guesser' : null);
+  const _picMyRole = _picMyRoleRaw || (_picRoundActive && _picRoundMode !== 'sketch' ? 'guesser' : null);
   React.useEffect(() => {
     if (isTeacherMode) return;
     if (!activeSessionCode || !user || !user.uid) return;
@@ -12781,12 +13431,27 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // All three gracefully fall back to native browser dialogs if React state
   // hasn't initialized yet (e.g. during the very first module load).
   useEffect(() => {
-    window.AlloFlowUX = {
+    confirmDialogControllerRef.current.activate();
+    promptDialogControllerRef.current.activate();
+    const nativeConfirm = (message) => {
+      try { return !!window.confirm(String(message)); }
+      catch (_) { return false; }
+    };
+    const nativePrompt = (message, defaultValue) => {
+      try {
+        const value = window.prompt(String(message), defaultValue == null ? '' : String(defaultValue));
+        return value == null ? null : String(value);
+      } catch (_) { return null; }
+    };
+    const uxApi = {
       toast: (message, type = 'info') => {
         try { addToast(String(message), type); }
         catch (_) { try { window.console && window.console.log && window.console.log('[Toast]', message); } catch (_) {} }
       },
-      confirm: (message, opts = {}) => new Promise((resolve) => {
+      confirm: (message, opts = {}) => {
+        const dialogModule = window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
+        if (typeof dialogModule !== 'function') return Promise.resolve(nativeConfirm(message));
+        return new Promise((resolve) => {
         try {
           setConfirmDialog({
             message: String(message),
@@ -12799,11 +13464,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             onCancel: () => resolve(false),
           });
         } catch (_) {
-          try { resolve(!!window.confirm(String(message))); }
-          catch (__) { resolve(false); }
+          resolve(nativeConfirm(message));
         }
-      }),
-      prompt: (message, defaultValue = '', opts = {}) => new Promise((resolve) => {
+        });
+      },
+      prompt: (message, defaultValue = '', opts = {}) => {
+        const dialogModule = window.AlloModules && window.AlloModules.PromptDialog && window.AlloModules.PromptDialog.PromptDialog;
+        if (typeof dialogModule !== 'function') return Promise.resolve(nativePrompt(message, defaultValue));
+        return new Promise((resolve) => {
         try {
           setPromptDialog({
             message: String(message),
@@ -12820,30 +13488,24 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             onCancel: () => resolve(null),
           });
         } catch (_) {
-          try {
-            const v = window.prompt(String(message), defaultValue == null ? '' : String(defaultValue));
-            resolve(v == null ? null : String(v));
-          } catch (__) { resolve(null); }
+          resolve(nativePrompt(message, defaultValue));
         }
-      }),
+        });
+      },
+    };
+    window.AlloFlowUX = uxApi;
+    return () => {
+      confirmDialogControllerRef.current.dispose();
+      promptDialogControllerRef.current.dispose();
+      if (window.AlloFlowUX === uxApi) {
+        try { delete window.AlloFlowUX; } catch (_) { window.AlloFlowUX = null; }
+      }
     };
   }, []);
 
   const clearPersonaResumeSnapshots = useCallback(async () => {
     try {
-      if (!window.__alloDeviceStoragePromise) {
-        window.__alloDeviceStoragePromise = window.alloDeviceStorage
-          ? Promise.resolve(window.alloDeviceStorage)
-          : new Promise((resolve, reject) => {
-              const script = document.createElement('script');
-              script.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds2-slots8';
-              script.onload = () => window.alloDeviceStorage ? resolve(window.alloDeviceStorage) : reject(new Error('device storage unavailable'));
-              script.onerror = () => reject(new Error('device storage failed to load'));
-              document.head.appendChild(script);
-            });
-      }
-      const storage = await window.__alloDeviceStoragePromise;
-      await storage.ready();
+      const storage = await _alloGetCanvasDeviceStorage();
       await storage.clearNamespace('persona_sessions');
       return true;
     } catch (_) {
@@ -14187,6 +14849,31 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const canvasRecoveryStoreRef = useRef(ALLO_WORKSPACE_RECOVERY.emptyStore());
   const canvasRecoveryCurrentIdRef = useRef(ALLO_WORKSPACE_RECOVERY.newId());
   const canvasRecoveryBootCheckedRef = useRef(false);
+  const localDataHydrationGenerationRef = useRef(0);
+  const invalidateLocalDataHydration = () => {
+      localDataHydrationGenerationRef.current += 1;
+      return localDataHydrationGenerationRef.current;
+  };
+  const cancelActiveProjectLoad = (options) => {
+      try {
+          const moduleApi = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.MiscHandlers;
+          if (moduleApi && typeof moduleApi.cancelProjectLoad === 'function') {
+              moduleApi.cancelProjectLoad(options);
+              return true;
+          }
+      } catch (_) {}
+      return false;
+  };
+  const cancelActiveFileIntakeOperations = (reason) => {
+      try {
+          const moduleApi = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.MiscHandlers;
+          if (moduleApi && typeof moduleApi.cancelFileIntakeOperations === 'function') {
+              moduleApi.cancelFileIntakeOperations({ reason: reason || 'host-reset' });
+              return true;
+          }
+      } catch (_) {}
+      return false;
+  };
   const canvasRecoveryDialogRef = useRef(null);
   const canvasRecoveryImportPreviousIdRef = useRef(null);
   const canvasRecoveryImportInputRef = useRef(null);
@@ -15505,48 +16192,79 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         return () => { cancelled = true; };
     }
     if (isTeacherMode && activeSessionCode && isHistoryLoaded) return;
-    const loadLocalData = async () => {
-        if (isStorageDisabled) {
-            setIsHistoryLoaded(true);
-            return;
+    const hydrationGeneration = ++localDataHydrationGenerationRef.current;
+    let hydrationCancelled = false;
+    const hydrationIsCurrent = () => (
+        !hydrationCancelled
+        && localDataHydrationGenerationRef.current === hydrationGeneration
+    );
+    const cancelHydration = () => {
+        hydrationCancelled = true;
+        if (localDataHydrationGenerationRef.current === hydrationGeneration) {
+            localDataHydrationGenerationRef.current += 1;
         }
+    };
+    if (isStorageDisabled) {
+        if (hydrationIsCurrent()) setIsHistoryLoaded(true);
+        return cancelHydration;
+    }
+    const loadLocalData = async () => {
         try {
             const savedHistory = await storageDB.get('allo_offline_history');
+            if (!hydrationIsCurrent()) return;
             if (!isTeacherMode && (activeSessionCode || _alloMbBridgeActive()
                 || _alloReadMailboxEntryParam('allo_mb') || _alloReadMailboxEntryParam('allo_mbp'))) {
                 return;
             }
             if (savedHistory) {
                 const items = savedHistory.items || (Array.isArray(savedHistory) ? savedHistory : []);
-                if (Array.isArray(items)) setHistory(hydrateHistory(items));
+                if (Array.isArray(items) && hydrationIsCurrent()) setHistory(hydrateHistory(items));
             } else {
-                setHistory([]);
+                if (hydrationIsCurrent()) setHistory([]);
             }
         } catch (error) {
+            if (!hydrationIsCurrent()) return;
             warnLog('Critical Error loading offline history:', error);
             if (addToastRef.current) addToastRef.current(t('toasts.data_load_error'), 'error');
         } finally {
-            setIsHistoryLoaded(true);
+            if (hydrationIsCurrent()) setIsHistoryLoaded(true);
         }
+        if (!hydrationIsCurrent()) return;
         try {
             const savedProfiles = await storageDB.get('allo_offline_profiles');
-            if (savedProfiles && Array.isArray(savedProfiles.items)) setProfiles(savedProfiles.items);
+            if (!hydrationIsCurrent()) return;
+            if (savedProfiles && Array.isArray(savedProfiles.items) && hydrationIsCurrent()) setProfiles(savedProfiles.items);
         } catch (error) {
+            if (!hydrationIsCurrent()) return;
             warnLog('Error loading offline profiles:', error);
         }
+        if (!hydrationIsCurrent()) return;
         try {
             const savedUnits = await storageDB.get('allo_offline_units');
-            if (savedUnits && Array.isArray(savedUnits.items)) setUnits(savedUnits.items);
+            if (!hydrationIsCurrent()) return;
+            if (savedUnits && Array.isArray(savedUnits.items) && hydrationIsCurrent()) setUnits(savedUnits.items);
         } catch (error) {
+            if (!hydrationIsCurrent()) return;
             warnLog('Error loading offline units:', error);
         }
     };
     loadLocalData();
+    return cancelHydration;
   }, [activeSessionCode, lzLoaded, isStorageDisabled, isCanvas, isTeacherMode]);
+  const offlineHistoryWriteRef = useRef({ sequence: 0, chain: Promise.resolve() });
+  const offlineProfileWriteRef = useRef({ sequence: 0, chain: Promise.resolve() });
+  const offlineUnitWriteRef = useRef({ sequence: 0, chain: Promise.resolve() });
   useEffect(() => {
-    if (!isHistoryLoaded || isStorageDisabled || isCanvas || (!isTeacherMode && activeSessionCode)) return;
+    const owner = offlineHistoryWriteRef.current;
+    if (!isHistoryLoaded || isStorageDisabled || isCanvas || (!isTeacherMode && activeSessionCode)) {
+        owner.sequence += 1;
+        setPendingSync(false);
+        return;
+    }
+    const sequence = owner.sequence + 1;
+    owner.sequence = sequence;
     setPendingSync(true);
-    const saveHistory = async () => {
+    const saveHistory = () => _alloQueueSequencedWrite(owner, sequence, async () => {
         const itemsToSave = history.slice(-MAX_OFFLINE_ITEMS);
         const serializeItems = (items, stripImages) => {
             return items.filter(item => item && typeof item === 'object').map(item => {
@@ -15607,54 +16325,78 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         try {
             const fullPayload = { items: serializeItems(itemsToSave, false) };
             await storageDB.set('allo_offline_history', fullPayload);
-            setLastSaved(new Date());
+            if (owner.sequence === sequence) setLastSaved(new Date());
         } catch (e) {
             if (e.name === 'QuotaExceededError' || e.message?.toLowerCase().includes('quota') || e.message?.toLowerCase().includes('exceeded')) {
+                if (owner.sequence !== sequence) return;
                 warnLog("Storage Quota Exceeded. Retrying with stripped assets...");
                 addToast(t('toasts.storage_full_text_only'), "warning");
                 try {
                     const strippedPayload = { items: serializeItems(itemsToSave, true) };
                     await storageDB.set('allo_offline_history', strippedPayload);
-                    setLastSaved(new Date());
+                    if (owner.sequence === sequence) setLastSaved(new Date());
                 } catch (retryErr) {
                     warnLog("Critical Storage Failure:", retryErr);
-                    addToast(t('toasts.storage_full_critical'), "error");
+                    if (owner.sequence === sequence) addToast(t('toasts.storage_full_critical'), "error");
                 }
             } else {
                 warnLog("IndexedDB Save Error:", e);
             }
-        } finally {
-            setPendingSync(false);
         }
-    };
+    }).finally(() => {
+        // A stale write must never clear the spinner for the newer snapshot
+        // queued behind it.
+        if (owner.sequence === sequence) setPendingSync(false);
+    });
     const timeoutId = setTimeout(saveHistory, 1000);
-    return () => clearTimeout(timeoutId);
+    return () => {
+        clearTimeout(timeoutId);
+        if (owner.sequence === sequence) owner.sequence += 1;
+    };
   }, [history, isHistoryLoaded, isOnline, isTeacherMode, activeSessionCode, lzLoaded]);
   useEffect(() => {
-      if (!lzLoaded) return;
-      const saveProfiles = async () => {
+      const owner = offlineProfileWriteRef.current;
+      if (!lzLoaded) {
+          owner.sequence += 1;
+          return;
+      }
+      const sequence = owner.sequence + 1;
+      owner.sequence = sequence;
+      const saveProfiles = () => _alloQueueSequencedWrite(owner, sequence, async () => {
           if (!window.idbKeyval) return;
           try {
               await storageDB.set('allo_offline_profiles', { items: profiles });
           } catch (e) {
               warnLog("Error saving profiles:", e);
           }
-      };
+      });
       const timeoutId = setTimeout(saveProfiles, 1000);
-      return () => clearTimeout(timeoutId);
+      return () => {
+          clearTimeout(timeoutId);
+          if (owner.sequence === sequence) owner.sequence += 1;
+      };
   }, [profiles, lzLoaded]);
   useEffect(() => {
-      if (!lzLoaded) return;
-      const saveUnits = async () => {
+      const owner = offlineUnitWriteRef.current;
+      if (!lzLoaded) {
+          owner.sequence += 1;
+          return;
+      }
+      const sequence = owner.sequence + 1;
+      owner.sequence = sequence;
+      const saveUnits = () => _alloQueueSequencedWrite(owner, sequence, async () => {
           if (!window.idbKeyval) return;
           try {
               await storageDB.set('allo_offline_units', { items: units });
           } catch (e) {
               warnLog("Error saving units:", e);
           }
-      };
+      });
       const timeoutId = setTimeout(saveUnits, 1000);
-      return () => clearTimeout(timeoutId);
+      return () => {
+          clearTimeout(timeoutId);
+          if (owner.sequence === sequence) owner.sequence += 1;
+      };
   }, [units, lzLoaded]);
   useEffect(() => {
       return () => {
@@ -15944,7 +16686,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       calculateLocalFluencyMetrics,
       applyGlobalCitations,
       chunkText,
-      guidedTourProgress: guidedMode ? { version: 1, guidedStep, selectedIds: guidedSelectedIds, completedSteps: guidedCompletedIds, skippedSteps: guidedSkippedIds, createdHistoryIds: guidedCreatedHistoryIds } : null,
+      guidedTourProgress: guidedMode ? { version: 1, guidedStep, selectedIds: guidedSelectedIds, completedSteps: guidedCompletedIds, skippedSteps: guidedSkippedIds, createdHistoryIds: guidedCreatedHistoryIds, deliveryEvidence: guidedDeliveryEvidence } : null,
       builderDraft: saveType === 'teacher' ? _getBuilderDraftForProject() : null,
       saveEncryptPassword,
       adventureConsistentCharacters,
@@ -16697,7 +17439,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const requestEndLiveSession = () => {
       if (!activeSessionCode) return;
       const mergedSessionData = sessionData ? { ...sessionData, quizState: { ...(sessionData.quizState || {}), allResponses: quizMergedAllResponses || {} } } : { roster: {}, quizState: { allResponses: quizMergedAllResponses || {} } };
-      const summary = buildRosterSessionSummary({ sessionCode: activeSessionCode, sessionData: mergedSessionData, rosterKey, mode: mbLive ? 'mailbox' : 'firebase' });
+      const summary = buildRosterSessionSummary({ sessionCode: activeSessionCode, sessionData: mergedSessionData, rosterKey, mode: mbLive ? 'mailbox' : 'firebase', activitySnapshots: liveActivitySnapshots });
       setEndSessionNote('');
       setEndSessionPreview({ summary, busy: false });
   };
@@ -16860,6 +17602,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       const _dirData = _objectives.length ? { body: md, objectives: _objectives, ...(d.softGate ? { softGate: true } : {}) } : md;
       const item = { id: generateUUID(), type: 'directions', title, timestamp: new Date().toISOString(), data: _dirData, ...(d.derivedFrom ? { meta: { derivedFrom: d.derivedFrom } } : {}) };
       setHistory(prev => [...(Array.isArray(prev) ? prev : []), item]);
+      if (guidedMode) {
+          markGuidedDeliveryEvidence('directionsSaved');
+          if (guidedActiveSteps[guidedStep]?.id === 'directions') markGuidedStepDone('directions');
+      }
       setMbDirectionsDraft(null);
       setShowDirectionsComposer(false);
       addToast(t('takehome.directions_added') || 'Directions added to the class pack — they sync to students automatically.', 'success');
@@ -17469,12 +18215,15 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       }
   }, [appId, buildAlloShareUrl, copyToClipboard, createSelfContainedHomeworkLink, homeworkExpiryDays, hostPackOnMailbox, mbConfig, generatedContent, history, openQrShareModal, sourceTopic, user?.uid, studentAiPolicyForShare]);
   const openStudentQrPreview = useCallback((url, label = 'student link') => {
-      if (!url || typeof window === 'undefined') return;
+      if (!url || typeof window === 'undefined') return false;
       const preview = window.open(url, '_blank');
       if (preview) {
           try { preview.opener = null; } catch (_) {}
           addToast('Student preview opened. Complete the check in the new tab, then return here.', 'success');
-      } else addToast('Allow pop-ups to test this ' + label + '.', 'info');
+          return true;
+      }
+      addToast('Allow pop-ups to test this ' + label + '.', 'info');
+      return false;
   }, [addToast]);
   const printQrSheet = useCallback((svg, heading, detail, modeLabel, fallbackCode = '') => {
       if (!svg || typeof window === 'undefined') {
@@ -17609,6 +18358,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // load, Hub/LMS intake, and startup restoration). Async work may only publish
   // while its captured generation is still current.
   const pdfDocumentSelectionEpochRef = useRef(0);
+  const pdfReattachPendingRef = useRef(null);
   const pdfProjectLoadEpochRef = useRef(0);
   const isPdfDocumentIntakeCurrent = React.useCallback(
     (epoch) => Number.isInteger(epoch) && epoch === pdfDocumentSelectionEpochRef.current,
@@ -17646,17 +18396,29 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const capturePdfHtmlCommitToken = React.useCallback(() => {
     const current = pdfFixResultRef.current;
     return {
+      documentEpoch: pdfDocumentSelectionEpochRef.current,
       revision: pdfHtmlRevisionRef.current,
       html: current && typeof current.accessibleHtml === 'string' ? current.accessibleHtml : null,
     };
   }, []);
+  const isPdfHtmlCommitTokenCurrent = React.useCallback((token) => {
+    const current = pdfFixResultRef.current;
+    return !!(token
+      && token.documentEpoch === pdfDocumentSelectionEpochRef.current
+      && token.revision === pdfHtmlRevisionRef.current
+      && current
+      && current.accessibleHtml === token.html);
+  }, []);
   const commitPdfFixResultIfCurrent = React.useCallback((token, updater) => {
-    if (!token || token.revision !== pdfHtmlRevisionRef.current) return false;
+    if (!token || token.documentEpoch !== pdfDocumentSelectionEpochRef.current || token.revision !== pdfHtmlRevisionRef.current) return false;
     const current = pdfFixResultRef.current;
     if (!current || current.accessibleHtml !== token.html) return false;
     let committed = false;
     setPdfFixResult((prev) => {
-      if (!prev || token.revision !== pdfHtmlRevisionRef.current || prev.accessibleHtml !== token.html) return prev;
+      if (!prev
+          || token.documentEpoch !== pdfDocumentSelectionEpochRef.current
+          || token.revision !== pdfHtmlRevisionRef.current
+          || prev.accessibleHtml !== token.html) return prev;
       const next = typeof updater === 'function' ? updater(prev) : updater;
       committed = !!next;
       return next || prev;
@@ -17692,6 +18454,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       try { pdfAutoContinueAbortRef.current = true; } catch (_) {}
       try { if (pdfAutoContinueAbortCtrlRef.current) pdfAutoContinueAbortCtrlRef.current.abort(); } catch (_) {}
       try { if (typeof window !== 'undefined') { window.__alloPdfRunGen = (window.__alloPdfRunGen || 0) + 1; window.__alloPdfAbortSignal = null; } } catch (_) {}
+      try { if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') window.dispatchEvent(new CustomEvent('alloflow:cancel-view-remediation-operations', { detail: { documentEpoch: pdfDocumentSelectionEpochRef.current, reason: 'watchdog' } })); } catch (_) {}
       setPdfFixLoading(false);
       setPdfFixStep('');
       if (typeof addToast === 'function') addToast(t('toasts.pdf_fix_appears_stuck_reset'), 'warning');
@@ -18019,6 +18782,45 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pdfFixResult, pdfFixLoading]);
 
+  const invalidatePdfDocumentOperations = () => {
+    const documentIntakeEpoch = ++pdfDocumentSelectionEpochRef.current;
+    invalidatePdfAuditRun();
+    try { pdfAutoContinueAbortRef.current = true; } catch (_) {}
+    try { if (pdfAutoContinueAbortCtrlRef.current) pdfAutoContinueAbortCtrlRef.current.abort(); } catch (_) {}
+    pdfAutoContinueAbortCtrlRef.current = null;
+    try { if (lmsAuditFetchControllerRef.current) lmsAuditFetchControllerRef.current.abort(); } catch (_) {}
+    lmsAuditFetchControllerRef.current = null;
+    try { if (pdfReattachPendingRef.current && pdfReattachPendingRef.current.finish) pdfReattachPendingRef.current.finish(null); } catch (_) {}
+    try { LargeFileHandler.cancel(); } catch (_) {}
+    try {
+      if (typeof window !== 'undefined') {
+        window.__alloPdfRunGen = (window.__alloPdfRunGen || 0) + 1;
+        window.__alloPdfBatchGen = (window.__alloPdfBatchGen || 0) + 1;
+        window.__alloPdfDocumentEpoch = documentIntakeEpoch;
+        if (typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') window.dispatchEvent(new CustomEvent('alloflow:cancel-view-remediation-operations', { detail: { documentEpoch: documentIntakeEpoch, reason: 'document-invalidated' } }));
+        window.__alloPdfAbortSignal = null;
+        if (window.__alloPdfBatchAbortCtrl) window.__alloPdfBatchAbortCtrl.abort();
+        if (window.__alloPdfAuxAbortCtrl) window.__alloPdfAuxAbortCtrl.abort();
+        if (window.__alloPdfFixAbortCtrl) window.__alloPdfFixAbortCtrl.abort();
+        window.__alloPdfFixAbortCtrl = null;
+        window.__alloflowCompareCropInsert = null;
+        window.__alloflowCompareGetTagged = null;
+        window.__alloflowCropDescribe = null;
+        window.__alloflowExtractedImages = [];
+        window.__alloPdfBatchAbortCtrl = null;
+        window.__alloPdfAuxAbortCtrl = null;
+      }
+    } catch (_) {}
+    setPdfAutoContinueRunning(false);
+    setPdfBatchProcessing(false);
+    setShowLargeFileModal(false);
+    setPendingLargeFile(null);
+    setIsLargeFileProcessing(false);
+    setLargeFileProgress(0);
+    setLargeFileTotalChunks(0);
+    setLargeFileStatus('');
+    return documentIntakeEpoch;
+  };
   const _closePdfAuditModal = () => {
     // Help-mode guard (2026-06-11, user report: pressing the floating ? then
     // interacting "took you out of the pipeline"). Whatever the click path,
@@ -18028,7 +18830,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       addToast(t('toasts.help_mode_close_blocked') || '❓ Help mode is on — click any control to learn about it. Press the yellow ✕ (right edge) to exit help mode first.', 'info');
       return;
     }
-    invalidatePdfAuditRun();
+    invalidatePdfDocumentOperations();
     setPdfFixLoading(false);
     setPdfFixStep('');
     setPendingPdfBase64(null);
@@ -18065,13 +18867,16 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     _closePdfAuditModal();
   };
   const startNewPdfAudit = () => {
-    const documentIntakeEpoch = ++pdfDocumentSelectionEpochRef.current;
-    invalidatePdfAuditRun();
+    cancelActiveProjectLoad();
+    cancelActiveFileIntakeOperations('new-pdf-audit');
+    invalidateLocalDataHydration();
+    const documentIntakeEpoch = invalidatePdfDocumentOperations();
     lastPdfAuditResultRef.current = null; // dropping the result — no re-entry pill for a cleared audit
     setPdfAuditResult(null);
     setPdfFixResult(null);
     setDiffChunks(null);
     setDiffSelection(null);
+    setApplyingRemarkup(false);
     setPdfFixLoading(false);
     // Also stop + clear any in-flight auto-continue loop, so a reset can never strand the
     // pdfAutoContinueRunning flag (a stranded flag leaves the results-panel buttons disabled).
@@ -18085,6 +18890,35 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     setPdfBatchMode(false);
     setPdfBatchQueue([]);
     setPdfBatchSummary(null);
+    setPdfBatchProcessing(false);
+    setPdfBatchCurrentIndex(-1);
+    setPdfBatchStep('');
+    setPdfPageRange(null);
+    setPdfMultiSession(null);
+    setPdfAuditTab('results');
+    setDiffViewOpen(false);
+    setPdfPreviewOpen(false);
+    setLiveChunkStream([]);
+    setExtractedImagesList([]);
+    selectedPreviewImgRef.current = null;
+    setLiveChunkSessionActive(false);
+    setLiveChunkExpanded({});
+    setLiveChunkRejected({});
+    setChunkResumePrompt(null);
+    setBoringPalettePrompt(false);
+    setChunkSaveFlash(false);
+    setFixIssuesList(null);
+    setExtractionData(null);
+    setFidelityResult(null);
+    setImageReinsertionReport(null);
+    setAutoRestoreSummary(null);
+    setShowLargeFileModal(false);
+    setPendingLargeFile(null);
+    setIsLargeFileProcessing(false);
+    setLargeFileProgress(0);
+    setLargeFileTotalChunks(0);
+    setLargeFileStatus('');
+    try { if (typeof window !== 'undefined') window.__lastIncompleteProject = null; } catch (_) {}
     setPdfWebMode(false);
     lastPdfBytesRef.current = null; // hard reset — drop the preserved original bytes too (new doc)
     setIsExtracting(false);
@@ -18092,24 +18926,52 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     return documentIntakeEpoch;
   };
   const ensurePdfBase64 = React.useCallback(() => {
-    return new Promise((resolve) => {
+    if (pendingPdfBase64) return Promise.resolve(pendingPdfBase64);
+    if (lastPdfBytesRef.current) { setPendingPdfBase64(lastPdfBytesRef.current); return Promise.resolve(lastPdfBytesRef.current); }
+    if (pdfReattachPendingRef.current) return pdfReattachPendingRef.current.promise;
+    let externalFinish = null;
+    let promiseSettled = false;
+    const promise = new Promise((resolve) => {
       const documentIntakeEpoch = pdfDocumentSelectionEpochRef.current;
       const intakeIsCurrent = () => isPdfDocumentIntakeCurrent(documentIntakeEpoch);
-      if (pendingPdfBase64) { resolve(pendingPdfBase64); return; }
-      // Restore bytes preserved across a soft modal-close (re-entry pill) so Compare / re-remediate
-      // show before/after automatically — only fall through to the re-attach picker when we truly
-      // have nothing (e.g. a project JSON restored in a fresh session, which omits PDF bytes).
-      if (lastPdfBytesRef.current) { setPendingPdfBase64(lastPdfBytesRef.current); resolve(lastPdfBytesRef.current); return; }
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = '.pdf,application/pdf';
       input.style.display = 'none';
       let settled = false;
-      const finish = (val) => { if (settled) return; settled = true; try { document.body.removeChild(input); } catch {} resolve(val); };
-      input.addEventListener('cancel', () => { addToast(t('toasts.re_attach_cancelled'), 'info'); finish(null); });
+      let timeoutId = null;
+      let focusListener = null;
+      let activeReader = null;
+      const finish = (val) => {
+        if (settled) return;
+        settled = true;
+        promiseSettled = true;
+        if (timeoutId) clearTimeout(timeoutId);
+        if (activeReader && activeReader.readyState === 1) try { activeReader.abort(); } catch (_) {}
+        if (focusListener) try { window.removeEventListener('focus', focusListener); } catch (_) {}
+        try { document.body.removeChild(input); } catch (_) {}
+        if (pdfReattachPendingRef.current && pdfReattachPendingRef.current.finish === finish) pdfReattachPendingRef.current = null;
+        resolve(val);
+      };
+      externalFinish = finish;
+      input.addEventListener('cancel', () => {
+        if (settled || !intakeIsCurrent()) { finish(null); return; }
+        addToast(t('toasts.re_attach_cancelled'), 'info');
+        finish(null);
+      });
       input.onchange = async (e) => {
+        if (settled || !intakeIsCurrent()) return;
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          if (!settled && intakeIsCurrent()) addToast(t('toasts.failed_read_pdf') + 'Document verification timed out. Please try again.', 'error');
+          finish(null);
+        }, 60000);
         const file = e.target.files?.[0];
         if (!file) { addToast(t('toasts.re_attach_cancelled'), 'info'); finish(null); return; }
+        if (file.size > 30 * 1024 * 1024) {
+          addToast(t('toasts.file_large') || 'PDF is too large (>30MB). Try splitting it into smaller sections.', 'error');
+          finish(null); return;
+        }
         if (pendingPdfFile && (pendingPdfFile.name || pendingPdfFile.size)) {
           const nameMismatch = !!pendingPdfFile.name && file.name !== pendingPdfFile.name;
           const sizeMismatch = Number.isFinite(pendingPdfFile.size) && pendingPdfFile.size > 0 && file.size !== pendingPdfFile.size;
@@ -18125,53 +18987,87 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         }
         try {
           const reader = new FileReader();
+          activeReader = reader;
           reader.onload = async () => {
-            if (!intakeIsCurrent()) { finish(null); return; }
+            if (settled || !intakeIsCurrent()) { finish(null); return; }
             const result = reader.result;
             const base64 = typeof result === 'string' && result.includes(',')
               ? result.split(',')[1]
               : String(result || '');
             if (!base64) { addToast(t('toasts.re_attach_failed_empty_file'), 'error'); finish(null); return; }
-            if (base64.slice(0, 5) !== 'JVBER') {
+            let reattachHeader = '';
+            try { reattachHeader = atob(base64.slice(0, 2048)); } catch (_) {}
+            if (!reattachHeader.includes('%PDF-')) {
               addToast(t('toasts.failed_read_pdf') + 'The selected file is not a valid PDF.', 'error');
               finish(null);
               return;
             }
-            const expectedDigest = pdfFixResultRef.current && pdfFixResultRef.current.documentDigest;
-            if (expectedDigest && _docPipeline && typeof _docPipeline.documentDigest === 'function') {
+            const expectedDigest = (pdfFixResultRef.current && pdfFixResultRef.current.documentDigest)
+              || (lastPdfAuditResultRef.current && lastPdfAuditResultRef.current.documentDigest)
+              || (pendingPdfFile && pendingPdfFile.documentDigest);
+            if (expectedDigest) {
               let actualDigest = null;
               try {
-                actualDigest = await _docPipeline.documentDigest(base64);
+                if (_docPipeline && typeof _docPipeline.documentDigest === 'function') {
+                  actualDigest = await _docPipeline.documentDigest(base64);
+                } else if (typeof crypto !== 'undefined' && crypto.subtle && typeof TextEncoder !== 'undefined') {
+                  const normalized = String(base64 || '').replace(/^data:[^,]*,/, '').replace(/\s+/g, '');
+                  const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(normalized));
+                  const hex = Array.from(new Uint8Array(hashBuffer)).map((byte) => byte.toString(16).padStart(2, '0')).join('');
+                  actualDigest = hex ? ('sha256:' + hex) : null;
+                } else {
+                  throw new Error('Document identity verification is unavailable in this browser.');
+                }
+                if (!actualDigest) throw new Error('Unable to verify document identity.');
               } catch (digestError) {
                 if (intakeIsCurrent()) addToast(t('toasts.failed_read_pdf') + (digestError?.message || 'Unable to verify document identity'), 'error');
                 finish(null);
                 return;
               }
-              if (!intakeIsCurrent()) { finish(null); return; }
-              if (actualDigest && actualDigest !== expectedDigest) {
+              if (settled || !intakeIsCurrent()) { finish(null); return; }
+              if (actualDigest !== expectedDigest) {
                 addToast(t('pdf_audit.reattach_digest_mismatch') || 'This PDF does not match the document used for this remediation. Select the original PDF to continue.', 'error');
                 finish(null);
                 return;
               }
             }
-            if (!intakeIsCurrent()) { finish(null); return; }
+            if (settled || !intakeIsCurrent()) { finish(null); return; }
             setPendingPdfBase64(base64);
-            setPendingPdfFile({ name: file.name, size: file.size });
+            setPendingPdfFile({ name: file.name, size: file.size, type: file.type || 'application/pdf', documentDigest: expectedDigest || null });
             addToast(t('toasts.pdf_re_attached_starting_remediation'), 'info');
             finish(base64);
           };
-          reader.onerror = () => { addToast(t('toasts.failed_read_pdf') + (reader.error?.message || 'unknown error'), 'error'); finish(null); };
-          reader.onabort = () => { if (intakeIsCurrent()) addToast(t('toasts.re_attach_cancelled'), 'info'); finish(null); };
+          reader.onerror = () => { if (!settled && intakeIsCurrent()) addToast(t('toasts.failed_read_pdf') + (reader.error?.message || 'unknown error'), 'error'); finish(null); };
+          reader.onabort = () => { if (!settled && intakeIsCurrent()) addToast(t('toasts.re_attach_cancelled'), 'info'); finish(null); };
           reader.readAsDataURL(file);
         } catch (err) {
-          addToast(t('toasts.failed_read_pdf') + (err?.message || 'unknown error'), 'error');
+          if (!settled && intakeIsCurrent()) addToast(t('toasts.failed_read_pdf') + (err?.message || 'unknown error'), 'error');
           finish(null);
         }
       };
       document.body.appendChild(input);
-      input.click();
+      const pickerOpenedAt = Date.now();
+      focusListener = () => {
+        setTimeout(() => {
+          if (!settled && Date.now() - pickerOpenedAt > 400 && !(input.files && input.files.length)) {
+            addToast(t('toasts.re_attach_cancelled'), 'info');
+            finish(null);
+          }
+        }, 250);
+      };
+      try { window.addEventListener('focus', focusListener); } catch (_) {}
+      timeoutId = setTimeout(() => {
+        if (!settled) addToast(t('toasts.re_attach_cancelled') || 'PDF selection timed out. Please try again.', 'info');
+        finish(null);
+      }, 30000);
+      try { input.click(); } catch (error) { addToast(t('toasts.failed_read_pdf') + (error?.message || 'Unable to open the file picker'), 'error'); finish(null); }
     });
+    if (!promiseSettled) pdfReattachPendingRef.current = { promise, finish: externalFinish };
+    return promise;
   }, [pendingPdfBase64, pendingPdfFile, addToast, t, _docPipeline, isPdfDocumentIntakeCurrent]);
+  React.useEffect(() => () => {
+    try { if (pdfReattachPendingRef.current && pdfReattachPendingRef.current.finish) pdfReattachPendingRef.current.finish(null); } catch (_) {}
+  }, []);
   const [pdfAutoSaveProject, setPdfAutoSaveProject] = useState(() => {
     try { const v = localStorage.getItem('alloflow_pdf_autosave_project'); return v === null ? true : v === 'true'; } catch { return true; }
   });
@@ -18182,6 +19078,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     let cancelled = false;
     if (!pdfAuditResult || !pendingPdfFile || !pendingPdfBase64 || !_docPipeline || !_docPipeline.documentDigest || !_docPipeline.multiSessionId || !_docPipeline.loadMultiSession) {
       setPdfMultiSession(null);
+      setPdfPageRange(null);
       return;
     }
     _docPipeline.documentDigest(pendingPdfBase64).then((digest) => {
@@ -18196,6 +19093,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     }).then((record) => {
       if (cancelled) return;
       setPdfMultiSession(record);
+      setPdfPageRange(null);
       if (record && record.ranges && record.ranges.length > 0) {
         const sorted = record.ranges.slice().sort((a, b) => (a.pages[0] || 0) - (b.pages[0] || 0));
         const lastEnd = sorted[sorted.length - 1].pages[1];
@@ -18206,7 +19104,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           setPdfPageRange({ start: nextStart, end: nextEnd });
         }
       }
-    }).catch(() => { if (!cancelled) setPdfMultiSession(null); });
+    }).catch(() => { if (!cancelled) { setPdfMultiSession(null); setPdfPageRange(null); } });
     return () => { cancelled = true; };
   }, [pdfAuditResult, pendingPdfFile, pendingPdfBase64]);
   const PDF_REGRESSION_TOLERANCE = 5;
@@ -18222,18 +19120,36 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     if (typeof axeScore !== 'number') return aiScore;
     return Math.min(aiScore, axeScore);
   };
-  const commitOrRevertPdfFix = (prev, candidate, extras, label) => {
+  const commitOrRevertPdfFix = (prev, candidate, extras, label, expectedOwner) => {
+    const ownerCurrent = () => !!(expectedOwner
+      && Number.isInteger(expectedOwner.documentEpoch)
+      && expectedOwner.documentEpoch === pdfDocumentSelectionEpochRef.current
+      && expectedOwner.htmlToken
+      && expectedOwner.htmlToken.documentEpoch === expectedOwner.documentEpoch
+      && prev && expectedOwner.htmlToken.html === prev.html);
+    if (!ownerCurrent()) return false;
+    const commitOwned = (updater) => ownerCurrent() && commitPdfFixResultIfCurrent(expectedOwner.htmlToken, updater);
     const newAi = candidate.ai?.score ?? null;
     const newAxe = candidate.axe?.score ?? null;
-    const newBlended = candidate.perfect ? 100 : blendAiAxe(newAi, newAxe);
-    const axeOnly = !candidate.perfect && newAi == null && typeof newAxe === 'number';
+    const newEqualAccessAudit = candidate.equalAccess || candidate.secondEngineAudit || null;
+    const newEqualAccess = newEqualAccessAudit?.score ?? null;
+    // A secondary action may never manufacture a perfect score from an AI/axe pair.
+    // The canonical verifier owns the three-engine minimum and exact-HTML binding.
+    const aiAxeScore = blendAiAxe(newAi, newAxe);
+    const newBlended = typeof newEqualAccess === 'number' && typeof aiAxeScore === 'number'
+      ? Math.min(aiAxeScore, newEqualAccess)
+      : aiAxeScore;
+    const candidateVerified = candidate.verificationState === 'complete'
+      && candidate.afterScoreVerified === true
+      && candidate.ai && candidate.axe && newEqualAccessAudit;
+    const axeOnly = newAi == null && typeof newAxe === 'number';
     // Regression baseline: an axe-only candidate must be compared against the
     // previous AXE score — a blend and an axe-only number aren't the same scale.
-    const prevAxe = prev.axeAudit?.score ?? null;
+    const prevAxe = prev.axe?.score ?? prev.axeAudit?.score ?? null;
     const prevScore = (axeOnly && prevAxe != null) ? prevAxe : prev.afterScore;
     const regressed = prevScore != null && newBlended != null && newBlended < prevScore - PDF_REGRESSION_TOLERANCE;
     if (regressed || newBlended == null) {
-      setPdfFixResult(p => ({ ...p, ...(extras?.preserveOnRevert || {}) }));
+      if (!commitOwned(p => ({ ...p, ...(extras?.preserveOnRevert || {}) }))) return false;
       addToast(
         newBlended == null
           ? (t('pdf_audit.audit_failed_kept', { label }) || `${label}: audit failed — kept previous version.`)
@@ -18242,19 +19158,27 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       );
       return false;
     }
-    if (axeOnly) {
+    const announceAxeOnlyCommit = () => {
       addToast(t('pdf_audit.axe_only_committed', { label }) || `${label}: AI verification unavailable — committed with the deterministic axe-core score only.`, 'info');
-    }
-    setPdfFixResult(p => ({
+    };
+    const committed = commitOwned(p => ({
       ...p,
-      accessibleHtml: candidate.html,
-      verificationAudit: candidate.ai,
-      axeAudit: candidate.axe,
-      afterScore: newBlended,
-      afterScoreProvenance: axeOnly ? 'axe-only' : (typeof newAxe === 'number' && newAi != null ? 'blended' : 'ai-only'),
-      htmlChars: candidate.chars,
       ...(extras?.commit || {}),
+      accessibleHtml: candidate.html,
+      verificationAudit: candidate.ai || null,
+      axeAudit: candidate.axe || null,
+      secondEngineAudit: newEqualAccessAudit,
+      afterScore: candidateVerified ? newBlended : null,
+      afterScoreVerified: !!candidateVerified,
+      afterScoreProvenance: candidateVerified ? 'canonical-three-engine-minimum' : 'verification-required',
+      verificationState: candidateVerified ? 'complete' : 'partial',
+      requiresManualReview: !candidateVerified,
+      verificationReasons: candidateVerified ? [] : ['secondary-action-requires-canonical-verification'],
+      verificationHtmlBinding: candidateVerified ? candidate.verificationHtmlBinding : null,
+      htmlChars: candidate.chars,
     }));
+    if (!committed) return false;
+    if (axeOnly) announceAxeOnlyCommit();
     return true;
   };
   const [liveChunkStream, setLiveChunkStream] = useState([]); // array of chunk event details
@@ -18271,20 +19195,23 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [autoRestoreSummary, setAutoRestoreSummary] = useState(null); // { restored, unplaceable, beforeFidelity, afterFidelity } — result of the last auto- or manual-restore pass
 
   useEffect(() => {
-    const onSessionStart = () => { setLiveChunkStream([]); setLiveChunkSessionActive(true); setLiveChunkExpanded({}); setLiveChunkRejected({}); setChunkResumePrompt(null); setTimeout(() => { const el = document.getElementById('live-remediation-panel'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300); };
-    const onResumeAvailable = (e) => { setChunkResumePrompt(e.detail); };
-    const onBoringPalette = () => { setBoringPalettePrompt(true); };
-    const onExtractionComplete = (e) => { setExtractionData(e.detail); setFidelityResult(null); setImageReinsertionReport(null); setAutoRestoreSummary(null); };
+    const eventIsCurrent = (e) => Number.isInteger(e && e.detail && e.detail.documentEpoch)
+      && e.detail.documentEpoch === pdfDocumentSelectionEpochRef.current;
+    const onSessionStart = (e) => { if (!eventIsCurrent(e)) return; const epoch = pdfDocumentSelectionEpochRef.current; setLiveChunkStream([]); setLiveChunkSessionActive(true); setLiveChunkExpanded({}); setLiveChunkRejected({}); setChunkResumePrompt(null); setTimeout(() => { if (epoch !== pdfDocumentSelectionEpochRef.current) return; const el = document.getElementById('live-remediation-panel'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300); };
+    const onResumeAvailable = (e) => { if (eventIsCurrent(e)) setChunkResumePrompt(e.detail); };
+    const onBoringPalette = (e) => { if (eventIsCurrent(e)) setBoringPalettePrompt(true); };
+    const onExtractionComplete = (e) => { if (!eventIsCurrent(e)) return; setExtractionData(e.detail); setFidelityResult(null); setImageReinsertionReport(null); setAutoRestoreSummary(null); };
     // Diff-viewer applies/reverts change the HTML the fidelity list was
     // computed against — clear it so a stale missing-words list isn't shown
     // (the fidelity panel's check button recomputes on demand).
-    const onFidelityStale = () => { setFidelityResult(null); setAutoRestoreSummary(null); };
-    const onFixIssuesDetected = (e) => { setFixIssuesList(e.detail); };
-    const onImageReinsertionReport = (e) => { setImageReinsertionReport(e.detail); };
-    const onChunkStart = (e) => { setLiveChunkStream(prev => { const idx = e.detail.index; if (prev.find(c => c.index === idx)) return prev; return [...prev, { ...e.detail, status: 'working' }]; }); };
-    const onChunkFixed = (e) => { setLiveChunkStream(prev => { const idx = e.detail.index; const existing = prev.find(c => c.index === idx); if (existing) { return prev.map(c => c.index === idx ? { ...e.detail, status: 'complete' } : c); } return [...prev, { ...e.detail, status: 'complete' }]; }); setChunkSaveFlash(true); setTimeout(() => setChunkSaveFlash(false), 2000); };
-    const onChunkRefixed = (e) => { setLiveChunkStream(prev => prev.map(c => c.index === e.detail.index ? { ...e.detail, status: 'complete' } : c)); };
-    const onSessionComplete = () => {
+    const onFidelityStale = (e) => { if (!eventIsCurrent(e)) return; setFidelityResult(null); setAutoRestoreSummary(null); };
+    const onFixIssuesDetected = (e) => { if (eventIsCurrent(e)) setFixIssuesList(e.detail); };
+    const onImageReinsertionReport = (e) => { if (eventIsCurrent(e)) setImageReinsertionReport(e.detail); };
+    const onChunkStart = (e) => { if (!eventIsCurrent(e)) return; setLiveChunkStream(prev => { const idx = e.detail.index; if (prev.find(c => c.index === idx)) return prev; return [...prev, { ...e.detail, status: 'working' }]; }); };
+    const onChunkFixed = (e) => { if (!eventIsCurrent(e)) return; const epoch = pdfDocumentSelectionEpochRef.current; setLiveChunkStream(prev => { const idx = e.detail.index; const existing = prev.find(c => c.index === idx); if (existing) { return prev.map(c => c.index === idx ? { ...e.detail, status: 'complete' } : c); } return [...prev, { ...e.detail, status: 'complete' }]; }); setChunkSaveFlash(true); setTimeout(() => { if (epoch === pdfDocumentSelectionEpochRef.current) setChunkSaveFlash(false); }, 2000); };
+    const onChunkRefixed = (e) => { if (eventIsCurrent(e)) setLiveChunkStream(prev => prev.map(c => c.index === e.detail.index ? { ...e.detail, status: 'complete' } : c)); };
+    const onSessionComplete = (e) => {
+      if (!eventIsCurrent(e)) return;
       setLiveChunkSessionActive(false);
       // Resolve any card still on 'working': a chunk that was throttle-deferred / failed never gets an
       // alloflow:chunk-fixed event, so without this it dangles on "Fixing…" AFTER the run finished — the
@@ -18467,6 +19394,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [extractedImagesList, setExtractedImagesList] = useState([]);
   useEffect(() => {
     const onExtracted = (e) => {
+      const eventEpoch = e && e.detail && e.detail.documentEpoch;
+      if (!Number.isInteger(eventEpoch) || eventEpoch !== pdfDocumentSelectionEpochRef.current) return;
+
       const images = (e && e.detail && Array.isArray(e.detail.images)) ? e.detail.images.filter(img => img && img.src) : [];
       setExtractedImagesList(images);
     };
@@ -18756,6 +19686,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [isLargeFileProcessing, setIsLargeFileProcessing] = useState(false);
   const fileInputRef = useRef(null);
   const projectFileInputRef = useRef(null);
+  useEffect(() => () => {
+    // The host is leaving; abort continuations without scheduling recovery
+    // lifecycle state updates against an unmounting component.
+    cancelActiveProjectLoad({ notifyLifecycle: false });
+    cancelActiveFileIntakeOperations('host-unmount');
+    invalidateLocalDataHydration();
+  }, []);
   const [outlineType, setOutlineType] = useState('Venn Diagram');
   const [outlineCustomInstructions, setOutlineCustomInstructions] = useState('');
   // Note-Taking Templates (Cornell Notes / Lab Report / Reading Response).
@@ -21798,6 +22735,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       setPendingPdfBase64,
       setPendingPdfFile,
       setPdfAuditResult,
+      setPdfAuditLoading,
       documentIntakeEpoch,
       isPdfDocumentIntakeCurrent,
       callGemini,
@@ -21809,13 +22747,14 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     if (!file) return;
     const documentIntakeEpoch = startNewPdfAudit();
     setIsExtracting(true);
-    setGenerationStep(t('status_steps.extracting_text'));
+    setPdfAuditLoading(true);
+    setGenerationStep(t('status_steps.extracting_text') || 'Preparing document intake...');
     const stableEvent = { target: { files: [file], value: '' }, currentTarget: { files: [file], value: '' } };
     try {
       let _m = window.AlloModules && window.AlloModules.MiscHandlers;
       if (!_m || typeof _m.handleFileUpload !== 'function') {
         try { window.__alloRetryFailedModules?.(); } catch (_) {}
-        for (let attempt = 0; attempt < 80 && isPdfDocumentIntakeCurrent(documentIntakeEpoch); attempt++) {
+        for (let attempt = 0; attempt < 300 && isPdfDocumentIntakeCurrent(documentIntakeEpoch); attempt++) {
           await new Promise((resolve) => setTimeout(resolve, 100));
           _m = window.AlloModules && window.AlloModules.MiscHandlers;
           if (_m && typeof _m.handleFileUpload === 'function') break;
@@ -21823,10 +22762,12 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       }
       if (!isPdfDocumentIntakeCurrent(documentIntakeEpoch)) return;
       if (!_m || typeof _m.handleFileUpload !== 'function') throw new Error('The file intake module did not finish loading.');
+      setGenerationStep(t('status_steps.extracting_text'));
       return await _m.handleFileUpload(stableEvent, _alloMiscHandlersDeps(documentIntakeEpoch));
     } catch (err) {
       if (!isPdfDocumentIntakeCurrent(documentIntakeEpoch)) return;
       warnLog('[handleFileUpload] failed:', err?.message || err);
+      setPdfAuditLoading(false);
       setIsExtracting(false);
       setGenerationStep('');
       setError((t('toasts.file_process_error') || 'Could not process this file.') + ' ' + (err?.message || ''));
@@ -23270,6 +24211,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     studentNickname, isTeacherMode, generatedContent,
     currentUiLanguage, isIndependentMode, isParentMode,
     pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
+    pdfDocumentEpoch: pdfDocumentSelectionEpochRef.current,
     pdfAutoSaveProject,
     pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfTargetScore, pdfOcrLanguage,
     pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
@@ -23290,8 +24232,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   var _docPipeline = _createDocPipeline
     ? _createDocPipeline({ callGemini, callGeminiVision, callImagen, addToast, t, isRtlLang, updateExportPreview: function() { if (typeof updateExportPreview === 'function') updateExportPreview(); }, getDefaultTitle: function(type) { return typeof getDefaultTitle === 'function' ? getDefaultTitle(type) : ''; } })
     : null;
-  const runPdfAccessibilityAudit = _docPipeline ? _docPipeline.runPdfAccessibilityAudit : async () => { addToast(t('toasts.doc_pipeline_loading'), 'info'); };
-  const auditOutputAccessibility = _docPipeline ? _docPipeline.auditOutputAccessibility : async () => {};
+  const _pipelineUnavailable = async () => {
+    const error = new Error(t('toasts.doc_pipeline_loading') || 'The document pipeline is still loading. Please retry in a moment.');
+    error.code = 'doc-pipeline-unavailable';
+    addToast(error.message, 'warning');
+    throw error;
+  };
+  const runPdfAccessibilityAudit = _docPipeline ? _docPipeline.runPdfAccessibilityAudit : _pipelineUnavailable;
+  const auditOutputAccessibility = _docPipeline ? _docPipeline.auditOutputAccessibility : _pipelineUnavailable;
   // Recompute the Issue-Resolution lists (Resolved/Persisted/Newly-Introduced) after each follow-up
   // round so fixed issues drop off instead of going stale. No-op fallback returns the prior object.
   const recomputeIssueResolution = (_docPipeline && _docPipeline.recomputeIssueResolution) ? _docPipeline.recomputeIssueResolution : (prev) => (prev || null);
@@ -23781,6 +24729,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       version: 1,
       savedAt: new Date().toISOString(),
       fileName: pendingPdfFile?.name || 'document.pdf',
+      fileSize: pendingPdfFile?.size || 0,
       documentDigest: cur.documentDigest || null,
       accessibleHtml: cur.accessibleHtml,
       beforeScore: cur.beforeScore,
@@ -23883,7 +24832,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     }
   }, [pendingPdfFile, pdfMultiSession, addToast, pdfAuditorCount, pdfPolishPasses, pdfAutoFixPasses, pdfTargetScore]);
   saveProjectToFileRef.current = saveProjectToFile;
-  const _rawFixAndVerifyPdf = _docPipeline ? _docPipeline.fixAndVerifyPdf : async () => {};
+  const _rawFixAndVerifyPdf = _docPipeline ? _docPipeline.fixAndVerifyPdf : _pipelineUnavailable;
   // Reliability telemetry (2026-06-13): wrap the pipeline so a FAILED run is
   // recorded in the run-history too — success rows are written by the
   // pdfFixResult effect, so without this the history (and its CSV) was
@@ -23965,8 +24914,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const restoreSentencesDeterministic = _docPipeline ? _docPipeline.restoreSentencesDeterministic : (h) => ({ html: h, stillMissing: [], restoredViaSentence: [] });
   const detectAndHandleDuplicates = _docPipeline ? _docPipeline.detectAndHandleDuplicates : (h, _s) => ({ html: h, autoRemoved: [], highlighted: [] });
   const generateCustomExportStyle = _docPipeline ? _docPipeline.generateCustomExportStyle : async () => {};
-  const runPdfBatchRemediation = _docPipeline ? _docPipeline.runPdfBatchRemediation : async () => {};
-  const proceedWithPdfTransform = _docPipeline ? _docPipeline.proceedWithPdfTransform : async () => {};
+  const runPdfBatchRemediation = _docPipeline ? _docPipeline.runPdfBatchRemediation : _pipelineUnavailable;
+  const proceedWithPdfTransform = _docPipeline ? _docPipeline.proceedWithPdfTransform : _pipelineUnavailable;
   const parseAuditJson = _docPipeline ? _docPipeline.parseAuditJson : () => ({});
   const parseMarkdownToHTML = _docPipeline ? _docPipeline.parseMarkdownToHTML : (t) => t || '';
   const generateResourceHTML = _docPipeline ? _docPipeline.generateResourceHTML : () => '';
@@ -23987,23 +24936,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       });
   };
   const _getPrivatePersonaArtifactStorage = async () => {
-      if (!window.__alloDeviceStoragePromise) {
-          window.__alloDeviceStoragePromise = window.alloDeviceStorage
-              ? Promise.resolve(window.alloDeviceStorage)
-              : new Promise((resolve, reject) => {
-                  const script = document.createElement('script');
-                  script.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds1';
-                  script.onload = () => window.alloDeviceStorage
-                      ? resolve(window.alloDeviceStorage)
-                      : reject(new Error('Device storage is unavailable.'));
-                  script.onerror = () => reject(new Error('Device storage failed to load.'));
-                  document.head.appendChild(script);
-              });
-      }
-      const storage = await window.__alloDeviceStoragePromise;
-      if (!storage || typeof storage.ready !== 'function') throw new Error('Device storage is unavailable.');
-      await storage.ready();
-      return storage;
+      return _alloGetCanvasDeviceStorage();
   };
   _exportLiveRef.current = {
       history, sourceTopic, gradeLevel, generatedContent, studentResponses,
@@ -24935,7 +25868,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       return;
     }
     const _m = window.AlloModules && window.AlloModules.PhaseOHandlers;
-    if (_m && typeof _m.startClassSession === "function") return _m.startClassSession({ ..._alloPhaseOHandlersDeps(), user: sessionUser });
+    if (_m && typeof _m.startClassSession === "function") {
+      const result = await _m.startClassSession({ ..._alloPhaseOHandlersDeps(), user: sessionUser });
+      if (result === true) completeGuidedDelivery('liveStarted');
+      return result;
+    }
     throw new Error("[startClassSession] PhaseOHandlers module not loaded - reload the page");
   };
   const toggleSessionMode = async () => {
@@ -25447,21 +26384,33 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       return cleanDraft ? await _packBuilderProjectDraft(cleanDraft, signature) : null;
     } catch (_) { return null; }
   };
-  const _restoreBuilderDraftFromProject = async (candidate, loadedHistory) => {
+  const _restoreBuilderDraftFromProject = async (candidate, loadedHistory, ownership = null) => {
+    const restoreIsCurrent = () => {
+      if (ownership && ownership.signal && ownership.signal.aborted) return false;
+      if (ownership && typeof ownership.isCurrent === 'function') {
+        try { return ownership.isCurrent() === true; } catch (_) { return false; }
+      }
+      return true;
+    };
     try {
+      if (!restoreIsCurrent()) return false;
       window.__alloBuilderEditedPack = null;
-      if (candidate == null) return;
+      if (candidate == null) return true;
       const signature = _getBuilderHistorySignature(loadedHistory);
       const unpackedHtml = await _unpackBuilderProjectDraft(candidate, signature);
+      if (!restoreIsCurrent()) return false;
       const cleanDraft = unpackedHtml ? _sanitizeBuilderProjectDraft(unpackedHtml, signature) : null;
       if (!cleanDraft) {
         addToast(t('toasts.builder_draft_skipped') || 'A saved Document Builder draft was not restored because it was stale or unsafe.', 'info');
-        return;
+        return false;
       }
       window.__alloBuilderEditedPack = { ...cleanDraft, at: Date.now(), restoredFromProject: true, storedVersion: candidate.version };
       addToast(t('toasts.builder_draft_restored') || 'Document Builder edits were restored with this project.', 'success');
+      return true;
     } catch (_) {
+      if (!restoreIsCurrent()) return false;
       try { window.__alloBuilderEditedPack = null; } catch (_) {}
+      return false;
     }
   };
 
@@ -25497,6 +26446,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   };
 
   const clearCanvasWorkspaceState = () => {
+      cancelActiveProjectLoad();
+      cancelActiveFileIntakeOperations('canvas-workspace-clear');
+      invalidateLocalDataHydration();
       try { window.__alloBuilderEditedPack = null; } catch (_) {}
       setHistory([]);
       setGeneratedContent(null);
@@ -25560,7 +26512,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   selectedIds: guidedSelectedIds,
                   completedIds: guidedCompletedIds,
                   skippedIds: guidedSkippedIds,
-                  createdHistoryIds: guidedCreatedHistoryIds
+                  createdHistoryIds: guidedCreatedHistoryIds,
+                  deliveryEvidence: guidedDeliveryEvidence
               },
               lessonSettings: {
                   gradeLevel,
@@ -25680,6 +26633,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           setGuidedCompletedIds(normalizedGuided.completedSteps);
           setGuidedSkippedIds(normalizedGuided.skippedSteps);
           setGuidedCreatedHistoryIds(normalizedGuided.createdHistoryIds);
+          setGuidedDeliveryEvidence(normalizedGuided.deliveryEvidence);
           const projectState = workspace.projectState || {};
           setStudentResponses(projectState.responses && typeof projectState.responses === 'object' ? projectState.responses : {});
           setStudentProjectSettings(_alloNormalizeStudentProjectSettings(projectState.studentProjectSettings));
@@ -26048,7 +27002,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       adventureCustomInstructions, personaCustomInstructions, useEmojis, keepCitations, includeCharts,
       dokLevel, targetStandards, standardInputValue, standardMode, selectedLanguages, leveledTextLanguage,
       sourceTone, sourceLevel, sourceVocabulary, sourceLength, sourceCustomInstructions, resourceCount,
-      fullPackTargetGroup, studentProjectSettings, guidedMode, guidedStep, guidedSelectedIds, guidedCompletedIds, guidedSkippedIds, guidedCreatedHistoryIds, studentResponses,
+      fullPackTargetGroup, studentProjectSettings, guidedMode, guidedStep, guidedSelectedIds, guidedCompletedIds, guidedSkippedIds, guidedCreatedHistoryIds, guidedDeliveryEvidence, studentResponses,
       studentProgressLog, stickers, wordSoundsHistory, wordSoundsFamilies, wordSoundsAudioLibrary,
       wordSoundsBadges, phonemeMastery, wordSoundsDailyProgress, wordSoundsConfusionPatterns,
       wordSoundsScore, canvasRecoveryRevision
@@ -26213,6 +27167,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     addToast(t('export_status.html_success'), 'success');
   };
   const handleClearHistory = () => {
+    cancelActiveProjectLoad();
+    cancelActiveFileIntakeOperations('workspace-clear');
+    invalidateLocalDataHydration();
     setHistory([]);
     setGeneratedContent(null);
     setActiveView('input');
@@ -26412,6 +27369,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         setGuidedCompletedIds,
         setGuidedSkippedIds,
         setGuidedCreatedHistoryIds,
+        setGuidedDeliveryEvidence,
         guidedStepIds: GUIDED_STEP_IDS,
         setStudentProjectSettings,
         setIsIndependentMode,
@@ -26480,6 +27438,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
             setImportedConceptMastery(prev => ({ ...prev, [key]: { attempts: m.attempts, nickname: m.nickname || null, savedAt: m.savedAt || null } }));
         },
         onProjectLoadStart: () => {
+            invalidateLocalDataHydration();
             if (!isCanvas) return;
             if (canvasRecoveryMutationInProgressRef.current) {
                 throw new Error('Another saved-work operation is still running.');
@@ -26572,13 +27531,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
       return true;
   };
-  const handleRestoreView = (item) => {
+  const handleRestoreView = (item, options = {}) => {
       // Reading Library book pinned to the lesson (2026-07-05): open the reader
       // on the saved book. Surface-opener — early return, no activeView swap.
       if (item && item.type === 'readingBook' && item.data && item.data.slug) {
           setPendingReadingBookSlug(item.data.slug);
           setIsReadingLibraryOpen(true);
-          _alloFollowResourceLive(item);
+          if (!options.suppressLiveFollow) _alloFollowResourceLive(item);
           return;
       }
       // Phase 2 — DA-generated math manipulative resource. Open the STEM Lab to
@@ -26595,7 +27554,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           setShowStemLab(true);
           setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id });
           // Teacher-mode session push so DA-generated manipulatives appear on student devices.
-          _alloFollowResourceLive(item);
+          if (!options.suppressLiveFollow) _alloFollowResourceLive(item);
           return; // do NOT fall through to the default activeView swap
       }
       if (item && item.type === 'video-ref') {
@@ -26706,7 +27665,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       if (item.type === 'litlab-config' || item.type === 'litlab-submission') {
           setShowLitLab(true);
       }
-      _alloFollowResourceLive(item, { blockedToast: t('adventure.toasts.teacher_sync_warning') });
+      if (!options.suppressLiveFollow) _alloFollowResourceLive(item, { blockedToast: t('adventure.toasts.teacher_sync_warning') });
   };
   useEffect(() => {
       if (!pendingQrAssignmentResource || isTeacherMode) return;
@@ -28977,6 +29936,20 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       : -1;
     const latestResumableWork = (Array.isArray(history) ? history.slice().reverse() : []).find((item) => item && item.id && item.type && (commandAudience !== 'student' || !TEACHER_ONLY_TYPES.includes(item.type))) || null;
     const latestStudentPreviewShare = (qrShareModal && qrShareModal.url) ? qrShareModal : ((Array.isArray(recentQrShares) && recentQrShares.find((share) => share && share.url)) || null);
+    const createGuidedHomeworkShare = async () => {
+      const share = await createHomeworkAssignmentLink();
+      if (share) completeGuidedDelivery('shareCreated');
+      return share;
+    };
+    const previewGuidedStudentAssignment = () => {
+      if (!latestStudentPreviewShare) {
+        addToast('Create a homework or mailbox link first, then test it as a student.', 'info');
+        return false;
+      }
+      const opened = openStudentQrPreview(latestStudentPreviewShare.url, 'homework link as a student');
+      if (opened) completeGuidedDelivery('studentPreviewed');
+      return opened;
+    };
     const ctx = {
       t, addToast, callGemini, commandAudience,
       setShowEducatorHub, setShowLearningHub, openExportPreview, setShowWizard,
@@ -29142,6 +30115,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       editAssignmentDirections: () => setShowDirectionsComposer(true),
       openAssessmentBuilder: () => setShowAssessmentBuilder(true),
       openUdlGuide: () => setShowUDLGuide(true),
+      openCommandBlueprintLibrary: () => {
+        try { setIsBotVisible(true); } catch (_) {}
+        setShowUDLGuide(true);
+        setTimeout(() => { try { handleSendUDLMessage('__allo_plan_library'); } catch (_) {} }, 0);
+      },
       canGenerateCurrentRubric: rubricActivityIndex >= 0,
       generateCurrentRubric: () => rubricActivityIndex >= 0 ? handleGenerateBrainstormRubric(rubricActivityIndex) : Promise.resolve(false),
       canShareAssignment: getAssignmentMapItems().length > 0 || !!(generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type)),
@@ -29155,7 +30133,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       resumeLatestWork: () => { if (latestResumableWork) handleRestoreView(latestResumableWork); return latestResumableWork; },
       // Pipeline-aware commands (guarded by `when` in the registry)
       pipelineOpen: !!pdfFixResult,
-      getPipelineScore: () => pdfFixResult ? { before: (pdfFixResult.beforeScore != null ? pdfFixResult.beforeScore : null), after: (pdfFixResult.afterScore || 0), target: pdfTargetScore } : null,
+      getPipelineScore: () => pdfFixResult ? { before: (Number.isFinite(pdfFixResult.beforeScore) ? pdfFixResult.beforeScore : null), after: (Number.isFinite(pdfFixResult.afterScore) ? pdfFixResult.afterScore : null), target: pdfTargetScore } : null,
       getRemainingIssues: () => (pdfFixResult && pdfFixResult.verificationAudit && Array.isArray(pdfFixResult.verificationAudit.issues)) ? pdfFixResult.verificationAudit.issues : [],
       jumpToPipelineSection: (id) => { try { const el = document.getElementById(id); if (!el) return false; if (el.tagName === 'DETAILS') el.open = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return true; } catch (_) { return false; } },
       // Voice loop (opt-in only; singleton lives on window so an old
@@ -31249,11 +32227,39 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       });
     throw new Error("[handleGenerateTermEtymology] GlossaryHelpers module not loaded - reload the page");
   };
-  const handleGenerateConceptItem = useCallback(async (term, categories, targetCategoryId = null) => {
+  const csDocumentId = generatedContent
+      && generatedContent.type === 'concept_sort'
+      && generatedContent.id != null
+      ? String(generatedContent.id)
+      : '';
+  const csLiveDocumentIdRef = useRef(csDocumentId);
+  csLiveDocumentIdRef.current = csDocumentId;
+  const csAsyncOwnerRef = useRef({ generation: 0, identity: '', controller: null });
+  const csBeginAsyncRun = useCallback(() => {
+      const documentId = csLiveDocumentIdRef.current;
+      if (!documentId) return null;
+      return _alloBeginOwnedAsync(csAsyncOwnerRef, documentId);
+  }, []);
+  const csAsyncRunIsCurrent = useCallback((token) => {
+      return _alloOwnedAsyncIsCurrent(csAsyncOwnerRef, token, csLiveDocumentIdRef.current);
+  }, []);
+  const csInvalidateAsyncRun = useCallback(() => {
+      _alloInvalidateOwnedAsync(csAsyncOwnerRef);
+      setCsBusyId(null);
+  }, []);
+  useEffect(() => {
+      return () => {
+          const owner = csAsyncOwnerRef.current;
+          if (owner && owner.identity === csDocumentId) _alloInvalidateOwnedAsync(csAsyncOwnerRef);
+      };
+  }, [csDocumentId]);
+  const handleGenerateConceptItem = useCallback(async (term, categories, targetCategoryId = null, runGuard = null) => {
       if (!term || !categories || categories.length === 0) return null;
+      const stillCurrent = () => !runGuard || runGuard();
       try {
           let categoryId;
           let content;
+              if (!stillCurrent()) return null;
           if (targetCategoryId) {
               // Caller already knows the category (e.g. csAddItem when the user
               // clicks "+ Add" inside a specific category). Skip the AI
@@ -31280,6 +32286,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               const categoryLabels = categories.map(c => `${c.id}: "${c.label}"`).join(', ');
               const prompt = `
                 Task: Classify the educational term "${term}" into exactly one of the provided categories.
+              if (!stillCurrent()) return null;
                 Categories: [${categoryLabels}]
                 Target Audience: ${gradeLevel} students.
                 Instructions:
@@ -31303,6 +32310,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               }
               if (!classification.categoryId) throw new Error("Failed to classify");
               categoryId = classification.categoryId;
+                  if (!stillCurrent()) return null;
               content = classification.content;
           }
           const newWordCount = String(content || '').trim().split(/\s+/).filter(Boolean).length;
@@ -31310,13 +32318,16 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               conceptImageMode === 'always' ||
               (conceptImageMode === 'auto' && newWordCount <= 6);
           let imageUrl = null;
+                              if (!stillCurrent()) return null;
           if (shouldGenerateImage) {
               try {
                   const styleInstruction = conceptSortImageStyle.trim() ? `Style: ${conceptSortImageStyle}.` : 'Educational style.';
+                          if (!stillCurrent()) return null;
                   const imgPrompt = `Simple, clear vector icon or illustration of: "${content}". White background. ${styleInstruction} No text.`;
                   imageUrl = await callImagen(imgPrompt);
                   // Auto-strip pass: same chain as csRegenerateItemImage. Best-effort
                   // — if the strip fails the un-stripped image is still returned.
+                  if (!stillCurrent()) return null;
                   if (imageUrl && conceptSortAutoRemoveWords && typeof callGeminiImageEdit === 'function') {
                       try {
                           const rawB64 = String(imageUrl).split(',')[1];
@@ -31327,6 +32338,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                       } catch (stripErr) {
                           warnLog('handleGenerateConceptItem auto-strip failed (using un-stripped image)', stripErr);
                       }
+          if (!stillCurrent()) return null;
                   }
               } catch (imgErr) {
                   warnLog("Added-item image gen failed", imgErr);
@@ -31343,10 +32355,14 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           addToast(t('toasts.categorize_failed'), "error");
           return null;
       }
-  }, [gradeLevel, callGemini, callImagen, conceptImageMode, conceptSortImageStyle, conceptSortAutoRemoveWords]);
-  const csUpdateData = useCallback((mutator) => {
+  }, [gradeLevel, callGemini, callImagen, callGeminiImageEdit, conceptImageMode, conceptSortImageStyle, conceptSortAutoRemoveWords, addToast, t]);
+  const csUpdateData = useCallback((mutator, expectedDocumentId = null) => {
       setGeneratedContent(prev => {
           if (!prev || !prev.data) return prev;
+          if (expectedDocumentId !== null) {
+              const actualDocumentId = prev.type === 'concept_sort' && prev.id != null ? String(prev.id) : '';
+              if (actualDocumentId !== String(expectedDocumentId)) return prev;
+          }
           const updated = Object.assign({}, prev, { data: mutator(prev.data) });
           // Mirror the edit into history so save/load and page reload retain it.
           // Every other generated-item editor in this file pairs setGeneratedContent
@@ -31356,6 +32372,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       });
   }, [setHistory]);
   const csDeleteItem = useCallback((itemId) => {
+      csInvalidateAsyncRun();
       csUpdateData((data) => Object.assign({}, data, {
           items: (data.items || []).filter(i => i.id !== itemId)
       }));
@@ -31363,11 +32380,13 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
   const csUpdateItemText = useCallback((itemId, newText) => {
       const clean = String(newText || '').trim();
       if (!clean) return;
+      csInvalidateAsyncRun();
       csUpdateData((data) => Object.assign({}, data, {
           items: (data.items || []).map(i => i.id === itemId ? Object.assign({}, i, { content: clean }) : i)
       }));
   }, [csUpdateData]);
   const csMoveItem = useCallback((itemId, newCategoryId) => {
+      csInvalidateAsyncRun();
       csUpdateData((data) => Object.assign({}, data, {
           items: (data.items || []).map(i => i.id === itemId ? Object.assign({}, i, { categoryId: newCategoryId }) : i)
       }));
@@ -31375,48 +32394,55 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
   const csUpdateCategoryLabel = useCallback((categoryId, newLabel) => {
       const clean = String(newLabel || '').trim();
       if (!clean) return;
+      csInvalidateAsyncRun();
       csUpdateData((data) => Object.assign({}, data, {
           categories: (data.categories || []).map(c => c.id === categoryId ? Object.assign({}, c, { label: clean }) : c)
       }));
   }, [csUpdateData]);
   const csRegenerateItem = useCallback(async (item, categories) => {
       if (!item || !item.id) return;
+      const run = csBeginAsyncRun();
+      if (!run) return;
       setCsBusyId(item.id);
       try {
           // Pass the existing categoryId so the AI doesn't silently teleport
           // the item to a different bucket on regenerate. Teachers who manually
           // moved an item expect "regenerate" to refresh text+image, not
           // re-classify. (Bonus: this also skips the classification round-trip.)
-          const refreshed = await handleGenerateConceptItem(item.content, categories, item.categoryId);
-          if (refreshed) {
+          const refreshed = await handleGenerateConceptItem(item.content, categories, item.categoryId, () => csAsyncRunIsCurrent(run));
+          if (refreshed && csAsyncRunIsCurrent(run)) {
               const merged = Object.assign({}, refreshed, { id: item.id, categoryId: item.categoryId });
               csUpdateData((data) => Object.assign({}, data, {
                   items: (data.items || []).map(i => i.id === item.id ? merged : i)
-              }));
+              }), run.identity);
           }
       } finally {
-          setCsBusyId(null);
+          if (csAsyncRunIsCurrent(run)) setCsBusyId(null);
       }
-  }, [handleGenerateConceptItem, csUpdateData]);
+  }, [handleGenerateConceptItem, csUpdateData, csBeginAsyncRun, csAsyncRunIsCurrent]);
   const csAddItem = useCallback(async (categoryId, term, categories) => {
       if (!term || !term.trim()) return;
+      const run = csBeginAsyncRun();
+      if (!run) return;
       setCsBusyId('__adding__');
       try {
           // Pass the user's chosen categoryId so handleGenerateConceptItem skips
           // the AI classification round-trip. The teacher already picked the
           // bucket via the per-category "+ Add" button — no need to ask Gemini.
-          const created = await handleGenerateConceptItem(term.trim(), categories, categoryId);
-          if (created) {
+          const created = await handleGenerateConceptItem(term.trim(), categories, categoryId, () => csAsyncRunIsCurrent(run));
+          if (created && csAsyncRunIsCurrent(run)) {
               csUpdateData((data) => Object.assign({}, data, {
                   items: [...(data.items || []), created]
-              }));
+              }), run.identity);
           }
       } finally {
-          setCsBusyId(null);
-          setCsAddingCatId(null);
-          setCsAddingText('');
+          if (csAsyncRunIsCurrent(run)) {
+              setCsBusyId(null);
+              setCsAddingCatId(null);
+              setCsAddingText('');
+          }
       }
-  }, [handleGenerateConceptItem, csUpdateData]);
+  }, [handleGenerateConceptItem, csUpdateData, csBeginAsyncRun, csAsyncRunIsCurrent]);
   // Image-only operations on existing items: regenerate the visual without
   // re-classifying or rewriting the term, upload a custom image, or clear the
   // image. Lighter-weight than csRegenerateItem (which re-runs classification
@@ -31424,12 +32450,15 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
   // just one Imagen call, not Gemini-classify-then-Imagen.
   const csRegenerateItemImage = useCallback(async (item) => {
       if (!item || !item.id || typeof callImagen !== 'function') return;
+      const run = csBeginAsyncRun();
+      if (!run) return;
       setCsBusyId(item.id);
       try {
           const styleInstruction = (conceptSortImageStyle || '').trim() ? `Style: ${conceptSortImageStyle}.` : 'Educational style.';
           const imgPrompt = `Simple, clear vector icon or illustration of: "${item.content}". White background. ${styleInstruction} No text.`;
           let imageUrl = await callImagen(imgPrompt);
           // Auto-strip pass: when toggle ON and we got an image back, run a single
+          if (!csAsyncRunIsCurrent(run)) return;
           // image-to-image edit to remove any text Imagen ignored. Best-effort —
           // if the strip fails the un-stripped image is still saved.
           if (imageUrl && conceptSortAutoRemoveWords && typeof callGeminiImageEdit === 'function') {
@@ -31438,24 +32467,27 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   if (rawB64) {
                       const stripped = await callGeminiImageEdit('Remove all text, labels, letters, and words from the image. Keep the illustration clean.', rawB64);
                       if (stripped) imageUrl = stripped;
+                      if (!csAsyncRunIsCurrent(run)) return;
                   }
               } catch (stripErr) {
                   warnLog('csRegenerateItemImage auto-strip failed (using un-stripped image)', stripErr);
+                  if (!csAsyncRunIsCurrent(run)) return;
               }
           }
           // callImagen and callGeminiImageEdit both throw on failure; the catch
           // below handles that. No need for an unreachable else branch here.
           csUpdateData((data) => Object.assign({}, data, {
               items: (data.items || []).map(i => i.id === item.id ? Object.assign({}, i, { image: imageUrl }) : i)
-          }));
+          }), run.identity);
           if (typeof addToast === 'function') addToast(t('concept_sort.actions.image_regenerated') || 'Image regenerated.', 'success');
       } catch (e) {
           warnLog('csRegenerateItemImage failed', e);
           if (typeof addToast === 'function') addToast(t('concept_sort.actions.image_regen_failed') || 'Image regeneration failed. Try again or upload your own.', 'error');
+          if (!csAsyncRunIsCurrent(run)) return;
       } finally {
-          setCsBusyId(null);
+          if (csAsyncRunIsCurrent(run)) setCsBusyId(null);
       }
-  }, [callImagen, conceptSortImageStyle, conceptSortAutoRemoveWords, csUpdateData, addToast, t]);
+  }, [callImagen, conceptSortImageStyle, conceptSortAutoRemoveWords, csUpdateData, addToast, t, csBeginAsyncRun, csAsyncRunIsCurrent]);
   // Image-to-image refinement (mirrors handleRefineGlossaryImage pattern).
   // Two call signatures: (itemId) reads the prompt from csRefinementInputs[itemId];
   // (itemId, instructionOverride) uses the literal — used by the one-click
@@ -31470,6 +32502,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       }
       const instruction = instructionOverride || (csRefinementInputs[itemId] || '').trim();
       if (!instruction) return;
+      const run = csBeginAsyncRun();
+      if (!run) return;
       setCsBusyId(itemId);
       if (typeof addToast === 'function') addToast(t('concept_sort.actions.refining_image') || 'Refining image...', 'info');
       try {
@@ -31477,22 +32511,24 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           if (!rawBase64) throw new Error('Image not in base64 dataURL form');
           const refinementPrompt = `Edit this concept-sort card icon. Instruction: ${instruction}. Maintain the simple, flat vector art style. White background.`;
           const newImageUrl = await callGeminiImageEdit(refinementPrompt, rawBase64);
+          if (!csAsyncRunIsCurrent(run)) return;
           // callGeminiImageEdit throws on failure rather than returning falsy;
           // the catch below handles that path.
           csUpdateData((data) => Object.assign({}, data, {
               items: (data.items || []).map(i => i.id === itemId ? Object.assign({}, i, { image: newImageUrl }) : i)
-          }));
+          }), run.identity);
           if (!instructionOverride) {
               setCsRefinementInputs(prev => Object.assign({}, prev, { [itemId]: '' }));
           }
           if (typeof addToast === 'function') addToast(t('concept_sort.actions.image_refined') || 'Image refined.', 'success');
       } catch (e) {
+          if (!csAsyncRunIsCurrent(run)) return;
           warnLog('csRefineItemImage failed', e);
           if (typeof addToast === 'function') addToast(t('concept_sort.actions.image_refine_failed') || 'Image refinement failed. Try again or rephrase the prompt.', 'error');
       } finally {
-          setCsBusyId(null);
+          if (csAsyncRunIsCurrent(run)) setCsBusyId(null);
       }
-  }, [generatedContent, csRefinementInputs, csUpdateData, addToast, t]);
+  }, [generatedContent, csRefinementInputs, csUpdateData, addToast, t, csBeginAsyncRun, csAsyncRunIsCurrent]);
   const csUploadItemImage = useCallback((itemId, file) => {
       if (!itemId || !file) return;
       // Validate: must be image, <=5MB. Skipping format-specific checks since the
@@ -31505,22 +32541,39 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           if (typeof addToast === 'function') addToast(t('concept_sort.actions.upload_too_large') || 'Image is too large (max 5 MB).', 'error');
           return;
       }
+      const run = csBeginAsyncRun();
+      if (!run) return;
       const reader = new FileReader();
+      const abortReader = () => {
+          try { if (reader.readyState === 1) reader.abort(); } catch (_) {}
+      };
+      const cleanupReader = () => {
+          run.controller.signal.removeEventListener('abort', abortReader);
+      };
+      run.controller.signal.addEventListener('abort', abortReader, { once: true });
+      reader.onabort = cleanupReader;
       reader.onload = (ev) => {
+          cleanupReader();
+          if (!csAsyncRunIsCurrent(run)) return;
           const dataUrl = ev.target && ev.target.result;
           if (typeof dataUrl !== 'string' || !dataUrl) return;
           csUpdateData((data) => Object.assign({}, data, {
               items: (data.items || []).map(i => i.id === itemId ? Object.assign({}, i, { image: dataUrl }) : i)
-          }));
+          }), run.identity);
           if (typeof addToast === 'function') addToast(t('concept_sort.actions.image_uploaded') || 'Image uploaded.', 'success');
       };
       reader.onerror = () => {
+          cleanupReader();
+          if (!csAsyncRunIsCurrent(run)) return;
           if (typeof addToast === 'function') addToast(t('concept_sort.actions.upload_failed') || 'Upload failed.', 'error');
       };
       reader.readAsDataURL(file);
-  }, [csUpdateData, addToast, t]);
+  }, [csUpdateData, addToast, t, csBeginAsyncRun, csAsyncRunIsCurrent]);
   const csClearItemImage = useCallback((itemId) => {
+          cleanupReader();
+          if (!csAsyncRunIsCurrent(run)) return;
       if (!itemId) return;
+      csInvalidateAsyncRun();
       csUpdateData((data) => Object.assign({}, data, {
           items: (data.items || []).map(i => {
               if (i.id !== itemId) return i;
@@ -31729,6 +32782,47 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
   // the student left on a take-home copy. Imported annotations get
   // author='student' forced so they're visually distinct from the
   // teacher's own in the overlay + sidebar.
+  const annotationDocumentIdentity = [
+    String(activeSessionCode || 'offline'),
+    generatedContent && generatedContent.type ? String(generatedContent.type) : '',
+    generatedContent && generatedContent.id != null ? String(generatedContent.id) : ''
+  ].join('|');
+  const annotationLiveDocumentIdentityRef = useRef(annotationDocumentIdentity);
+  annotationLiveDocumentIdentityRef.current = annotationDocumentIdentity;
+  const annotationImportOwnerRef = useRef({
+    generation: 0,
+    identity: annotationDocumentIdentity,
+    readers: new Set()
+  });
+  const cancelAnnotationImports = useCallback(() => {
+    const owner = annotationImportOwnerRef.current;
+    owner.generation += 1;
+    owner.identity = annotationLiveDocumentIdentityRef.current;
+    for (const activeReader of owner.readers) {
+      try { if (activeReader.readyState === 1) activeReader.abort(); } catch (_) {}
+    }
+    owner.readers.clear();
+  }, []);
+  useEffect(() => {
+    const owner = annotationImportOwnerRef.current;
+    if (owner.identity !== annotationDocumentIdentity) {
+      owner.generation += 1;
+      for (const activeReader of owner.readers) {
+        try { if (activeReader.readyState === 1) activeReader.abort(); } catch (_) {}
+      }
+      owner.readers.clear();
+      owner.identity = annotationDocumentIdentity;
+    }
+    return () => {
+      const current = annotationImportOwnerRef.current;
+      if (current.identity !== annotationDocumentIdentity) return;
+      current.generation += 1;
+      for (const activeReader of current.readers) {
+        try { if (activeReader.readyState === 1) activeReader.abort(); } catch (_) {}
+      }
+      current.readers.clear();
+    };
+  }, [annotationDocumentIdentity]);
   const handleImportAnnotations = () => {
     if (!annotationImportInputRef.current) return;
     annotationImportInputRef.current.value = '';
@@ -31737,8 +32831,24 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
   const handleAnnotationImportFile = (e) => {
     const file = e && e.target && e.target.files && e.target.files[0];
     if (!file) return;
+    const owner = annotationImportOwnerRef.current;
+    const identity = annotationLiveDocumentIdentityRef.current;
+    if (owner.identity !== identity) cancelAnnotationImports();
+    const generation = owner.generation;
+    owner.identity = identity;
+
     const reader = new FileReader();
+    owner.readers.add(reader);
+    const isCurrent = () => (
+      annotationImportOwnerRef.current === owner
+      && owner.generation === generation
+      && owner.identity === identity
+      && annotationLiveDocumentIdentityRef.current === identity
+    );
+    const finishReader = () => owner.readers.delete(reader);
     reader.onload = (ev) => {
+      finishReader();
+      if (!isCurrent()) return;
       try {
         const payload = JSON.parse(ev.target.result);
         const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
@@ -31750,19 +32860,33 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         // everything so the teacher's own annotations stay distinguishable.
         // Student importing peer work → keep authors as-is (no rebrand).
         const opts = isTeacherMode ? { forceAuthor: 'student' } : {};
-        const result = _m.importAnnotations(stickers, payload, opts);
+        const result = _m.importAnnotations([], payload, opts);
         if (result.error) {
           addToast && addToast(t('toasts.could_not_import') + result.error + '. File must be an annotations JSON.', 'error');
           return;
         }
-        setStickers(result.list);
+        setStickers((previous) => {
+          if (!isCurrent()) return previous;
+          const merged = _m.importAnnotations(previous, payload, opts);
+          return merged && !merged.error && Array.isArray(merged.list) ? merged.list : previous;
+        });
         addToast && addToast(t('toasts.imported') + result.added + ' annotation' + (result.added === 1 ? '' : 's') + (result.skipped ? ' (' + result.skipped + ' skipped — invalid shape)' : '') + '.', 'success');
       } catch (err) {
+        if (!isCurrent()) return;
         warnLog && warnLog('[Annotations] import failed:', err);
         addToast && addToast(t('toasts.could_not_parse_file_must'), 'error');
       }
     };
-    reader.readAsText(file);
+    reader.onerror = () => {
+      finishReader();
+      if (isCurrent()) addToast && addToast(t('toasts.could_not_parse_file_must'), 'error');
+    };
+    reader.onabort = finishReader;
+    try { reader.readAsText(file); }
+    catch (err) {
+      finishReader();
+      if (isCurrent()) addToast && addToast(t('toasts.could_not_parse_file_must'), 'error');
+    }
   };
   const handleVoiceRecordingCancel = async () => {
       if (!voiceRecording) return;
@@ -31796,7 +32920,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       try { sel.removeAllRanges(); } catch (_) {}
       playSound('click');
   };
-  const clearStickers = () => setStickers([]);
+  const clearStickers = () => {
+    cancelAnnotationImports();
+    setStickers([]);
+  };
   const handleFormatText = (formatType, overrideRef, overrideText, overrideCallback) => {
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
     if (_m && typeof _m.handleFormatText === 'function') {
@@ -33023,56 +34150,119 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           </div>
           <div className="flex flex-wrap gap-2">
             {lmsAuditUrls.map((url, i) => {
-              const name = decodeURIComponent(url.split('/').pop().split('?')[0]) || `Document ${i + 1}`;
+              let name = `Document ${i + 1}`;
+              try {
+                const parsedUrl = new URL(url, window.location.href);
+                const encodedName = parsedUrl.pathname.split('/').filter(Boolean).pop() || '';
+                try { name = decodeURIComponent(encodedName) || name; } catch (_) { name = encodedName || name; }
+              } catch (_) {
+                const rawName = String(url || '').split('/').pop().split('?')[0];
+                name = rawName || name;
+              }
               return (
                 <button key={i} onClick={async () => {
                   const documentIntakeEpoch = startNewPdfAudit();
+                  const fetchController = typeof AbortController !== 'undefined' ? new AbortController() : null;
+                  lmsAuditFetchControllerRef.current = fetchController;
+                  let fetchTimedOut = false;
+                  const fetchTimeout = setTimeout(() => { fetchTimedOut = true; try { fetchController?.abort(); } catch (_) {} }, 30000);
                   setIsExtracting(true);
                   setGenerationStep(t('status_steps.extracting_text'));
                   try {
                     addToast(t('lms.fetching', { name }) || `Fetching ${name}...`, 'info');
-                    const resp = await fetch(url);
+                    const resp = await fetch(url, fetchController ? { signal: fetchController.signal } : undefined);
                     if (!isPdfDocumentIntakeCurrent(documentIntakeEpoch)) return;
                     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
                     const responseType = String(resp.headers.get('content-type') || '').toLowerCase();
                     if (/text\/html|application\/json/.test(responseType)) throw new Error('The LMS returned a sign-in page instead of a document.');
-                    const blob = await resp.blob();
+                    const maxBytes = 30 * 1024 * 1024;
+                    const declaredBytes = Number(resp.headers.get('content-length'));
+                    if (Number.isFinite(declaredBytes) && declaredBytes > maxBytes) throw new Error('The document is larger than the 30 MB safety limit.');
+                    let blob;
+                    if (resp.body && typeof resp.body.getReader === 'function') {
+                      const streamReader = resp.body.getReader();
+                      const chunks = [];
+                      let received = 0;
+                      while (true) {
+                        const part = await streamReader.read();
+                        if (part.done) break;
+                        received += part.value.byteLength;
+                        if (received > maxBytes) {
+                          try { await streamReader.cancel(); } catch (_) {}
+                          throw new Error('The document is larger than the 30 MB safety limit.');
+                        }
+                        chunks.push(part.value);
+                      }
+                      blob = new Blob(chunks, { type: responseType || 'application/octet-stream' });
+                    } else blob = await resp.blob();
                     if (!isPdfDocumentIntakeCurrent(documentIntakeEpoch)) return;
                     if (blob.size > 30 * 1024 * 1024) throw new Error('The document is larger than the 30 MB safety limit.');
+                    // The fetch timer owns only network/body acquisition. Once the Blob is complete,
+                    // FileReader's separate timer below owns conversion and visible error cleanup.
+                    clearTimeout(fetchTimeout);
                     const failLmsRead = (message) => {
                       if (!isPdfDocumentIntakeCurrent(documentIntakeEpoch)) return;
                       setIsExtracting(false);
                       setGenerationStep('');
                       addToast(message, 'error');
                     };
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                      if (!isPdfDocumentIntakeCurrent(documentIntakeEpoch)) return;
-                      const result = reader.result;
-                      const base64 = typeof result === 'string' && result.includes(',') ? result.split(',')[1] : '';
-                      if (!base64) { failLmsRead('The downloaded document was empty.'); return; }
-                      const looksPdf = responseType.includes('application/pdf') || /\.pdf$/i.test(name);
-                      if (looksPdf) {
-                        let header = '';
-                        try { header = atob(base64.slice(0, 1400)); } catch (_) {}
-                        if (!header.includes('%PDF-')) { failLmsRead('The LMS response was not a valid PDF. Sign in to the LMS in this browser, then try again.'); return; }
-                      }
-                      setPendingPdfBase64(base64);
-                      setPendingPdfFile({ name, size: blob.size, type: blob.type || responseType });
-                      setPdfAuditResult({ _choosing: true, fileName: name, fileSize: blob.size });
-                      setLmsAuditUrls(prev => prev.filter((item) => item !== url));
-                      setIsExtracting(false);
-                      setGenerationStep('');
-                      addToast(t('lms.loaded_ready', { name }) || `${name} loaded — ready for audit`, 'success');
-                    };
-                    reader.onerror = () => failLmsRead('The downloaded document could not be read.');
-                    reader.onabort = reader.onerror;
-                    try { reader.readAsDataURL(blob); } catch (err) { failLmsRead(err?.message || 'The downloaded document could not be read.'); }
+                    await new Promise((resolveRead) => {
+                      const reader = new FileReader();
+                      let readSettled = false;
+                      let readTimeout = null;
+                      const onFetchAbort = () => {
+                        if (readSettled) return;
+                        settleRead();
+                        try { if (reader.readyState === 1) reader.abort(); } catch (_) {}
+                      };
+                      const settleRead = () => {
+                        if (readSettled) return;
+                        readSettled = true;
+                        if (readTimeout) clearTimeout(readTimeout);
+                        try { fetchController?.signal.removeEventListener('abort', onFetchAbort); } catch (_) {}
+                        resolveRead();
+                      };
+                      const failRead = (message) => {
+                        if (readSettled) return;
+                        failLmsRead(message);
+                        settleRead();
+                        try { if (reader.readyState === 1) reader.abort(); } catch (_) {}
+                      };
+                      reader.onload = () => {
+                        if (readSettled || !isPdfDocumentIntakeCurrent(documentIntakeEpoch)) { settleRead(); return; }
+                        const result = reader.result;
+                        const base64 = typeof result === 'string' && result.includes(',') ? result.split(',')[1] : '';
+                        if (!base64) { failRead('The downloaded document was empty.'); return; }
+                        const looksPdf = responseType.includes('application/pdf') || /\.pdf$/i.test(name);
+                        if (looksPdf) {
+                          let header = '';
+                          try { header = atob(base64.slice(0, 1400)); } catch (_) {}
+                          if (!header.includes('%PDF-')) { failRead('The LMS response was not a valid PDF. Sign in to the LMS in this browser, then try again.'); return; }
+                        }
+                        setPendingPdfBase64(base64);
+                        setPendingPdfFile({ name, size: blob.size, type: blob.type || responseType });
+                        setPdfAuditResult({ _choosing: true, fileName: name, fileSize: blob.size });
+                        setLmsAuditUrls(prev => prev.filter((item) => item !== url));
+                        setIsExtracting(false);
+                        setGenerationStep('');
+                        addToast(t('lms.loaded_ready', { name }) || `${name} loaded — ready for audit`, 'success');
+                        settleRead();
+                      };
+                      reader.onerror = () => failRead('The downloaded document could not be read.');
+                      reader.onabort = () => { if (readSettled) return; if (isPdfDocumentIntakeCurrent(documentIntakeEpoch)) failRead('The downloaded document read was cancelled.'); else settleRead(); };
+                      try { fetchController?.signal.addEventListener('abort', onFetchAbort, { once: true }); } catch (_) {}
+                      readTimeout = setTimeout(() => failRead('The downloaded document could not be read within 30 seconds.'), 30000);
+                      try { reader.readAsDataURL(blob); } catch (err) { failRead(err?.message || 'The downloaded document could not be read.'); }
+                    });
                   } catch (err) {
                     if (!isPdfDocumentIntakeCurrent(documentIntakeEpoch)) return;
                     setIsExtracting(false);
                     setGenerationStep('');
-                    addToast(t('lms.fetch_failed', { name, error: err.message }) || `Failed to fetch ${name}: ${err.message}. The file may require LMS authentication.`, 'error');
+                    const reason = fetchTimedOut ? 'The download timed out after 30 seconds.' : (err?.message || 'Unknown download error');
+                    addToast(t('lms.fetch_failed', { name, error: reason }) || `Failed to fetch ${name}: ${reason}. The file may require LMS authentication.`, 'error');
+                  } finally {
+                    clearTimeout(fetchTimeout);
+                    if (lmsAuditFetchControllerRef.current === fetchController) lmsAuditFetchControllerRef.current = null;
                   }
                 }} className="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5">
                   <span className="bg-white/20 px-1 py-0.5 rounded text-[11px] font-bold">{name.split('.').pop()?.toUpperCase() || 'FILE'}</span>
@@ -33586,8 +34776,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             </div>
           </div>
         </div>
-      )}      {confirmDialog && <ConfirmDialog confirmDialog={confirmDialog} setConfirmDialog={setConfirmDialog} t={t} />}
-      {promptDialog && <PromptDialog promptDialog={promptDialog} setPromptDialog={setPromptDialog} t={t} />}
+      )}      {confirmDialog && <ConfirmDialog confirmDialog={confirmDialog} setConfirmDialog={(next) => setConfirmDialog((current) => (
+          current === confirmDialog ? next : current
+      ))} t={t} />}
+      {promptDialog && <PromptDialog promptDialog={promptDialog} setPromptDialog={(next) => setPromptDialog((current) => (
+          current === promptDialog ? next : current
+      ))} t={t} />}
       {/* ── GroupSessionModal extracted to view_misc_panels_module.js (CDN) ── */}
       {(showGroupModal && activeSessionCode && sessionData) && window.AlloModules && window.AlloModules.GroupSessionModal && React.createElement(window.AlloModules.GroupSessionModal, {
           activeSessionCode, addToast, appId, db,
@@ -34529,8 +35723,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       {/* ── PdfDiffViewer extracted to view_misc_panels_module.js (CDN) ── */}
       {(diffViewOpen && pdfFixResult) && window.AlloModules && window.AlloModules.PdfDiffViewer && React.createElement(window.AlloModules.PdfDiffViewer, {
           _applyTextSurgery, _lastDiffFingerprintRef, addToast, applyingRemarkup, callGemini,
+          capturePdfHtmlCommitToken, commitPdfFixResultIfCurrent,
           diffChunks, diffGranularity, diffLibLoading, diffLibReady, diffSelection,
-          diffViewOpen, pdfFixResult, theme, setApplyingRemarkup, setDiffChunks, setDiffGranularity,
+          diffViewOpen, isPdfHtmlCommitTokenCurrent, pdfDocumentEpoch: pdfDocumentSelectionEpochRef.current,
+          pdfFixResult, theme, setApplyingRemarkup, setDiffChunks, setDiffGranularity,
           setDiffSelection, setDiffViewOpen, setPdfFixResult, setRangeRejected, t, toggleDiffChunk,
           warnLog
       })}
@@ -34587,7 +35783,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             style={{ width: isWide ? `${leftWidth}%` : '100%', height: '100%' }}
         >
           {isTeacherMode && <SidebarTabsNav activeSidebarTab={activeSidebarTab} handleSetActiveSidebarTabToCreate={handleSetActiveSidebarTabToCreate} isHistoryPulsing={isHistoryPulsing} setActiveSidebarTab={setActiveSidebarTab} setIsHistoryPulsing={setIsHistoryPulsing} t={t} />}
-          {guidedMode && <GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedEngaged={guidedEngaged} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} inputText={inputText} setInputText={setInputText} guidedCompletedIds={guidedCompletedIds} guidedSkippedIds={guidedSkippedIds} guidedCreatedHistoryIds={guidedCreatedHistoryIds} wordSoundsHistory={wordSoundsHistory} currentUiLanguage={currentUiLanguage} markGuidedStepDone={markGuidedStepDone} resetGuidedProgress={resetGuidedProgress} guidedPresets={GUIDED_PRESETS} applyGuidedPreset={applyGuidedPreset} guidedStepError={guidedStepError} retryGuidedStep={retryGuidedStep} isGuidedRetrying={isProcessing || isGeneratingPersona || isGeneratingSource || isExtracting} openGuidedHistoryItem={handleRestoreView} guidedAutoAdvance={guidedAutoAdvance} setGuidedAutoAdvance={setGuidedAutoAdvance} />}
+          {guidedMode && <GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedEngaged={guidedEngaged} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} inputText={inputText} setInputText={setInputText} guidedCompletedIds={guidedCompletedIds} guidedSkippedIds={guidedSkippedIds} guidedCreatedHistoryIds={guidedCreatedHistoryIds} wordSoundsHistory={wordSoundsHistory} currentUiLanguage={currentUiLanguage} markGuidedStepDone={markGuidedStepDone} resetGuidedProgress={resetGuidedProgress} guidedPresets={GUIDED_PRESETS} applyGuidedPreset={applyGuidedPreset} guidedPhases={GUIDED_PHASES} guidedDeliveryGroups={GUIDED_DELIVERY_GROUPS} openGuidedDocumentBuilder={() => openExportPreview('print')} createGuidedHomeworkShare={createGuidedHomeworkShare} startGuidedLiveSession={() => setShowSessionStartOptions(true)} canPreviewGuidedStudentAssignment={!!latestStudentPreviewShare} previewGuidedStudentAssignment={previewGuidedStudentAssignment} guidedDeliveryEvidence={guidedDeliveryEvidence} guidedStepError={guidedStepError} retryGuidedStep={retryGuidedStep} isGuidedRetrying={isProcessing || isGeneratingPersona || isGeneratingSource || isExtracting} openGuidedHistoryItem={handleRestoreView} guidedAutoAdvance={guidedAutoAdvance} setGuidedAutoAdvance={setGuidedAutoAdvance} handleCompleteGuidedMode={handleCompleteGuidedMode} handleGuidedJump={handleGuidedJump} focusGuidedTarget={focusGuidedTarget} processingProgress={processingProgress} generationStep={generationStep} guidedProviderProfile={String(ai?.backend || ai?.textBackend || ai?.provider || 'default')} />}
           {isTeacherMode && <UDLGuideButton handleToggleShowUDLGuide={handleToggleShowUDLGuide} showUDLGuide={showUDLGuide} t={t} />}
           {isTeacherMode && activeSidebarTab === 'create' && (
           <div style={{display: isGuidedToolVisible('source-input') ? undefined : 'none'}} id="tour-input-panel" data-help-key="source_input" className={`bg-white rounded-3xl shadow-indigo-500/10 border transition-all overflow-hidden shrink-0 ${activeView === 'input' ? 'border-indigo-600 shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200'}`}>
@@ -34622,7 +35818,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         <FileDown size={12} /> {t('input.load_project') || 'Load Project'}
                         <input type="file" accept=".json" className="hidden" onChange={(e) => {
                           const file = e.target.files?.[0]; if (!file) return;
-                          if (file.size > 320 * 1024 * 1024) { addToast('This project file is larger than the 320 MB safety limit.', 'error'); e.target.value = ''; return; }
+                          if (file.size > 64 * 1024 * 1024) { addToast('This project file is larger than the 64 MB browser safety limit.', 'error'); e.target.value = ''; return; }
                           const _projectLoadEpoch = ++pdfProjectLoadEpochRef.current;
                           let _projectDocumentEpoch = capturePdfDocumentIntakeEpoch();
                           const _projectLoadIsCurrent = () => _projectLoadEpoch === pdfProjectLoadEpochRef.current
@@ -34632,7 +35828,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             if (!_projectLoadIsCurrent()) return;
                             try {
                               const _savedProject = JSON.parse(ev.target.result);
-                              if (!_savedProject.accessibleHtml || !_savedProject.version) { addToast(t('toasts.not_valid_alloflow_project'), 'error'); return; }
+                              if (!_savedProject.version || (!_savedProject.accessibleHtml && !_savedProject.incomplete)) { addToast(t('toasts.not_valid_alloflow_project'), 'error'); return; }
                               // Ignore any serialized runtime snapshot. Rehydrate makes it live
                               // only when the persisted SHA-256 digest matches accessibleHtml.
                               const _projectSanitizer = window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.sanitizeRemediationProject;
@@ -34640,9 +35836,36 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                               const _sanitizedImport = _projectSanitizer(_savedProject);
                               const project = await rehydrateVerificationHtmlBinding(_sanitizedImport.project);
                               if (!_projectLoadIsCurrent()) return;
+                              if (!project.version || (!project.accessibleHtml && !project.incomplete)) { addToast(t('toasts.not_valid_alloflow_project'), 'error'); return; }
                               _projectDocumentEpoch = startNewPdfAudit();
                               if (!_projectLoadIsCurrent()) return;
                               setPendingPdfBase64(project.pdfBase64 || null);
+                              if (project.incomplete) {
+                                const _resumeName = project.fileName || 'resumed-project.pdf';
+                                const _resumeDigest = project.docKey || (project.auditResult && project.auditResult.documentDigest) || null;
+                                setPendingPdfFile({
+                                  name: _resumeName,
+                                  size: Number(project.fileSize) || Number(project.multiSession && project.multiSession.fileSize) || 0,
+                                  documentDigest: _resumeDigest,
+                                });
+                                try {
+                                  if (project.extractedText) window.__resumeExtractedText = { fileName: _resumeName, text: project.extractedText, docKey: _resumeDigest };
+                                } catch (_) {}
+                                setPdfAuditResult(project.auditResult
+                                  ? { ...project.auditResult, documentDigest: project.auditResult.documentDigest || _resumeDigest }
+                                  : {
+                                      documentDigest: _resumeDigest, score: null, scores: [], critical: [], serious: [], moderate: [], minor: [], passes: [],
+                                      summary: 'Resumed from an unfinished session; no numeric baseline is available yet.', pageCount: project.pageCount || 1,
+                                      hasSearchableText: true, hasImages: false, _resumeIncomplete: true,
+                                    });
+                                setPdfFixResult(null);
+                                if (project.extractedText) setInputText(project.extractedText);
+                                if (Array.isArray(project.pageRange) && project.pageRange.length === 2) {
+                                  setPdfPageRange({ start: project.pageRange[0], end: project.pageRange[1] });
+                                }
+                                addToast('Resumed “' + _resumeName + '”. Click Make Accessible to finish' + (project.pdfBase64 ? '.' : ' after re-attaching the original PDF.'), 'success');
+                                return;
+                              }
                               const _derivedProjectVerification = deriveVerificationState({
                                 ai: project.verificationAudit || null,
                                 axe: project.axeAudit || null,
@@ -34650,11 +35873,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                 aiIncomplete: !!project._aiVerificationIncomplete,
                                 pdfUaSelfCheck: project.verificationCoverage && project.verificationCoverage.pdfUaSelfCheck,
                               }) || {};
-                              const _loadedVerificationCoverage = project.verificationCoverage || _derivedProjectVerification.coverage || _derivedProjectVerification.verificationCoverage || null;
-                              const _loadedVerificationState = project.verificationState || _derivedProjectVerification.verificationState || 'partial';
+                              const _loadedVerificationCoverage = _derivedProjectVerification.coverage || _derivedProjectVerification.verificationCoverage || project.verificationCoverage || null;
+                              const _loadedVerificationState = _derivedProjectVerification.verificationState || 'partial';
                               const _loadedHtmlBound = isLiveVerificationHtmlBound(project, project.accessibleHtml);
                               const _loadedRequiresManualReview = _loadedVerificationState !== 'complete' || project.requiresManualReview === true || !_loadedHtmlBound;
-                              const _loadedAfterScoreVerified = (typeof project.afterScoreVerified === 'boolean' ? project.afterScoreVerified : _derivedProjectVerification.afterScoreVerified === true) && _loadedVerificationState === 'complete' && !_loadedRequiresManualReview && _loadedHtmlBound;
+                              const _loadedAfterScoreVerified = _derivedProjectVerification.afterScoreVerified === true && _loadedVerificationState === 'complete' && !_loadedRequiresManualReview && _loadedHtmlBound;
                               const _loadedFidelityLimited = !!project.fidelityLimited;
                               const _loadedExpertReason = project.expertReviewReason || (_loadedFidelityLimited
                                 ? (_loadedRequiresManualReview ? 'both' : 'content-fidelity')
@@ -34663,13 +35886,13 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                 ? project._expertReviewBeforeVerification
                                 : (_loadedRequiresManualReview ? { needed: _loadedFidelityLimited, reason: _loadedFidelityLimited ? 'content-fidelity' : null } : null);
                               setPdfAuditResult({
-                                score: project.beforeScore || 0, scores: [], critical: [], major: [], minor: [],
+                                score: Number.isFinite(project.beforeScore) ? project.beforeScore : null, scores: [], critical: [], major: [], minor: [],
                                 passes: [], summary: 'Loaded from saved project', pageCount: project.pageCount,
                                 hasSearchableText: true, hasImages: project.imageCount > 0,
                               });
                               const _loadedPdfFixResult = {
                                 accessibleHtml: project.accessibleHtml,
-                                documentDigest: project.documentDigest || null,
+                                documentDigest: project.documentDigest || project.docKey || null,
                                 beforeScore: project.beforeScore, afterScore: project.afterScore,
                                 axeAudit: project.axeAudit || null, verificationAudit: project.verificationAudit || null,
                                 secondEngineAudit: project.secondEngineAudit || null,
@@ -34678,9 +35901,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                 verificationState: _loadedVerificationState,
                                 afterScoreVerified: _loadedAfterScoreVerified,
                                 requiresManualReview: _loadedRequiresManualReview,
-                                verificationReviewCount: Number.isFinite(project.verificationReviewCount) ? project.verificationReviewCount : (Number.isFinite(_derivedProjectVerification.reviewCount) ? _derivedProjectVerification.reviewCount : 0),
-                                verificationReasons: Array.isArray(project.verificationReasons) ? project.verificationReasons : (Array.isArray(_derivedProjectVerification.reasons) ? _derivedProjectVerification.reasons : []),
-                                _verificationExpertReview: typeof project._verificationExpertReview === 'boolean' ? project._verificationExpertReview : _loadedRequiresManualReview,
+                                verificationReviewCount: Number.isFinite(_derivedProjectVerification.reviewCount) ? _derivedProjectVerification.reviewCount : (Number.isFinite(project.verificationReviewCount) ? project.verificationReviewCount : 0),
+                                verificationReasons: Array.isArray(_derivedProjectVerification.reasons) ? _derivedProjectVerification.reasons : (Array.isArray(project.verificationReasons) ? project.verificationReasons : []),
+                                _verificationExpertReview: _loadedRequiresManualReview || project._verificationExpertReview === true,
                                 _expertReviewBeforeVerification: _loadedExpertBase,
                                 _aiVerificationIncomplete: _loadedVerificationCoverage ? _loadedVerificationCoverage.ai !== 'complete' : !!project._aiVerificationIncomplete,
                                 _scoreSource: project._scoreSource || null,
@@ -34716,7 +35939,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                 attachVerificationHtmlProof(_loadedPdfFixResult, project.accessibleHtml);
                               }
                               setPdfFixResult(_loadedPdfFixResult);
-                              setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf' });
+                              setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf', size: Number(project.fileSize) || Number(project.multiSession && project.multiSession.fileSize) || 0, documentDigest: project.documentDigest || project.docKey || null });
                               addToast(t('toasts.loaded') + (project.fileName || 'project'), 'success');
                             } catch(err) {
                               if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + err.message, 'error');
@@ -34724,7 +35947,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                           };
                           reader.onerror = () => { if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + (reader.error?.message || 'Unable to read project file'), 'error'); };
                           reader.onabort = () => { if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + 'Project file read was cancelled', 'info'); };
-                          reader.readAsText(file); e.target.value = '';
+                          try {
+                            reader.readAsText(file);
+                          } catch (readError) {
+                            if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + (readError?.message || 'Unable to start reading project file'), 'error');
+                          }
+                          e.target.value = '';
                         }} />
                      </label>
                      <button
@@ -35270,7 +36498,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             {/* Directions v2: teacher-AUTHORED (not generated) — the card opens the composer
                 instead of a generation panel. Student-facing by design; sits after Lesson Plan
                 as its student-voice counterpart. */}
-            <div style={{display: (isTeacherMode && (!guidedMode || guidedActiveSteps[guidedStep]?.id === '_final')) ? undefined : 'none'}} id="tour-tool-directions" data-help-key="tool_directions" className="rounded-3xl border-2 border-slate-200 hover:border-amber-300 shadow-lg shadow-amber-500/10 transition-all bg-white overflow-hidden">
+            <div style={{display: (isTeacherMode && (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'directions')) ? undefined : 'none'}} id="tour-tool-directions" data-help-key="tool_directions" className="rounded-3xl border-2 border-slate-200 hover:border-amber-300 shadow-lg shadow-amber-500/10 transition-all bg-white overflow-hidden">
               <button
                   data-help-key="tool_directions"
                   onClick={() => { setMbDirectionsDraft(p => p || {}); setShowDirectionsComposer(true); }}
@@ -35283,7 +36511,28 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">{t('directions.badge') || 'you write it'}</span>
               </button>
             </div>
-            <div style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === '_final') ? undefined : 'none'}} id="tour-tool-fullpack" data-help-key="tool_fullpack" className="relative z-10 bg-gradient-to-r from-indigo-600 to-purple-600 p-1 rounded-3xl shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all group">
+            <div style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'package-deliver' || guidedActiveSteps[guidedStep]?.id === '_final') ? undefined : 'none'}} id="tour-tool-fullpack" data-help-key="tool_fullpack" className="relative z-10 bg-gradient-to-r from-indigo-600 to-purple-600 p-1 rounded-3xl shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all group">
+                {guidedMode && guidedActiveSteps[guidedStep]?.id === 'package-deliver' && (
+                  <div role="region" aria-labelledby="guided-delivery-panel-title" className="m-1 mb-2 rounded-2xl bg-white p-3 text-slate-800">
+                    <div id="guided-delivery-panel-title" className="text-sm font-black text-indigo-900">Preview, Package &amp; Deliver</div>
+                    <p className="mt-1 text-[11px] leading-relaxed text-slate-600">Choose formats by purpose. You can use more than one route—for example, an accessible Word handout plus a Homework QR.</p>
+                    <div role="list" aria-label="Available export and delivery families" className="mt-2 grid gap-2">
+                      {GUIDED_DELIVERY_GROUPS.map(group => (
+                        <div role="listitem" key={group.id} className="rounded-xl border border-indigo-100 bg-indigo-50/60 p-2">
+                          <div className="text-[11px] font-black text-indigo-900">{group.label}</div>
+                          <div className="mt-0.5 text-[10px] leading-relaxed text-slate-600">{group.options.join(' · ')}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="mt-2 text-[10px] leading-relaxed text-slate-500">QTI requires a quiz. H5P appears for compatible quiz or study-card content and needs matching H5P libraries at the destination. Storybook and Persona exports live inside those resource views. Homework sharing method and expiry depend on deployment.</p>
+                    <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      <button type="button" onClick={() => openExportPreview('print')} className="min-h-10 rounded-lg bg-indigo-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-indigo-600">Open Document Builder</button>
+                      <button type="button" onClick={createGuidedHomeworkShare} className="min-h-10 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-[11px] font-bold text-indigo-800 hover:bg-indigo-50">Create Homework QR</button>
+                      <button type="button" onClick={() => setShowSessionStartOptions(true)} className="min-h-10 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-[11px] font-bold text-emerald-900 hover:bg-emerald-100">Start live session</button>
+                      <button type="button" disabled={!((qrShareModal && qrShareModal.url) || (Array.isArray(recentQrShares) && recentQrShares.some(share => share && share.url)))} onClick={() => { const share = (qrShareModal && qrShareModal.url) ? qrShareModal : ((Array.isArray(recentQrShares) && recentQrShares.find(item => item && item.url)) || null); if (share?.url) openStudentQrPreview(share.url, 'homework link as a student'); }} className="min-h-10 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] font-bold text-amber-900 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50">Test latest student link</button>
+                    </div>
+                  </div>
+                )}
                 <div className="flex items-center justify-between mb-1 px-3 pt-2 text-white/90">
                     <div className="flex items-center gap-2">
                         <input aria-label={t('common.toggle_is_auto_config_enabled')}
@@ -35346,7 +36595,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     <ArrowRight size={16} className="text-indigo-300 group-hover:text-indigo-600" />
                 </button>
             </div>
-            <div style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'alignment' || guidedActiveSteps[guidedStep]?.id === '_final') ? undefined : 'none'}} id="tour-tool-alignment" data-help-key="tool_alignment" className="bg-gradient-to-r from-teal-500 to-emerald-500 p-1 rounded-3xl shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all group">
+            <div style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'alignment') ? undefined : 'none'}} id="tour-tool-alignment" data-help-key="tool_alignment" className="bg-gradient-to-r from-teal-500 to-emerald-500 p-1 rounded-3xl shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all group">
                 <button
                     data-help-key="tool_alignment"
                     onClick={() => handleGenerate('alignment-report')}
@@ -37456,7 +38705,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   <div style={{fontWeight:800,color:'#0f172a',fontSize:'0.95rem'}}>{t('live_dock.title') || 'Live Session Center'}</div>
                   <button onClick={() => setShowLiveDock(false)} aria-label={t('common.close') || 'Close'} style={{background:'#f1f5f9',border:'none',borderRadius:6,padding:'0.15rem 0.5rem',cursor:'pointer',fontWeight:700}}>✕</button>
                 </div>
-                <button onClick={() => { setShowLiveDock(false); setShowSessionModal(true); }} style={{background:'none',border:'none',padding:0,cursor:'pointer',fontFamily:'monospace',fontWeight:800,color:'#1e3a8a',fontSize:'0.85rem'}} aria-label={t('live_dock.session_code_aria') || 'Show session code'}>
+                <button onClick={() => { setShowLiveDock(false); setShowSessionModal(true); }} style={{background:'none',border:'none',padding:0,cursor:'pointer',fontFamily:'monospace',fontWeight:800,color:'#1e3a8a',fontSize:'0.85rem'}} aria-label={t('live_dock.session_code_aria') || 'Show session code and projection screen'}>
                   {(t('live_dock.code_label') || 'Code:') + ' ' + activeSessionCode}
                 </button>
                 {(() => {
@@ -37490,6 +38739,34 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     );
                   } catch (e) { return null; }
                 })()}
+                {window.AlloModules
+                  && window.AlloModules.LiveLessonRun
+                  && window.AlloModules.LiveLessonRun.LiveLessonRunPanel
+                  && React.createElement(window.AlloModules.LiveLessonRun.LiveLessonRunPanel, {
+                    history: getFilteredHistory(),
+                    getStudentSafeResources: _alloStudentSafeResources,
+                    currentItemId: generatedContent && generatedContent.id,
+                    currentResourceId: sessionData && sessionData.currentResourceId,
+                    sessionMode: sessionData && sessionData.mode,
+                    groups: (sessionData && sessionData.groups) || {},
+                    roster: rosterEntries,
+                    activeUnitLabel: activeUnitId === 'all'
+                      ? (t('history.all_units') || 'All resources')
+                      : activeUnitId === 'uncategorized'
+                        ? (t('history.uncategorized') || 'Uncategorized')
+                        : (((Array.isArray(units) ? units : []).find(unit => unit.id === activeUnitId) || {}).name || (t('common.unit') || 'Unit')),
+                    getTitle: item => String(item.title || item.label || getDefaultTitle(item.type)),
+                    getIcon: getIconForType,
+                    onOpenResource: item => {
+                      handleRestoreView(item);
+                      setShowLiveDock(false);
+                    },
+                    onSendToGroup: (groupId, item) => handleSetGroupResource(groupId, item.id),
+                    onSendToStudent: (uid, item) => handleSetStudentResource(uid, item.id),
+                    activitySnapshots: liveActivitySnapshots,
+                    onOpenActivity: openLiveActivityDashboard,
+                    t,
+                  })}
                 <div style={dockGroupLabel}>{t('live_dock.group_run') || 'Run'}</div>
                 <div style={{display:'flex',flexDirection:'column',gap:6}}>
                   <button style={dockCardStyle} onClick={() => { setLivePollPreset(null); setShowLivePollingPanel(true); setShowLiveDock(false); }}>
@@ -37507,12 +38784,46 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   }}>
                     <span aria-hidden="true">⚡</span>{t('live_dock.quick_check') || 'Quick Check (confused → ready)'}
                   </button>
-                  <button style={dockCardStyle} onClick={() => { setShowPictionaryHost(true); setShowLiveDock(false); }}>
+                  <button style={dockCardStyle} onClick={() => {
+                    setLivePollPreset({
+                      type: 'wordcloud',
+                      prompt: t('live_dock.word_cloud_prompt') || 'What word or short phrase best captures your thinking?',
+                      afterSubmitMode: 'wait',
+                    });
+                    setShowLivePollingPanel(true); setShowLiveDock(false);
+                  }}>
+                    <span aria-hidden="true">☁️</span>{t('live_dock.word_cloud') || 'Word Cloud'}
+                  </button>
+                  <button style={dockCardStyle} onClick={() => {
+                    setLivePollPreset({
+                      type: 'freetext',
+                      prompt: t('live_dock.feedback_response_prompt') || 'Explain your thinking using evidence from the lesson.',
+                      afterSubmitMode: 'wait',
+                      feedbackEnabled: true,
+                      feedbackCriteria: t('live_dock.feedback_response_criteria') || 'Identify one accurate idea, explain it clearly, and support it with relevant evidence.',
+                      feedbackAudienceMode: 'class',
+                    });
+                    setShowLivePollingPanel(true); setShowLiveDock(false);
+                  }}>
+                    <span aria-hidden="true">✍️</span>{t('live_dock.feedback_response') || 'Feedback Response'}
+                  </button>
+                  <button style={dockCardStyle} onClick={() => { setPictionaryInitialMode('pictionary'); setShowPictionaryHost(true); setShowLiveDock(false); }}>
                     <span aria-hidden="true">🎨</span>{t('pictionary.button') || 'Concept Pictionary'}
+                  </button>
+                  <button style={dockCardStyle} onClick={() => { setPictionaryInitialMode('sketch'); setShowPictionaryHost(true); setShowLiveDock(false); }}>
+                    <span aria-hidden="true">✏️</span>{t('live_dock.sketch_response') || 'Sketch Response'}
                   </button>
                 </div>
                 <div style={dockGroupLabel}>{t('live_dock.group_guide') || 'Guide'}</div>
                 <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                  <button type="button" disabled={!generatedContent} style={{...dockCardStyle,opacity:generatedContent?1:0.55,cursor:generatedContent?'pointer':'not-allowed'}} onClick={() => { if (!generatedContent) return; setShowLiveDock(false); handleSetIsZenModeToTrue(); }}>
+                    <span aria-hidden="true">🖥️</span>{t('live_dock.focus_display') || 'Focus display'}
+                    <span style={{marginLeft:'auto',fontSize:'0.65rem',fontWeight:700,color:'#1d4ed8'}}>{t('live_dock.current_view') || 'current view'}</span>
+                  </button>
+                  <button type="button" style={dockCardStyle} onClick={() => { setShowLiveDock(false); handleSetShowStudyTimerModalToTrue(); }}>
+                    <span aria-hidden="true">⏱️</span>{t('a11y.task_timer') || 'Class timer'}
+                    {isStudyTimerRunning ? <span style={{marginLeft:'auto',fontSize:'0.68rem',fontWeight:800,color:'#15803d',fontVariantNumeric:'tabular-nums'}}>{formatTime(studyTimeLeft)}</span> : null}
+                  </button>
                   <button style={dockCardStyle} onClick={() => toggleSessionMode()}>
                     <span aria-hidden="true">{sessionData && sessionData.mode === 'sync' ? '🧑‍🏫' : '🧭'}</span>
                     {(sessionData && sessionData.mode === 'sync') ? (t('session.teacher_paced') || 'Teacher-paced') : (t('session.student_paced') || 'Student-paced')}
@@ -38023,7 +39334,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   </div>
                 )}
                 <p style={{fontSize:'0.68rem',color:'#64748b',margin:'0.7rem 0 0 0',lineHeight:1.35}}>
-                  {t('live_dock.privacy_note') || '🔒 Poll answers, drawings and guesses travel device-to-device and are never stored. Signals share only a codename + a preset phrase.'}
+                  {t('live_dock.privacy_note') || '🔒 Poll answers, feedback, drawings and guesses are not written to the live session. Activity Pulse keeps status/count metadata in teacher memory only. Generating feedback sends the selected response without a codename to your configured AI provider. Signals share only a codename + a preset phrase.'}
                 </p>
               </div>
             )}
@@ -38035,9 +39346,16 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           sessionCode: activeSessionCode,
           isOpen: showLivePollingPanel,
           onClose: () => { setShowLivePollingPanel(false); setLivePollPreset(null); },
-          // One-tap presets from the Live Session Center (e.g. Quick Check)
-          // seed the composer; the teacher still reviews + broadcasts.
+          // One-tap presets from the Live Session Center (e.g. Quick Check /
+          // Word Cloud / Feedback Response) seed the existing composer.
           initialPoll: livePollPreset,
+          callGemini,
+          resources: _alloStudentSafeResources(history),
+          roster: (sessionData && sessionData.roster) || {},
+          sessionGroups: (sessionData && sessionData.groups) || {},
+          onSendToStudent: (uid, resourceId) => handleSetStudentResource(uid, resourceId),
+          onSendToGroup: (groupId, resourceId) => handleSetGroupResource(groupId, resourceId),
+          onActivitySnapshot: recordLiveActivitySnapshot,
           // Roster gate (defense-in-depth): the host ignores WebRTC offers
           // from uids not present in the session roster.
           allowedUids: sessionData && sessionData.roster ? Object.keys(sessionData.roster) : [],
@@ -38056,14 +39374,16 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           hostNonce: (sessionData && sessionData.livePolling && sessionData.livePolling.hostOpenedAt) || 0,
         })
       }
-      {/* Concept Pictionary (WebRTC peer-to-peer). Sibling of Live Polling. Strokes + guesses */}
-      {/* flow browser-to-browser; only Tier-1 roster.{uid}.role markers touch Firestore. See  */}
+      {/* Concept Pictionary + Sketch Response (WebRTC peer-to-peer). Strokes, guesses, private */}
+      {/* sketch submissions, and approved anonymous reveals flow browser-to-browser; only Tier-1 */}
+      {/* roster.{uid}.role markers touch Firestore. See */}
       {/* concept_pictionary_module.js + feedback_session_tier1_tier2. */}
       {/* Pictionary's floating button now lives inside the Live Session Center dock above. */}
       {isTeacherMode && activeSessionCode && showPictionaryHost && window.AlloModules && window.AlloModules.ConceptPictionary && window.AlloModules.ConceptPictionary.HostView &&
         React.createElement(window.AlloModules.ConceptPictionary.HostView, {
           isOpen: showPictionaryHost,
-          onClose: () => { setShowPictionaryHost(false); setPictionaryIncomingConcepts([]); },
+          onClose: () => { setShowPictionaryHost(false); setPictionaryIncomingConcepts([]); setPictionaryInitialMode('pictionary'); },
+          initialMode: pictionaryInitialMode,
           sessionCode: activeSessionCode,
           sessionData,
           sessionRef: (typeof sessionUnsubscribeRef !== 'undefined' && sessionUnsubscribeRef && sessionUnsubscribeRef.current && sessionUnsubscribeRef.current.docRef) || (activeSessionCode ? doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode) : null),
@@ -38085,6 +39405,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             return (generatedContent && (generatedContent.source || (generatedContent.data && generatedContent.data.sourceText))) || (typeof inputText !== 'undefined' ? inputText : '');
           })(),
           initialConceptIdeas: pictionaryIncomingConcepts,
+          resources: _alloStudentSafeResources(history),
+          onSendToStudent: (uid, resourceId) => handleSetStudentResource(uid, resourceId),
+          onSendToGroup: (groupId, resourceId) => handleSetGroupResource(groupId, resourceId),
+          onActivitySnapshot: recordLiveActivitySnapshot,
         })
       }
       {!isTeacherMode && activeSessionCode && user && user.uid && showPictionaryGuest && window.AlloModules && window.AlloModules.ConceptPictionary && window.AlloModules.ConceptPictionary.GuestOverlay &&
@@ -38526,8 +39850,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         </div>
       )}
       {(pdfAuditResult || pdfAuditLoading) && window.AlloModules && window.AlloModules.PdfAuditView && React.createElement(window.AlloModules.PdfAuditView, {
+          key: 'pdf-audit-document-' + pdfDocumentSelectionEpochRef.current,
           STYLE_SEEDS, _buildMissingList, _closePdfAuditModal, _discardAndCloseAudit, _docPipeline, recomputeIssueResolution,
-          _ensureDiffLib, _ensurePdfLib, _saveAndCloseAudit, addToast, agentActivityLog,
+          _ensureDiffLib, _ensurePdfLib, _saveAndCloseAudit, addToast, agentActivityLog, applyingRemarkup,
           agentLogFullView, applyWordRestorationInPlace, auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary,
           auditReady, auditDependencyState, remediationReady, remediationDependencyState, retryRemediationDependencies,
           boringPalettePrompt, callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
@@ -38541,7 +39866,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           pdfAutoContinue, pdfAutoContinueAbortCtrlRef, pdfAutoContinueAbortRef, pdfAutoContinueRunning, pdfAutoFixPasses,
           pdfAutoSaveProject, pdfBatchCurrentIndex, pdfBatchMode, pdfBatchProcessing, pdfBatchQueue,
           pdfBatchStep, pdfBatchSummary, pdfFixLoading, pdfFixMode, pdfFixModeRef,
-          pdfFixResult, pdfFixResultRef, pdfFixStep, pdfMultiSession, pdfPageRange,
+          pdfFixResult, pdfFixResultRef, pdfFixStep, pdfMultiSession, pdfPageRange, pdfDocumentEpoch: pdfDocumentSelectionEpochRef.current,
           capturePdfHtmlCommitToken, commitPdfFixResultIfCurrent,
           pdfPolishPasses, pdfPreviewA11yInspect, pdfPreviewFontSize, pdfPreviewOpen, pdfPreviewRef,
           pdfPreviewTheme, pdfTargetScore, pdfWebMode, pendingPdfBase64, pendingPdfFile,
@@ -38573,6 +39898,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         }}
         onConfirm={async () => {
             if (!pendingLargeFile) return;
+            const documentIntakeEpoch = capturePdfDocumentIntakeEpoch();
             setIsLargeFileProcessing(true);
             setLargeFileProgress(0);
             setLargeFileStatus(t('large_file.starting') || 'Starting...');
@@ -38593,21 +39919,25 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         return await callGeminiVision(prompt, base64, mimeType);
                     },
                     (current, total, status) => {
+                        if (!isPdfDocumentIntakeCurrent(documentIntakeEpoch)) return;
                         setLargeFileProgress(current);
                         setLargeFileTotalChunks(total);
                         setLargeFileStatus(status);
                     }
                 );
+                if (!isPdfDocumentIntakeCurrent(documentIntakeEpoch)) return;
                 if (result && result.transcript) {
                     setInputText(prev => prev + '\n\n' + result.transcript);
                     addToast(t('toasts.file_chunking_complete') || 'Transcription complete!', 'success');
                 }
             } catch (error) {
+                if (!isPdfDocumentIntakeCurrent(documentIntakeEpoch)) return;
                 if (error.message !== 'Cancelled') {
                     warnLog('Large file transcription error:', error);
                     addToast(t('toasts.file_chunking_failed') || 'Chunked transcription failed.', 'error');
                 }
             } finally {
+                if (!isPdfDocumentIntakeCurrent(documentIntakeEpoch)) return;
                 setIsLargeFileProcessing(false);
                 setShowLargeFileModal(false);
                 setPendingLargeFile(null);
@@ -38931,6 +40261,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           and voice loop (S2) will reuse; ctx is assembled from the SAME
           named handlers the HeaderBar/FabStack already receive. */}
       {isAppReady && window.AlloModules && window.AlloModules.AlloCommands && React.createElement(window.AlloModules.AlloCommands.AlloCommandPalette, { ctx: _alloCmdCtx() })}
+      {isAppReady && window.AlloModules && window.AlloModules.AlloCommands && window.AlloModules.AlloCommands.AlloCommandProgress && React.createElement(window.AlloModules.AlloCommands.AlloCommandProgress, { ctx: _alloCmdCtx() })}
       {/* Voice-control indicator (S2): visible + announced whenever the mic is live. */}
       {alloVoiceActive && (
         <div role="status" aria-live="polite" className="fixed bottom-24 left-4 z-[11500] flex items-center gap-2 px-3 py-2 bg-rose-600 text-white rounded-full shadow-xl text-xs font-bold no-print">
@@ -39011,7 +40342,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           setAgentLogFullView, setCustomExportCSS, setDiffViewOpen, setExpertCommandInput, setExportAuditLoading,
           setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt, setExportTheme,
           setIsAgentRunning, setShowBrandProfileEditor, setShowExportPreview: setShowExportPreviewWrapped, showExportPreview, t, theme, toggleA11yInspect, updateExportPreview,
-          exportPreviewSource
+          exportPreviewSource,
+          onExportSuccess: () => completeGuidedDelivery('exportCreated')
         })}
         <CDNModuleGate moduleKey="StemLab" isOpen={showStemLab} onClose={() => setShowStemLab(false)} icon="🔬" displayName="STEM Lab" t={t}>
             {(StemLab) => React.createElement(StemLab, {
@@ -39638,11 +40970,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             re-importing a downloaded project file). This pill re-mounts the modal
             against the still-in-memory result. Shown whenever a result exists but the
             modal is closed. Mirrors the DA pill above; stacks above it when both show. */}
-        {pdfFixResult && !pdfAuditResult && !pdfAuditLoading && !pdfFixLoading && !pdfAutoContinueRunning && (
+        {(pdfFixResult || lastPdfAuditResultRef.current) && !pdfAuditResult && !pdfAuditLoading && !pdfFixLoading && !pdfAutoContinueRunning && (
             <button
                 onClick={() => {
                     const _restore = lastPdfAuditResultRef.current || {
-                        score: pdfFixResult.beforeScore || 0, scores: [], critical: [], major: [], minor: [],
+                        score: pdfFixResult?.beforeScore ?? null, scores: [], critical: [], major: [], minor: [],
                         passes: [], summary: 'Reopened remediation', pageCount: pdfFixResult.pageCount,
                         hasSearchableText: true, hasImages: (pdfFixResult.imageCount || 0) > 0,
                     };
@@ -39654,7 +40986,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             >
                 <span className="text-base" aria-hidden="true">↩</span>
                 <span>{t('pdf_audit.return_pill') || 'Return to remediation'}</span>
-                {typeof pdfFixResult.afterScore === 'number' && (
+                {typeof pdfFixResult?.afterScore === 'number' && (
                     <span className="bg-emerald-800 px-1.5 py-0.5 rounded text-[10px] font-black">{pdfFixResult.afterScore}/100</span>
                 )}
             </button>
@@ -40079,6 +41411,19 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             })}
         </CDNModuleGate>
 
+        {accessibilityReviewSession && !isAccessibilityLabOpen && (
+            <button
+                type="button"
+                data-a11y-review-return="true"
+                onClick={() => setIsAccessibilityLabOpen(true)}
+                aria-label={(t('a11y_lab.review.return_aria') || 'Return to Accessibility Lab review') + ': ' + (accessibilityReviewSession.artifactTitle || accessibilityReviewSession.artifactType || '')}
+                className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[1000] max-w-[calc(100vw-2rem)] bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2.5 rounded-full shadow-2xl border-2 border-indigo-300 flex items-center gap-2 text-sm font-bold transition-all hover:scale-[1.02]"
+            >
+                <span aria-hidden="true">♿</span>
+                <span className="truncate">{t('a11y_lab.review.return_label') || 'Return to Accessibility Lab'}</span>
+                <span className="hidden sm:inline max-w-64 truncate text-indigo-100 font-medium">· {accessibilityReviewSession.artifactTitle || accessibilityReviewSession.artifactType}</span>
+            </button>
+        )}
         <CDNModuleGate moduleKey="AccessibilityLab" isOpen={isAccessibilityLabOpen} onClose={() => setIsAccessibilityLabOpen(false)} icon="🔍" displayName="Accessibility Lab" t={t}>
             {(AL) => React.createElement(AL, {
                 isOpen: true,
@@ -40087,6 +41432,22 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 history,
                 callTTS: callTTSDirect,
                 renderFormattedText,
+                reviewSession: accessibilityReviewSession,
+                onEndReviewSession: () => setAccessibilityReviewSession(null),
+                onOpenAuthenticView: (item) => {
+                    if (!item) return;
+                    const sameSession = accessibilityReviewSession && String(accessibilityReviewSession.itemId) === String(item.id);
+                    setAccessibilityReviewSession({
+                        itemId: item.id,
+                        artifactType: item.type || '',
+                        artifactTitle: item.title || getDefaultTitle(item.type),
+                        startedAt: sameSession && accessibilityReviewSession.startedAt ? accessibilityReviewSession.startedAt : new Date().toISOString(),
+                    });
+                    // Accessibility review is local: opening a preview must never
+                    // advance or push the active resource in a live class session.
+                    setIsAccessibilityLabOpen(false);
+                    setTimeout(() => handleRestoreView(item, { suppressLiveFollow: true }), 0);
+                },
                 t,
                 readingTheme, setReadingTheme,
                 baseFontSize, setBaseFontSize,
@@ -40204,6 +41565,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 isOpen: true,
                 onClose: () => setIsTestPrepHubOpen(false),
                 callTTS,
+                callGemini,
+                selectedVoice,
                 addToast,
                 t,
             })}
@@ -40529,16 +41892,22 @@ function KokoroOfferModal(props) {
     );
 }
 // ── ConfirmDialog extracted to view_confirm_dialog_module.js (CDN) ──
+function _AlloUnavailableDialogFallback({ setDialog }) {
+    React.useEffect(() => {
+        if (typeof setDialog === 'function') setDialog(null);
+    }, [setDialog]);
+    return null;
+}
 function ConfirmDialog(props) {
     var Real = window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
     if (Real && Real !== ConfirmDialog) return React.createElement(Real, props);
-    return null;
+    return React.createElement(_AlloUnavailableDialogFallback, { setDialog: props.setConfirmDialog });
 }
 // ── PromptDialog extracted to view_prompt_dialog_module.js (CDN) ──
 function PromptDialog(props) {
     var Real = window.AlloModules && window.AlloModules.PromptDialog && window.AlloModules.PromptDialog.PromptDialog;
     if (Real && Real !== PromptDialog) return React.createElement(Real, props);
-    return null;
+    return React.createElement(_AlloUnavailableDialogFallback, { setDialog: props.setPromptDialog });
 }
 // ── HintsModal extracted to view_hints_modal_module.js (CDN) ──
 function HintsModal(props) {

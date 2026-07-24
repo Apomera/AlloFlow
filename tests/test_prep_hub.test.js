@@ -35,7 +35,10 @@ describe('Test Prep Hub exam-pack contract', () => {
     expect(eppp.items.every((item) => item.reviewStatus === 'source-reviewed')).toBe(true);
     expect(eppp.items.every((item) => item.references.length > 0)).toBe(true);
     expect(eppp.items.every((item) => item.choiceRationales.length === item.choices.length)).toBe(true);
-    expect(eppp.legacyUrl).toBe('./test_prep/eppp_legacy/index.html?embedded=1');
+    expect(eppp.legacyUrl).toBe('https://alloflow-cdn.pages.dev/test_prep/eppp_legacy/index.html?embedded=1');
+    expect(eppp.nativeQaUrl).toBe('https://alloflow-cdn.pages.dev/test_prep/eppp_native_qa.json');
+    expect(eppp.learningLibraryUrl).toBe('https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library.json');
+    expect(eppp.learningLibraryQaUrl).toBe('https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library_qa.json');
     expect(eppp.legacyAuditUrl).toBe('');
     expect(eppp.nextReviewDocketUrl).toBe('');
     expect(eppp.curation500Url).toBe('');
@@ -177,6 +180,38 @@ describe('Test Prep Hub exam-pack contract', () => {
     expect(Hub.normalizePack({ id: 'remote', title: 'Remote', legacyUrl: 'https://example.com/app' }).legacyUrl).toBe('');
     expect(Hub.normalizePack({ id: 'escape', title: 'Escape', legacyUrl: './test_prep/../secret' }).legacyUrl).toBe('');
     expect(Hub.normalizePack({ id: 'remote-audit', title: 'Remote audit', legacyAuditUrl: 'https://example.com/audit.json' }).legacyAuditUrl).toBe('');
+    expect(Hub.normalizePack({ id: 'trusted-cdn', title: 'Trusted CDN', learningLibraryUrl: 'https://alloflow-cdn.pages.dev/test_prep/catalog.json' }).learningLibraryUrl).toBe('https://alloflow-cdn.pages.dev/test_prep/catalog.json');
+    expect(Hub.normalizePack({ id: 'wrong-raw-repo', title: 'Wrong raw repo', learningLibraryUrl: 'https://raw.githubusercontent.com/Other/Repo/main/test_prep/catalog.json' }).learningLibraryUrl).toBe('');
+  });
+
+  it('resolves repository JSON through CDN, GitHub raw, and local-development candidates', async () => {
+    const logicalUrl = './test_prep/catalog.json';
+    expect(Hub.repoAssetCandidates(logicalUrl)).toEqual([
+      'https://alloflow-cdn.pages.dev/test_prep/catalog.json',
+      'https://raw.githubusercontent.com/Apomera/AlloFlow/main/test_prep/catalog.json',
+      './test_prep/catalog.json',
+    ]);
+
+    const originalFetch = global.fetch;
+    const originalWindowFetch = window.fetch;
+    const calls = [];
+    const fetchMock = async (url) => {
+      calls.push(String(url));
+      if (calls.length === 1) return { ok: false, status: 503, json: async () => ({}) };
+      return { ok: true, status: 200, json: async () => ({ schemaVersion: 1, summary: {}, chapters: [] }) };
+    };
+    global.fetch = window.fetch = fetchMock;
+    try {
+      const catalog = await Hub.fetchRepoJson(logicalUrl, (value) => value && value.schemaVersion === 1);
+      expect(catalog.schemaVersion).toBe(1);
+      expect(calls).toEqual([
+        'https://alloflow-cdn.pages.dev/test_prep/catalog.json',
+        'https://raw.githubusercontent.com/Apomera/AlloFlow/main/test_prep/catalog.json',
+      ]);
+    } finally {
+      global.fetch = originalFetch;
+      window.fetch = originalWindowFetch;
+    }
   });
 
   it('rejects invalid answer keys and empty ready packs', () => {

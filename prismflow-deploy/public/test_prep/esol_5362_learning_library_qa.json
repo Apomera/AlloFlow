@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-19T17:48:51.885Z",
+  "generatedAt": "2026-07-23T17:24:40.801Z",
   "libraryId": "praxis-esol-5362-learning-library",
   "packId": "praxis-esol-5362",
   "standard": {
@@ -31,7 +31,7 @@
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
     "sourceItemsSha256": "cb9ec0f82816eca7b266d593b7ff20d89b6d0f461a050e83f552ecc8f2ce113c",
-    "learningLibrarySha256": "21b4296b7bb8d654bd81b25002fbc757364f06595786e5b87e0686232b2e3c83",
+    "learningLibrarySha256": "4c27865e1c7ff93205e36067f2f6acb47a8aaa97f4a5bef9ba8bbbce11dd2a66",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

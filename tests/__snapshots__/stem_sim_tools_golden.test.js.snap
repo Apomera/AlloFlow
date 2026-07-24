@@ -73,7 +73,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for bakin
   "lengthBucket": 55,
   "paths": 0,
   "selects": 0,
-  "sha": "00fe29c54672b741",
+  "sha": "7310d0c89d3be346",
   "svgs": 0,
 }
 `;
@@ -281,7 +281,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for physi
   "lengthBucket": 101,
   "paths": 0,
   "selects": 0,
-  "sha": "648777016d4dd8ee",
+  "sha": "c70b5b9fb9530aec",
   "svgs": 0,
 }
 `;
@@ -359,7 +359,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for swimL
   "lengthBucket": 69,
   "paths": 0,
   "selects": 0,
-  "sha": "eb420d0b7c303d28",
+  "sha": "fc95da41a13ac06b",
   "svgs": 0,
 }
 `;

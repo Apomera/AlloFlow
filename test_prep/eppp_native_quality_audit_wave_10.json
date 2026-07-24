@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-10",
+  "reviewedAt": "2026-07-23",
+  "reportType": "source-checked-native-item-repair",
+  "scope": "Deep-rewrite the next eight unreviewed items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.",
+  "challengeCriteria": [
+    "replace definition completion with application or analysis where difficulty warrants",
+    "use adjacent, instructionally plausible distractors without stacked absolute cues",
+    "avoid keyed lexical echoes that allow answer selection without construct knowledge",
+    "separate intentionally related coverage by decision, context, or cognitive demand",
+    "verify the key and rationale against an item-specific authoritative or peer-reviewed source",
+    "provide four substantive, option-specific explanations and preserve answer positions"
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 8,
+    "domainsCovered": 4,
+    "appliedOrAnalysisItems": 8,
+    "keyPositionsPreserved": 8,
+    "optionSpecificExplanations": 32,
+    "selectedItemsWithWarningsAfter": 0,
+    "selectedWarningIdsAfter": [],
+    "warningCountsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 168,
+      "asymmetricExtremeDistractorCandidates": 346,
+      "advancedDirectRecallCandidates": 24,
+      "semanticConceptDuplicatePairs": 303,
+      "semanticConceptDuplicateClusters": 130,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "warningCountsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 166,
+      "asymmetricExtremeDistractorCandidates": 339,
+      "advancedDirectRecallCandidates": 23,
+      "semanticConceptDuplicatePairs": 287,
+      "semanticConceptDuplicateClusters": 128,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-b024-assessment-3",
+      "domainId": "assessment",
+      "difficulty": "foundation",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "assessment-fixed-battery-profile-interpretation",
+      "sourceCheck": "The Reitan and Wolfson technical monograph supports interpretation of the fixed battery through patterns and levels across component tests, while emphasizing integrated clinical interpretation rather than lesion claims from a single score.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b015-professional-1",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "professional-ethics-adjudication-versus-guidance",
+      "sourceCheck": "The official APA Code states that the broad principles are goals intended to guide psychologists toward the profession's highest ideals and, unlike the numbered requirements, are not obligations or bases for sanctions.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b023-professional-1",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "professional-values-beyond-minimum-compliance",
+      "sourceCheck": "The official APA Code identifies five broad principles as goals that guide psychologists toward the profession's highest ideals, supporting their use when compliant options still require professional ethical judgment.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-assessment-028",
+      "domainId": "assessment",
+      "difficulty": "advanced",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "assessment-regression-residual-spread-interpretation",
+      "sourceCheck": "The NIST least-squares chapter defines the error-term estimate as the square root of residual sum of squares over residual degrees of freedom and explains that it describes response variation around the fitted regression function.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "advanced-direct-recall",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-social-cultural-015",
+      "domainId": "social-cultural",
+      "difficulty": "foundation",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "social-cultural-minimal-group-allocation-bias",
+      "sourceCheck": "The foundational minimal-group experiments found that arbitrary categorization influenced distributions of real rewards and produced preference for one's assigned category, directly supporting the applied allocation scenario.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-intervention-032",
+      "domainId": "intervention",
+      "difficulty": "intermediate",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-psychological-flexibility-defusion-values",
+      "sourceCheck": "The peer-reviewed model paper describes changing the function and context of private events through acceptance and defusion while strengthening values-guided committed action, supporting the scenario's intervention choice.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b026-professional-1",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "professional-noncash-fee-clinical-exploitation-analysis",
+      "sourceCheck": "The official APA Code permits noncash exchange when it is not clinically contraindicated and the resulting arrangement is not exploitative, supporting a prospective case-specific risk analysis rather than a blanket rule.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-professional-020",
+      "domainId": "professional",
+      "difficulty": "intermediate",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "professional-assessment-basis-fitness-for-duty",
+      "sourceCheck": "The official APA Code requires assessment opinions to rest on information and techniques sufficient to substantiate findings, directly supporting refusal to issue a definitive occupational opinion from an informal report and mismatched screener.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    }
+  ],
+  "limitations": [
+    "Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation."
+  ]
+}

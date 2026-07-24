@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-19T17:49:13.764Z",
+  "generatedAt": "2026-07-23T17:25:04.633Z",
   "packId": "praxis-teaching-reading-5205",
   "standard": {
     "label": "AlloFlow Teaching Reading 5205 source, structure, feedback, safety, linkage, and credential-role QA v3",
@@ -69,7 +69,7 @@
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
     "sourceItemsSha256": "51c325b09b7d291b8035e3bf6c87977aadb49d1b8460e61185f021f4bf18674a",
-    "learningLibrarySha256": "0f3dba4bc13540b8ce3af5e0f58e27a39065ebc43bc07f474264331f94033b7d",
+    "learningLibrarySha256": "2a7ec9e68bdefb1a7c4c5784ab012979c1d07f0010cb823e8ddde832977c58c6",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   },
   "expansion": {

@@ -371,6 +371,7 @@ const PLAN_CONTRACTS = Object.freeze({
     reason: 'Sends one fixed-vocabulary signal to the teacher in an active live session.'
   },
   create_activity_rubric: { demoSafe: false, interaction: 'guided', reason: 'Runs rubric generation for the current activity.' },
+  open_command_blueprints: { demoSafe: false, interaction: 'interactive', terminal: true, reason: 'Opens the teacher-owned saved workflow library; selection and approval remain user-controlled.' },
   share_assignment: { demoSafe: false, interaction: 'external', reason: 'Creates a student-facing assignment link after confirmation.' },
   preview_assignment_as_student: { demoSafe: false, interaction: 'external', reason: 'Opens an already-shared student assignment in a new tab.' },
   launch_flashcards: { requires: ['glossary'] },
@@ -499,6 +500,62 @@ function _commandAllowsAudience(command, audience) {
   return roles === audience;
 }
 
+// UI capability contracts are deliberately separate from plan artifact contracts:
+// these describe whether the host can perform a command in its current state and
+// provide a human-readable reason when a teacher searches for a gated action.
+const COMMAND_CAPABILITIES = Object.freeze({
+  assignmentDirectionsEditor: {
+    test: (c) => !!c.canEditAssignmentDirections && typeof c.editAssignmentDirections === 'function',
+    reason: 'Add assignment directions before editing them.'
+  },
+  assessmentBuilder: {
+    test: (c) => typeof c.openAssessmentBuilder === 'function',
+    reason: 'Assessment Builder is not available in this view yet.'
+  },
+  udlGuide: {
+    test: (c) => typeof c.openUdlGuide === 'function',
+    reason: 'The UDL Guide is not available in this view yet.'
+  },
+  activityRubricGenerator: {
+    test: (c) => !!c.canGenerateCurrentRubric && typeof c.generateCurrentRubric === 'function',
+    reason: 'Open an activity with enough content to create a rubric.'
+  },
+  assignmentSharing: {
+    test: (c) => !!c.canShareAssignment && typeof c.shareAssignment === 'function',
+    reason: 'Add at least one shareable assignment resource first.'
+  },
+  studentAssignmentPreview: {
+    test: (c) => !!c.canPreviewStudentAssignment && typeof c.previewStudentAssignment === 'function',
+    reason: 'Create a student assignment link before previewing it.'
+  }
+});
+
+function getCommandAvailability(command, ctx) {
+  const c = ctx || {};
+  const required = Array.isArray(command && command.requiresCapabilities) ? command.requiresCapabilities : [];
+  const missingCapabilities = [];
+  let reason = '';
+  for (const name of required) {
+    const capability = COMMAND_CAPABILITIES[name];
+    let ready = false;
+    try { ready = !!(capability && capability.test(c)); } catch (_) { ready = false; }
+    if (!ready) {
+      missingCapabilities.push(name);
+      if (!reason && capability && capability.reason) reason = capability.reason;
+    }
+  }
+  let whenReady = true;
+  if (!missingCapabilities.length && command && typeof command.when === 'function') {
+    try { whenReady = !!command.when(c); } catch (_) { whenReady = false; }
+    if (!whenReady) reason = command.unavailableReason || 'This command is not available in the current context.';
+  }
+  return {
+    available: missingCapabilities.length === 0 && whenReady,
+    reason,
+    missingCapabilities
+  };
+}
+
 // Pure, non-mutating plan preflight. It simulates declared produces/requires
 // contracts while still checking today's live command guards. Both AlloBot and
 // Video Studio use the same result, so readiness logic cannot drift.
@@ -593,12 +650,13 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: 'go_dashboard', opensPanel: 'dashboard', icon: '🏠', roles: 'all', label: t('cmd.go_dashboard', 'Go to the dashboard'), aliases: ['dashboard', 'home', 'go home', 'main view', 'overview'], hint: t('cmd.go_dashboard_hint', 'Back to the main lesson view'), run: (c) => { c.goToDashboard(); return t('cmd.go_dashboard_done', 'Dashboard.'); } },
     { id: 'open_roster', icon: '🧑‍🤝‍🧑', roles: 'teacher', label: t('cmd.open_roster', 'Open the class roster'), aliases: ['roster', 'manage roster', 'class roster', 'roster key'], hint: t('cmd.open_roster_hint', 'Manage your class groups'), run: (c) => { c.openRoster(); return t('cmd.open_roster_done', 'Class roster opened.'); } },
     { id: 'open_project_settings', icon: '⚙️', roles: 'teacher', label: t('cmd.open_project_settings', 'Open project settings'), aliases: ['project settings', 'student settings', 'lesson settings', 'permissions', 'allow ai'], hint: t('cmd.open_project_settings_hint', 'Per-project AI, dictation, and Socratic gating'), run: (c) => { c.openProjectSettings(); return t('cmd.open_project_settings_done', 'Project settings opened.'); } },
-    { id: 'edit_assignment_directions', icon: '\u{1F4CB}', roles: 'teacher', when: (c) => !!c.canEditAssignmentDirections && !!c.editAssignmentDirections, label: t('cmd.edit_assignment_directions', 'Edit assignment directions'), aliases: ['edit directions', 'assignment directions editor', 'write directions', 'change assignment directions'], hint: t('cmd.edit_assignment_directions_hint', 'Open the directions and goals composer'), run: (c) => { c.editAssignmentDirections(); return t('cmd.edit_assignment_directions_done', 'Assignment directions editor opened.'); } },
-    { id: 'open_assessment_builder', icon: '\u{1F9ED}', roles: 'teacher', when: (c) => !!c.openAssessmentBuilder, label: t('cmd.open_assessment_builder', 'Open Assessment Builder'), aliases: ['assessment builder', 'build assessment', 'make an assessment', 'assessment tools'], hint: t('cmd.open_assessment_builder_hint', 'Design an assessment and supporting activities'), run: (c) => { c.openAssessmentBuilder(); return t('cmd.open_assessment_builder_done', 'Assessment Builder opened.'); } },
-    { id: 'open_udl_guide', icon: '\u267F', roles: 'teacher', when: (c) => !!c.openUdlGuide, label: t('cmd.open_udl_guide', 'Open the UDL Guide'), aliases: ['udl guide', 'universal design guide', 'udl help', 'accessibility guide'], hint: t('cmd.open_udl_guide_hint', 'Review UDL supports for the current lesson'), run: (c) => { c.openUdlGuide(); return t('cmd.open_udl_guide_done', 'UDL Guide opened.'); } },
-    { id: 'create_activity_rubric', icon: '\u{1F4D0}', roles: 'teacher', when: (c) => !!c.canGenerateCurrentRubric && !!c.generateCurrentRubric, label: t('cmd.create_activity_rubric', 'Create a rubric for this activity'), aliases: ['create rubric', 'make a rubric', 'generate rubric', 'rubric for this activity'], hint: t('cmd.create_activity_rubric_hint', 'Generate observable, student-friendly success criteria'), run: (c) => { c.generateCurrentRubric(); return t('cmd.create_activity_rubric_working', 'Generating an activity rubric...'); }, pendingNarration: t('cmd.create_activity_rubric_working', 'Generating an activity rubric...'), runAsync: async (c) => { const ok = await c.generateCurrentRubric(); if (ok === false) throw new Error(t('cmd.create_activity_rubric_failed', 'The activity rubric could not be created.')); return t('cmd.create_activity_rubric_done', 'Activity rubric created.'); } },
-    { id: 'share_assignment', icon: '\u{1F517}', roles: 'teacher', destructive: true, when: (c) => !!c.canShareAssignment && !!c.shareAssignment, label: t('cmd.share_assignment', 'Share this assignment'), aliases: ['share assignment', 'publish assignment', 'make homework link', 'create student link', 'assign this'], hint: t('cmd.share_assignment_hint', 'Create a student-facing homework link after confirmation'), confirmMessage: (c) => { const count = Math.max(1, Number(c.shareResourceCount) || 1); const days = Math.max(1, Number(c.shareExpiryDays) || 1); const ai = c.shareStudentAiPolicy === 'student-byok' ? t('cmd.share_assignment_confirm_ai_byok', 'Students may connect their own AI provider.') : t('cmd.share_assignment_confirm_ai_off', 'Student AI will stay off.'); return t('cmd.share_assignment_confirm', 'Create a student link containing {count} resource(s), expiring in {days} day(s). {ai} Press Enter again to confirm.').replace('{count}', count).replace('{days}', days).replace('{ai}', ai); }, run: (c) => { c.shareAssignment(); return t('cmd.share_assignment_working', 'Creating the student assignment link...'); }, pendingNarration: t('cmd.share_assignment_working', 'Creating the student assignment link...'), runAsync: async (c) => { const url = await c.shareAssignment(); if (!url) throw new Error(t('cmd.share_assignment_failed', 'The student assignment link was not created.')); return t('cmd.share_assignment_done', 'Student assignment link created.'); } },
-    { id: 'preview_assignment_as_student', icon: '\u{1F440}', roles: 'teacher', when: (c) => !!c.canPreviewStudentAssignment && !!c.previewStudentAssignment, label: t('cmd.preview_assignment_as_student', 'Preview the shared assignment as a student'), aliases: ['preview as student', 'student preview', 'test student link', 'view assignment as student'], hint: t('cmd.preview_assignment_as_student_hint', 'Open the latest shared link in a separate student tab'), run: (c) => { c.previewStudentAssignment(); return t('cmd.preview_assignment_as_student_done', 'Student preview opened in a new tab.'); } },
+    { id: 'edit_assignment_directions', icon: '\u{1F4CB}', roles: 'teacher', requiresCapabilities: ['assignmentDirectionsEditor'], label: t('cmd.edit_assignment_directions', 'Edit assignment directions'), aliases: ['edit directions', 'assignment directions editor', 'write directions', 'change assignment directions'], hint: t('cmd.edit_assignment_directions_hint', 'Open the directions and goals composer'), run: (c) => { c.editAssignmentDirections(); return t('cmd.edit_assignment_directions_done', 'Assignment directions editor opened.'); } },
+    { id: 'open_assessment_builder', icon: '\u{1F9ED}', roles: 'teacher', requiresCapabilities: ['assessmentBuilder'], label: t('cmd.open_assessment_builder', 'Open Assessment Builder'), aliases: ['assessment builder', 'build assessment', 'make an assessment', 'assessment tools'], hint: t('cmd.open_assessment_builder_hint', 'Design an assessment and supporting activities'), run: (c) => { c.openAssessmentBuilder(); return t('cmd.open_assessment_builder_done', 'Assessment Builder opened.'); } },
+    { id: 'open_udl_guide', icon: '\u267F', roles: 'teacher', requiresCapabilities: ['udlGuide'], label: t('cmd.open_udl_guide', 'Open the UDL Guide'), aliases: ['udl guide', 'universal design guide', 'udl help', 'accessibility guide'], hint: t('cmd.open_udl_guide_hint', 'Review UDL supports for the current lesson'), run: (c) => { c.openUdlGuide(); return t('cmd.open_udl_guide_done', 'UDL Guide opened.'); } },
+    { id: 'open_command_blueprints', icon: '\u{1F9E9}', roles: 'teacher', label: 'Saved Command Blueprints', aliases: ['command blueprints', 'saved command blueprints', 'saved workflows', 'workflow library', 'saved plans', 'command workflow library'], hint: 'Open, review, and rerun saved multi-step command workflows', run: (c) => { c.openCommandBlueprintLibrary(); return 'Saved Command Blueprints opened in AlloBot.'; } },
+    { id: 'create_activity_rubric', icon: '\u{1F4D0}', roles: 'teacher', requiresCapabilities: ['activityRubricGenerator'], label: t('cmd.create_activity_rubric', 'Create a rubric for this activity'), aliases: ['create rubric', 'make a rubric', 'generate rubric', 'rubric for this activity'], hint: t('cmd.create_activity_rubric_hint', 'Generate observable, student-friendly success criteria'), run: (c) => { c.generateCurrentRubric(); return t('cmd.create_activity_rubric_working', 'Generating an activity rubric...'); }, pendingNarration: t('cmd.create_activity_rubric_working', 'Generating an activity rubric...'), runAsync: async (c) => { const ok = await c.generateCurrentRubric(); if (ok === false) throw new Error(t('cmd.create_activity_rubric_failed', 'The activity rubric could not be created.')); return t('cmd.create_activity_rubric_done', 'Activity rubric created.'); } },
+    { id: 'share_assignment', icon: '\u{1F517}', roles: 'teacher', destructive: true, requiresCapabilities: ['assignmentSharing'], label: t('cmd.share_assignment', 'Share this assignment'), aliases: ['share assignment', 'publish assignment', 'make homework link', 'create student link', 'assign this'], hint: t('cmd.share_assignment_hint', 'Create a student-facing homework link after confirmation'), confirmMessage: (c) => { const count = Math.max(1, Number(c.shareResourceCount) || 1); const days = Math.max(1, Number(c.shareExpiryDays) || 1); const ai = c.shareStudentAiPolicy === 'student-byok' ? t('cmd.share_assignment_confirm_ai_byok', 'Students may connect their own AI provider.') : t('cmd.share_assignment_confirm_ai_off', 'Student AI will stay off.'); return t('cmd.share_assignment_confirm', 'Create a student link containing {count} resource(s), expiring in {days} day(s). {ai} Press Enter again to confirm.').replace('{count}', count).replace('{days}', days).replace('{ai}', ai); }, run: (c) => { c.shareAssignment(); return t('cmd.share_assignment_working', 'Creating the student assignment link...'); }, pendingNarration: t('cmd.share_assignment_working', 'Creating the student assignment link...'), runAsync: async (c) => { const url = await c.shareAssignment(); if (!url) throw new Error(t('cmd.share_assignment_failed', 'The student assignment link was not created.')); return t('cmd.share_assignment_done', 'Student assignment link created.'); } },
+    { id: 'preview_assignment_as_student', icon: '\u{1F440}', roles: 'teacher', requiresCapabilities: ['studentAssignmentPreview'], label: t('cmd.preview_assignment_as_student', 'Preview the shared assignment as a student'), aliases: ['preview as student', 'student preview', 'test student link', 'view assignment as student'], hint: t('cmd.preview_assignment_as_student_hint', 'Open the latest shared link in a separate student tab'), run: (c) => { c.previewStudentAssignment(); return t('cmd.preview_assignment_as_student_done', 'Student preview opened in a new tab.'); } },
     { id: 'resume_latest_work', icon: '\u21A9\uFE0F', roles: 'all', when: (c) => !!c.hasResumableWork && !!c.resumeLatestWork, label: t('cmd.resume_latest_work', 'Resume my latest work'), aliases: ['resume my work', 'continue my work', 'open latest work', 'pick up where i left off'], hint: t('cmd.resume_latest_work_hint', 'Open the most recent saved item directly'), run: (c) => { const item = c.resumeLatestWork(); return item ? (t('cmd.resume_latest_work_done', 'Resumed ') + (item.title || item.type || 'your latest work') + '.') : t('cmd.resume_latest_work_none', 'No saved work is available yet.'); } },
 
     // ── Open a tool (added 2026-06-13) — quick-launch the workspaces that normally live behind a
@@ -722,7 +780,18 @@ function buildAlloCommands(ctx, opts = {}) {
   // the PLANNER must see commands an earlier step will unlock (create lesson →
   // generate quiz), while every EXECUTION surface keeps the default filter and
   // runPlan re-checks availability at run time. Role filtering always applies.
-  return cmds.filter((c) => _commandAllowsAudience(c, audience) && (opts.includeGated || !c.when || (() => { try { return !!c.when(ctx); } catch (_) { return false; } })()));
+  return cmds.reduce((visible, command) => {
+    if (!_commandAllowsAudience(command, audience)) return visible;
+    const availability = getCommandAvailability(command, ctx);
+    const decorated = Object.assign({}, command, {
+      available: availability.available,
+      unavailableReason: availability.reason,
+      missingCapabilities: availability.missingCapabilities
+    });
+    const showUnavailableTeacherCommand = !!opts.includeUnavailable && audience === 'teacher' && command.roles === 'teacher';
+    if (availability.available || opts.includeGated || showUnavailableTeacherCommand) visible.push(decorated);
+    return visible;
+  }, []);
 }
 
 // ── S1: the hybrid utterance router (bot chat + voice share it) ──
@@ -829,8 +898,8 @@ function _commandConfirmationText(command, ctx, t) {
   return t('palette.confirm', 'Press Enter again to confirm.');
 }
 
-function _emitCommandLifecycle(ctx, command, status, narration, via, notifyUser) {
-  const detail = { commandId: command && command.id, label: command && command.label, status, narration: narration || '', via: via || 'confirm', at: Date.now() };
+function _emitCommandLifecycle(ctx, command, status, narration, via, notifyUser, metadata) {
+  const detail = Object.assign({ commandId: command && command.id, label: command && command.label, status, narration: narration || '', via: via || 'confirm', at: Date.now() }, metadata || {});
   try { if (ctx && typeof ctx.onCommandState === 'function') ctx.onCommandState(detail); } catch (_) {}
   try { if (typeof window !== 'undefined' && window.dispatchEvent && window.CustomEvent) window.dispatchEvent(new window.CustomEvent('alloflow:command-state', { detail })); } catch (_) {}
   if (!notifyUser || !narration || status === 'pending') return detail;
@@ -839,9 +908,27 @@ function _emitCommandLifecycle(ctx, command, status, narration, via, notifyUser)
   return detail;
 }
 
+const _activeAsyncCommands = new Map();
+
+function _commandExecutionKey(ctx, command) {
+  return getCommandAudience(ctx || {}) + ':' + String(command && command.id || '');
+}
+
+function _awaitCommandCompletion(completion, timeoutMs, t, command, via) {
+  let timerId = null;
+  const timer = new Promise((resolve) => { timerId = setTimeout(() => resolve({ __alloTimeout: true }), timeoutMs || 180000); });
+  const clearTimer = () => { if (timerId != null) { clearTimeout(timerId); timerId = null; } };
+  return Promise.race([completion, timer]).then((result) => {
+    clearTimer();
+    if (result && result.__alloTimeout) return { handled: true, ok: true, timedOut: true, narration: t('router.still_working', 'Still working - it will finish in the background.'), commandId: command.id, via };
+    return result;
+  });
+}
+
 // Run a specific command by id (used by the bot chat AFTER the user confirms a
 // previewed match). Re-resolves permissions, emits a shared async lifecycle,
-// and never invokes run + runAsync for the same execution.
+// and never invokes run + runAsync for the same execution. Repeated requests
+// for the same audience/command share one in-flight completion promise.
 function executeCommand(ctx, commandOrId, params, opts = {}) {
   const t = _mkT(ctx && ctx.t);
   const id = String(commandOrId && typeof commandOrId === 'object' ? commandOrId.id : (commandOrId || ''));
@@ -854,41 +941,46 @@ function executeCommand(ctx, commandOrId, params, opts = {}) {
   if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === 'function') { try { ctx.closeOtherPanels(cmd.opensPanel); } catch (_) {} }
 
   if (typeof cmd.runAsync === 'function') {
+    const executionKey = _commandExecutionKey(ctx, cmd);
+    const active = _activeAsyncCommands.get(executionKey);
+    if (active) {
+      if (opts.awaitCompletion) return _awaitCommandCompletion(active.completion, opts.timeoutMs || 180000, t, cmd, via);
+      return { handled: true, ok: true, pending: true, deduplicated: true, narration: active.pendingNarration, commandId: cmd.id, via, completion: active.completion };
+    }
     let action;
     try { action = Promise.resolve(cmd.runAsync(ctx, safeParams)); }
     catch (error) {
       const narration = t('router.failed', 'That did not work: ') + ((error && error.message) || 'unknown');
-      _emitCommandLifecycle(ctx, cmd, 'error', narration, via, !opts.awaitCompletion);
+      _emitCommandLifecycle(ctx, cmd, 'error', narration, via, !opts.awaitCompletion, { params: safeParams, retryable: true });
       const failed = { handled: true, ok: false, narration, commandId: cmd.id, via };
       return opts.awaitCompletion ? Promise.resolve(failed) : failed;
     }
     const pendingNarration = cmd.pendingNarration || t('cmd.working', 'Working...');
-    _emitCommandLifecycle(ctx, cmd, 'pending', pendingNarration, via, false);
+    const startedAt = Date.now();
+    _emitCommandLifecycle(ctx, cmd, 'pending', pendingNarration, via, false, { params: safeParams, startedAt, retryable: false });
+    let entry = null;
     const completion = action.then((message) => {
       const narration = message || t('router.done', 'Done.');
-      _emitCommandLifecycle(ctx, cmd, 'success', narration, via, !opts.awaitCompletion);
+      _recordCommandUse(cmd.id);
+      _emitCommandLifecycle(ctx, cmd, 'success', narration, via, !opts.awaitCompletion, { params: safeParams, startedAt, retryable: false });
       return { handled: true, ok: true, narration, commandId: cmd.id, via };
     }).catch((error) => {
       const narration = t('router.failed', 'That did not work: ') + ((error && error.message) || 'unknown');
-      _emitCommandLifecycle(ctx, cmd, 'error', narration, via, !opts.awaitCompletion);
+      _emitCommandLifecycle(ctx, cmd, 'error', narration, via, !opts.awaitCompletion, { params: safeParams, startedAt, retryable: true });
       return { handled: true, ok: false, narration, commandId: cmd.id, via };
+    }).finally(() => {
+      if (_activeAsyncCommands.get(executionKey) === entry) _activeAsyncCommands.delete(executionKey);
     });
+    entry = { completion, pendingNarration, startedAt };
+    _activeAsyncCommands.set(executionKey, entry);
 
     if (!opts.awaitCompletion) return { handled: true, ok: true, pending: true, narration: pendingNarration, commandId: cmd.id, via, completion };
-
-    const timeoutMs = opts.timeoutMs || 180000;
-    let timerId = null;
-    const timer = new Promise((resolve) => { timerId = setTimeout(() => resolve({ __alloTimeout: true }), timeoutMs); });
-    const clearTimer = () => { if (timerId != null) { clearTimeout(timerId); timerId = null; } };
-    return Promise.race([completion, timer]).then((result) => {
-      clearTimer();
-      if (result && result.__alloTimeout) return { handled: true, ok: true, timedOut: true, narration: t('router.still_working', 'Still working - it will finish in the background.'), commandId: cmd.id, via };
-      return result;
-    });
+    return _awaitCommandCompletion(completion, opts.timeoutMs || 180000, t, cmd, via);
   }
 
   try {
     const message = cmd.run(ctx, safeParams);
+    _recordCommandUse(cmd.id);
     return { handled: true, narration: message || t('router.done', 'Done.'), commandId: cmd.id, via };
   } catch (error) {
     return { handled: true, ok: false, narration: t('router.failed', 'That did not work: ') + ((error && error.message) || 'unknown'), commandId: cmd.id, via };
@@ -1162,7 +1254,7 @@ const CMD_GROUP = {
   cycle_reading_theme:'display', set_ui_language:'display', open_sel_hub:'tools', open_submission_inbox:'navigate', toggle_cloud_sync:'navigate', generate_outline:'create', export_pack:'create',
   launch_flashcards:'create', clear_my_answers:'create', clear_workspace:'create', undo_settings:'create', open_persona_chat:'navigate',
   pipeline_fix_again:'pipeline', pipeline_stop:'pipeline', pipeline_new_doc:'pipeline',
-  edit_assignment_directions:'create', open_assessment_builder:'create', open_udl_guide:'help', create_activity_rubric:'create', share_assignment:'create', preview_assignment_as_student:'navigate', resume_latest_work:'navigate',
+  edit_assignment_directions:'create', open_assessment_builder:'create', open_udl_guide:'help', open_command_blueprints:'create', create_activity_rubric:'create', share_assignment:'create', preview_assignment_as_student:'navigate', resume_latest_work:'navigate',
   next_assignment_step:'navigate', read_assignment_directions:'accessibility', show_success_criteria:'navigate', send_teacher_signal:'live', review_teacher_feedback:'navigate',
 };
 const CMD_CONTEXT = {
@@ -1181,14 +1273,61 @@ const CMD_CONTEXT = {
   stop_reading:['reading'], line_spacing_more:['reading'], line_spacing_less:['reading'], open_submission_inbox:['educatorHub'], generate_outline:['content'], export_pack:['content'],
   launch_flashcards:['content','learningHub'], clear_my_answers:['content'], clear_workspace:['content'], open_persona_chat:['content'],
   pipeline_fix_again:['pipeline'], pipeline_stop:['pipeline'], pipeline_new_doc:['pipeline'],
-  edit_assignment_directions:['content'], open_assessment_builder:['educatorHub','content'], open_udl_guide:['educatorHub','content'], create_activity_rubric:['content'], share_assignment:['content'], preview_assignment_as_student:['content'], resume_latest_work:['content'],
+  edit_assignment_directions:['content'], open_assessment_builder:['educatorHub','content'], open_udl_guide:['educatorHub','content'], open_command_blueprints:['educatorHub','content'], create_activity_rubric:['content'], share_assignment:['content'], preview_assignment_as_student:['content'], resume_latest_work:['content'],
   next_assignment_step:['content'], read_assignment_directions:['content','reading'], show_success_criteria:['content'], send_teacher_signal:['liveSession'], review_teacher_feedback:['content'],
 };
 const GROUP_ORDER = ['navigate','live','create','tools','accessibility','display','pipeline','help','voice'];
 const GROUP_LABEL_FALLBACK = { navigate:'Navigate', live:'Live class', create:'Create from this content', tools:'Open a tool', accessibility:'Reading & access', display:'Display & motion', pipeline:'Pipeline results', help:'Help', voice:'Voice' };
 const COMMAND_RECENTS_KEY = 'allo_command_recents_v1';
 const COMMAND_RECENTS_LIMIT = 5;
+const COMMAND_FAVORITES_KEY = 'allo_command_favorites_v1';
+const COMMAND_FAVORITES_LIMIT = 8;
+const COMMAND_USAGE_KEY = 'allo_command_usage_v1';
+const COMMAND_USAGE_LIMIT = 80;
 const ALLO_COMMAND_PALETTE_OPEN_EVENT = 'alloflow:open-command-palette';
+
+function _safeCommandId(value) {
+  const id = String(value || '');
+  return /^[a-z0-9_:-]{1,80}$/.test(id) ? id : '';
+}
+
+function _readCommandFavorites() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(COMMAND_FAVORITES_KEY) || '[]');
+    return Array.isArray(saved) ? saved.map(_safeCommandId).filter(Boolean).slice(0, COMMAND_FAVORITES_LIMIT) : [];
+  } catch (_) { return []; }
+}
+
+function _readCommandUsage() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(COMMAND_USAGE_KEY) || '{}');
+    return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+  } catch (_) { return {}; }
+}
+
+// Local-only summary: command id, successful-run count, and last-used time.
+// Queries, parameters, content, narration, roles, and student data are never stored.
+function getLocalCommandInsights() {
+  const usage = _readCommandUsage();
+  return Object.keys(usage).map((rawId) => {
+    const commandId = _safeCommandId(rawId);
+    const item = usage[rawId] || {};
+    return commandId ? { commandId, count: Math.max(0, Math.floor(Number(item.count) || 0)), lastUsed: Math.max(0, Math.floor(Number(item.lastUsed) || 0)) } : null;
+  }).filter((item) => item && item.count > 0).sort((a, b) => (b.count - a.count) || (b.lastUsed - a.lastUsed) || a.commandId.localeCompare(b.commandId));
+}
+
+function _recordCommandUse(commandId) {
+  const id = _safeCommandId(commandId);
+  if (!id) return;
+  try {
+    const usage = _readCommandUsage();
+    const prior = usage[id] || {};
+    usage[id] = { count: Math.max(0, Math.floor(Number(prior.count) || 0)) + 1, lastUsed: Date.now() };
+    const entries = Object.entries(usage).sort((a, b) => (Number(b[1] && b[1].lastUsed) || 0) - (Number(a[1] && a[1].lastUsed) || 0)).slice(0, COMMAND_USAGE_LIMIT);
+    localStorage.setItem(COMMAND_USAGE_KEY, JSON.stringify(Object.fromEntries(entries)));
+    if (typeof window !== 'undefined' && window.dispatchEvent && window.CustomEvent) window.dispatchEvent(new window.CustomEvent('alloflow:command-usage', { detail: { commandId: id } }));
+  } catch (_) {}
+}
 // context → ctx signal (string boolean-key, OR a function for derived ones like reading).
 const CTX_FLAG = { liveSession:'liveSessionActive', pipeline:'pipelineOpen', educatorHub:'educatorHubOpen', learningHub:'learningHubOpen', sourceSetup:'sourceSetupOpen', symbolStudio:'symbolStudioOpen', videoStudio:'videoStudioOpen', alloStudio:'alloStudioOpen', cinematicStudio:'cinematicStudioOpen', stemLab:'stemLabOpen', openGroove:'openGrooveOpen', timelineStudio:'timelineStudioOpen', linguaPractice:'linguaPracticeOpen', testPrepHub:'testPrepHubOpen', researchHub:'researchHubOpen', litLab:'litLabOpen', mindMap:'mindMapOpen', poetTree:'poetTreeOpen', behaviorLens:'behaviorLensOpen', content:'contentLoaded', reading:(c)=>!!(c.zenActive||c.focusActive) };
 // Priority when several contexts are active (tool > pipeline > hub > content > reading).
@@ -1209,6 +1348,8 @@ const AlloCommandPalette = ({ ctx }) => {
   const [query, setQuery] = useState('');
   const [sel, setSel] = useState(0);
   const [confirming, setConfirming] = useState(null);
+  const [favoriteCommandIds, setFavoriteCommandIds] = useState(_readCommandFavorites);
+  const [usageVersion, setUsageVersion] = useState(0);
   const [recentCommandIds, setRecentCommandIds] = useState(() => {
     try {
       const saved = JSON.parse(sessionStorage.getItem(COMMAND_RECENTS_KEY) || '[]');
@@ -1220,7 +1361,7 @@ const AlloCommandPalette = ({ ctx }) => {
   const prevFocusRef = useRef(null);
   const t = _mkT(ctx && ctx.t);
 
-  const commands = useMemo(() => (ctx ? buildAlloCommands(ctx) : []), [ctx]);
+  const commands = useMemo(() => (ctx ? buildAlloCommands(ctx, { includeUnavailable: getCommandAudience(ctx) === 'teacher' }) : []), [ctx]);
   // Slice 3: rows = a FLAT array of {kind:'header'|'cmd'} so `sel` stays one integer index and
   // arrow-nav keeps working; selection skips headers. Search view = scored + context-tie-broken
   // flat cmds; browse view = a promoted "Here —" block (<=6, context-relevant) + grouped sections.
@@ -1234,18 +1375,24 @@ const AlloCommandPalette = ({ ctx }) => {
       scored.slice(0, 12).forEach((x) => out.push({ kind: 'cmd', c: x.c }));
       return out;
     }
+    const browseCommands = commands.filter((command) => command.available !== false);
     const acts = _activeContexts(ctx);
     const promotedIds = new Set();
     if (getCommandAudience(ctx) === 'student') {
-      const studentActions = commands.filter((command) => command.roles === 'student').slice(0, 6);
+      const studentActions = browseCommands.filter((command) => command.roles === 'student').slice(0, 6);
       if (studentActions.length) {
         out.push({ kind: 'header', label: t('student.actions', 'Student actions') });
         studentActions.forEach((command) => { promotedIds.add(command.id); out.push({ kind: 'cmd', c: command }); });
       }
     }
+    const favorites = favoriteCommandIds.map((id) => browseCommands.find((command) => command.id === id)).filter(Boolean);
+    if (favorites.length) {
+      out.push({ kind: 'header', label: 'Favorites' });
+      favorites.forEach((command) => { promotedIds.add(command.id); out.push({ kind: 'cmd', c: command }); });
+    }
     if (acts.length) {
       const promoted = [];
-      for (const c of commands) {
+      for (const c of browseCommands) {
         if (!promotedIds.has(c.id) && (CMD_CONTEXT[c.id] || []).some((x) => acts.indexOf(x) >= 0)) { promoted.push(c); promotedIds.add(c.id); if (promoted.length >= 6) break; }
       }
       if (promoted.length) {
@@ -1254,10 +1401,15 @@ const AlloCommandPalette = ({ ctx }) => {
         promoted.forEach((c) => out.push({ kind: 'cmd', c }));
       }
     }
-    const recent = recentCommandIds.map((id) => commands.find((c) => c.id === id)).filter((c) => c && !promotedIds.has(c.id)).slice(0, COMMAND_RECENTS_LIMIT);
+    const recent = recentCommandIds.map((id) => browseCommands.find((c) => c.id === id)).filter((c) => c && !promotedIds.has(c.id)).slice(0, COMMAND_RECENTS_LIMIT);
     if (recent.length) {
       out.push({ kind: 'header', label: t('palette.group.recent', 'Recent') });
       recent.forEach((c) => { promotedIds.add(c.id); out.push({ kind: 'cmd', c }); });
+    }
+    const frequent = getLocalCommandInsights().map((item) => browseCommands.find((command) => command.id === item.commandId)).filter((command) => command && !promotedIds.has(command.id)).slice(0, 5);
+    if (frequent.length) {
+      out.push({ kind: 'header', label: 'Frequently used' });
+      frequent.forEach((command) => { promotedIds.add(command.id); out.push({ kind: 'cmd', c: command }); });
     }
     // Browse view: show EVERY group (breadth) with a per-group cap, so a newly added command
     // family (e.g. the tool launchers) stays discoverable instead of being squeezed out of the
@@ -1267,7 +1419,7 @@ const AlloCommandPalette = ({ ctx }) => {
     let cmdCount = promotedIds.size;
     for (const g of GROUP_ORDER) {
       if (cmdCount >= MAX_ROWS) break;
-      const inGroup = commands.filter((c) => (CMD_GROUP[c.id] || 'navigate') === g && !promotedIds.has(c.id));
+      const inGroup = browseCommands.filter((c) => (CMD_GROUP[c.id] || 'navigate') === g && !promotedIds.has(c.id));
       const take = inGroup.slice(0, Math.min(PER_GROUP, MAX_ROWS - cmdCount));
       if (!take.length) continue;
       out.push({ kind: 'header', label: t('palette.group.' + g, GROUP_LABEL_FALLBACK[g]) });
@@ -1275,18 +1427,21 @@ const AlloCommandPalette = ({ ctx }) => {
       cmdCount += take.length;
     }
     return out;
-  }, [commands, query, ctx, t, recentCommandIds]);
-  const selectable = useMemo(() => { const a = []; rows.forEach((r, i) => { if (r.kind === 'cmd') a.push(i); }); return a; }, [rows]);
+  }, [commands, query, ctx, t, recentCommandIds, favoriteCommandIds, usageVersion]);
+  const selectable = useMemo(() => { const a = []; rows.forEach((r, i) => { if (r.kind === 'cmd' && r.c.available !== false) a.push(i); }); return a; }, [rows]);
+  const commandRowCount = useMemo(() => rows.filter((row) => row.kind === 'cmd').length, [rows]);
   const selectedCommand = rows[sel] && rows[sel].kind === 'cmd' ? rows[sel].c : null;
   const selectedCommandId = selectedCommand ? selectedCommand.id : '';
+  const selectedIsFavorite = !!selectedCommandId && favoriteCommandIds.includes(selectedCommandId);
   const paletteStatus = (() => {
     if (confirming && selectedCommand && confirming === selectedCommand.id) return _commandConfirmationText(selectedCommand, ctx, t);
-    const count = selectable.length;
+    const count = commandRowCount;
     if (!count) return query.trim() ? 'No matching commands.' : 'No commands are available here.';
     const resultText = query.trim()
       ? count + ' matching command' + (count === 1 ? '.' : 's.')
       : count + ' command' + (count === 1 ? ' shown.' : 's shown.');
-    return resultText + (selectedCommand ? ' ' + selectedCommand.label + ' selected.' : '');
+    const unavailableCount = rows.filter((row) => row.kind === 'cmd' && row.c.available === false).length;
+    return resultText + (unavailableCount ? ' ' + unavailableCount + ' unavailable in the current context.' : '') + (selectedCommand ? ' ' + selectedCommand.label + ' selected.' : '');
   })();
 
   useEffect(() => {
@@ -1321,6 +1476,12 @@ const AlloCommandPalette = ({ ctx }) => {
       window.removeEventListener('keydown', onKey);
       window.removeEventListener(ALLO_COMMAND_PALETTE_OPEN_EVENT, onOpenRequest);
     };
+  }, []);
+
+  useEffect(() => {
+    const onUsage = () => setUsageVersion((version) => version + 1);
+    window.addEventListener('alloflow:command-usage', onUsage);
+    return () => window.removeEventListener('alloflow:command-usage', onUsage);
   }, []);
 
   useEffect(() => {
@@ -1409,6 +1570,18 @@ const AlloCommandPalette = ({ ctx }) => {
     try { if (window.alloAnnounce) window.alloAnnounce(msg); } catch (_) {}
     try { if (ctx && ctx.addToast) ctx.addToast(msg, type); } catch (_) {}
   }, [ctx]);
+  const toggleSelectedFavorite = useCallback(() => {
+    if (!selectedCommandId || !selectedCommand || selectedCommand.available === false) return;
+    setFavoriteCommandIds((previous) => {
+      const current = Array.isArray(previous) ? previous : [];
+      const next = current.includes(selectedCommandId)
+        ? current.filter((id) => id !== selectedCommandId)
+        : [selectedCommandId].concat(current.filter((id) => id !== selectedCommandId)).slice(0, COMMAND_FAVORITES_LIMIT);
+      try { localStorage.setItem(COMMAND_FAVORITES_KEY, JSON.stringify(next)); } catch (_) {}
+      return next;
+    });
+  }, [selectedCommandId, selectedCommand]);
+
   const rememberCommand = useCallback((id) => {
     if (!id) return;
     setRecentCommandIds((previous) => {
@@ -1419,7 +1592,7 @@ const AlloCommandPalette = ({ ctx }) => {
   }, []);
 
   const runCmd = useCallback((cmd) => {
-    if (!cmd) return;
+    if (!cmd || cmd.available === false) return;
     if (cmd.destructive && (!confirming || confirming !== cmd.id)) { setConfirming(cmd.id); return; }
     setConfirming(null);
     const result = executeCommand(ctx, cmd, {}, { confirmed: true, via: 'palette' });
@@ -1453,6 +1626,12 @@ const AlloCommandPalette = ({ ctx }) => {
             placeholder={getCommandAudience(ctx) === 'student' ? (t('student.actions_search') || 'Try “read directions”, “check my progress”, or “save my work”…') : t('palette.placeholder', 'Type a command — “bigger text”, “educator hub”, “read this page”…')}
             aria-label={t('palette.input_aria', 'Search commands')} role="combobox" aria-expanded="true" aria-autocomplete="list" aria-controls="allo-palette-list" aria-describedby="allo-palette-status" aria-activedescendant={selectedCommandId ? ('allo-cmd-' + selectedCommandId) : undefined}
             className="flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-500" />
+          <button type="button" onClick={toggleSelectedFavorite} disabled={!selectedCommand || selectedCommand.available === false} aria-pressed={selectedIsFavorite}
+            aria-label={(selectedIsFavorite ? 'Remove selected command from favorites' : 'Pin selected command to favorites') + (selectedCommand ? ': ' + selectedCommand.label : '')}
+            title={selectedIsFavorite ? 'Remove from favorites' : 'Pin to favorites'}
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-lg text-amber-600 hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600">
+            <span aria-hidden="true">{selectedIsFavorite ? '★' : '☆'}</span>
+          </button>
           <kbd className="text-[10px] text-slate-500 border border-slate-300 rounded px-1.5 py-0.5">Esc</kbd>
           <button type="button" onClick={() => setOpen(false)} aria-label={t('palette.close', 'Close command palette')}
             className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-xl leading-none text-slate-600 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
@@ -1461,20 +1640,20 @@ const AlloCommandPalette = ({ ctx }) => {
         </div>
         <div id="allo-palette-status" role="status" aria-live="polite" aria-atomic="true" className="sr-only">{paletteStatus}</div>
         <ul id="allo-palette-list" role="listbox" aria-label={t('palette.list_aria', 'Matching commands')} className="max-h-[46vh] overflow-y-auto py-1">
-          {selectable.length === 0 && (
+          {commandRowCount === 0 && (
             <li role="presentation" className="px-4 py-6 text-center text-xs text-slate-600">{t('palette.no_match', 'No matching command. The bot chat (and soon voice) understands free-form requests.')}</li>
           )}
           {rows.map((row, i) => (
             row.kind === 'header' ? (
               <li key={'h-' + i} role="presentation" className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 select-none">{row.label}</li>
             ) : (
-              <li key={row.c.id} id={'allo-cmd-' + row.c.id} role="option" aria-selected={i === sel}
-                onClick={() => runCmd(row.c)} onMouseEnter={() => setSel(i)}
-                className={`min-h-11 w-full cursor-pointer px-4 py-2.5 text-left flex items-center gap-3 ${i === sel ? 'bg-indigo-50' : ''}`}>
+              <li key={row.c.id} id={'allo-cmd-' + row.c.id} role="option" aria-selected={i === sel} aria-disabled={row.c.available === false}
+                onClick={() => runCmd(row.c)} onMouseEnter={() => { if (row.c.available !== false) setSel(i); }}
+                className={`min-h-11 w-full px-4 py-2.5 text-left flex items-center gap-3 ${row.c.available === false ? 'cursor-not-allowed bg-slate-50 opacity-75' : 'cursor-pointer'} ${i === sel ? 'bg-indigo-50' : ''}`}>
                   <span className="text-lg shrink-0" aria-hidden="true">{row.c.icon}</span>
                   <span className="flex-1 min-w-0">
                     <span className={`block text-sm font-bold ${i === sel ? 'text-indigo-900' : 'text-slate-800'}`}>{row.c.label}</span>
-                    <span className="block text-[11px] text-slate-600 truncate">{confirming === row.c.id ? _commandConfirmationText(row.c, ctx, t) : row.c.hint}</span>
+                    <span className="block text-[11px] text-slate-600 truncate">{row.c.available === false ? row.c.unavailableReason : (confirming === row.c.id ? _commandConfirmationText(row.c, ctx, t) : row.c.hint)}</span>
                   </span>
                   {i === sel && <kbd className="text-[10px] text-indigo-600 border border-indigo-300 rounded px-1.5 py-0.5 shrink-0">↵</kbd>}
               </li>
@@ -1488,5 +1667,86 @@ const AlloCommandPalette = ({ ctx }) => {
         </div>
       </div>
     </div>
+  );
+};
+
+// Pure merge keeps concurrent progress entries isolated. A completion only
+// updates the matching command execution and cannot clear another running job.
+function mergeCommandProgressItems(previous, detail, limit = 4) {
+  if (!detail || !detail.commandId) return Array.isArray(previous) ? previous : [];
+  const key = String(detail.commandId) + ':' + String(detail.startedAt || detail.at || 'current');
+  const item = Object.assign({}, detail, { progressKey: key });
+  const rest = (Array.isArray(previous) ? previous : []).filter((entry) => entry && entry.progressKey !== key);
+  return [item].concat(rest).slice(0, Math.max(1, limit));
+}
+
+// Persistent, compact lifecycle surface. It stays visible after the palette
+// closes, tracks several independent jobs, and offers retry per failed job.
+const AlloCommandProgress = ({ ctx }) => {
+  const [items, setItems] = useState([]);
+  const clearTimersRef = useRef(new Map());
+  const t = _mkT(ctx && ctx.t);
+
+  const dismiss = useCallback((progressKey) => {
+    const timer = clearTimersRef.current.get(progressKey);
+    if (timer) clearTimeout(timer);
+    clearTimersRef.current.delete(progressKey);
+    setItems((previous) => previous.filter((entry) => entry.progressKey !== progressKey));
+  }, []);
+
+  useEffect(() => {
+    const onState = (event) => {
+      const detail = event && event.detail;
+      if (!detail || !detail.commandId) return;
+      const progressKey = String(detail.commandId) + ':' + String(detail.startedAt || detail.at || 'current');
+      const priorTimer = clearTimersRef.current.get(progressKey);
+      if (priorTimer) clearTimeout(priorTimer);
+      clearTimersRef.current.delete(progressKey);
+      setItems((previous) => mergeCommandProgressItems(previous, detail));
+      if (detail.status === 'success') {
+        const timer = setTimeout(() => {
+          clearTimersRef.current.delete(progressKey);
+          setItems((previous) => previous.filter((entry) => entry.progressKey !== progressKey));
+        }, 4000);
+        clearTimersRef.current.set(progressKey, timer);
+      }
+    };
+    window.addEventListener('alloflow:command-state', onState);
+    return () => {
+      window.removeEventListener('alloflow:command-state', onState);
+      clearTimersRef.current.forEach((timer) => clearTimeout(timer));
+      clearTimersRef.current.clear();
+    };
+  }, []);
+
+  const retry = useCallback((item) => {
+    if (!item || item.status !== 'error' || !item.retryable) return;
+    const result = executeCommand(ctx, item.commandId, item.params || {}, { confirmed: true, via: 'retry' });
+    if (result && result.handled) dismiss(item.progressKey);
+    else setItems((previous) => previous.map((entry) => entry.progressKey === item.progressKey ? Object.assign({}, entry, { narration: t('cmd.failed', 'That command is no longer available here.'), retryable: false }) : entry));
+  }, [ctx, dismiss, t]);
+
+  if (!items.length) return null;
+  return (
+    <section aria-label="Command progress" data-help-ignore="true" className="fixed bottom-4 right-4 z-[11900] flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2 no-print">
+      {items.map((item) => {
+        const pending = item.status === 'pending';
+        const failed = item.status === 'error';
+        return (
+          <article key={item.progressKey} role="status" aria-live={failed ? 'assertive' : 'polite'} aria-atomic="true"
+            className={`rounded-xl border p-3 shadow-xl ${failed ? 'border-rose-300 bg-rose-50 text-rose-950' : item.status === 'success' ? 'border-emerald-300 bg-emerald-50 text-emerald-950' : 'border-indigo-300 bg-white text-slate-900'}`}>
+            <div className="flex items-start gap-3">
+              <span className={`mt-0.5 text-lg ${pending ? 'animate-pulse' : ''}`} aria-hidden="true">{pending ? '⏳' : failed ? '⚠️' : '✅'}</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold">{item.label || item.commandId}</p>
+                <p className="mt-0.5 text-xs leading-5">{item.narration || (pending ? t('cmd.working', 'Working...') : t('router.done', 'Done.'))}</p>
+                {failed && item.retryable && <button type="button" onClick={() => retry(item)} className="mt-2 min-h-9 rounded-lg bg-rose-700 px-3 text-xs font-bold text-white hover:bg-rose-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700">Retry</button>}
+              </div>
+              <button type="button" onClick={() => dismiss(item.progressKey)} aria-label={'Dismiss progress for ' + (item.label || item.commandId)} className="inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg text-lg hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"><span aria-hidden="true">×</span></button>
+            </div>
+          </article>
+        );
+      })}
+    </section>
   );
 };

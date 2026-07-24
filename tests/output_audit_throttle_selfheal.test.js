@@ -100,7 +100,9 @@ describe('anti-drift: the multi-round self-heal ships in the engine', () => {
     expect(dp).toContain('Throttle self-heal');
     expect(dp).toContain('const _SELFHEAL_MAX_ROUNDS = 3;');
     expect(dp).toContain('let _stillFailed = _failedIdx.slice();');
-    expect(dp).toMatch(/_round < _SELFHEAL_MAX_ROUNDS && _stillFailed\.length > 0 && chunkResults\.length > 0/);
+    // chunkResults is a position-preserving preallocated array; length alone is
+    // always non-zero, so require an actual successful result and a live owner.
+    expect(dp).toMatch(/_round < _SELFHEAL_MAX_ROUNDS && _stillFailed\.length > 0 && chunkResults\.some\(Boolean\) && !_outputAuditCancelled\(\)/);
     expect(dp).toMatch(/_stillFailed\.length === _beforeLen && !\(typeof _geminiCooldownUntil/);
     expect(dp).toMatch(/_auditOneChunk\(chunks\[ci\], ci \+ 1\)/);
   });

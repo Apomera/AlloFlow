@@ -1,0 +1,9 @@
+{
+  "sourceToolId": "example_text_tool",
+  "sourceToolName": "Example Text Tool",
+  "sourceToolVersion": "2026.07",
+  "title": "Example bounded pattern",
+  "summary": "A derived pattern paired with a counter-reading and limitation.",
+  "data": { "derivedResults": { "term": "example", "count": 3 }, "interpretation": { "claim": "The repetition may establish emphasis.", "counterReading": "The term appears in more than one context.", "limitation": "Counts do not establish meaning." } },
+  "reproducibilityReceipt": { "softwareVersion": "2026.07", "sourceRecordId": "example-source-1", "parameters": { "caseFold": true }, "randomSeed": "not applicable; deterministic analysis", "limitations": ["Frequency is descriptive and requires close reading."], "transformations": ["Unicode tokenization", "lowercase comparison"] }
+}

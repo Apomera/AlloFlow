@@ -14,8 +14,12 @@ const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), '
 
 describe('#1 host — startNewPdfAudit fully resets, + dead-man switch for the auto-continue flag', () => {
   it('startNewPdfAudit aborts the loop and clears pdfAutoContinueRunning + the abort controller', () => {
-    const i = host.indexOf('const startNewPdfAudit = () => {');
-    const body = host.slice(i, i + 900);
+    const start = host.indexOf('const startNewPdfAudit = () => {');
+    const end = host.indexOf('const ensurePdfBase64', start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const body = host.slice(start, end);
+    expect(body).toContain('invalidatePdfDocumentOperations()');
     expect(body).toContain('pdfAutoContinueAbortRef.current = true');
     expect(body).toContain('pdfAutoContinueAbortCtrlRef.current.abort()');
     expect(body).toContain('pdfAutoContinueAbortCtrlRef.current = null');

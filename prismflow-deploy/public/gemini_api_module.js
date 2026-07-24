@@ -668,7 +668,18 @@ const createGeminiAPI = (deps) => {
       }
     };
 
-    const callGeminiVision = async (prompt, base64Data, mimeType) => {
+    const callGeminiVision = async (prompt, base64Data, mimeType, options = null) => {
+      const _explicitSignal = options && options.signal
+        ? options.signal
+        : (options && typeof options.aborted === 'boolean' ? options : null);
+      const _signal = _explicitSignal
+        || (typeof getAbortSignal === 'function' ? getAbortSignal() : null)
+        || null;
+      const _throwIfVisionAborted = () => {
+        if (!_signal || !_signal.aborted) return;
+        const abortError = new Error('Vision extraction cancelled.'); abortError.name = 'AbortError'; throw abortError;
+      };
+      _throwIfVisionAborted();
       const primaryModel = GEMINI_MODELS.vision || GEMINI_MODELS.flash || GEMINI_MODELS.default;
       const fallbackModel = GEMINI_MODELS.fallback;
       const _visionUrl = (m) => `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent${apiKey ? `?key=${apiKey}` : ''}`;
@@ -681,7 +692,6 @@ const createGeminiAPI = (deps) => {
         }],
         generationConfig: { maxOutputTokens: 65536 }
       };
-      const _signal = (typeof getAbortSignal === 'function' ? getAbortSignal() : null) || null;
       const _fetchOpts = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), ...(_signal ? { signal: _signal } : {}) };
       let response;
       let modelUsed = primaryModel;
@@ -690,7 +700,9 @@ const createGeminiAPI = (deps) => {
           // Use the same backoff wrapper callGemini uses — this gives Vision
           // the same 429/5xx retry behavior + signal propagation.
           response = await fetchWithExponentialBackoff(_visionUrl(primaryModel), _fetchOpts);
+          _throwIfVisionAborted();
         } catch (primaryErr) {
+          _throwIfVisionAborted();
           if (primaryErr?.name === 'AbortError') throw primaryErr;
           const cls = _classifyGeminiError(primaryErr);
           const shouldFallback = (cls.kind === 'quota' || cls.kind === 'config' || cls.kind === 'transient');
@@ -698,6 +710,7 @@ const createGeminiAPI = (deps) => {
             console.warn(`[Vision] ${primaryModel} ${cls.kind} — falling back to ${fallbackModel}`);
             try {
               response = await fetchWithExponentialBackoff(_visionUrl(fallbackModel), _fetchOpts);
+              _throwIfVisionAborted();
               modelUsed = fallbackModel;
             } catch (fbErr) {
               console.error(`[Vision] Fallback ${fallbackModel} also failed:`, fbErr.message);
@@ -707,7 +720,9 @@ const createGeminiAPI = (deps) => {
             throw primaryErr;
           }
         }
+        _throwIfVisionAborted();
         const rawText = await response.text();
+        _throwIfVisionAborted();
         let data;
         try {
           data = JSON.parse(rawText);

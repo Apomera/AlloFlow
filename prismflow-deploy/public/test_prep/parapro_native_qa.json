@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-19T17:49:08.186Z",
+  "generatedAt": "2026-07-23T17:25:00.877Z",
   "packId": "parapro-1755-practice-1",
   "packVersion": "0.7.0",
   "blueprint": {
@@ -9124,7 +9124,7 @@
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
     "sourceItemsSha256": "e4096941430fb9e1f99420e608434f33f8d8fa1d98a8526d96af5d600c53e1a8",
-    "learningLibrarySha256": "753483e735a37bf9bea8520ad30e7f12add0ca99991724ad60f4658cc72c0c2c",
+    "learningLibrarySha256": "607971bddea562748afac7e95ee3be639af828f2a8e15d424a8265626de71177",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   },
   "expansion": {

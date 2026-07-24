@@ -333,9 +333,40 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
 5. **Live resource updates through the manifest path** (§4 gap) — stop silently dropping oldest
    resources on the trim-guard path.
 6. **Live Session Center** — [PARTIALLY SHIPPED 2026-07-01] one teacher dock now replaces the
-   per-feature floating buttons: Run (Live Poll / Quick Check preset / Pictionary), Guide (pacing
+   per-feature floating buttons: Run (Live Poll / Quick Check / Word Cloud / Feedback Response / Pictionary / Sketch Response), Guide (pacing
    toggle, groups, session code), Signals (student help signals, see below), and a privacy note.
    Quick Check rides the polling transport via the HostPanel `initialPoll` composer preset.
+   **Word Cloud** [SHIPPED 2026-07-23] is another HostPanel poll type and preset, not a
+   separate activity: one bounded term per student travels over the same WebRTC response
+   channel, begins held on the teacher device, and only teacher-approved anonymous labels and
+   counts can be revealed through the existing results broadcast.
+   **Sketch Response** [SHIPPED 2026-07-23] is a mode inside Concept Pictionary,
+   not another drawing engine: selected students receive a private prompt and individual
+   canvas over the existing Pictionary round/RTC path. Strokes stop at the teacher gallery;
+   only submitted, teacher-approved boards can be anonymously revealed to that round's
+   participant snapshot. The gallery reuses the established individual/group resource
+   delivery callbacks for differentiated follow-up.
+   **Feedback Response** [SHIPPED 2026-07-23] is a teacher-controlled mode of
+   the existing free-text poll. It adds connected class/group/individual
+   audience targeting, status-only drafting progress, criteria-aligned AI
+   feedback drafts, explicit teacher review/edit/send, and one private revision
+   attempt. Feedback travels only to the addressed peer, cannot enter the
+   class-results broadcast, and is never written to the session document.
+   AI generation sends the bounded response + criteria without uid/codename to
+   the teacher's configured AI provider; this is disclosed in the teacher UI.
+   Gallery follow-up uses the established individual/group resource callbacks.
+   **Activity Pulse** [SHIPPED 2026-07-23] refines the existing Lesson path:
+   Polling/Word Cloud/Feedback Response and Pictionary/Sketch Response publish
+   one allowlisted teacher-memory snapshot containing only activity
+   family/kind/phase, audience uids, waiting/working/submitted/revised status,
+   aggregate moderation counts, and timing metadata. The coordinator strips
+   prompts, answers, guesses, strokes, feedback, codenames, and arbitrary
+   fields. Pulse follow-up calls the established individual resource handler
+   with the currently selected student-safe Lesson path item. At explicit
+   session end, the existing device-local roster summary stores aggregate
+   activity evidence and codename-matched participation counts; activity ids,
+   live uids, and raw work are omitted. No new Firestore field, WebRTC message,
+   Class Mailbox payload, or reporting stream was added.
    **Help signals** shipped with it: students send an enum-only status (`stuck`/`slow`/`repeat`/
    `ready`) as Tier-1 `roster.{uid}.signal` + `signalAt`; the dock lists fresh (<10 min) signals
    with clear buttons. Still open for the full vision: quiz state surface, roster
@@ -367,10 +398,25 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
 
 - `tests/live_polling.test.js` — pure helpers: routing rules, rating scales, anonymous summaries
   (codenames/free text never leak into shared results), dedup, stale-close.
+- `tests/live_polling_wordcloud.test.js` — normalization, latest-response aggregation,
+  hold/approve/hide moderation, privacy-safe reveal summaries, bounded student input, and the
+  Live Session Center preset.
 - `tests/live_polling_reconnect.test.js` — terminal event, state-sync on connect, re-offer
   replacement, signaling-doc preservation, guest `hostClosed` routing.
+- `tests/live_polling_feedback_response.test.js` — bounded feedback helpers, two-attempt
+  history, class/group/individual audience resolution, participant-only poll delivery,
+  one-peer identity-free feedback, status metadata, class-results exclusion, and existing
+  individual/group resource callbacks.
+- `tests/live_polling_feedback_response_ui.test.js` — runtime hydration of the Live Center
+  preset inside the existing free-text HostPanel.
+- `tests/live_activity_pulse.test.js` — snapshot allowlist/privacy boundary,
+  active-pulse selection, evidence-to-resource reuse, both existing host
+  emitters, and uid/raw-content exclusion from device-local session history.
 - `tests/concept_pictionary.test.js` — protocol smoke (concept only to drawers, stroke ownership,
   late-join replay, timer auto-resolve) + the same reconnect suite.
+- `tests/concept_pictionary_sketch_response.test.js` — private per-student stroke isolation,
+  participant-scoped round/reveal delivery, submission moderation, anonymous sanitization,
+  retained teacher gallery, and individual/group follow-up resource wiring.
 - `tests/session_soft_end_terminal.test.js` — source pins: soft-end terminal check in ANTI,
   `livePolling` Tier-1 leaf, presence props at the mount site.
 - `tests/session_asset_sync.test.js`, `tests/firestore_sync.test.js` — manifest/chunking + sanitizers.

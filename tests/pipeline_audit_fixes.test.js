@@ -86,7 +86,7 @@ describe('H-9: _reauditAndScore drops a stale write (score must describe the byt
   it('the terminal setPdfFixResult bails when the audited html is no longer current', () => {
     const fn = view.slice(view.indexOf('const _reauditAndScore = async'), view.indexOf('const _spliceBlock = '));
     expect(fn).toContain('const _curFix = pdfFixResultRef.current;');
-    expect(fn).toContain('const _applied = !!(_curFix && _curFix.accessibleHtml === newHtml);');
+    expect(fn).toContain('const _applied = !!(_reauditIsCurrent() && _curFix && _curFix.accessibleHtml === newHtml);');
     expect(fn).toContain('setPdfFixResult(prev => (prev && prev.accessibleHtml === newHtml) ? _bound : prev);'); // pure CAS stale guard
     expect(fn).toMatch(/stale: !_applied/);                                     // reported to callers
   });
@@ -128,8 +128,9 @@ describe('Canvas-test fixes (2026-06-23): conformance overclaim, re-scan save, r
 describe('Auto-fix loop: a PARTIAL audit does not count as "target met" (do not stop early on incomplete coverage)', () => {
   it('the loop entry gate keeps going when the audit was partial (mirrors the per-pass !_rePartial break)', () => {
     expect(dp).toMatch(/const _auditPartial = !!\(verification && verification\._partialAudit\);/);
-    // the gate must OR in _auditPartial in both the issue-count clause and the target-met clause
-    expect(dp).toMatch(/if \(maxFixPasses > 0 && \(_totalIssues > 0 \|\| _auditPartial\) && \(bestAxeViolations > 0 \|\| bestAiScore < _targetScore \|\| _auditPartial\)\)/);
+    // Carry incomplete AI coverage and unresolved manual-review evidence through
+    // both halves; neither may masquerade as "target met".
+    expect(dp).toMatch(/if \(maxFixPasses > 0 && \(_totalIssues > 0 \|\| _auditPartial \|\| _auditReviewRequired\) && \(bestAxeViolations > 0 \|\| bestAiScore < _targetScore \|\| _auditPartial \|\| _auditReviewRequired\)\)/);
   });
 });
 

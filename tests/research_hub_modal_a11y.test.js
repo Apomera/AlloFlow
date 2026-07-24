@@ -102,7 +102,19 @@ describe('Research Hub modal accessibility', () => {
     expect(source).toContain('This is a reasoning check, not an automatic grade.');
     expect(source).toContain('data-capture-integration-contract="true"');
     expect(source).toContain('data-capture-unregistered-warning="true"');
+    expect(source).toContain('data-capture-privacy-findings="true"');
     expect(source).toContain('Declared limitations:');
+    expect(source).toContain('data-research-storage-health="true"');
+    expect(source).toContain('The latest write failed. “Saved” is not being shown');
+    expect(source).toContain('Download artifact archive');
+    expect(source).toContain('data-remove-downloaded-artifacts="true"');
+    expect(source).toContain('data-legacy-artifact-repair="true"');
+    expect(source).toContain('Do not reconstruct it from memory.');
+    expect(source).toContain('registerCaptureSanitizer');
+    expect(source).toContain('secret_detected');
+    expect(source).toContain('direct_identifier_detected');
+    expect(source).toContain('MAX_CAPTURES_PER_TOOL_PER_MINUTE = 5');
+    expect(source).toContain('This artifact is already waiting for review.');
     expect(source).toContain('TOOL_INTEGRATION_CONTRACT_VERSION = 1');
   });
 
@@ -115,19 +127,37 @@ describe('Research Hub modal accessibility', () => {
     expect(educatorSource).toContain('data-educator-integration-health="true"');
     expect(educatorSource).toContain('does not independently certify');
     expect(educatorSource).toContain('data-humanities-source-context-health="true"');
+    expect(educatorSource).toContain('data-educator-storage-health="true"');
+    expect(educatorSource).toContain('review after:');
+    expect(educatorSource).toContain('Privacy controls:');
+    expect(educatorSource).toContain('Legacy metadata:');
   });
 
+  it('renders an accessible evidence map with portable standards-based exports', () => {
+    expect(source).toContain('data-research-evidence-graph="true"');
+    expect(source).toContain('aria-label="Claims and their evidence relationships"');
+    expect(source).toContain('data-evidence-relationship={row.edge.type}');
+    expect(source).toContain('W3C annotations');
+    expect(source).toContain('CSL citations');
+    expect(source).toContain('RO-Crate 1.3 metadata');
+    expect(source).toContain('This is a reasoning check, not an automatic grade.');
+  });
   it('connects AlphaFold through a sequence-free learner-approved capture', () => {
     expect(alphaFoldSource).toContain('id="sendResearchHubBtn"');
-    expect(alphaFoldSource).toContain('ResearchHub.captureArtifact');
-    expect(alphaFoldSource).toContain("sourceToolId: 'alphafold_explorer'");
+    expect(alphaFoldSource).toContain('../tool_integration_sdk.js');
+    expect(alphaFoldSource).toContain('window.AlloFlowToolIntegration.createAdapter');
+    expect(alphaFoldSource).toContain('adapter.capture');
+    expect(alphaFoldSource).toContain("id: 'alphafold_explorer'");
     expect(alphaFoldSource).toContain('function redactSequenceLikeText');
     expect(alphaFoldSource).toContain('[protein sequence omitted]');
     expect(alphaFoldSource).toContain('Sequence-like strings of 40 or more characters are redacted');
     expect(alphaFoldSource).toContain('ALPHAFOLD_RESEARCH_CONTRACT');
     expect(alphaFoldSource).toContain("spdx: 'AGPL-3.0-only'");
-    expect(alphaFoldSource).toContain('integrationContract: ALPHAFOLD_RESEARCH_CONTRACT');
-    expect(alphaFoldSource).toContain('reproducibility: {');
+    expect(alphaFoldSource).toContain("reviewAfter: '2027-01-22'");
+    expect(alphaFoldSource).toContain("sanitizerId: 'alphafold_sequence_redaction_v1'");
+    expect(alphaFoldSource).toContain('contract: ALPHAFOLD_RESEARCH_CONTRACT');
+    expect(alphaFoldSource).toContain('reproducibilityReceipt: {');
+    expect(alphaFoldSource).not.toContain('function researchHubCaptureHost');
     expect(alphaFoldSource).toContain("randomSeed: 'not applicable'");
     expect(alphaFoldSource).toContain('Predicted structure confidence is not experimental validation.');
     expect(alphaFoldSource).not.toContain('data: { sequence:');
@@ -178,5 +208,8 @@ describe('Research Hub modal accessibility', () => {
 
   it('synchronizes the deployable module', () => {
     expect(fs.readFileSync('prismflow-deploy/public/research_hub_module.js', 'utf8')).toBe(fs.readFileSync('research_hub_module.js', 'utf8'));
+    const compiled = fs.readFileSync('research_hub_module.js', 'utf8');
+    expect(compiled).not.toMatch(/^export default/m);
+    expect(compiled).toContain('AlloFlowResearchEvidenceGraph');
   });
 });

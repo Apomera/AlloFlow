@@ -1,0 +1,21 @@
+{
+  "sourceToolId": "text_inquiry_studio",
+  "sourceToolName": "Text Inquiry Studio",
+  "sourceToolVersion": "2026.07",
+  "title": "Repetition and counter-reading",
+  "summary": "A repeated term is interpreted alongside an exception and a source-context limitation.",
+  "data": {
+    "source": { "title": "A public-domain classroom passage", "creator": "Known classroom source", "citation": "Teacher-provided public-domain edition" },
+    "analysis": { "wordCount": 120, "queryTerm": "home", "queryCount": 4, "topTerms": [{ "term": "home", "count": 4 }], "concordance": [{ "sentenceIndex": 2, "excerpt": "The speaker returns to the word home while questioning what it can mean." }] },
+    "interpretation": { "claim": "The repetition may make belonging a contested idea.", "counterReading": "One use is literal rather than symbolic.", "limitation": "Frequency alone cannot establish the historical meaning of the term." }
+  },
+  "reproducibilityReceipt": {
+    "softwareVersion": "2026.07",
+    "sourceRecordId": "text-a9130c2d",
+    "parameters": { "tokenizer": "unicode_words_v1", "stopwordList": "alloflow_english_v1", "queryTerm": "home", "maxConcordanceExcerpts": 10 },
+    "randomSeed": "not applicable; deterministic analysis",
+    "limitations": ["Word counts and concordance are descriptive evidence, not an interpretation or measure of importance.", "Automated sentence boundaries may differ from editorial or poetic units."],
+    "datasetVersion": "Teacher-provided public-domain edition",
+    "transformations": ["Unicode tokenization", "lowercase comparison", "English stopword filtering for ranked terms", "full source text omitted from capture"]
+  }
+}

@@ -1,0 +1,360 @@
+{
+  "schemaVersion": 1,
+  "reportType": "adjudication-aware-editorial-action-docket",
+  "generatedAt": "2026-07-22",
+  "sourceDiagnostics": "test_prep/eppp_distractor_quality_diagnostics.json",
+  "sourceAdjudication": "test_prep/eppp_distractor_review_wave_01.json",
+  "policy": {
+    "separation": "The raw diagnostic report remains unchanged and retains every heuristic warning. This companion view filters only fingerprint-current reviewed-no-revision decisions from the actionable queue.",
+    "staleReview": "A changed prompt, key, answer position, diagnostic family, or duplicate-pair fingerprint automatically returns the item to the action docket.",
+    "limitation": "Docket priority is editorial triage, not psychometric severity, item-response analysis, or independent expert validation."
+  },
+  "summary": {
+    "rawPriorityDocketItems": 20,
+    "currentAdjudicationsApplied": 5,
+    "staleAdjudications": 0,
+    "actionItems": 15,
+    "learnerFacingItemsChanged": 0,
+    "status": "pass"
+  },
+  "appliedAdjudications": [
+    {
+      "id": "eppp-v2-professional-040",
+      "resolution": "reviewed-no-revision",
+      "classification": "distinct-coverage-false-positive",
+      "reviewWave": "eppp-distractor-review-wave-01",
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b016-social-1",
+      "resolution": "reviewed-no-revision",
+      "classification": "intentional-foundation-application-scaffold",
+      "reviewWave": "eppp-distractor-review-wave-01",
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b022-assessment-1",
+      "resolution": "reviewed-no-revision",
+      "classification": "different-instrument-distinct-decision",
+      "reviewWave": "eppp-distractor-review-wave-01",
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-v3-professional-030",
+      "resolution": "reviewed-no-revision",
+      "classification": "intentional-foundation-application-scaffold",
+      "reviewWave": "eppp-distractor-review-wave-01",
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-v2-professional-030",
+      "resolution": "reviewed-no-revision",
+      "classification": "intentional-foundation-application-scaffold",
+      "reviewWave": "eppp-distractor-review-wave-01",
+      "mismatchReasons": []
+    }
+  ],
+  "staleAdjudications": [],
+  "actionItems": [
+    {
+      "id": "eppp-b017-biological-1",
+      "domainId": "biological",
+      "difficulty": "foundation",
+      "practiceBank": 3,
+      "itemInBank": 73,
+      "score": 12,
+      "diagnostics": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "Developmental synaptic pruning refers to:",
+      "keyedChoice": "Selective elimination and refinement of neural connections during developmental maturation",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 6,
+      "originalDiagnosticRank": 6,
+      "actionRank": 1,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b020-social-1",
+      "domainId": "social-cultural",
+      "difficulty": "foundation",
+      "practiceBank": 4,
+      "itemInBank": 24,
+      "score": 12,
+      "diagnostics": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "In Berkowitz’s cognitive-neoassociation model, an aversive event can increase aggressive tendencies by:",
+      "keyedChoice": "Activating unpleasant affect and associated networks of anger-related thoughts and action tendencies",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 7,
+      "originalDiagnosticRank": 7,
+      "actionRank": 2,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v3-professional-073",
+      "domainId": "professional",
+      "difficulty": "intermediate",
+      "practiceBank": 15,
+      "itemInBank": 93,
+      "score": 12,
+      "diagnostics": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "duplicateCandidateLinks": 0,
+      "prompt": "When no appropriate services are available during an emergency, Standard 2.02 permits a psychologist to:",
+      "keyedChoice": "Provide limited services to avoid denial of care, ending when the emergency ends or appropriate services become available.",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 8,
+      "originalDiagnosticRank": 8,
+      "actionRank": 3,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v2-assessment-064",
+      "domainId": "assessment",
+      "difficulty": "foundation",
+      "practiceBank": 8,
+      "itemInBank": 89,
+      "score": 11.99,
+      "diagnostics": [
+        "unique-key/stem-lexical-leakage",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "duplicateCandidateLinks": 5,
+      "prompt": "Complete the statement: The Beck Depression Inventory-II (BDI-II) is a:",
+      "keyedChoice": "A self-report measure of depression severity over the past two weeks",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 9,
+      "originalDiagnosticRank": 9,
+      "actionRank": 4,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-015",
+      "domainId": "cognitive-affective",
+      "difficulty": "intermediate",
+      "practiceBank": 6,
+      "itemInBank": 65,
+      "score": 11.88,
+      "diagnostics": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "duplicateCandidateLinks": 3,
+      "prompt": "Complete the statement: According to the dual-process theory, System 1 thinking is:",
+      "keyedChoice": "Fast, automatic, and intuitive",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 10,
+      "originalDiagnosticRank": 10,
+      "actionRank": 5,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b004-professional-2",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "practiceBank": 1,
+      "itemInBank": 80,
+      "score": 11.67,
+      "diagnostics": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "duplicateCandidateLinks": 3,
+      "prompt": "Which statement best reflects APA Ethics Code Standard 3.05 on multiple relationships?",
+      "keyedChoice": "They are problematic when reasonably expected to impair work or risk exploitation or harm",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 11,
+      "originalDiagnosticRank": 11,
+      "actionRank": 6,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v3-professional-055",
+      "domainId": "professional",
+      "difficulty": "intermediate",
+      "practiceBank": 15,
+      "itemInBank": 75,
+      "score": 11.67,
+      "diagnostics": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "duplicateCandidateLinks": 3,
+      "prompt": "Under APA Ethics Code Standard 3.05, multiple relationships are:",
+      "keyedChoice": "Problematic when they risk impaired work, exploitation, or harm",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 12,
+      "originalDiagnosticRank": 12,
+      "actionRank": 7,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b028-intervention-2",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "practiceBank": 5,
+      "itemInBank": 95,
+      "score": 11.65,
+      "diagnostics": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "duplicateCandidateLinks": 2,
+      "prompt": "For obsessive-compulsive disorder, exposure and response prevention asks a client to:",
+      "keyedChoice": "Approach feared cues while refraining from the usual compulsion or ritual",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 13,
+      "originalDiagnosticRank": 13,
+      "actionRank": 8,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v2-social-cultural-009",
+      "domainId": "social-cultural",
+      "difficulty": "intermediate",
+      "practiceBank": 7,
+      "itemInBank": 24,
+      "score": 11.48,
+      "diagnostics": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "duplicateCandidateLinks": 1,
+      "prompt": "Complete the statement: The contact hypothesis (Allport) proposes that prejudice can be reduced when:",
+      "keyedChoice": "Groups interact under conditions of equal status, common goals, and institutional support",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 14,
+      "originalDiagnosticRank": 14,
+      "actionRank": 9,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b010-intervention-2",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "practiceBank": 2,
+      "itemInBank": 72,
+      "score": 11.39,
+      "diagnostics": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "duplicateCandidateLinks": 1,
+      "prompt": "Evidence-based practice in psychology integrates:",
+      "keyedChoice": "Best research, clinical expertise, and client characteristics, culture, and preferences",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 15,
+      "originalDiagnosticRank": 15,
+      "actionRank": 10,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v3-intervention-062",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "practiceBank": 14,
+      "itemInBank": 72,
+      "score": 11.39,
+      "diagnostics": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "duplicateCandidateLinks": 1,
+      "prompt": "Evidence-based practice (EBP) in psychology integrates:",
+      "keyedChoice": "Research evidence, clinical expertise, and patient characteristics and preferences",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 16,
+      "originalDiagnosticRank": 16,
+      "actionRank": 11,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v3-social-cultural-055",
+      "domainId": "social-cultural",
+      "difficulty": "intermediate",
+      "practiceBank": 12,
+      "itemInBank": 70,
+      "score": 11.26,
+      "diagnostics": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "duplicateCandidateLinks": 1,
+      "prompt": "Contact hypothesis (Allport, 1954) states that prejudice can be reduced under which conditions?",
+      "keyedChoice": "Equal status, common goals, cooperation, and support from authorities",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 17,
+      "originalDiagnosticRank": 17,
+      "actionRank": 12,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-001",
+      "domainId": "cognitive-affective",
+      "difficulty": "foundation",
+      "practiceBank": 6,
+      "itemInBank": 51,
+      "score": 11.17,
+      "diagnostics": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "duplicateCandidateLinks": 1,
+      "prompt": "Complete the statement: Emotional intelligence (Salovey & Mayer) involves:",
+      "keyedChoice": "Accurately perceiving, skillfully using, comprehensively understanding, and adaptively managing emotions",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 18,
+      "originalDiagnosticRank": 18,
+      "actionRank": 13,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-001",
+      "domainId": "cognitive-affective",
+      "difficulty": "intermediate",
+      "practiceBank": 11,
+      "itemInBank": 51,
+      "score": 11.17,
+      "diagnostics": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "duplicateCandidateLinks": 1,
+      "prompt": "Source monitoring errors occur when:",
+      "keyedChoice": "A person correctly remembers information but subsequently misattributes its specific origin or context",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 19,
+      "originalDiagnosticRank": 19,
+      "actionRank": 14,
+      "status": "editorial-review-needed"
+    },
+    {
+      "id": "eppp-b020-intervention-2",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "practiceBank": 4,
+      "itemInBank": 31,
+      "score": 11.08,
+      "diagnostics": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "duplicateCandidateLinks": 2,
+      "prompt": "In the REBT ABCDE framework, the letter D refers to:",
+      "keyedChoice": "Disputing rigid or irrational beliefs that link events to consequences",
+      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
+      "rank": 20,
+      "originalDiagnosticRank": 20,
+      "actionRank": 15,
+      "status": "editorial-review-needed"
+    }
+  ]
+}

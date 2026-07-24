@@ -31,7 +31,7 @@ describe('Concept Pictionary WCAG 2.2 timed-round controls', () => {
 
   it('blocks drawing, undo, and guessing consistently while paused', () => {
     expect(source).toContain('this.activeRound.isPaused || !this.activeRound.drawerUids.has(senderUid)');
-    expect(source).toContain("drawingEnabled={!!(activeRound && isDrawer && activeRound.status === 'drawing' && !activeRound.isPaused)}");
+    expect(source).toContain("drawingEnabled={!!(activeRound && isDrawer && activeRound.status === 'drawing' && !activeRound.isPaused && !(isSketchResponse && sketchSubmitted))}");
     expect(source).toContain('disabled={!!activeRound.isPaused}');
     expect(source).toContain('disabled={!guessText.trim() || !!activeRound.isPaused}');
     expect(source).toContain('Round paused by the teacher. Drawing and guessing will resume with the timer.');

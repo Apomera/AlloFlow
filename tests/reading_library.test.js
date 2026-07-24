@@ -407,7 +407,7 @@ describe('mirrored data contract (reading_library/)', () => {
         fail(/^https:\/\/storyweaver\.org\.in\//.test(book.source.url), label + ': StoryWeaver source drift');
       } else {
         fail(entry.sourceId === sourceId, label + ': source id mismatch');
-        fail(['frontiers', 'nasa', 'noaa', 'usgs', 'wikisource', 'loc', 'gutenberg', 'openstax', 'bloom'].includes(sourceId), label + ': unknown source');
+        fail(['frontiers', 'nasa', 'noaa', 'usgs', 'wikisource', 'loc', 'gutenberg', 'openstax', 'ck12', 'bloom'].includes(sourceId), label + ': unknown source');
       }
       fail(Array.isArray(book.pages) && book.pages.length > 0, label + ': no pages');
       fail(!!(book.title && book.title.length), label + ': no title');

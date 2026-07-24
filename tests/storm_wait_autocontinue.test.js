@@ -72,14 +72,16 @@ describe('deferred final re-audit CIRCLES BACK to throttle-skipped sections unti
     expect(dp).toContain('await _withTimeout(waitForGeminiCalm({');
     expect(dp).toContain('maxWaitMs: Math.max(0, _deferHardStop - Date.now()),');
     expect(dp).toContain('shouldAbort: _genStale,');
-    expect(dp).toContain("_reFinalAudit = await _withTimeout(auditOutputAccessibility(accessibleHtml), Math.max(5000, _deferHardStop - Date.now()), 'deferred re-audit round ' + _roundNow);");
+    expect(dp).toContain('const _reFinalAuditHtml = accessibleHtml;');
+    expect(dp).toContain("_reFinalAudit = await _withTimeout(auditOutputAccessibility(_reFinalAuditHtml), Math.max(5000, _deferHardStop - Date.now()), 'deferred re-audit round ' + _roundNow);");
   });
   it('re-runs the AI audit (auditOutputAccessibility), NOT a deterministic substitute', () => {
     // the loop body must call the AI audit and must not swap in axe/EA as the coverage source
     const s = dp.indexOf('Circle-back-until-the-AI-audit-COMPLETES');
     const e = dp.indexOf('Deferred re-audit SKIPPED', s);
     const block = dp.slice(s, e);
-    expect(block).toContain('auditOutputAccessibility(accessibleHtml)');
+    expect(block).toContain('const _reFinalAuditHtml = accessibleHtml;');
+    expect(block).toContain('auditOutputAccessibility(_reFinalAuditHtml)');
     expect(block).not.toContain('deterministicScore');
     expect(block).not.toContain('runAxeAudit');
   });
@@ -98,8 +100,9 @@ describe('deferred final re-audit CIRCLES BACK to throttle-skipped sections unti
     expect(dp).toContain('_perFileDeadlineTs ? _perFileDeadlineTs - 30000 : Infinity');
   });
   it('the memo makes each re-audit cheap: only FAILED sections are re-called (successful parses memoized)', () => {
-    // successful parse memoized; a null (failed) parse is NOT — so it re-calls next round
-    expect(dp).toMatch(/if \(!p \|\| !Array\.isArray\(p\.issues\)\) return null;\s*\n\s*_auditMemoPut\(_memoKey, p\);/);
+    // Strict-schema successes are memoized; thrown/invalid replies return null and retry.
+    expect(dp).toMatch(/const p = _requireStrictOutputAudit\(parseAuditJson\(r\)\);[\s\S]{0,500}_auditMemoPut\(_memoKey, p\);/);
+    expect(dp).toContain('_outputAuditIssueArrayIsValid(parsed.issues)');
   });
 });
 

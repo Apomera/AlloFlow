@@ -22,12 +22,13 @@
   "illustrators": [],
   "originalAuthors": [],
   "publisher": "OpenStax",
-  "license": "OpenStax Creative Commons / item-level license",
-  "licenseUrl": "https://openstax.org/license",
+  "license": "CC BY-NC-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
   "source": {
     "id": "openstax",
     "name": "OpenStax",
-    "url": "https://openstax.org/details/books/algebra-and-trigonometry-2e"
+    "url": "https://openstax.org/details/books/algebra-and-trigonometry-2e",
+    "attributionUrl": "https://openstax.org/details/books/algebra-and-trigonometry-2e"
   },
   "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/DALL-E_-_Blackboard_drawing_of_anthropomorphic_rhinoceros_wearing_a_business_suit_scratching_his_head_and_looked_confused%2C_with_complicated_mathematic_matrices_multiplications_around_him.jpg/960px-thumbnail.jpg",
   "audio": null,
@@ -51,5 +52,24 @@
   "stats": {
     "pages": 3,
     "words": 60
+  },
+  "usagePolicy": {
+    "access": "link-out",
+    "mirror": true,
+    "adapt": true,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": true,
+    "auditedAt": "2026-07-23",
+    "auditSource": "https://help.openstax.org/s/article/Licensing-information-of-OpenStax-textbooks",
+    "aiPermissionRequired": true,
+    "reason": "This book may not be used in the training of large language models or otherwise be ingested into large language models or generative AI offerings without OpenStax's permission.",
+    "aiRestrictionSource": "https://openstax.org/details/books/algebra-and-trigonometry-2e"
+  },
+  "licenseAudit": {
+    "auditedAt": "2026-07-23",
+    "source": "https://help.openstax.org/s/article/Licensing-information-of-OpenStax-textbooks",
+    "note": "OpenStax attribution, noncommercial, and share-alike requirements apply to adaptations. Generative-AI ingestion requires OpenStax permission."
   }
 }

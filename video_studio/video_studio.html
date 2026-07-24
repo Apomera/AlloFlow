@@ -379,6 +379,7 @@
         <button class="quiet" id="demoTemplateLoadBtn" disabled>Load template</button>
         <button class="quiet" id="demoDuplicateBtn" disabled>Duplicate tutorial</button>
         <button class="quiet" id="demoTemplateDeleteBtn" disabled>Delete template</button>
+        <button class="quiet" id="demoTemplateUndoDeleteBtn" hidden disabled>Undo delete</button>
       </div>
       <p class="status" id="demoTemplateSafety" style="margin:-2px 0 8px">Saved templates are independent, editable copies. Video Studio revalidates their commands against the current AlloFlow window before recording.</p>
       <div class="row" style="margin:0 0 8px">
@@ -10915,6 +10916,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   var DEMO_CONTINUATION_MAX_AGE = 12 * 60 * 60 * 1000;
   var DEMO_TEMPLATE_KEY = 'vs_demo_templates_v1';
   var demoTemplates = [];
+  var deletedDemoTemplate = null;
   var demoState = { steps: null, originalSteps: null, activeSteps: [], active: false, activePolish: null, activeSeriesId: null, activeSeriesPart: 1, seriesId: null, seriesPart: 1, events: [], running: false, rehearsing: false, abandoned: false, voice: '', previousMicOn: null, officialId: null, preflightOk: false, commandReport: null, preflightVersion: 0, restoringDraft: false, continuation: null };
   var demoPreflightController = null;
   var demoStartPending = false;
@@ -11135,6 +11137,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     $('demoDuplicateBtn').disabled = locked || (!hasPlan && !selected);
     $('demoTemplateLoadBtn').disabled = locked || !selected;
     $('demoTemplateDeleteBtn').disabled = locked || !selected;
+    var undoDelete = $('demoTemplateUndoDeleteBtn');
+    var canUndoDelete = !!(deletedDemoTemplate && deletedDemoTemplate.item);
+    undoDelete.hidden = !canUndoDelete;
+    undoDelete.disabled = locked || !canUndoDelete;
   }
   function loadDemoTemplate(item) {
     var template = cleanDemoTemplate(item);
@@ -12083,13 +12089,52 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   $('demoTemplateDeleteBtn').addEventListener('click', function () {
     if (demoTemplateMutationLocked()) return;
     var id = $('demoTemplateSelect').value;
-    var item = demoTemplates.find(function (row) { return row.id === id; });
+    var index = demoTemplates.findIndex(function (row) { return row.id === id; });
+    var item = index >= 0 ? demoTemplates[index] : null;
     if (!item) return;
-    demoTemplates = demoTemplates.filter(function (row) { return row.id !== id; });
-    writeDemoTemplates();
+    var priorTemplates = demoTemplates.slice();
+    var deleted = cleanDemoTemplate(item);
+    if (!deleted) return;
+    demoTemplates.splice(index, 1);
+    if (!writeDemoTemplates()) {
+      demoTemplates = priorTemplates;
+      renderDemoTemplateControls(id);
+      setStatus($('demoStatus'), 'The browser could not delete that tutorial template. Nothing changed.', 'warn');
+      return;
+    }
+    deletedDemoTemplate = { item: deleted, index: index };
     $('demoTemplateName').value = '';
     renderDemoTemplateControls('');
-    setStatus($('demoStatus'), 'Deleted tutorial template: ' + item.name + '. The current plan is unchanged.', 'ok');
+    setStatus($('demoStatus'), 'Deleted tutorial template: ' + item.name + '. The current plan is unchanged; Undo delete is available.', 'ok');
+    announce('Tutorial template deleted. Undo is available.');
+    $('demoTemplateUndoDeleteBtn').focus();
+  });
+  $('demoTemplateUndoDeleteBtn').addEventListener('click', function () {
+    if (demoTemplateMutationLocked() || !deletedDemoTemplate || !deletedDemoTemplate.item) return;
+    if (demoTemplates.length >= 24) {
+      setStatus($('demoStatus'), 'The template library is full. Delete another template before restoring this one.', 'warn');
+      return;
+    }
+    var restored = cleanDemoTemplate(deletedDemoTemplate.item);
+    if (!restored) { deletedDemoTemplate = null; syncDemoTemplateControls(); return; }
+    if (demoTemplates.some(function (row) { return row.id === restored.id; })) restored.id = ('tpl_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)).slice(0, 60);
+    if (demoTemplates.some(function (row) { return row.name.toLowerCase() === restored.name.toLowerCase(); })) restored.name = uniqueDemoTemplateName(restored.name);
+    var restoreAt = Math.max(0, Math.min(demoTemplates.length, Math.round(Number(deletedDemoTemplate.index) || 0)));
+    var priorTemplates = demoTemplates.slice();
+    demoTemplates.splice(restoreAt, 0, restored);
+    if (!writeDemoTemplates()) {
+      demoTemplates = priorTemplates;
+      renderDemoTemplateControls('');
+      setStatus($('demoStatus'), 'The browser could not restore that tutorial template. Undo is still available.', 'warn');
+      $('demoTemplateUndoDeleteBtn').focus();
+      return;
+    }
+    deletedDemoTemplate = null;
+    $('demoTemplateName').value = restored.name;
+    renderDemoTemplateControls(restored.id);
+    setStatus($('demoStatus'), 'Restored tutorial template: ' + restored.name + '.', 'ok');
+    announce('Tutorial template restored');
+    $('demoTemplateSelect').focus();
   });
   $('demoGoal').addEventListener('keydown', function (e) {
     if (e.key !== 'Enter' || (!e.ctrlKey && !e.metaKey) || e.shiftKey || e.altKey) return;

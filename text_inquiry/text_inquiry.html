@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AlloFlow Text Inquiry Studio</title>
+  <style>
+    :root{color-scheme:light;--ink:#172033;--muted:#59657a;--line:#cbd5e1;--panel:#fff;--wash:#f5f3ff;--violet:#6d28d9;--violet2:#4c1d95;--amber:#92400e;--green:#166534;--red:#b91c1c;--focus:#0ea5e9}*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#f8fafc,#f5f3ff 55%,#ecfeff);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}button,input,textarea,select{font:inherit}button{min-height:44px;border:1px solid transparent;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--focus);outline-offset:2px}.top{padding:22px clamp(16px,4vw,46px);background:#27134f;color:#fff}.top h1{margin:0;font-size:clamp(24px,4vw,38px)}.top p{max-width:900px;margin:7px 0 0;color:#ddd6fe}.badges{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}.badge{border:1px solid #8b5cf6;border-radius:999px;padding:4px 9px;background:#3b1b6c;color:#ede9fe;font-size:12px;font-weight:750}.layout{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(300px,.92fr);gap:18px;max-width:1320px;margin:0 auto;padding:20px}.stack{display:grid;gap:16px}.card{padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--panel);box-shadow:0 10px 28px rgba(51,65,85,.08)}.card h2{margin:0 0 5px;font-size:18px}.card h3{margin:16px 0 6px;font-size:14px}.help{margin:0 0 13px;color:var(--muted);font-size:13px}.warning{padding:10px 12px;border-left:4px solid #d97706;border-radius:8px;background:#fffbeb;color:#78350f;font-size:13px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:grid;gap:5px}.field label,.label{font-size:12px;font-weight:850;color:#334155}.field input,.field textarea,.field select{width:100%;border:1px solid #94a3b8;border-radius:9px;padding:9px;background:#fff;color:#0f172a}.field textarea{min-height:92px;resize:vertical}.text-input{min-height:270px!important;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}.primary{background:linear-gradient(135deg,var(--violet),var(--violet2));color:#fff}.secondary{border-color:#7c3aed;background:#fff;color:#5b21b6}.ghost{border-color:#94a3b8;background:#f8fafc;color:#334155}.primary:disabled,.secondary:disabled{cursor:not-allowed;opacity:.48}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.metric{padding:10px;border:1px solid #ddd6fe;border-radius:10px;background:#faf5ff}.metric strong{display:block;font-size:19px;color:#5b21b6}.metric span{font-size:10px;color:#64748b}.terms{display:flex;flex-wrap:wrap;gap:7px}.term{min-height:36px;padding:7px 9px;border:1px solid #c4b5fd;background:#faf5ff;color:#5b21b6;font-size:12px}.term[aria-pressed="true"]{background:#6d28d9;color:#fff}.concordance{display:grid;gap:8px;margin:9px 0 0;padding:0;list-style:none}.concordance li{padding:9px 11px;border-left:3px solid #8b5cf6;background:#f8fafc;color:#334155;font-size:12px}.annotation-list{display:grid;gap:8px;padding:0;list-style:none}.annotation-list li{padding:10px;border:1px solid #c4b5fd;border-radius:9px;background:#faf5ff;font-size:12px}.annotation-list button{float:right;min-height:32px;padding:4px 8px}.empty{color:#64748b;font-size:12px;font-style:italic}.check{display:flex;align-items:flex-start;gap:9px;margin-top:12px;padding:10px;border:1px solid #c4b5fd;border-radius:10px;background:#faf5ff;font-size:12px}.check input{width:20px;height:20px;flex:0 0 auto}.status{min-height:24px;margin-top:10px;font-size:13px;font-weight:750}.status[data-kind="ok"]{color:var(--green)}.status[data-kind="error"]{color:var(--red)}.status[data-kind="warn"]{color:var(--amber)}.method-note{padding:12px;border:1px solid #a7f3d0;border-radius:10px;background:#ecfdf5;color:#14532d;font-size:12px}.license{max-width:1320px;margin:0 auto;padding:0 20px 24px;color:#64748b;font-size:11px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}[hidden]{display:none!important}@media(max-width:900px){.layout{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.grid2{grid-template-columns:1fr}.layout{padding:12px}.card{padding:14px}.actions button{width:100%}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <h1>Text Inquiry Studio</h1>
+    <p>Use transparent word patterns and concordance as evidence for close reading. Counts can point you toward a passage; they cannot decide what a text means.</p>
+    <div class="badges" aria-label="Tool characteristics">
+      <span class="badge">Humanistic inquiry</span><span class="badge">Full text stays in this window</span><span class="badge">Learner-approved capture</span><span class="badge" id="nlpBadge">Deterministic analysis ready</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <div class="stack">
+      <section class="card" aria-labelledby="sourceHeading">
+        <h2 id="sourceHeading">1. Identify the source</h2>
+        <p class="help">Record enough edition and context information for another reader to locate the same text. Use public, licensed, or teacher-approved material.</p>
+        <div class="grid2">
+          <div class="field"><label for="sourceTitle">Title or collection</label><input id="sourceTitle" maxlength="180" autocomplete="off"></div>
+          <div class="field"><label for="sourceCreator">Author, speaker, or creator</label><input id="sourceCreator" maxlength="180" autocomplete="off"></div>
+          <div class="field"><label for="sourceEdition">Edition, date, or version</label><input id="sourceEdition" maxlength="220" autocomplete="off"></div>
+          <div class="field"><label for="sourceUrl">Stable record URL (optional)</label><input id="sourceUrl" type="url" maxlength="500" autocomplete="off" placeholder="https://…"></div>
+        </div>
+        <div class="field" style="margin-top:12px"><label for="sourceContext">Historical, cultural, positional, or collection context</label><textarea id="sourceContext" maxlength="1200" placeholder="What should a reader know about who created, preserved, edited, translated, or selected this source?"></textarea></div>
+      </section>
+
+      <section class="card" aria-labelledby="textHeading">
+        <h2 id="textHeading">2. Analyze a bounded text</h2>
+        <p class="help">Paste up to 50,000 characters. The text is held only in memory and is not included in Research Hub captures or downloads.</p>
+        <div class="warning"><strong>Privacy boundary:</strong> do not paste private interviews, student records, direct identifiers, unpublished community testimony, or restricted/copyrighted text you are not permitted to process.</div>
+        <div class="field" style="margin-top:12px"><label for="sourceText">Source text</label><textarea id="sourceText" class="text-input" maxlength="50000" spellcheck="false"></textarea></div>
+        <div class="actions"><button class="primary" id="analyzeBtn" type="button">Analyze patterns</button><button class="ghost" id="sampleBtn" type="button">Load public-domain sample</button><button class="ghost" id="clearBtn" type="button">Clear text and results</button></div>
+        <div class="status" id="analysisStatus" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="card" id="resultsCard" aria-labelledby="resultsHeading" hidden>
+        <h2 id="resultsHeading">3. Inspect patterns, then return to passages</h2>
+        <p class="help">Lexical diversity is a descriptive ratio of unique words to all words in this bounded sample. It is not a score of writing quality.</p>
+        <div class="metrics" id="metrics"></div>
+        <h3>Frequent content terms</h3><div class="terms" id="topTerms"></div>
+        <h3>Repeated two-word sequences</h3><div class="terms" id="topBigrams"></div>
+        <div class="field" style="margin-top:15px"><label for="queryTerm">Concordance term or phrase</label><input id="queryTerm" maxlength="80" autocomplete="off"><button class="secondary" id="concordanceBtn" type="button">Find in sentence contexts</button></div>
+        <p class="help" id="concordanceSummary"></p><ol class="concordance" id="concordanceList"></ol>
+        <div class="actions"><button class="secondary" id="openAnnotationBtn" type="button">Send current passages to Annotation Suite</button></div>
+        <section id="annotationCard" aria-labelledby="annotationHeading" hidden style="margin-top:16px;padding-top:16px;border-top:1px solid #ddd6fe">
+          <h3 id="annotationHeading">Annotation Suite · Close Reading</h3>
+          <p class="help">Attach a stance and note to a bounded passage. These portable notes use the same note shape as Annotation Suite and return to the Research Hub with the inquiry.</p>
+          <div class="field"><label for="annotationExcerpt">Passage</label><select id="annotationExcerpt"></select></div>
+          <div class="field" style="margin-top:10px"><label for="annotationStance">Reading stance</label><select id="annotationStance"><option value="supports">Supports the claim</option><option value="complicates">Complicates the claim</option><option value="context">Adds context</option><option value="language">Attends to language</option><option value="question">Raises a question</option></select></div>
+          <div class="field" style="margin-top:10px"><label for="annotationNote">Close-reading note</label><textarea id="annotationNote" maxlength="900" placeholder="Name the wording or feature you notice, then explain how it affects your reading."></textarea></div>
+          <div class="actions"><button class="primary" id="addAnnotationBtn" type="button">Add annotation</button><button class="ghost" id="downloadAnnotationsBtn" type="button">Download for Annotation Suite</button></div>
+          <div class="status" id="annotationStatus" role="status" aria-live="polite"></div>
+          <ol class="annotation-list" id="annotationList" aria-label="Close-reading annotations"></ol>
+        </section>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="card" aria-labelledby="interpretHeading">
+        <h2 id="interpretHeading">4. Build an interpretation with resistance</h2>
+        <p class="help">All three fields are required. This prevents a frequency list from being mistaken for a finished interpretation.</p>
+        <div class="field"><label for="patternClaim">Pattern claim: what might the selected evidence suggest?</label><textarea id="patternClaim" maxlength="900" placeholder="The recurrence of … may suggest … because …"></textarea></div>
+        <div class="field"><label for="counterReading">Counter-reading or exception: what passage complicates that claim?</label><textarea id="counterReading" maxlength="900" placeholder="However, in sentence/passage … the term does something different …"></textarea></div>
+        <div class="field"><label for="limitation">Context and limitation: what can this method not establish?</label><textarea id="limitation" maxlength="900" placeholder="The count cannot establish …; the edition/context matters because …"></textarea></div>
+        <div class="field"><label for="nextQuestion">Next close-reading or contextual question</label><textarea id="nextQuestion" maxlength="500" placeholder="What would I inspect or research next?"></textarea></div>
+        <div class="method-note"><strong>Interpretive rule:</strong> computational patterns direct attention. Meaning still depends on wording, genre, voice, translation, historical context, absence, editorial history, and plausible alternative readings.</div>
+      </section>
+
+      <section class="card" aria-labelledby="captureHeading">
+        <h2 id="captureHeading">5. Review and capture</h2>
+        <p class="help">The capture contains source metadata, derived counts, up to ten short concordance excerpts, your interpretation, and a reproducibility receipt. It omits the full pasted text.</p>
+        <label class="check" for="approvalCheck"><input id="approvalCheck" type="checkbox"><span>I reviewed the bounded artifact, have permission to use the source, and approve sending these derived results and excerpts to my Research Hub.</span></label>
+        <div class="actions"><button class="primary" id="captureBtn" type="button">Send to Research Hub</button><button class="secondary" id="downloadBtn" type="button">Download artifact JSON</button></div>
+        <div class="status" id="captureStatus" role="status" aria-live="polite"></div>
+        <details><summary>Exactly what will be included?</summary><pre id="capturePreview" style="white-space:pre-wrap;word-break:break-word;font-size:11px;max-height:340px;overflow:auto"></pre></details>
+      </section>
+    </div>
+  </main>
+
+  <footer class="license">Text analysis enhancement: compromise 14.15.1, MIT license. Core frequency and concordance analysis remains available without the enhancement. AlloFlow integration contract reviewed 2026-07-22; review after 2027-01-22.</footer>
+
+  <script src="../vendor/compromise/compromise.js"></script>
+  <script src="../annotation_inquiry_bridge.js"></script>
+  <script src="../tool_integration_sdk.js"></script>
+  <script src="text_inquiry_core.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    var core = window.AlloFlowTextInquiryCore;
+    var sdk = window.AlloFlowToolIntegration;
+    var annotationBridge = window.AlloFlowAnnotationInquiryBridge;
+    var TOOL_VERSION = '2026.07';
+    var TEXT_INQUIRY_CONTRACT = {
+      schemaVersion: 1,
+      id: 'text_inquiry_studio',
+      name: 'Text Inquiry Studio',
+      version: TOOL_VERSION,
+      reviewedAt: '2026-07-22',
+      reviewAfter: '2027-01-22',
+      license: { name: 'MIT License', spdx: 'MIT', note: 'NLP enhancement uses compromise 14.15.1; learners must separately respect source-text rights.' },
+      citation: { text: 'Cite the analyzed source edition or record and disclose Text Inquiry Studio 2026.07 with compromise 14.15.1 when its sentence segmentation is used.', url: 'https://github.com/spencermountain/compromise' },
+      supportedMethodPacks: ['humanistic_interpretation', 'civic_policy', 'creative_cultural'],
+      capabilities: { captureArtifact: true, rawDataIncluded: false },
+      privacy: { learnerApprovalRequired: true, directIdentifiersAllowed: false, sequenceLikeTextAllowed: false, fullTextIncluded: false, sanitizerId: 'text_inquiry_excerpt_guard_v1', sanitizerRequired: false },
+      reproducibility: { requiredFields: ['softwareVersion', 'sourceRecordId', 'parameters', 'randomSeed', 'limitations', 'datasetVersion', 'transformations'] }
+    };
+    var els = {};
+    ['sourceTitle','sourceCreator','sourceEdition','sourceUrl','sourceContext','sourceText','analyzeBtn','sampleBtn','clearBtn','analysisStatus','resultsCard','metrics','topTerms','topBigrams','queryTerm','concordanceBtn','concordanceSummary','concordanceList','openAnnotationBtn','annotationCard','annotationExcerpt','annotationStance','annotationNote','addAnnotationBtn','downloadAnnotationsBtn','annotationStatus','annotationList','patternClaim','counterReading','limitation','nextQuestion','approvalCheck','captureBtn','downloadBtn','captureStatus','capturePreview','nlpBadge'].forEach(function (id) { els[id] = document.getElementById(id); });
+    var analysis = null;
+    var concordanceRows = [];
+    var concordanceQuery = '';
+    var annotationHandoff = null;
+    var inquiryAnnotations = [];
+
+    function setStatus(element, message, kind) { element.textContent = message || ''; element.dataset.kind = kind || ''; }
+    function text(value, limit) { return core.cleanText(value, limit); }
+    function enhancedSentences(value) {
+      if (typeof window.nlp !== 'function') return null;
+      var rows = window.nlp(value).sentences().out('array');
+      return Array.isArray(rows) ? rows : null;
+    }
+    els.nlpBadge.textContent = typeof window.nlp === 'function' ? 'compromise 14.15.1 enhancement loaded' : 'Offline deterministic analysis';
+
+    function resetInquiryAnnotations(message) {
+      annotationHandoff = null;
+      inquiryAnnotations = [];
+      els.annotationCard.hidden = true;
+      els.annotationExcerpt.textContent = '';
+      els.annotationNote.value = '';
+      els.annotationList.textContent = '';
+      setStatus(els.annotationStatus, message || '', message ? 'warn' : '');
+    }
+    function renderInquiryAnnotations() {
+      els.annotationList.textContent = '';
+      inquiryAnnotations.forEach(function (annotation, index) {
+        var li=document.createElement('li');
+        var remove=document.createElement('button'); remove.type='button'; remove.className='ghost'; remove.textContent='Remove'; remove.setAttribute('aria-label','Remove annotation '+(index+1));
+        remove.addEventListener('click',function(){inquiryAnnotations.splice(index,1);renderInquiryAnnotations();updatePreview();});
+        var target=annotation.inquiryTarget;
+        var strong=document.createElement('strong'); strong.textContent=annotation.inquiryStance+': ';
+        li.append(remove,strong,document.createTextNode(annotation.content+' — Sentence '+target.sentenceIndex));
+        els.annotationList.appendChild(li);
+      });
+      if (!inquiryAnnotations.length) { var empty=document.createElement('li'); empty.className='empty'; empty.textContent='No close-reading annotations yet.'; els.annotationList.appendChild(empty); }
+    }
+    function openAnnotationSuite() {
+      if (!annotationBridge) { setStatus(els.annotationStatus,'The Annotation Suite bridge did not load. Refresh this page and try again.','error'); els.annotationCard.hidden=false; return; }
+      if (!concordanceRows.length || !concordanceQuery) { setStatus(els.analysisStatus,'Run a concordance search before opening Annotation Suite.','error'); return; }
+      var source=sourceMetadata();
+      var result=annotationBridge.createHandoff({source:source,sourceRecordId:core.stableSourceId([source.title,source.creator,source.edition,source.stableUrl]),queryTerm:concordanceQuery,excerpts:concordanceRows});
+      if (!result.ok) { setStatus(els.analysisStatus,result.reason,'error'); return; }
+      annotationHandoff=result.handoff; inquiryAnnotations=[]; els.annotationExcerpt.textContent='';
+      annotationHandoff.excerpts.forEach(function(row){var option=document.createElement('option');option.value=row.excerptId;option.textContent='Sentence '+row.sentenceIndex+': '+row.excerpt;els.annotationExcerpt.appendChild(option);});
+      els.annotationCard.hidden=false; renderInquiryAnnotations(); setStatus(els.annotationStatus,'Passages transferred. Add at least one close-reading annotation.','ok'); els.annotationExcerpt.focus(); updatePreview();
+    }
+    function addInquiryAnnotation() {
+      if (!annotationHandoff || !annotationBridge) { setStatus(els.annotationStatus,'Send the current passages to Annotation Suite first.','error'); return; }
+      var result=annotationBridge.createAnnotation(annotationHandoff,{excerptId:els.annotationExcerpt.value,stance:els.annotationStance.value,note:els.annotationNote.value});
+      if (!result.ok) { setStatus(els.annotationStatus,result.reason,'error'); return; }
+      inquiryAnnotations.push(result.annotation); els.annotationNote.value=''; renderInquiryAnnotations(); setStatus(els.annotationStatus,'Annotation added to this inquiry.','ok'); updatePreview(); els.annotationNote.focus();
+    }
+    function downloadInquiryAnnotations() {
+      if (!annotationHandoff || !inquiryAnnotations.length) { setStatus(els.annotationStatus,'Add at least one annotation before downloading.','error'); return; }
+      var body=JSON.stringify(annotationBridge.toAnnotationSuitePayload(annotationHandoff,inquiryAnnotations),null,2);
+      var url=URL.createObjectURL(new Blob([body],{type:'application/json'})); var link=document.createElement('a'); link.href=url; link.download='text-inquiry-annotations.json'; document.body.appendChild(link); link.click(); link.remove(); setTimeout(function(){URL.revokeObjectURL(url);},0);
+      setStatus(els.annotationStatus,'Downloaded an Annotation Suite-compatible note bundle.','ok');
+    }
+    function renderMetrics() {
+      var rows = [['Words', analysis.wordCount], ['Unique words', analysis.uniqueWordCount], ['Sentences', analysis.sentenceCount], ['Lexical diversity', analysis.lexicalDiversity]];
+      els.metrics.textContent = '';
+      rows.forEach(function (row) { var div=document.createElement('div'); div.className='metric'; var strong=document.createElement('strong'); strong.textContent=String(row[1]); var span=document.createElement('span'); span.textContent=row[0]; div.append(strong,span); els.metrics.appendChild(div); });
+    }
+    function renderTermButtons(container, rows) {
+      container.textContent = '';
+      if (!rows.length) { var empty=document.createElement('span'); empty.className='empty'; empty.textContent='No repeated pattern met the display threshold.'; container.appendChild(empty); return; }
+      rows.forEach(function (row) { var button=document.createElement('button'); button.type='button'; button.className='term'; button.setAttribute('aria-pressed','false'); button.textContent=row.term+' · '+row.count; button.addEventListener('click',function(){ Array.from(container.querySelectorAll('button')).forEach(function(item){item.setAttribute('aria-pressed','false');}); button.setAttribute('aria-pressed','true'); els.queryTerm.value=row.term; runConcordance(); }); container.appendChild(button); });
+    }
+    function analyze() {
+      var source = els.sourceText.value;
+      if (text(source, 50000).length < 40) { setStatus(els.analysisStatus,'Paste at least 40 characters so the pattern display has meaningful context.','error'); return; }
+      analysis = core.analyzeText(source, { maxCharacters: 50000, sentenceSegmenter: enhancedSentences, topTermLimit: 20, bigramLimit: 12 });
+      concordanceRows = [];
+      concordanceQuery = '';
+      resetInquiryAnnotations('');
+      els.concordanceList.textContent = '';
+      els.concordanceSummary.textContent = '';
+      els.resultsCard.hidden = false;
+      renderMetrics(); renderTermButtons(els.topTerms,analysis.topTerms); renderTermButtons(els.topBigrams,analysis.topBigrams);
+      setStatus(els.analysisStatus,'Analysis complete. Select a term and inspect its sentence contexts before interpreting the pattern.','ok');
+      updatePreview(); els.resultsCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    function runConcordance() {
+      if (!analysis) { setStatus(els.analysisStatus,'Analyze the source text first.','error'); return; }
+      var query=text(els.queryTerm.value,80);
+      concordanceRows=core.concordance(analysis,query,10);
+      concordanceQuery=query.toLowerCase();
+      resetInquiryAnnotations('The passage selection changed; reopen Annotation Suite for the current concordance.');
+      els.concordanceList.textContent='';
+      concordanceRows.forEach(function(row){var li=document.createElement('li');li.textContent='Sentence '+row.sentenceIndex+': '+row.excerpt;els.concordanceList.appendChild(li);});
+      els.concordanceSummary.textContent=concordanceRows.length ? concordanceRows.length+' bounded context'+(concordanceRows.length===1?'':'s')+' shown for “'+query+'”.' : 'No sentence context found for “'+query+'”.';
+      updatePreview();
+    }
+    function redactString(value) {
+      return String(value).replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,'[email omitted]').replace(/\b\d{3}-\d{2}-\d{4}\b/g,'[identifier omitted]').replace(/\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b/g,'[phone omitted]').replace(/\b[ACGTUN]{40,}\b/gi,'[nucleic-acid sequence omitted]').replace(/\b[ACDEFGHIKLMNPQRSTVWY]{40,}\b/gi,'[protein sequence omitted]');
+    }
+    function sanitizeValue(value, depth) {
+      if (depth>7) return '[nested value omitted]';
+      if (typeof value==='string') return redactString(value).slice(0,1600);
+      if (Array.isArray(value)) return value.slice(0,30).map(function(item){return sanitizeValue(item,depth+1);});
+      if (value&&typeof value==='object') { var out={}; Object.keys(value).forEach(function(key){if(!/^(fullText|rawText|sourceText|text)$/i.test(key))out[key]=sanitizeValue(value[key],depth+1);}); return out; }
+      return value;
+    }
+    function sourceMetadata() { return { title:text(els.sourceTitle.value,180)||'Untitled classroom source', creator:text(els.sourceCreator.value,180)||'Creator not recorded', edition:text(els.sourceEdition.value,220)||'Edition not recorded', stableUrl:text(els.sourceUrl.value,500), context:text(els.sourceContext.value,1200) }; }
+    function payload() { var query=text(els.queryTerm.value,80); return { source:sourceMetadata(), analysis:analysis, concordance:query.toLowerCase()===concordanceQuery?concordanceRows:[], queryTerm:query, claim:text(els.patternClaim.value,900), counterReading:text(els.counterReading.value,900), limitation:text(els.limitation.value,900), nextQuestion:text(els.nextQuestion.value,500), nlpEnhanced:typeof window.nlp==='function', annotationBundle:annotationHandoff&&annotationBridge?annotationBridge.summarizeForCapture(annotationHandoff,inquiryAnnotations):null }; }
+
+    var adapter = sdk.createAdapter({
+      contract: TEXT_INQUIRY_CONTRACT,
+      buildCapture: function (state) {
+        var source=state.source;
+        var sourceId=core.stableSourceId([source.title,source.creator,source.edition,source.stableUrl]);
+        var selectedCount=0;
+        (state.analysis.topTerms||[]).forEach(function(row){if(row.term===String(state.queryTerm||'').toLowerCase())selectedCount=row.count;});
+        (state.analysis.topBigrams||[]).forEach(function(row){if(row.term===String(state.queryTerm||'').toLowerCase())selectedCount=row.count;});
+        return {
+          title: source.title+' · text pattern inquiry',
+          summary: state.claim+' Counter-reading: '+state.counterReading+' Limitation: '+state.limitation+' Close-reading annotations: '+(state.annotationBundle&&state.annotationBundle.annotations?state.annotationBundle.annotations.length:0)+'.',
+          data: {
+            source: source,
+            analysis: { wordCount:state.analysis.wordCount, uniqueWordCount:state.analysis.uniqueWordCount, sentenceCount:state.analysis.sentenceCount, lexicalDiversity:state.analysis.lexicalDiversity, topTerms:state.analysis.topTerms.slice(0,20), topBigrams:state.analysis.topBigrams.slice(0,12), queryTerm:state.queryTerm, queryCount:selectedCount, concordance:state.concordance.slice(0,10) },
+            interpretation: { claim:state.claim, counterReading:state.counterReading, limitation:state.limitation, nextQuestion:state.nextQuestion },
+            annotations: state.annotationBundle
+          },
+          reproducibilityReceipt: {
+            status:'complete', softwareVersion:TOOL_VERSION, sourceRecordId:sourceId,
+            parameters:{tokenizer:'unicode_words_v1',stopwordList:'alloflow_english_v1',queryTerm:state.queryTerm,maxConcordanceExcerpts:10,sentenceSegmenter:state.nlpEnhanced?'compromise 14.15.1':'deterministic punctuation fallback',annotationBridgeVersion:annotationBridge&&annotationBridge.version||'unavailable',annotationCount:state.annotationBundle&&state.annotationBundle.annotations?state.annotationBundle.annotations.length:0},
+            randomSeed:'not applicable; deterministic analysis',
+            limitations:['Word counts and concordance are descriptive evidence, not an interpretation or measure of importance.','Automated sentence boundaries may differ from editorial, poetic, translated, or performed units.','The bounded sample may not represent the whole work or its historical reception.'],
+            datasetVersion:source.edition||'Edition not recorded',
+            transformations:['Unicode tokenization','lowercase comparison','English stopword filtering for ranked terms','full source text omitted from capture','bounded concordance excerpts converted to portable Annotation Suite notes']
+          }
+        };
+      },
+      sanitizeCapture:function(capture){return sanitizeValue(capture,0);}
+    });
+
+    function readiness() {
+      if(!analysis)return 'Analyze a text first.';
+      if(text(els.sourceTitle.value,180).length<2)return 'Record the source title or collection.';
+      if(!text(els.queryTerm.value,80)||text(els.queryTerm.value,80).toLowerCase()!==concordanceQuery||!concordanceRows.length)return 'Run a current concordance search and inspect at least one passage context.';
+      if(!annotationHandoff||!annotationBridge||!inquiryAnnotations.some(function(annotation){return annotationBridge.validateAnnotation(annotationHandoff,annotation);}))return 'Add at least one close-reading annotation in Annotation Suite.';
+      if(text(els.patternClaim.value,900).length<20)return 'Write a pattern claim of at least 20 characters.';
+      if(text(els.counterReading.value,900).length<20)return 'Add a counter-reading or exception of at least 20 characters.';
+      if(text(els.limitation.value,900).length<20)return 'Add a context or limitation note of at least 20 characters.';
+      if(!els.approvalCheck.checked)return 'Review and approve the bounded artifact.';
+      return '';
+    }
+    function updatePreview(){if(!analysis){els.capturePreview.textContent='Analyze a text to preview the bounded artifact.';return;}var prepared=adapter.prepare(payload());els.capturePreview.textContent=prepared.ok?JSON.stringify(prepared.capture,null,2):prepared.reason;}
+    function sendCapture(){var gap=readiness();if(gap){setStatus(els.captureStatus,gap,'error');return;}var result=adapter.capture(payload());if(result.ok)setStatus(els.captureStatus,'Artifact queued in the Research Hub for learner review.','ok');else if(result.unavailable)setStatus(els.captureStatus,result.reason,'warn');else setStatus(els.captureStatus,result.reason||'The Research Hub did not accept this capture.','error');updatePreview();}
+    function downloadCapture(){var gap=readiness();if(gap){setStatus(els.captureStatus,gap,'error');return;}var result=adapter.download(payload(),'text-inquiry-artifact.json');setStatus(els.captureStatus,result.ok?'Downloaded the bounded artifact JSON. The full pasted text was not included.':result.reason,result.ok?'ok':'error');updatePreview();}
+    function clearAll(){els.sourceText.value='';analysis=null;concordanceRows=[];concordanceQuery='';resetInquiryAnnotations('');els.resultsCard.hidden=true;els.metrics.textContent='';els.topTerms.textContent='';els.topBigrams.textContent='';els.queryTerm.value='';els.concordanceList.textContent='';els.concordanceSummary.textContent='';els.approvalCheck.checked=false;setStatus(els.analysisStatus,'Text and derived results cleared from this window.','ok');setStatus(els.captureStatus,'','');updatePreview();els.sourceText.focus();}
+    function loadSample(){els.sourceTitle.value='The Yellow Wallpaper (excerpt)';els.sourceCreator.value='Charlotte Perkins Gilman';els.sourceEdition.value='Public-domain text, first published 1892';els.sourceUrl.value='https://www.gutenberg.org/ebooks/1952';els.sourceContext.value='A first-person narrative published in the late nineteenth century. Interpretive claims should consider gender, medical authority, narration, genre, and the history of the edition.';els.sourceText.value='It is very seldom that mere ordinary people like John and myself secure ancestral halls for the summer. A colonial mansion, a hereditary estate, I would say a haunted house, and reach the height of romantic felicity—but that would be asking too much of fate! Still I will proudly declare that there is something queer about it. Else, why should it be let so cheaply? And why have stood so long untenanted? John laughs at me, of course, but one expects that in marriage. John is practical in the extreme. He has no patience with faith, an intense horror of superstition, and he scoffs openly at any talk of things not to be felt and seen and put down in figures.';setStatus(els.analysisStatus,'Loaded a short public-domain sample. Analyze it, then inspect repeated words in context.','ok');els.sourceText.focus();}
+
+    els.analyzeBtn.addEventListener('click',analyze);els.sampleBtn.addEventListener('click',loadSample);els.clearBtn.addEventListener('click',clearAll);els.concordanceBtn.addEventListener('click',runConcordance);els.openAnnotationBtn.addEventListener('click',openAnnotationSuite);els.addAnnotationBtn.addEventListener('click',addInquiryAnnotation);els.downloadAnnotationsBtn.addEventListener('click',downloadInquiryAnnotations);els.captureBtn.addEventListener('click',sendCapture);els.downloadBtn.addEventListener('click',downloadCapture);
+    els.queryTerm.addEventListener('input',function(){if(text(els.queryTerm.value,80).toLowerCase()!==concordanceQuery){concordanceRows=[];resetInquiryAnnotations('The query changed; run concordance and reopen Annotation Suite.');els.concordanceList.textContent='';els.concordanceSummary.textContent='Query changed. Run concordance again before capture.';}updatePreview();});
+    [els.sourceTitle,els.sourceCreator,els.sourceEdition,els.sourceUrl,els.sourceContext,els.patternClaim,els.counterReading,els.limitation,els.nextQuestion,els.approvalCheck].forEach(function(element){element.addEventListener('input',updatePreview);element.addEventListener('change',updatePreview);});
+    updatePreview();
+  })();
+  </script>
+</body>
+</html>

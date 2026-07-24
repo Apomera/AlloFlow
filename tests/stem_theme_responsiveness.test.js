@@ -68,6 +68,23 @@ describe('centralized native palettes', () => {
   });
 });
 
+describe('dispersed-color native shells', () => {
+  it.each([
+    ['stem_lab/stem_tool_bakingscience.js', 'data-baking-theme'],
+    ['stem_lab/stem_tool_coordgrid.js', 'data-coordinate-theme'],
+    ['stem_lab/stem_tool_physics.js', 'data-physics-theme'],
+    ['stem_lab/stem_tool_algebraCAS.js', 'data-algebra-theme'],
+    ['stem_lab/stem_tool_lumen.js', 'data-lumen-theme']
+  ])('%s exposes an explicit host-theme shell', (file, marker) => {
+    const source = read(file);
+    expect(source).toContain('var isContrast = !!ctx.isContrast');
+    expect(source).toContain('var isDark = !!ctx.isDark');
+    expect(source).toContain(marker);
+    expect(source).toContain("'#000000'");
+    expect(source).toContain("'#fbbf24'");
+  });
+});
+
 describe('companion-window theme propagation', () => {
   const launchers = [
     'stem_lab/stem_tool_alphafold.js',

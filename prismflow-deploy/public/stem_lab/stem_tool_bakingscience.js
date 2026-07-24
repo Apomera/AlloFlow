@@ -391,6 +391,11 @@
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
+      var isContrast = !!ctx.isContrast;
+      var isDark = !!ctx.isDark;
+      var themeSurface = isContrast ? '#000000' : (isDark ? '#0f172a' : '#fffdf8');
+      var themeInk = isContrast ? '#ffffff' : (isDark ? '#f8fafc' : '#0f172a');
+      var themeBorder = isContrast ? '#fbbf24' : (isDark ? '#475569' : '#fcd34d');
       var labToolData = ctx.toolData;
       var setLabToolData = ctx.setToolData;
       var setStemLabTool = ctx.setStemLabTool;
@@ -2171,6 +2176,8 @@
         function wrapWithA11y(child) {
           return h('div', {
             className: 'outline-none focus:ring-4 focus:ring-amber-400 focus:ring-inset rounded-lg',
+            'data-baking-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'),
+            style: { background: themeSurface, color: themeInk, border: '1px solid ' + themeBorder },
             role: 'region',
             'aria-label': 'Baking Lab. Keyboard shortcuts: 1 through ' + _BK_SUBTOOL_IDS.length + ' pick an activity, M or Escape returns to menu.',
             tabIndex: 0,

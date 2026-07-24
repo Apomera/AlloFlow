@@ -1,0 +1,9 @@
+{
+  "sourceToolId": "alphafold_explorer",
+  "sourceToolName": "AlphaFold Explorer",
+  "sourceToolVersion": "2026.07",
+  "title": "Public structure observation",
+  "summary": "A sequence-free observation from public AlphaFold Database record P01308.",
+  "data": { "accession": "P01308", "observation": "One region is recorded as lower confidence than the compact core." },
+  "reproducibilityReceipt": { "softwareVersion": "2026.07", "sourceRecordId": "P01308", "parameters": { "confidenceView": "all", "structureSource": "AlphaFold DB" }, "randomSeed": "not applicable", "limitations": ["Predicted structure confidence is not experimental validation."] }
+}
