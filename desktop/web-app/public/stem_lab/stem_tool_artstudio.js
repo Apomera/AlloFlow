@@ -4593,7 +4593,7 @@ const d = labToolData.artStudio || {};
 
             tab === 'fractal' && React.createElement("div", { className: "space-y-3" },
 
-              React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
+              React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
 
                 React.createElement("div", { className: "space-y-3" },
 
@@ -4603,13 +4603,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-violet-600 block mb-1" }, __alloT('stem.artstudio.fractal_type', "Fractal Type")),
+                      React.createElement("span", { id: "artstudio-fractal-type-label", className: "text-[11px] font-bold text-violet-700 block mb-1" }, __alloT('stem.artstudio.fractal_type', "Fractal Type")),
 
-                      React.createElement("div", { className: "flex gap-1" },
+                      React.createElement("div", { className: "flex gap-1 flex-wrap", role: "group", "aria-labelledby": "artstudio-fractal-type-label" },
 
                         [{ id: 'mandelbrot', label: __alloT('stem.artstudio.mandelbrot', '\uD83C\uDF00 Mandelbrot') }, { id: 'julia', label: __alloT('stem.artstudio.julia', '\u2728 Julia') }, { id: 'burningShip', label: __alloT('stem.artstudio.burning_ship', '\uD83D\uDD25 Burning Ship') }, { id: 'sierpinski', label: __alloT('stem.artstudio.sierpinski', '\u25B3 Sierpinski') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, onClick: function () { upd('fractalType', s.id); upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.fractalType || 'mandelbrot') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-violet-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.fractalType || 'mandelbrot') === s.id, onClick: function () { upd('fractalType', s.id); upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(s.label + ' fractal selected; view reset.'); }, className: "flex-1 min-w-[6rem] px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 " + ((d.fractalType || 'mandelbrot') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-700 border border-slate-400 hover:bg-violet-50') }, s.label);
 
                         })
 
@@ -4619,15 +4619,25 @@ const d = labToolData.artStudio || {};
 
                     [{ k: 'fractalIter', label: __alloT('stem.artstudio.max_iterations', 'Max Iterations'), min: 50, max: 500, def: 200 },
 
-                     { k: 'fractalZoom', label: __alloT('stem.artstudio.zoom', 'Zoom'), min: 1, max: 500, def: 1 }].map(function (s) {
+                     { k: 'fractalZoom', label: __alloT('stem.artstudio.zoom', 'Zoom'), min: 1, max: 500, def: 1 },
+
+                     { k: 'fractalPanX', label: __alloT('stem.artstudio.horizontal_pan', 'Horizontal pan'), min: -200, max: 200, def: 0 },
+
+                     { k: 'fractalPanY', label: __alloT('stem.artstudio.vertical_pan', 'Vertical pan'), min: -200, max: 200, def: 0 }].map(function (s) {
 
                       var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
 
+                      var valueText = s.k === 'fractalZoom' ? val + ' times magnification' :
+
+                        s.k === 'fractalPanX' ? val + ' horizontal units' :
+
+                        s.k === 'fractalPanY' ? val + ' vertical units' : val + ' iterations';
+
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { className: "text-[11px] font-bold text-violet-600 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[11px] font-bold text-violet-700 block mb-0.5" }, s.label + ': ' + val),
 
-                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('fractalReset', Date.now()); }, className: "w-full accent-violet-600" })
+                        React.createElement("input", { id: 'artstudio-' + s.k, type: "range", min: s.min, max: s.max, value: val, "aria-valuetext": valueText, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('fractalReset', Date.now()); }, className: "w-full accent-violet-600" })
 
                       );
 
@@ -4635,7 +4645,7 @@ const d = labToolData.artStudio || {};
 
                     (d.fractalType || 'mandelbrot') === 'julia' && React.createElement("div", { className: "space-y-2 mt-2 p-2 bg-violet-50 rounded-lg border border-violet-200" },
 
-                      React.createElement("p", { className: "text-[11px] font-bold text-violet-500" }, __alloT('stem.artstudio.julia_constant_c', "Julia Constant (c)")),
+                      React.createElement("p", { className: "text-[11px] font-bold text-violet-700" }, __alloT('stem.artstudio.julia_constant_c', "Julia Constant (c)")),
 
                       [{ k: 'juliaReal', label: __alloT('stem.artstudio.c_real', 'c real'), min: -200, max: 200, def: -70 },
 
@@ -4645,9 +4655,9 @@ const d = labToolData.artStudio || {};
 
                         return React.createElement("div", { key: s.k },
 
-                          React.createElement("label", { className: "text-[11px] font-bold text-violet-600" }, s.label + ': ' + (val / 100).toFixed(2)),
+                          React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[11px] font-bold text-violet-700 block" }, s.label + ': ' + (val / 100).toFixed(2)),
 
-                          React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('fractalReset', Date.now()); }, className: "w-full accent-violet-500" })
+                          React.createElement("input", { id: 'artstudio-' + s.k, type: "range", min: s.min, max: s.max, value: val, "aria-valuetext": (val / 100).toFixed(2), onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('fractalReset', Date.now()); }, className: "w-full accent-violet-600" })
 
                         );
 
@@ -4657,13 +4667,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3 mt-2" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-violet-600 block mb-1" }, __alloT('stem.artstudio.color_scheme_2', "Color Scheme")),
+                      React.createElement("span", { id: "artstudio-fractal-color-label", className: "text-[11px] font-bold text-violet-700 block mb-1" }, __alloT('stem.artstudio.color_scheme_2', "Color Scheme")),
 
-                      React.createElement("div", { className: "flex gap-1 flex-wrap" },
+                      React.createElement("div", { className: "flex gap-1 flex-wrap", role: "group", "aria-labelledby": "artstudio-fractal-color-label" },
 
                         [{ id: 'classic', label: __alloT('stem.artstudio.classic', '\uD83C\uDF08 Classic') }, { id: 'fire', label: __alloT('stem.artstudio.fire', '\uD83D\uDD25 Fire') }, { id: 'ocean', label: __alloT('stem.artstudio.ocean', '\uD83C\uDF0A Ocean') }, { id: 'psychedelic', label: __alloT('stem.artstudio.psychedelic', '\uD83D\uDC9C Psychedelic') }, { id: 'grayscale', label: __alloT('stem.artstudio.grayscale', '\u25AB Grayscale') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, onClick: function () { upd('fractalColor', s.id); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.fractalColor || 'classic') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-violet-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.fractalColor || 'classic') === s.id, onClick: function () { upd('fractalColor', s.id); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 " + ((d.fractalColor || 'classic') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-700 border border-slate-400 hover:bg-violet-50') }, s.label);
 
                         })
 
@@ -4673,15 +4683,15 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { onClick: function () { upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, __alloT('stem.artstudio.reset_view', "\u21BA Reset View")),
+                      React.createElement("button", { onClick: function () { upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR('Fractal view reset to one times zoom and centered pan.'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.reset_view', "\u21BA Reset View")),
 
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_13', "Export PNG"), onClick: function () { var c = document.getElementById('fractalCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'fractal-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_14', "\uD83D\uDCE5 Export PNG"))
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_13', "Export fractal as PNG"), onClick: function () { var c = document.getElementById('fractalCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'fractal-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR('Fractal PNG exported.'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_14', "\uD83D\uDCE5 Export PNG"))
 
                     ),
 
-                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
+                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap items-center", role: "group", "aria-labelledby": "artstudio-fractal-presets-label" },
 
-                      React.createElement("span", { className: "text-[11px] font-bold text-violet-500 mr-1" }, "Presets:"),
+                      React.createElement("span", { id: "artstudio-fractal-presets-label", className: "text-[11px] font-bold text-violet-700 mr-1" }, "Presets:"),
 
                       [{ label: __alloT('stem.artstudio.seahorse_valley', 'Seahorse Valley'), type: 'mandelbrot', panX: 74, panY: -20, zoom: 120, iter: 350 },
 
@@ -4691,25 +4701,27 @@ const d = labToolData.artStudio || {};
 
                        { label: __alloT('stem.artstudio.spiral_arm', 'Spiral Arm'), type: 'julia', panX: 0, panY: 0, zoom: 1, iter: 300, jr: 28, ji: 1 }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, onClick: function () { upd('fractalType', pr.type); upd('fractalPanX', pr.panX); upd('fractalPanY', pr.panY); upd('fractalZoom', pr.zoom); upd('fractalIter', pr.iter); if (pr.jr !== undefined) { upd('juliaReal', pr.jr); upd('juliaImag', pr.ji); } upd('fractalReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-violet-600 border border-violet-200 hover:bg-violet-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' fractal preset', onClick: function () { upd('fractalType', pr.type); upd('fractalPanX', pr.panX); upd('fractalPanY', pr.panY); upd('fractalZoom', pr.zoom); upd('fractalIter', pr.iter); if (pr.jr !== undefined) { upd('juliaReal', pr.jr); upd('juliaImag', pr.ji); } upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(pr.label + ' fractal preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-violet-700 border border-violet-300 hover:bg-violet-50 transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2" }, pr.label);
 
                       })
 
-                    )
+                    ),
+
+                    React.createElement("p", { id: "artstudio-fractal-instructions", className: "mt-3 text-[11px] text-violet-700 leading-relaxed" }, __alloT('stem.artstudio.fractal_keyboard_instructions', "Keyboard: use the Zoom, Horizontal pan, and Vertical pan sliders to explore every view. Pointer users can also double-click a location or use the mouse wheel."))
 
                   ),
 
                   React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-3 border border-purple-200" },
 
-                    React.createElement("button", { onClick: function () { upd('showFractalInfo', !d.showFractalInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-purple-700" },
+                    React.createElement("button", { id: "artstudio-fractal-info-toggle", "aria-expanded": !!d.showFractalInfo, "aria-controls": "artstudio-fractal-info", onClick: function () { upd('showFractalInfo', !d.showFractalInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-purple-700 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 rounded" },
 
                       React.createElement("span", null, __alloT('stem.artstudio.the_math_of_fractals', "\uD83D\uDD2C The Math of Fractals")),
 
-                      React.createElement("span", null, d.showFractalInfo ? '\u25B2' : '\u25BC')
+                      React.createElement("span", { "aria-hidden": "true" }, d.showFractalInfo ? '\u25B2' : '\u25BC')
 
                     ),
 
-                    d.showFractalInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
+                    d.showFractalInfo && React.createElement("div", { id: "artstudio-fractal-info", role: "region", "aria-labelledby": "artstudio-fractal-info-toggle", className: "mt-3 space-y-2 text-xs text-slate-700 leading-relaxed" },
 
                       React.createElement("p", null, "\uD83C\uDF00 ", React.createElement("strong", null, __alloT('stem.artstudio.the_mandelbrot_set', "The Mandelbrot set")), __alloT('stem.artstudio.is_generated_by_iterating_z_z_c_for_ev', " is generated by iterating z = z\u00B2 + c for every point c in the complex plane. Points where |z| stays bounded (never exceeds 2) are 'in' the set. The boundary reveals "), React.createElement("strong", null, __alloT('stem.artstudio.infinite_complexity', "infinite complexity")), __alloT('stem.artstudio.at_every_scale', " at every scale.")),
 
@@ -4727,7 +4739,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { tabIndex: 0, id: 'fractalCanvas', width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.fractal_art_canvas', 'Fractal art canvas'), className: "rounded-xl border-2 border-violet-200 shadow-lg mx-auto block cursor-crosshair", style: { maxWidth: '100%', background: '#0a0a1a' },
+                React.createElement("canvas", { id: 'fractalCanvas', width: 512, height: 512, role: "img", "aria-describedby": "artstudio-fractal-instructions", 'aria-label': ((d.fractalType || 'mandelbrot') === 'mandelbrot' ? 'Mandelbrot fractal: a dark cardioid and circular bulbs bordered by repeating colored tendrils' : (d.fractalType || 'mandelbrot') === 'julia' ? 'Julia fractal: self-similar colored branches generated from the selected complex constant' : (d.fractalType || 'mandelbrot') === 'burningShip' ? 'Burning Ship fractal: an asymmetric ship-like boundary with flame-shaped repeating detail' : 'Sierpinski triangle: a self-similar triangle subdivided into three smaller triangles') + '. ' + (typeof d.fractalIter === 'number' ? d.fractalIter : 200) + ' maximum iterations, ' + (typeof d.fractalZoom === 'number' ? d.fractalZoom : 1) + ' times zoom, horizontal pan ' + (typeof d.fractalPanX === 'number' ? d.fractalPanX : 0) + ', vertical pan ' + (typeof d.fractalPanY === 'number' ? d.fractalPanY : 0) + ', ' + (d.fractalColor || 'classic') + ' color scheme.', className: "rounded-xl border-2 border-violet-300 shadow-lg mx-auto block cursor-crosshair", style: { maxWidth: '100%', background: '#0a0a1a' },
 
                   key: 'frac-' + (d.fractalType || 'mandelbrot') + '-' + (d.fractalReset || 0),
 
@@ -4829,7 +4841,7 @@ const d = labToolData.artStudio || {};
 
                       var si = 0, total = 100000;
 
-                      var batchSize = 500;
+                      var batchSize = reducedMotion ? total : 500;
 
                       function drawSierpBatch() {
 
@@ -4967,7 +4979,15 @@ const d = labToolData.artStudio || {};
 
                         }
 
-                        ctx.putImageData(imgData, 0, 0, 0, rowsDone, W, endRow - rowsDone);
+                        if (reducedMotion) {
+
+                          if (endRow === H) ctx.putImageData(imgData, 0, 0);
+
+                        } else {
+
+                          ctx.putImageData(imgData, 0, 0, 0, rowsDone, W, endRow - rowsDone);
+
+                        }
 
                         rowsDone = endRow;
 
@@ -4997,7 +5017,7 @@ const d = labToolData.artStudio || {};
 
                       var newZoom = Math.min(500, Math.round(zoom * 2));
 
-                      upd('fractalPanX', newPanX); upd('fractalPanY', newPanY); upd('fractalZoom', newZoom); upd('fractalReset', Date.now());
+                      upd('fractalPanX', newPanX); upd('fractalPanY', newPanY); upd('fractalZoom', newZoom); upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR('Fractal view zoomed to ' + newZoom + ' times at horizontal pan ' + newPanX + ' and vertical pan ' + newPanY + '.');
 
                     };
 
@@ -5011,7 +5031,7 @@ const d = labToolData.artStudio || {};
 
                       var newZoom2 = Math.max(1, Math.min(500, Math.round(zoom * factor)));
 
-                      upd('fractalZoom', newZoom2); upd('fractalReset', Date.now());
+                      upd('fractalZoom', newZoom2); upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR('Fractal zoom ' + newZoom2 + ' times.');
 
                     };
 
