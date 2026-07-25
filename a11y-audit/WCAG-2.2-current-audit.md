@@ -217,6 +217,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Corrected Memory Game’s conditional fullscreen semantics: its embedded form remains a named region, while fullscreen now becomes a labelled modal dialog with programmatic focus, Tab/Shift+Tab containment, Escape-to-exit, and focus restoration to the fullscreen toggle. The shared game-dialog focus helper now supports an explicit active state so inline Memory Game content is not trapped when fullscreen is off (WCAG 1.3.1, 2.1.1, 2.4.3, 2.4.6, 4.1.2).
 
+- Remediated AlloHaven Boss Encounter's synchronized class-round deadline: teachers can now pause and resume the timer for every participant without losing remaining time, paused rounds neither tick nor auto-advance, and new or skipped rounds reset pause state. Timer state changes are announced without announcing every second; the control exposes pressed state and a time-specific accessible name; all teacher actions provide 44 CSS-pixel targets and dual-color visible focus with forced-colors support; and arcade cards and verb controls no longer suppress native focus (WCAG 1.3.1, 2.2.1, 2.4.6, 2.4.7, 2.5.8, 4.1.2, 4.1.3).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

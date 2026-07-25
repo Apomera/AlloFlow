@@ -282,9 +282,12 @@
       // accent shadow when picked. Transition kept short (140ms) to feel
       // responsive without being twitchy.
       '.ah-arcade-card { transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease; }',
+      '.ah-arcade-card:focus-visible, .ah-arcade-verb:focus-visible, .ah-boss-control:focus-visible { outline: 3px solid #fff; outline-offset: 3px; box-shadow: 0 0 0 6px #1d4ed8; }',
+      '@media (forced-colors: active) {',
+      '  .ah-arcade-card:focus-visible, .ah-arcade-verb:focus-visible, .ah-boss-control:focus-visible { outline-color: Highlight; box-shadow: none; }',
+      '}',
       '@media (prefers-reduced-motion: no-preference) {',
       '  .ah-arcade-card:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(96,165,250,0.18); }',
-      '  .ah-arcade-card:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(96,165,250,0.55); }',
       '  .ah-arcade-card.is-picked { transform: translateY(-1px) scale(1.02); box-shadow: 0 6px 18px rgba(96,165,250,0.32); }',
       '}',
       '.ah-arcade-card.is-picked { z-index: 1; }',
@@ -825,6 +828,11 @@
       var roundDurationMs = typeof be.roundDurationMs === 'number' ? be.roundDurationMs : CLASS_ROUND_DURATION_MS;
       var roundStartedAtMs = be.roundStartedAt ? new Date(be.roundStartedAt).getTime() : 0;
       var roundEndsAtMs = roundStartedAtMs ? roundStartedAtMs + roundDurationMs : 0;
+      var timerPaused = !!be.timerPaused;
+      var calculatedRemainingMs = roundEndsAtMs ? Math.max(0, roundEndsAtMs - Date.now()) : roundDurationMs;
+      var pausedRemainingMs = typeof be.pausedRemainingMs === 'number'
+        ? Math.max(0, Math.min(roundDurationMs, be.pausedRemainingMs))
+        : calculatedRemainingMs;
       var maxRounds = typeof be.maxRounds === 'number' ? be.maxRounds : MAX_ROUNDS;
 
       // Has THIS user submitted in the current round?
@@ -843,6 +851,8 @@
         roundDurationMs: roundDurationMs,
         roundStartedAtMs: roundStartedAtMs,
         roundEndsAtMs: roundEndsAtMs,
+        timerPaused: timerPaused,
+        pausedRemainingMs: pausedRemainingMs,
         maxRounds: maxRounds,
         hasSubmittedThisRound: hasSubmittedThisRound
       };
@@ -934,12 +944,55 @@
             currentRound: 1,
             roundStartedAt: new Date().toISOString(),
             roundDurationMs: CLASS_ROUND_DURATION_MS,
+            timerPaused: false,
+            pausedRemainingMs: null,
+            timerPausedAt: null,
             maxRounds: MAX_ROUNDS
           }
         }).catch(function () { /* ignore — best-effort */ });
         ctx.addToast('🌐 Class encounter live. Students can join.');
       } catch (e) { /* ignore */ }
     }
+    // WCAG 2.2.1 — the host can pause and resume the synchronized
+    // round deadline for every participant. Resuming reconstructs
+    // roundStartedAt from the retained duration so the existing
+    // roundEndsAt calculation remains authoritative.
+    function setClassRoundTimerPaused(shouldPause) {
+      if (!isClassHost || !classView) return;
+      if (typeof ctx.sessionUpdate !== 'function') return;
+      var nowMs = Date.now();
+      var fields;
+      if (shouldPause) {
+        var remainingMs = Math.max(0, classView.roundEndsAtMs - nowMs);
+        if (remainingMs <= 100) {
+          ctx.addToast('This round has already ended.');
+          return;
+        }
+        fields = {
+          timerPaused: true,
+          pausedRemainingMs: remainingMs,
+          timerPausedAt: new Date(nowMs).toISOString()
+        };
+      } else {
+        var retainedMs = Math.max(0, Math.min(
+          classView.roundDurationMs,
+          classView.pausedRemainingMs
+        ));
+        fields = {
+          timerPaused: false,
+          pausedRemainingMs: null,
+          timerPausedAt: null,
+          roundStartedAt: new Date(
+            nowMs - Math.max(0, classView.roundDurationMs - retainedMs)
+          ).toISOString()
+        };
+      }
+      try {
+        ctx.sessionUpdate({ bossEncounter: fields }).catch(function () { /* best-effort */ });
+        ctx.addToast(shouldPause ? 'Round timer paused.' : 'Round timer resumed.');
+      } catch (e) { /* ignore */ }
+    }
+
     // Mark the session encounter completed when the host's encounter
     // ends (any terminal phase). Students who haven't joined yet won't
     // see a stale "Join" prompt; future encounters can overwrite cleanly.
@@ -1532,10 +1585,11 @@
     var setNowTick = nowTickTuple[1];
     useEffect(function () {
       if (!isClassMode || phase !== 'play') return;
+      if (classView && classView.timerPaused) return;
       var iv = setInterval(function () { setNowTick(function (t) { return t + 1; }); }, 1000);
       return function () { clearInterval(iv); };
       // eslint-disable-next-line
-    }, [isClassMode, phase]);
+    }, [isClassMode, phase, classView && classView.timerPaused]);
 
     // Phase 3b.full.d — host auto-advances rounds. When the current
     // round's timer expires, host writes currentRound++ + a fresh
@@ -1548,6 +1602,7 @@
       if (phase !== 'play') return;
       if (!classView) return;
       if (classView.sessionStatus !== 'open') return;
+      if (classView.timerPaused) return;
       if (!classView.roundEndsAtMs) return;
       var msLeft = classView.roundEndsAtMs - Date.now();
       if (msLeft > 100) return; // not yet expired
@@ -1569,12 +1624,15 @@
         ctx.sessionUpdate({
           bossEncounter: {
             currentRound: nextRound,
-            roundStartedAt: new Date().toISOString()
+            roundStartedAt: new Date().toISOString(),
+            timerPaused: false,
+            pausedRemainingMs: null,
+            timerPausedAt: null
           }
         }).catch(function () { /* best-effort */ });
       } catch (e) { /* ignore */ }
       // eslint-disable-next-line
-    }, [isClassHost, phase, classView && classView.roundEndsAtMs, nowTick]);
+    }, [isClassHost, phase, classView && classView.roundEndsAtMs, classView && classView.timerPaused, nowTick]);
 
     // Phase 3b.full.e — group reward claim. Watches the snapshot for an
     // ended encounter with classRewardTokens > 0; if we haven't claimed
@@ -1840,6 +1898,8 @@
       // snapshot useEffect propagates terminal phase to all
       // participants.
       isClassHost && classView && classView.sessionStatus === 'open' ? h('div', {
+        role: 'group',
+        'aria-label': 'Teacher encounter controls',
         style: {
           display: 'flex', gap: '8px', flexWrap: 'wrap',
           padding: '8px 10px',
@@ -1851,8 +1911,28 @@
       },
         h('span', {
           style: { fontSize: '10px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginRight: 'auto', alignSelf: 'center' }
-        }, '🎓 Teacher controls'),
+        }, 'Teacher controls'),
         h('button', {
+          type: 'button',
+          className: 'ah-boss-control',
+          'aria-pressed': classView.timerPaused,
+          'aria-label': classView.timerPaused
+            ? 'Resume round timer, ' + Math.ceil(classView.pausedRemainingMs / 1000) + ' seconds remaining'
+            : 'Pause round timer',
+          onClick: function () {
+            setClassRoundTimerPaused(!classView.timerPaused);
+          },
+          style: {
+            background: 'transparent', color: palette.text,
+            border: '1px solid ' + palette.border, borderRadius: '8px',
+            padding: '8px 12px', minHeight: '44px', minWidth: '44px',
+            fontSize: '11px', fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'inherit'
+          }
+        }, classView.timerPaused ? 'Resume timer' : 'Pause timer'),
+        h('button', {
+          type: 'button',
+          className: 'ah-boss-control',
           onClick: function () {
             if (!classView) return;
             var nextRound = (classView.currentRound || 1) + 1;
@@ -1864,7 +1944,10 @@
               ctx.sessionUpdate({
                 bossEncounter: {
                   currentRound: nextRound,
-                  roundStartedAt: new Date().toISOString()
+                  roundStartedAt: new Date().toISOString(),
+                  timerPaused: false,
+                  pausedRemainingMs: null,
+                  timerPausedAt: null
                 }
               }).catch(function () { /* best-effort */ });
               ctx.addToast('⏭ Skipped to round ' + nextRound);
@@ -1873,11 +1956,14 @@
           style: {
             background: 'transparent', color: palette.text,
             border: '1px solid ' + palette.border, borderRadius: '8px',
-            padding: '4px 10px', fontSize: '11px', fontWeight: 600,
+            padding: '8px 12px', minHeight: '44px', minWidth: '44px',
+            fontSize: '11px', fontWeight: 600,
             cursor: 'pointer', fontFamily: 'inherit'
           }
         }, '⏭ Skip round'),
         h('button', {
+          type: 'button',
+          className: 'ah-boss-control',
           onClick: function () {
             if (!classView) return;
             // Outcome: won if HP already 0, otherwise host-call ends
@@ -1890,11 +1976,24 @@
           style: {
             background: 'transparent', color: '#dc2626',
             border: '1px solid #dc2626', borderRadius: '8px',
-            padding: '4px 10px', fontSize: '11px', fontWeight: 600,
+            padding: '8px 12px', minHeight: '44px', minWidth: '44px',
+            fontSize: '11px', fontWeight: 600,
             cursor: 'pointer', fontFamily: 'inherit'
           }
         }, '🏁 End encounter')
       ) : null,
+      isClassMode && classView ? h('span', {
+        role: 'status',
+        'aria-live': 'polite',
+        'aria-atomic': 'true',
+        style: {
+          position: 'absolute', width: '1px', height: '1px',
+          padding: 0, margin: '-1px', overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0
+        }
+      }, classView.timerPaused
+        ? 'Round timer paused with ' + Math.ceil(classView.pausedRemainingMs / 1000) + ' seconds remaining.'
+        : 'Round timer running.') : null,
       // Boss panel — image + HP bar. When transforming, the image gets a
       // glowing accent border + a small overlay label, so the student can
       // see the Spark IS landing visually even while the API call resolves.
@@ -1979,10 +2078,15 @@
             (function () {
               if (isClassMode && classView) {
                 var roundLabel = 'Round ' + classView.currentRound + ' / ' + classView.maxRounds;
-                var remainMs = Math.max(0, classView.roundEndsAtMs - Date.now());
+                var remainMs = classView.timerPaused
+                  ? classView.pausedRemainingMs
+                  : Math.max(0, classView.roundEndsAtMs - Date.now());
                 var remainSec = Math.ceil(remainMs / 1000);
-                var participantsLabel = '🌐 ' + classView.participants + ' participant' + (classView.participants === 1 ? '' : 's');
-                return displayHp + ' / ' + BOSS_HP_START + ' HP · ' + roundLabel + ' · ' + remainSec + 's left · ' + participantsLabel;
+                var timeLabel = classView.timerPaused
+                  ? 'Timer paused at ' + remainSec + 's remaining'
+                  : remainSec + 's left';
+                var participantsLabel = 'Class: ' + classView.participants + ' participant' + (classView.participants === 1 ? '' : 's');
+                return displayHp + ' / ' + BOSS_HP_START + ' HP · ' + roundLabel + ' · ' + timeLabel + ' · ' + participantsLabel;
               }
               return displayHp + ' / ' + BOSS_HP_START + ' HP · Round ' + round + ' / ' + MAX_ROUNDS;
             })()
