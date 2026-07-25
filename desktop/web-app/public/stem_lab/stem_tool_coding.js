@@ -29,6 +29,137 @@
     return null;
   }
 
+  function CodingReplacementDialog(props) {
+    var React = props.React;
+    var dialogRef = React.useRef(null);
+    var cancelRef = React.useRef(null);
+    var cancelHandlerRef = React.useRef(props.onCancel);
+    cancelHandlerRef.current = props.onCancel;
+
+    React.useEffect(function() {
+      var dialog = dialogRef.current;
+      if (!dialog || typeof document === 'undefined') return;
+      var previousFocus = document.activeElement;
+      var overlay = dialog.parentElement;
+      var root = dialog.closest('[data-coding-tool="true"]');
+      var isolated = [];
+      if (root) {
+        Array.prototype.forEach.call(root.children, function(child) {
+          if (child === overlay || child.contains(dialog)) return;
+          isolated.push({
+            element: child,
+            hadInert: child.hasAttribute('inert'),
+            ariaHidden: child.getAttribute('aria-hidden')
+          });
+          child.setAttribute('inert', '');
+          child.inert = true;
+          child.setAttribute('aria-hidden', 'true');
+        });
+      }
+
+      function focusableElements() {
+        return Array.prototype.slice.call(dialog.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        ));
+      }
+      function onKeyDown(event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          cancelHandlerRef.current();
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var focusable = focusableElements();
+        if (!focusable.length) {
+          event.preventDefault();
+          dialog.focus();
+          return;
+        }
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+      function onFocusIn(event) {
+        if (!dialog.contains(event.target)) {
+          var focusable = focusableElements();
+          (focusable[0] || dialog).focus();
+        }
+      }
+
+      document.addEventListener('keydown', onKeyDown, true);
+      document.addEventListener('focusin', onFocusIn, true);
+      var focusTimer = setTimeout(function() {
+        (cancelRef.current || dialog).focus();
+      }, 0);
+
+      return function() {
+        clearTimeout(focusTimer);
+        document.removeEventListener('keydown', onKeyDown, true);
+        document.removeEventListener('focusin', onFocusIn, true);
+        isolated.forEach(function(item) {
+          if (!item.hadInert) {
+            item.element.removeAttribute('inert');
+            item.element.inert = false;
+          }
+          if (item.ariaHidden == null) item.element.removeAttribute('aria-hidden');
+          else item.element.setAttribute('aria-hidden', item.ariaHidden);
+        });
+        if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === 'function') {
+          previousFocus.focus();
+        } else if (root) {
+          var fallback = root.querySelector('button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])');
+          if (fallback) fallback.focus();
+        }
+      };
+    }, []);
+
+    return React.createElement("div", {
+      "data-coding-replacement-dialog-overlay": "true",
+      className: "fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4",
+      onMouseDown: function(event) {
+        if (event.target === event.currentTarget) props.onCancel();
+      }
+    },
+      React.createElement("div", {
+        ref: dialogRef,
+        role: "alertdialog",
+        "aria-modal": "true",
+        "aria-labelledby": "coding-replacement-dialog-title",
+        "aria-describedby": "coding-replacement-dialog-description",
+        tabIndex: -1,
+        className: "w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto rounded-xl border border-amber-400/60 bg-slate-900 p-5 text-white shadow-2xl"
+      },
+        React.createElement("h2", {
+          id: "coding-replacement-dialog-title",
+          className: "text-lg font-bold text-amber-200"
+        }, "Replace current program?"),
+        React.createElement("p", {
+          id: "coding-replacement-dialog-description",
+          className: "mt-2 text-sm leading-relaxed text-slate-200"
+        }, "Loading " + props.itemName + " will replace every block in your current program. Cancel to keep your work."),
+        React.createElement("div", { className: "mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end" },
+          React.createElement("button", {
+            ref: cancelRef,
+            type: "button",
+            onClick: props.onCancel,
+            className: "min-h-11 min-w-11 rounded-lg border border-slate-400 px-4 py-2 font-semibold text-white hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          }, "Cancel"),
+          React.createElement("button", {
+            type: "button",
+            onClick: props.onConfirm,
+            className: "min-h-11 min-w-11 rounded-lg bg-amber-500 px-4 py-2 font-bold text-slate-950 hover:bg-amber-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          }, "Replace program")
+        )
+      )
+    );
+  }
+
   function getCodeAC() { if (!_codeAC) { try { _codeAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_codeAC && _codeAC.state === 'suspended') { try { _codeAC.resume(); } catch(e) {} } return _codeAC; }
   function codeTone(f, d, t, v) { var ac = getCodeAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxCodeRun() { codeTone(440, 0.06, 'sine', 0.06); setTimeout(function() { codeTone(554, 0.06, 'sine', 0.06); }, 50); setTimeout(function() { codeTone(659, 0.08, 'sine', 0.07); }, 100); }
@@ -525,6 +656,7 @@
           var redoStack = d.redoStack || [];
           var showTemplates = d.showTemplates || false;
           var tutorialDismissed = d.tutorialDismissed || false;
+          var pendingReplacement = d.pendingReplacement || null;
 
           var showGrid = d.showGrid !== false;
 
@@ -1525,22 +1657,60 @@
             if (addToast) addToast('📥 PNG exported!', 'success');
           }
 
-          // ── Load template ──
-          function seedChallenge(ch, ci) {
-            if (blocks.length > 0 && typeof confirm === 'function' && !confirm('Replace your current program with this example?')) return;
+          // ── Program replacement workflows ──
+          function applyChallenge(ch, ci) {
             pushUndo();
             var sb = JSON.parse(JSON.stringify(ch.seedBlocks || []));
-            updMulti({ blocks: sb, challengeIdx: ci });
+            updMulti({ blocks: sb, challengeIdx: ci, pendingReplacement: null });
             if (codeMode === 'text') upd('textCode', blocksToText(sb));
             if (addToast) addToast((ch.kind === 'worked' ? 'Study this example, then click Run: ' : 'Finish this one: ') + ch.title, 'info');
           }
-          function loadTemplate(tmpl) {
-            if (blocks.length > 0 && !confirm('Replace current program with template?')) return;
+          function seedChallenge(ch, ci) {
+            if (blocks.length > 0) {
+              upd('pendingReplacement', { kind: 'challenge', index: ci });
+              return;
+            }
+            applyChallenge(ch, ci);
+          }
+          function applyTemplate(tmpl) {
             pushUndo();
             var tBlocks = JSON.parse(JSON.stringify(tmpl.blocks));
-            updMulti({ blocks: tBlocks, showTemplates: false });
+            updMulti({ blocks: tBlocks, showTemplates: false, pendingReplacement: null });
             if (codeMode === 'text') upd('textCode', blocksToText(tBlocks));
             if (addToast) addToast('📂 Loaded: ' + tmpl.name, 'info');
+          }
+          function loadTemplate(tmpl, ti) {
+            if (blocks.length > 0) {
+              upd('pendingReplacement', { kind: 'template', index: ti });
+              return;
+            }
+            applyTemplate(tmpl);
+          }
+          function cancelPendingReplacement() {
+            upd('pendingReplacement', null);
+          }
+          function confirmPendingReplacement() {
+            if (!pendingReplacement) return;
+            if (pendingReplacement.kind === 'challenge') {
+              var challenge = CHALLENGES[pendingReplacement.index];
+              if (challenge) {
+                applyChallenge(challenge, pendingReplacement.index);
+                return;
+              }
+            } else if (pendingReplacement.kind === 'template') {
+              var template = TEMPLATES[pendingReplacement.index];
+              if (template) {
+                applyTemplate(template);
+                return;
+              }
+            }
+            cancelPendingReplacement();
+          }
+          var pendingReplacementName = '';
+          if (pendingReplacement && pendingReplacement.kind === 'challenge' && CHALLENGES[pendingReplacement.index]) {
+            pendingReplacementName = CHALLENGES[pendingReplacement.index].title;
+          } else if (pendingReplacement && pendingReplacement.kind === 'template' && TEMPLATES[pendingReplacement.index]) {
+            pendingReplacementName = TEMPLATES[pendingReplacement.index].name;
           }
 
           // ── Drag and drop state ──
@@ -1821,10 +1991,17 @@
           }
 
           return React.createElement("div", {
+            "data-coding-tool": "true",
             className: "grid gap-4 relative",
             style: { gridTemplateColumns: '220px 1fr', gridTemplateRows: 'auto auto' }
           },
             React.createElement(CodingActivityCleanup, { React: React }),
+            pendingReplacement && pendingReplacementName && React.createElement(CodingReplacementDialog, {
+              React: React,
+              itemName: pendingReplacementName,
+              onCancel: cancelPendingReplacement,
+              onConfirm: confirmPendingReplacement
+            }),
             // ── Templates gallery overlay ──
             showTemplates && React.createElement("div", {
               className: "col-span-2 bg-slate-800/95 backdrop-blur-sm rounded-xl p-4 border border-amber-500/30 shadow-2xl z-10",
@@ -1844,7 +2021,7 @@
                 TEMPLATES.map(function (tmpl, ti) {
                   return React.createElement("button", { "aria-label": t('stem.coding.load_template', "Load Template"),
                     key: ti,
-                    onClick: function () { loadTemplate(tmpl); },
+                    onClick: function () { loadTemplate(tmpl, ti); },
                     className: "flex flex-col items-center gap-1 p-3 rounded-lg bg-slate-700/80 hover:bg-slate-600 border border-slate-600 hover:border-amber-500/50 transition-all text-left group"
                   },
                     React.createElement("span", { className: "text-2xl group-hover:scale-110 transition-transform" }, tmpl.icon),
