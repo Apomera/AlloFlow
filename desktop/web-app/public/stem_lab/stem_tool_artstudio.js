@@ -2496,19 +2496,28 @@ const d = labToolData.artStudio || {};
 
             // ═══ GENERATIVE ART TAB ═══
 
-            tab === 'generative' && React.createElement("div", { className: "space-y-3" },
+            tab === 'generative' && React.createElement("div", { className: "relative space-y-3" },
 
-              React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
+              React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap", role: "group", "aria-label": "Generative art controls" },
 
                 React.createElement("span", { className: "text-xs font-bold text-slate-600" }, __alloT('stem.artstudio.style', "\uD83C\uDF86 Style:")),
 
                 [{ id: 'flow', icon: '\uD83C\uDF0A', label: __alloT('stem.artstudio.flow_field', 'Flow Field') }, { id: 'rain', icon: '\uD83C\uDF27', label: __alloT('stem.artstudio.particle_rain', 'Particle Rain') }, { id: 'stars', icon: '\u2728', label: __alloT('stem.artstudio.starfield', 'Starfield') }, { id: 'aurora', icon: '\uD83C\uDF0C', label: __alloT('stem.artstudio.aurora', 'Aurora') }].map(function (s) {
 
-                  return React.createElement("button", { "aria-label": __alloT('stem.artstudio.clear_5', "Clear"), key: s.id, onClick: function () { upd('genStyle', s.id); upd('genReset', Date.now()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.genStyle || 'flow') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-fuchsia-50') }, s.icon + ' ' + s.label);
+                  return React.createElement("button", { "aria-label": 'Use ' + s.label + ' generative style', "aria-pressed": (d.genStyle || 'flow') === s.id, key: s.id, onClick: function () { upd('genStyle', s.id); upd('genReset', Date.now()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.genStyle || 'flow') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-fuchsia-50') }, s.icon + ' ' + s.label);
 
                 }),
 
-                React.createElement("button", { onClick: function () { upd('genPaused', !d.genPaused); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.genPaused ? 'bg-amber-100 text-amber-700' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200') }, d.genPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
+                React.createElement("button", {
+                  "aria-label": (d.genPaused === undefined ? reducedMotion : !!d.genPaused) ? "Resume generative animation" : "Pause generative animation",
+                  "aria-pressed": d.genPaused === undefined ? reducedMotion : !!d.genPaused,
+                  onClick: function () {
+                    var isPaused = d.genPaused === undefined ? reducedMotion : !!d.genPaused;
+                    upd('genPaused', !isPaused);
+                    if (typeof announceToSR === 'function') announceToSR(isPaused ? 'Generative animation resumed.' : 'Generative animation paused.');
+                  },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + ((d.genPaused === undefined ? reducedMotion : !!d.genPaused) ? 'bg-amber-100 text-amber-700' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200')
+                }, (d.genPaused === undefined ? reducedMotion : !!d.genPaused) ? '\u25B6 Resume' : '\u23F8 Pause'),
 
                 React.createElement("button", { onClick: function () { upd('genReset', Date.now()); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, __alloT('stem.artstudio.clear_6', "\uD83D\uDDD1 Clear")),
 
@@ -2518,19 +2527,32 @@ const d = labToolData.artStudio || {};
 
               React.createElement("div", { className: "flex gap-2 mb-2" },
 
-                React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "Density:"),
+                React.createElement("label", { htmlFor: "artstudio-generative-density", className: "text-[11px] font-bold text-slate-600" }, "Density:"),
 
-                React.createElement("input", { type: "range", min: 20, max: 300, value: d.genDensity || 100, 'aria-label': __alloT('stem.artstudio.particle_density', 'Particle density'), onChange: function (e) { upd('genDensity', parseInt(e.target.value)); upd('genReset', Date.now()); }, className: "w-32 accent-fuchsia-600" }),
+                React.createElement("input", { id: "artstudio-generative-density", type: "range", min: 20, max: 300, value: d.genDensity || 100, "aria-describedby": "artstudio-generative-density-value", onChange: function (e) { upd('genDensity', parseInt(e.target.value)); upd('genReset', Date.now()); }, className: "w-32 max-w-full accent-fuchsia-600" }),
 
-                React.createElement("span", { className: "text-[11px] text-slate-600" }, (d.genDensity || 100) + ' particles')
+                React.createElement("span", { id: "artstudio-generative-density-value", className: "text-[11px] text-slate-600" }, (d.genDensity || 100) + ' particles')
 
               ),
 
-              React.createElement("canvas", { tabIndex: 0, id: 'genCanvas', key: 'gen-' + (d.genStyle || 'flow') + '-' + (d.genReset || 0), width: 640, height: 480, role: "img", 'aria-label': __alloT('stem.artstudio.generative_art_canvas', 'Generative art canvas'), className: "rounded-xl border-2 border-fuchsia-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', background: '#0a0a1a' },
+              React.createElement("canvas", { tabIndex: 0, id: 'genCanvas', key: 'gen-' + (d.genStyle || 'flow') + '-' + (d.genReset || 0), width: 640, height: 480, role: "img",
+                'aria-label': 'Generative art canvas using ' + (d.genStyle || 'flow') + ' style with ' + (d.genDensity || 100) + ' particles; ' + ((d.genPaused === undefined ? reducedMotion : !!d.genPaused) ? 'paused' : 'playing') + '.',
+                'aria-describedby': "artstudio-generative-keyboard-help",
+                'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space",
+                className: "rounded-xl border-2 border-fuchsia-200 shadow-lg cursor-crosshair mx-auto block focus-visible:ring-4 focus-visible:ring-fuchsia-600 focus-visible:ring-offset-2",
+                style: { maxWidth: '100%', background: '#0a0a1a' },
 
                 ref: function (canvas) {
 
                   if (!canvas) return;
+
+                  var isPaused = d.genPaused === undefined ? reducedMotion : !!d.genPaused;
+
+                  canvas.setAttribute('data-paused', isPaused ? '1' : '0');
+
+                  canvas.setAttribute('aria-label', 'Generative art canvas using ' + (d.genStyle || 'flow') + ' style with ' +
+
+                    (d.genDensity || 100) + ' particles; ' + (isPaused ? 'paused' : 'playing') + '.');
 
                   if (canvas._genInit) return;
 
@@ -2549,6 +2571,40 @@ const d = labToolData.artStudio || {};
                   var particles = [];
 
                   var mouseX = -1, mouseY = -1;
+
+                  var keyboardCursor = canvas._genKeyboardCursor || { x: W / 2, y: H / 2 };
+
+                  keyboardCursor.x = Math.max(0, Math.min(W, keyboardCursor.x));
+
+                  keyboardCursor.y = Math.max(0, Math.min(H, keyboardCursor.y));
+
+                  canvas._genKeyboardCursor = keyboardCursor;
+
+                  function updateGenCursor(show) {
+
+                    var cursor = canvas.parentElement && canvas.parentElement.querySelector('[data-generative-keyboard-cursor="true"]');
+
+                    if (cursor) {
+
+                      var displayW = canvas.clientWidth || W;
+
+                      var displayH = canvas.clientHeight || H;
+
+                      cursor.style.left = ((canvas.offsetLeft || 0) + keyboardCursor.x / W * displayW - 10) + 'px';
+
+                      cursor.style.top = ((canvas.offsetTop || 0) + keyboardCursor.y / H * displayH - 10) + 'px';
+
+                      cursor.style.display = show ? 'block' : 'none';
+
+                    }
+
+                    canvas.setAttribute('aria-label', 'Generative art canvas using ' + style + ' style with ' + density +
+
+                      ' particles; ' + (canvas.getAttribute('data-paused') === '1' ? 'paused' : 'playing') +
+
+                      '. Keyboard cursor at x ' + Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
+
+                  }
 
                   // Simplex-like noise (simple hash-based)
 
@@ -2588,19 +2644,11 @@ const d = labToolData.artStudio || {};
 
                   var paused = false;
 
-                  // Check pause state via data attribute
+                  // Pause state is refreshed before the initialization guard so the controls remain functional.
 
-                  canvas.setAttribute('data-paused', d.genPaused ? '1' : '0');
+                  function burstAt(x, y) {
 
-                  canvas.onmousedown = canvas.ontouchstart = function (e) {
-
-                    var rect = canvas.getBoundingClientRect();
-
-                    mouseX = ((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) * (W / rect.width);
-
-                    mouseY = ((e.touches ? e.touches[0].clientY : e.clientY) - rect.top) * (H / rect.height);
-
-                    // Burst particles from click
+                    mouseX = x; mouseY = y;
 
                     for (var bi = 0; bi < 30; bi++) {
 
@@ -2624,6 +2672,18 @@ const d = labToolData.artStudio || {};
 
                     }
 
+                  }
+
+                  canvas.onmousedown = canvas.ontouchstart = function (e) {
+
+                    var rect = canvas.getBoundingClientRect();
+
+                    mouseX = ((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) * (W / rect.width);
+
+                    mouseY = ((e.touches ? e.touches[0].clientY : e.clientY) - rect.top) * (H / rect.height);
+
+                    burstAt(mouseX, mouseY);
+
                   };
 
                   canvas.onmousemove = canvas.ontouchmove = function (e) {
@@ -2635,6 +2695,60 @@ const d = labToolData.artStudio || {};
                     mouseY = ((e.touches ? e.touches[0].clientY : e.clientY) - rect.top) * (H / rect.height);
 
                   };
+
+                  canvas.onfocus = function() { updateGenCursor(true); };
+
+                  canvas.onblur = function() { updateGenCursor(false); };
+
+                  canvas.onkeydown = function(event) {
+
+                    var step = event.altKey ? 1 : 10;
+
+                    var moved = true;
+
+                    if (event.key === 'ArrowLeft') keyboardCursor.x = Math.max(0, keyboardCursor.x - step);
+
+                    else if (event.key === 'ArrowRight') keyboardCursor.x = Math.min(W, keyboardCursor.x + step);
+
+                    else if (event.key === 'ArrowUp') keyboardCursor.y = Math.max(0, keyboardCursor.y - step);
+
+                    else if (event.key === 'ArrowDown') keyboardCursor.y = Math.min(H, keyboardCursor.y + step);
+
+                    else if (event.key === 'Home') { keyboardCursor.x = W / 2; keyboardCursor.y = H / 2; }
+
+                    else moved = false;
+
+                    if (moved) {
+
+                      event.preventDefault();
+
+                      canvas._genKeyboardCursor = keyboardCursor;
+
+                      if (event.shiftKey) burstAt(keyboardCursor.x, keyboardCursor.y);
+
+                      updateGenCursor(true);
+
+                      if (typeof announceToSR === 'function') announceToSR((event.shiftKey ? 'Created particle burst at' : 'Generative cursor') +
+
+                        ' x ' + Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
+
+                      return;
+
+                    }
+
+                    if (event.key === 'Enter' || event.key === ' ') {
+
+                      event.preventDefault(); burstAt(keyboardCursor.x, keyboardCursor.y);
+
+                      if (typeof announceToSR === 'function') announceToSR('Created particle burst at x ' +
+
+                        Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
+
+                    }
+
+                  };
+
+                  updateGenCursor(typeof document !== 'undefined' && document.activeElement === canvas);
 
                   function animate() {
 
@@ -2762,7 +2876,14 @@ const d = labToolData.artStudio || {};
 
               }),
 
-              React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic mt-1" }, __alloT('stem.artstudio.click_or_drag_on_the_canvas_to_create_', "\uD83D\uDC46 Click or drag on the canvas to create particle bursts"))
+              React.createElement("span", {
+                "data-generative-keyboard-cursor": "true",
+                "aria-hidden": "true",
+                className: "pointer-events-none absolute z-10 h-5 w-5 rounded-full border-4 border-white shadow-[0_0_0_2px_#c026d3]",
+                style: { display: 'none' }
+              }),
+
+              React.createElement("p", { id: "artstudio-generative-keyboard-help", className: "text-[11px] text-center text-slate-600 italic mt-1" }, "Click the canvas to create a particle burst. Keyboard: Arrow keys move the cursor; Space or Enter creates a burst; Shift with an Arrow key moves and creates a burst; Home returns to center; Alt makes one-pixel moves.")
 
             ),
 
