@@ -29,14 +29,44 @@
   function bootCoasterLab(rootEl, THREE, bridge){
 'use strict';
 function __clabGet(id){ return rootEl.querySelector('#' + id); }
+/* @clab-cleanup-start */
 let __clabDead = false;
-function __clabDestroy(){
-  if(__clabDead) return; __clabDead = true;
-  try{ renderer.setAnimationLoop(null); }catch(e){}
-  try{ clearInterval(ride.timerId); }catch(e){}
-  try{ if(audio.ctx) audio.ctx.close(); }catch(e){}
-  try{ renderer.dispose(); }catch(e){}
+const __clabResources = {
+  renderer: null,
+  rideTimerId: null,
+  rideResumeId: null,
+  rideBurstId: null,
+  bannerTimerId: null,
+  audioCtx: null,
+  xrSession: null
+};
+function __clabIgnoreRejection(result){
+  if(result && typeof result.catch === 'function') result.catch(() => {});
 }
+function __clabDestroy(){
+  if(__clabDead) return;
+  __clabDead = true;
+  const resources = { ...__clabResources };
+  Object.keys(__clabResources).forEach(key => { __clabResources[key] = null; });
+  try{ if(resources.renderer) resources.renderer.setAnimationLoop(null); }catch(_e){}
+  try{ if(resources.rideTimerId != null) clearInterval(resources.rideTimerId); }catch(_e){}
+  try{ if(resources.rideResumeId != null) clearTimeout(resources.rideResumeId); }catch(_e){}
+  try{ if(resources.rideBurstId != null) clearTimeout(resources.rideBurstId); }catch(_e){}
+  try{ if(resources.bannerTimerId != null) clearTimeout(resources.bannerTimerId); }catch(_e){}
+  try{
+    if(resources.xrSession && typeof resources.xrSession.end === 'function'){
+      __clabIgnoreRejection(resources.xrSession.end());
+    }
+  }catch(_e){}
+  try{
+    if(resources.audioCtx && typeof resources.audioCtx.close === 'function'){
+      __clabIgnoreRejection(resources.audioCtx.close());
+    }
+  }catch(_e){}
+  try{ if(resources.renderer) resources.renderer.dispose(); }catch(_e){}
+}
+/* @clab-cleanup-end */
+rootEl._clabCleanup = __clabDestroy;
 /* ============================================================
    COASTER LAB — 3D coaster design + physics certification
    Single-file STEM tool. Physics: a coaster on rails is a 1-D
@@ -376,6 +406,7 @@ try{
   showFatal('WebGL is not available in this browser: ' + e.message);
   throw e;
 }
+__clabResources.renderer = renderer;
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -2022,7 +2053,13 @@ function banner(msg, cls = '', ms = 2500){
   bannerEl.className = cls;
   bannerEl.hidden = false;
   clearTimeout(bannerTimer);
-  bannerTimer = setTimeout(() => { bannerEl.hidden = true; }, ms);
+  __clabResources.bannerTimerId = null;
+  bannerTimer = setTimeout(() => {
+    bannerTimer = null;
+    __clabResources.bannerTimerId = null;
+    if(!__clabDead) bannerEl.hidden = true;
+  }, ms);
+  __clabResources.bannerTimerId = bannerTimer;
 }
 
 /* ---------------- cameras & pointer input ---------------- */
@@ -2427,6 +2464,7 @@ const audio = { enabled: false, ctx: null, master: null, windFilt: null, windGai
 function initAudio(){
   const Ctx = window.AudioContext || window.webkitAudioContext;
   audio.ctx = new Ctx();
+  __clabResources.audioCtx = audio.ctx;
   audio.master = audio.ctx.createGain();
   audio.master.gain.value = 0.8;
   audio.master.connect(audio.ctx.destination);
@@ -2880,6 +2918,21 @@ const ride = {
   correct: 0, total: 0, times: [], qStart: 0, timerId: null, timerLen: 30,
   resumeId: null, burstId: null, current: null, prevCam: 'orbit', lastQKey: null
 };
+function clearRideQuestionTimer(){
+  clearInterval(ride.timerId);
+  ride.timerId = null;
+  __clabResources.rideTimerId = null;
+}
+function clearRideResumeTimer(){
+  clearTimeout(ride.resumeId);
+  ride.resumeId = null;
+  __clabResources.rideResumeId = null;
+}
+function clearRideBurstTimer(){
+  clearTimeout(ride.burstId);
+  ride.burstId = null;
+  __clabResources.rideBurstId = null;
+}
 const rq = {
   box: __clabGet('clab-rideQ'), tag: __clabGet('clab-rqTag'),
   text: __clabGet('clab-rqText'), choices: __clabGet('clab-rqChoices'),
@@ -3284,8 +3337,8 @@ function startRide(){
 }
 function pauseForQuestion(){
   sim.paused = true;
-  clearTimeout(ride.resumeId); ride.resumeId = null;
-  clearTimeout(ride.burstId); ride.burstId = null;
+  clearRideResumeTimer();
+  clearRideBurstTimer();
   rq.box.querySelectorAll('.clab-spark').forEach(p => p.remove());
   const stop = ride.stops[ride.idx];
   const tr = trackAt(sim.S);
@@ -3356,7 +3409,7 @@ function pauseForQuestion(){
     if(ride.current && focusTarget && focusTarget.isConnected) focusTarget.focus();
   }, 60);
   blip(660, 0.1); blip(880, 0.14);
-  clearInterval(ride.timerId);
+  clearRideQuestionTimer();
   ride.timerId = setInterval(() => {
     const left = 1 - (performance.now() - ride.qStart) / (ride.timerLen * 1000);
     const pct = Math.max(0, left * 100);
@@ -3367,6 +3420,7 @@ function pauseForQuestion(){
     rq.timer.classList.toggle('critical', pct <= 10);
     if(left <= 0) submitRideAnswer(null, false);
   }, 100);
+  __clabResources.rideTimerId = ride.timerId;
 }
 function spawnAnswerBurst(anchor){
   if(reducedMotion()) return;
@@ -3394,9 +3448,9 @@ function spawnAnswerBurst(anchor){
 }
 function submitRideAnswer(val, instant){
   if(!ride.current) return;
-  clearInterval(ride.timerId);
-  clearTimeout(ride.resumeId); ride.resumeId = null;
-  clearTimeout(ride.burstId); ride.burstId = null;
+  clearRideQuestionTimer();
+  clearRideResumeTimer();
+  clearRideBurstTimer();
   const answerIdx = ride.idx;
   const q = ride.current;
   const dt = (performance.now() - ride.qStart) / 1000;
@@ -3444,8 +3498,10 @@ function submitRideAnswer(val, instant){
         if(!reducedMotion() && !instant){
           ride.burstId = setTimeout(() => {
             ride.burstId = null;
+            __clabResources.rideBurstId = null;
             if(ride.active && _ansEl.isConnected) spawnAnswerBurst(_ansEl);
           }, 170);
+          __clabResources.rideBurstId = ride.burstId;
         }
       }
     }
@@ -3465,6 +3521,7 @@ function submitRideAnswer(val, instant){
   ride.current = null;
   const resume = () => {
     ride.resumeId = null;
+    __clabResources.rideResumeId = null;
     if(!ride.active || ride.idx !== answerIdx) return;
     rq.box.hidden = true;
     rq.viewport.classList.remove('ride-question-open');
@@ -3472,12 +3529,15 @@ function submitRideAnswer(val, instant){
     sim.paused = false;
   };
   if(instant) resume();
-  else ride.resumeId = setTimeout(resume, ok ? 1300 : 2600);
+  else {
+    ride.resumeId = setTimeout(resume, ok ? 1300 : 2600);
+    __clabResources.rideResumeId = ride.resumeId;
+  }
 }
 function cleanupRide(showEnd){
-  clearInterval(ride.timerId);
-  clearTimeout(ride.resumeId); ride.resumeId = null;
-  clearTimeout(ride.burstId); ride.burstId = null;
+  clearRideQuestionTimer();
+  clearRideResumeTimer();
+  clearRideBurstTimer();
   ride.current = null;
   rq.box.querySelectorAll('.clab-spark').forEach(p => p.remove());
   rq.box.hidden = true;
@@ -3659,7 +3719,9 @@ scene.add(xrRig);
 let xrOn = false;
 if(navigator.xr && navigator.xr.isSessionSupported){
   navigator.xr.isSessionSupported('immersive-vr').then(ok => {
-    if(ok) __clabGet('clab-btnVR').hidden = false;
+    if(!ok || __clabDead) return;
+    const vrButton = __clabGet('clab-btnVR');
+    if(vrButton) vrButton.hidden = false;
   }).catch(() => {});
 }
 __clabGet('clab-btnVR').addEventListener('click', async () => {
@@ -3667,19 +3729,26 @@ __clabGet('clab-btnVR').addEventListener('click', async () => {
     const session = await navigator.xr.requestSession('immersive-vr', {
       optionalFeatures: ['local-floor']
     });
+    if(__clabDead){
+      if(typeof session.end === 'function') __clabIgnoreRejection(session.end());
+      return;
+    }
+    __clabResources.xrSession = session;
     renderer.xr.enabled = true;
     await renderer.xr.setSession(session);
+    if(__clabDead) return;
     xrOn = true;
     xrRig.add(camera);
     if(!sim.running) startRun(false);
     session.addEventListener('end', () => {
+      if(__clabResources.xrSession === session) __clabResources.xrSession = null;
       xrOn = false;
       renderer.xr.enabled = false;
       xrRig.remove(camera);
       if(sim.running){ stopRun(); cleanupRide(false); }
     });
   }catch(e){
-    banner('Could not start VR: ' + (e && e.message || e), 'fail', 3200);
+    if(!__clabDead) banner('Could not start VR: ' + (e && e.message || e), 'fail', 3200);
   }
 });
 const _xrM = new THREE.Matrix4(), _xrSide = new THREE.Vector3();
@@ -4028,6 +4097,8 @@ return { destroy: __clabDestroy };
             var eng = bootCoasterLab(el, THREE, bridge);
             el._clabCleanup = eng && eng.destroy;
           } catch (err) {
+            try { if (typeof el._clabCleanup === 'function') el._clabCleanup(); } catch (_cleanupErr) {}
+            el._clabCleanup = null;
             el.innerHTML = '';
             el.appendChild(note);
             note.textContent = 'Coaster Lab could not start here: ' + ((err && err.message) || err);

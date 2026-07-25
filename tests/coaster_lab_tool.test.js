@@ -55,6 +55,74 @@ describe('coaster lab — registration', () => {
   });
 });
 
+describe('coaster lab — teardown survives partial initialization', () => {
+  function loadCleanup(p, clearIntervalFn = () => {}, clearTimeoutFn = () => {}) {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const start = src.indexOf('/* @clab-cleanup-start');
+    const end = src.indexOf('/* @clab-cleanup-end', start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const cleanupBlock = src.slice(start, end);
+    const api = new Function(
+      'clearInterval',
+      'clearTimeout',
+      cleanupBlock + '\nreturn { resources: __clabResources, destroy: __clabDestroy, isDead: () => __clabDead };',
+    )(clearIntervalFn, clearTimeoutFn);
+    return { cleanupBlock, ...api };
+  }
+
+  it.each(TOOL_PATHS)('%s: early cleanup does not touch later lexical bindings', (p) => {
+    const { cleanupBlock, destroy, isDead } = loadCleanup(p);
+    expect(cleanupBlock).not.toContain('ride.timerId');
+    expect(cleanupBlock).not.toContain('audio.ctx');
+    expect(cleanupBlock).not.toContain('try{ renderer.');
+    expect(() => destroy()).not.toThrow();
+    expect(isDead()).toBe(true);
+  });
+
+  it('stops all acquired resources once and clears their registry entries', () => {
+    const calls = [];
+    const { resources, destroy } = loadCleanup(
+      TOOL_PATHS[0],
+      id => calls.push(['interval', id]),
+      id => calls.push(['timeout', id]),
+    );
+    resources.renderer = {
+      setAnimationLoop: value => calls.push(['loop', value]),
+      dispose: () => calls.push(['renderer', 'dispose']),
+    };
+    resources.rideTimerId = 'question';
+    resources.rideResumeId = 'resume';
+    resources.rideBurstId = 'burst';
+    resources.bannerTimerId = 'banner';
+    resources.xrSession = { end: () => { calls.push(['xr', 'end']); return Promise.resolve(); } };
+    resources.audioCtx = { close: () => { calls.push(['audio', 'close']); return Promise.resolve(); } };
+
+    destroy();
+    destroy();
+
+    expect(calls).toEqual([
+      ['loop', null],
+      ['interval', 'question'],
+      ['timeout', 'resume'],
+      ['timeout', 'burst'],
+      ['timeout', 'banner'],
+      ['xr', 'end'],
+      ['audio', 'close'],
+      ['renderer', 'dispose'],
+    ]);
+    expect(Object.values(resources).every(value => value === null)).toBe(true);
+  });
+
+  it.each(TOOL_PATHS)('%s: tracks late resources and cleans a failed mount', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    expect(src).toContain('__clabResources.renderer = renderer;');
+    expect(src).toContain('__clabResources.audioCtx = audio.ctx;');
+    expect(src).toContain('__clabResources.rideTimerId = ride.timerId;');
+    expect(src).toContain('__clabResources.xrSession = session;');
+    expect(src).toContain("if (typeof el._clabCleanup === 'function') el._clabCleanup();");
+  });
+});
 describe('coaster lab — mount smoke (no WebGL in jsdom)', () => {
   it('renders the shell, scoped styles, and the loading note without throwing', () => {
     const cfg = loadTool(TOOL_PATHS[0], 'coasterLab');
@@ -374,13 +442,19 @@ describe('coaster lab — Ride & Solve math is GROUNDED in the checkpoint elemen
       streak: document.createElement('span'), delta: document.createElement('span'),
       viewport: document.createElement('div'), viz: null, box: document.createElement('div'),
     };
+    const resources = { rideTimerId: null, rideResumeId: null, rideBurstId: null };
     const submit = new Function(
-      'ride', 'rq', 'performance', 'clearInterval', 'clearTimeout', 'setTimeout',
+      'ride', 'rq', 'performance',
+      'clearRideQuestionTimer', 'clearRideResumeTimer', 'clearRideBurstTimer',
+      'setTimeout', '__clabResources',
       'fmt', 'blip', 'reducedMotion', 'sim', 'spawnAnswerBurst',
       src.slice(s, e) + '\nreturn submitRideAnswer;'
     )(
-      rideState, rqState, { now: () => 1000 }, () => {}, () => {},
-      (fn, delay) => { scheduled.push({ fn, delay }); return scheduled.length; },
+      rideState, rqState, { now: () => 1000 },
+      () => { rideState.timerId = null; resources.rideTimerId = null; },
+      () => { rideState.resumeId = null; resources.rideResumeId = null; },
+      () => { rideState.burstId = null; resources.rideBurstId = null; },
+      (fn, delay) => { scheduled.push({ fn, delay }); return scheduled.length; }, resources,
       String, () => {}, () => false, { paused: true }, () => {}
     );
 
@@ -402,7 +476,9 @@ describe('coaster lab — Ride & Solve math is GROUNDED in the checkpoint elemen
     expect(src).toContain('role=\\"status\\" aria-live=\\"polite\\" aria-atomic=\\"true\\"');
     expect(src).toContain("focusTarget = rq.choices.querySelector('button')");
     expect(src).toContain('if(ride.current && focusTarget && focusTarget.isConnected) focusTarget.focus()');
-    expect(src).toContain('clearTimeout(ride.resumeId); ride.resumeId = null;');
+    expect(src).toContain('function clearRideResumeTimer(){');
+    expect(src).toContain('__clabResources.rideResumeId = null;');
+    expect(src).toContain('clearRideResumeTimer();');
     expect(src).toContain('if(!ride.active || ride.idx !== answerIdx) return;');
     expect(src).toContain('.clab-root #clab-rideQ{max-height:calc(100% - 156px);overflow-y:auto');
     expect(src).toContain('@media (max-width:760px),(max-height:620px)');
