@@ -215,6 +215,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Repaired shared Games/Visual Panel styling that suppressed native focus: bridge text and select fields now retain a transparent base outline and expose strong teal focus-visible rings; label editors, panel actions, undo/redo, drawing tools, color choices, and grid controls expose 3 CSS-pixel blue rings with forced-colors support. Shared controls now provide 32 CSS-pixel targets (44 pixels for bridge actions), and decorative transitions plus label-placement pulsing stop under reduced-motion preferences. The focused Games static audit dropped from four critical focus findings to zero (WCAG 2.4.7, 2.5.8, 2.3.3, 1.4.11).
 
+- Corrected Memory Game’s conditional fullscreen semantics: its embedded form remains a named region, while fullscreen now becomes a labelled modal dialog with programmatic focus, Tab/Shift+Tab containment, Escape-to-exit, and focus restoration to the fullscreen toggle. The shared game-dialog focus helper now supports an explicit active state so inline Memory Game content is not trapped when fullscreen is off (WCAG 1.3.1, 2.1.1, 2.4.3, 2.4.6, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

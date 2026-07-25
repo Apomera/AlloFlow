@@ -5,10 +5,22 @@ const paths = ['games_source.jsx', 'games_module.js', 'desktop/web-app/public/ga
 const files = paths.map(path => [path, fs.readFileSync(path, 'utf8')]);
 
 describe('Memory Game accessibility', () => {
-  it.each(files)('%s exposes a named region and completion focus target', (_path, source) => {
+  it.each(files)('%s exposes an inline region and a modal fullscreen workspace', (_path, source) => {
     expect(source).toContain('memory-game-title');
+    expect(source).toMatch(/role:\s*["']dialog["']/);
+    expect(source).toMatch(/["']aria-modal["']:\s*["']true["']/);
+    expect(source).toMatch(/role:\s*["']region["']/);
+    expect(source).toContain('memoryRegionRef');
+    expect(source).toContain('memoryFullscreenToggleRef');
     expect(source).toContain('memoryPlayAgainRef');
     expect(source).toContain('memory.victory');
+  });
+
+  it('contains and restores focus only while fullscreen is active', () => {
+    const source = files[0][1];
+    expect(source).toContain('useGameDialogFocus(memoryRegionRef, memoryFullscreenToggleRef, () => setIsFullscreen(false), isFullscreen)');
+    expect(source).toContain('if (!active) return undefined;');
+    expect(source).toContain('}, [active]);');
   });
 
   it('uses button-group semantics for an independently operable card board', () => {

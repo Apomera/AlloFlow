@@ -15,10 +15,11 @@ const useReducedMotion = () => typeof window !== 'undefined' && window.matchMedi
 const getGameDialogFocusable = (dialog) => dialog ? Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter((element) => element.getClientRects().length > 0 && element.getAttribute('aria-hidden') !== 'true') : [];
 
 // Shared focus management for full-screen game workspaces.
-const useGameDialogFocus = (dialogRef, initialFocusRef, onClose) => {
+const useGameDialogFocus = (dialogRef, initialFocusRef, onClose, active = true) => {
   const closeHandlerRef = useRef(onClose);
   closeHandlerRef.current = onClose;
   useEffect(() => {
+    if (!active) return undefined;
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
     const previousFocus = typeof document !== 'undefined' ? document.activeElement : null;
@@ -40,7 +41,7 @@ const useGameDialogFocus = (dialogRef, initialFocusRef, onClose) => {
       dialog.removeEventListener('keydown', onKeyDown);
       if (previousFocus?.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
     };
-  }, []);
+  }, [active]);
 };
 
 // ── TTS utility for read-aloud accessibility ──
@@ -198,8 +199,11 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
   const gridRef = useRef(null);
   const modeSelectRef = useRef(null);
   const modeDialogRef = useRef(null);
+  const memoryRegionRef = useRef(null);
+  const memoryFullscreenToggleRef = useRef(null);
   const memoryPlayAgainRef = useRef(null);
   const scoreDeltaTimerRef = useRef(null);
+  useGameDialogFocus(memoryRegionRef, memoryFullscreenToggleRef, () => setIsFullscreen(false), isFullscreen);
   const flashScoreDelta = (delta) => {
     if (scoreDeltaTimerRef.current) clearTimeout(scoreDeltaTimerRef.current);
     setScoreDelta(delta);
@@ -385,7 +389,12 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
   const totalPairs = cards.length / 2;
   const progressPct = totalPairs > 0 ? Math.round((matchedPairs.size / totalPairs) * 100) : 0;
   return (
-    <section role="region" aria-labelledby="memory-game-title" className={`p-6 motion-safe:transition-all motion-safe:duration-300 ${isFullscreen ? 'fixed inset-0 z-[100] overflow-y-auto h-screen w-screen rounded-none bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900' : 'rounded-xl border-2 border-indigo-200 shadow-inner mb-6 relative bg-slate-100'}`}>
+    <section
+      ref={memoryRegionRef}
+      {...(isFullscreen ? { role: 'dialog', 'aria-modal': 'true', tabIndex: -1 } : { role: 'region' })}
+      aria-labelledby="memory-game-title"
+      className={`p-6 motion-safe:transition-all motion-safe:duration-300 ${isFullscreen ? 'fixed inset-0 z-[100] overflow-y-auto h-screen w-screen rounded-none bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900' : 'rounded-xl border-2 border-indigo-200 shadow-inner mb-6 relative bg-slate-100'}`}
+    >
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
       <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 ${isFullscreen ? 'sticky top-0 z-30 bg-slate-900/70 backdrop-blur-md py-3 px-2 -mx-2 rounded-xl border border-white/10' : ''}`}>
         <div>
@@ -431,6 +440,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
             <RefreshCw size={14} aria-hidden="true"/> {t('memory.reset')}
           </button>
           <button type="button"
+            ref={memoryFullscreenToggleRef}
             onClick={() => setIsFullscreen(prev => !prev)}
             className={`min-w-11 min-h-11 p-1.5 rounded-full transition-colors focus:ring-2 focus:ring-indigo-500 ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`}
             title={isFullscreen ? t('memory.exit_fullscreen') : t('memory.fullscreen')}
