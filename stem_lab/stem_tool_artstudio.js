@@ -2419,7 +2419,7 @@ const d = labToolData.artStudio || {};
 
             tab === 'spirograph' && React.createElement("div", { className: "space-y-3" },
 
-              React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
+              React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
 
                 React.createElement("div", { className: "space-y-3" },
 
@@ -2439,9 +2439,9 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { className: "text-[11px] font-bold text-indigo-600 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[11px] font-bold text-indigo-700 block mb-0.5" }, s.label + ': ' + val),
 
-                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('spiroReset', Date.now()); }, className: "w-full accent-indigo-600" })
+                        React.createElement("input", { id: 'artstudio-' + s.k, type: "range", min: s.min, max: s.max, value: val, "aria-valuetext": s.k === 'spiroSpeed' ? val + ' drawing steps per frame' : val + ' units', onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('spiroReset', Date.now()); }, className: "w-full accent-indigo-600" })
 
                       );
 
@@ -2449,21 +2449,21 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { onClick: function () { upd('spiroReset', Date.now()); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, __alloT('stem.artstudio.clear_4', "\uD83D\uDDD1 Clear")),
+                      React.createElement("button", { onClick: function () { upd('spiroReset', Date.now()); if (typeof announceToSR === 'function') announceToSR('Redrawing the spirograph.'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-300 hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.redraw_spirograph', "\u21BB Redraw")),
 
-                      React.createElement("button", { onClick: function () { var c = document.getElementById('spiroCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spirograph-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_3', "\uD83D\uDCE5 Export PNG")),
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_spirograph_png', "Export spirograph as PNG"), onClick: function () { var c = document.getElementById('spiroCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spirograph-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR('Spirograph PNG exported.'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_3', "\uD83D\uDCE5 Export PNG")),
 
-                      React.createElement("button", { "aria-label": "Presets:", onClick: function () { upd('spiroRainbow', !(d.spiroRainbow)); upd('spiroReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.spiroRainbow ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, d.spiroRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
+                      React.createElement("button", { "aria-label": d.spiroRainbow ? "Use a single color for the spirograph" : "Use a rainbow color progression for the spirograph", "aria-pressed": !!d.spiroRainbow, onClick: function () { var nextRainbow = !d.spiroRainbow; upd('spiroRainbow', nextRainbow); upd('spiroReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(nextRainbow ? 'Rainbow spirograph enabled.' : 'Single-color spirograph enabled.'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 " + (d.spiroRainbow ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-700 border border-slate-400 hover:bg-indigo-50') }, d.spiroRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
 
                     ),
 
-                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
+                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap items-center", role: "group", "aria-labelledby": "artstudio-spiro-presets-label" },
 
-                      React.createElement("span", { className: "text-[11px] font-bold text-indigo-500 mr-1" }, "Presets:"),
+                      React.createElement("span", { id: "artstudio-spiro-presets-label", className: "text-[11px] font-bold text-indigo-700 mr-1" }, "Presets:"),
 
                       [{ label: __alloT('stem.artstudio.star', 'Star'), R: 120, r: 45, p: 55 }, { label: __alloT('stem.artstudio.flower', 'Flower'), R: 150, r: 50, p: 25 }, { label: __alloT('stem.artstudio.lace', 'Lace'), R: 100, r: 73, p: 80 }, { label: __alloT('stem.artstudio.atom', 'Atom'), R: 180, r: 25, p: 90 }, { label: __alloT('stem.artstudio.spiral', 'Spiral'), R: 140, r: 91, p: 60 }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, onClick: function () { upd('spiroR', pr.R); upd('spiror', pr.r); upd('spirop', pr.p); upd('spiroReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-indigo-600 border border-indigo-600 hover:bg-indigo-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' spirograph preset', onClick: function () { upd('spiroR', pr.R); upd('spiror', pr.r); upd('spirop', pr.p); upd('spiroReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(pr.label + ' spirograph preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-indigo-700 border border-indigo-600 hover:bg-indigo-50 transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2" }, pr.label);
 
                       })
 
@@ -2475,13 +2475,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("p", { className: "text-[11px] font-bold text-violet-700 mb-1" }, __alloT('stem.artstudio.math_connection', "\uD83D\uDCDA Math Connection")),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" }, __alloT('stem.artstudio.spirographs_draw', "Spirographs draw "), React.createElement("strong", null, __alloT('stem.artstudio.hypotrochoid_curves', "hypotrochoid curves")), __alloT('stem.artstudio.the_path_traced_by_a_point_on_a_small_', " \u2014 the path traced by a point on a small circle rolling inside a larger one. The pattern depends on the "), React.createElement("strong", null, "GCD"), __alloT('stem.artstudio.greatest_common_divisor_of_the_two_rad', " (greatest common divisor) of the two radii. When R/r is a simple fraction, you get fewer petals; complex ratios create intricate, never-repeating paths."))
+                    React.createElement("p", { id: "artstudio-spiro-description", className: "text-[11px] text-slate-700 leading-relaxed" }, __alloT('stem.artstudio.spirographs_draw', "Spirographs draw "), React.createElement("strong", null, __alloT('stem.artstudio.hypotrochoid_curves', "hypotrochoid curves")), __alloT('stem.artstudio.the_path_traced_by_a_point_on_a_small_', " \u2014 the path traced by a point on a small circle rolling inside a larger one. The pattern depends on the "), React.createElement("strong", null, "GCD"), __alloT('stem.artstudio.greatest_common_divisor_of_the_two_rad', " (greatest common divisor) of the two radii. When R/r is a simple fraction, you get fewer petals; complex ratios create intricate, never-repeating paths."))
 
                   )
 
                 ),
 
-                React.createElement("canvas", { tabIndex: 0, id: 'spiroCanvas', key: 'spiro-' + (d.spiroReset || 0), width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.spirograph_canvas', 'Spirograph canvas'), className: "rounded-xl border-2 border-indigo-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
+                React.createElement("canvas", { id: 'spiroCanvas', key: 'spiro-' + (d.spiroReset || 0), width: 512, height: 512, role: "img", "aria-describedby": "artstudio-spiro-description", 'aria-label': 'Spirograph output: a ' + (d.spiroRainbow ? 'rainbow' : 'single-color') + ' hypotrochoid with outer radius ' + (typeof d.spiroR === 'number' ? d.spiroR : 120) + ', inner radius ' + (typeof d.spiror === 'number' ? d.spiror : 45) + ', and pen offset ' + (typeof d.spirop === 'number' ? d.spirop : 55) + '.', className: "rounded-xl border-2 border-indigo-300 shadow-lg mx-auto block", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
 
                   ref: function (canvas) {
 
@@ -2535,11 +2535,23 @@ const d = labToolData.artStudio || {};
 
                     ctx.globalCompositeOperation = 'lighter';
 
+                    function announceSpiroComplete() {
+
+                      if (canvas._spiroDone) return;
+
+                      canvas._spiroDone = true;
+
+                      if (typeof announceToSR === 'function') announceToSR('Spirograph drawing complete.');
+
+                    }
+
                     function drawStep() {
 
-                      if (t >= maxT) return;
+                      if (t >= maxT) { announceSpiroComplete(); return; }
 
-                      for (var si = 0; si < speed; si++) {
+                      var stepsThisFrame = reducedMotion ? Math.ceil((maxT - t) / 0.02) : speed;
+
+                      for (var si = 0; si < stepsThisFrame; si++) {
 
                         t += 0.02;
 
@@ -2559,7 +2571,9 @@ const d = labToolData.artStudio || {};
 
                       }
 
-                      if (canvas.isConnected) canvas._spiroAnim = requestAnimationFrame(drawStep);
+                      if (t < maxT && canvas.isConnected) canvas._spiroAnim = requestAnimationFrame(drawStep);
+
+                      else announceSpiroComplete();
 
                     }
 
