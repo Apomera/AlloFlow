@@ -4936,17 +4936,17 @@ const d = labToolData.artStudio || {};
 
             tab === 'stereogram' && React.createElement("div", { className: "space-y-3" },
 
-              React.createElement("div", { className: "flex gap-1 p-1 bg-slate-100 rounded-xl border border-slate-400 mb-2" },
+              React.createElement("div", { className: "flex gap-1 p-1 bg-slate-100 rounded-xl border border-slate-400 mb-2", role: "group", "aria-label": "Stereogram mode" },
 
-                React.createElement("button", { onClick: function() { _stopStereoAnim(); upd('stereoAnimMode', 'static'); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + ((d.stereoAnimMode || 'static') === 'static' ? 'bg-white shadow-md text-cyan-700' : 'text-slate-600 hover:text-slate-700') }, __alloT('stem.artstudio.static', "\uD83D\uDCF8 Static")),
+                React.createElement("button", { "aria-pressed": (d.stereoAnimMode || 'static') === 'static', onClick: function() { _stopStereoAnim(); upd('stereoAnimMode', 'static'); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + ((d.stereoAnimMode || 'static') === 'static' ? 'bg-white shadow-md text-cyan-700' : 'text-slate-600 hover:text-slate-700') }, __alloT('stem.artstudio.static', "\uD83D\uDCF8 Static")),
 
-                React.createElement("button", { "aria-label": __alloT('stem.artstudio.animate', "Animate"), onClick: function() { upd('stereoAnimMode', 'animate'); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + ((d.stereoAnimMode || 'static') === 'animate' ? 'bg-white shadow-md text-purple-700' : 'text-slate-600 hover:text-slate-700') }, __alloT('stem.artstudio.animate_2', "\uD83C\uDFAC Animate"))
+                React.createElement("button", { "aria-label": __alloT('stem.artstudio.animate', "Animate"), "aria-pressed": (d.stereoAnimMode || 'static') === 'animate', onClick: function() { upd('stereoAnimMode', 'animate'); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + ((d.stereoAnimMode || 'static') === 'animate' ? 'bg-white shadow-md text-purple-700' : 'text-slate-600 hover:text-slate-700') }, __alloT('stem.artstudio.animate_2', "\uD83C\uDFAC Animate"))
 
               ),
 
               (d.stereoAnimMode || 'static') === 'static' &&
 
-              React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
+              React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
 
                 React.createElement("div", { className: "space-y-3" },
 
@@ -4956,13 +4956,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-cyan-600 block mb-1" }, __alloT('stem.artstudio.depth_brush', "Depth Brush")),
+                      React.createElement("span", { id: "artstudio-stereo-depth-brush-label", className: "text-[11px] font-bold text-cyan-700 block mb-1" }, __alloT('stem.artstudio.depth_brush', "Depth Brush")),
 
-                      React.createElement("div", { className: "flex gap-1" },
+                      React.createElement("div", { className: "flex gap-1", role: "group", "aria-labelledby": "artstudio-stereo-depth-brush-label" },
 
                         [{ id: 'near', label: __alloT('stem.artstudio.near', '\u2B1C Near') }, { id: 'mid', label: __alloT('stem.artstudio.mid', '\uD83D\uDD18 Mid') }, { id: 'far', label: __alloT('stem.artstudio.far', '\u2B1B Far') }, { id: 'erase', label: __alloT('stem.artstudio.erase', '\uD83E\uDDFD Erase') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, onClick: function () { upd('stereoDepth', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoDepth || 'near') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-cyan-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.stereoDepth || 'near') === s.id, onClick: function () { upd('stereoDepth', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoDepth || 'near') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-cyan-50') }, s.label);
 
                         })
 
@@ -4972,21 +4972,21 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-cyan-600 block mb-0.5" }, "Brush Size: " + (typeof d.stereoBrush === 'number' ? d.stereoBrush : 20)),
+                      React.createElement("label", { htmlFor: "artstudio-stereo-brush-size", className: "text-[11px] font-bold text-cyan-700 block mb-0.5" }, "Brush Size: " + (typeof d.stereoBrush === 'number' ? d.stereoBrush : 20)),
 
-                      React.createElement("input", { type: "range", min: 5, max: 60, value: typeof d.stereoBrush === 'number' ? d.stereoBrush : 20, 'aria-label': __alloT('stem.artstudio.stereogram_brush_size', 'Stereogram brush size'), onChange: function (e) { upd('stereoBrush', parseInt(e.target.value)); }, className: "w-full accent-cyan-600" })
+                      React.createElement("input", { id: "artstudio-stereo-brush-size", type: "range", min: 5, max: 60, value: typeof d.stereoBrush === 'number' ? d.stereoBrush : 20, onChange: function (e) { upd('stereoBrush', parseInt(e.target.value)); }, className: "w-full accent-cyan-600" })
 
                     ),
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-cyan-600 block mb-1" }, __alloT('stem.artstudio.pattern_type', "Pattern Type")),
+                      React.createElement("span", { id: "artstudio-stereo-pattern-label", className: "text-[11px] font-bold text-cyan-700 block mb-1" }, __alloT('stem.artstudio.pattern_type', "Pattern Type")),
 
-                      React.createElement("div", { className: "flex gap-1" },
+                      React.createElement("div", { className: "flex gap-1", role: "group", "aria-labelledby": "artstudio-stereo-pattern-label" },
 
                         [{ id: 'bw', label: __alloT('stem.artstudio.b_w', '\u26AB B&W') }, { id: 'color', label: __alloT('stem.artstudio.color', '\uD83C\uDFA8 Color') }, { id: 'noise', label: __alloT('stem.artstudio.noise', '\uD83D\uDCFA Noise') }, { id: 'ai', label: __alloT('stem.artstudio.ai', '\u2728 AI') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, onClick: function () { upd('stereoPattern', s.id); if(s.id === 'ai' && !d.stereoAiPatternImg) { if(typeof addToast === 'function') addToast('Please generate an AI Pattern first!', 'warning'); } }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-cyan-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.stereoPattern || 'bw') === s.id, onClick: function () { upd('stereoPattern', s.id); if(s.id === 'ai' && !d.stereoAiPatternImg) { if(typeof addToast === 'function') addToast('Please generate an AI Pattern first!', 'warning'); } }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-cyan-50') }, s.label);
 
                         })
 
@@ -5002,9 +5002,9 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { className: "text-[11px] font-bold text-cyan-600 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[11px] font-bold text-cyan-700 block mb-0.5" }, s.label + ': ' + val),
 
-                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-cyan-600" })
+                        React.createElement("input", { id: 'artstudio-' + s.k, type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-cyan-600" })
 
                       );
 
@@ -5020,7 +5020,7 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("label", { htmlFor: "artstudio-stereo-ai-description", className: "text-[11px] font-bold text-indigo-700" }, __alloT('stem.artstudio.ai_stereogram_creator', "\u2728 AI Stereogram Creator")),
 
-                        d.stereoAiGen && React.createElement("span", { className: "text-[11px] text-indigo-500 font-bold" + (reducedMotion ? "" : " animate-pulse") }, "Generating " + d.stereoAiGen + "...")
+                        d.stereoAiGen && React.createElement("span", { className: "text-[11px] text-indigo-700 font-bold" + (reducedMotion ? "" : " animate-pulse") }, "Generating " + d.stereoAiGen + "...")
 
                       ),
 
@@ -5151,19 +5151,19 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-4" },
 
-                      React.createElement("button", { onClick: function () { upd('stereoGen', Date.now()); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-cyan-500 to-teal-500 text-white hover:from-cyan-600 hover:to-teal-600 shadow-md transition-all" }, __alloT('stem.artstudio.render_stereogram', "\uD83D\uDC53 Render Stereogram")),
+                      React.createElement("button", { onClick: function () { upd('stereoGen', Date.now()); if (typeof announceToSR === 'function') announceToSR('Rendering stereogram from the current depth map.'); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-cyan-500 to-teal-500 text-white hover:from-cyan-600 hover:to-teal-600 shadow-md transition-all" }, __alloT('stem.artstudio.render_stereogram', "\uD83D\uDC53 Render Stereogram")),
 
                       React.createElement("button", { "aria-label": __alloT('stem.artstudio.clear_9', "Clear"), onClick: function () { upd('stereoClear', Date.now()); upd('stereoPreset', null); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, __alloT('stem.artstudio.clear_10', "\uD83D\uDDD1 Clear"))
 
                     ),
 
-                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
+                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap", role: "group", "aria-labelledby": "artstudio-stereo-presets-label" },
 
-                      React.createElement("span", { className: "text-[11px] font-bold text-cyan-500 mr-1" }, "Presets:"),
+                      React.createElement("span", { id: "artstudio-stereo-presets-label", className: "text-[11px] font-bold text-cyan-700 mr-1" }, "Presets:"),
 
                       [{ label: __alloT('stem.artstudio.sphere', 'Sphere'), id: 'sphere' }, { label: __alloT('stem.artstudio.pyramid', 'Pyramid'), id: 'pyramid' }, { label: __alloT('stem.artstudio.heart', 'Heart'), id: 'heart' }, { label: __alloT('stem.artstudio.hi_text', 'HI Text'), id: 'text' }, { label: __alloT('stem.artstudio.rings_2', 'Rings'), id: 'rings' }].map(function (pr) {
 
-                        return React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_stereogram', "Export Stereogram"), key: pr.id, onClick: function () { upd('stereoPreset', pr.id); upd('stereoClear', Date.now()); setTimeout(function () { upd('stereoGen', Date.now()); }, 150); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-cyan-600 border border-cyan-600 hover:bg-cyan-50 transition-all" }, pr.label);
+                        return React.createElement("button", { "aria-label": 'Use ' + pr.label + ' depth-map preset', "aria-pressed": d.stereoPreset === pr.id, key: pr.id, onClick: function () { upd('stereoPreset', pr.id); upd('stereoClear', Date.now()); setTimeout(function () { upd('stereoGen', Date.now()); }, 150); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-cyan-700 border border-cyan-600 hover:bg-cyan-50 transition-all" }, pr.label);
 
                       })
 
@@ -5173,20 +5173,24 @@ const d = labToolData.artStudio || {};
 
                   ),
 
-                  React.createElement("div", null,
+                  React.createElement("div", { className: "relative" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 mb-1" }, __alloT('stem.artstudio.depth_map_canvas', "\uD83C\uDFA8 Depth Map Canvas")),
+                    React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 mb-1" }, __alloT('stem.artstudio.depth_map_canvas', "\uD83C\uDFA8 Depth Map Canvas")),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, __alloT('stem.artstudio.white_pops_out_gray_middle_black_far', "White = pops out \u2022 Gray = middle \u2022 Black = far")),
+                    React.createElement("p", { id: "artstudio-depth-map-legend", className: "text-[11px] text-slate-600 mb-1" }, __alloT('stem.artstudio.white_pops_out_gray_middle_black_far', "White = pops out \u2022 Gray = middle \u2022 Black = far")),
+
+                    React.createElement("p", { id: "artstudio-depth-map-keyboard-help", className: "text-[11px] text-slate-700 mb-1" }, "Keyboard: Arrow keys move the drawing cursor; hold Shift with an Arrow key to draw; Space or Enter stamps the brush; Home returns to center; Alt makes one-pixel moves."),
 
                     React.createElement("canvas", { id: 'depthMapCanvas', width: 400, height: 400,
                       tabIndex: 0,
                       role: "img",
                       "aria-label": "Depth map drawing canvas. Current brush is " + (d.stereoDepth || 'near') + ". White is near, gray is middle, and black is far.",
+                      "aria-describedby": "artstudio-depth-map-legend artstudio-depth-map-keyboard-help",
+                      "aria-keyshortcuts": "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space",
 
                       key: 'dm-' + (d.stereoClear || 0),
 
-                      className: "rounded-xl border-2 border-cyan-200 shadow-lg cursor-crosshair block", style: { maxWidth: '100%', background: '#000000' },
+                      className: "rounded-xl border-2 border-cyan-200 shadow-lg cursor-crosshair block focus-visible:ring-4 focus-visible:ring-cyan-600 focus-visible:ring-offset-2", style: { maxWidth: '100%', background: '#000000' },
 
                       ref: function (canvas) {
 
@@ -5272,6 +5276,38 @@ const d = labToolData.artStudio || {};
 
                         var painting = false;
 
+                        var keyboardCursor = canvas._depthKeyboardCursor || { x: W / 2, y: H / 2 };
+
+                        keyboardCursor.x = Math.max(0, Math.min(W, keyboardCursor.x));
+
+                        keyboardCursor.y = Math.max(0, Math.min(H, keyboardCursor.y));
+
+                        canvas._depthKeyboardCursor = keyboardCursor;
+
+                        function updateDepthKeyboardCursor(show) {
+
+                          var cursor = canvas.parentElement && canvas.parentElement.querySelector('[data-depth-keyboard-cursor="true"]');
+
+                          if (cursor) {
+
+                            var displayW = canvas.clientWidth || W;
+
+                            var displayH = canvas.clientHeight || H;
+
+                            cursor.style.left = ((canvas.offsetLeft || 0) + keyboardCursor.x / W * displayW - 10) + 'px';
+
+                            cursor.style.top = ((canvas.offsetTop || 0) + keyboardCursor.y / H * displayH - 10) + 'px';
+
+                            cursor.style.display = show ? 'block' : 'none';
+
+                          }
+
+                          canvas.setAttribute('aria-label', 'Depth map drawing canvas. Current brush is ' + depthLevel +
+
+                            '. Keyboard cursor at x ' + Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
+
+                        }
+
                         function getP(e) {
 
                           var rect = canvas.getBoundingClientRect();
@@ -5292,6 +5328,16 @@ const d = labToolData.artStudio || {};
 
                         }
 
+                        function doBrushLine(from, to) {
+
+                          ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y);
+
+                          ctx.lineWidth = brushSz * 2; ctx.lineCap = 'round';
+
+                          ctx.strokeStyle = depthColors[depthLevel]; ctx.stroke();
+
+                        }
+
                         canvas.onmousedown = canvas.ontouchstart = function (e) { e.preventDefault(); painting = true; doBrush(getP(e)); };
 
                         canvas.onmousemove = canvas.ontouchmove = function (e) { if (painting) doBrush(getP(e)); };
@@ -5300,7 +5346,79 @@ const d = labToolData.artStudio || {};
 
                         canvas.onmouseleave = function () { painting = false; };
 
+                        canvas.onfocus = function () { updateDepthKeyboardCursor(true); };
+
+                        canvas.onblur = function () { updateDepthKeyboardCursor(false); };
+
+                        canvas.onkeydown = function (event) {
+
+                          var step = event.altKey ? 1 : 10;
+
+                          var previous = { x: keyboardCursor.x, y: keyboardCursor.y };
+
+                          var moved = true;
+
+                          if (event.key === 'ArrowLeft') keyboardCursor.x = Math.max(0, keyboardCursor.x - step);
+
+                          else if (event.key === 'ArrowRight') keyboardCursor.x = Math.min(W, keyboardCursor.x + step);
+
+                          else if (event.key === 'ArrowUp') keyboardCursor.y = Math.max(0, keyboardCursor.y - step);
+
+                          else if (event.key === 'ArrowDown') keyboardCursor.y = Math.min(H, keyboardCursor.y + step);
+
+                          else if (event.key === 'Home') { keyboardCursor.x = W / 2; keyboardCursor.y = H / 2; }
+
+                          else moved = false;
+
+                          if (moved) {
+
+                            event.preventDefault();
+
+                            if (event.shiftKey) doBrushLine(previous, keyboardCursor);
+
+                            canvas._depthKeyboardCursor = keyboardCursor;
+
+                            updateDepthKeyboardCursor(true);
+
+                            if (typeof announceToSR === 'function') {
+
+                              announceToSR((event.shiftKey ? 'Drew depth to' : 'Depth cursor') + ' x ' + Math.round(keyboardCursor.x) +
+
+                                ', y ' + Math.round(keyboardCursor.y) + '.');
+
+                            }
+
+                            return;
+
+                          }
+
+                          if (event.key === 'Enter' || event.key === ' ') {
+
+                            event.preventDefault(); doBrush(keyboardCursor);
+
+                            if (typeof announceToSR === 'function') announceToSR('Stamped ' + depthLevel + ' depth at x ' +
+
+                              Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
+
+                          }
+
+                        };
+
+                        updateDepthKeyboardCursor(typeof document !== 'undefined' && document.activeElement === canvas);
+
                       }
+
+                    }),
+
+                    React.createElement("span", {
+
+                      "data-depth-keyboard-cursor": "true",
+
+                      "aria-hidden": "true",
+
+                      className: "pointer-events-none absolute z-10 h-5 w-5 rounded-full border-4 border-white shadow-[0_0_0_2px_#0891b2]",
+
+                      style: { display: 'none' }
 
                     })
 
@@ -5314,7 +5432,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-3 border border-teal-200" },
 
-                    React.createElement("button", { onClick: function () { upd('showStereoInfo', !d.showStereoInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-teal-700" },
+                    React.createElement("button", { "aria-expanded": !!d.showStereoInfo, "aria-controls": "artstudio-stereogram-science", onClick: function () { upd('showStereoInfo', !d.showStereoInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-teal-700" },
 
                       React.createElement("span", null, __alloT('stem.artstudio.the_science_of_stereograms', "\uD83E\uDDE0 The Science of Stereograms")),
 
@@ -5322,7 +5440,7 @@ const d = labToolData.artStudio || {};
 
                     ),
 
-                    d.showStereoInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
+                    d.showStereoInfo && React.createElement("div", { id: "artstudio-stereogram-science", className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
 
                       React.createElement("p", null, "\uD83D\uDC40 ", React.createElement("strong", null, __alloT('stem.artstudio.your_eyes_are_6_cm_apart', "Your eyes are ~6 cm apart")), __alloT('stem.artstudio.so_each_sees_the_world_from_a_slightly', ", so each sees the world from a slightly different angle. Your brain fuses these two views to perceive "), React.createElement("strong", null, "depth"), __alloT('stem.artstudio.this_is_called', " \u2014 this is called "), React.createElement("strong", null, "stereopsis"), "."),
 
@@ -5344,11 +5462,12 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("p", { className: "text-xs font-bold text-teal-700" }, __alloT('stem.artstudio.stereogram_output', "\uD83D\uDC53 Stereogram Output")),
 
-                  React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, __alloT('stem.artstudio.relax_your_eyes_and_look_through_the_i', "Relax your eyes and look \u2018through\u2019 the image to see 3D")),
+                  React.createElement("p", { id: "artstudio-stereogram-output-help", className: "text-[11px] text-slate-600 mb-1" }, __alloT('stem.artstudio.relax_your_eyes_and_look_through_the_i', "Relax your eyes and look \u2018through\u2019 the image to see 3D")),
 
                   React.createElement("canvas", { id: 'stereoCanvas', width: 512, height: 512,
                     role: "img",
                     "aria-label": "Stereogram output using the " + (d.stereoPattern || 'black and white') + " pattern and " + (d.stereoPreset || 'drawn') + " depth map.",
+                    "aria-describedby": "artstudio-stereogram-output-help",
 
                     key: 'stereo-' + (d.stereoGen || 0),
 
