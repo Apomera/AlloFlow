@@ -3609,7 +3609,7 @@ const d = labToolData.artStudio || {};
 
             tab === 'opArt' && React.createElement("div", { className: "space-y-3" },
 
-              React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
+              React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
 
                 React.createElement("div", { className: "space-y-3" },
 
@@ -3619,13 +3619,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-fuchsia-600 block mb-1" }, __alloT('stem.artstudio.style_2', "Style")),
+                      React.createElement("span", { id: "artstudio-op-style-label", className: "text-[11px] font-bold text-fuchsia-700 block mb-1" }, __alloT('stem.artstudio.style_2', "Style")),
 
-                      React.createElement("div", { className: "flex gap-1" },
+                      React.createElement("div", { className: "flex gap-1 flex-wrap", role: "group", "aria-labelledby": "artstudio-op-style-label" },
 
                         [{ id: 'concentric', label: __alloT('stem.artstudio.rings', '\u25CE Rings') }, { id: 'checkerboard', label: __alloT('stem.artstudio.checker', '\u2593 Checker') }, { id: 'moire', label: __alloT('stem.artstudio.moir', '\u2261 Moir\u00E9') }, { id: 'vibrating', label: __alloT('stem.artstudio.vibrate', '\u2248 Vibrate') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, onClick: function () { upd('opStyle', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.opStyle || 'concentric') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-fuchsia-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.opStyle || 'concentric') === s.id, onClick: function () { upd('opStyle', s.id); if (typeof announceToSR === 'function') announceToSR(s.label + ' Op Art style selected.'); }, className: "flex-1 min-w-[5rem] px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2 " + ((d.opStyle || 'concentric') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-white text-slate-700 border border-slate-400 hover:bg-fuchsia-50') }, s.label);
 
                         })
 
@@ -3645,9 +3645,9 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { className: "text-[11px] font-bold text-fuchsia-600 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[11px] font-bold text-fuchsia-700 block mb-0.5" }, s.label + ': ' + val),
 
-                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-fuchsia-600" })
+                        React.createElement("input", { id: 'artstudio-' + s.k, type: "range", min: s.min, max: s.max, value: val, "aria-valuetext": s.k === 'opSpeed' ? val + ' animation speed' : s.k === 'opDensity' ? val + ' pattern density' : val + ' degrees hue', onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-fuchsia-600" })
 
                       );
 
@@ -3655,15 +3655,15 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { onClick: function () { upd('opPaused', !(d.opPaused)); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.opPaused ? 'bg-green-50 text-green-700 border border-green-600 hover:bg-green-100' : 'bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100') }, d.opPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
+                      React.createElement("button", { "aria-label": (d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? "Resume Op Art animation" : "Pause Op Art animation", "aria-describedby": "artstudio-op-motion-status", onClick: function () { var isPaused = d.opPaused === undefined ? reducedMotion : !!d.opPaused; upd('opPaused', !isPaused); if (typeof announceToSR === 'function') announceToSR(isPaused ? 'Op Art animation resumed.' : 'Op Art animation paused.'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2 " + ((d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? 'bg-green-50 text-green-700 border border-green-600 hover:bg-green-100' : 'bg-amber-50 text-amber-800 border border-amber-600 hover:bg-amber-100') }, (d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? '\u25B6 Resume' : '\u23F8 Pause'),
 
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_9', "Export PNG"), onClick: function () { var c = document.getElementById('opArtCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'op-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_10', "\uD83D\uDCE5 Export PNG"))
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_op_art_png', "Export Op Art as PNG"), onClick: function () { var c = document.getElementById('opArtCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'op-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR('Op Art PNG exported.'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_10', "\uD83D\uDCE5 Export PNG"))
 
                     ),
 
-                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
+                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap items-center", role: "group", "aria-labelledby": "artstudio-op-presets-label" },
 
-                      React.createElement("span", { className: "text-[11px] font-bold text-fuchsia-500 mr-1" }, "Presets:"),
+                      React.createElement("span", { id: "artstudio-op-presets-label", className: "text-[11px] font-bold text-fuchsia-700 mr-1" }, "Presets:"),
 
                       [{ label: __alloT('stem.artstudio.classic_b_w', 'Classic B&W'), style: 'concentric', hA: 0, hB: 0, density: 25, speed: 4 },
 
@@ -3673,25 +3673,27 @@ const d = labToolData.artStudio || {};
 
                        { label: __alloT('stem.artstudio.wave_grid', 'Wave Grid'), style: 'checkerboard', hA: 10, hB: 190, density: 20, speed: 5 }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, onClick: function () { upd('opStyle', pr.style); upd('opHueA', pr.hA); upd('opHueB', pr.hB); upd('opDensity', pr.density); upd('opSpeed', pr.speed); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-fuchsia-600 border border-fuchsia-600 hover:bg-fuchsia-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' Op Art preset', onClick: function () { upd('opStyle', pr.style); upd('opHueA', pr.hA); upd('opHueB', pr.hB); upd('opDensity', pr.density); upd('opSpeed', pr.speed); if (typeof announceToSR === 'function') announceToSR(pr.label + ' Op Art preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-fuchsia-700 border border-fuchsia-600 hover:bg-fuchsia-50 transition-all focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2" }, pr.label);
 
                       })
 
-                    )
+                    ),
+
+                    React.createElement("p", { id: "artstudio-op-motion-status", className: "mt-3 text-[11px] text-fuchsia-700 leading-relaxed" }, ((d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? 'Animation paused. ' : 'Animation running. ') + 'Use the pause or resume button to control motion; reduced-motion preferences start this view paused.')
 
                   ),
 
                   React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-3 border border-purple-200" },
 
-                    React.createElement("button", { onClick: function () { upd('showOpInfo', !d.showOpInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-purple-700" },
+                    React.createElement("button", { id: "artstudio-op-info-toggle", "aria-expanded": !!d.showOpInfo, "aria-controls": "artstudio-op-info", onClick: function () { upd('showOpInfo', !d.showOpInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-purple-700 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 rounded" },
 
                       React.createElement("span", null, __alloT('stem.artstudio.the_science_of_op_art', "\uD83E\uDDE0 The Science of Op Art")),
 
-                      React.createElement("span", null, d.showOpInfo ? '\u25B2' : '\u25BC')
+                      React.createElement("span", { "aria-hidden": "true" }, d.showOpInfo ? '\u25B2' : '\u25BC')
 
                     ),
 
-                    d.showOpInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
+                    d.showOpInfo && React.createElement("div", { id: "artstudio-op-info", role: "region", "aria-labelledby": "artstudio-op-info-toggle", className: "mt-3 space-y-2 text-xs text-slate-700 leading-relaxed" },
 
                       React.createElement("p", null, "\uD83D\uDC41 ", React.createElement("strong", null, __alloT('stem.artstudio.op_art_3', "Op Art")), __alloT('stem.artstudio.optical_art_emerged_in_the_1960s_pione', " (Optical Art) emerged in the 1960s, pioneered by "), React.createElement("strong", null, __alloT('stem.artstudio.bridget_riley', "Bridget Riley")), " and ", React.createElement("strong", null, __alloT('stem.artstudio.victor_vasarely', "Victor Vasarely")), __alloT('stem.artstudio.it_exploits_the_mechanics_of_human_vis', ". It exploits the mechanics of human vision to create illusions of movement, vibration, and depth on flat surfaces.")),
 
@@ -3707,7 +3709,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { tabIndex: 0, id: 'opArtCanvas', width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.op_art_canvas', 'Op art canvas'), className: "rounded-xl border-2 border-fuchsia-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#0a0a0a' },
+                React.createElement("canvas", { id: 'opArtCanvas', width: 512, height: 512, role: "img", "aria-describedby": "artstudio-op-motion-status", 'aria-label': 'Op Art output: ' + ((d.opStyle || 'concentric') === 'concentric' ? 'concentric rings' : (d.opStyle || 'concentric') === 'checkerboard' ? 'a warped checkerboard grid' : (d.opStyle || 'concentric') === 'moire' ? 'overlapping Moire line fields' : 'vibrating wavy stripes') + ' at density ' + (typeof d.opDensity === 'number' ? d.opDensity : 20) + ' and speed ' + (typeof d.opSpeed === 'number' ? d.opSpeed : 5) + ', ' + ((d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? 'paused' : 'animating') + '.', className: "rounded-xl border-2 border-fuchsia-300 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#0a0a0a' },
 
                   ref: function (canvas) {
 
@@ -3733,7 +3735,7 @@ const d = labToolData.artStudio || {};
 
                     var hueB = typeof d.opHueB === 'number' ? d.opHueB : 180;
 
-                    var paused = d.opPaused;
+                    var paused = d.opPaused === undefined ? reducedMotion : !!d.opPaused;
 
                     var isMonochrome = (hueA === 0 && hueB === 0);
 
@@ -3941,7 +3943,7 @@ const d = labToolData.artStudio || {};
 
 
 
-                      if (canvas.isConnected) canvas._opAnim = requestAnimationFrame(drawFrame);
+                      if (!paused && canvas.isConnected) canvas._opAnim = requestAnimationFrame(drawFrame);
 
                     }
 
