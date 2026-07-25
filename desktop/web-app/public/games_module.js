@@ -4835,9 +4835,9 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
   width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
   border-radius: 12px; padding: 14px; color: #e2e8f0; font-size: 15px;
   line-height: 1.6; resize: vertical; min-height: 100px;
-  transition: border-color 0.2s; outline: none; font-family: inherit;
+  transition: border-color 0.2s; outline: 3px solid transparent; outline-offset: 2px; font-family: inherit;
 }
-.bridge-send-input:focus { border-color: rgba(20,184,166,0.5); box-shadow: 0 0 20px rgba(20,184,166,0.1); }
+.bridge-send-input:focus-visible { border-color: #5eead4; outline-color: #5eead4; box-shadow: 0 0 0 3px #0f172a, 0 0 0 6px #5eead4; }
 .bridge-send-input::placeholder { color: rgba(148,163,184,0.6); }
 .bridge-send-modes {
   display: flex; gap: 8px; margin: 14px 0;
@@ -4860,9 +4860,18 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
 .bridge-send-target-select {
   flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
   color: #e2e8f0; padding: 8px 12px; border-radius: 10px; font-size: 13px;
-  outline: none; cursor: pointer;
+  outline: 3px solid transparent; outline-offset: 2px; cursor: pointer;
 }
 .bridge-send-target-select option { background: #1e293b; color: #e2e8f0; }
+.bridge-send-mode-btn:focus-visible,
+.bridge-send-target-select:focus-visible,
+.bridge-send-btn:focus-visible {
+  outline: 3px solid #5eead4;
+  outline-offset: 2px;
+}
+.bridge-send-mode-btn,
+.bridge-send-target-select,
+.bridge-send-btn { min-height: 44px; }
 .bridge-send-btn {
   width: 100%; background: linear-gradient(135deg, #0d9488, #14b8a6);
   border: none; color: white; padding: 14px; border-radius: 14px;
@@ -4891,11 +4900,11 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
 .visual-label::before { content: ''; position: absolute; left: -6px; top: 50%; transform: translateY(-50%); width: 8px; height: 8px; background: #6366f1; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 6px rgba(99,102,241,0.5); }
 .visual-label:hover { transform: scale(1.08) translateY(-1px); border-color: #6366f1; box-shadow: 0 6px 20px rgba(99,102,241,0.3), inset 0 1px 0 rgba(255,255,255,0.5); }
 .visual-label.hidden-label { opacity: 0; pointer-events: none; }
-.visual-label input { border: none; background: transparent; font-size: 14px; font-weight: 800; color: #1e1b4b; outline: none; width: 100%; min-width: 60px; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
+.visual-label input { border: none; background: transparent; font-size: 14px; font-weight: 800; color: #1e1b4b; outline: 3px solid transparent; outline-offset: 2px; width: 100%; min-width: 60px; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
 .visual-caption { padding: 4px 10px; font-size: 11px; color: #64748b; text-align: center; background: #f8fafc; border-top: 1px solid #f1f5f9; font-weight: 500; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; letter-spacing: 0.01em; line-height: 1.2; margin: 0; }
 .visual-panel-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; opacity: 0.6; transition: opacity 0.2s; }
 .visual-panel:hover .visual-panel-actions { opacity: 1; }
-.visual-panel-actions button { background: rgba(255,255,255,0.9); backdrop-filter: blur(4px); border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 11px; transition: background 0.2s; }
+.visual-panel-actions button { min-width: 32px; min-height: 32px; background: rgba(255,255,255,0.9); backdrop-filter: blur(4px); border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 11px; transition: background 0.2s; }
 .visual-panel-actions button:hover { background: #eef2ff; border-color: #6366f1; }
 .visual-leader-line { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
 .visual-leader-line line { stroke: #6366f1; stroke-width: 1.5; stroke-dasharray: 4 3; opacity: 0.7; }
@@ -4903,30 +4912,67 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
 .visual-panel.drag-over { outline: 3px dashed #6366f1; outline-offset: -3px; background: #eef2ff; }
 .visual-panel[draggable="true"] { cursor: grab; }
 .visual-panel[draggable="true"]:active { cursor: grabbing; opacity: 0.7; }
-.visual-label:focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; box-shadow: 0 0 0 4px rgba(99,102,241,0.2); }
-.visual-label[tabindex] { outline: none; }
+.visual-label[tabindex]:not(:focus-visible) { outline: 3px solid transparent; outline-offset: 2px; }
+.visual-label:focus-visible,
+.visual-label input:focus-visible,
+.visual-label button:focus-visible,
+.visual-panel-actions button:focus-visible,
+.visual-undo-redo button:focus-visible,
+.drawing-toolbar button:focus-visible,
+.drawing-toolbar [role="radio"]:focus-visible,
+.visual-grid-controls button:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px #ffffff;
+}
 .visual-undo-redo { display: flex; gap: 4px; }
-.visual-undo-redo button { background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 8px; font-size: 12px; cursor: pointer; color: #64748b; transition: all 0.15s; }
+.visual-undo-redo button { min-width: 32px; min-height: 32px; background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 8px; font-size: 12px; cursor: pointer; color: #64748b; transition: all 0.15s; }
 .visual-undo-redo button:hover:not(:disabled) { background: #f1f5f9; border-color: #6366f1; color: #4f46e5; }
 .visual-undo-redo button:disabled { opacity: 0.3; cursor: not-allowed; }
 .drawing-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; }
 .drawing-overlay.active { cursor: crosshair; }
 .drawing-overlay svg { width: 100%; height: 100%; }
 .drawing-toolbar { display: flex; gap: 4px; align-items: center; }
-.drawing-toolbar button { padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0; background: white; font-size: 11px; cursor: pointer; transition: all 0.15s; }
+.drawing-toolbar button { min-width: 32px; min-height: 32px; padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0; background: white; font-size: 11px; cursor: pointer; transition: all 0.15s; }
 .drawing-toolbar button:hover { background: #fef3c7; border-color: #f59e0b; }
 .drawing-toolbar button.active { background: #fbbf24; color: #78350f; border-color: #f59e0b; }
-.drawing-toolbar .color-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #e2e8f0; cursor: pointer; transition: transform 0.15s; }
+.drawing-toolbar .color-dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #e2e8f0; cursor: pointer; transition: transform 0.15s; }
 .drawing-toolbar .color-dot:hover { transform: scale(1.2); }
 .drawing-toolbar .color-dot.selected { border-color: #1e293b; transform: scale(1.15); box-shadow: 0 0 0 2px rgba(0,0,0,0.1); }
 .visual-panel.adding-label { cursor: crosshair !important; }
 .visual-panel.adding-label::after { content: '+ Click to place label'; position: absolute; bottom: 50%; left: 50%; transform: translate(-50%, 50%); background: rgba(99,102,241,0.9); color: white; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; pointer-events: none; z-index: 10; animation: pulse 1.5s infinite; }
 .visual-grid-controls { display: flex; gap: 6px; align-items: center; justify-content: flex-start; flex-wrap: wrap; margin-bottom: 6px; }
-.visual-grid-controls button { display: flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; color: #475569; }
+.visual-grid-controls button { min-height: 32px; display: flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; color: #475569; }
 .visual-grid-controls button:hover { background: #eef2ff; border-color: #6366f1; color: #4f46e5; }
 .visual-grid-controls button.active { background: #4f46e5; color: white; border-color: #4f46e5; }
 .visual-label:hover .label-delete-btn { visibility: visible !important; }
 .visual-sequence-arrow { display: flex; align-items: center; justify-content: center; font-size: 10px; color: #e2e8f0; align-self: center; padding: 0; margin: 0; line-height: 1; height: 12px; letter-spacing: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .bridge-send-overlay,
+  .bridge-send-panel,
+  .visual-panel,
+  .visual-label,
+  .visual-panel-actions,
+  .visual-undo-redo button,
+  .drawing-toolbar button,
+  .drawing-toolbar .color-dot,
+  .visual-grid-controls button { animation: none !important; transition: none !important; }
+  .visual-panel.adding-label::after { animation: none !important; }
+}
+@media (forced-colors: active) {
+  .bridge-send-input:focus-visible,
+  .bridge-send-mode-btn:focus-visible,
+  .bridge-send-target-select:focus-visible,
+  .bridge-send-btn:focus-visible,
+  .visual-label:focus-visible,
+  .visual-label input:focus-visible,
+  .visual-label button:focus-visible,
+  .visual-panel-actions button:focus-visible,
+  .visual-undo-redo button:focus-visible,
+  .drawing-toolbar button:focus-visible,
+  .drawing-toolbar [role="radio"]:focus-visible,
+  .visual-grid-controls button:focus-visible { outline-color: Highlight; box-shadow: none; }
+}
 @media (max-width: 640px) {
   .visual-panel-grid.layout-before-after,
   .visual-panel-grid.layout-comparison { grid-template-columns: 1fr; }

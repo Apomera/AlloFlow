@@ -213,6 +213,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Rebuilt Visual Panel label controls so AI and teacher labels expose persistent native move/edit and remove buttons instead of hover-only clickable spans. Removal controls have specific accessible names, 32 CSS-pixel targets, strong visible focus including forced-colors support, and no nested interactive ancestors. Label placement now uses a dedicated native panel target: pointer users can choose a location, while Enter or Space places the label at the panel center without a dragging gesture (WCAG 1.3.1, 2.1.1, 2.4.6, 2.4.7, 2.5.7, 2.5.8, 4.1.2).
 
+- Repaired shared Games/Visual Panel styling that suppressed native focus: bridge text and select fields now retain a transparent base outline and expose strong teal focus-visible rings; label editors, panel actions, undo/redo, drawing tools, color choices, and grid controls expose 3 CSS-pixel blue rings with forced-colors support. Shared controls now provide 32 CSS-pixel targets (44 pixels for bridge actions), and decorative transitions plus label-placement pulsing stop under reduced-motion preferences. The focused Games static audit dropped from four critical focus findings to zero (WCAG 2.4.7, 2.5.8, 2.3.3, 1.4.11).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
