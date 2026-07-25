@@ -2889,23 +2889,36 @@ const d = labToolData.artStudio || {};
 
             // ═══ SPIN ART TAB ═══
 
-            tab === 'spinArt' && React.createElement("div", { className: "space-y-3" },
+            tab === 'spinArt' && React.createElement("div", { className: "relative space-y-3" },
 
-              React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
+              React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap", role: "group", "aria-label": "Spin art controls" },
 
-                React.createElement("span", { className: "text-xs font-bold text-slate-600" }, __alloT('stem.artstudio.rpm', "\uD83C\uDF00 RPM:")),
+                React.createElement("label", { htmlFor: "artstudio-spin-rpm", className: "text-xs font-bold text-slate-600" }, __alloT('stem.artstudio.rpm', "\uD83C\uDF00 RPM:")),
 
-                React.createElement("input", { type: "range", min: 20, max: 300, value: d.spinRPM || 120, 'aria-label': __alloT('stem.artstudio.spin_speed_rpm', 'Spin speed RPM'), onChange: function (e) { upd('spinRPM', parseInt(e.target.value)); }, className: "w-28 accent-orange-600" }),
+                React.createElement("input", { id: "artstudio-spin-rpm", type: "range", min: 20, max: 300, value: d.spinRPM || 120, "aria-describedby": "artstudio-spin-rpm-value", onChange: function (e) { upd('spinRPM', parseInt(e.target.value)); }, className: "w-28 max-w-full accent-orange-600" }),
 
-                React.createElement("span", { className: "text-[11px] text-slate-600 font-bold" }, (d.spinRPM || 120) + ' rpm'),
+                React.createElement("span", { id: "artstudio-spin-rpm-value", className: "text-[11px] text-slate-600 font-bold" }, (d.spinRPM || 120) + ' rpm'),
 
-                React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Brush:"),
+                React.createElement("label", { htmlFor: "artstudio-spin-brush", className: "text-xs font-bold text-slate-600 ml-2" }, "Brush:"),
 
-                React.createElement("input", { type: "range", min: 2, max: 20, value: d.spinBrush || 6, 'aria-label': __alloT('stem.artstudio.spin_brush_size', 'Spin brush size'), onChange: function (e) { upd('spinBrush', parseInt(e.target.value)); }, className: "w-20 accent-orange-600" }),
+                React.createElement("input", { id: "artstudio-spin-brush", type: "range", min: 2, max: 20, value: d.spinBrush || 6, "aria-describedby": "artstudio-spin-brush-value", onChange: function (e) { upd('spinBrush', parseInt(e.target.value)); }, className: "w-20 max-w-full accent-orange-600" }),
 
-                React.createElement("button", { onClick: function () { upd('spinSplatter', !d.spinSplatter); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinSplatter ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, d.spinSplatter ? '\uD83D\uDCA6 Splatter \u2714' : '\uD83D\uDCA6 Splatter'),
+                React.createElement("span", { id: "artstudio-spin-brush-value", className: "text-[11px] text-slate-600 font-bold" }, (d.spinBrush || 6) + ' pixels'),
 
-                React.createElement("button", { onClick: function () { upd('spinDark', !d.spinDark); upd('spinReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-400') }, d.spinDark ? '\uD83C\uDF11 Dark' : '\u2B1C Light'),
+                React.createElement("button", { "aria-label": d.spinSplatter ? "Disable paint splatter" : "Enable paint splatter", "aria-pressed": !!d.spinSplatter, onClick: function () { upd('spinSplatter', !d.spinSplatter); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinSplatter ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, d.spinSplatter ? '\uD83D\uDCA6 Splatter \u2714' : '\uD83D\uDCA6 Splatter'),
+
+                React.createElement("button", { "aria-label": d.spinDark ? "Switch to light canvas background" : "Switch to dark canvas background", "aria-pressed": !!d.spinDark, onClick: function () { upd('spinDark', !d.spinDark); upd('spinReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-400') }, d.spinDark ? '\uD83C\uDF11 Dark' : '\u2B1C Light'),
+
+                React.createElement("button", {
+                  "aria-label": (d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? "Resume spin art animation" : "Pause spin art animation",
+                  "aria-pressed": d.spinPaused === undefined ? reducedMotion : !!d.spinPaused,
+                  onClick: function () {
+                    var isPaused = d.spinPaused === undefined ? reducedMotion : !!d.spinPaused;
+                    upd('spinPaused', !isPaused);
+                    if (typeof announceToSR === 'function') announceToSR(isPaused ? 'Spin art animation resumed.' : 'Spin art animation paused.');
+                  },
+                  className: "px-2 py-1 rounded-lg text-[11px] font-bold " + ((d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700 hover:bg-slate-200')
+                }, (d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? '\u25B6 Resume' : '\u23F8 Pause'),
 
                 React.createElement("button", { onClick: function () { upd('spinReset', Date.now()); }, className: "transition-colors ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, __alloT('stem.artstudio.clear_7', "\uD83D\uDDD1 Clear")),
 
@@ -2917,13 +2930,17 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
 
-                  React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, __alloT('stem.artstudio.palettes_3', "\uD83C\uDFA8 Palettes")),
+                  React.createElement("span", { id: "artstudio-spin-palettes-label", className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, __alloT('stem.artstudio.palettes_3', "\uD83C\uDFA8 Palettes")),
 
-                  [{ id: 'retro', label: __alloT('stem.artstudio.retro_3', '\uD83D\uDD79 Retro') }, { id: 'nature', label: __alloT('stem.artstudio.nature_3', '\uD83C\uDF3F Nature') }, { id: 'warm', label: __alloT('stem.artstudio.warm_3', '\uD83D\uDD25 Warm') }, { id: 'cool', label: __alloT('stem.artstudio.cool_3', '\u2744 Cool') }, { id: 'neon', label: __alloT('stem.artstudio.neon_3', '\uD83D\uDCA5 Neon') }].map(function (pal) {
+                  React.createElement("div", { className: "contents", role: "group", "aria-labelledby": "artstudio-spin-palettes-label" },
 
-                    return React.createElement("button", { key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-orange-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-orange-50') }, pal.label);
+                    [{ id: 'retro', label: __alloT('stem.artstudio.retro_3', '\uD83D\uDD79 Retro') }, { id: 'nature', label: __alloT('stem.artstudio.nature_3', '\uD83C\uDF3F Nature') }, { id: 'warm', label: __alloT('stem.artstudio.warm_3', '\uD83D\uDD25 Warm') }, { id: 'cool', label: __alloT('stem.artstudio.cool_3', '\u2744 Cool') }, { id: 'neon', label: __alloT('stem.artstudio.neon_3', '\uD83D\uDCA5 Neon') }].map(function (pal) {
 
-                  })
+                      return React.createElement("button", { "aria-label": "Use " + pal.label + " palette", "aria-pressed": (d.activePalette || 'retro') === pal.id, key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-orange-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-orange-50') }, pal.label);
+
+                    })
+
+                  )
 
                 ),
 
@@ -2937,7 +2954,7 @@ const d = labToolData.artStudio || {};
 
                     return activePal.map(function (c, i) {
 
-                      return React.createElement("button", { "aria-label": "HSL(", key: i, onClick: function () { upd('hue', c[0]); upd('sat', c[1]); upd('lit', c[2]); }, className: "rounded-md border-2 transition-all hover:scale-110", style: { width: 28, height: 28, background: 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)', borderColor: (d.hue === c[0] && d.sat === c[1] && d.lit === c[2]) ? '#ea580c' : 'rgba(255,255,255,0.6)', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }, title: 'HSL(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)' });
+                      return React.createElement("button", { "aria-label": "Select color HSL " + c[0] + ", " + c[1] + " percent saturation, " + c[2] + " percent lightness", "aria-pressed": d.hue === c[0] && d.sat === c[1] && d.lit === c[2], key: i, onClick: function () { upd('hue', c[0]); upd('sat', c[1]); upd('lit', c[2]); }, className: "rounded-md border-2 transition-all hover:scale-110 focus-visible:ring-4 focus-visible:ring-orange-600 focus-visible:ring-offset-2", style: { width: 28, height: 28, background: 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)', borderColor: (d.hue === c[0] && d.sat === c[1] && d.lit === c[2]) ? '#c2410c' : '#64748b', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }, title: 'HSL(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)' });
 
                     });
 
@@ -2947,16 +2964,28 @@ const d = labToolData.artStudio || {};
 
               ),
 
-              React.createElement("canvas", { tabIndex: 0, id: 'spinCanvas', key: 'spin-' + (d.spinReset || 0), width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.spin_art_canvas', 'Spin art canvas'), className: "rounded-full border-4 border-orange-300 shadow-lg cursor-crosshair mx-auto block mt-3", style: { maxWidth: '100%', background: d.spinDark ? '#0f172a' : '#fefefe' },
+              React.createElement("canvas", { tabIndex: 0, id: 'spinCanvas', key: 'spin-' + (d.spinReset || 0), width: 512, height: 512, role: "img",
+                'aria-label': 'Spin art canvas at ' + (d.spinRPM || 120) + ' RPM with a ' + (d.spinBrush || 6) + '-pixel brush; ' + ((d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? 'paused' : 'playing') + '.',
+                'aria-describedby': "artstudio-spin-keyboard-help",
+                'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space",
+                className: "rounded-full border-4 border-orange-300 shadow-lg cursor-crosshair mx-auto block mt-3 focus-visible:ring-4 focus-visible:ring-orange-600 focus-visible:ring-offset-2",
+                style: { maxWidth: '100%', background: d.spinDark ? '#0f172a' : '#fefefe' },
 
                 ref: function (canvas) {
 
                   if (!canvas) return;
 
-                  // Always sync current color to canvas data attributes (runs on every render)
-                  canvas.dataset.hue = d.hue || 0;
-                  canvas.dataset.sat = d.sat || 100;
-                  canvas.dataset.lit = d.lit || 50;
+                  // Always sync current controls to canvas data attributes (runs on every render).
+                  var spinPaused = d.spinPaused === undefined ? reducedMotion : !!d.spinPaused;
+                  canvas.dataset.hue = d.hue === undefined ? 0 : d.hue;
+                  canvas.dataset.sat = d.sat === undefined ? 100 : d.sat;
+                  canvas.dataset.lit = d.lit === undefined ? 50 : d.lit;
+                  canvas.dataset.rpm = d.spinRPM || 120;
+                  canvas.dataset.brush = d.spinBrush || 6;
+                  canvas.dataset.splatter = d.spinSplatter ? '1' : '0';
+                  canvas.dataset.paused = spinPaused ? '1' : '0';
+                  canvas.setAttribute('aria-label', 'Spin art canvas at ' + (d.spinRPM || 120) + ' RPM with a ' +
+                    (d.spinBrush || 6) + '-pixel brush; ' + (spinPaused ? 'paused' : 'playing') + '.');
 
                   if (canvas._spinInit) return;
 
@@ -2968,15 +2997,11 @@ const d = labToolData.artStudio || {};
 
                   var cx = W / 2, cy = H / 2;
 
-                  var rpm = d.spinRPM || 120;
-
-                  var brushSize = d.spinBrush || 6;
-
-                  var splatter = d.spinSplatter || false;
-
                   var isDark = d.spinDark || false;
 
-                  var baseHue = d.hue || 0, baseSat = d.sat || 100, baseLit = d.lit || 50;
+                  var baseSat = d.sat === undefined ? 100 : d.sat;
+
+                  var baseLit = d.lit === undefined ? 50 : d.lit;
 
 
 
@@ -2990,6 +3015,34 @@ const d = labToolData.artStudio || {};
                   var drips = [];
 
                   var mouseDown = false, mouseX = cx, mouseY = cy;
+
+                  var keyboardCursor = canvas._spinKeyboardCursor || { x: cx, y: cy };
+
+                  canvas._spinKeyboardCursor = keyboardCursor;
+
+                  function updateSpinCursor(show) {
+
+                    var cursor = canvas.parentElement && canvas.parentElement.querySelector('[data-spin-keyboard-cursor="true"]');
+
+                    if (cursor) {
+
+                      var displayW = canvas.clientWidth || W, displayH = canvas.clientHeight || H;
+
+                      cursor.style.left = ((canvas.offsetLeft || 0) + keyboardCursor.x / W * displayW - 10) + 'px';
+
+                      cursor.style.top = ((canvas.offsetTop || 0) + keyboardCursor.y / H * displayH - 10) + 'px';
+
+                      cursor.style.display = show ? 'block' : 'none';
+
+                    }
+
+                    canvas.setAttribute('aria-label', 'Spin art canvas at ' + canvas.dataset.rpm + ' RPM with a ' +
+
+                      canvas.dataset.brush + '-pixel brush; ' + (canvas.dataset.paused === '1' ? 'paused' : 'playing') +
+
+                      '. Keyboard cursor at x ' + Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
+
+                  }
 
                   canvas.onmousedown = canvas.ontouchstart = function (e) {
 
@@ -3017,26 +3070,88 @@ const d = labToolData.artStudio || {};
 
                   canvas.onmouseleave = function () { mouseDown = false; };
 
+                  canvas.onfocus = function () { updateSpinCursor(true); };
+
+                  canvas.onblur = function () { updateSpinCursor(false); };
+
+                  canvas.onkeydown = function (event) {
+
+                    var step = event.altKey ? 1 : 10, moved = true;
+
+                    if (event.key === 'ArrowLeft') keyboardCursor.x = Math.max(0, keyboardCursor.x - step);
+
+                    else if (event.key === 'ArrowRight') keyboardCursor.x = Math.min(W, keyboardCursor.x + step);
+
+                    else if (event.key === 'ArrowUp') keyboardCursor.y = Math.max(0, keyboardCursor.y - step);
+
+                    else if (event.key === 'ArrowDown') keyboardCursor.y = Math.min(H, keyboardCursor.y + step);
+
+                    else if (event.key === 'Home') { keyboardCursor.x = cx; keyboardCursor.y = cy; }
+
+                    else moved = false;
+
+                    if (moved) {
+
+                      event.preventDefault();
+
+                      canvas._spinKeyboardCursor = keyboardCursor;
+
+                      if (event.shiftKey) spawnDrip(keyboardCursor.x, keyboardCursor.y);
+
+                      updateSpinCursor(true);
+
+                      if (typeof announceToSR === 'function') announceToSR((event.shiftKey ? 'Added paint at' : 'Spin art cursor') +
+
+                        ' x ' + Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
+
+                    } else if (event.key === 'Enter' || event.key === ' ') {
+
+                      event.preventDefault();
+
+                      spawnDrip(keyboardCursor.x, keyboardCursor.y);
+
+                      if (typeof announceToSR === 'function') announceToSR('Added paint at x ' +
+
+                        Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
+
+                    }
+
+                  };
+
+                  updateSpinCursor(typeof document !== 'undefined' && document.activeElement === canvas);
+
                   function spawnDrip(x, y) {
 
                     var curHue = parseFloat(canvas.dataset.hue) || 0;
-                    var curSat = parseFloat(canvas.dataset.sat) || 100;
-                    var curLit = parseFloat(canvas.dataset.lit) || 50;
-                    var count = splatter ? 5 + Math.floor(Math.random() * 8) : 1;
+                    var curSat = parseFloat(canvas.dataset.sat);
+                    var curLit = parseFloat(canvas.dataset.lit);
+                    var currentBrush = parseFloat(canvas.dataset.brush) || 6;
+                    var currentSplatter = canvas.dataset.splatter === '1';
+                    var count = currentSplatter ? 5 + Math.floor(Math.random() * 8) : 1;
 
                     for (var i = 0; i < count; i++) {
 
-                      var ox = splatter ? (Math.random() - 0.5) * 30 : 0;
+                      var ox = currentSplatter ? (Math.random() - 0.5) * 30 : 0;
 
-                      var oy = splatter ? (Math.random() - 0.5) * 30 : 0;
+                      var oy = currentSplatter ? (Math.random() - 0.5) * 30 : 0;
 
-                      drips.push({ x: x + ox, y: y + oy, vx: 0, vy: 0, life: 200 + Math.random() * 150, size: splatter ? 1 + Math.random() * brushSize : brushSize * 0.6, hue: curHue + (splatter ? Math.random() * 30 - 15 : 0), sat: curSat, lit: curLit });
+                      drips.push({ x: x + ox, y: y + oy, vx: 0, vy: 0, life: 200 + Math.random() * 150, size: currentSplatter ? 1 + Math.random() * currentBrush : currentBrush * 0.6, hue: curHue + (currentSplatter ? Math.random() * 30 - 15 : 0), sat: curSat, lit: curLit });
 
                     }
 
                   }
 
                   function animate() {
+
+                    if (canvas.dataset.paused === '1') {
+
+                      if (canvas.isConnected) canvas._spinAnim = requestAnimationFrame(animate);
+
+                      return;
+
+                    }
+
+                    var rpm = parseFloat(canvas.dataset.rpm) || 120;
 
                     var radPerFrame = (rpm / 60) * (Math.PI * 2) / 60;
 
@@ -3106,19 +3221,26 @@ const d = labToolData.artStudio || {};
 
               }),
 
-              React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic mt-1" }, __alloT('stem.artstudio.click_and_drag_to_drip_paint_on_the_sp', "\uD83D\uDC46 Click and drag to drip paint on the spinning canvas")),
+              React.createElement("span", {
+                "data-spin-keyboard-cursor": "true",
+                "aria-hidden": "true",
+                className: "pointer-events-none absolute z-10 h-5 w-5 rounded-full border-4 border-white shadow-[0_0_0_2px_#c2410c]",
+                style: { display: 'none' }
+              }),
+
+              React.createElement("p", { id: "artstudio-spin-keyboard-help", className: "text-[11px] text-center text-slate-600 italic mt-1" }, "Click and drag to drip paint. Keyboard: Arrow keys move the cursor; Space or Enter adds paint; Shift with an Arrow key moves and adds paint; Home returns to center; Alt makes one-pixel moves."),
 
               React.createElement("div", { className: "mt-3 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-200" },
 
-                React.createElement("button", { onClick: function () { upd('showSpinInfo', !d.showSpinInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-orange-700" },
+                React.createElement("button", { "aria-expanded": !!d.showSpinInfo, "aria-controls": "artstudio-spin-physics", onClick: function () { upd('showSpinInfo', !d.showSpinInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-orange-700" },
 
                   React.createElement("span", null, __alloT('stem.artstudio.physics_of_spin_art', "\uD83C\uDF00 Physics of Spin Art")),
 
-                  React.createElement("span", null, d.showSpinInfo ? '\u25B2' : '\u25BC')
+                  React.createElement("span", { "aria-hidden": "true" }, d.showSpinInfo ? '\u25B2' : '\u25BC')
 
                 ),
 
-                d.showSpinInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
+                d.showSpinInfo && React.createElement("div", { id: "artstudio-spin-physics", className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
 
                   React.createElement("p", null, "\uD83C\uDF00 ", React.createElement("strong", null, __alloT('stem.artstudio.centrifugal_effect', "Centrifugal effect:")), __alloT('stem.artstudio.in_a_spinning_reference_frame_objects_', " In a spinning reference frame, objects experience an outward pseudo-force proportional to their distance from the center and the square of angular velocity (\u03C9\u00B2r).")),
 
