@@ -2036,6 +2036,8 @@ const d = labToolData.artStudio || {};
               var parts = (recipe && recipe.parts) || [];
               var sel = Math.min(d.sculptSel || 0, Math.max(0, parts.length - 1));
               var gallery = d.sculptGallery || {};
+              var sculptAuto = d.sculptAuto === undefined ? !reducedMotion : !!d.sculptAuto;
+              var sculptSummary = recipe ? ((recipe.name || 'Custom sculpture') + ' with ' + parts.length + (parts.length === 1 ? ' part' : ' parts')) : 'Empty sculpture scene';
               var setRecipe = function(r) { upd('sculptRecipe', r); };
               var partOp = function(op) { var next = op(P3D, recipe); if (next !== recipe) setRecipe(next); };
               var _cnvBox = { current: null };
@@ -2044,6 +2046,11 @@ const d = labToolData.artStudio || {};
                 if (!cnv) return;
                 _cnvBox.current = cnv;
                 var THREE = window.THREE;
+                cnv.dataset.auto = sculptAuto ? '1' : '0';
+                cnv.dataset.summary = sculptSummary;
+                if (cnv._p3d && !cnv._p3d.drag) cnv._p3d.auto = sculptAuto;
+                if (cnv._p3d && cnv._p3d.updateA11y) cnv._p3d.updateA11y();
+                else cnv.setAttribute('aria-label', '3D sculpture preview. ' + sculptSummary + '. Auto-rotation ' + (sculptAuto ? 'running' : 'paused') + '.');
                 if (!cnv._p3d) {
                   var scene3 = new THREE.Scene(); scene3.background = new THREE.Color('#0f172a');
                   var cam = new THREE.PerspectiveCamera(45, cnv.width / cnv.height, 0.1, 100);
@@ -2052,17 +2059,65 @@ const d = labToolData.artStudio || {};
                   scene3.add(new THREE.AmbientLight(0xffffff, 0.6));
                   var d1 = new THREE.DirectionalLight(0xffffff, 0.7); d1.position.set(2, 3, 2); scene3.add(d1);
                   var grid = new THREE.GridHelper(3, 12, 0x475569, 0x1e293b); scene3.add(grid);
-                  cnv._p3d = { scene: scene3, cam: cam, ren: ren, obj: null, json: '', yaw: 0.7, pitch: 0.5, auto: true };
-                  // drag to orbit (pointer events; auto-rotate resumes on release)
+                  cnv._p3d = { scene: scene3, cam: cam, ren: ren, obj: null, json: '', yaw: 0.7, pitch: 0.5, auto: sculptAuto };
+                  function updateSculptViewLabel() {
+                    var state = cnv._p3d;
+                    if (!state) return;
+                    var yawDegrees = Math.round((((state.yaw * 180 / Math.PI) % 360) + 360) % 360);
+                    var pitchDegrees = Math.round(state.pitch * 180 / Math.PI);
+                    cnv.setAttribute('aria-label', '3D sculpture preview. ' + cnv.dataset.summary + '. View angle ' +
+                      yawDegrees + ' degrees, elevation ' + pitchDegrees + ' degrees. Auto-rotation ' + (state.auto ? 'running' : 'paused') + '.');
+                  }
+                  cnv._p3d.updateA11y = updateSculptViewLabel;
+                  function announceSculptView(message) {
+                    updateSculptViewLabel();
+                    var state = cnv._p3d;
+                    if (!state || typeof announceToSR !== 'function') return;
+                    announceToSR(message + ' View angle ' + Math.round((((state.yaw * 180 / Math.PI) % 360) + 360) % 360) +
+                      ' degrees, elevation ' + Math.round(state.pitch * 180 / Math.PI) + ' degrees.');
+                  }
+                  function endSculptDrag() {
+                    if (cnv._p3d) {
+                      cnv._p3d.drag = null;
+                      cnv._p3d.auto = cnv.dataset.auto === '1';
+                      updateSculptViewLabel();
+                    }
+                  }
+                  // Drag to orbit; the configured rotation preference is restored on release.
                   cnv.style.touchAction = 'none';
-                  cnv.addEventListener('pointerdown', function(ev) { cnv._p3d.drag = { x: ev.clientX, y: ev.clientY }; cnv._p3d.auto = false; try { cnv.setPointerCapture(ev.pointerId); } catch (e) {} });
+                  cnv.addEventListener('pointerdown', function(ev) { cnv._p3d.drag = { x: ev.clientX, y: ev.clientY }; cnv._p3d.auto = false; updateSculptViewLabel(); try { cnv.setPointerCapture(ev.pointerId); } catch (e) {} });
                   cnv.addEventListener('pointermove', function(ev) {
                     var st = cnv._p3d; if (!st || !st.drag) return;
                     st.yaw += (ev.clientX - st.drag.x) * 0.01;
                     st.pitch = Math.max(0.05, Math.min(1.45, st.pitch + (ev.clientY - st.drag.y) * 0.008));
                     st.drag = { x: ev.clientX, y: ev.clientY };
+                    updateSculptViewLabel();
                   });
-                  cnv.addEventListener('pointerup', function() { if (cnv._p3d) { cnv._p3d.drag = null; cnv._p3d.auto = true; } });
+                  cnv.addEventListener('pointerup', endSculptDrag);
+                  cnv.addEventListener('pointercancel', endSculptDrag);
+                  cnv.onkeydown = function(event) {
+                    var st = cnv._p3d;
+                    if (!st) return;
+                    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+                      event.preventDefault();
+                      var step = event.altKey ? 0.02 : 0.12;
+                      if (event.key === 'ArrowLeft') st.yaw -= step;
+                      if (event.key === 'ArrowRight') st.yaw += step;
+                      if (event.key === 'ArrowUp') st.pitch = Math.min(1.45, st.pitch + step);
+                      if (event.key === 'ArrowDown') st.pitch = Math.max(0.05, st.pitch - step);
+                      st.auto = false; cnv.dataset.auto = '0'; upd('sculptAuto', false);
+                      announceSculptView('Sculpture view moved; auto-rotation paused.');
+                    } else if (event.key === 'Home') {
+                      event.preventDefault();
+                      st.yaw = 0.7; st.pitch = 0.5; st.auto = false; cnv.dataset.auto = '0'; upd('sculptAuto', false);
+                      announceSculptView('Sculpture view reset; auto-rotation paused.');
+                    } else if (event.key === ' ' || event.key === 'Enter') {
+                      event.preventDefault();
+                      st.auto = !st.auto; cnv.dataset.auto = st.auto ? '1' : '0'; upd('sculptAuto', st.auto);
+                      announceSculptView(st.auto ? 'Sculpture auto-rotation resumed.' : 'Sculpture auto-rotation paused.');
+                    }
+                  };
+                  updateSculptViewLabel();
                   var loop = function() {
                     var st = cnv._p3d;
                     if (!st) return;
@@ -2126,29 +2181,53 @@ const d = labToolData.artStudio || {};
                   a.href = cnv.toDataURL('image/png');
                   a.download = ((recipe && recipe.name) || 'sculpture').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40) + '.png';
                   document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                } catch (e) {}
+                  if (typeof announceToSR === 'function') announceToSR('Sculpture picture saved.');
+                } catch (e) {
+                  if (typeof announceToSR === 'function') announceToSR('Unable to save the sculpture picture.');
+                }
               };
               return React.createElement("div", { className: "grid md:grid-cols-2 gap-4" },
                 // preview column
                 React.createElement("div", null,
-                  React.createElement("canvas", { ref: sculptRef, width: 480, height: 420, className: "w-full rounded-xl border border-slate-300", tabIndex: 0, role: "img", "aria-label": __alloT('stem.artstudio.sculpt_canvas', '3D sculpture preview. Drag to orbit.') }),
-                  React.createElement("div", { className: "flex gap-2 mt-2" },
+                  React.createElement("canvas", { role: "img", "aria-label": '3D sculpture preview. ' + sculptSummary + '. Auto-rotation ' + (sculptAuto ? 'running' : 'paused') + '.',
+                    ref: sculptRef,
+                    width: 480,
+                    height: 420,
+                    className: "w-full rounded-xl border border-slate-400 focus-visible:ring-4 focus-visible:ring-pink-600 focus-visible:ring-offset-2",
+                    tabIndex: 0,
+                    "aria-describedby": "artstudio-sculpt-keyboard-help",
+                    "aria-keyshortcuts": "ArrowUp ArrowDown ArrowLeft ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space"
+                  }),
+                  React.createElement("p", { id: "artstudio-sculpt-keyboard-help", className: "mt-2 text-[11px] text-slate-600" }, "Drag to orbit. Keyboard: Arrow keys orbit; Alt with an Arrow key makes a fine adjustment; Home resets the view; Space or Enter toggles auto-rotation. Manual keyboard orbit pauses auto-rotation."),
+                  React.createElement("div", { className: "flex flex-wrap gap-2 mt-2", role: "group", "aria-label": "3D preview actions" },
+                    React.createElement("button", {
+                      className: mini + " flex-1",
+                      "aria-label": sculptAuto ? "Pause 3D preview rotation" : "Resume 3D preview rotation",
+                      "aria-pressed": !sculptAuto,
+                      onClick: function() {
+                        var nextAuto = !sculptAuto;
+                        var cnv = _cnvBox.current;
+                        if (cnv && cnv._p3d) { cnv._p3d.auto = nextAuto; cnv.dataset.auto = nextAuto ? '1' : '0'; }
+                        upd('sculptAuto', nextAuto);
+                        if (typeof announceToSR === 'function') announceToSR(nextAuto ? 'Sculpture auto-rotation resumed.' : 'Sculpture auto-rotation paused.');
+                      }
+                    }, sculptAuto ? '⏸ ' + __alloT('stem.artstudio.pause', 'Pause') : '▶ ' + __alloT('stem.artstudio.resume', 'Resume')),
                     React.createElement("button", { className: mini + " flex-1", onClick: doExportPng }, '📷 ' + __alloT('stem.artstudio.sculpt_export', 'Save picture')),
-                    recipe ? React.createElement("button", { className: mini + " flex-1", onClick: function() { upd('sculptSel', 0); setRecipe(null); } }, '🗑 ' + __alloT('stem.artstudio.sculpt_clear', 'Clear')) : null
+                    recipe ? React.createElement("button", { className: mini + " flex-1", onClick: function() { upd('sculptSel', 0); setRecipe(null); if (typeof announceToSR === 'function') announceToSR('Sculpture cleared.'); } }, '🗑 ' + __alloT('stem.artstudio.sculpt_clear', 'Clear')) : null
                   )
                 ),
                 // editor column
                 React.createElement("div", { className: "space-y-2" },
                   React.createElement("h3", { className: "font-black text-slate-700 text-sm" }, '🗿 ' + __alloT('stem.artstudio.sculpt_title', 'Sculpt with primitive shapes')),
                   !parts.length ? React.createElement("div", null,
-                    React.createElement("div", { className: "text-[11px] font-bold text-slate-500 mb-1" }, __alloT('stem.artstudio.sculpt_presets', 'Start from a preset')),
-                    React.createElement("div", { className: "flex flex-wrap gap-1" }, (P3D.PRESETS || []).map(function(ps) {
+                    React.createElement("span", { id: "artstudio-sculpt-presets-label", className: "text-[11px] font-bold text-slate-600 mb-1 block" }, __alloT('stem.artstudio.sculpt_presets', 'Start from a preset')),
+                    React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-labelledby": "artstudio-sculpt-presets-label" }, (P3D.PRESETS || []).map(function(ps) {
                       return React.createElement("button", { key: ps.id, className: mini, title: ps.label, "aria-label": 'Preset: ' + ps.label, onClick: function() { upd('sculptSel', 0); setRecipe(P3D.getPreset(ps.id)); } }, ps.emoji);
                     }))
                   ) : null,
                   React.createElement("div", null,
-                    React.createElement("div", { className: "text-[11px] font-bold text-slate-500 mb-1" }, __alloT('stem.artstudio.sculpt_add_part', 'Add a part')),
-                    React.createElement("div", { className: "flex flex-wrap gap-1" }, (P3D.SHAPES || []).map(function(shp) {
+                    React.createElement("span", { id: "artstudio-sculpt-add-label", className: "text-[11px] font-bold text-slate-600 mb-1 block" }, __alloT('stem.artstudio.sculpt_add_part', 'Add a part')),
+                    React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-labelledby": "artstudio-sculpt-add-label" }, (P3D.SHAPES || []).map(function(shp) {
                       return React.createElement("button", { key: shp, className: mini, title: 'Add ' + shp, "aria-label": 'Add ' + shp, onClick: function() { partOp(function(P, r) { return P.addPart(r, shp); }); upd('sculptSel', parts.length); } }, SHAPE_ICONS[shp] || shp);
                     }))
                   ),
@@ -2171,7 +2250,7 @@ const d = labToolData.artStudio || {};
                   ) : null,
                   (typeof callGemini === 'function') ? React.createElement("div", { className: "flex gap-1" },
                     React.createElement("input", { value: d.sculptText || '', onChange: function(e) { upd('sculptText', e.target.value); }, placeholder: recipe ? __alloT('stem.artstudio.sculpt_refine_ph', 'Describe a change ("longer tail")…') : __alloT('stem.artstudio.sculpt_create_ph', 'Or describe something to sculpt…'), "aria-label": __alloT('stem.artstudio.sculpt_ai_label', 'Describe a sculpture or a change'), className: "flex-1 min-w-0 border border-slate-300 rounded-lg px-2 py-1.5 text-xs" }),
-                    React.createElement("button", { className: mini, onClick: doAiSculpt, disabled: !!window._artSculptBusy, "aria-busy": window._artSculptBusy ? 'true' : 'false' }, window._artSculptBusy ? '…' : '✨')
+                    React.createElement("button", { className: mini, "aria-label": recipe ? "Refine sculpture with AI" : "Create sculpture with AI", onClick: doAiSculpt, disabled: !!window._artSculptBusy, "aria-busy": window._artSculptBusy ? 'true' : 'false' }, window._artSculptBusy ? '…' : '✨')
                   ) : null,
                   // gallery — named recipes persisted in toolData
                   React.createElement("div", null,
@@ -2185,14 +2264,14 @@ const d = labToolData.artStudio || {};
                       if (typeof announceToSR === 'function') announceToSR('Saved to gallery');
                     } },
                       React.createElement("input", { name: "sculptname", placeholder: __alloT('stem.artstudio.sculpt_save_ph', 'Name it…'), "aria-label": __alloT('stem.artstudio.sculpt_save_ph', 'Name it…'), className: "flex-1 min-w-0 border border-slate-300 rounded-lg px-2 py-1.5 text-xs" }),
-                      React.createElement("button", { type: "submit", className: mini }, '💾')
+                      React.createElement("button", { type: "submit", className: mini, "aria-label": "Save sculpture to gallery" }, '💾')
                     ) : null,
                     Object.keys(gallery).length ? React.createElement("ul", { className: "space-y-1" }, Object.keys(gallery).map(function(nm) {
                       return React.createElement("li", { key: nm, className: "flex items-center gap-1 text-xs" },
                         React.createElement("button", { className: "flex-1 text-left min-h-[40px] px-2 rounded-lg border border-slate-200 hover:bg-pink-50 font-bold text-slate-700", onClick: function() { upd('sculptSel', 0); setRecipe(P3D.normalizeRecipe(gallery[nm])); }, "aria-label": 'Load ' + nm }, nm),
                         React.createElement("button", { className: mini, "aria-label": 'Delete ' + nm, onClick: function() { var g2 = Object.assign({}, gallery); delete g2[nm]; upd('sculptGallery', g2); } }, '✕')
                       );
-                    })) : React.createElement("p", { className: "text-[11px] text-slate-400" }, __alloT('stem.artstudio.sculpt_gallery_empty', 'Saved sculptures appear here.'))
+                    })) : React.createElement("p", { className: "text-[11px] text-slate-600" }, __alloT('stem.artstudio.sculpt_gallery_empty', 'Saved sculptures appear here.'))
                   )
                 )
               );

@@ -125,6 +125,7 @@ describe('Art Studio graphic and form semantics', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
     expect(source).toContain('role: "img", "aria-label": "Uploaded depth map preview"');
     expect(source).toContain('role: "img", "aria-label": "AI-generated depth map preview"');
-    expect(source).toContain('role: "img", "aria-label": __alloT');
+    expect(source).toContain('"aria-label": \'3D sculpture preview. \' + sculptSummary');
+    expect(source).toContain('"aria-describedby": "artstudio-sculpt-keyboard-help"');
   });
 });
