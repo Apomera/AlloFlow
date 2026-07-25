@@ -814,9 +814,17 @@ const d = labToolData.artStudio || {};
 
           var mixed = mixColors(mix1, mix2, mixRatio);
 
-          var fgH = d.fgH || 0, fgS = d.fgS || 0, fgL = d.fgL || 0;
+          var fgH = typeof d.fgH === 'number' ? d.fgH : 0;
 
-          var bgH = d.bgH || 0, bgS = d.bgS || 0, bgL = d.bgL || 100;
+          var fgS = typeof d.fgS === 'number' ? d.fgS : 0;
+
+          var fgL = typeof d.fgL === 'number' ? d.fgL : 0;
+
+          var bgH = typeof d.bgH === 'number' ? d.bgH : 0;
+
+          var bgS = typeof d.bgS === 'number' ? d.bgS : 0;
+
+          var bgL = typeof d.bgL === 'number' ? d.bgL : 100;
 
           var l1c = luminance(fgH, fgS, fgL), l2c = luminance(bgH, bgS, bgL);
 
@@ -1919,53 +1927,61 @@ const d = labToolData.artStudio || {};
 
             tab === 'contrast' && React.createElement("div", { className: "space-y-4" },
 
-              React.createElement("div", { className: "grid grid-cols-2 gap-4" },
+              React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4" },
 
-                React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400" },
+                [
 
-                  React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-3" }, __alloT('stem.artstudio.foreground_text', "Foreground (Text)")),
+                  { prefix: 'fg', title: __alloT('stem.artstudio.foreground_text', "Foreground (Text)"), h: fgH, s: fgS, l: fgL },
 
-                  React.createElement("div", { style: { width: '100%', height: 50, borderRadius: 8, background: 'hsl(' + fgH + ',' + fgS + '%,' + fgL + '%)', marginBottom: 8 } }),
+                  { prefix: 'bg', title: __alloT('stem.artstudio.background', "Background"), h: bgH, s: bgS, l: bgL }
 
-                  [{ k: 'fgH', label: 'Hue', max: 360, val: fgH }, { k: 'fgS', label: 'Sat', max: 100, val: fgS }, { k: 'fgL', label: __alloT('stem.artstudio.light', 'Light'), max: 100, val: fgL }].map(function (s) {
+                ].map(function (group) {
 
-                    return React.createElement("div", { key: s.k, className: "mb-1" },
+                  var headingId = 'artstudio-contrast-' + group.prefix + '-heading';
 
-                      React.createElement("label", { className: "text-[11px] text-slate-600 font-bold" }, s.label + ': ' + s.val),
+                  var colorText = 'HSL ' + group.h + ' degrees, ' + group.s + ' percent saturation, ' + group.l + ' percent lightness';
 
-                      React.createElement("input", { type: "range", min: 0, max: s.max, value: s.val, 'aria-label': s.label || s.k, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-slate-600" })
+                  return React.createElement("section", { key: group.prefix, role: "group", "aria-labelledby": headingId, className: "bg-white rounded-xl p-4 border border-slate-400" },
 
-                    );
+                    React.createElement("h4", { id: headingId, className: "text-xs font-bold text-slate-700 mb-3" }, group.title),
 
-                  })
+                    React.createElement("div", { role: "img", "aria-label": group.title + ' color preview: ' + colorText + '.', style: { width: '100%', height: 50, borderRadius: 8, background: 'hsl(' + group.h + ',' + group.s + '%,' + group.l + '%)', marginBottom: 8, border: '1px solid #64748b' } }),
 
-                ),
+                    [
 
-                React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400" },
+                      { suffix: 'H', label: __alloT('stem.artstudio.hue', 'Hue'), max: 360, val: group.h, valueText: group.h + ' degrees' },
 
-                  React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-3" }, __alloT('stem.artstudio.background', "Background")),
+                      { suffix: 'S', label: __alloT('stem.artstudio.saturation', 'Saturation'), max: 100, val: group.s, valueText: group.s + ' percent' },
 
-                  React.createElement("div", { style: { width: '100%', height: 50, borderRadius: 8, background: 'hsl(' + bgH + ',' + bgS + '%,' + bgL + '%)', marginBottom: 8 } }),
+                      { suffix: 'L', label: __alloT('stem.artstudio.lightness', 'Lightness'), max: 100, val: group.l, valueText: group.l + ' percent' }
 
-                  [{ k: 'bgH', label: 'Hue', max: 360, val: bgH }, { k: 'bgS', label: 'Sat', max: 100, val: bgS }, { k: 'bgL', label: __alloT('stem.artstudio.light_2', 'Light'), max: 100, val: bgL }].map(function (s) {
+                    ].map(function (control) {
 
-                    return React.createElement("div", { key: s.k, className: "mb-1" },
+                      var stateKey = group.prefix + control.suffix;
 
-                      React.createElement("label", { className: "text-[11px] text-slate-600 font-bold" }, s.label + ': ' + s.val),
+                      var inputId = 'artstudio-contrast-' + stateKey;
 
-                      React.createElement("input", { type: "range", min: 0, max: s.max, value: s.val, 'aria-label': s.label || s.k, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-slate-600" })
+                      return React.createElement("div", { key: stateKey, className: "mb-2" },
 
-                    );
+                        React.createElement("label", { htmlFor: inputId, className: "text-[11px] text-slate-700 font-bold block" }, control.label + ': ' + control.val),
 
-                  })
+                        React.createElement("input", { id: inputId, type: "range", min: 0, max: control.max, value: control.val, "aria-valuetext": control.valueText, onChange: function (e) { upd(stateKey, parseInt(e.target.value)); }, className: "w-full accent-slate-700" })
 
-                )
+                      );
+
+                    })
+
+                  );
+
+                })
 
               ),
 
-              React.createElement("div", { className: "rounded-xl border-2 p-6 text-center " + (passAA ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50') },
+              React.createElement("section", { role: "status", "aria-live": "polite", "aria-atomic": "true", "aria-labelledby": "artstudio-contrast-result-heading", className: "rounded-xl border-2 p-4 sm:p-6 text-center " + (passAA ? 'border-green-400 bg-green-50' : 'border-red-400 bg-red-50') },
 
-                React.createElement("div", { className: "mb-3", style: { padding: 20, borderRadius: 12, background: 'hsl(' + bgH + ',' + bgS + '%,' + bgL + '%)' } },
+                React.createElement("h4", { id: "artstudio-contrast-result-heading", className: "text-sm font-bold text-slate-800 mb-3" }, __alloT('stem.artstudio.contrast_result', "WCAG 2.2 contrast result")),
+
+                React.createElement("div", { role: "group", "aria-label": "Text contrast preview", className: "mb-3", style: { padding: 20, borderRadius: 12, background: 'hsl(' + bgH + ',' + bgS + '%,' + bgL + '%)', border: '1px solid #64748b' } },
 
                   React.createElement("p", { style: { color: 'hsl(' + fgH + ',' + fgS + '%,' + fgL + '%)', fontSize: 24, fontWeight: 'bold' } }, __alloT('stem.artstudio.sample_text', "Sample Text")),
 
@@ -1973,15 +1989,17 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("p", { className: "text-3xl font-bold " + (passAA ? 'text-green-700' : 'text-red-700') }, contrastRatio.toFixed(2) + ':1'),
+                React.createElement("p", { className: "text-3xl font-bold " + (passAA ? 'text-green-800' : 'text-red-800') }, contrastRatio.toFixed(2) + ':1'),
 
-                React.createElement("div", { className: "flex justify-center gap-3 mt-3" },
+                React.createElement("p", { className: "text-xs text-slate-700 mt-2" }, __alloT('stem.artstudio.wcag_22_contrast_guidance', "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.")),
 
-                  React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAALarge ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800') }, (passAALarge ? '\u2705' : '\u274C') + ' AA Large'),
+                React.createElement("div", { className: "flex flex-wrap justify-center gap-2 sm:gap-3 mt-3" },
 
-                  React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAA ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800') }, (passAA ? '\u2705' : '\u274C') + ' AA Normal'),
+                  React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAALarge ? 'bg-green-200 text-green-900' : 'bg-red-200 text-red-900') }, (passAALarge ? '\u2705 Pass' : '\u274C Fail') + ' AA Large'),
 
-                  React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAAA ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800') }, (passAAA ? '\u2705' : '\u274C') + ' AAA')
+                  React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAA ? 'bg-green-200 text-green-900' : 'bg-red-200 text-red-900') }, (passAA ? '\u2705 Pass' : '\u274C Fail') + ' AA Normal'),
+
+                  React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAAA ? 'bg-green-200 text-green-900' : 'bg-red-200 text-red-900') }, (passAAA ? '\u2705 Pass' : '\u274C Fail') + ' AAA Normal')
 
                 )
 
