@@ -121,6 +121,8 @@ const d = labToolData.artStudio || {};
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, artStudio: { ...prev.artStudio, [key]: val } }));
 
           const tab = d.tab || 'colorWheel';
+          const reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
           // Canvas Narration: Art Studio init
           if (typeof canvasNarrate === 'function') canvasNarrate('artStudio', 'init', {
@@ -1959,7 +1961,7 @@ const d = labToolData.artStudio || {};
               return React.createElement("div", { className: "grid md:grid-cols-2 gap-4" },
                 // preview column
                 React.createElement("div", null,
-                  React.createElement("canvas", { ref: sculptRef, width: 480, height: 420, className: "w-full rounded-xl border border-slate-300", tabIndex: 0, "aria-label": __alloT('stem.artstudio.sculpt_canvas', '3D sculpture preview. Drag to orbit.') }),
+                  React.createElement("canvas", { ref: sculptRef, width: 480, height: 420, className: "w-full rounded-xl border border-slate-300", tabIndex: 0, role: "img", "aria-label": __alloT('stem.artstudio.sculpt_canvas', '3D sculpture preview. Drag to orbit.') }),
                   React.createElement("div", { className: "flex gap-2 mt-2" },
                     React.createElement("button", { className: mini + " flex-1", onClick: doExportPng }, '📷 ' + __alloT('stem.artstudio.sculpt_export', 'Save picture')),
                     recipe ? React.createElement("button", { className: mini + " flex-1", onClick: function() { upd('sculptSel', 0); setRecipe(null); } }, '🗑 ' + __alloT('stem.artstudio.sculpt_clear', 'Clear')) : null
@@ -2068,7 +2070,7 @@ const d = labToolData.artStudio || {};
                   ),
                   // SVG harmony wheel visualization
                   React.createElement('div', { className: 'flex justify-center p-3 bg-slate-50 rounded border border-slate-200' },
-                    React.createElement('svg', { viewBox: '0 0 240 240', className: 'w-64 h-64' },
+                    React.createElement('svg', { viewBox: '0 0 240 240', role: 'img', 'aria-label': 'Color harmony wheel showing ' + hMeta.label + ' with ' + iq.paletteSize + ' colors around base hue ' + iq.baseHue + ' degrees.', className: 'w-64 h-64' },
                       // Background hue ring (reference)
                       Array.from({ length: 36 }, function(_, i) {
                         var hue = i * 10;
@@ -2128,7 +2130,7 @@ const d = labToolData.artStudio || {};
                   (iq.log || []).length > 0 && React.createElement('div', { className: 'overflow-x-auto' },
                     React.createElement('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
                       React.createElement('thead', null, React.createElement('tr', { className: 'bg-slate-100' },
-                        ['base', 'sat', 'lit', 'rot', 'n', 'harmony'].map(function(c, i) { return React.createElement('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                        ['base', 'sat', 'lit', 'rot', 'n', 'harmony'].map(function(c, i) { return React.createElement('th', { key: 'h' + i, scope: 'col', className: 'px-1 border border-slate-200 text-left' }, c); }))),
                       React.createElement('tbody', null, iq.log.map(function(o, idx) {
                         return React.createElement('tr', { key: 'lr' + idx },
                           React.createElement('td', { className: 'px-1 border border-slate-200 font-mono' }, o.h),
@@ -2140,7 +2142,7 @@ const d = labToolData.artStudio || {};
                       }))
                     )
                   ),
-                  React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.artstudio.hypothesis_free_text_no_right_answer_w', 'Hypothesis (free text — no right answer): What makes a palette feel harmonious vs jarring?'),
+                  React.createElement('textarea', { 'aria-label': 'Color harmony hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.artstudio.hypothesis_free_text_no_right_answer_w', 'Hypothesis (free text — no right answer): What makes a palette feel harmonious vs jarring?'),
                     className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                   !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.artstudio.stuck_show_open_prompts_no_answers', '🤔 Stuck — show open prompts (no answers)')),
                   iq.stuckRevealed && React.createElement('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
@@ -2156,7 +2158,7 @@ const d = labToolData.artStudio || {};
                       React.createElement('input', { type: 'checkbox', id: 'hh-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                       React.createElement('label', { htmlFor: 'hh-und', className: 'text-[12px] font-bold text-emerald-900 cursor-pointer' },
                         __alloT('stem.artstudio.i_think_i_understand_color_harmony_now', 'I think I understand color harmony now — let me explain it in my own words'))),
-                    iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.artstudio.explain_in_your_own_words_how_do_hue_s', 'Explain in your own words: how do hue spacing, saturation, and palette size determine "harmony"?'),
+                    iq.understood && React.createElement('textarea', { 'aria-label': 'Explain your understanding of color harmony', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.artstudio.explain_in_your_own_words_how_do_hue_s', 'Explain in your own words: how do hue spacing, saturation, and palette size determine "harmony"?'),
                       className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 })),
                   React.createElement('div', { className: 'mt-3 text-[10px] italic text-slate-500' },
                     __alloT('stem.artstudio.design_note_discrete_5_state_harmony_m', 'Design note: discrete 5-state harmony marker; SVG wheel shows palette positions; no "good palette" score — by design.'))
@@ -4887,14 +4889,15 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("div", { className: "flex justify-between items-center mb-2" },
 
-                        React.createElement("label", { className: "text-[11px] font-bold text-indigo-700" }, __alloT('stem.artstudio.ai_stereogram_creator', "\u2728 AI Stereogram Creator")),
+                        React.createElement("label", { htmlFor: "artstudio-stereo-ai-description", className: "text-[11px] font-bold text-indigo-700" }, __alloT('stem.artstudio.ai_stereogram_creator', "\u2728 AI Stereogram Creator")),
 
-                        d.stereoAiGen && React.createElement("span", { className: "text-[11px] text-indigo-500 animate-pulse font-bold" }, "Generating " + d.stereoAiGen + "...")
+                        d.stereoAiGen && React.createElement("span", { className: "text-[11px] text-indigo-500 font-bold" + (reducedMotion ? "" : " animate-pulse") }, "Generating " + d.stereoAiGen + "...")
 
                       ),
 
                       React.createElement("textarea", {
 
+                        id: "artstudio-stereo-ai-description",
                         value: d.stereoAiStr || '',
 
                         onChange: function(e) { upd('stereoAiStr', e.target.value); },
@@ -5048,6 +5051,9 @@ const d = labToolData.artStudio || {};
                     React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, __alloT('stem.artstudio.white_pops_out_gray_middle_black_far', "White = pops out \u2022 Gray = middle \u2022 Black = far")),
 
                     React.createElement("canvas", { id: 'depthMapCanvas', width: 400, height: 400,
+                      tabIndex: 0,
+                      role: "img",
+                      "aria-label": "Depth map drawing canvas. Current brush is " + (d.stereoDepth || 'near') + ". White is near, gray is middle, and black is far.",
 
                       key: 'dm-' + (d.stereoClear || 0),
 
@@ -5212,6 +5218,8 @@ const d = labToolData.artStudio || {};
                   React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, __alloT('stem.artstudio.relax_your_eyes_and_look_through_the_i', "Relax your eyes and look \u2018through\u2019 the image to see 3D")),
 
                   React.createElement("canvas", { id: 'stereoCanvas', width: 512, height: 512,
+                    role: "img",
+                    "aria-label": "Stereogram output using the " + (d.stereoPattern || 'black and white') + " pattern and " + (d.stereoPreset || 'drawn') + " depth map.",
 
                     key: 'stereo-' + (d.stereoGen || 0),
 
@@ -5470,6 +5478,9 @@ const d = labToolData.artStudio || {};
                     ),
 
                     React.createElement("canvas", { id: 'stereoAnimDrawCanvas', width: 400, height: 400,
+                      tabIndex: 0,
+                      role: "img",
+                      "aria-label": "Animation depth-map drawing canvas. Current brush is " + (d.stereoAnimDrawBrush || 'near') + ".",
 
                       key: 'anim-draw-' + (d.stereoAnimDrawClear || 0),
 
@@ -5615,7 +5626,7 @@ const d = labToolData.artStudio || {};
 
                           return React.createElement("div", { key: idx, className: "relative" },
 
-                            React.createElement("canvas", { width: 60, height: 60, className: "rounded border border-purple-200", ref: function(c) {
+                            React.createElement("canvas", { width: 60, height: 60, role: "img", "aria-label": "Depth-map keyframe " + (idx + 1) + " of " + d.stereoAnimKeyframes.length, className: "rounded border border-purple-200", ref: function(c) {
 
                               if (!c) return;
 
@@ -5705,7 +5716,7 @@ const d = labToolData.artStudio || {};
 
                     d.stereoAnimUploadedDepth && React.createElement("div", { className: "mt-2 flex items-center gap-2" },
 
-                      React.createElement("canvas", { width: 80, height: 80, className: "rounded border border-purple-200", ref: function(c) {
+                      React.createElement("canvas", { width: 80, height: 80, role: "img", "aria-label": "Uploaded depth map preview", className: "rounded border border-purple-200", ref: function(c) {
 
                         if (!c || !d.stereoAnimUploadedDepth) return;
 
@@ -5791,7 +5802,7 @@ const d = labToolData.artStudio || {};
 
                   (d.stereoAnimSource) === 'ai' && React.createElement("div", { className: "mb-3 space-y-2" },
 
-                    React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, __alloT('stem.artstudio.ai_generated_depth_map', "\uD83E\uDD16 AI-Generated Depth Map")),
+                    React.createElement("label", { htmlFor: "artstudio-stereo-animation-ai-prompt", className: "text-[11px] font-bold text-purple-600 block" }, __alloT('stem.artstudio.ai_generated_depth_map', "\uD83E\uDD16 AI-Generated Depth Map")),
 
                     React.createElement("p", { className: "text-[11px] text-slate-600" }, __alloT('stem.artstudio.describe_a_3d_scene_and_ai_will_genera', "Describe a 3D scene and AI will generate a depth map, then animate it with a transform.")),
 
@@ -5799,6 +5810,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("textarea", {
 
+                        id: "artstudio-stereo-animation-ai-prompt",
                         value: d.stereoAnimAiPrompt || '',
 
                         onChange: function(e) { upd('stereoAnimAiPrompt', e.target.value); },
@@ -5861,7 +5873,7 @@ const d = labToolData.artStudio || {};
 
                       d.stereoAnimAiDepth && React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                        React.createElement("canvas", { width: 80, height: 80, className: "rounded border border-purple-200", ref: function(c) {
+                        React.createElement("canvas", { width: 80, height: 80, role: "img", "aria-label": "AI-generated depth map preview", className: "rounded border border-purple-200", ref: function(c) {
 
                           if (!c || !d.stereoAnimAiDepth) return;
 
@@ -6569,6 +6581,8 @@ const d = labToolData.artStudio || {};
                   React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, __alloT('stem.artstudio.relax_your_eyes_and_look_through_the_a', "Relax your eyes and look \u2018through\u2019 the animation to see 3D shapes move")),
 
                   React.createElement("canvas", { id: 'stereoAnimCanvas', width: 512, height: 512,
+                    role: "img",
+                    "aria-label": "Animated stereogram output with " + ((d.stereoAnimKeyframes && d.stereoAnimKeyframes.length) || 0) + " source keyframes; " + (d.stereoAnimPlaying ? "playing" : "paused") + ".",
 
                     className: "rounded-xl border-2 border-purple-200 shadow-lg block", style: { maxWidth: '100%', background: '#111' },
 
