@@ -73,7 +73,7 @@ describe('Art Studio graphic and form semantics', () => {
     expect(staticHtml).toContain('aria-label="Stereogram output using the');
     expect(animatedHtml).toContain('aria-label="Animation depth-map drawing canvas.');
     expect(animatedHtml).toContain('aria-label="Depth-map keyframe 1 of 1"');
-    expect(animatedHtml).toContain('aria-label="Animated stereogram output with 1 source keyframes; paused."');
+    expect(animatedHtml).toContain('aria-label="Animated stereogram output with 0 rendered frames; paused."');
   });
 
   it('associates visible AI labels with their textareas', () => {
