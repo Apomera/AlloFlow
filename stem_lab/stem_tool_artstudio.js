@@ -3351,7 +3351,7 @@ const d = labToolData.artStudio || {};
 
             tab === 'stringArt' && React.createElement("div", { className: "space-y-3" },
 
-              React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
+              React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
 
                 React.createElement("div", { className: "space-y-3" },
 
@@ -3361,13 +3361,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-rose-600 block mb-1" }, __alloT('stem.artstudio.shape', "Shape")),
+                      React.createElement("span", { id: "artstudio-string-shape-label", className: "text-[11px] font-bold text-rose-700 block mb-1" }, __alloT('stem.artstudio.shape', "Shape")),
 
-                      React.createElement("div", { className: "flex gap-1" },
+                      React.createElement("div", { className: "flex gap-1 flex-wrap", role: "group", "aria-labelledby": "artstudio-string-shape-label" },
 
                         [{ id: 'circle', label: __alloT('stem.artstudio.circle', '\u25CB Circle') }, { id: 'square', label: __alloT('stem.artstudio.square', '\u25A1 Square') }, { id: 'triangle', label: __alloT('stem.artstudio.triangle', '\u25B3 Triangle') }, { id: 'star', label: __alloT('stem.artstudio.star_2', '\u2606 Star') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, onClick: function () { upd('strShape', s.id); upd('strReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.strShape || 'circle') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-rose-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.strShape || 'circle') === s.id, onClick: function () { upd('strShape', s.id); upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(s.label + ' string-art frame selected.'); }, className: "flex-1 min-w-[5rem] px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((d.strShape || 'circle') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-400 hover:bg-rose-50') }, s.label);
 
                         })
 
@@ -3385,9 +3385,9 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { className: "text-[11px] font-bold text-rose-600 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[11px] font-bold text-rose-700 block mb-0.5" }, s.label + ': ' + val),
 
-                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('strReset', Date.now()); }, className: "w-full accent-rose-600" })
+                        React.createElement("input", { id: 'artstudio-' + s.k, type: "range", min: s.min, max: s.max, value: val, "aria-valuetext": s.k === 'strOpacity' ? val + ' percent opacity' : val + (s.k === 'strNails' ? ' nails' : ' multiplier'), onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('strReset', Date.now()); }, className: "w-full accent-rose-600" })
 
                       );
 
@@ -3395,21 +3395,21 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { onClick: function () { upd('strReset', Date.now()); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, __alloT('stem.artstudio.clear_8', "\uD83D\uDDD1 Clear")),
+                      React.createElement("button", { onClick: function () { upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR('Redrawing the string art.'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100 focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.redraw_string_art', "\u21BB Redraw")),
 
-                      React.createElement("button", { onClick: function () { var c = document.getElementById('stringCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'string-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_8', "\uD83D\uDCE5 Export PNG")),
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_string_art_png', "Export string art as PNG"), onClick: function () { var c = document.getElementById('stringCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'string-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR('String-art PNG exported.'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_8', "\uD83D\uDCE5 Export PNG")),
 
-                      React.createElement("button", { "aria-label": "Presets:", onClick: function () { upd('strRainbow', !(d.strRainbow)); upd('strReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.strRainbow ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, d.strRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
+                      React.createElement("button", { "aria-label": d.strRainbow ? "Use a single thread color" : "Use a rainbow thread progression", "aria-pressed": !!d.strRainbow, onClick: function () { var nextRainbow = !d.strRainbow; upd('strRainbow', nextRainbow); upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(nextRainbow ? 'Rainbow threads enabled.' : 'Single-color threads enabled.'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + (d.strRainbow ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-700 border border-slate-400 hover:bg-rose-50') }, d.strRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
 
                     ),
 
-                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
+                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap items-center", role: "group", "aria-labelledby": "artstudio-string-presets-label" },
 
-                      React.createElement("span", { className: "text-[11px] font-bold text-rose-500 mr-1" }, "Presets:"),
+                      React.createElement("span", { id: "artstudio-string-presets-label", className: "text-[11px] font-bold text-rose-700 mr-1" }, "Presets:"),
 
                       [{ label: __alloT('stem.artstudio.cardioid', 'Cardioid'), nails: 100, mult: 2 }, { label: __alloT('stem.artstudio.nephroid', 'Nephroid'), nails: 100, mult: 3 }, { label: __alloT('stem.artstudio.star_burst', 'Star Burst'), nails: 72, mult: 37 }, { label: __alloT('stem.artstudio.lace_2', 'Lace'), nails: 150, mult: 71 }, { label: __alloT('stem.artstudio.weave', 'Weave'), nails: 60, mult: 23 }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, onClick: function () { upd('strNails', pr.nails); upd('strMult', pr.mult); upd('strReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-rose-600 border border-rose-600 hover:bg-rose-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' string-art preset', onClick: function () { upd('strNails', pr.nails); upd('strMult', pr.mult); upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(pr.label + ' string-art preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-rose-700 border border-rose-600 hover:bg-rose-50 transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, pr.label);
 
                       })
 
@@ -3421,13 +3421,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("p", { className: "text-[11px] font-bold text-pink-700 mb-1" }, __alloT('stem.artstudio.math_connection_2', "\uD83D\uDCDA Math Connection")),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" }, __alloT('stem.artstudio.string_art_creates', "String art creates "), React.createElement("strong", null, __alloT('stem.artstudio.envelope_curves', "envelope curves")), __alloT('stem.artstudio.from_straight_lines_with_a_circle_and_', " from straight lines. With a circle and multiplier of 2, you get a "), React.createElement("strong", null, "cardioid"), __alloT('stem.artstudio.the_heart_shaped_curve_seen_in_coffee_', " \u2014 the heart-shaped curve seen in coffee cups. Multiplier 3 makes a "), React.createElement("strong", null, "nephroid"), __alloT('stem.artstudio.higher_multipliers_create_intricate_pa', ". Higher multipliers create intricate patterns governed by "), React.createElement("strong", null, __alloT('stem.artstudio.modular_arithmetic', "modular arithmetic")), __alloT('stem.artstudio.nail_n_connects_to_nail_n_m_mod_total', ": nail N connects to nail (N \u00D7 M) mod total."))
+                    React.createElement("p", { id: "artstudio-string-description", className: "text-[11px] text-slate-700 leading-relaxed" }, __alloT('stem.artstudio.string_art_creates', "String art creates "), React.createElement("strong", null, __alloT('stem.artstudio.envelope_curves', "envelope curves")), __alloT('stem.artstudio.from_straight_lines_with_a_circle_and_', " from straight lines. With a circle and multiplier of 2, you get a "), React.createElement("strong", null, "cardioid"), __alloT('stem.artstudio.the_heart_shaped_curve_seen_in_coffee_', " \u2014 the heart-shaped curve seen in coffee cups. Multiplier 3 makes a "), React.createElement("strong", null, "nephroid"), __alloT('stem.artstudio.higher_multipliers_create_intricate_pa', ". Higher multipliers create intricate patterns governed by "), React.createElement("strong", null, __alloT('stem.artstudio.modular_arithmetic', "modular arithmetic")), __alloT('stem.artstudio.nail_n_connects_to_nail_n_m_mod_total', ": nail N connects to nail (N \u00D7 M) mod total."))
 
                   )
 
                 ),
 
-                React.createElement("canvas", { tabIndex: 0, id: 'stringCanvas', key: 'str-' + (d.strReset || 0), width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.string_art_canvas', 'String art canvas'), className: "rounded-xl border-2 border-rose-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
+                React.createElement("canvas", { id: 'stringCanvas', key: 'str-' + (d.strReset || 0), width: 512, height: 512, role: "img", "aria-describedby": "artstudio-string-description", 'aria-label': 'String-art output: ' + (typeof d.strNails === 'number' ? d.strNails : 80) + ' nails arranged on a ' + (d.strShape || 'circle') + ' frame, connected with multiplier ' + (typeof d.strMult === 'number' ? d.strMult : 2) + ' using ' + (d.strRainbow ? 'rainbow' : 'single-color') + ' threads at ' + (typeof d.strOpacity === 'number' ? d.strOpacity : 30) + ' percent opacity.', className: "rounded-xl border-2 border-rose-300 shadow-lg mx-auto block", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
 
                   ref: function (canvas) {
 
@@ -3557,11 +3557,21 @@ const d = labToolData.artStudio || {};
 
                     ctx.globalCompositeOperation = 'lighter';
 
+                    function announceStringComplete() {
+
+                      if (canvas._strDone) return;
+
+                      canvas._strDone = true;
+
+                      if (typeof announceToSR === 'function') announceToSR('String-art drawing complete.');
+
+                    }
+
                     function drawStep() {
 
-                      if (lineIdx >= nails) return;
+                      if (lineIdx >= nails) { announceStringComplete(); return; }
 
-                      var batchSize = Math.max(1, Math.floor(nails / 80));
+                      var batchSize = reducedMotion ? nails : Math.max(1, Math.floor(nails / 80));
 
                       for (var b = 0; b < batchSize && lineIdx < nails; b++, lineIdx++) {
 
@@ -3579,7 +3589,9 @@ const d = labToolData.artStudio || {};
 
                       }
 
-                      if (canvas.isConnected) canvas._strAnim = requestAnimationFrame(drawStep);
+                      if (lineIdx < nails && canvas.isConnected) canvas._strAnim = requestAnimationFrame(drawStep);
+
+                      else announceStringComplete();
 
                     }
 
