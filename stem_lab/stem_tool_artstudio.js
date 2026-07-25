@@ -3854,7 +3854,7 @@ const d = labToolData.artStudio || {};
 
             tab === 'tessellation' && React.createElement("div", { className: "space-y-3" },
 
-              React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
+              React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
 
                 React.createElement("div", { className: "space-y-3" },
 
@@ -3864,13 +3864,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-teal-600 block mb-1" }, __alloT('stem.artstudio.base_shape', "Base Shape")),
+                      React.createElement("span", { id: "artstudio-tess-shape-label", className: "text-[11px] font-bold text-teal-700 block mb-1" }, __alloT('stem.artstudio.base_shape', "Base Shape")),
 
-                      React.createElement("div", { className: "flex gap-1" },
+                      React.createElement("div", { className: "flex gap-1", role: "group", "aria-labelledby": "artstudio-tess-shape-label" },
 
                         [{ id: 'triangle', label: __alloT('stem.artstudio.triangle_2', '\u25B3 Triangle') }, { id: 'square', label: __alloT('stem.artstudio.square_2', '\u25A1 Square') }, { id: 'hexagon', label: __alloT('stem.artstudio.hexagon', '\u2B21 Hexagon') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, onClick: function () { upd('tessShape', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.tessShape || 'hexagon') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-teal-50') }, s.label);
+                          return React.createElement("button", { "aria-pressed": (d.tessShape || 'hexagon') === s.id, key: s.id, onClick: function () { upd('tessShape', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.tessShape || 'hexagon') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-teal-50') }, s.label);
 
                         })
 
@@ -3888,9 +3888,9 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { className: "text-[11px] font-bold text-teal-600 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("label", { htmlFor: "artstudio-" + s.k, className: "text-[11px] font-bold text-teal-700 block mb-0.5" }, s.label + ': ' + val),
 
-                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-teal-600" })
+                        React.createElement("input", { id: "artstudio-" + s.k, type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-teal-600" })
 
                       );
 
@@ -3898,13 +3898,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-teal-600 block mb-1" }, __alloT('stem.artstudio.color_scheme', "Color Scheme")),
+                      React.createElement("span", { id: "artstudio-tess-scheme-label", className: "text-[11px] font-bold text-teal-700 block mb-1" }, __alloT('stem.artstudio.color_scheme', "Color Scheme")),
 
-                      React.createElement("div", { className: "flex gap-1 flex-wrap" },
+                      React.createElement("div", { className: "flex gap-1 flex-wrap", role: "group", "aria-labelledby": "artstudio-tess-scheme-label" },
 
                         [{ id: 'rainbow', label: __alloT('stem.artstudio.rainbow_2', '\uD83C\uDF08 Rainbow') }, { id: 'warm', label: __alloT('stem.artstudio.warm_4', '\uD83D\uDD25 Warm') }, { id: 'cool', label: __alloT('stem.artstudio.cool_4', '\u2744 Cool') }, { id: 'mono', label: __alloT('stem.artstudio.mono', '\u25AB Mono') }, { id: 'custom', label: __alloT('stem.artstudio.custom', '\uD83C\uDFA8 Custom') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, onClick: function () { upd('tessScheme', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.tessScheme || 'rainbow') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-teal-50') }, s.label);
+                          return React.createElement("button", { "aria-pressed": (d.tessScheme || 'rainbow') === s.id, key: s.id, onClick: function () { upd('tessScheme', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.tessScheme || 'rainbow') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-teal-50') }, s.label);
 
                         })
 
@@ -3914,15 +3914,15 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { onClick: function () { upd('tessClickData', {}); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, __alloT('stem.artstudio.clear_colors', "\uD83D\uDDD1 Clear Colors")),
+                      React.createElement("button", { "aria-label": "Clear tessellation tile colors", onClick: function () { upd('tessClickData', {}); upd('tessReset', Date.now()); if (typeof announceToSR === 'function') announceToSR('Tessellation tile colors cleared.'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_colors', "\uD83D\uDDD1 Clear Colors")),
 
                       React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_11', "Export PNG"), onClick: function () { var c = document.getElementById('tessCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'tessellation-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_12', "\uD83D\uDCE5 Export PNG"))
 
                     ),
 
-                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
+                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap", role: "group", "aria-labelledby": "artstudio-tess-presets-label" },
 
-                      React.createElement("span", { className: "text-[11px] font-bold text-teal-500 mr-1" }, "Presets:"),
+                      React.createElement("span", { id: "artstudio-tess-presets-label", className: "text-[11px] font-bold text-teal-700 mr-1" }, "Presets:"),
 
                       [{ label: __alloT('stem.artstudio.honeycomb', 'Honeycomb'), shape: 'hexagon', grid: 6, rot: 0, warp: 0, scheme: 'warm' },
 
@@ -3932,7 +3932,7 @@ const d = labToolData.artStudio || {};
 
                        { label: __alloT('stem.artstudio.escher_fish', 'Escher Fish'), shape: 'square', grid: 6, rot: 0, warp: 35, scheme: 'rainbow' }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, onClick: function () { upd('tessShape', pr.shape); upd('tessGrid', pr.grid); upd('tessRotation', pr.rot); upd('tessWarpAmt', pr.warp); upd('tessScheme', pr.scheme); upd('tessClickData', {}); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-teal-600 border border-teal-600 hover:bg-teal-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('tessShape', pr.shape); upd('tessGrid', pr.grid); upd('tessRotation', pr.rot); upd('tessWarpAmt', pr.warp); upd('tessScheme', pr.scheme); upd('tessClickData', {}); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-teal-700 border border-teal-700 hover:bg-teal-50 transition-all" }, pr.label);
 
                       })
 
@@ -3942,15 +3942,15 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-3 border border-cyan-200" },
 
-                    React.createElement("button", { onClick: function () { upd('showTessInfo', !d.showTessInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-cyan-700" },
+                    React.createElement("button", { "aria-expanded": !!d.showTessInfo, "aria-controls": "artstudio-tess-math", onClick: function () { upd('showTessInfo', !d.showTessInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-cyan-700" },
 
                       React.createElement("span", null, __alloT('stem.artstudio.the_math_of_tessellations', "\uD83D\uDCCF The Math of Tessellations")),
 
-                      React.createElement("span", null, d.showTessInfo ? '\u25B2' : '\u25BC')
+                      React.createElement("span", { "aria-hidden": "true" }, d.showTessInfo ? '\u25B2' : '\u25BC')
 
                     ),
 
-                    d.showTessInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
+                    d.showTessInfo && React.createElement("div", { id: "artstudio-tess-math", className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
 
                       React.createElement("p", null, __alloT('stem.artstudio.a', "\uD83D\uDD37 A "), React.createElement("strong", null, "tessellation"), __alloT('stem.artstudio.or_tiling_covers_a_plane_with_shapes_t', " (or tiling) covers a plane with shapes that fit together without gaps or overlaps. Only three regular polygons tile by themselves: "), React.createElement("strong", null, __alloT('stem.artstudio.equilateral_triangles', "equilateral triangles")), __alloT('stem.artstudio.60_6_360', " (60\u00B0 \u00D7 6 = 360\u00B0), "), React.createElement("strong", null, "squares"), __alloT('stem.artstudio.90_4_360_and', " (90\u00B0 \u00D7 4 = 360\u00B0), and "), React.createElement("strong", null, __alloT('stem.artstudio.regular_hexagons', "regular hexagons")), __alloT('stem.artstudio.120_3_360', " (120\u00B0 \u00D7 3 = 360\u00B0).")),
 
@@ -3964,13 +3964,20 @@ const d = labToolData.artStudio || {};
 
                   ),
 
-                  React.createElement("p", { className: "text-[11px] text-center text-slate-600 italic" }, __alloT('stem.artstudio.click_tiles_to_cycle_their_colors', "\uD83D\uDC46 Click tiles to cycle their colors"))
+                  React.createElement("p", { id: "artstudio-tess-keyboard-help", className: "text-[11px] text-center text-slate-600 italic" }, "Click a tile to cycle its color. Keyboard: Arrow keys move between tiles; Space or Enter cycles the selected tile; Shift with an Arrow key moves and cycles; Home selects the center tile.")
 
                 ),
 
-                React.createElement("canvas", { tabIndex: 0, id: 'tessCanvas', width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.tessellation_canvas', 'Tessellation canvas'), className: "rounded-xl border-2 border-teal-200 shadow-lg mx-auto block cursor-pointer", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
+                React.createElement("div", { className: "relative min-w-0" },
 
-                  key: 'tess-' + (d.tessShape || 'hexagon') + '-' + (d.tessGrid || 6) + '-' + (d.tessRotation || 0) + '-' + (d.tessWarpAmt || 0) + '-' + (d.tessScheme || 'rainbow'),
+                  React.createElement("canvas", { tabIndex: 0, id: 'tessCanvas', width: 512, height: 512, role: "img",
+                    'aria-label': 'Tessellation canvas with ' + (d.tessShape || 'hexagon') + ' tiles in a ' + (d.tessScheme || 'rainbow') + ' color scheme and grid size ' + (typeof d.tessGrid === 'number' ? d.tessGrid : 6) + '.',
+                    'aria-describedby': "artstudio-tess-keyboard-help",
+                    'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home Enter Space",
+                    className: "rounded-xl border-2 border-teal-300 shadow-lg mx-auto block cursor-pointer focus-visible:ring-4 focus-visible:ring-teal-600 focus-visible:ring-offset-2",
+                    style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
+
+                    key: 'tess-' + (d.tessShape || 'hexagon') + '-' + (d.tessGrid || 6) + '-' + (d.tessRotation || 0) + '-' + (d.tessWarpAmt || 0) + '-' + (d.tessScheme || 'rainbow') + '-' + (d.tessReset || 0),
 
                   ref: function (canvas) {
 
@@ -4076,7 +4083,7 @@ const d = labToolData.artStudio || {};
 
 
 
-                    function drawTile(vertices, fillColor, idx) {
+                    function warpedPoints(vertices) {
 
                       var wPts = [];
 
@@ -4086,35 +4093,45 @@ const d = labToolData.artStudio || {};
 
                         var edgePts = warpEdge(vertices[vi][0], vertices[vi][1], vertices[next][0], vertices[next][1], warpAmt);
 
-                        for (var ep = 0; ep < edgePts.length - (vi < vertices.length - 1 ? 1 : 0); ep++) {
-
-                          wPts.push(edgePts[ep]);
-
-                        }
+                        for (var ep = 0; ep < edgePts.length - (vi < vertices.length - 1 ? 1 : 0); ep++) wPts.push(edgePts[ep]);
 
                       }
 
-                      var keyStr = Math.round(vertices[0][0]) + '_' + Math.round(vertices[0][1]);
+                      return wPts;
 
-                      var useColor = clickData[keyStr] !== undefined ? clickCyclePalette[clickData[keyStr] % clickCyclePalette.length] : fillColor;
+                    }
+
+                    function paintTile(vertices, fillColor) {
+
+                      var wPts = warpedPoints(vertices);
 
                       ctx.beginPath();
 
                       ctx.moveTo(wPts[0][0], wPts[0][1]);
 
-                      for (var wp = 1; wp < wPts.length; wp++) { ctx.lineTo(wPts[wp][0], wPts[wp][1]); }
+                      for (var wp = 1; wp < wPts.length; wp++) ctx.lineTo(wPts[wp][0], wPts[wp][1]);
 
                       ctx.closePath();
 
-                      ctx.fillStyle = useColor;
+                      ctx.fillStyle = fillColor;
 
                       ctx.fill();
 
-                      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+                      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
 
                       ctx.lineWidth = 1;
 
                       ctx.stroke();
+
+                    }
+
+                    function drawTile(vertices, fillColor, idx) {
+
+                      var keyStr = Math.round(vertices[0][0]) + '_' + Math.round(vertices[0][1]);
+
+                      var useColor = clickData[keyStr] !== undefined ? clickCyclePalette[clickData[keyStr] % clickCyclePalette.length] : fillColor;
+
+                      paintTile(vertices, useColor);
 
                       tilePolys.push({ vertices: vertices, key: keyStr, idx: idx });
 
@@ -4220,9 +4237,207 @@ const d = labToolData.artStudio || {};
 
                     ctx.restore();
 
+                    var clickCycleNames = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'light gray'];
 
+                    function displayPoint(px, py) {
 
-                    // Click handler for cycling tile colors
+                      var dcx = W / 2, dcy = H / 2, ddx = px - dcx, ddy = py - dcy;
+
+                      return { x: dcx + ddx * Math.cos(rotation) - ddy * Math.sin(rotation), y: dcy + ddx * Math.sin(rotation) + ddy * Math.cos(rotation) };
+
+                    }
+
+                    function displayCenter(poly) {
+
+                      var px = 0, py = 0;
+
+                      for (var ci = 0; ci < poly.vertices.length; ci++) { px += poly.vertices[ci][0]; py += poly.vertices[ci][1]; }
+
+                      return displayPoint(px / poly.vertices.length, py / poly.vertices.length);
+
+                    }
+
+                    var visibleTiles = tilePolys.filter(function (poly) {
+
+                      var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+                      for (var bvi = 0; bvi < poly.vertices.length; bvi++) {
+
+                        var point = displayPoint(poly.vertices[bvi][0], poly.vertices[bvi][1]);
+
+                        minX = Math.min(minX, point.x); minY = Math.min(minY, point.y);
+
+                        maxX = Math.max(maxX, point.x); maxY = Math.max(maxY, point.y);
+
+                      }
+
+                      return maxX >= 0 && minX <= W && maxY >= 0 && minY <= H;
+
+                    });
+
+                    var selectedPoly = visibleTiles[0] || tilePolys[0];
+
+                    var bestCenterDistance = Infinity;
+
+                    for (var vsi = 0; vsi < visibleTiles.length; vsi++) {
+
+                      var vc = displayCenter(visibleTiles[vsi]);
+
+                      var vd = Math.pow(vc.x - W / 2, 2) + Math.pow(vc.y - H / 2, 2);
+
+                      if (vd < bestCenterDistance) { bestCenterDistance = vd; selectedPoly = visibleTiles[vsi]; }
+
+                    }
+
+                    function updateTessSelection(show) {
+
+                      if (!selectedPoly) return;
+
+                      canvas._tessSelectedKey = selectedPoly.key;
+
+                      var selectedCenter = displayCenter(selectedPoly);
+
+                      var cursor = canvas.parentElement && canvas.parentElement.querySelector('[data-tess-keyboard-cursor="true"]');
+
+                      if (cursor) {
+
+                        var displayW = canvas.clientWidth || W, displayH = canvas.clientHeight || H;
+
+                        cursor.style.left = ((canvas.offsetLeft || 0) + selectedCenter.x / W * displayW - 10) + 'px';
+
+                        cursor.style.top = ((canvas.offsetTop || 0) + selectedCenter.y / H * displayH - 10) + 'px';
+
+                        cursor.style.display = show ? 'block' : 'none';
+
+                      }
+
+                      var selectedNumber = visibleTiles.indexOf(selectedPoly) + 1;
+
+                      var colorIndex = clickData[selectedPoly.key];
+
+                      canvas.setAttribute('aria-label', 'Tessellation canvas with ' + shape + ' tiles in a ' + scheme +
+
+                        ' color scheme and grid size ' + gridSize + '. Selected tile ' + selectedNumber + ' of ' +
+
+                        visibleTiles.length + (colorIndex === undefined ? '.' : ', colored ' + clickCycleNames[colorIndex] + '.'));
+
+                    }
+
+                    function cycleTile(poly) {
+
+                      if (!poly) return;
+
+                      var newClick = Object.assign({}, clickData);
+
+                      var nextColor = ((newClick[poly.key] || 0) + 1) % clickCyclePalette.length;
+
+                      newClick[poly.key] = nextColor;
+
+                      clickData = newClick;
+
+                      ctx.save();
+
+                      ctx.translate(W / 2, H / 2); ctx.rotate(rotation); ctx.translate(-W / 2, -H / 2);
+
+                      paintTile(poly.vertices, clickCyclePalette[nextColor]);
+
+                      ctx.restore();
+
+                      upd('tessClickData', newClick);
+
+                      updateTessSelection(true);
+
+                      if (typeof announceToSR === 'function') announceToSR('Tile ' + (visibleTiles.indexOf(poly) + 1) +
+
+                        ' of ' + visibleTiles.length + ' changed to ' + clickCycleNames[nextColor] + '.');
+
+                    }
+
+                    function moveTessSelection(key) {
+
+                      if (!selectedPoly) return;
+
+                      var current = displayCenter(selectedPoly), best = null, bestScore = Infinity;
+
+                      for (var mi = 0; mi < visibleTiles.length; mi++) {
+
+                        var candidate = visibleTiles[mi];
+
+                        if (candidate === selectedPoly) continue;
+
+                        var cc = displayCenter(candidate), dx = cc.x - current.x, dy = cc.y - current.y;
+
+                        var forward = key === 'ArrowLeft' ? -dx : key === 'ArrowRight' ? dx : key === 'ArrowUp' ? -dy : dy;
+
+                        if (forward <= 1) continue;
+
+                        var sideways = key === 'ArrowLeft' || key === 'ArrowRight' ? Math.abs(dy) : Math.abs(dx);
+
+                        var score = forward + sideways * 2;
+
+                        if (score < bestScore) { bestScore = score; best = candidate; }
+
+                      }
+
+                      if (best) selectedPoly = best;
+
+                    }
+
+                    canvas.onfocus = function () { updateTessSelection(true); };
+
+                    canvas.onblur = function () { updateTessSelection(false); };
+
+                    canvas.onkeydown = function (event) {
+
+                      if (event.key === 'Home') {
+
+                        event.preventDefault();
+
+                        bestCenterDistance = Infinity;
+
+                        for (var hi = 0; hi < visibleTiles.length; hi++) {
+
+                          var hc = displayCenter(visibleTiles[hi]);
+
+                          var hd = Math.pow(hc.x - W / 2, 2) + Math.pow(hc.y - H / 2, 2);
+
+                          if (hd < bestCenterDistance) { bestCenterDistance = hd; selectedPoly = visibleTiles[hi]; }
+
+                        }
+
+                        updateTessSelection(true);
+
+                      } else if (event.key.indexOf('Arrow') === 0) {
+
+                        event.preventDefault();
+
+                        moveTessSelection(event.key);
+
+                        if (event.shiftKey) cycleTile(selectedPoly);
+
+                        else {
+
+                          updateTessSelection(true);
+
+                          if (typeof announceToSR === 'function') announceToSR('Selected tile ' +
+
+                            (visibleTiles.indexOf(selectedPoly) + 1) + ' of ' + visibleTiles.length + '.');
+
+                        }
+
+                      } else if (event.key === 'Enter' || event.key === ' ') {
+
+                        event.preventDefault();
+
+                        cycleTile(selectedPoly);
+
+                      }
+
+                    };
+
+                    updateTessSelection(typeof document !== 'undefined' && document.activeElement === canvas);
+
+                    // Click handler for cycling tile colors.
 
                     canvas.onclick = function (e) {
 
@@ -4266,11 +4481,9 @@ const d = labToolData.artStudio || {};
 
                         if (inside) {
 
-                          var newClick = Object.assign({}, clickData);
+                          selectedPoly = poly;
 
-                          newClick[poly.key] = ((newClick[poly.key] || 0) + 1) % clickCyclePalette.length;
-
-                          upd('tessClickData', newClick);
+                          cycleTile(poly);
 
                           break;
 
@@ -4282,7 +4495,16 @@ const d = labToolData.artStudio || {};
 
                   }
 
-                })
+                }),
+
+                  React.createElement("span", {
+                    "data-tess-keyboard-cursor": "true",
+                    "aria-hidden": "true",
+                    className: "pointer-events-none absolute z-10 h-5 w-5 rounded-full border-4 border-white shadow-[0_0_0_2px_#0f766e]",
+                    style: { display: 'none' }
+                  })
+
+                )
 
               )
 
