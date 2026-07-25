@@ -468,6 +468,23 @@ const d = labToolData.artStudio || {};
             var brushSize = d.brushSize || 3;
 
             var brushColor = 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)';
+            var keyboardCursor = canvas._symmetryKeyboardCursor || { x: cx, y: cy };
+            keyboardCursor.x = Math.max(0, Math.min(W, keyboardCursor.x));
+            keyboardCursor.y = Math.max(0, Math.min(H, keyboardCursor.y));
+            canvas._symmetryKeyboardCursor = keyboardCursor;
+
+            function updateKeyboardCursor(show) {
+              var cursor = canvas.parentElement && canvas.parentElement.querySelector('[data-symmetry-keyboard-cursor="true"]');
+              if (cursor) {
+                var displayW = canvas.clientWidth || W;
+                var displayH = canvas.clientHeight || H;
+                cursor.style.left = ((canvas.offsetLeft || 0) + keyboardCursor.x / W * displayW - 10) + 'px';
+                cursor.style.top = ((canvas.offsetTop || 0) + keyboardCursor.y / H * displayH - 10) + 'px';
+                cursor.style.display = show ? 'block' : 'none';
+              }
+              canvas.setAttribute('aria-label', 'Symmetry drawing canvas with ' + folds + ' folds. Keyboard cursor at x ' +
+                Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
+            }
 
             // Store previous point for continuous line drawing
 
@@ -674,6 +691,44 @@ const d = labToolData.artStudio || {};
                canvas._prevX = null; canvas._prevY = null;
 
             };
+            canvas.onfocus = function () { updateKeyboardCursor(true); };
+            canvas.onblur = function () { updateKeyboardCursor(false); };
+            canvas.onkeydown = function (event) {
+              var step = event.altKey ? 1 : 10;
+              var oldX = keyboardCursor.x, oldY = keyboardCursor.y;
+              var moved = true;
+              if (event.key === 'ArrowLeft') keyboardCursor.x = Math.max(0, keyboardCursor.x - step);
+              else if (event.key === 'ArrowRight') keyboardCursor.x = Math.min(W, keyboardCursor.x + step);
+              else if (event.key === 'ArrowUp') keyboardCursor.y = Math.max(0, keyboardCursor.y - step);
+              else if (event.key === 'ArrowDown') keyboardCursor.y = Math.min(H, keyboardCursor.y + step);
+              else if (event.key === 'Home') { keyboardCursor.x = cx; keyboardCursor.y = cy; }
+              else moved = false;
+
+              if (moved) {
+                event.preventDefault();
+                if (event.shiftKey) {
+                  canvas._prevX = oldX; canvas._prevY = oldY;
+                  drawSymmetric(keyboardCursor.x, keyboardCursor.y, false);
+                  canvas._prevX = null; canvas._prevY = null;
+                }
+                canvas._symmetryKeyboardCursor = keyboardCursor;
+                updateKeyboardCursor(true);
+                if (typeof announceToSR === 'function') {
+                  announceToSR((event.shiftKey ? 'Drew to' : 'Symmetry cursor') + ' x ' + Math.round(keyboardCursor.x) +
+                    ', y ' + Math.round(keyboardCursor.y) + '.');
+                }
+                return;
+              }
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                canvas._prevX = null; canvas._prevY = null;
+                drawSymmetric(keyboardCursor.x, keyboardCursor.y, true);
+                if (typeof announceToSR === 'function') {
+                  announceToSR('Placed symmetric marks at x ' + Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
+                }
+              }
+            };
+            updateKeyboardCursor(false);
 
           };
 
@@ -1714,7 +1769,7 @@ const d = labToolData.artStudio || {};
 
                 [4, 6, 8, 12, 16].map(function (f) {
 
-                  return React.createElement("button", { "aria-label": "Brush:", key: f, onClick: function () { upd('symmetryFolds', f); }, className: "px-3 py-1 rounded-lg text-xs font-bold transition-all " + ((d.symmetryFolds || 6) === f ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, f);
+                  return React.createElement("button", { "aria-label": f + ' symmetry folds', "aria-pressed": (d.symmetryFolds || 6) === f, key: f, onClick: function () { upd('symmetryFolds', f); }, className: "px-3 py-1 rounded-lg text-xs font-bold transition-all " + ((d.symmetryFolds || 6) === f ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, f);
 
                 }),
 
@@ -1724,11 +1779,11 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Mode:"),
 
-                React.createElement("button", { onClick: function () { upd('symBrushMode', 'solid'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'solid' ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, __alloT('stem.artstudio.solid', "\uD83D\uDD8C Solid")),
+                React.createElement("button", { "aria-pressed": (d.symBrushMode || 'rainbow') === 'solid', onClick: function () { upd('symBrushMode', 'solid'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'solid' ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, __alloT('stem.artstudio.solid', "\uD83D\uDD8C Solid")),
 
-                React.createElement("button", { onClick: function () { upd('symBrushMode', 'rainbow'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'rainbow' ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, __alloT('stem.artstudio.rainbow', "\uD83C\uDF08 Rainbow")),
+                React.createElement("button", { "aria-pressed": (d.symBrushMode || 'rainbow') === 'rainbow', onClick: function () { upd('symBrushMode', 'rainbow'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'rainbow' ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, __alloT('stem.artstudio.rainbow', "\uD83C\uDF08 Rainbow")),
 
-                React.createElement("button", { onClick: function () { upd('symMirrorOnly', !(d.symMirrorOnly)); upd('symmetryClear', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.symMirrorOnly ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, d.symMirrorOnly ? '\uD83E\uDE9E Mirror \u2714' : '\uD83E\uDE9E Mirror'),
+                React.createElement("button", { "aria-pressed": !!d.symMirrorOnly, onClick: function () { upd('symMirrorOnly', !(d.symMirrorOnly)); upd('symmetryClear', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.symMirrorOnly ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, d.symMirrorOnly ? '\uD83E\uDE9E Mirror \u2714' : '\uD83E\uDE9E Mirror'),
 
                 React.createElement("button", { onClick: function () { upd('symmetryClear', Date.now()); }, className: "transition-colors ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, __alloT('stem.artstudio.clear_3', "\uD83D\uDDD1 Clear")),
 
@@ -1748,7 +1803,7 @@ const d = labToolData.artStudio || {};
 
                   [{ id: 'retro', label: __alloT('stem.artstudio.retro_2', '\uD83D\uDD79 Retro') }, { id: 'nature', label: __alloT('stem.artstudio.nature_2', '\uD83C\uDF3F Nature') }, { id: 'warm', label: __alloT('stem.artstudio.warm_2', '\uD83D\uDD25 Warm') }, { id: 'cool', label: __alloT('stem.artstudio.cool_2', '\u2744 Cool') }, { id: 'neon', label: __alloT('stem.artstudio.neon_2', '\uD83D\uDCA5 Neon') }].map(function (pal) {
 
-                    return React.createElement("button", { key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-pink-50') }, pal.label);
+                    return React.createElement("button", { key: pal.id, "aria-pressed": (d.activePalette || 'retro') === pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-pink-50') }, pal.label);
 
                   })
 
@@ -1764,7 +1819,7 @@ const d = labToolData.artStudio || {};
 
                     return activePal.map(function (c, i) {
 
-                      return React.createElement("button", { "aria-label": "HSL(", key: i, onClick: function () { upd('hue', c[0]); upd('sat', c[1]); upd('lit', c[2]); }, className: "rounded-md border-2 transition-all hover:scale-110", style: { width: 28, height: 28, background: 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)', borderColor: (d.hue === c[0] && d.sat === c[1] && d.lit === c[2]) ? '#ec4899' : 'rgba(255,255,255,0.6)', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }, title: 'HSL(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)' });
+                      return React.createElement("button", { "aria-label": 'Choose color: hue ' + c[0] + ' degrees, saturation ' + c[1] + ' percent, lightness ' + c[2] + ' percent', "aria-pressed": d.hue === c[0] && d.sat === c[1] && d.lit === c[2], key: i, onClick: function () { upd('hue', c[0]); upd('sat', c[1]); upd('lit', c[2]); }, className: "rounded-md border-2 transition-all hover:scale-110", style: { width: 28, height: 28, background: 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)', borderColor: (d.hue === c[0] && d.sat === c[1] && d.lit === c[2]) ? '#ec4899' : 'rgba(255,255,255,0.6)', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }, title: 'HSL(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)' });
 
                     });
 
@@ -1774,7 +1829,22 @@ const d = labToolData.artStudio || {};
 
               ),
 
-              React.createElement("canvas", { tabIndex: 0, id: 'symmetryCanvas', ref: symmetryRef, width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.symmetry_drawing_canvas', 'Symmetry drawing canvas'), key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0) + '-' + (d.symMirrorOnly ? 'm' : 'r'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block mt-3 flex-shrink-0", style: { maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', background: 'var(--allo-stem-canvas, #0f172a)' } })
+              React.createElement("p", { id: "artstudio-symmetry-keyboard-help", className: "mb-1 text-xs text-slate-200 text-center" },
+                "Keyboard: Arrow keys move the drawing cursor; hold Shift with an Arrow key to draw a line; Space or Enter stamps mirrored marks; Home returns to center; Alt makes one-pixel moves."
+              ),
+              React.createElement("canvas", { tabIndex: 0, id: 'symmetryCanvas', ref: symmetryRef, width: 512, height: 512, role: "img",
+                'aria-label': 'Symmetry drawing canvas with ' + (d.symmetryFolds || 6) + ' folds.',
+                'aria-describedby': "artstudio-symmetry-keyboard-help",
+                'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space",
+                key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0) + '-' + (d.symMirrorOnly ? 'm' : 'r'),
+                className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block mt-3 flex-shrink-0 focus-visible:ring-4 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900",
+                style: { maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', background: 'var(--allo-stem-canvas, #0f172a)' } }),
+              React.createElement("span", {
+                "data-symmetry-keyboard-cursor": "true",
+                "aria-hidden": "true",
+                className: "pointer-events-none absolute z-10 h-5 w-5 rounded-full border-4 border-white shadow-[0_0_0_2px_#0f172a]",
+                style: { display: 'none' }
+              })
 
               ), // end symmetryCanvasContainer
 
