@@ -13,8 +13,31 @@ describe('Visual Panel WCAG controls', () => {
   });
 
   it('uses explicit non-submit types for every native button', () => {
-    expect(source.match(/<button\b/g)).toHaveLength(43);
-    expect(source.match(/\btype="button"/g)).toHaveLength(43);
+    expect(source.match(/<button\b/g)).toHaveLength(48);
+    expect(source.match(/\btype="button"/g)).toHaveLength(48);
+  });
+
+  it('uses persistent native removal controls for every editable label type', () => {
+    expect(source).not.toContain('hoveredLabelKey');
+    expect(source.match(/className="label-delete-btn"/g)).toHaveLength(3);
+    expect(source).toContain('aria-label={`Remove label ${label.text || label} from panel ${panelIdx + 1}`}');
+    expect(source).toContain('aria-label={`Remove label ${uLabel.text} from panel ${panelIdx + 1}`}');
+    expect(source).toContain('aria-label={`Remove student label from panel ${panelIdx + 1}`}');
+    expect(source).not.toMatch(/<span[^>]*onClick=\{\(e\) => \{ e\.stopPropagation\(\); (?:onUpdateLabel|handleDeleteUserLabel)/);
+  });
+
+  it('keeps label groups and removal controls keyboard-safe and visibly focused', () => {
+    expect(source.match(/role="group"/g).length).toBeGreaterThanOrEqual(2);
+    expect(source.match(/className="label-move-btn"/g)).toHaveLength(2);
+    expect(source).toContain('aria-keyshortcuts="Enter ArrowUp ArrowDown ArrowLeft ArrowRight"');
+    expect(source).not.toMatch(/role="group"[^>]*tabIndex/);
+    expect(source).not.toContain('<div role="button" tabIndex={0}');
+    expect(source).toContain('className="visual-panel-add-label-target"');
+    expect(source).toContain('Keyboard activation places it in the center');
+    expect(source.match(/control\.closest\?\.\('\.visual-label'\) \|\| control/g)).toHaveLength(2);
+    expect(moduleSource).toContain('.visual-label button:focus-visible');
+    expect(moduleSource).toContain('.label-delete-btn { min-width: 32px; min-height: 32px;');
+    expect(moduleSource).toContain('@media (forced-colors: active)');
   });
 
   it('defensively names the export-only scratch canvas', () => {

@@ -211,6 +211,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Replaced Adventure Cast Lobby portrait-upload browser alerts and silent rejection with persistent character-specific validation. Invalid file type, files above 5 MB, and FileReader failures now produce an atomic alert associated with both upload paths; inputs reset so the same corrected file can be selected again; successful/restarted uploads and character removal clear stale errors; and authoritative/deployed Adventure sources and modules are synchronized (WCAG 1.3.1, 3.3.1, 3.3.2, 4.1.2, 4.1.3).
 
+- Rebuilt Visual Panel label controls so AI and teacher labels expose persistent native move/edit and remove buttons instead of hover-only clickable spans. Removal controls have specific accessible names, 32 CSS-pixel targets, strong visible focus including forced-colors support, and no nested interactive ancestors. Label placement now uses a dedicated native panel target: pointer users can choose a location, while Enter or Space places the label at the panel center without a dragging gesture (WCAG 1.3.1, 2.1.1, 2.4.6, 2.4.7, 2.5.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

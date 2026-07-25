@@ -90,7 +90,7 @@ const outputCode = `/**
 (function() {
   'use strict';
   // WCAG 2.2 AA: Accessibility CSS
-  if (!document.getElementById("visual-panel-a11y")) { var _s = document.createElement("style"); _s.id = "visual-panel-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }"; document.head.appendChild(_s); }
+  if (!document.getElementById("visual-panel-a11y")) { var _s = document.createElement("style"); _s.id = "visual-panel-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; } .visual-label:focus-visible, .visual-label input:focus-visible, .visual-label button:focus-visible, .visual-panel-actions button:focus-visible, .visual-grid-controls button:focus-visible, .visual-panel-add-label-target:focus-visible { outline: 3px solid #1d4ed8 !important; outline-offset: 2px !important; } .label-delete-btn { min-width: 32px; min-height: 32px; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; } @media (forced-colors: active) { .visual-label:focus-visible, .visual-label input:focus-visible, .visual-label button:focus-visible, .visual-panel-actions button:focus-visible, .visual-grid-controls button:focus-visible, .visual-panel-add-label-target:focus-visible { outline-color: Highlight !important; } }"; document.head.appendChild(_s); }
 
   // ── Duplicate-load guard ──
   if (window.__visualPanelModuleLoaded) {
