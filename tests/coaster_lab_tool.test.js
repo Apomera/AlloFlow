@@ -87,9 +87,20 @@ describe('coaster lab — teardown survives partial initialization', () => {
       id => calls.push(['interval', id]),
       id => calls.push(['timeout', id]),
     );
+    const sharedTexture = { isTexture: true, dispose: () => calls.push(['texture', 'dispose']) };
+    const sharedMaterial = { map: sharedTexture, dispose: () => calls.push(['material', 'dispose']) };
+    const sharedGeometry = { dispose: () => calls.push(['geometry', 'dispose']) };
     resources.renderer = {
       setAnimationLoop: value => calls.push(['loop', value]),
+      renderLists: { dispose: () => calls.push(['renderLists', 'dispose']) },
       dispose: () => calls.push(['renderer', 'dispose']),
+      forceContextLoss: () => calls.push(['renderer', 'context-loss']),
+    };
+    resources.sceneRoot = {
+      traverse: visit => {
+        visit({ geometry: sharedGeometry, material: sharedMaterial });
+        visit({ geometry: sharedGeometry, material: sharedMaterial });
+      },
     };
     resources.rideTimerId = 'question';
     resources.rideResumeId = 'resume';
@@ -109,7 +120,12 @@ describe('coaster lab — teardown survives partial initialization', () => {
       ['timeout', 'banner'],
       ['xr', 'end'],
       ['audio', 'close'],
+      ['geometry', 'dispose'],
+      ['texture', 'dispose'],
+      ['material', 'dispose'],
+      ['renderLists', 'dispose'],
       ['renderer', 'dispose'],
+      ['renderer', 'context-loss'],
     ]);
     expect(Object.values(resources).every(value => value === null)).toBe(true);
   });
@@ -120,7 +136,56 @@ describe('coaster lab — teardown survives partial initialization', () => {
     expect(src).toContain('__clabResources.audioCtx = audio.ctx;');
     expect(src).toContain('__clabResources.rideTimerId = ride.timerId;');
     expect(src).toContain('__clabResources.xrSession = session;');
+    expect(src).toContain('__clabResources.sceneRoot = scene;');
     expect(src).toContain("if (typeof el._clabCleanup === 'function') el._clabCleanup();");
+  });
+});
+describe('coaster lab — keyboard isolation, guide semantics, and ref cleanup', () => {
+  function loadShortcutHelpers(p) {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const start = src.indexOf('/* @clab-shortcut-target-start');
+    const end = src.indexOf('/* @clab-shortcut-target-end', start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    return new Function(src.slice(start, end) + '\nreturn { isGlobalShortcutTarget, isTextEditingTarget };')();
+  }
+
+  it.each(TOOL_PATHS)('%s: global shortcuts ignore every interactive control', (p) => {
+    const { isGlobalShortcutTarget, isTextEditingTarget } = loadShortcutHelpers(p);
+    const host = document.createElement('div');
+    host.innerHTML = '<button><span id="inside">Answer</span></button><input><select></select><a href="#">link</a><div contenteditable="true"><b>edit</b></div><div id="plain"></div>';
+    const inside = host.querySelector('#inside');
+    const input = host.querySelector('input');
+    const select = host.querySelector('select');
+    const editable = host.querySelector('[contenteditable] b');
+    expect(isGlobalShortcutTarget(inside)).toBe(true);
+    expect(isGlobalShortcutTarget(input)).toBe(true);
+    expect(isGlobalShortcutTarget(select)).toBe(true);
+    expect(isGlobalShortcutTarget(host.querySelector('a'))).toBe(true);
+    expect(isGlobalShortcutTarget(editable)).toBe(true);
+    expect(isGlobalShortcutTarget(host.querySelector('#plain'))).toBe(false);
+    expect(isTextEditingTarget(input)).toBe(true);
+    expect(isTextEditingTarget(editable)).toBe(true);
+    expect(isTextEditingTarget(select)).toBe(false);
+  });
+
+  it.each(TOOL_PATHS)('%s: guide exposes state, restores focus, and Escape wins over control filtering', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    expect(src).toContain('aria-controls=\\"clab-guide\\" aria-expanded=\\"false\\"');
+    expect(src).toContain('id=\\"clab-guide\\" role=\\"dialog\\" aria-modal=\\"false\\" aria-labelledby=\\"clab-guide-title\\" tabindex=\\"-1\\"');
+    expect(src).toContain("guideBtn.setAttribute('aria-expanded', 'true')");
+    expect(src).toContain('guideReturnFocus.focus({ preventScroll: true })');
+    const handlerStart = src.indexOf("rootEl.addEventListener('keydown', e => {");
+    const handlerEnd = src.indexOf('/* undo / redo */', handlerStart);
+    const handler = src.slice(handlerStart, handlerEnd);
+    expect(handler.indexOf("k === 'escape'")).toBeLessThan(handler.indexOf('isGlobalShortcutTarget(e.target)'));
+  });
+
+  it.each(TOOL_PATHS)('%s: detached refs clean up on a microtask without restarting connected rerenders', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    expect(src).toContain('var detachedEl = refCb._el;');
+    expect(src).toContain('if (!detachedEl.isConnected && typeof detachedEl._clabCleanup === \'function\')');
+    expect(src).toContain('refCb._el = el;');
   });
 });
 describe('coaster lab — mount smoke (no WebGL in jsdom)', () => {
@@ -904,6 +969,37 @@ describe('coaster lab — AI "any topic" Ride & Solve questions', () => {
     expect(qs[1].correct).toBe('0'); // the out-of-range index was clamped
   });
 
+  it('discards an old AI batch when topic or grade changes during the request', () => {
+    const src = readFileSync(resolve(process.cwd(), TOOL_PATHS[0]), 'utf8');
+    const start = src.indexOf('/* @clab-aiqueue-start');
+    const end = src.indexOf('/* @clab-aiqueue-end', start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const pending = [];
+    const bridge = { ai: (prompt, cb) => pending.push({ prompt, cb }) };
+    const api = new Function(
+      '__clabBridge', '__clabDead',
+      src.slice(start, end) + '\nreturn { aiQ, resetAiQuestionBuffer, fetchAiQuestions };',
+    )(bridge, false);
+    const completed = [];
+    const payload = subject => JSON.stringify([{
+      q: `Question about ${subject}?`, choices: ['One', 'Two'], answer: 0, explain: `${subject} explanation.`,
+    }]);
+
+    api.fetchAiQuestions('science', 'g35', n => completed.push(['science', n]));
+    api.resetAiQuestionBuffer();
+    api.fetchAiQuestions('history', 'g68', n => completed.push(['history', n]));
+    expect(pending).toHaveLength(2);
+
+    pending[0].cb(null, payload('science'));
+    expect(api.aiQ.buffer).toEqual([]);
+    expect(completed).toEqual([]);
+
+    pending[1].cb(null, payload('history'));
+    expect(api.aiQ.buffer).toHaveLength(1);
+    expect(api.aiQ.buffer[0].tag).toContain('history');
+    expect(completed).toEqual([['history', 1]]);
+  });
   it.each(TOOL_PATHS)('%s: AI mode buffers, falls back to math, and gates on host AI', (p) => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
     // the option and the subject input exist in the header
