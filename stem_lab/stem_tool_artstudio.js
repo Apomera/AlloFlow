@@ -285,6 +285,16 @@ const d = labToolData.artStudio || {};
             var painting = false;
 
             var currentColor = 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)';
+            var keyboardCursor = canvas._pixelKeyboardCursor || { x: 0, y: 0 };
+            keyboardCursor.x = Math.max(0, Math.min(gridSize - 1, keyboardCursor.x || 0));
+            keyboardCursor.y = Math.max(0, Math.min(gridSize - 1, keyboardCursor.y || 0));
+            canvas._pixelKeyboardCursor = keyboardCursor;
+
+            function updateKeyboardLabel() {
+              var colored = Object.keys(grid).length;
+              canvas.setAttribute('aria-label', 'Pixel art editor, ' + gridSize + ' by ' + gridSize + ' grid with ' + colored +
+                ' colored cells. Keyboard cursor at row ' + (keyboardCursor.y + 1) + ', column ' + (keyboardCursor.x + 1) + '.');
+            }
 
             function drawPixelGrid() {
 
@@ -307,6 +317,16 @@ const d = labToolData.artStudio || {};
               for (var gx = 0; gx <= gridSize; gx++) { ctx.beginPath(); ctx.moveTo(gx * cellW, 0); ctx.lineTo(gx * cellW, H); ctx.stroke(); }
 
               for (var gy = 0; gy <= gridSize; gy++) { ctx.beginPath(); ctx.moveTo(0, gy * cellH); ctx.lineTo(W, gy * cellH); ctx.stroke(); }
+
+              if (typeof document !== 'undefined' && document.activeElement === canvas) {
+                ctx.save();
+                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 5;
+                ctx.strokeRect(keyboardCursor.x * cellW + 2, keyboardCursor.y * cellH + 2, cellW - 4, cellH - 4);
+                ctx.strokeStyle = '#111827'; ctx.lineWidth = 2;
+                ctx.strokeRect(keyboardCursor.x * cellW + 5, keyboardCursor.y * cellH + 5, cellW - 10, cellH - 10);
+                ctx.restore();
+              }
+              updateKeyboardLabel();
 
             }
 
@@ -350,6 +370,25 @@ const d = labToolData.artStudio || {};
 
             }
 
+            function applyToolAt(gx, gy) {
+              if (gx < 0 || gx >= gridSize || gy < 0 || gy >= gridSize) return '';
+              if (d.pixelTool === 'fill') {
+                floodFill(gx, gy, currentColor);
+                return 'Filled from';
+              }
+              var key = gx + ',' + gy;
+              if (d.pixelTool === 'eraser') {
+                delete grid[key];
+                upd('pixelData', Object.assign({}, grid));
+                drawPixelGrid();
+                return 'Erased';
+              }
+              grid[key] = currentColor;
+              upd('pixelData', Object.assign({}, grid));
+              drawPixelGrid();
+              return 'Painted';
+            }
+
             function paint(e) {
 
               var rect = canvas.getBoundingClientRect();
@@ -362,25 +401,7 @@ const d = labToolData.artStudio || {};
 
               var gy = Math.floor(ey * (H / rect.height) / cellH);
 
-              if (gx >= 0 && gx < gridSize && gy >= 0 && gy < gridSize) {
-
-                if (d.pixelTool === 'fill') {
-
-                  floodFill(gx, gy, currentColor);
-
-                  return;
-
-                }
-
-                var key = gx + ',' + gy;
-
-                if (d.pixelTool === 'eraser') delete grid[key]; else grid[key] = currentColor;
-
-                upd('pixelData', Object.assign({}, grid));
-
-                drawPixelGrid();
-
-              }
+              applyToolAt(gx, gy);
 
             }
 
@@ -391,6 +412,36 @@ const d = labToolData.artStudio || {};
             canvas.onmouseup = canvas.ontouchend = function () { painting = false; };
 
             canvas.onmouseleave = function () { painting = false; };
+            canvas.onfocus = function () { drawPixelGrid(); };
+            canvas.onblur = function () { drawPixelGrid(); };
+            canvas.onkeydown = function (event) {
+              var moved = false;
+              if (event.key === 'ArrowLeft') { keyboardCursor.x = Math.max(0, keyboardCursor.x - 1); moved = true; }
+              else if (event.key === 'ArrowRight') { keyboardCursor.x = Math.min(gridSize - 1, keyboardCursor.x + 1); moved = true; }
+              else if (event.key === 'ArrowUp') { keyboardCursor.y = Math.max(0, keyboardCursor.y - 1); moved = true; }
+              else if (event.key === 'ArrowDown') { keyboardCursor.y = Math.min(gridSize - 1, keyboardCursor.y + 1); moved = true; }
+              else if (event.key === 'Home') { keyboardCursor.x = 0; keyboardCursor.y = 0; moved = true; }
+              else if (event.key === 'End') { keyboardCursor.x = gridSize - 1; keyboardCursor.y = gridSize - 1; moved = true; }
+              else if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                var action = applyToolAt(keyboardCursor.x, keyboardCursor.y);
+                updateKeyboardLabel();
+                if (typeof announceToSR === 'function') {
+                  announceToSR(action + ' row ' + (keyboardCursor.y + 1) + ', column ' + (keyboardCursor.x + 1) + '.');
+                }
+                return;
+              } else {
+                return;
+              }
+              if (moved) {
+                event.preventDefault();
+                canvas._pixelKeyboardCursor = keyboardCursor;
+                drawPixelGrid();
+                if (typeof announceToSR === 'function') {
+                  announceToSR('Pixel row ' + (keyboardCursor.y + 1) + ', column ' + (keyboardCursor.x + 1) + '.');
+                }
+              }
+            };
 
             drawPixelGrid();
 
@@ -1583,7 +1634,7 @@ const d = labToolData.artStudio || {};
 
                   [{ id: 'brush', icon: '\uD83D\uDD8C', label: __alloT('stem.artstudio.brush', 'Brush') }, { id: 'eraser', icon: '\uD83E\uDDFD', label: __alloT('stem.artstudio.eraser', 'Eraser') }, { id: 'fill', icon: '\uD83E\uDEA3', label: __alloT('stem.artstudio.fill', 'Fill') }].map(function (t) {
 
-                    return React.createElement("button", { "aria-label": __alloT('stem.artstudio.clear', "Clear"), key: t.id, onClick: function () { upd('pixelTool', t.id); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.pixelTool || 'brush') === t.id ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, t.icon + ' ' + t.label);
+                    return React.createElement("button", { "aria-label": t.label, "aria-pressed": (d.pixelTool || 'brush') === t.id, key: t.id, onClick: function () { upd('pixelTool', t.id); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.pixelTool || 'brush') === t.id ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, t.icon + ' ' + t.label);
 
                   }),
 
@@ -1617,7 +1668,7 @@ const d = labToolData.artStudio || {};
 
                    { id: 'neon', label: __alloT('stem.artstudio.neon', '\uD83D\uDCA5 Neon'), colors: [[330,100,55],[300,100,55],[280,100,60],[200,100,55],[170,100,50],[120,100,45],[60,100,50],[30,100,55],[0,100,50],[45,100,55]] }].map(function (pal) {
 
-                    return React.createElement("button", { key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-pink-50') }, pal.label);
+                    return React.createElement("button", { key: pal.id, "aria-pressed": (d.activePalette || 'retro') === pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-pink-50') }, pal.label);
 
                   })
 
@@ -1633,7 +1684,7 @@ const d = labToolData.artStudio || {};
 
                     return activePal.map(function (c, i) {
 
-                      return React.createElement("button", { "aria-label": "HSL(", key: i, onClick: function () { upd('hue', c[0]); upd('sat', c[1]); upd('lit', c[2]); }, className: "rounded-md border-2 transition-all hover:scale-110", style: { width: 28, height: 28, background: 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)', borderColor: (d.hue === c[0] && d.sat === c[1] && d.lit === c[2]) ? '#ec4899' : 'rgba(255,255,255,0.6)', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }, title: 'HSL(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)' });
+                      return React.createElement("button", { "aria-label": 'Choose color: hue ' + c[0] + ' degrees, saturation ' + c[1] + ' percent, lightness ' + c[2] + ' percent', "aria-pressed": d.hue === c[0] && d.sat === c[1] && d.lit === c[2], key: i, onClick: function () { upd('hue', c[0]); upd('sat', c[1]); upd('lit', c[2]); }, className: "rounded-md border-2 transition-all hover:scale-110", style: { width: 28, height: 28, background: 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)', borderColor: (d.hue === c[0] && d.sat === c[1] && d.lit === c[2]) ? '#ec4899' : 'rgba(255,255,255,0.6)', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }, title: 'HSL(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)' });
 
                     });
 
@@ -1643,7 +1694,15 @@ const d = labToolData.artStudio || {};
 
               ),
 
-              React.createElement("canvas", { tabIndex: 0, ref: pixelRef, width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.pixel_art_canvas', 'Pixel art canvas'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', imageRendering: 'pixelated' } })
+              React.createElement("p", { id: "artstudio-pixel-keyboard-help", className: "text-xs text-slate-600 text-center" },
+                "Keyboard: focus the canvas, move the cell cursor with Arrow keys, jump with Home or End, and press Space or Enter to use the selected tool."
+              ),
+              React.createElement("canvas", { tabIndex: 0, ref: pixelRef, width: 512, height: 512, role: "img",
+                'aria-label': 'Pixel art editor, ' + (typeof d.pixelGrid === 'number' ? d.pixelGrid : 16) + ' by ' + (typeof d.pixelGrid === 'number' ? d.pixelGrid : 16) + ' grid with ' + Object.keys(d.pixelData || {}).length + ' colored cells.',
+                'aria-describedby': "artstudio-pixel-keyboard-help",
+                'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space",
+                className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block focus-visible:ring-4 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
+                style: { maxWidth: '100%', imageRendering: 'pixelated' } })
 
             ),
 
