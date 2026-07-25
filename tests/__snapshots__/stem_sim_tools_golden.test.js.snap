@@ -44,10 +44,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for artSt
   "buttons": 24,
   "canvases": 1,
   "inputs": 3,
-  "lengthBucket": 40,
+  "lengthBucket": 44,
   "paths": 0,
   "selects": 0,
-  "sha": "a030f0d22cb17eae",
+  "sha": "b08e9a029f4ac0cf",
   "svgs": 0,
 }
 `;

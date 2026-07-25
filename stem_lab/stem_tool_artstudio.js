@@ -186,7 +186,7 @@ const d = labToolData.artStudio || {};
 
               var sy = cy + Math.sin(selRad) * R * 0.75;
 
-              ctx.beginPath(); ctx.arc(sx, sy, 8 + Math.sin(tick * 0.06) * 2, 0, Math.PI * 2);
+              ctx.beginPath(); ctx.arc(sx, sy, reducedMotion ? 8 : 8 + Math.sin(tick * 0.06) * 2, 0, Math.PI * 2);
 
               ctx.shadowBlur = 14; ctx.shadowColor = 'hsl(' + hue + ',' + sat + '%,' + lit + '%)';
 
@@ -230,7 +230,21 @@ const d = labToolData.artStudio || {};
 
               });
 
-              if (canvas.isConnected) canvas._wheelAnim = requestAnimationFrame(drawWheel);
+              if (!reducedMotion && canvas.isConnected) canvas._wheelAnim = requestAnimationFrame(drawWheel);
+
+            }
+
+            function chooseHue(angle, messagePrefix) {
+
+              hue = (angle + 360) % 360;
+
+              canvas.setAttribute('aria-label', 'Interactive color wheel. Hue ' + hue + ' degrees, saturation ' + sat +
+
+                ' percent, lightness ' + lit + ' percent.');
+
+              upd('hue', hue);
+
+              if (typeof announceToSR === 'function') announceToSR((messagePrefix || 'Hue') + ' ' + hue + ' degrees.');
 
             }
 
@@ -252,13 +266,35 @@ const d = labToolData.artStudio || {};
 
               if (dist < R && dist > R * 0.35) {
 
-                var angle = Math.round((Math.atan2(dy, dx) * 180 / Math.PI + 90 + 360) % 360);
-
-                hue = angle; upd('hue', angle);
+                chooseHue(Math.round((Math.atan2(dy, dx) * 180 / Math.PI + 90 + 360) % 360), 'Selected hue');
 
               }
 
             };
+
+            canvas.onkeydown = function(event) {
+
+              var step = event.shiftKey ? 10 : 1;
+
+              var handled = true;
+
+              if (event.key === 'ArrowRight' || event.key === 'ArrowUp') chooseHue(hue + step, 'Hue');
+
+              else if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') chooseHue(hue - step, 'Hue');
+
+              else if (event.key === 'Home') chooseHue(0, 'Hue');
+
+              else if (event.key === 'End') chooseHue(359, 'Hue');
+
+              else handled = false;
+
+              if (handled) event.preventDefault();
+
+            };
+
+            canvas.setAttribute('aria-label', 'Interactive color wheel. Hue ' + hue + ' degrees, saturation ' + sat +
+
+              ' percent, lightness ' + lit + ' percent.');
 
             drawWheel();
 
@@ -1569,9 +1605,14 @@ const d = labToolData.artStudio || {};
 
             tab === 'colorWheel' && React.createElement("div", { className: "space-y-4" },
 
-              React.createElement("div", { className: "flex gap-4", style: { alignItems: 'flex-start' } },
+              React.createElement("div", { className: "flex flex-col lg:flex-row gap-4", style: { alignItems: 'flex-start' } },
 
-                React.createElement("canvas", { tabIndex: 0, ref: wheelRef, width: 320, height: 320, role: "img", 'aria-label': __alloT('stem.artstudio.interactive_color_wheel', 'Interactive color wheel'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair flex-shrink-0", style: { background: '#1e1e2e' } }),
+                React.createElement("canvas", { tabIndex: 0, ref: wheelRef, width: 320, height: 320, role: "img",
+                  'aria-label': 'Interactive color wheel. Hue ' + (d.hue || 0) + ' degrees, saturation ' + (d.sat !== undefined ? d.sat : 100) + ' percent, lightness ' + (d.lit !== undefined ? d.lit : 50) + ' percent.',
+                  'aria-describedby': "artstudio-color-wheel-help",
+                  'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End",
+                  className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair flex-shrink-0 focus-visible:ring-4 focus-visible:ring-pink-600 focus-visible:ring-offset-2",
+                  style: { background: '#1e1e2e', maxWidth: '100%' } }),
 
                 React.createElement("div", { className: "flex-1 space-y-3" },
 
@@ -1581,13 +1622,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
 
-                      React.createElement("div", { style: { width: 60, height: 60, borderRadius: 12, background: 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }),
+                      React.createElement("div", { "aria-hidden": "true", style: { width: 60, height: 60, borderRadius: 12, background: 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }),
 
                       React.createElement("div", null,
 
                         React.createElement("p", { className: "text-sm font-bold text-slate-800" }, "HSL(" + (d.hue || 0) + ", " + (d.sat || 100) + "%, " + (d.lit || 50) + "%)"),
 
-                        React.createElement("p", { className: "text-[11px] text-slate-600" }, __alloT('stem.artstudio.click_the_wheel_to_pick_a_hue', "Click the wheel to pick a hue"))
+                        React.createElement("p", { id: "artstudio-color-wheel-help", className: "text-[11px] text-slate-600" }, "Click the wheel, or focus it and use Arrow keys to adjust hue; hold Shift for 10-degree steps; Home selects 0 degrees and End selects 359 degrees.")
 
                       )
 
@@ -1597,9 +1638,9 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { className: "text-[11px] font-bold text-pink-600 block mb-0.5" }, s.label + ": " + (d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50))),
+                        React.createElement("label", { htmlFor: 'artstudio-color-' + s.k, className: "text-[11px] font-bold text-pink-700 block mb-0.5" }, s.label + ": " + (d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50))),
 
-                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50), 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-pink-600" })
+                        React.createElement("input", { id: 'artstudio-color-' + s.k, type: "range", min: s.min, max: s.max, value: d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50), onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-pink-600" })
 
                       );
 
@@ -1609,13 +1650,13 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-white rounded-xl p-3 border border-pink-200" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-pink-600 mb-2" }, __alloT('stem.artstudio.color_harmony', "\uD83D\uDD17 Color Harmony")),
+                    React.createElement("p", { id: "artstudio-color-harmony-label", className: "text-[11px] font-bold text-pink-700 mb-2" }, __alloT('stem.artstudio.color_harmony', "\uD83D\uDD17 Color Harmony")),
 
-                    React.createElement("div", { className: "flex gap-1" },
+                    React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-labelledby": "artstudio-color-harmony-label" },
 
                       ['complementary', 'triadic', 'analogous', 'split'].map(function (h) {
 
-                        return React.createElement("button", { key: h, onClick: function () { upd('harmony', h); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all " + ((d.harmony || 'complementary') === h ? 'bg-pink-600 text-white' : 'bg-slate-50 text-slate-600 hover:bg-pink-50') }, h);
+                        return React.createElement("button", { key: h, "aria-pressed": (d.harmony || 'complementary') === h, onClick: function () { upd('harmony', h); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all " + ((d.harmony || 'complementary') === h ? 'bg-pink-600 text-white' : 'bg-slate-50 text-slate-600 hover:bg-pink-50') }, h);
 
                       })
 
