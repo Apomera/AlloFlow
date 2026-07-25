@@ -5077,7 +5077,7 @@ const d = labToolData.artStudio || {};
 
             tab === 'gradient' && React.createElement("div", { className: "space-y-3" },
 
-              React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
+              React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
 
                 React.createElement("div", { className: "space-y-3" },
 
@@ -5087,13 +5087,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-rose-600 block mb-1" }, __alloT('stem.artstudio.gradient_type', "Gradient Type")),
+                      React.createElement("span", { id: "artstudio-gradient-type-label", className: "text-[11px] font-bold text-rose-700 block mb-1" }, __alloT('stem.artstudio.gradient_type', "Gradient Type")),
 
-                      React.createElement("div", { className: "flex gap-1" },
+                      React.createElement("div", { className: "flex gap-1", role: "group", "aria-labelledby": "artstudio-gradient-type-label" },
 
                         [{ id: 'linear', label: __alloT('stem.artstudio.linear', '\u2194 Linear') }, { id: 'radial', label: __alloT('stem.artstudio.radial', '\u25CE Radial') }, { id: 'conic', label: __alloT('stem.artstudio.conic', '\uD83C\uDF00 Conic') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, onClick: function () { upd('gradType', s.id); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all " + ((d.gradType || 'linear') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-rose-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.gradType || 'linear') === s.id, onClick: function () { upd('gradType', s.id); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((d.gradType || 'linear') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-400 hover:bg-rose-50') }, s.label);
 
                         })
 
@@ -5103,21 +5103,21 @@ const d = labToolData.artStudio || {};
 
                     (d.gradType || 'linear') === 'linear' && React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-rose-600 block mb-0.5" }, "Angle: " + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + '\u00B0'),
+                      React.createElement("label", { htmlFor: "artstudio-grad-angle", className: "text-[11px] font-bold text-rose-700 block mb-0.5" }, "Angle: " + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + '\u00B0'),
 
-                      React.createElement("input", { type: "range", min: 0, max: 360, value: typeof d.gradAngle === 'number' ? d.gradAngle : 90, 'aria-label': __alloT('stem.artstudio.gradient_angle', 'Gradient angle'), onChange: function (e) { upd('gradAngle', parseInt(e.target.value)); }, className: "w-full accent-rose-600" })
+                      React.createElement("input", { id: "artstudio-grad-angle", type: "range", min: 0, max: 360, value: typeof d.gradAngle === 'number' ? d.gradAngle : 90, "aria-valuetext": (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + ' degrees', onChange: function (e) { upd('gradAngle', parseInt(e.target.value)); }, className: "w-full accent-rose-600" })
 
                     ),
 
                     React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { className: "text-[11px] font-bold text-rose-600 block mb-1" }, __alloT('stem.artstudio.blend_mode', "Blend Mode")),
+                      React.createElement("span", { id: "artstudio-gradient-blend-label", className: "text-[11px] font-bold text-rose-700 block mb-1" }, __alloT('stem.artstudio.blend_mode', "Blend Mode")),
 
-                      React.createElement("div", { className: "flex gap-1" },
+                      React.createElement("div", { className: "flex gap-1", role: "group", "aria-labelledby": "artstudio-gradient-blend-label" },
 
                         [{ id: 'smooth', label: __alloT('stem.artstudio.smooth', 'Smooth') }, { id: 'hard', label: __alloT('stem.artstudio.hard_edge', 'Hard Edge') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, onClick: function () { upd('gradBlend', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.gradBlend || 'smooth') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-rose-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.gradBlend || 'smooth') === s.id, onClick: function () { upd('gradBlend', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((d.gradBlend || 'smooth') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-400 hover:bg-rose-50') }, s.label);
 
                         })
 
@@ -5127,13 +5127,13 @@ const d = labToolData.artStudio || {};
 
                     // Color stops editor
 
-                    React.createElement("div", { className: "mb-3" },
+                    React.createElement("div", { className: "mb-3", role: "group", "aria-labelledby": "artstudio-gradient-stops-label" },
 
                       React.createElement("div", { className: "flex items-center justify-between mb-1" },
 
-                        React.createElement("label", { className: "text-[11px] font-bold text-rose-600" }, __alloT('stem.artstudio.color_stops', "Color Stops")),
+                        React.createElement("span", { id: "artstudio-gradient-stops-label", className: "text-[11px] font-bold text-rose-700" }, __alloT('stem.artstudio.color_stops', "Color Stops")),
 
-                        React.createElement("button", { "aria-label": __alloT('stem.artstudio.add_stop', "+ Add Stop"), onClick: function () {
+                        React.createElement("button", { "aria-label": __alloT('stem.artstudio.add_stop', "Add color stop"), "aria-describedby": "artstudio-gradient-stop-help", disabled: (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).length >= 8, onClick: function () {
 
                           var stops = d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }];
 
@@ -5147,11 +5147,15 @@ const d = labToolData.artStudio || {};
 
                             upd('gradStops', stops);
 
+                            if (typeof announceToSR === 'function') announceToSR('Color stop added. ' + stops.length + ' stops total.');
+
                           }
 
-                        }, className: "transition-colors px-2 py-0.5 rounded text-[11px] font-bold bg-rose-100 text-rose-700 hover:bg-rose-200" }, __alloT('stem.artstudio.add_stop_2', "+ Add Stop"))
+                        }, className: "transition-colors px-2 py-1 rounded text-[11px] font-bold bg-rose-100 text-rose-700 hover:bg-rose-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.add_stop_2', "+ Add Stop"))
 
                       ),
+
+                      React.createElement("p", { id: "artstudio-gradient-stop-help", className: "text-[11px] text-rose-700 mb-2 leading-relaxed" }, "Adjust hue and position with the sliders. Positions stay between neighboring stops. " + (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).length + " of 8 stops."),
 
                       (function () {
 
@@ -5159,13 +5163,15 @@ const d = labToolData.artStudio || {};
 
                         return stops.map(function (stop, idx) {
 
-                          return React.createElement("div", { key: idx, className: "flex items-center gap-2 mb-1.5" },
+                          return React.createElement("div", { key: idx, className: "flex items-end gap-2 mb-2 flex-wrap", role: "group", "aria-label": 'Color stop ' + (idx + 1) + ', hue ' + stop.hue + ' degrees, position ' + stop.pos + ' percent' },
 
-                            React.createElement("div", { style: { width: 20, height: 20, borderRadius: 4, background: 'hsl(' + stop.hue + ',85%,55%)', border: '2px solid white', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', flexShrink: 0 } }),
+                            React.createElement("div", { "aria-hidden": "true", style: { width: 24, height: 24, borderRadius: 4, background: 'hsl(' + stop.hue + ',85%,55%)', border: '2px solid white', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', flexShrink: 0 } }),
 
-                            React.createElement("div", { className: "flex-1" },
+                            React.createElement("div", { className: "flex-1 min-w-[8rem]" },
 
-                              React.createElement("input", { type: "range", min: 0, max: 360, value: stop.hue, 'aria-label': 'Stop ' + (idx + 1) + ' hue', onChange: function (e) {
+                              React.createElement("label", { htmlFor: 'artstudio-grad-stop-' + idx + '-hue', className: "text-[10px] font-bold text-rose-700 block" }, 'Hue: ' + stop.hue + '\u00B0'),
+
+                              React.createElement("input", { id: 'artstudio-grad-stop-' + idx + '-hue', type: "range", min: 0, max: 360, value: stop.hue, "aria-valuetext": stop.hue + ' degrees', onChange: function (e) {
 
                                 var newStops = (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).slice();
 
@@ -5177,25 +5183,23 @@ const d = labToolData.artStudio || {};
 
                             ),
 
-                            React.createElement("div", { style: { width: 60, flexShrink: 0 } },
+                            React.createElement("div", { className: "w-24 flex-shrink-0" },
 
-                              React.createElement("input", { type: "range", min: 0, max: 100, value: stop.pos, 'aria-label': 'Stop ' + (idx + 1) + ' position', onChange: function (e) {
+                              React.createElement("label", { htmlFor: 'artstudio-grad-stop-' + idx + '-position', className: "text-[10px] font-bold text-rose-700 block" }, 'Position: ' + stop.pos + '%'),
+
+                              React.createElement("input", { id: 'artstudio-grad-stop-' + idx + '-position', type: "range", min: idx === 0 ? 0 : stops[idx - 1].pos, max: idx === stops.length - 1 ? 100 : stops[idx + 1].pos, value: stop.pos, "aria-valuetext": stop.pos + ' percent', onChange: function (e) {
 
                                 var newStops2 = (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).slice();
 
                                 newStops2[idx] = Object.assign({}, newStops2[idx], { pos: parseInt(e.target.value) });
 
-                                newStops2.sort(function (a, b) { return a.pos - b.pos; });
-
                                 upd('gradStops', newStops2);
 
-                              }, className: "w-full accent-orange-500", title: "Position: " + stop.pos + "%" })
+                              }, className: "w-full accent-orange-500" })
 
                             ),
 
-                            React.createElement("span", { className: "text-[11px] text-slate-600 w-8 text-right flex-shrink-0" }, stop.pos + '%'),
-
-                            stops.length > 2 && React.createElement("button", { onClick: function () {
+                            stops.length > 2 && React.createElement("button", { "aria-label": 'Remove color stop ' + (idx + 1), onClick: function () {
 
                               var newStops3 = (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).slice();
 
@@ -5203,7 +5207,9 @@ const d = labToolData.artStudio || {};
 
                               upd('gradStops', newStops3);
 
-                            }, className: "transition-colors text-[11px] font-bold text-red-400 hover:text-red-600 flex-shrink-0 px-1" }, "\u00D7")
+                              if (typeof announceToSR === 'function') announceToSR('Color stop removed. ' + newStops3.length + ' stops remain.');
+
+                            }, className: "transition-colors text-sm font-bold text-red-700 hover:text-red-800 flex-shrink-0 w-6 h-6 rounded focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2" }, "\u00D7")
 
                           );
 
@@ -5215,13 +5221,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_15', "Export PNG"), onClick: function () { var c = document.getElementById('gradientCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'gradient-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_16', "\uD83D\uDCE5 Export PNG"))
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_gradient_png', "Export gradient as PNG"), onClick: function () { var c = document.getElementById('gradientCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'gradient-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR('Gradient PNG exported.'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_16', "\uD83D\uDCE5 Export PNG"))
 
                     ),
 
-                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
+                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap items-center", role: "group", "aria-labelledby": "artstudio-gradient-presets-label" },
 
-                      React.createElement("span", { className: "text-[11px] font-bold text-rose-500 mr-1" }, "Presets:"),
+                      React.createElement("span", { id: "artstudio-gradient-presets-label", className: "text-[11px] font-bold text-rose-700 mr-1" }, "Presets:"),
 
                       [{ label: __alloT('stem.artstudio.sunset', 'Sunset'), stops: [{ hue: 270, pos: 0 }, { hue: 330, pos: 30 }, { hue: 20, pos: 60 }, { hue: 45, pos: 100 }], type: 'linear', angle: 180 },
 
@@ -5233,7 +5239,7 @@ const d = labToolData.artStudio || {};
 
                        { label: __alloT('stem.artstudio.deep_space', 'Deep Space'), stops: [{ hue: 260, pos: 0 }, { hue: 230, pos: 30 }, { hue: 200, pos: 60 }, { hue: 280, pos: 80 }, { hue: 0, pos: 100 }], type: 'radial', angle: 90 }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, onClick: function () { upd('gradStops', pr.stops); upd('gradType', pr.type); upd('gradAngle', pr.angle); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-rose-600 border border-rose-600 hover:bg-rose-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' gradient preset', onClick: function () { upd('gradStops', pr.stops); upd('gradType', pr.type); upd('gradAngle', pr.angle); if (typeof announceToSR === 'function') announceToSR(pr.label + ' gradient preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-rose-700 border border-rose-600 hover:bg-rose-50 transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, pr.label);
 
                       })
 
@@ -5247,9 +5253,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex items-center justify-between mb-1" },
 
-                      React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, __alloT('stem.artstudio.css_output', "\uD83D\uDCCB CSS Output")),
+                      React.createElement("span", { id: "artstudio-gradient-css-label", className: "text-[11px] font-bold text-slate-300" }, __alloT('stem.artstudio.css_output', "\uD83D\uDCCB CSS Output")),
 
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.copy', "Copy"), onClick: function () {
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.copy_gradient_css', "Copy gradient CSS to clipboard"), onClick: function () {
 
                         var stops = d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }];
 
@@ -5263,13 +5269,13 @@ const d = labToolData.artStudio || {};
 
                         else css = 'background: linear-gradient(' + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + 'deg, ' + stopsStr + ');';
 
-                        navigator.clipboard.writeText(css).then(function () { if (typeof addToast === 'function') addToast('\u2705 CSS copied!', 'success'); });
+                        navigator.clipboard.writeText(css).then(function () { if (typeof addToast === 'function') addToast('\u2705 CSS copied!', 'success'); if (typeof announceToSR === 'function') announceToSR('Gradient CSS copied to the clipboard.'); }, function () { if (typeof addToast === 'function') addToast('Unable to copy CSS.', 'error'); if (typeof announceToSR === 'function') announceToSR('Unable to copy gradient CSS.'); });
 
-                      }, className: "transition-colors px-2 py-0.5 rounded text-[11px] font-bold bg-slate-700 text-slate-300 hover:bg-slate-600" }, __alloT('stem.artstudio.copy_2', "\uD83D\uDCCB Copy"))
+                      }, className: "transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900" }, __alloT('stem.artstudio.copy_2', "\uD83D\uDCCB Copy"))
 
                     ),
 
-                    React.createElement("code", { className: "text-[11px] text-green-400 font-mono leading-relaxed block whitespace-pre-wrap" }, (function () {
+                    React.createElement("code", { id: "artstudio-gradient-css", "aria-labelledby": "artstudio-gradient-css-label", className: "text-[11px] text-green-400 font-mono leading-relaxed block whitespace-pre-wrap" }, (function () {
 
                       var stops = d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }];
 
@@ -5287,15 +5293,15 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-3 border border-orange-200" },
 
-                    React.createElement("button", { onClick: function () { upd('showGradInfo', !d.showGradInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-orange-700" },
+                    React.createElement("button", { id: "artstudio-gradient-info-toggle", "aria-expanded": !!d.showGradInfo, "aria-controls": "artstudio-gradient-info", onClick: function () { upd('showGradInfo', !d.showGradInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-orange-700 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 rounded" },
 
                       React.createElement("span", null, __alloT('stem.artstudio.the_science_of_gradients', "\uD83C\uDFA8 The Science of Gradients")),
 
-                      React.createElement("span", null, d.showGradInfo ? '\u25B2' : '\u25BC')
+                      React.createElement("span", { "aria-hidden": "true" }, d.showGradInfo ? '\u25B2' : '\u25BC')
 
                     ),
 
-                    d.showGradInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
+                    d.showGradInfo && React.createElement("div", { id: "artstudio-gradient-info", role: "region", "aria-labelledby": "artstudio-gradient-info-toggle", className: "mt-3 space-y-2 text-xs text-slate-700 leading-relaxed" },
 
                       React.createElement("p", null, __alloT('stem.artstudio.screens_create_gradients_by_mixing', "\uD83C\uDF08 Screens create gradients by mixing "), React.createElement("strong", null, __alloT('stem.artstudio.rgb_sub_pixels', "RGB sub-pixels")), __alloT('stem.artstudio.each_pixel_blends_red_green_and_blue_l', ". Each pixel blends red, green, and blue light at different intensities. A gradient smoothly interpolates these values across space.")),
 
@@ -5313,9 +5319,9 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { tabIndex: 0, id: 'gradientCanvas', width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.gradient_designer_canvas', 'Gradient designer canvas'), className: "rounded-xl border-2 border-rose-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#1e1e2e' },
+                React.createElement("canvas", { id: 'gradientCanvas', width: 512, height: 512, role: "img", "aria-describedby": "artstudio-gradient-css", 'aria-label': 'Gradient output: ' + (d.gradType || 'linear') + ((d.gradType || 'linear') === 'linear' ? ' at ' + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + ' degrees' : '') + ', ' + (d.gradBlend || 'smooth') + ' blend, with ' + (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).length + ' color stops: ' + (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).map(function (stop) { return 'hue ' + stop.hue + ' at ' + stop.pos + ' percent'; }).join(', ') + '.', className: "rounded-xl border-2 border-rose-300 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#1e1e2e' },
 
-                  key: 'grad-' + (d.gradType || 'linear') + '-' + (d.gradAngle || 90) + '-' + (d.gradBlend || 'smooth') + '-' + JSON.stringify(d.gradStops || []),
+                  key: 'grad-' + (d.gradType || 'linear') + '-' + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + '-' + (d.gradBlend || 'smooth') + '-' + JSON.stringify(d.gradStops || []),
 
                   ref: function (canvas) {
 
