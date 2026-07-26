@@ -4695,7 +4695,63 @@ var geographyGroup = new THREE.Group();
         var warm = type === 'warm';
         var occluded = type === 'occluded';
         var frontLabel = fair ? 'High pressure: sinking air suppresses cloud growth' : warm ? 'Warm front: warm air rises gradually over cooler air' : occluded ? 'Occluded front: cold air lifts warm air away from the surface' : 'Cold front: dense cold air forces warm air upward quickly';
-        var textColor = dark ? '#e2e8f0' : '#0f172a';
+        var textColor = chartInk;
+        var mutedColor = chartMutedInk;
+
+        // The cross-section reads the same model the map does, so the boundary sits at the
+        // same place in both views and steepens or flattens with the front-speed slider.
+        // Previously this panel was frozen: no control changed it.
+        var GROUND = 226;
+        var SKY_TOP = 34;
+        var progress = clamp((state.simHour * state.frontSpeed) / 500, 0, 0.55);
+        var frontX = 40 + (0.28 + progress) * 640;
+        var steep = clamp(state.frontSpeed / 65, 0, 1);
+        var coldCeil = GROUND - 96;
+        // A faster cold front rides a steeper slope; warm fronts stay shallow either way.
+        var coldRun = 150 - steep * 78;
+        var coldBack = clamp(frontX - coldRun, 26, 660);
+        var occludedTip = coldCeil - 34;
+        // Deeper instability builds a taller cloud, matching the map canvas.
+        var cloudTop = GROUND - 74 - clamp(state.instability / 100, 0, 1) * 84;
+
+        // Which air mass reaches the ground on which side is the whole point of the diagram,
+        // and it differs per front type. All three previously drew COLD on the left and WARM
+        // on the right, which put "WARM AIR" inside the cold region on a warm front.
+        var coldPath = warm
+          ? 'M' + frontX + ' ' + GROUND + ' Q' + ((frontX + 700) / 2) + ' ' + (GROUND - 26) + ' 700 ' + coldCeil + ' L700 ' + GROUND + ' Z'
+          : occluded
+            ? 'M20 ' + GROUND + ' L20 ' + coldCeil + ' Q' + (frontX - 84) + ' ' + (GROUND - 44) + ' ' + frontX + ' ' + occludedTip + ' Q' + (frontX + 84) + ' ' + (GROUND - 44) + ' 700 ' + coldCeil + ' L700 ' + GROUND + ' Z'
+            : 'M20 ' + GROUND + ' L20 ' + coldCeil + ' L' + coldBack + ' ' + coldCeil + ' Q' + (frontX - coldRun * 0.3) + ' ' + (coldCeil + (GROUND - coldCeil) * 0.55) + ' ' + frontX + ' ' + GROUND + ' Z';
+        var warmPath = warm
+          ? 'M20 ' + SKY_TOP + ' L700 ' + SKY_TOP + ' L700 ' + coldCeil + ' Q' + ((frontX + 700) / 2) + ' ' + (GROUND - 26) + ' ' + frontX + ' ' + GROUND + ' L20 ' + GROUND + ' Z'
+          : occluded
+            ? 'M20 ' + SKY_TOP + ' L700 ' + SKY_TOP + ' L700 ' + coldCeil + ' Q' + (frontX + 84) + ' ' + (GROUND - 44) + ' ' + frontX + ' ' + occludedTip + ' Q' + (frontX - 84) + ' ' + (GROUND - 44) + ' 20 ' + coldCeil + ' Z'
+            : 'M' + frontX + ' ' + GROUND + ' Q' + (frontX - coldRun * 0.3) + ' ' + (coldCeil + (GROUND - coldCeil) * 0.55) + ' ' + coldBack + ' ' + coldCeil + ' L20 ' + coldCeil + ' L20 ' + SKY_TOP + ' L700 ' + SKY_TOP + ' L700 ' + GROUND + ' Z';
+
+        // Warm air is at the surface behind a warm front, ahead of a cold front, and lifted
+        // clear of the ground entirely once the front occludes.
+        var surfaceLabels = warm
+          ? [{ text: 'WARM AIR', x: 92, y: GROUND - 12 }, { text: 'COLD AIR', x: 618, y: GROUND - 12 }]
+          : occluded
+            ? [{ text: 'COLD AIR', x: 82, y: GROUND - 12 }, { text: 'COLD AIR', x: 628, y: GROUND - 12 }, { text: 'WARM AIR ALOFT', x: clamp(frontX, 130, 580), y: occludedTip - 12 }]
+            : [{ text: 'COLD AIR', x: 92, y: GROUND - 12 }, { text: 'WARM AIR', x: 618, y: GROUND - 12 }];
+        var cloudX = clamp(warm ? frontX + 165 : occluded ? frontX : frontX + 34, 96, 624);
+
+        // Heights are schematic, so the axis is banded rather than ticked to false precision.
+        var altitudeBands = [
+          { y: SKY_TOP + 16, label: 'high cloud' },
+          { y: GROUND - 96, label: 'mid level' },
+          { y: GROUND - 34, label: 'low cloud' }
+        ];
+        var liftArrow = warm
+          ? { x1: frontX + 20, y1: GROUND - 16, x2: clamp(frontX + 240, 200, 690), y2: coldCeil + 20 }
+          : occluded
+            ? { x1: frontX - 70, y1: GROUND - 40, x2: frontX - 6, y2: occludedTip + 14 }
+            : { x1: frontX + 56, y1: GROUND - 30, x2: frontX + 6, y2: cloudTop + 22 };
+        var detail = fair
+          ? 'Sinking air in a ' + Math.round(state.pressure) + ' hPa high suppresses cloud growth.'
+          : frontLabel + '. Boundary drawn at the position the map shows for T +' + state.simHour + ' h, moving at ' + Math.round(state.frontSpeed) + ' km/h.';
+
         return h('section', { className: panelClass + ' p-4', 'data-weather-cross-section': true, 'aria-labelledby': 'weather-cross-section-title' },
           h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
             h('div', null,
@@ -4704,31 +4760,52 @@ var geographyGroup = new THREE.Group();
             ),
             h('span', { className: 'rounded-full px-3 py-1 text-xs font-black ' + (dark ? 'bg-slate-800 text-sky-300' : 'bg-sky-100 text-sky-800') }, scenario.name)
           ),
-          h('svg', { viewBox: '0 0 720 245', className: 'mt-3 h-auto w-full', role: 'img', 'aria-label': frontLabel },
+          h('svg', { viewBox: '0 0 720 262', className: 'mt-3 h-auto w-full', role: 'img', 'aria-label': detail },
             h('defs', null, h('marker', { id: 'weather-cross-arrow', markerWidth: 8, markerHeight: 8, refX: 6, refY: 3, orient: 'auto' }, h('path', { d: 'M0,0 L0,6 L7,3 z', fill: textColor }))),
-            h('rect', { x: 0, y: 0, width: '100%', height: 210, rx: 14, fill: dark ? '#0b1830' : '#e0f2fe' }),
-            h('line', { x1: 20, y1: 205, x2: 700, y2: 205, stroke: dark ? '#94a3b8' : '#475569', strokeWidth: 3 }),
+            h('rect', { x: 0, y: 0, width: '100%', height: GROUND + 6, rx: 14, fill: dark ? '#0b1830' : '#e0f2fe' }),
+            altitudeBands.map(function (band) {
+              return h('g', { key: band.label },
+                h('line', { x1: 20, y1: band.y, x2: 700, y2: band.y, stroke: dark ? 'rgba(148,163,184,.2)' : 'rgba(15,23,42,.1)', strokeWidth: 1 }),
+                h('text', { x: 24, y: band.y - 4, fill: mutedColor, fontSize: 9, fontWeight: 700 }, band.label)
+              );
+            }),
+            h('line', { x1: 20, y1: GROUND, x2: 700, y2: GROUND, stroke: dark ? '#94a3b8' : '#475569', strokeWidth: 3 }),
             fair ? h('g', null,
-              h('path', { d: 'M70 205 L70 70 L650 70 L650 205 Z', fill: dark ? '#163b57' : '#bae6fd', opacity: 0.7 }),
-              [190, 360, 530].map(function (x) { return h('line', { key: x, x1: x, y1: 75, x2: x, y2: 165, stroke: textColor, strokeWidth: 3, markerEnd: 'url(#weather-cross-arrow)' }); }),
-              h('text', { x: 360, y: 42, textAnchor: 'middle', fill: textColor, fontSize: 15, fontWeight: 700 }, 'Sinking, warming air'),
-              h('text', { x: 360, y: 190, textAnchor: 'middle', fill: textColor, fontSize: 13 }, 'High pressure | generally fewer clouds')
+              h('path', { d: 'M70 ' + GROUND + ' L70 ' + (SKY_TOP + 46) + ' L650 ' + (SKY_TOP + 46) + ' L650 ' + GROUND + ' Z', fill: dark ? '#163b57' : '#bae6fd', opacity: 0.7 }),
+              [190, 360, 530].map(function (x) {
+                var reach = 70 + clamp((state.pressure - 1000) / 40, 0, 1) * 60;
+                return h('line', { key: x, x1: x, y1: SKY_TOP + 52, x2: x, y2: SKY_TOP + 52 + reach, stroke: textColor, strokeWidth: 3, markerEnd: 'url(#weather-cross-arrow)' });
+              }),
+              h('text', { x: 360, y: SKY_TOP + 14, textAnchor: 'middle', fill: textColor, fontSize: 15, fontWeight: 700 }, 'Sinking, warming air'),
+              h('text', { x: 360, y: GROUND - 14, textAnchor: 'middle', fill: textColor, fontSize: 13 }, Math.round(state.pressure) + ' hPa high | generally fewer clouds')
             ) : h('g', null,
-              h('path', { d: warm ? 'M20 205 L20 165 Q250 150 520 70 L700 70 L700 205 Z' : occluded ? 'M20 205 L20 120 Q270 165 360 75 Q450 165 700 120 L700 205 Z' : 'M20 205 L20 70 L250 70 Q330 95 390 205 Z', fill: '#2563eb', opacity: 0.62 }),
-              h('path', { d: warm ? 'M20 35 L700 35 L700 70 L520 70 Q250 150 20 165 Z' : occluded ? 'M20 35 L700 35 L700 120 Q450 165 360 75 Q270 165 20 120 Z' : 'M250 70 L700 35 L700 205 L390 205 Q330 95 250 70 Z', fill: '#ef4444', opacity: 0.5 }),
-              h('line', { x1: warm ? 230 : 430, y1: 165, x2: warm ? 470 : 350, y2: 58, stroke: textColor, strokeWidth: 3, markerEnd: 'url(#weather-cross-arrow)' }),
-              h('line', { x1: warm ? 330 : 500, y1: warm ? 137 : 155, x2: warm ? 555 : 410, y2: 65, stroke: textColor, strokeWidth: 2, markerEnd: 'url(#weather-cross-arrow)' }),
-              h('text', { x: 100, y: 190, textAnchor: 'middle', fill: '#dbeafe', fontSize: 14, fontWeight: 700 }, 'COLD AIR'),
-              h('text', { x: 590, y: 185, textAnchor: 'middle', fill: dark ? '#fecaca' : '#7f1d1d', fontSize: 14, fontWeight: 700 }, 'WARM AIR'),
-              h('g', { transform: 'translate(' + (warm ? 490 : 365) + ' 58)' },
-                h('circle', { cx: -24, cy: 7, r: 18, fill: '#f8fafc' }),
-                h('circle', { cx: 0, cy: 0, r: 25, fill: '#e2e8f0' }),
-                h('circle', { cx: 27, cy: 9, r: 17, fill: '#f8fafc' }),
-                current.precipPotential > 28 && [-22, 0, 22].map(function (x) { return h('line', { key: x, x1: x, y1: 28, x2: x - 5, y2: 49, stroke: current.precipType === 'snow' ? '#f8fafc' : '#38bdf8', strokeWidth: 3 }); })
+              h('path', { d: coldPath, fill: '#2563eb', opacity: 0.62 }),
+              h('path', { d: warmPath, fill: '#ef4444', opacity: 0.5 }),
+              h('line', { x1: liftArrow.x1, y1: liftArrow.y1, x2: liftArrow.x2, y2: liftArrow.y2, stroke: textColor, strokeWidth: 3, markerEnd: 'url(#weather-cross-arrow)' }),
+              // Every air-mass label takes a surface halo, so none depends on the fill behind
+              // it for legibility the way the old hard-coded pale blue did.
+              surfaceLabels.map(function (item, index) {
+                return h('text', {
+                  key: item.text + index,
+                  x: item.x, y: item.y, textAnchor: 'middle', fill: textColor, fontSize: 13, fontWeight: 800,
+                  style: { paintOrder: 'stroke', stroke: dark ? '#0b1830' : '#e0f2fe', strokeWidth: 4, strokeLinejoin: 'round' }
+                }, item.text);
+              }),
+              h('g', { transform: 'translate(' + cloudX + ' ' + cloudTop + ')' },
+                h('ellipse', { cx: 0, cy: -20, rx: 44, ry: 11, fill: dark ? '#cbd5e1' : '#e2e8f0', opacity: state.instability > 55 ? 0.9 : 0 }),
+                h('circle', { cx: -26, cy: 7, r: 17, fill: '#eef2f7' }),
+                h('circle', { cx: 0, cy: -2, r: 24, fill: '#f8fafc' }),
+                h('circle', { cx: 27, cy: 8, r: 16, fill: '#eef2f7' }),
+                h('rect', { x: -28, y: 4, width: 56, height: 16, rx: 4, fill: '#dbe3ec' }),
+                current.precipPotential > 28 && [-20, 0, 20].map(function (x) {
+                  return h('line', { key: x, x1: x, y1: 24, x2: x - 5, y2: 24 + clamp(current.precipPotential / 100, 0, 1) * 40, stroke: current.precipType === 'snow' ? '#f1f5f9' : '#38bdf8', strokeWidth: 3, strokeLinecap: 'round' });
+                })
               ),
-              h('text', { x: 360, y: 230, textAnchor: 'middle', fill: textColor, fontSize: 14, fontWeight: 700 }, frontLabel)
-            )
-          )
+              h('text', { x: frontX, y: GROUND + 16, textAnchor: 'middle', fill: mutedColor, fontSize: 10, fontWeight: 700 }, '▲ boundary at T +' + state.simHour + ' h')
+            ),
+            h('text', { x: 700, y: GROUND + 30, textAnchor: 'end', fill: mutedColor, fontSize: 9 }, 'Vertical scale exaggerated; heights are schematic.')
+          ),
+          h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, detail)
         );
       }
       function observationLogPanel() {

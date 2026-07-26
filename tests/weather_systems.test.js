@@ -2297,6 +2297,73 @@ describe('Weather Systems evidence-lens change bars', () => {
   });
 });
 
+describe('Weather Systems vertical cross-section', () => {
+  const render = (weatherSystems, grade) => renderTool('weatherSystems', { weatherSystems }, { gradeLevel: grade || '8th Grade' });
+  const boundaryX = (html) => {
+    const match = html.match(/<text x="([\d.]+)"[^>]*>▲ boundary at T \+\d+ h<\/text>/);
+    return match ? Number(match[1]) : null;
+  };
+  const section = (html) => (html.match(/data-weather-cross-section[\s\S]*?<\/section>/) || [''])[0];
+
+  it('advances the boundary with model hour and front speed', () => {
+    const early = render({ tab: 'map', scenario: 'coldFront', simHour: 0 });
+    const late = render({ tab: 'map', scenario: 'coldFront', simHour: 10 });
+    expect(boundaryX(early)).not.toBeNull();
+    expect(boundaryX(late)).toBeGreaterThan(boundaryX(early));
+
+    // A near-stalled front has barely moved by the same hour.
+    const slow = render({ tab: 'map', scenario: 'coldFront', simHour: 10, frontSpeed: 4 });
+    expect(boundaryX(slow)).toBeLessThan(boundaryX(late));
+    // The caption reports the speed actually modelled, not the scenario default.
+    expect(section(slow)).toContain('moving at 4 km/h');
+    expect(section(late)).toContain('moving at 36 km/h');
+  });
+
+  it('puts each air mass on the side it actually reaches the ground', () => {
+    const labelsFor = (html) => {
+      const found = [];
+      const re = /<text x="([\d.]+)"[^>]*>(COLD AIR|WARM AIR|WARM AIR ALOFT)<\/text>/g;
+      let m;
+      while ((m = re.exec(section(html)))) found.push({ x: Number(m[1]), text: m[2] });
+      return found;
+    };
+
+    // Cold front: cold air behind on the left, warm air ahead on the right.
+    const cold = labelsFor(render({ tab: 'map', scenario: 'coldFront', simHour: 4 }));
+    expect(cold.find((l) => l.text === 'COLD AIR').x).toBeLessThan(cold.find((l) => l.text === 'WARM AIR').x);
+
+    // Warm front: the reverse — warm air behind on the left, cold wedge ahead on the right.
+    const warm = labelsFor(render({ tab: 'map', scenario: 'warmFront', simHour: 4 }));
+    expect(warm.find((l) => l.text === 'WARM AIR').x).toBeLessThan(warm.find((l) => l.text === 'COLD AIR').x);
+
+    // Occluded: cold air both sides, warm air lifted clear of the surface.
+    const occluded = labelsFor(render({ tab: 'map', scenario: 'winterStorm', simHour: 4 }));
+    expect(occluded.filter((l) => l.text === 'COLD AIR')).toHaveLength(2);
+    expect(occluded.some((l) => l.text === 'WARM AIR ALOFT')).toBe(true);
+    expect(occluded.some((l) => l.text === 'WARM AIR')).toBe(false);
+  });
+
+  it('grows a taller cloud as instability rises', () => {
+    const cloudY = (html) => {
+      const match = section(html).match(/<g transform="translate\([\d.]+ ([\d.]+)\)"/);
+      return match ? Number(match[1]) : null;
+    };
+    const calm = render({ tab: 'map', scenario: 'coldFront', simHour: 4, instability: 5 });
+    const violent = render({ tab: 'map', scenario: 'coldFront', simHour: 4, instability: 100 });
+    // Smaller y is higher on the canvas.
+    expect(cloudY(violent)).toBeLessThan(cloudY(calm));
+  });
+
+  it('keeps the schematic honest about its vertical scale', () => {
+    const html = section(render({ tab: 'map', scenario: 'coldFront', simHour: 4 }));
+    expect(html).toContain('Vertical scale exaggerated; heights are schematic.');
+    // Bands are named rather than ticked with invented altitudes.
+    expect(html).toContain('high cloud');
+    expect(html).toContain('mid level');
+    expect(html).not.toMatch(/\d+\s*km<\/text>/);
+  });
+});
+
 describe('Weather Systems geographic map loader resilience', () => {
   const { readFileSync } = require('node:fs');
   const { resolve } = require('node:path');
