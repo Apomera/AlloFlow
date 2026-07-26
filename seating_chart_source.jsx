@@ -1142,7 +1142,16 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
               {/* ── Canvas / list ── */}
               <div className="flex-1 min-w-0 p-3 overflow-auto custom-scrollbar" onKeyDown={nudgeSelected}>
                 {view === 'map' ? (
-                  <svg ref={svgRef} viewBox={'0 0 ' + ROOM_W + ' ' + ROOM_H} role="application" aria-label={tr('Classroom map — {n} seats', { n: layout.seats.length })}
+                  <React.Fragment>
+                  <p id="seating-map-instructions" className="sr-only">
+                    {mode === 'edit'
+                      ? tr('Use Tab to move between classroom items. Use the arrow keys to move the focused item; hold Shift for larger steps. Press Delete to remove it.')
+                      : mode === 'live'
+                        ? tr('Use Tab to move between seats. Press Enter or Space to recognize the student assigned to the focused seat.')
+                        : tr('Choose a student, then use Tab to move between seats. Press Enter or Space to assign the selected student. The List view provides the same seat controls.')}
+                  </p>
+                  <svg ref={svgRef} viewBox={'0 0 ' + ROOM_W + ' ' + ROOM_H} role="group" aria-label={tr('Classroom map — {n} seats', { n: layout.seats.length })}
+                    aria-describedby="seating-map-instructions"
                     className="w-full h-auto max-h-full select-none bg-slate-50 rounded-xl border border-slate-200"
                     onPointerMove={onSvgPointerMove} onPointerUp={endDrag} onPointerLeave={endDrag}>
                     {/* Board / front-of-room marker */}
@@ -1154,7 +1163,8 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                         tabIndex={mode === 'edit' ? 0 : -1} role={mode === 'edit' ? 'button' : undefined}
                         aria-label={furnitureLabel(f.kind) + (f.label ? ' ' + f.label : '')}
                         onFocus={() => mode === 'edit' && setSelectedItem(f.id)}
-                        style={{ cursor: mode === 'edit' ? 'move' : 'default', outline: 'none' }}>
+                        className="seating-map-item"
+                        style={{ cursor: mode === 'edit' ? 'move' : 'default' }}>
                         <rect x={f.x} y={f.y} width={f.w} height={f.h} rx="1.2"
                           fill={f.kind === 'rug' ? '#ede9fe' : f.kind === 'window' ? '#e0f2fe' : '#f1f5f9'}
                           stroke={selectedItem === f.id ? '#4f46e5' : '#94a3b8'} strokeWidth={selectedItem === f.id ? 0.8 : 0.4} strokeDasharray="1.6 1" />
@@ -1190,7 +1200,8 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                           onFocus={() => mode === 'edit' && setSelectedItem(s.id)}
                           tabIndex={0} role="button"
                           aria-label={tr('Seat {n}', { n: seatNumberOf[s.id] }) + ': ' + (name ? displayNameOf(name) : tr('empty')) + liveAria + (isOverlap ? ' — ' + tr('overlaps furniture') : '')}
-                          style={{ cursor: mode === 'edit' ? 'move' : 'pointer', outline: 'none', opacity: mode === 'live' && name && status !== 'on' ? 0.55 : 1 }}>
+                          className="seating-map-item"
+                          style={{ cursor: mode === 'edit' ? 'move' : 'pointer', opacity: mode === 'live' && name && status !== 'on' ? 0.55 : 1 }}>
                           <rect x={s.x} y={s.y} width={s.w} height={s.h} rx="1.4"
                             fill={name ? (mode === 'live' && status === 'on' ? '#ecfdf5' : '#eef2ff') : '#ffffff'}
                             stroke={isOverlap ? '#e11d48' : isSel ? '#f59e0b' : (mode === 'live' && name) ? (status === 'on' ? '#10b981' : '#94a3b8') : name ? groupColorOf(name) : '#94a3b8'}
@@ -1206,6 +1217,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                       );
                     })}
                   </svg>
+                  </React.Fragment>
                 ) : (
                   /* List view — same data, native controls, full AT parity. */
                   <table className="w-full text-sm border-collapse">

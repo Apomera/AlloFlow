@@ -61,7 +61,7 @@ const outputCode = `/**
   if (!document.getElementById("seating-chart-a11y")) {
     var _s = document.createElement("style");
     _s.id = "seating-chart-a11y";
-    _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }";
+    _s.textContent = ".seating-map-item:focus-visible > rect { stroke: #0f172a !important; stroke-width: 3px !important; vector-effect: non-scaling-stroke; filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 3px #0f172a); } @media (forced-colors: active) { .seating-map-item:focus-visible > rect { stroke: Highlight !important; stroke-width: 3px !important; filter: none !important; } } @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }";
     document.head.appendChild(_s);
   }
   (function() {

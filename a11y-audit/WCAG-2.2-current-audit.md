@@ -231,6 +231,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Remediated Live Polling's teacher host as a named and described focus-managed dialog with initial Close focus, Tab and Shift+Tab containment, Escape closure, and launcher focus restoration. Replaced the ability-tiered group-name browser confirmation with a nested named and described alert dialog that isolates the parent, focuses the safe neutral-name action, supports Escape and backdrop cancellation, returns focus to Add group, preserves the pending name on cancel, and provides 44 CSS-pixel actions. Refined the timer heuristic so signaling-transport expiry metadata is not misclassified as a user time limit (WCAG 1.3.1, 2.1.1, 2.1.2, 2.4.3, 2.4.7, 2.5.8, 3.2.2, 4.1.2).
 
+- Remediated Seating Chart's interactive SVG map: removed the overbroad application role, exposed the seat collection as a named and described group, and supplied mode-specific nonvisual instructions for assignment, recognition, and keyboard room editing. Every focusable seat and furniture item now retains browser focus and receives a three-pixel non-scaling high-contrast SVG indicator with a forced-colors override; the existing arrow-key and Shift-modified movement alternative remains available without dragging (WCAG 1.3.1, 2.1.1, 2.4.6, 2.4.7, 2.5.7, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
