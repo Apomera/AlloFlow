@@ -784,3 +784,164 @@ describe('MemoryPalace view — own image + recall order wiring', () => {
     expect(v.indexOf("t('memory_palace.order_next')")).toBeGreaterThan(v.indexOf('recall && finished && ('));
   });
 });
+
+// ── Expanding the palace (student-built rooms and loci) ───────────────────
+// The pedagogical promise is "the palace grows and nothing you already learned
+// moves", so the stability assertions here are the point, not decoration.
+function withExtras(rooms, loci) {
+  const d = sampleData();
+  d.memoryPalace = { extraRooms: rooms || [], extraLoci: loci || [] };
+  return d;
+}
+
+describe('MemoryPalace — student-built extensions', () => {
+  it('merges student rooms and loci into the walk, marked as theirs', () => {
+    const p = MP.buildPalace(withExtras(
+      [{ id: 'xr1', title: 'My Attic' }],
+      [{ id: 'xl1', room: 'b0', label: 'My own fact' }, { id: 'xl2', room: 'xr1', label: 'Attic thing' }],
+    ));
+    expect(p.rooms.map((r) => r.key)).toEqual(['__entry', 'b0', 'b1', 'xr1']);
+    expect(p.rooms.find((r) => r.key === 'xr1').mine).toBe(true);
+    // a student locus sits right after its own room's generated loci
+    expect(p.route).toEqual(['__entry', 'b0_i0', 'b0_i1', 'xl1', 'b1_i0', 'b1_i1', 'xl2']);
+    const mine = p.loci.find((l) => l.id === 'xl1');
+    expect(mine.mine).toBe(true);
+    expect(mine.label).toBe('My own fact');
+    expect(mine.roomIdx).toBe(1);
+  });
+
+  it('re-homes a locus whose room disappeared instead of deleting the student work', () => {
+    const p = MP.buildPalace(withExtras([], [{ id: 'xl1', room: 'b7_gone', label: 'Orphan' }]));
+    const orphan = p.loci.find((l) => l.id === 'xl1');
+    expect(orphan).toBeTruthy();
+    expect(orphan.roomIdx).toBe(1);              // first room, not dropped
+    expect(p.route).toContain('xl1');
+  });
+
+  it('never moves a generated room when the student adds an annex', () => {
+    const at = (rooms) => JSON.stringify(MP.buildPalace(withExtras(rooms, [])).rooms.find((r) => r.key === 'b0').center);
+    const none = at([]);
+    expect(at([{ id: 'xr1', title: 'A' }])).toBe(none);
+    expect(at([{ id: 'xr1', title: 'A' }, { id: 'xr2', title: 'B' }])).toBe(none);
+    expect(at([{ id: 'xr1', title: 'A' }, { id: 'xr2', title: 'B' }, { id: 'xr3', title: 'C' }])).toBe(none);
+  });
+
+  it('never moves an existing annex or wall frame when another is added', () => {
+    const roomsA = [{ id: 'xr1', title: 'A' }];
+    const roomsB = [{ id: 'xr1', title: 'A' }, { id: 'xr2', title: 'B' }];
+    const annexAt = (rooms) => JSON.stringify(MP.buildPalace(withExtras(rooms, [])).rooms.find((r) => r.key === 'xr1').center);
+    expect(annexAt(roomsA)).toBe(annexAt(roomsB));
+    // and a wall frame does not re-space when a student locus joins its room —
+    // wall SLOTS would have divided the room by the new count
+    const frame = (loci) => JSON.stringify(MP.buildPalace(withExtras([], loci)).loci.find((l) => l.id === 'b0_i0').framePos);
+    const before = frame([]);
+    expect(frame([{ id: 'xl1', room: 'b0', label: 'one' }])).toBe(before);
+    expect(frame([{ id: 'xl1', room: 'b0', label: 'one' }, { id: 'xl2', room: 'b0', label: 'two' }])).toBe(before);
+  });
+
+  it('keeps the annex ring inside the palace bounds', () => {
+    const p = MP.buildPalace(withExtras([{ id: 'xr1', title: 'A' }, { id: 'xr2', title: 'B' }], []));
+    p.rooms.forEach((r) => {
+      expect(Math.abs(r.center.x)).toBeLessThan(p.bounds.maxX);
+      expect(Math.abs(r.center.z)).toBeLessThan(p.bounds.maxZ);
+    });
+  });
+
+  it('mints ids that cannot collide with generated ones, even after gaps', () => {
+    expect(MP.nextExtraLocusId([])).toBe('xl1');
+    expect(MP.nextExtraLocusId([{ id: 'xl1' }, { id: 'xl9' }])).toBe('xl10');
+    expect(MP.nextExtraRoomId([{ id: 'xr1' }])).toBe('xr2');
+    expect(MP.nextExtraLocusId([{ id: 'xl3' }]).startsWith('b')).toBe(false);
+  });
+
+  it('round-trips a floor click into room-local space and back', () => {
+    const p = MP.buildPalace(sampleData());
+    const l = p.loci.find((x) => x.id === 'b0_i1');
+    const hit = MP.roomAtPoint(p, l.framePos.x, l.framePos.z, 0);
+    expect(hit.roomKey).toBe('b0');
+    const placed = MP.buildPalace(withExtras([], [{ id: 'xl1', room: hit.roomKey, label: 'here', lx: hit.lx, lz: hit.lz }]));
+    const mine = placed.loci.find((x) => x.id === 'xl1');
+    expect(mine.framePos.x).toBeCloseTo(l.framePos.x, 5);
+    expect(mine.framePos.z).toBeCloseTo(l.framePos.z, 5);
+  });
+
+  it('refuses floor points that are not inside a room', () => {
+    const p = MP.buildPalace(sampleData());
+    expect(MP.roomAtPoint(p, 0, 0)).toBe(null);            // the hub plaza
+    expect(MP.roomAtPoint(p, 1e6, 1e6)).toBe(null);        // outside everything
+  });
+
+  it('auto-placed spots stay inside the room and do not stack', () => {
+    const p = MP.buildPalace(withExtras([], [
+      { id: 'xl1', room: 'b0', label: 'a' }, { id: 'xl2', room: 'b0', label: 'b' }, { id: 'xl3', room: 'b0', label: 'c' },
+    ]));
+    const mine = p.loci.filter((l) => l.mine);
+    const seen = new Set(mine.map((l) => `${l.lx.toFixed(2)},${l.lz.toFixed(2)}`));
+    expect(seen.size).toBe(3);                             // distinct spots
+    const room = p.rooms.find((r) => r.key === 'b0');
+    mine.forEach((l) => {
+      const back = MP.worldToRoomLocal(room, l.framePos.x, l.framePos.z);
+      expect(Math.abs(back.lx)).toBeLessThan(400);
+      expect(Math.abs(back.lz)).toBeLessThan(400);
+    });
+  });
+
+  it('lets student loci carry own images and join the recall check', () => {
+    const d = withExtras([], [{ id: 'xl1', room: 'b0', label: 'My own fact' }]);
+    d.memoryPalace.myMnemonics = { xl1: 'A trumpet growing out of the floorboards' };
+    const p = MP.buildPalace(d);
+    expect(p.loci.find((l) => l.id === 'xl1').mnemonicSource).toBe('self');
+    expect(MP.describeLocusForSR(p, 'xl1', null, {})).toContain('trumpet');
+    expect(MP.buildRecallOrder(p, {})).toContain('xl1');
+    expect(MP.buildRecallBank(p, 5).map((c) => c.id)).toContain('xl1');
+    // and the recall announcement still never leaks the answer
+    expect(MP.describeLocusForRecall(p, 'xl1', null, {})).not.toContain('My own fact');
+  });
+
+  it('exposes build mode on the handle as a safe no-op without WebGL', () => {
+    const el = document.createElement('div');
+    const h = MP.render(el, sampleData(), {});
+    expect(typeof h.setBuildMode).toBe('function');
+    expect(() => h.setBuildMode(true)).not.toThrow();
+    h.destroy();
+  });
+});
+
+describe('MemoryPalace view — build wiring', () => {
+  const view = () => readFileSync(resolve(process.cwd(), 'view_renderers_source.jsx'), 'utf8');
+
+  it('turns a floor click into a named locus persisted in its own sub-store', () => {
+    const v = view();
+    expect(v).toContain('onFloorPlace: (spot) =>');
+    expect(v).toContain('const saveNewSpot = () =>');
+    expect(v).toContain('MP.nextExtraLocusId(mineLoci)');
+    expect(v).toContain("persist({ ...(mpRef.current || {}), extraLoci: next }, 'memoryPalace')");
+    expect(v).toContain("t('memory_palace.build_toggle')");
+  });
+
+  it('rebuilds the scene for structural additions (unlike a rewritten image)', () => {
+    const v = view();
+    const dataKey = v.slice(v.indexOf('const dataKey = JSON.stringify({'), v.indexOf('const nowISO'));
+    expect(dataKey).toContain('extraRooms');
+    expect(dataKey).toContain('extraLoci');
+    expect(dataKey).not.toContain('myMnemonics');
+  });
+
+  it('removing a student spot also clears anything hung on it', () => {
+    const v = view();
+    const fn = v.slice(v.indexOf('const removeMineLocus'), v.indexOf('const removeMineLocus') + 900);
+    ['images', 'depths', 'objects', 'stamps', 'myMnemonics', 'mastery'].forEach((k) => {
+      expect(fn).toContain(k);
+    });
+  });
+});
+
+describe('Memory Palace generation prompt', () => {
+  it('asks for a walkable palace of about 16 loci without padding', () => {
+    const src = readFileSync(resolve(process.cwd(), 'generate_dispatcher_module.js'), 'utf8');
+    const block = src.slice(src.indexOf("case 'Memory Palace':"), src.indexOf("case 'Memory Palace':") + 1400);
+    expect(block).toContain('about 16 loci');
+    expect(block).toContain('4 ROOMS of 4');
+    expect(block).toMatch(/never pad/i);
+  });
+});

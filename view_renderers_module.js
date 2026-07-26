@@ -2944,7 +2944,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     b: (Array.isArray(data?.branches) ? data.branches : []).map((b) => ({ t: b.title, i: b.items, mn: b.mnemonics })),
     img: data?.memoryPalace?.generatedAt || 0,
     route: data?.memoryPalace?.routeOrder || [],
-    routePreview: routePreview || []
+    routePreview: routePreview || [],
+    // Student-built rooms/loci CHANGE the geometry, so unlike a rewritten
+    // mnemonic they do have to rebuild the scene.
+    mine: [(data?.memoryPalace?.extraRooms || []).length, (data?.memoryPalace?.extraLoci || []).length],
+    mineIds: (data?.memoryPalace?.extraLoci || []).map((e) => e && e.id).join(",")
   });
   const nowISO = React.useMemo(() => (/* @__PURE__ */ new Date()).toISOString(), []);
   const masteryKey = JSON.stringify(data?.memoryPalace?.mastery || {});
@@ -3023,6 +3027,16 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       objects: data?.memoryPalace?.objects || {},
       decor: decorLabels,
       // screen-reader names for placed decorations (a11y parity)
+      // Build mode: a click on a room floor comes back here as a room-local
+      // spot; null means the click landed in the hub or outside the walls.
+      onFloorPlace: (spot) => {
+        if (!spot) {
+          if (addToast) addToast(t("memory_palace.build_outside") || "Aim at the floor inside a room to put a new spot there.", "info");
+          return;
+        }
+        setSpotLabel("");
+        setPendingSpot(spot);
+      },
       mastery: recall ? void 0 : data?.memoryPalace?.mastery || {},
       // recall-driven dimming (study mode only)
       recall: !!recall,
@@ -3039,7 +3053,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       onLocusChange: (locus, idx, total) => {
         if (!locus) return;
         currentRef.current = locus;
-        setCurrent({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, source: locus.mnemonicSource, aiMnemonic: locus.aiMnemonic, idx, total: total - 1, entry: locus.id === "__entry" });
+        setCurrent({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, source: locus.mnemonicSource, aiMnemonic: locus.aiMnemonic, mine: !!locus.mine, idx, total: total - 1, entry: locus.id === "__entry" });
         if (quickCreateRef.current && quickCreateRef.current.id !== locus.id && quickCreateRef.current.status !== "generating") setQuickCreate(null);
         const r = recallResultsRef.current[locus.id];
         setRecallHint(r && r.attempts >= 2 && locus.mnemonic && !r.correct && !r.revealed ? locus.mnemonic : null);
@@ -3058,7 +3072,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
           return;
         }
         currentRef.current = locus;
-        setCurrent({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, source: locus.mnemonicSource, aiMnemonic: locus.aiMnemonic, idx, total: total - 1, entry: false });
+        setCurrent({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, source: locus.mnemonicSource, aiMnemonic: locus.aiMnemonic, mine: !!locus.mine, idx, total: total - 1, entry: false });
         if (quickCreateRef.current && quickCreateRef.current.id !== locus.id && quickCreateRef.current.status !== "generating") setQuickCreate(null);
         nearbyEmptyRef.current = locus.id;
         setNearbyEmpty({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, idx, total: total - 1 });
@@ -3409,6 +3423,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const [sculpting, setSculpting] = React.useState(null);
   const [decorMode, setDecorMode] = React.useState(false);
   const [customizeOpen, setCustomizeOpen] = React.useState(false);
+  const [buildMode, setBuildMode] = React.useState(false);
+  const [pendingSpot, setPendingSpot] = React.useState(null);
+  const [spotLabel, setSpotLabel] = React.useState("");
+  const [roomName, setRoomName] = React.useState("");
+  const [addingRoom, setAddingRoom] = React.useState(false);
   const [mnEditing, setMnEditing] = React.useState(false);
   const [mnDraft, setMnDraft] = React.useState("");
   const mnLocusId = current && current.id;
@@ -3706,6 +3725,51 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         done("images", "images", base64);
       }).catch(() => done("images", "images", null));
     }
+  };
+  const mineRooms = data?.memoryPalace?.extraRooms || [];
+  const mineLoci = data?.memoryPalace?.extraLoci || [];
+  React.useEffect(() => {
+    try {
+      handleRef.current?.setBuildMode?.(buildMode);
+    } catch (e) {
+    }
+  }, [buildMode, ready, failed, dataKey]);
+  const saveNewSpot = () => {
+    const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+    if (!MP || !persist || !pendingSpot) return;
+    const label = String(spotLabel || "").trim();
+    if (!label) return;
+    const id = MP.nextExtraLocusId(mineLoci);
+    const next = mineLoci.concat([{ id, room: pendingSpot.roomKey, label, lx: pendingSpot.lx, lz: pendingSpot.lz }]);
+    persist({ ...mpRef.current || {}, extraLoci: next }, "memoryPalace");
+    setPendingSpot(null);
+    setSpotLabel("");
+    if (addToast) addToast((t("memory_palace.build_added") || 'Added "{label}" to your palace.').replace("{label}", label), "success");
+  };
+  const addRoom = () => {
+    const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+    if (!MP || !persist) return;
+    const title2 = String(roomName || "").trim();
+    if (!title2) return;
+    const id = MP.nextExtraRoomId(mineRooms);
+    persist({ ...mpRef.current || {}, extraRooms: mineRooms.concat([{ id, title: title2 }]) }, "memoryPalace");
+    setRoomName("");
+    setAddingRoom(false);
+    if (addToast) addToast((t("memory_palace.build_room_added") || "Added the {title} to your palace.").replace("{title}", title2), "success");
+  };
+  const removeMineLocus = (id) => {
+    if (!persist || !id) return;
+    const store = { ...mpRef.current || {} };
+    store.extraLoci = (store.extraLoci || []).filter((e) => e && e.id !== id);
+    ["images", "depths", "objects", "stamps", "myMnemonics", "mastery"].forEach((k) => {
+      if (store[k] && store[k][id]) {
+        const c = { ...store[k] };
+        delete c[id];
+        store[k] = c;
+      }
+    });
+    persist(store, "memoryPalace");
+    if (addToast) addToast(t("memory_palace.build_removed") || "Spot removed from your palace.", "info");
   };
   const saveOwnMnemonic = (id, text) => {
     if (!id || id === "__entry" || !persist) return;
@@ -4310,6 +4374,21 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u{1F381} ",
     t("memory_palace.decorate_toggle") || "Decorate"
+  ), hasContent && !failed && persist && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => {
+        setBuildMode((b) => !b);
+        setPendingSpot(null);
+        setDecorMode(false);
+        setDirectMode(false);
+      },
+      "aria-pressed": buildMode ? "true" : "false",
+      className: `flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${buildMode ? "bg-sky-600 text-white border-sky-600" : "bg-white text-sky-700 border-sky-300 hover:bg-sky-50"}`,
+      title: t("memory_palace.build_tooltip") || "Extend the palace yourself: point at a spot on any room floor and click to add a new locus there"
+    },
+    "\u{1F9F1} ",
+    t("memory_palace.build_toggle") || "Build"
   ), hasContent && !failed && canImagen && persist && /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -4736,7 +4815,51 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       },
       "\xD7"
     ))
-  )), !presenting && !recall && !directMode && current && !current.entry && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-700 mb-0.5" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", current.label), current.mnemonic && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-indigo-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.picture_this") || "Picture this:"), " ", current.mnemonic, current.source === "self" && /* @__PURE__ */ React.createElement("span", { className: "ml-1.5 inline-block rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white" }, t("memory_palace.own_badge") || "Yours")), persist && !mnEditing && /* @__PURE__ */ React.createElement(
+  )), !presenting && !recall && buildMode && hasContent && !failed && /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3" }, pendingSpot ? /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
+    e.preventDefault();
+    saveNewSpot();
+  } }, /* @__PURE__ */ React.createElement("label", { className: "mb-1 block text-xs font-bold text-sky-900", htmlFor: "mp-new-spot" }, (t("memory_palace.build_name_label") || "What lives at this new spot in {room}?").replace("{room}", pendingSpot.roomLabel || "")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      id: "mp-new-spot",
+      value: spotLabel,
+      onChange: (e) => setSpotLabel(e.target.value),
+      autoFocus: true,
+      maxLength: 80,
+      placeholder: t("memory_palace.build_name_placeholder") || "A fact, a word, a step\u2026",
+      className: "min-w-[12rem] flex-1 rounded-lg border border-sky-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-600"
+    }
+  ), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !spotLabel.trim(), className: "rounded-full bg-sky-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-40" }, t("memory_palace.build_place") || "Place it"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+    setPendingSpot(null);
+    setSpotLabel("");
+  }, className: "rounded-full border border-sky-300 bg-white px-3 py-1.5 text-xs font-bold text-sky-700 transition-colors hover:bg-sky-100" }, t("common.cancel") || "Cancel"))) : addingRoom ? /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
+    e.preventDefault();
+    addRoom();
+  } }, /* @__PURE__ */ React.createElement("label", { className: "mb-1 block text-xs font-bold text-sky-900", htmlFor: "mp-new-room" }, t("memory_palace.build_room_label") || "Name your new room"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      id: "mp-new-room",
+      value: roomName,
+      onChange: (e) => setRoomName(e.target.value),
+      autoFocus: true,
+      maxLength: 40,
+      placeholder: t("memory_palace.build_room_placeholder") || "The Attic, Grandma\u2019s kitchen\u2026",
+      className: "min-w-[12rem] flex-1 rounded-lg border border-sky-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-600"
+    }
+  ), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !roomName.trim(), className: "rounded-full bg-sky-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-40" }, t("memory_palace.build_room_add") || "Add room"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+    setAddingRoom(false);
+    setRoomName("");
+  }, className: "rounded-full border border-sky-300 bg-white px-3 py-1.5 text-xs font-bold text-sky-700 transition-colors hover:bg-sky-100" }, t("common.cancel") || "Cancel"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-sm text-sky-900" }, "\u{1F9F1} ", t("memory_palace.build_hint") || "Point at the floor inside any room and click to add a new spot. Rooms you add are yours to keep \u2014 the palace grows, and nothing you already learned moves."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setAddingRoom(true), className: "rounded-full border border-sky-300 bg-white px-3 py-1 text-xs font-bold text-sky-700 transition-colors hover:bg-sky-100" }, "\u2795 ", t("memory_palace.build_new_room") || "New room"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-sky-800" }, (t("memory_palace.build_count") || "You have added {rooms} room(s) and {spots} spot(s).").replace("{rooms}", String(mineRooms.length)).replace("{spots}", String(mineLoci.length)))))), !presenting && !recall && !directMode && current && !current.entry && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-700 mb-0.5" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", current.label), current.mnemonic && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-indigo-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.picture_this") || "Picture this:"), " ", current.mnemonic, current.source === "self" && /* @__PURE__ */ React.createElement("span", { className: "ml-1.5 inline-block rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white" }, t("memory_palace.own_badge") || "Yours")), current.mine && persist && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => removeMineLocus(current.id),
+      className: "mt-2 ml-2 rounded-full border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-100",
+      title: t("memory_palace.build_remove_tip") || "Remove this spot you added, along with anything placed on it"
+    },
+    "\u{1F5D1} ",
+    t("memory_palace.build_remove") || "Remove this spot"
+  ), persist && !mnEditing && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

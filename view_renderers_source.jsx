@@ -3751,6 +3751,10 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         img: data?.memoryPalace?.generatedAt || 0,
         route: data?.memoryPalace?.routeOrder || [],
         routePreview: routePreview || [],
+        // Student-built rooms/loci CHANGE the geometry, so unlike a rewritten
+        // mnemonic they do have to rebuild the scene.
+        mine: [(data?.memoryPalace?.extraRooms || []).length, (data?.memoryPalace?.extraLoci || []).length],
+        mineIds: (data?.memoryPalace?.extraLoci || []).map((e) => e && e.id).join(','),
     });
     // Spaced review: which loci are due (dueAt <= now) vs never-walked. Stable
     // mount-time `now` so the banner doesn't flicker across renders.
@@ -3826,6 +3830,16 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             depths: data?.memoryPalace?.depths || {},
             objects: data?.memoryPalace?.objects || {},
             decor: decorLabels,   // screen-reader names for placed decorations (a11y parity)
+            // Build mode: a click on a room floor comes back here as a room-local
+            // spot; null means the click landed in the hub or outside the walls.
+            onFloorPlace: (spot) => {
+                if (!spot) {
+                    if (addToast) addToast(t('memory_palace.build_outside') || 'Aim at the floor inside a room to put a new spot there.', 'info');
+                    return;
+                }
+                setSpotLabel('');
+                setPendingSpot(spot);
+            },
             mastery: recall ? undefined : (data?.memoryPalace?.mastery || {}),   // recall-driven dimming (study mode only)
             recall: !!recall,
             // In-VR recall bank: the palace spawns the remaining answers as ray-
@@ -3839,7 +3853,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             onLocusChange: (locus, idx, total) => {
                 if (!locus) return;
                 currentRef.current = locus;
-                setCurrent({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, source: locus.mnemonicSource, aiMnemonic: locus.aiMnemonic, idx, total: total - 1, entry: locus.id === '__entry' });
+                setCurrent({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, source: locus.mnemonicSource, aiMnemonic: locus.aiMnemonic, mine: !!locus.mine, idx, total: total - 1, entry: locus.id === '__entry' });
                 if (quickCreateRef.current && quickCreateRef.current.id !== locus.id && quickCreateRef.current.status !== 'generating') setQuickCreate(null);
                 // Re-surface earned hints when revisiting a struggled locus.
                 const r = recallResultsRef.current[locus.id];
@@ -3859,7 +3873,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     return;
                 }
                 currentRef.current = locus;
-                setCurrent({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, source: locus.mnemonicSource, aiMnemonic: locus.aiMnemonic, idx, total: total - 1, entry: false });
+                setCurrent({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, source: locus.mnemonicSource, aiMnemonic: locus.aiMnemonic, mine: !!locus.mine, idx, total: total - 1, entry: false });
                 if (quickCreateRef.current && quickCreateRef.current.id !== locus.id && quickCreateRef.current.status !== 'generating') setQuickCreate(null);
                 nearbyEmptyRef.current = locus.id;
                 setNearbyEmpty({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, idx, total: total - 1 });
@@ -4178,6 +4192,15 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     // An image you invent yourself is recalled better than one handed to you, so
     // the student's line replaces the generated one everywhere it is read. The AI
     // line is kept, never destroyed, so they can compare or go back to it.
+    // ── Build mode: the student extends the palace itself ──
+    // A real memory palace grows — you add a spot, you add a room, and you reuse
+    // the building for new material. Generated geography answers to the document;
+    // these additions answer to the student and survive regeneration.
+    const [buildMode, setBuildMode] = React.useState(false);
+    const [pendingSpot, setPendingSpot] = React.useState(null);   // {roomKey, roomLabel, lx, lz}
+    const [spotLabel, setSpotLabel] = React.useState('');
+    const [roomName, setRoomName] = React.useState('');
+    const [addingRoom, setAddingRoom] = React.useState(false);
     const [mnEditing, setMnEditing] = React.useState(false);
     const [mnDraft, setMnDraft] = React.useState('');
     // Walking on closes the editor: a draft written for the last locus must never
@@ -4431,6 +4454,54 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                 })
                 .catch(() => done('images', 'images', null));
         }
+    };
+
+    // ── Extending the palace ──
+    // Additions live in their own sub-stores (extraRooms / extraLoci) so they can
+    // never collide with generated ids and survive a regeneration of the document.
+    // A student locus keeps ROOM-LOCAL coordinates, which is what lets it stay put
+    // when siblings are added and still rotate with its room's spoke.
+    const mineRooms = data?.memoryPalace?.extraRooms || [];
+    const mineLoci = data?.memoryPalace?.extraLoci || [];
+
+    React.useEffect(() => {
+        try { handleRef.current?.setBuildMode?.(buildMode); } catch (e) {}
+    }, [buildMode, ready, failed, dataKey]);
+
+    const saveNewSpot = () => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (!MP || !persist || !pendingSpot) return;
+        const label = String(spotLabel || '').trim();
+        if (!label) return;
+        const id = MP.nextExtraLocusId(mineLoci);
+        const next = mineLoci.concat([{ id, room: pendingSpot.roomKey, label, lx: pendingSpot.lx, lz: pendingSpot.lz }]);
+        persist({ ...(mpRef.current || {}), extraLoci: next }, 'memoryPalace');
+        setPendingSpot(null); setSpotLabel('');
+        if (addToast) addToast((t('memory_palace.build_added') || 'Added "{label}" to your palace.').replace('{label}', label), 'success');
+    };
+
+    const addRoom = () => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (!MP || !persist) return;
+        const title = String(roomName || '').trim();
+        if (!title) return;
+        const id = MP.nextExtraRoomId(mineRooms);
+        persist({ ...(mpRef.current || {}), extraRooms: mineRooms.concat([{ id, title }]) }, 'memoryPalace');
+        setRoomName(''); setAddingRoom(false);
+        if (addToast) addToast((t('memory_palace.build_room_added') || 'Added the {title} to your palace.').replace('{title}', title), 'success');
+    };
+
+    // Removing a student locus also clears anything hung on it, so no art, image
+    // or schedule is left pointing at a spot that no longer exists.
+    const removeMineLocus = (id) => {
+        if (!persist || !id) return;
+        const store = { ...(mpRef.current || {}) };
+        store.extraLoci = (store.extraLoci || []).filter((e) => e && e.id !== id);
+        ['images', 'depths', 'objects', 'stamps', 'myMnemonics', 'mastery'].forEach((k) => {
+            if (store[k] && store[k][id]) { const c = { ...store[k] }; delete c[id]; store[k] = c; }
+        });
+        persist(store, 'memoryPalace');
+        if (addToast) addToast(t('memory_palace.build_removed') || 'Spot removed from your palace.', 'info');
     };
 
     // ── Save the student's own image for a locus ──
@@ -5026,6 +5097,16 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     🎁 {t('memory_palace.decorate_toggle') || 'Decorate'}
                                 </button>
                             )}
+                            {hasContent && !failed && persist && (
+                                <button
+                                    onClick={() => { setBuildMode((b) => !b); setPendingSpot(null); setDecorMode(false); setDirectMode(false); }}
+                                    aria-pressed={buildMode ? 'true' : 'false'}
+                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${buildMode ? 'bg-sky-600 text-white border-sky-600' : 'bg-white text-sky-700 border-sky-300 hover:bg-sky-50'}`}
+                                    title={t('memory_palace.build_tooltip') || 'Extend the palace yourself: point at a spot on any room floor and click to add a new locus there'}
+                                >
+                                    🧱 {t('memory_palace.build_toggle') || 'Build'}
+                                </button>
+                            )}
                             {hasContent && !failed && canImagen && persist && (
                                 <button
                                     onClick={() => setReliefOn((r) => !r)}
@@ -5477,6 +5558,72 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     </div>
                 )}
             </div>
+            {!presenting && !recall && buildMode && hasContent && !failed && (
+                <div className="mt-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3">
+                    {pendingSpot ? (
+                        <form onSubmit={(e) => { e.preventDefault(); saveNewSpot(); }}>
+                            <label className="mb-1 block text-xs font-bold text-sky-900" htmlFor="mp-new-spot">
+                                {(t('memory_palace.build_name_label') || 'What lives at this new spot in {room}?').replace('{room}', pendingSpot.roomLabel || '')}
+                            </label>
+                            <div className="flex flex-wrap gap-1.5">
+                                <input
+                                    id="mp-new-spot"
+                                    value={spotLabel}
+                                    onChange={(e) => setSpotLabel(e.target.value)}
+                                    autoFocus
+                                    maxLength={80}
+                                    placeholder={t('memory_palace.build_name_placeholder') || 'A fact, a word, a step…'}
+                                    className="min-w-[12rem] flex-1 rounded-lg border border-sky-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-600"
+                                />
+                                <button type="submit" disabled={!spotLabel.trim()} className="rounded-full bg-sky-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-40">
+                                    {t('memory_palace.build_place') || 'Place it'}
+                                </button>
+                                <button type="button" onClick={() => { setPendingSpot(null); setSpotLabel(''); }} className="rounded-full border border-sky-300 bg-white px-3 py-1.5 text-xs font-bold text-sky-700 transition-colors hover:bg-sky-100">
+                                    {t('common.cancel') || 'Cancel'}
+                                </button>
+                            </div>
+                        </form>
+                    ) : addingRoom ? (
+                        <form onSubmit={(e) => { e.preventDefault(); addRoom(); }}>
+                            <label className="mb-1 block text-xs font-bold text-sky-900" htmlFor="mp-new-room">
+                                {t('memory_palace.build_room_label') || 'Name your new room'}
+                            </label>
+                            <div className="flex flex-wrap gap-1.5">
+                                <input
+                                    id="mp-new-room"
+                                    value={roomName}
+                                    onChange={(e) => setRoomName(e.target.value)}
+                                    autoFocus
+                                    maxLength={40}
+                                    placeholder={t('memory_palace.build_room_placeholder') || 'The Attic, Grandma\u2019s kitchen…'}
+                                    className="min-w-[12rem] flex-1 rounded-lg border border-sky-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-600"
+                                />
+                                <button type="submit" disabled={!roomName.trim()} className="rounded-full bg-sky-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-40">
+                                    {t('memory_palace.build_room_add') || 'Add room'}
+                                </button>
+                                <button type="button" onClick={() => { setAddingRoom(false); setRoomName(''); }} className="rounded-full border border-sky-300 bg-white px-3 py-1.5 text-xs font-bold text-sky-700 transition-colors hover:bg-sky-100">
+                                    {t('common.cancel') || 'Cancel'}
+                                </button>
+                            </div>
+                        </form>
+                    ) : (
+                        <>
+                            <div className="text-sm text-sky-900">
+                                🧱 {t('memory_palace.build_hint') || 'Point at the floor inside any room and click to add a new spot. Rooms you add are yours to keep — the palace grows, and nothing you already learned moves.'}
+                            </div>
+                            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                                <button type="button" onClick={() => setAddingRoom(true)} className="rounded-full border border-sky-300 bg-white px-3 py-1 text-xs font-bold text-sky-700 transition-colors hover:bg-sky-100">
+                                    ➕ {t('memory_palace.build_new_room') || 'New room'}
+                                </button>
+                                <span className="text-[11px] text-sky-800">
+                                    {(t('memory_palace.build_count') || 'You have added {rooms} room(s) and {spots} spot(s).')
+                                        .replace('{rooms}', String(mineRooms.length)).replace('{spots}', String(mineLoci.length))}
+                                </span>
+                            </div>
+                        </>
+                    )}
+                </div>
+            )}
             {!presenting && !recall && !directMode && current && !current.entry && (
                 <div className="mt-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3">
                     <div className="text-xs font-bold text-indigo-700 mb-0.5">
@@ -5491,6 +5638,16 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 </span>
                             )}
                         </div>
+                    )}
+                    {current.mine && persist && (
+                        <button
+                            type="button"
+                            onClick={() => removeMineLocus(current.id)}
+                            className="mt-2 ml-2 rounded-full border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-100"
+                            title={t('memory_palace.build_remove_tip') || 'Remove this spot you added, along with anything placed on it'}
+                        >
+                            🗑 {t('memory_palace.build_remove') || 'Remove this spot'}
+                        </button>
                     )}
                     {/* Writing your own image IS the technique, not a decoration on it: a
                         picture you invent is recalled better than one you were handed.

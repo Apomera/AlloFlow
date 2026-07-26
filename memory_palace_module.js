@@ -121,6 +121,68 @@
     return true;
   }
 
+  // ── Student-built extensions (expanding the palace) ─────────────────
+  // A real memory palace grows: you add a room, you add a spot, and you reuse the
+  // building for new material. Generated geography answers to the document;
+  // these answer to the STUDENT, and persist across regeneration.
+  //
+  // Extra loci are stored in ROOM-LOCAL coordinates rather than as wall slots.
+  // That is the whole point: wall slots re-space every sibling when one is added
+  // (lx divides ROOM_W by the count), which would quietly move furniture the
+  // student had already memorised. A local (lx, lz) never moves — it just rotates
+  // with its room's spoke — so an addition costs nothing already learned.
+  var EXTRA_PREFIX = 'xl';
+  var EXTRA_ROOM_PREFIX = 'xr';
+
+  function _nextSeqId(existing, prefix) {
+    var max = 0;
+    (Array.isArray(existing) ? existing : []).forEach(function (e) {
+      var id = (e && e.id != null) ? String(e.id) : String(e == null ? '' : e);
+      if (id.indexOf(prefix) !== 0) return;
+      var n = parseInt(id.slice(prefix.length), 10);
+      if (!isNaN(n) && n > max) max = n;
+    });
+    return prefix + (max + 1);
+  }
+  function nextExtraLocusId(extraLoci) { return _nextSeqId(extraLoci, EXTRA_PREFIX); }
+  function nextExtraRoomId(extraRooms) { return _nextSeqId(extraRooms, EXTRA_ROOM_PREFIX); }
+
+  // Where a menu-added (not floor-placed) locus stands: down the middle of the
+  // room on a FIXED step, so it never collides with the wall frames and never
+  // shifts when the next one is added. Clamped to stay inside the room.
+  function extraSpotFor(k) {
+    var step = ROOM_W / 6;
+    var lx = -ROOM_W / 2 + step * ((k % 5) + 1);
+    var lz = (Math.floor(k / 5) % 2 === 0) ? 0 : -ROOM_D / 6;
+    return { lx: Math.max(-ROOM_W / 2 + 10, Math.min(ROOM_W / 2 - 10, lx)), lz: lz };
+  }
+
+  // Inverse of the spoke rotation buildPalace applies: a world floor point back
+  // into its room's local (lx, lz). PURE — this is what lets a click on the
+  // ground become a locus the room owns, so it rotates with the spoke like
+  // everything else instead of being pinned to a world coordinate.
+  function worldToRoomLocal(room, x, z) {
+    if (!room || !room.center) return null;
+    var ang = room.angle || 0, ca = Math.cos(ang), sa = Math.sin(ang);
+    var dx = x - room.center.x, dz = z - room.center.z;
+    return { lx: dx * ca - dz * sa, lz: dx * sa + dz * ca };
+  }
+  // Which room contains a world floor point (with a small inset so a locus is
+  // never dropped inside a wall). Returns { room, lx, lz } or null for the hub.
+  function roomAtPoint(palace, x, z, inset) {
+    var pad = isNum(inset) ? inset : 22;
+    var found = null;
+    ((palace && palace.rooms) || []).forEach(function (room, ri) {
+      if (found || ri === 0) return;                 // the hub plaza is not a room
+      var lc = worldToRoomLocal(room, x, z);
+      if (!lc) return;
+      if (Math.abs(lc.lx) <= ROOM_W / 2 - pad && Math.abs(lc.lz) <= ROOM_D / 2 - pad) {
+        found = { room: room, roomKey: room.key, lx: lc.lx, lz: lc.lz };
+      }
+    });
+    return found;
+  }
+
   // ── buildPalace — PURE: {main, branches[±mnemonics]} → rooms/loci/route ──
   // Rooms in a row along +X (entry hall first), items alternate left/right walls
   // in reading order, each locus carries its camera stop. Deterministic.
@@ -148,8 +210,62 @@
     // long walls, doorway on the hub-facing end) is unchanged; we just rotate each
     // room by its spoke angle and rotate the loci world positions to match — so the
     // route, loci ids, camera rails, and recall all keep working.
+    // Student-built rooms ride the same spoke ring, appended after the generated
+    // ones so the walking ORDER a learner already knows is never re-shuffled.
+    var mp = (data && data.memoryPalace) || {};
+    var extraRooms = (opts.extraRooms && Array.isArray(opts.extraRooms)) ? opts.extraRooms
+      : (Array.isArray(mp.extraRooms) ? mp.extraRooms : []);
+    var extraLoci = (opts.extraLoci && Array.isArray(opts.extraLoci)) ? opts.extraLoci
+      : (Array.isArray(mp.extraLoci) ? mp.extraLoci : []);
+    var roomKeys = branches.map(function (b, bi) { return 'b' + bi; })
+      .concat(extraRooms.map(function (r, ri) { return (r && r.id) ? String(r.id) : (EXTRA_ROOM_PREFIX + (ri + 1)); }));
+    // Group the student's loci by room, keeping their authoring order. A locus
+    // whose room vanished (the document regenerated with fewer branches) is
+    // re-homed into the first room rather than silently deleted — it is the
+    // student's work, not ours to throw away.
+    var extrasByRoom = {};
+    roomKeys.forEach(function (k) { extrasByRoom[k] = []; });
+    extraLoci.forEach(function (e) {
+      if (!e || !e.id) return;
+      var key = String(e.room == null ? '' : e.room);
+      if (!extrasByRoom[key]) key = roomKeys[0];
+      if (!key || !extrasByRoom[key]) return;                 // no rooms at all ⇒ nothing to hang it on
+      extrasByRoom[key].push(e);
+    });
+    // Place one student locus in room-local space (its own spot, never a wall slot).
+    function pushExtra(e, k, roomIdx, bi, ang, rot) {
+      var spot = (isNum(e.lx) && isNum(e.lz)) ? { lx: e.lx, lz: e.lz } : extraSpotFor(k);
+      var fp = rot(spot.lx, spot.lz);
+      var cp = rot(spot.lx - CAM_BACK, spot.lz);              // stand between the doorway and it
+      loci.push({
+        id: String(e.id), roomIdx: roomIdx, branchIdx: bi, itemIdx: -1, mine: true,
+        lx: spot.lx, lz: spot.lz,
+        label: _itemText(e.label != null ? e.label : e.text),
+        mnemonic: (e.mnemonic != null) ? String(e.mnemonic) : '',
+        framePos: { x: fp.x, y: EYE + 20, z: fp.z }, faceDir: -1,
+        faceYaw: ang + Math.PI,                               // face back toward the doorway
+        camPos: { x: cp.x, y: EYE, z: cp.z },
+        lookAt: { x: fp.x, y: EYE + 20, z: fp.z }
+      });
+      route.push(String(e.id));
+    }
+
+    // The inner ring is sized by the GENERATED rooms alone, so building an annex
+    // never re-angles a spoke the student has already walked a hundred times.
     var N = Math.max(1, branches.length);
     var SPOKE_R = Math.max(ROOM_W * 1.4, (N * ROOM_D) / (2 * Math.PI) * 1.25 + ROOM_W / 2);
+    // Student rooms ride an outer ring on a FIXED 8-slot carousel (offset half a
+    // slot so they sit between the inner spokes, never directly behind one).
+    // Fixed slots ⇒ adding the 3rd annex does not move the 1st or 2nd.
+    var OUTER_SLOTS = 8;
+    var OUTER_GAP = ROOM_W * 1.35;
+    function outerRoomPlacement(ri) {
+      var lap = Math.floor(ri / OUTER_SLOTS);
+      return {
+        ang: (2 * Math.PI * ((ri % OUTER_SLOTS) + 0.5)) / OUTER_SLOTS,
+        r: SPOKE_R + OUTER_GAP * (lap + 1)
+      };
+    }
     branches.forEach(function (b, bi) {
       var roomIdx = bi + 1;
       var ang = (2 * Math.PI * bi) / N;                 // spoke angle (room's rotation.y)
@@ -184,6 +300,25 @@
         });
         route.push(id);
       });
+      (extrasByRoom['b' + bi] || []).forEach(function (e, k) { pushExtra(e, k, roomIdx, bi, ang, rot); });
+    });
+
+    // Rooms the student added themselves — no generated items, only their own loci.
+    extraRooms.forEach(function (r, ri) {
+      var bi = branches.length + ri;
+      var roomIdx = bi + 1;
+      var key = (r && r.id) ? String(r.id) : (EXTRA_ROOM_PREFIX + (ri + 1));
+      var place = outerRoomPlacement(ri);
+      var ang = place.ang;
+      var ca = Math.cos(ang), sa = Math.sin(ang);
+      var cx = place.r * ca, cz = -place.r * sa;
+      var rot = function (lx, lz) { return { x: cx + lx * ca + lz * sa, z: cz - lx * sa + lz * ca }; };
+      rooms.push({
+        key: key, label: (r && r.title != null) ? String(r.title) : ('Room ' + roomIdx),
+        index: roomIdx, center: { x: cx, z: cz }, angle: ang,
+        color: PALETTE[bi % PALETTE.length], mine: true
+      });
+      (extrasByRoom[key] || []).forEach(function (e, k) { pushExtra(e, k, roomIdx, bi, ang, rot); });
     });
 
     // A saved self-authored image wins over the generated one everywhere the
@@ -205,7 +340,8 @@
       : (data && data.memoryPalace && Array.isArray(data.memoryPalace.routeOrder) ? data.memoryPalace.routeOrder : null);
     route = normalizeRouteOrder(route, preferredRoute);
 
-    var reach = SPOKE_R + ROOM_D / 2 + 80;               // radial extent (square bounds around the hub)
+    var outerLaps = extraRooms.length ? Math.floor((extraRooms.length - 1) / OUTER_SLOTS) + 1 : 0;
+    var reach = SPOKE_R + OUTER_GAP * outerLaps + ROOM_D / 2 + 80;   // radial extent, annexes included
     return {
       version: VERSION, title: main,
       rooms: rooms, loci: loci, route: route,
@@ -992,8 +1128,23 @@
         new THREE.MeshStandardMaterial({ color: 0x475569, emissive: 0xffd9a0, emissiveIntensity: 0.85, roughness: 0.5, metalness: 0.2 }));
       lampBar.position.set(0, FRAME_H / 2 + 24, 6);
       g2.add(lampBar);
+      // A student-built locus stands free in the room rather than hanging on a
+      // wall, so it gets a post and a base plate to sit on — and skips the wall
+      // wash, which would otherwise glow on thin air behind it.
+      if (l.mine) {
+        try {
+          var postMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.55), roughness: 0.7, metalness: 0.25 });
+          var postH = Math.max(10, l.framePos.y - FRAME_H / 2 - 1);
+          var post = new THREE.Mesh(new THREE.CylinderGeometry(5, 6.5, postH, 10), postMat);
+          post.position.set(0, -(FRAME_H / 2) - postH / 2, 0);
+          g2.add(post);
+          var base = new THREE.Mesh(new THREE.CylinderGeometry(16, 19, 3.5, 16), postMat);
+          base.position.set(0, -(FRAME_H / 2) - postH + 1.75, 0);
+          g2.add(base);
+        } catch (eP) {}
+      }
       // Warm wash on the wall around the frame — the picture light "shining".
-      if (_washMat) {
+      if (_washMat && !l.mine) {
         try {
           var wash = new THREE.Mesh(new THREE.PlaneGeometry(FRAME_W * 1.7, FRAME_H * 1.9), _washMat);
           wash.position.set(0, 14, -0.5);   // between the wall face and the frame border
@@ -1765,6 +1916,54 @@
 
     var dragging = false, moved = false, lx = 0, ly = 0;
     var raycaster = new THREE.Raycaster(); var ndc = new THREE.Vector2();
+    // ── Build mode: click the floor to drop a new locus where you are looking ──
+    // The palace is the student's to extend, so placement happens IN the walk
+    // rather than in a form: point at a spot on a room floor, click, name it.
+    // A ghost ring previews the landing spot and turns red outside any room.
+    var buildMode = false, _ghost = null, _floorPlane = null;
+    var _ghostOk = false;
+    function _ensureGhost() {
+      if (_ghost) return _ghost;
+      try {
+        _ghost = new THREE.Mesh(
+          new THREE.RingGeometry(13, 19, 24),
+          new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthTest: false })
+        );
+        _ghost.rotation.x = -Math.PI / 2;
+        _ghost.visible = false;
+        _ghost.renderOrder = 6;
+        group.add(_ghost);
+      } catch (e) { _ghost = null; }
+      return _ghost;
+    }
+    function _floorHit(clientX, clientY) {
+      try {
+        if (!_floorPlane) _floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+        var r = el.getBoundingClientRect();
+        ndc.x = ((clientX - r.left) / Math.max(1, r.width)) * 2 - 1;
+        ndc.y = -((clientY - r.top) / Math.max(1, r.height)) * 2 + 1;
+        raycaster.setFromCamera(ndc, camera);
+        var pt = new THREE.Vector3();
+        return raycaster.ray.intersectPlane(_floorPlane, pt) ? pt : null;
+      } catch (e) { return null; }
+    }
+    function _updateGhost(clientX, clientY) {
+      var g = _ensureGhost();
+      if (!g) return;
+      var pt = _floorHit(clientX, clientY);
+      if (!pt) { g.visible = false; _ghostOk = false; return; }
+      var spot = roomAtPoint(palace, pt.x, pt.z);
+      _ghostOk = !!spot;
+      g.visible = true;
+      g.position.set(pt.x, 1.2, pt.z);
+      try { g.material.color.set(spot ? 0x38bdf8 : 0xf87171); } catch (e) {}
+    }
+    state.setBuildMode = function (on) {
+      buildMode = !!on;
+      var g = _ensureGhost();
+      if (g && !buildMode) g.visible = false;
+      try { el.style.cursor = buildMode ? 'crosshair' : 'grab'; } catch (e) {}
+    };
     function onDown(e) { dragging = true; moved = false; lx = e.clientX; ly = e.clientY; el.style.cursor = 'grabbing'; try { el.focus(); } catch (er) {} }   // focus so WASD/arrows work after a click
     function onMove(e) {
       if (!dragging) return;
@@ -1780,7 +1979,21 @@
       }
       lx = e.clientX; ly = e.clientY;
     }
+    function onHover(e) { if (buildMode && !dragging) _updateGhost(e.clientX, e.clientY); }
     function onUp(e) {
+      if (dragging && !moved && buildMode) {
+        dragging = false;
+        try {
+          var pt = _floorHit(e.clientX, e.clientY);
+          var spot = pt ? roomAtPoint(palace, pt.x, pt.z) : null;
+          if (spot && typeof opts.onFloorPlace === 'function') {
+            opts.onFloorPlace({ roomKey: spot.roomKey, roomLabel: spot.room.label, lx: spot.lx, lz: spot.lz });
+          } else if (typeof opts.onFloorPlace === 'function') {
+            opts.onFloorPlace(null);                 // outside a room — the host explains why
+          }
+        } catch (er) {}
+        return;
+      }
       if (dragging && !moved) {
         try {
           var r = el.getBoundingClientRect();
@@ -1806,6 +2019,7 @@
     }
     el.style.cursor = 'grab';
     el.addEventListener('pointerdown', onDown);
+    el.addEventListener('pointermove', onHover);
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     el.addEventListener('wheel', onWheel, { passive: false });
@@ -1813,6 +2027,7 @@
     state.cleanup.push(function () {
       el.removeEventListener('keydown', onKeyDown);
       el.removeEventListener('keyup', onKeyUp);
+      try { el.removeEventListener('pointermove', onHover); } catch (eH) {}
       routePanel.removeEventListener('keydown', onRouteKeyDown);
       el.removeEventListener('pointerdown', onDown);
       window.removeEventListener('pointermove', onMove);
@@ -2159,7 +2374,7 @@
     var routeEl = buildRouteDom(palace, t, routeVisible, !!opts.recall, opts.decor);   // sr-only while 3D is live
     container.appendChild(routeEl);
 
-    var state = { raf: 0, renderer: null, scene: null, disposed: false, onResize: null, cleanup: [], goTo: null, setTourPace: null, revealLocus: null, setLocusStatus: null, setLocusMnemonic: null, routePanel: null };
+    var state = { raf: 0, renderer: null, scene: null, disposed: false, onResize: null, cleanup: [], goTo: null, setTourPace: null, revealLocus: null, setLocusStatus: null, setLocusMnemonic: null, setBuildMode: null, routePanel: null };
     function destroy() {
       state.disposed = true;
       if (state.raf) { try { (window.cancelAnimationFrame || function () {})(state.raf); } catch (e) {} state.raf = 0; }
@@ -2201,6 +2416,7 @@
     function replaceLocusObject(id, recipe) { try { if (state.replaceLocusObject) state.replaceLocusObject(id, recipe); } catch (e) {} }
     function clearLocus(id) { try { if (state.clearLocus) state.clearLocus(id); } catch (e) {} }
     function setDecor(d) { try { if (state.setDecor) state.setDecor(d); } catch (e) {} }
+    function setBuildMode(on) { try { if (state.setBuildMode) state.setBuildMode(on); } catch (e) {} }
     // The route list is the accessible source of truth, and it quotes the
     // mnemonic — so an edited image has to reach it too, or screen-reader users
     // would keep reading the generated line the student just replaced.
@@ -2231,7 +2447,7 @@
 
     if (!isWebGLAvailable()) {
       showFallback(_tr(t, 'memory_palace.no_webgl', 'This browser cannot show the 3D palace. Showing the walking route instead.'));
-      return { destroy: destroy, goTo: goTo, setTourPace: setTourPace, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, setLocusBusy: setLocusBusy, replaceLocusObject: replaceLocusObject, clearLocus: clearLocus, setDecor: setDecor, setLocusMnemonic: setLocusMnemonic, fellBack: true };
+      return { destroy: destroy, goTo: goTo, setTourPace: setTourPace, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, setLocusBusy: setLocusBusy, replaceLocusObject: replaceLocusObject, clearLocus: clearLocus, setDecor: setDecor, setLocusMnemonic: setLocusMnemonic, setBuildMode: setBuildMode, fellBack: true };
     }
 
     var holder = document.createElement('div');
@@ -2253,7 +2469,7 @@
       showFallback(_tr(t, 'memory_palace.load_error', 'The 3D library could not load. Showing the walking route instead.'));
     });
 
-    return { destroy: destroy, goTo: goTo, setTourPace: setTourPace, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, setLocusBusy: setLocusBusy, replaceLocusObject: replaceLocusObject, clearLocus: clearLocus, setDecor: setDecor, setLocusMnemonic: setLocusMnemonic, fellBack: false };
+    return { destroy: destroy, goTo: goTo, setTourPace: setTourPace, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, setLocusBusy: setLocusBusy, replaceLocusObject: replaceLocusObject, clearLocus: clearLocus, setDecor: setDecor, setLocusMnemonic: setLocusMnemonic, setBuildMode: setBuildMode, fellBack: false };
   }
 
   window.AlloModules = window.AlloModules || {};
@@ -2268,6 +2484,11 @@
     MNEMONIC_CRITERIA: MNEMONIC_CRITERIA,
     mnemonicFeedback: mnemonicFeedback,
     applyOwnMnemonic: applyOwnMnemonic,
+    worldToRoomLocal: worldToRoomLocal,
+    roomAtPoint: roomAtPoint,
+    nextExtraLocusId: nextExtraLocusId,
+    nextExtraRoomId: nextExtraRoomId,
+    extraSpotFor: extraSpotFor,
     RECALL_DIRECTIONS: RECALL_DIRECTIONS,
     buildRecallOrder: buildRecallOrder,
     decorSpot: decorSpot,
