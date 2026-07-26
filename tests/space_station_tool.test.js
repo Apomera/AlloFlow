@@ -487,6 +487,27 @@ describe('space station tool', () => {
       expect(integrated).toContain('All systems');
       expect(integrated).toContain('Crew safety is the combined result');
 
+      // ── Ops-model fidelity ────────────────────────────────────────────────
+      // These pin two properties the model got WRONG, both of which taught
+      // something false about the real station.
+      //
+      // 1. A nominal orbit must CHARGE the battery. The arrays were modelled at
+      //    132 kW peak, which left a full crew running routine research
+      //    net-negative every orbit — i.e. the ISS could not do science at full
+      //    crew. It does, continuously.
+      const fidelityPower = mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'power', opsScenario: 'nominal' });
+      expect(fidelityPower).toContain('Net charge +');
+      expect(fidelityPower).not.toContain('Net discharge');
+
+      // 2. Cabin CO2 must read like a spacecraft, not an office. Real ISS cabin
+      //    CO2 runs roughly 2-4 mmHg (~2600-5300 ppm) against Earth's ~420 ppm;
+      //    the old model peaked near 950 ppm and ruled at < 1000.
+      const fidelityEclss = mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'eclss', opsScenario: 'nominal' });
+      const fidelityPpm = Number((fidelityEclss.match(/Modeled CO₂ (\d+) ppm/) || [])[1]);
+      expect(fidelityPpm).toBeGreaterThan(2000);
+      expect(fidelityPpm).toBeLessThan(5300);
+      expect(fidelityEclss).toContain('Earth air is ~420 ppm');
+
       const comparison = mountWithSeed({ ...BASE, tab: 'operations', opsScenario: 'science', opsResearch: 95 });
       expect(comparison).toContain('Dashed = nominal orbit');
 
@@ -542,7 +563,9 @@ describe('space station tool', () => {
         expect(fault.getAttribute('aria-pressed')).toBe('true');
         expect(live.host.textContent).toContain('Cascading fault');
         expect(live.host.textContent).toContain('RULE ≥ 25% · CHECK');
-        expect(live.host.textContent).toContain('RULE < 1000 ppm · CHECK');
+        // 4000 ppm ~= 3 mmHg, the level ISS crews work to stay under. The old
+        // 1000 ppm rule was an office-air figure: real cabin CO2 runs 2-4 mmHg.
+        expect(live.host.textContent).toContain('RULE < 4000 ppm · CHECK');
         expect(live.host.textContent).toContain('4 FLIGHT RULES TO CHECK');
         expect(live.host.textContent).toContain('too little battery reserve after eclipse');
         const powerRule = live.host.querySelector('[data-flight-rule="power"]');

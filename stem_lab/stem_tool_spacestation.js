@@ -1751,7 +1751,7 @@
       function renderOpsNetwork(metrics, focus) {
         var nodes = [
           { id: 'power', x: 92, y: 56, label: 'POWER', value: metrics.power.toFixed(0) + '%', color: metrics.power > 25 ? '#fbbf24' : '#f87171' },
-          { id: 'air', x: 548, y: 56, label: 'AIR', value: metrics.co2.toFixed(0) + ' ppm', color: metrics.co2 < 1000 ? '#34d399' : '#f87171' },
+          { id: 'air', x: 548, y: 56, label: 'AIR', value: metrics.co2.toFixed(0) + ' ppm', color: metrics.co2 < metrics.co2Action ? '#34d399' : '#f87171' },
           { id: 'water', x: 86, y: 154, label: 'WATER', value: metrics.recovery.toFixed(0) + '%', color: metrics.recovery > 90 ? '#38bdf8' : '#fbbf24' },
           { id: 'thermal', x: 554, y: 154, label: 'THERMAL', value: metrics.temp.toFixed(1) + '°C', color: metrics.temp > 18 && metrics.temp < 27 ? '#fb923c' : '#f87171' },
           { id: 'attitude', x: 320, y: 180, label: 'ATTITUDE', value: metrics.cmg.toFixed(0) + '%', color: metrics.cmg < 80 ? '#a78bfa' : '#f87171' }
@@ -1785,17 +1785,45 @@
         var debrisSize = opsClamp(d.opsDebrisSize == null ? 1 : d.opsDebrisSize, .2, 12);
         var shieldGap = opsClamp(d.opsShieldGap == null ? 10 : d.opsShieldGap, 2, 20);
         var debrisSpeed = opsClamp(d.opsDebrisSpeed == null ? 12 : d.opsDebrisSpeed, 7, 15);
+        // ── Model constants ────────────────────────────────────────────────
+        // Named rather than inlined because the battery projection is computed in
+        // FOUR places (headline, per-minute forecast, nominal reference forecast,
+        // scrubber cursor) and they must not drift apart.
+        //
+        // ARRAY_PEAK_KW is the arrays' output at perfect pointing while sunlit,
+        // not the orbit average. Over a 92-minute orbit with a 35-minute eclipse
+        // it averages ~99 kW, inside the 84-120 kW NASA cites for the station
+        // since the iROSA upgrades. This was 132, which made the average ~82 kW
+        // and left the NOMINAL configuration net-negative: a full crew running
+        // routine research drained the battery every orbit, implying the real ISS
+        // cannot do science at full crew. It sustains both, so the model must too.
+        var ARRAY_PEAK_KW = 160;
+        // Assumed usable battery capacity, so a kWh surplus becomes a percentage
+        // of reserve. Previously a bare "/ 2.1" divisor, which is this same
+        // assumption (210 kWh) left unstated.
+        var BATTERY_KWH = 210;
+        // Cabin CO2 action level, ~3 mmHg. Crews work to stay under this; NASA's
+        // 180-day limit is higher still. The old rule was 1000 ppm, an office-air
+        // number: real ISS cabin CO2 runs roughly 2-4 mmHg (~2600-5300 ppm),
+        // never near ground level, because scrubbing keeps pace with the crew
+        // rather than eliminating CO2.
+        var CO2_ACTION_PPM = 4000;
+
         var load = 68 + crew * 1.6 + research * .22;
-        var generation = 132 * Math.sin(arrayAngle * Math.PI / 180);
+        var generation = ARRAY_PEAK_KW * Math.sin(arrayAngle * Math.PI / 180);
         var energyIn = generation * (92 - eclipse) / 60;
         var energyOut = load * 92 / 60;
-        var orbitDelta = (energyIn - energyOut) / 2.1;
+        var orbitDelta = (energyIn - energyOut) / (BATTERY_KWH / 100);
         var projectedBattery = opsClamp(battery + orbitDelta, 0, 100);
         var waterNeed = crew * 3.8;
         var waterReturn = waterNeed * recovery / 100;
         var resupplyWater = waterNeed - waterReturn;
         var oxygenNeed = crew * .84;
-        var co2 = opsClamp(350 + crew * 55 + (100 - scrub) * 18, 350, 2500);
+        // Tuned so a nominal 7-crew day with healthy scrubbing lands ~2600 ppm
+        // (~2 mmHg, a good day aboard), perfect scrubbing ~2000 ppm, and a
+        // degraded scrubber with 11 aboard climbs past 5000 ppm. The floor stays
+        // near Earth ambient; the ceiling sits around NASA's long-duration limit.
+        var co2 = opsClamp(425 + crew * 225 + (100 - scrub) * 50, 400, 8000);
         var wasteHeat = load * .72;
         var rejectedHeat = radiator * .75 * cooling / 100;
         var cabinTemp = opsClamp(22 + (wasteHeat - rejectedHeat) / 12, 10, 40);
@@ -1807,26 +1835,28 @@
         var impactKj = .5 * debrisMass * Math.pow(debrisSpeed * 1000, 2) / 1000;
         var shieldCapacity = 5 * Math.pow(shieldGap / 10, 1.4);
         var powerScore = projectedBattery;
-        var airScore = opsClamp(100 - Math.max(0, co2 - 650) / 12, 0, 100);
+        // 100 at a well-scrubbed ~2000 ppm, reaching 0 near the long-duration
+        // limit, so the meter tracks the same scale the flight rule uses.
+        var airScore = opsClamp(100 - Math.max(0, co2 - 2000) / 50, 0, 100);
         var thermalScore = opsClamp(100 - Math.abs(cabinTemp - 22) * 13, 0, 100);
         var attitudeScore = opsClamp(100 - nextCmg * .65, 0, 100);
         var health = Math.round((powerScore + airScore + recovery + thermalScore + attitudeScore) / 5);
         var healthColor = health >= 75 ? '#4ade80' : health >= 50 ? '#fbbf24' : '#f87171';
-        var metrics = { power: projectedBattery, co2: co2, recovery: recovery, temp: cabinTemp, cmg: nextCmg };
+        var metrics = { power: projectedBattery, co2: co2, co2Action: CO2_ACTION_PPM, recovery: recovery, temp: cabinTemp, cmg: nextCmg };
         var sunlightMinutes = 92 - eclipse;
         var orbitForecast = [];
         for (var forecastStep = 0; forecastStep <= 24; forecastStep++) {
           var minute = forecastStep / 24 * 92;
           var sunMinutes = Math.min(minute, sunlightMinutes);
           var darkMinutes = Math.max(0, minute - sunlightMinutes);
-          var batteryAtMinute = opsClamp(battery + ((generation - load) * sunMinutes - load * darkMinutes) / 60 / 2.1, 0, 100);
+          var batteryAtMinute = opsClamp(battery + ((generation - load) * sunMinutes - load * darkMinutes) / 60 / (BATTERY_KWH / 100), 0, 100);
           var thermalAtMinute = opsClamp(thermalScore + Math.sin(minute / 92 * Math.PI * 2) * 2 - (minute > sunlightMinutes ? 2 : 0), 0, 100);
           var cmgAtMinute = cmg + attitudeDemand * .55 * minute / 92;
           orbitForecast.push({ minute: minute, battery: batteryAtMinute, thermal: thermalAtMinute, attitude: opsClamp(100 - cmgAtMinute * .65, 0, 100) });
         }
         var nominalForecast = [];
         var nominalLoad = 68 + 7 * 1.6 + 60 * .22;
-        var nominalGeneration = 132 * Math.sin(86 * Math.PI / 180);
+        var nominalGeneration = ARRAY_PEAK_KW * Math.sin(86 * Math.PI / 180);
         var nominalSunlight = 57;
         var nominalWasteHeat = nominalLoad * .72;
         var nominalRejectedHeat = 82 * .75 * 86 / 100;
@@ -1838,13 +1868,13 @@
           var nominalSunMinutes = Math.min(nominalMinute, nominalSunlight);
           var nominalDarkMinutes = Math.max(0, nominalMinute - nominalSunlight);
           var nominalCmg = 28 + nominalAttitudeDemand * .55 * nominalMinute / 92;
-          nominalForecast.push({ minute: nominalMinute, battery: opsClamp(76 + ((nominalGeneration - nominalLoad) * nominalSunMinutes - nominalLoad * nominalDarkMinutes) / 60 / 2.1, 0, 100), thermal: opsClamp(nominalThermalScore + Math.sin(nominalMinute / 92 * Math.PI * 2) * 2 - (nominalMinute > nominalSunlight ? 2 : 0), 0, 100), attitude: opsClamp(100 - nominalCmg * .65, 0, 100) });
+          nominalForecast.push({ minute: nominalMinute, battery: opsClamp(76 + ((nominalGeneration - nominalLoad) * nominalSunMinutes - nominalLoad * nominalDarkMinutes) / 60 / (BATTERY_KWH / 100), 0, 100), thermal: opsClamp(nominalThermalScore + Math.sin(nominalMinute / 92 * Math.PI * 2) * 2 - (nominalMinute > nominalSunlight ? 2 : 0), 0, 100), attitude: opsClamp(100 - nominalCmg * .65, 0, 100) });
         }        var orbitMinute = opsClamp(d.opsOrbitMinute == null ? 0 : d.opsOrbitMinute, 0, 92);
         var cursorSunMinutes = Math.min(orbitMinute, sunlightMinutes);
         var cursorDarkMinutes = Math.max(0, orbitMinute - sunlightMinutes);
         var cursorCmg = cmg + attitudeDemand * .55 * orbitMinute / 92;
         var orbitCursor = {
-          battery: opsClamp(battery + ((generation - load) * cursorSunMinutes - load * cursorDarkMinutes) / 60 / 2.1, 0, 100),
+          battery: opsClamp(battery + ((generation - load) * cursorSunMinutes - load * cursorDarkMinutes) / 60 / (BATTERY_KWH / 100), 0, 100),
           thermal: opsClamp(thermalScore + Math.sin(orbitMinute / 92 * Math.PI * 2) * 2 - (orbitMinute > sunlightMinutes ? 2 : 0), 0, 100),
           attitude: opsClamp(100 - cursorCmg * .65, 0, 100)
         };        var modes = [['integrated','🛰️','Integrated'],['power','☀️','Power'],['eclss','♻️','Air + water'],['thermal','🌡️','Thermal'],['attitude','🧭','Attitude'],['debris','🛡️','Debris'],['human','🦴','Human'],['emergency','🚨','Emergency'],['rendezvous','🚀','Rendezvous']];
@@ -1859,7 +1889,7 @@
         var opsScenario = d.opsScenario || 'custom';
         var flightRules = [
           { mode: 'power', label: 'Battery reserve', value: projectedBattery.toFixed(0) + '%', rule: '≥ 25%', pass: projectedBattery >= 25, color: projectedBattery >= 25 ? '#4ade80' : '#f87171' },
-          { mode: 'eclss', label: 'Cabin CO₂', value: co2.toFixed(0) + ' ppm', rule: '< 1000 ppm', pass: co2 < 1000, color: co2 < 1000 ? '#34d399' : '#f87171' },
+          { mode: 'eclss', label: 'Cabin CO₂', value: co2.toFixed(0) + ' ppm', rule: '< ' + CO2_ACTION_PPM + ' ppm', pass: co2 < CO2_ACTION_PPM, color: co2 < CO2_ACTION_PPM ? '#34d399' : '#f87171' },
           { mode: 'eclss', label: 'Water loop', value: recovery.toFixed(1) + '%', rule: '≥ 90%', pass: recovery >= 90, color: recovery >= 90 ? '#38bdf8' : '#fbbf24' },
           { mode: 'thermal', label: 'Cabin temp', value: cabinTemp.toFixed(1) + ' °C', rule: '18–27 °C', pass: cabinTemp > 18 && cabinTemp < 27, color: cabinTemp > 18 && cabinTemp < 27 ? '#fb923c' : '#f87171' },
           { mode: 'attitude', label: 'CMG load', value: nextCmg.toFixed(0) + '%', rule: '< 80%', pass: nextCmg < 80, color: nextCmg < 80 ? '#a78bfa' : '#f87171' }
@@ -1914,7 +1944,7 @@
         }
         function renderEclss() {
           return h('div', null, renderSystemSchematic(SYSTEMS[0]), h('div', { className: 'iss-ops-grid' }, opsControl('iss-eclss-crew','Crew demand',crew,3,11,1,' people','#7dd3fc','opsCrew'), opsControl('iss-eclss-recovery','Water recovery',recovery,70,99,.5,'%','#38bdf8','opsRecovery'), opsControl('iss-eclss-scrub','CO₂ scrubber output',scrub,40,100,1,'%','#34d399','opsScrub'), statusBox('Water recovered',waterReturn.toFixed(1) + ' L/day','Daily potable-water model for the selected crew.','#38bdf8'), statusBox('Water resupply gap',resupplyWater.toFixed(2) + ' L/day','Even a small open-loop loss compounds on Mars.','#fbbf24'), statusBox('Oxygen demand',oxygenNeed.toFixed(2) + ' kg/day','Electrolysis must replace crew consumption.','#34d399')),
-            opsMeter('Loop closure',recovery,'#38bdf8','Target ≥ 98% for exploration-class missions'), opsMeter('Cabin-air quality',airScore,co2 < 1000 ? '#34d399' : '#f87171','Modeled CO₂ ' + co2.toFixed(0) + ' ppm'), opsSpark('CO2 trend',airScore,co2 < 1000 ? '#34d399' : '#f87171',8));
+            opsMeter('Loop closure',recovery,'#38bdf8','Target ≥ 98% for exploration-class missions'), opsMeter('Cabin-air quality',airScore,co2 < CO2_ACTION_PPM ? '#34d399' : '#f87171','Modeled CO₂ ' + co2.toFixed(0) + ' ppm — Earth air is ~420 ppm; crews work to stay under ' + CO2_ACTION_PPM), opsSpark('CO2 trend',airScore,co2 < CO2_ACTION_PPM ? '#34d399' : '#f87171',8));
         }
         function renderThermal() {
           return h('div', null, renderSystemSchematic(SYSTEMS[3]), h('div', { className: 'iss-ops-grid' }, opsControl('iss-thermal-rad','Radiator deployment',radiator,30,100,1,'%','#fb923c','opsRadiator'), opsControl('iss-thermal-flow','Cooling-loop flow',cooling,40,100,1,'%','#38bdf8','opsCooling'), opsControl('iss-thermal-research','Heat-producing research',research,0,100,5,'%','#a78bfa','opsResearch'), statusBox('Waste heat',wasteHeat.toFixed(1) + ' kW','Electronics and crew work become heat.','#f97316'), statusBox('Rejected heat',rejectedHeat.toFixed(1) + ' kW','Radiators emit infrared energy to space.','#38bdf8'), statusBox('Modeled cabin',cabinTemp.toFixed(1) + ' °C','Comfort band: 18–27 °C. ',cabinTemp > 18 && cabinTemp < 27 ? '#4ade80' : '#f87171')), opsMeter('Thermal margin',thermalScore,cabinTemp > 18 && cabinTemp < 27 ? '#4ade80' : '#f87171','Balance heat collected with heat rejected'), opsSpark('Cabin temperature stability',thermalScore,'#fb923c',6));
