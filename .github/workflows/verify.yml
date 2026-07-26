@@ -81,6 +81,13 @@ jobs:
     # BLOCKING. Sharding keeps the 1,200+ file Vitest suite bounded while every
     # test still runs on each push and pull request. fail-fast is disabled so a
     # failure in one shard does not hide independent regressions in another.
+    #
+    # 2026-07-26 (audit finding H1): this job runs the suite MINUS tests/QUARANTINE.txt.
+    # It previously ran everything with no allowlist while ~271 assertions were already red, so it
+    # was permanently red — a gate that cannot change colour gates nothing, and a genuinely new
+    # regression was indistinguishable from the standing noise. Quarantined files still run, in the
+    # non-blocking `quarantine` job below, and `check_quarantine` fails if that list ever stops
+    # shrinking honestly (a listed file that now passes, or no longer exists, must be removed).
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -97,6 +104,26 @@ jobs:
         run: npm install --no-audit --no-fund --no-save --prefix desktop/web-app react@^18.2.0 react-dom@^18.2.0
       - name: Run Vitest shard
         run: npm run test:ci:shard -- --shard=${{ matrix.shard }}/8
+
+  quarantine:
+    name: Quarantined tests (non-blocking)
+    # NOT blocking. Runs exactly the files the `unit` job excludes, so their status stays visible
+    # instead of being swept out of sight, and fails loudly if the list has rotted — a quarantined
+    # file that now PASSES must be removed, or the blocking job never protects it again.
+    # This job going red is a chore, not an outage. The `unit` job going red is an outage.
+    runs-on: windows-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm install --no-audit --no-fund
+      - name: Install React 18 for golden-master harnesses
+        run: npm install --no-audit --no-fund --no-save --prefix desktop/web-app react@^18.2.0 react-dom@^18.2.0
+      - name: Run quarantined tests + anti-rot check
+        run: npm run test:quarantine
 
   research-integrations:
     name: Research integration contracts + accessibility

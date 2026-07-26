@@ -131,7 +131,10 @@ describe('#6-ext — per-round recompute carries numeric + structural warnings (
     expect(dp).toContain('recomputableFidelityKinds: _RECOMPUTABLE_FIDELITY_KINDS,');
     // #6-full (2026-07-16): the replace-recomputable/carry-run-scoped merge moved VERBATIM into
     // the canonical reducer (which uses the module constant directly); the host delegates.
-    expect(dp).toContain('(cur.fidelityNotes || []).filter((n) => !(n && _RECOMPUTABLE_FIDELITY_KINDS[n.kind])).concat(_roundFid.fidelityNotes || [])');
+    // 2026-07-26 (audit C1): the inline filter moved into the exported _mergeFidelityNotes helper so
+    // the view's Fix-Remaining lane calls the SAME rule — it used to assign its fresh notes over the
+    // whole array, deleting every durable extraction-time disclosure.
+    expect(dp).toContain('_mergeFidelityNotes(cur.fidelityNotes, _roundFid.fidelityNotes, _RECOMPUTABLE_FIDELITY_KINDS)');
     expect(dp).toContain('fidelityNotes: _roundNotes,');
     expect(dp).toContain('_roundFid.numericWarn].filter(Boolean)');
     expect(anti).toContain('_mergedRound = await _finalizeRound(cur, {');

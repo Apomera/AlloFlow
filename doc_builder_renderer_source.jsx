@@ -64,12 +64,36 @@ const renderJsonToHtml = (blocks) => {
           // attribute-less safe inline tags so intended emphasis survives while every
           // scripting vector is neutralized (no attributes can pass the allow-list).
           const escapeTextField = (val) => {
+            let _openAnchors = 0;
             const s = String(val == null ? '' : val)
               .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
               .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-            return s
+            const withInline = s
               .replace(/&lt;(\/?(?:strong|em|b|i|u|sub|sup|mark|code|s|small))&gt;/gi, '<$1>')
-              .replace(/&lt;br\s*\/?&gt;/gi, '<br>');
+              .replace(/&lt;br\s*\/?&gt;/gi, '<br>')
+              // H9 (audit 2026-07-26): re-allow INLINE ANCHORS. The extraction prompt explicitly
+              // instructs the model to emit <a href='url'>descriptive link text</a> inside paragraph
+              // text (doc_pipeline_source.jsx ~21877), and this escaper turned every one into
+              // visible literal markup — so a remediated document showed raw &lt;a href=...&gt; to
+              // sighted readers and gave screen-reader users no links at all, in a pipeline whose
+              // whole purpose is WCAG conformance (2.4.4 Link Purpose).
+              // The allow-list stays strict: ONLY href, only schemes safeHref permits, and the href
+              // is re-escaped — so no other attribute (onclick, target, style) can survive, which is
+              // the property that made attribute-less tags safe in the first place.
+              .replace(/&lt;a\s+href=(?:&quot;|&#39;)([^&]*?)(?:&quot;|&#39;)&gt;/gi, (m, rawHref) => {
+                _openAnchors++;
+                const decoded = String(rawHref).replace(/&amp;/g, '&');
+                return '<a href="' + safeHref(decoded) + '">';
+              });
+            // Close only as many anchors as were actually opened. An <a> carrying any extra
+            // attribute (onclick, target, style) deliberately FAILS the allow-list above and stays
+            // escaped — so unconditionally un-escaping every &lt;/a&gt; would emit a stray closing
+            // tag with no opener. Harmless in a browser, but this pipeline's output is validated
+            // against PDF/UA and axe, where unbalanced markup is exactly the kind of thing that
+            // shows up as a defect in the document we just promised was clean.
+            return _openAnchors > 0
+              ? withInline.replace(/&lt;\/a&gt;/gi, () => (_openAnchors-- > 0 ? '</a>' : '&lt;/a&gt;'))
+              : withInline;
           };
           // Only allow safe URL schemes in link hrefs (block javascript:, data:, etc.).
           const safeHref = (u) => { const v = String(u || '').trim(); return /^(https?:|mailto:|tel:|#|\/|\.)/i.test(v) ? v.replace(/"/g, '&quot;') : '#'; };

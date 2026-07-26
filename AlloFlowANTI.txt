@@ -25600,6 +25600,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const _why = _inc.failureReason === 'auth' ? 'the AI service rejected the request (an API key / permission problem)'
         : _inc.failureReason === 'quota' ? 'the AI service hit a usage or quota limit'
         : _inc.failureReason === 'network' ? 'the connection to the AI service dropped'
+        // H19/M19: the stall case, which used to bank nothing at all.
+        : _inc.failureReason === 'stalled' ? 'the run stopped responding and was shut down by the stall watchdog'
         : 'the AI service was briefly unavailable';
       if (typeof addToast === 'function') {
         addToast(_saved
@@ -25639,7 +25641,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           return next.length > 200 ? next.slice(-200) : next;
         });
       } catch (_) {}
-      if (!_cancelled) _maybeSaveIncompleteProject();
+      // H19/M19 (audit 2026-07-26): a WATCHDOG-invalidated stall also banks its extracted text
+      // (pipeline marks it `stalled:true`), and that is exactly the case the resume feature exists
+      // for — many minutes of OCR the teacher never chose to throw away. A deliberate Stop banks
+      // nothing, so this stays a no-op there.
+      const _stalledBank = (typeof window !== 'undefined' && window.__lastIncompleteProject && window.__lastIncompleteProject.stalled) || false;
+      if (!_cancelled || _stalledBank) _maybeSaveIncompleteProject();
       throw err;
     }
   };

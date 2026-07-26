@@ -3090,7 +3090,27 @@ function PdfAuditView(props) {
       });
     };
     const _eventIsForCurrentDocument = (e) => !!(e && e.detail && Number.isInteger(e.detail.documentEpoch) && e.detail.documentEpoch === pdfDocumentEpoch);
-    const onProgress = (e) => {
+    const _mismatchReported = /* @__PURE__ */ new Set();
+    const _noteEpochMismatch = (detail) => {
+      const runKey = String(detail && detail.runId || "unknown");
+      if (_mismatchReported.has(runKey)) return;
+      _mismatchReported.add(runKey);
+      const note = "Progress events dropped \u2014 the run reports documentEpoch " + JSON.stringify(detail && detail.documentEpoch) + " but this modal owns " + JSON.stringify(pdfDocumentEpoch) + ". The live activity log stays empty for this run; remediation itself is unaffected.";
+      try {
+        if (_docPipeline && typeof _docPipeline.logHostDiagnostic === "function") {
+          _docPipeline.logHostDiagnostic("EpochGate", note, {
+            runId: detail && detail.runId || null,
+            documentEpoch: detail ? detail.documentEpoch : null,
+            modalDocumentEpoch: pdfDocumentEpoch
+          });
+        } else {
+          console.warn("[PdfAuditView][EpochGate] " + note);
+        }
+      } catch (_) {
+      }
+    };
+    const onProgress = (e, opts) => {
+      if (e && e.detail && e.detail.version === 1 && !_eventIsForCurrentDocument(e) && !(opts && opts.hydration)) _noteEpochMismatch(e.detail);
       if (!_eventIsForCurrentDocument(e) || e.detail.version !== 1) return;
       const detail = e.detail;
       if (!detail.runId) return;
@@ -3164,7 +3184,7 @@ function PdfAuditView(props) {
     window.addEventListener("alloflow:chunk-session-start", onChunkSessionStart);
     try {
       const latest = window.__alloRemediationProgress;
-      if (latest) onProgress({ detail: latest });
+      if (latest) onProgress({ detail: latest }, { hydration: true });
     } catch (_) {
     }
     window.addEventListener("alloflow:chunk-progress", onChunkProgress);
@@ -3214,6 +3234,13 @@ function PdfAuditView(props) {
   const _releaseRemediationOperationUi = (ticket) => {
     try {
       if (ticket && ticket.metadata && typeof ticket.metadata.cancelUi === "function") ticket.metadata.cancelUi();
+    } catch (_) {
+    }
+    try {
+      if (ticket && ticket.metadata && ticket.metadata.ownsPdfFixLoading !== false) {
+        setPdfFixLoading(false);
+        setPdfFixStep("");
+      }
     } catch (_) {
     }
   };
@@ -3274,8 +3301,10 @@ function PdfAuditView(props) {
   const _completeRemediationOperation = (ticket) => _remediationOperationOwnerRef.current.complete(ticket);
   const _finishPdfRemediationOperation = (ticket, clearMode) => {
     if (!_completeRemediationOperation(ticket)) return false;
-    setPdfFixLoading(false);
-    setPdfFixStep("");
+    if (!ticket || !ticket.metadata || ticket.metadata.ownsPdfFixLoading !== false) {
+      setPdfFixLoading(false);
+      setPdfFixStep("");
+    }
     if (clearMode) pdfFixModeRef.current = "";
     return true;
   };
@@ -3342,7 +3371,37 @@ function PdfAuditView(props) {
   }, [pdfDocumentEpoch]);
   const _oneClickRemediationBusyRef = useRef(false);
   const [oneClickRemediationBusy, setOneClickRemediationBusy] = useState(false);
-  const _oneClickOperationBusy = oneClickRemediationBusy || pdfAuditLoading || pdfFixLoading || pdfAutoContinueRunning;
+  const _pipelineIsRemediating = React.useCallback(() => {
+    try {
+      return !!(_docPipeline && typeof _docPipeline.isRemediationRunning === "function" && _docPipeline.isRemediationRunning());
+    } catch (_) {
+      return false;
+    }
+  }, [_docPipeline]);
+  const [pipelineRunActive, setPipelineRunActive] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    const sync = () => {
+      if (!cancelled) setPipelineRunActive(_pipelineIsRemediating());
+    };
+    sync();
+    const id = setInterval(sync, 1e3);
+    const onPipelineEvent = () => sync();
+    if (typeof window !== "undefined" && window.addEventListener) {
+      window.addEventListener("alloflow:remediation-progress", onPipelineEvent);
+      window.addEventListener("alloflow:pipeline-warn", onPipelineEvent);
+    }
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+      if (typeof window !== "undefined" && window.removeEventListener) {
+        window.removeEventListener("alloflow:remediation-progress", onPipelineEvent);
+        window.removeEventListener("alloflow:pipeline-warn", onPipelineEvent);
+      }
+    };
+  }, [_pipelineIsRemediating]);
+  const _remediationBusy = pdfFixLoading || pipelineRunActive;
+  const _oneClickOperationBusy = oneClickRemediationBusy || pdfAuditLoading || _remediationBusy || pdfAutoContinueRunning;
   const _viewDocumentJobRef = useRef({ id: 0, controller: null });
   const [webJobBusy, setWebJobBusy] = useState("");
   const _beginViewDocumentJob = () => {
@@ -6404,7 +6463,7 @@ function PdfAuditView(props) {
       cancelled = true;
     };
   }, []);
-  const _modalWorkBusy = oneClickRemediationBusy || pdfFixLoading || pdfAutoContinueRunning || pdfBatchProcessing || batchIngesting || mediaDigesting || applyingRemarkup || !!webJobBusy;
+  const _modalWorkBusy = oneClickRemediationBusy || _remediationBusy || pdfAutoContinueRunning || pdfBatchProcessing || batchIngesting || mediaDigesting || applyingRemarkup || !!webJobBusy;
   const _batchSummaryPending = pdfBatchSummary ? Number.isFinite(pdfBatchSummary.pending) ? pdfBatchSummary.pending : pdfBatchQueue.filter((item) => !item.status || item.status === "pending" || item.status === "processing").length : 0;
   const _batchSummaryIncomplete = !!(pdfBatchSummary && (pdfBatchSummary.status !== "complete" || _batchSummaryPending > 0));
   const _batchSummaryNeedsAttention = !!(pdfBatchSummary && (_batchSummaryIncomplete || pdfBatchSummary.reviewRequired > 0 || pdfBatchSummary.failed > 0));
@@ -7211,7 +7270,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         }
       }, className: "px-4 py-2 bg-cyan-600 text-white rounded-xl font-bold text-xs hover:bg-cyan-700 disabled:opacity-50" }, mediaDigesting ? "\u23F3 " + (mediaDigestProgress || (t("pdf_audit.media.digesting") || "Digesting\u2026 (large recordings take a while)")) : "\u25B6 " + (t("pdf_audit.media.go") || "Digest recording")), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500 ml-2" }, t("pdf_audit.media.unlock_note") || "The buttons below unlock once the digest is ready."));
     })(), /* @__PURE__ */ React.createElement("div", { className: "mb-4 bg-gradient-to-br from-indigo-50 to-violet-50 border-2 border-indigo-300 rounded-2xl p-4" }, remediationReady === false && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "mb-3 rounded-xl border border-amber-400 bg-amber-50 p-3 text-xs text-amber-900" }, /* @__PURE__ */ React.createElement("div", { className: "font-black" }, "Remediation engine not ready"), /* @__PURE__ */ React.createElement("div", null, _remediationDependencies.failed.length ? "Required modules failed to load: " + _remediationDependencies.failed.join(", ") : "Required modules are still loading: " + _remediationDependencies.pending.join(", ")), _remediationDependencies.failed.length > 0 && typeof retryRemediationDependencies === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: retryRemediationDependencies, className: "mt-2 rounded-lg border border-amber-500 bg-white px-3 py-1 font-bold hover:bg-amber-100" }, "Retry required modules")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-snug text-slate-700 mb-3 pb-2 border-b border-indigo-200" }, "\u{1F512} ", t("pdf_audit.gemini_disclosure") || "Privacy: this document\u2019s text and images are sent to Google Gemini (a third-party AI service) for the AI parts of the audit. The automated WCAG checks run locally in your browser. Don\u2019t upload documents containing student personal information you aren\u2019t permitted to share with a third-party AI service."), /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_make_accessible_btn", disabled: _oneClickOperationBusy || remediationReady === false, "aria-busy": _oneClickOperationBusy ? "true" : void 0, onClick: async () => {
-      if (_oneClickRemediationBusyRef.current || pdfAuditLoading || pdfFixLoading || pdfAutoContinueRunning) {
+      if (_oneClickRemediationBusyRef.current || pdfAuditLoading || _remediationBusy || pdfAutoContinueRunning) {
         addToast(t("toasts.remediation_already_running") || "Remediation is already running. This click was ignored so the active run can finish.", "info");
         return;
       }
@@ -8517,7 +8576,7 @@ Return ONLY JSON:
             const _ro = _docPipeline.checkReadingOrderPreserved(prevSnapshot.html, bestHtml);
             if (_ro && _ro.ok === false) _notes.push({ kind: "reading-order", msg: 'Reading order: content may have moved or been dropped vs the previous version (token "' + (_ro.droppedToken || "") + '"; ' + _ro.beforeCount + "\u2192" + _ro.afterCount + " tokens). Magnitude checks passed but order was not preserved \u2014 review the Diff before distributing." });
           }
-          _refixNotes = _notes;
+          _refixNotes = _docPipeline && typeof _docPipeline.mergeFidelityNotes === "function" ? _docPipeline.mergeFidelityNotes(_fixRemainingSource.fidelityNotes, _notes) : (Array.isArray(_fixRemainingSource.fidelityNotes) ? _fixRemainingSource.fidelityNotes : []).filter((n) => !(n && { links: 1, tables: 1, refusal: 1, placement: 1, numeric: 1, "reading-order": 1 }[n.kind])).concat(_notes);
           _notes.forEach((n) => warnLog("[Fix Remaining] fidelity: " + n.msg));
         } catch (_fidErr) {
           warnLog("[Fix Remaining] fidelity sweep failed (non-critical): " + (_fidErr && _fidErr.message));
@@ -8564,7 +8623,7 @@ Return ONLY JSON:
         fixAndVerifyPdf({ documentEpoch: _fixDocumentEpoch, base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {
         });
       }
-    }, disabled: pdfFixLoading || remediationReady === false, className: "flex-1 px-5 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40" }, pdfFixLoading ? /* @__PURE__ */ React.createElement("span", { className: "animate-spin" }, "\u23F3") : /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), pdfFixLoading ? pdfFixStep || "Fixing..." : pdfPageRange ? `\u267F Fix Pages ${pdfPageRange.start}\u2013${pdfPageRange.end}` : `\u267F Fix & Verify${pdfAuditResult.pageCount > 1 ? ` (${pdfAuditResult.pageCount} pages)` : ""}`), pdfFixLoading && /* @__PURE__ */ React.createElement("div", { className: "basis-full mt-1", role: "region", "aria-label": "Detailed remediation progress" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 mb-1 text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, Math.round(_remediationPercent), "% estimated"), /* @__PURE__ */ React.createElement("span", null, _formatElapsed(remediationProgress?.elapsedMs), " elapsed")), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-2 overflow-hidden", role: "progressbar", "aria-label": t("pdf_audit.fix_pass.progress_aria") || "Fix and verify progress", "aria-valuenow": Math.round(_remediationPercent), "aria-valuemin": 0, "aria-valuemax": 100 }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-700 rounded-full", style: { width: _remediationPercent + "%" } })), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-700 mt-1 text-center font-semibold", role: "status", "aria-live": "polite", "aria-atomic": "true" }, remediationProgress?.detail || pdfFixStep), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center justify-center gap-1.5 text-[10px]" }, /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-slate-100 text-slate-700" }, "AI calls ", _progressStats.apiCalls || 0), /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-slate-100 text-slate-700" }, "Vision ", _progressStats.visionCalls || 0), /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-slate-100 text-slate-700" }, "Retries ", _progressStats.transportRetries || 0), !!_progressStats.recoveredRetries && /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800" }, "Recovered ", _progressStats.recoveredRetries), !!_progressStats.authThrottles && /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-amber-100 text-amber-800" }, "Throttle signals ", _progressStats.authThrottles)), remediationProgress?.activity?.message && /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-lg border px-2.5 py-1.5 text-[11px] " + (remediationProgress.status === "throttled" ? "bg-amber-50 border-amber-300 text-amber-900" : "bg-slate-50 border-slate-200 text-slate-700") }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, remediationProgress.status === "throttled" ? "Waiting safely: " : "Current activity: "), remediationProgress.activity.message), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex items-center justify-center" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowAgentTrace((v) => !v), "aria-pressed": showAgentTrace, className: "text-[11px] font-bold px-3 py-1 rounded-full border border-indigo-300 bg-indigo-50 text-indigo-800 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-400" }, showAgentTrace ? "Hide live agent trace" : "Show live agent trace")), showAgentTrace && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[10px] text-center text-slate-600" }, "Read-only safety view: intermediate AI HTML is isolated; code appears only after validation."), (() => {
+    }, disabled: _remediationBusy || remediationReady === false, className: "flex-1 px-5 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40" }, _remediationBusy ? /* @__PURE__ */ React.createElement("span", { className: "animate-spin" }, "\u23F3") : /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), _remediationBusy ? pdfFixStep || "Fixing..." : pdfPageRange ? `\u267F Fix Pages ${pdfPageRange.start}\u2013${pdfPageRange.end}` : `\u267F Fix & Verify${pdfAuditResult.pageCount > 1 ? ` (${pdfAuditResult.pageCount} pages)` : ""}`), _remediationBusy && /* @__PURE__ */ React.createElement("div", { className: "basis-full mt-1", role: "region", "aria-label": "Detailed remediation progress" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 mb-1 text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, Math.round(_remediationPercent), "% estimated"), /* @__PURE__ */ React.createElement("span", null, _formatElapsed(remediationProgress?.elapsedMs), " elapsed")), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-2 overflow-hidden", role: "progressbar", "aria-label": t("pdf_audit.fix_pass.progress_aria") || "Fix and verify progress", "aria-valuenow": Math.round(_remediationPercent), "aria-valuemin": 0, "aria-valuemax": 100 }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-700 rounded-full", style: { width: _remediationPercent + "%" } })), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-700 mt-1 text-center font-semibold", role: "status", "aria-live": "polite", "aria-atomic": "true" }, remediationProgress?.detail || pdfFixStep), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center justify-center gap-1.5 text-[10px]" }, /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-slate-100 text-slate-700" }, "AI calls ", _progressStats.apiCalls || 0), /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-slate-100 text-slate-700" }, "Vision ", _progressStats.visionCalls || 0), /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-slate-100 text-slate-700" }, "Retries ", _progressStats.transportRetries || 0), !!_progressStats.recoveredRetries && /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800" }, "Recovered ", _progressStats.recoveredRetries), !!_progressStats.authThrottles && /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-amber-100 text-amber-800" }, "Throttle signals ", _progressStats.authThrottles)), remediationProgress?.activity?.message && /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-lg border px-2.5 py-1.5 text-[11px] " + (remediationProgress.status === "throttled" ? "bg-amber-50 border-amber-300 text-amber-900" : "bg-slate-50 border-slate-200 text-slate-700") }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, remediationProgress.status === "throttled" ? "Waiting safely: " : "Current activity: "), remediationProgress.activity.message), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex items-center justify-center" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowAgentTrace((v) => !v), "aria-pressed": showAgentTrace, className: "text-[11px] font-bold px-3 py-1 rounded-full border border-indigo-300 bg-indigo-50 text-indigo-800 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-400" }, showAgentTrace ? "Hide live agent trace" : "Show live agent trace")), showAgentTrace && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[10px] text-center text-slate-600" }, "Read-only safety view: intermediate AI HTML is isolated; code appears only after validation."), (() => {
       const steps = [
         { step: 1, label: "Extract", icon: "\u{1F4C4}" },
         { step: 2, label: "Build HTML", icon: "\u{1F3D7}\uFE0F" },
@@ -9618,11 +9677,11 @@ Return ONLY JSON:
             startNewPdfAudit();
           }
         },
-        disabled: pdfFixLoading,
-        className: "text-[11px] px-2.5 py-1 bg-white text-slate-600 border border-slate-400 rounded-md font-bold inline-flex items-center gap-1 " + (pdfFixLoading ? "opacity-40 cursor-not-allowed" : "hover:bg-slate-100"),
-        title: pdfFixLoading ? t("pdf_audit.start_new_running_title") || "Remediation is still running \u2014 clearing now would lose this run." : t("pdf_audit.start_new_title") || "Clear this audit result and start fresh with a new PDF"
+        disabled: _remediationBusy,
+        className: "text-[11px] px-2.5 py-1 bg-white text-slate-600 border border-slate-400 rounded-md font-bold inline-flex items-center gap-1 " + (_remediationBusy ? "opacity-40 cursor-not-allowed" : "hover:bg-slate-100"),
+        title: _remediationBusy ? t("pdf_audit.start_new_running_title") || "Remediation is still running \u2014 clearing now would lose this run." : t("pdf_audit.start_new_title") || "Clear this audit result and start fresh with a new PDF"
       },
-      pdfFixLoading ? "\u23F3" : "\u{1F5D1}\uFE0F",
+      _remediationBusy ? "\u23F3" : "\u{1F5D1}\uFE0F",
       " ",
       t("pdf_audit.start_new_audit") || "Start New Audit"
     )), /* @__PURE__ */ React.createElement("div", { "data-help-key": "pdf_audit_results_whatnow", className: "bg-white border rounded-xl px-3 py-2 text-xs text-slate-700 flex items-center gap-2 flex-wrap " + (pdfFixResult && pdfFixResult.fidelityLimited ? "border-amber-300" : "border-emerald-200"), role: "note" }, /* @__PURE__ */ React.createElement("span", { className: "font-black " + (pdfFixResult && pdfFixResult.fidelityLimited ? "text-amber-800" : "text-emerald-800") }, t("pdf_audit.whatnow.lead") || "What now?"), /* @__PURE__ */ React.createElement("span", null, pdfFixResult && pdfFixResult.fidelityLimited ? t("pdf_audit.whatnow.fidelity") || "\u26A0 Before sharing: some source content may not have carried over (see the fidelity notes below). 1\uFE0F\u20E3 Open Compare/Diff and confirm scores, numbers, dates, and key text match the original. 2\uFE0F\u20E3 Only then grab the " + (_inputIsPdf ? "Tagged PDF" : "Word file") + " from Downloads." : _inputIsPdf ? t("pdf_audit.whatnow.pdf") || "1\uFE0F\u20E3 Scroll to Downloads and grab the Tagged PDF \u2014 that\u2019s your share-ready copy. 2\uFE0F\u20E3 Optional: open Compare to see before/after. 3\uFE0F\u20E3 Anything flagged below is optional polish." : t("pdf_audit.whatnow.office") || "1\uFE0F\u20E3 Scroll to Downloads and grab the Word file \u2014 that\u2019s your share-ready copy. 2\uFE0F\u20E3 Optional: open Compare to see before/after. 3\uFE0F\u20E3 Anything flagged below is optional polish."), /* @__PURE__ */ React.createElement("button", { onClick: () => {
@@ -9637,7 +9696,7 @@ Return ONLY JSON:
       setInputText(temp.textContent || temp.innerText || "");
       _closePdfAuditModal();
       addToast(t("toasts.reverse_door") || "\u2728 Document loaded as source material \u2014 generate a glossary, quiz, leveled text, or full lesson from it using the tools on the left.", "success");
-    }, disabled: pdfFixLoading || pdfAutoContinueRunning, className: "px-2.5 py-1 bg-violet-600 text-white rounded-full text-[11px] font-bold shrink-0 " + (pdfFixLoading || pdfAutoContinueRunning ? "opacity-40 cursor-not-allowed" : "hover:bg-violet-700"), title: pdfFixLoading || pdfAutoContinueRunning ? t("pdf_audit.whatnow.materials_running_title") || "Remediation is still running \u2014 closing now would interrupt it. Click \u201CStop after this round\u201D first." : t("pdf_audit.whatnow.materials_title") || "Open the content tools with this document as the source \u2014 glossary, quiz, leveled text, lesson plan, games: everything generates from the same accessible text." }, "\u2728 ", t("pdf_audit.whatnow.materials") || "Make learning materials")), (() => {
+    }, disabled: _remediationBusy || pdfAutoContinueRunning, className: "px-2.5 py-1 bg-violet-600 text-white rounded-full text-[11px] font-bold shrink-0 " + (_remediationBusy || pdfAutoContinueRunning ? "opacity-40 cursor-not-allowed" : "hover:bg-violet-700"), title: _remediationBusy || pdfAutoContinueRunning ? t("pdf_audit.whatnow.materials_running_title") || "Remediation is still running \u2014 closing now would interrupt it. Click \u201CStop after this round\u201D first." : t("pdf_audit.whatnow.materials_title") || "Open the content tools with this document as the source \u2014 glossary, quiz, leveled text, lesson plan, games: everything generates from the same accessible text." }, "\u2728 ", t("pdf_audit.whatnow.materials") || "Make learning materials")), (() => {
       const _n = ((pdfFixResult.accessibleHtml || "").match(/data-allo-kind="/g) || []).length;
       if (_n === 0) return null;
       if (imgReviewIdx === null) return /* @__PURE__ */ React.createElement("div", { className: "bg-violet-50/70 border border-violet-200 rounded-xl px-3 py-2 text-xs text-slate-700 flex items-center gap-2 flex-wrap", "data-help-key": "pdf_audit_img_review_panel" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F916} ", _n === 1 ? t("pdf_audit.imgreview.one") || "AI looked at 1 image and described it." : t("pdf_audit.imgreview.many") || "AI looked at " + _n + " images and described them.", " ", t("pdf_audit.imgreview.pitch") || "Its descriptions are good but not infallible \u2014 a 30-second review catches what it got wrong."), /* @__PURE__ */ React.createElement("button", { onClick: () => {
@@ -12594,7 +12653,7 @@ ${_viewNeutralizePromptFence(textContent)}
       setInputText(temp.textContent || temp.innerText || "");
       _closePdfAuditModal();
       addToast(t("toasts.content_loaded_generate_leveled_text"), "success");
-    }, disabled: pdfFixLoading || pdfAutoContinueRunning, className: "w-full px-3 py-2 bg-white border border-violet-600 rounded-xl text-xs font-bold text-violet-700 transition-all flex items-center gap-2 justify-center " + (pdfFixLoading || pdfAutoContinueRunning ? "opacity-40 cursor-not-allowed" : "hover:bg-violet-100"), title: pdfFixLoading || pdfAutoContinueRunning ? t("pdf_audit.whatnow.materials_running_title") || "Remediation is still running \u2014 closing now would interrupt it. Click \u201CStop after this round\u201D first." : void 0 }, "\u2728 Full Differentiation Pipeline"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-violet-500" }, `Translations and simplifications stack \u2014 add French, then Spanish, then a 3rd grade version, all in one document. Each appears as a new section. Use "Full Pipeline" to feed into AlloFlow's complete differentiation system.`)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, callTTS && !audioJob && /* @__PURE__ */ React.createElement("button", { id: "allo-export-audio", "data-help-key": "pdf_audit_audio_download_btn", onClick: () => {
+    }, disabled: _remediationBusy || pdfAutoContinueRunning, className: "w-full px-3 py-2 bg-white border border-violet-600 rounded-xl text-xs font-bold text-violet-700 transition-all flex items-center gap-2 justify-center " + (_remediationBusy || pdfAutoContinueRunning ? "opacity-40 cursor-not-allowed" : "hover:bg-violet-100"), title: _remediationBusy || pdfAutoContinueRunning ? t("pdf_audit.whatnow.materials_running_title") || "Remediation is still running \u2014 closing now would interrupt it. Click \u201CStop after this round\u201D first." : void 0 }, "\u2728 Full Differentiation Pipeline"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-violet-500" }, `Translations and simplifications stack \u2014 add French, then Spanish, then a 3rd grade version, all in one document. Each appears as a new section. Use "Full Pipeline" to feed into AlloFlow's complete differentiation system.`)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, callTTS && !audioJob && /* @__PURE__ */ React.createElement("button", { id: "allo-export-audio", "data-help-key": "pdf_audit_audio_download_btn", onClick: () => {
       const fullText = _audioReadyText(pdfFixResult.accessibleHtml);
       if (!fullText) {
         addToast(t("toasts.text_content_convert"), "error");

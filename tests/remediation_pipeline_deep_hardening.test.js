@@ -199,7 +199,10 @@ describe('remediation deep-dive hardening', () => {
       view.indexOf('</button>', view.indexOf("console.warn('[Fix&Verify btn] clicked")),
     );
     expect(makeAccessible).toContain('disabled={_oneClickOperationBusy || remediationReady === false}');
-    expect(fixVerify).toContain('disabled={pdfFixLoading || remediationReady === false}');
+    // Strengthened 2026-07-26: the start control is gated on _remediationBusy (the host flag OR
+    // the pipeline's live-run lock). Gating on pdfFixLoading alone let this button render armed
+    // over a running remediation — pressing it produced only the duplicate-start toast.
+    expect(fixVerify).toContain('disabled={_remediationBusy || remediationReady === false}');
     expect(view).toContain('module unavailable|modules? finish loading');
   });
 

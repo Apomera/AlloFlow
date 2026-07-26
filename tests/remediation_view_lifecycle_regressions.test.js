@@ -16,7 +16,10 @@ describe('remediation view async document ownership', () => {
 
   it('blocks same-tick duplicate starts and disables modal close throughout one-click and auxiliary work', () => {
     expect(view).toContain('webJobBusy || _viewDocumentJobIsActive()');
-    expect(view).toContain('const _modalWorkBusy = oneClickRemediationBusy || pdfFixLoading || pdfAutoContinueRunning || pdfBatchProcessing || batchIngesting || mediaDigesting || applyingRemarkup || !!webJobBusy;');
+    // _remediationBusy replaced bare pdfFixLoading here on 2026-07-26 — same operands plus the
+    // pipeline's own live-run lock, so a lost flag write can no longer let the modal be closed
+    // out from under an active run.
+    expect(view).toContain('const _modalWorkBusy = oneClickRemediationBusy || _remediationBusy || pdfAutoContinueRunning || pdfBatchProcessing || batchIngesting || mediaDigesting || applyingRemarkup || !!webJobBusy;');
     expect(view).toContain('disabled={_modalWorkBusy}');
   });
 

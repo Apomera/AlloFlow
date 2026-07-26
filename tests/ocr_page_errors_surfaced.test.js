@@ -12,7 +12,13 @@ const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), '
 
 describe('OCR page errors reach the partial-extraction banner (audit #17)', () => {
   it('the reconcile collects per-page errors from both engines onto the run global', () => {
-    expect(pipe).toContain('window.__lastOcrPageErrors = [].concat(tessResult.pageErrors || [], visionResult.pageErrors || []);');
+    // Still the union of both engines' records...
+    expect(pipe).toContain('const _allErrs = [].concat(tessResult.pageErrors || [], visionResult.pageErrors || []);');
+    // ...but narrowed to pages the RECONCILE left empty (C3, audit 2026-07-26). Before that change
+    // the two whole-engine failure paths emitted no records at all, so this global stayed empty on a
+    // total engine death; now that they do emit, a raw concat would fire the banner on every run
+    // where one engine died and the other covered the document — a false alarm, not a lost page.
+    expect(pipe).toContain('window.__lastOcrPageErrors = _unrecovered;');
   });
   it('the global is reset per run so a later born-digital doc does not show stale errors', () => {
     expect(pipe).toContain("window.__lastOcrPageErrors = []; // audit #17");

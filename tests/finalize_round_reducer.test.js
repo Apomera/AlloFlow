@@ -131,9 +131,17 @@ async function referenceMerge(P, cur, { html, reVerify, rawAxe, rawEa, auditOnly
 
 // The binding is created independently by each implementation — normalize it to presence +
 // any stable digest field so a nonce/timestamp inside the witness can't fail the comparison.
+//
+// DELIBERATE DIVERGENCE (audit finding M9, 2026-07-26). The reducer now RESETS three stale-estimate
+// fields that the frozen reference carried forward untouched, so a superseded round's "estimated
+// minimum score" could be displayed against the current document. That is an intentional behaviour
+// change, not a refactor slip, so it is excluded from the parity comparison and pinned separately
+// in the dedicated test below — parity still covers every other field.
+const M9_DIVERGENT_KEYS = ['_estimatedMinimumScore', '_estimatedScoreBasis', '_finalAuditRetryAvailable'];
 function normalized(result) {
   const c = JSON.parse(JSON.stringify(Object.assign({}, result, { verificationHtmlBinding: undefined })));
   c._bindingPresent = !!result.verificationHtmlBinding;
+  for (const k of M9_DIVERGENT_KEYS) delete c[k];
   return c;
 }
 

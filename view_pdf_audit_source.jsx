@@ -2999,7 +2999,39 @@ function PdfAuditView(props) {
       });
     };
     const _eventIsForCurrentDocument = (e) => !!(e && e.detail && Number.isInteger(e.detail.documentEpoch) && e.detail.documentEpoch === pdfDocumentEpoch);
-    const onProgress = (e) => {
+    // This gate drops EVERY progress event when the producer's documentEpoch and this modal's
+    // prop disagree — which is exactly how the in-app activity log goes blank while the console
+    // log keeps flowing (2026-07-25 handoff §3, gate #1). It used to drop them wordlessly, so a
+    // field report carried no evidence of which side was stale. Say so once per run, into the
+    // buffer the in-app Log panel reads, then keep dropping: the gate itself is right, since
+    // cross-document bleed is worse than a blank panel.
+    const _mismatchReported = new Set();
+    const _noteEpochMismatch = (detail) => {
+      const runKey = String((detail && detail.runId) || 'unknown');
+      if (_mismatchReported.has(runKey)) return;
+      _mismatchReported.add(runKey);
+      const note = 'Progress events dropped — the run reports documentEpoch '
+        + JSON.stringify(detail && detail.documentEpoch) + ' but this modal owns '
+        + JSON.stringify(pdfDocumentEpoch) + '. The live activity log stays empty for this run; '
+        + 'remediation itself is unaffected.';
+      try {
+        if (_docPipeline && typeof _docPipeline.logHostDiagnostic === 'function') {
+          _docPipeline.logHostDiagnostic('EpochGate', note, {
+            runId: (detail && detail.runId) || null,
+            documentEpoch: detail ? detail.documentEpoch : null,
+            modalDocumentEpoch: pdfDocumentEpoch,
+          });
+        } else { console.warn('[PdfAuditView][EpochGate] ' + note); }
+      } catch (_) {}
+    };
+    const onProgress = (e, opts) => {
+      // Report a mismatch only for a genuinely DISPATCHED event. The mount-time hydration below
+      // replays window.__alloRemediationProgress, which the pipeline never clears — so after the
+      // teacher switches documents that replay is ALWAYS the previous document's last event, and
+      // reporting it would fire a false "progress events dropped" alarm on a perfectly healthy
+      // session. A stale hydrate being dropped is the gate working, not evidence of a fault.
+      if (e && e.detail && e.detail.version === 1 && !_eventIsForCurrentDocument(e)
+        && !(opts && opts.hydration)) _noteEpochMismatch(e.detail);
       if (!_eventIsForCurrentDocument(e) || e.detail.version !== 1) return;
       const detail = e.detail;
       if (!detail.runId) return;
@@ -3076,7 +3108,7 @@ function PdfAuditView(props) {
     // and look blank until the next API log. Hydrate only through the same strict epoch/run gate.
     try {
       const latest = window.__alloRemediationProgress;
-      if (latest) onProgress({ detail: latest });
+      if (latest) onProgress({ detail: latest }, { hydration: true });
     } catch (_) {}
     window.addEventListener('alloflow:chunk-progress', onChunkProgress);
     window.addEventListener('alloflow:chunk-fixed', onChunkFixed);
@@ -3125,6 +3157,21 @@ function PdfAuditView(props) {
   const _releaseRemediationOperationUi = (ticket) => {
     try {
       if (ticket && ticket.metadata && typeof ticket.metadata.cancelUi === 'function') ticket.metadata.cancelUi();
+    } catch (_) {}
+    // H17 (audit 2026-07-26): a SUPERSEDED ticket that owned pdfFixLoading can never clear it
+    // itself. Its own `finally` calls _finishPdfRemediationOperation, which bails at
+    // _completeRemediationOperation's isCurrent() check and returns before the reset. So a teacher
+    // clicking Translate (or Glossary / Plain Language / Easy-Read — none of which are gated on
+    // _remediationBusy) mid-sweep left pdfFixLoading stuck true with no run behind it: every
+    // remediation control disabled and a frozen spinner until the modal was closed. The 8-min
+    // watchdog cannot rescue it either, because window.__alloActivePdfRemediation is null for
+    // view-owned operations, so its `superseded` check short-circuits first.
+    // Ticket-owned UI is released by whoever takes ownership away.
+    try {
+      if (ticket && ticket.metadata && ticket.metadata.ownsPdfFixLoading !== false) {
+        setPdfFixLoading(false);
+        setPdfFixStep('');
+      }
     } catch (_) {}
   };
   const _beginRemediationOperation = (kind, ownsPdfFixLoading, metadata) => {
@@ -3185,8 +3232,15 @@ function PdfAuditView(props) {
   const _completeRemediationOperation = (ticket) => _remediationOperationOwnerRef.current.complete(ticket);
   const _finishPdfRemediationOperation = (ticket, clearMode) => {
     if (!_completeRemediationOperation(ticket)) return false;
-    setPdfFixLoading(false);
-    setPdfFixStep('');
+    // Honor the ownership flag _beginRemediationOperation records. It was stored and never read,
+    // so any companion job started with ownsPdfFixLoading:false (translation, palette, preview
+    // audit…) would clear whatever else was showing a spinner when it finished. Latent today —
+    // every such caller currently exits through _completeRemediationOperation instead — but it is
+    // the same "two writers, one flag" shape that let the modal go idle over a live run.
+    if (!ticket || !ticket.metadata || ticket.metadata.ownsPdfFixLoading !== false) {
+      setPdfFixLoading(false);
+      setPdfFixStep('');
+    }
     if (clearMode) pdfFixModeRef.current = '';
     return true;
   };
@@ -3256,7 +3310,46 @@ function PdfAuditView(props) {
   // state keeps the control visibly busy/disabled across every phase.
   const _oneClickRemediationBusyRef = useRef(false);
   const [oneClickRemediationBusy, setOneClickRemediationBusy] = useState(false);
-  const _oneClickOperationBusy = oneClickRemediationBusy || pdfAuditLoading || pdfFixLoading || pdfAutoContinueRunning;
+  // ── Live-run mirror (2026-07-26, field report) ──
+  // pdfFixLoading is a one-shot host boolean the pipeline writes once at run entry. When that
+  // write was lost, this modal rendered the audit-results panel fully interactive over a live
+  // run: no spinner, no progress bar, an armed "Fix & Verify" button whose only feedback was
+  // the pipeline's own duplicate-start toast. The pipeline's re-entry lock is the authoritative
+  // fact (doc_pipeline isRemediationRunning) — mirror it and OR the two, so the flag failing
+  // degrades to a redundant signal instead of a silent lie.
+  const _pipelineIsRemediating = React.useCallback(() => {
+    try {
+      return !!(_docPipeline && typeof _docPipeline.isRemediationRunning === 'function'
+        && _docPipeline.isRemediationRunning());
+    } catch (_) { return false; }
+  }, [_docPipeline]);
+  const [pipelineRunActive, setPipelineRunActive] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    const sync = () => { if (!cancelled) setPipelineRunActive(_pipelineIsRemediating()); };
+    sync();
+    // Events are the fast path; the 1s poll is the backstop. It has to be a poll: the progress
+    // events are themselves dropped when the documentEpoch/runId gates disagree, which is one
+    // of the ways a run goes invisible — a listener alone would inherit the same blind spot.
+    // It also supplies the release edge, since a settled lock emits nothing.
+    const id = setInterval(sync, 1000);
+    const onPipelineEvent = () => sync();
+    if (typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('alloflow:remediation-progress', onPipelineEvent);
+      window.addEventListener('alloflow:pipeline-warn', onPipelineEvent);
+    }
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+      if (typeof window !== 'undefined' && window.removeEventListener) {
+        window.removeEventListener('alloflow:remediation-progress', onPipelineEvent);
+        window.removeEventListener('alloflow:pipeline-warn', onPipelineEvent);
+      }
+    };
+  }, [_pipelineIsRemediating]);
+  // Use this — not bare pdfFixLoading — for anything that must not be interactive during a run.
+  const _remediationBusy = pdfFixLoading || pipelineRunActive;
+  const _oneClickOperationBusy = oneClickRemediationBusy || pdfAuditLoading || _remediationBusy || pdfAutoContinueRunning;
   // Website/YouTube/media work may outlive the source that launched it. Every
   // job owns an AbortController plus the host document-intake epoch; post-await
   // state writes are allowed only while both still match.
@@ -5834,7 +5927,7 @@ function PdfAuditView(props) {
     return () => { cancelled = true; };
   }, []);
 
-  const _modalWorkBusy = oneClickRemediationBusy || pdfFixLoading || pdfAutoContinueRunning || pdfBatchProcessing || batchIngesting || mediaDigesting || applyingRemarkup || !!webJobBusy;
+  const _modalWorkBusy = oneClickRemediationBusy || _remediationBusy || pdfAutoContinueRunning || pdfBatchProcessing || batchIngesting || mediaDigesting || applyingRemarkup || !!webJobBusy;
   const _batchSummaryPending = pdfBatchSummary
     ? (Number.isFinite(pdfBatchSummary.pending) ? pdfBatchSummary.pending : pdfBatchQueue.filter((item) => !item.status || item.status === 'pending' || item.status === 'processing').length)
     : 0;
@@ -6805,7 +6898,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   )}
                   <p className="text-[11px] leading-snug text-slate-700 mb-3 pb-2 border-b border-indigo-200">🔒 {t('pdf_audit.gemini_disclosure') || 'Privacy: this document’s text and images are sent to Google Gemini (a third-party AI service) for the AI parts of the audit. The automated WCAG checks run locally in your browser. Don’t upload documents containing student personal information you aren’t permitted to share with a third-party AI service.'}</p>
                   <button data-help-key="pdf_audit_view_make_accessible_btn" disabled={_oneClickOperationBusy || remediationReady === false} aria-busy={_oneClickOperationBusy ? 'true' : undefined} onClick={async () => {
-                    if (_oneClickRemediationBusyRef.current || pdfAuditLoading || pdfFixLoading || pdfAutoContinueRunning) {
+                    if (_oneClickRemediationBusyRef.current || pdfAuditLoading || _remediationBusy || pdfAutoContinueRunning) {
                       addToast(t('toasts.remediation_already_running') || 'Remediation is already running. This click was ignored so the active run can finish.', 'info');
                       return;
                     }
@@ -8908,7 +9001,21 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 const _ro = _docPipeline.checkReadingOrderPreserved(prevSnapshot.html, bestHtml);
                                 if (_ro && _ro.ok === false) _notes.push({ kind: 'reading-order', msg: 'Reading order: content may have moved or been dropped vs the previous version (token "' + (_ro.droppedToken || '') + '"; ' + _ro.beforeCount + '→' + _ro.afterCount + ' tokens). Magnitude checks passed but order was not preserved — review the Diff before distributing.' });
                               }
-                              _refixNotes = _notes; // THIS run's findings replace the prior run's
+                              // C1 (audit 2026-07-26): this used to be a flat `_refixNotes = _notes`, which
+                              // replaced the WHOLE array with the three kinds this lane recomputes — silently
+                              // deleting every durable extraction-time disclosure (lowOcrAccuracy,
+                              // lowOcrConfidence, altQuality, folioLeak, pageEdge, ocrColumnOrder,
+                              // activeContent). Those are properties of the SOURCE document, still true after
+                              // any number of fix passes. Losing them also cleared fidelityLimited and
+                              // needsExpertReview, emptied the distribution verdict's cautions, and stripped
+                              // the disclosures from the exported accessibility statement — so a scanned doc
+                              // with garbled OCR could present as clean. Merge through the pipeline's single
+                              // rule; the inline fallback mirrors it for a host running an older module.
+                              _refixNotes = (_docPipeline && typeof _docPipeline.mergeFidelityNotes === 'function')
+                                ? _docPipeline.mergeFidelityNotes(_fixRemainingSource.fidelityNotes, _notes)
+                                : (Array.isArray(_fixRemainingSource.fidelityNotes) ? _fixRemainingSource.fidelityNotes : [])
+                                  .filter((n) => !(n && { links: 1, tables: 1, refusal: 1, placement: 1, numeric: 1, 'reading-order': 1 }[n.kind]))
+                                  .concat(_notes);
                               _notes.forEach(n => warnLog('[Fix Remaining] fidelity: ' + n.msg));
                             } catch (_fidErr) { warnLog('[Fix Remaining] fidelity sweep failed (non-critical): ' + (_fidErr && _fidErr.message)); }
                             const finalMetadataToken = _captureAsyncHtmlToken();
@@ -8956,12 +9063,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         } else {
                           fixAndVerifyPdf({ documentEpoch: _fixDocumentEpoch, base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2: pipeline rethrows after toasting
                         }
-                      }} disabled={pdfFixLoading || remediationReady === false} className="flex-1 px-5 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
-                        {pdfFixLoading ? <span className="animate-spin">⏳</span> : <Sparkles size={16} />}
-                        {pdfFixLoading ? (pdfFixStep || 'Fixing...') : (pdfPageRange ? `♿ Fix Pages ${pdfPageRange.start}–${pdfPageRange.end}` : `♿ Fix & Verify${pdfAuditResult.pageCount > 1 ? ` (${pdfAuditResult.pageCount} pages)` : ''}`)}
+                      }} disabled={_remediationBusy || remediationReady === false} className="flex-1 px-5 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
+                        {_remediationBusy ? <span className="animate-spin">⏳</span> : <Sparkles size={16} />}
+                        {_remediationBusy ? (pdfFixStep || 'Fixing...') : (pdfPageRange ? `♿ Fix Pages ${pdfPageRange.start}–${pdfPageRange.end}` : `♿ Fix & Verify${pdfAuditResult.pageCount > 1 ? ` (${pdfAuditResult.pageCount} pages)` : ''}`)}
                       </button>
                     )}
-                    {pdfFixLoading && (
+                    {_remediationBusy && (
                       <div className="basis-full mt-1" role="region" aria-label="Detailed remediation progress">
                         <div className="flex items-center justify-between gap-3 mb-1 text-[11px] text-slate-600">
                           <span className="font-bold">{Math.round(_remediationPercent)}% estimated</span>
@@ -10834,11 +10941,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 startNewPdfAudit();
                               }
                             }}
-                            disabled={pdfFixLoading}
-                            className={'text-[11px] px-2.5 py-1 bg-white text-slate-600 border border-slate-400 rounded-md font-bold inline-flex items-center gap-1 ' + (pdfFixLoading ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100')}
-                            title={pdfFixLoading ? (t('pdf_audit.start_new_running_title') || 'Remediation is still running — clearing now would lose this run.') : (t('pdf_audit.start_new_title') || 'Clear this audit result and start fresh with a new PDF')}
+                            disabled={_remediationBusy}
+                            className={'text-[11px] px-2.5 py-1 bg-white text-slate-600 border border-slate-400 rounded-md font-bold inline-flex items-center gap-1 ' + (_remediationBusy ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100')}
+                            title={_remediationBusy ? (t('pdf_audit.start_new_running_title') || 'Remediation is still running — clearing now would lose this run.') : (t('pdf_audit.start_new_title') || 'Clear this audit result and start fresh with a new PDF')}
                           >
-                            {pdfFixLoading ? '⏳' : '🗑️'} {t('pdf_audit.start_new_audit') || 'Start New Audit'}
+                            {_remediationBusy ? '⏳' : '🗑️'} {t('pdf_audit.start_new_audit') || 'Start New Audit'}
                           </button>
                         )}
                       </div>
@@ -10863,7 +10970,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           setInputText(temp.textContent || temp.innerText || '');
                           _closePdfAuditModal();
                           addToast(t('toasts.reverse_door') || '✨ Document loaded as source material — generate a glossary, quiz, leveled text, or full lesson from it using the tools on the left.', 'success');
-                        }} disabled={pdfFixLoading || pdfAutoContinueRunning} className={'px-2.5 py-1 bg-violet-600 text-white rounded-full text-[11px] font-bold shrink-0 ' + ((pdfFixLoading || pdfAutoContinueRunning) ? 'opacity-40 cursor-not-allowed' : 'hover:bg-violet-700')} title={(pdfFixLoading || pdfAutoContinueRunning) ? (t('pdf_audit.whatnow.materials_running_title') || 'Remediation is still running — closing now would interrupt it. Click “Stop after this round” first.') : (t('pdf_audit.whatnow.materials_title') || 'Open the content tools with this document as the source — glossary, quiz, leveled text, lesson plan, games: everything generates from the same accessible text.')}>✨ {t('pdf_audit.whatnow.materials') || 'Make learning materials'}</button>
+                        }} disabled={_remediationBusy || pdfAutoContinueRunning} className={'px-2.5 py-1 bg-violet-600 text-white rounded-full text-[11px] font-bold shrink-0 ' + ((_remediationBusy || pdfAutoContinueRunning) ? 'opacity-40 cursor-not-allowed' : 'hover:bg-violet-700')} title={(_remediationBusy || pdfAutoContinueRunning) ? (t('pdf_audit.whatnow.materials_running_title') || 'Remediation is still running — closing now would interrupt it. Click “Stop after this round” first.') : (t('pdf_audit.whatnow.materials_title') || 'Open the content tools with this document as the source — glossary, quiz, leveled text, lesson plan, games: everything generates from the same accessible text.')}>✨ {t('pdf_audit.whatnow.materials') || 'Make learning materials'}</button>
                       </div>
                       {/* Image-description reviewer (item 8b): entry + stepper. */}
                       {(() => {
@@ -14554,7 +14661,7 @@ const _downloadBRF = (brf) => {
                           setInputText(temp.textContent || temp.innerText || '');
                           _closePdfAuditModal();
                           addToast(t('toasts.content_loaded_generate_leveled_text'), 'success');
-                        }} disabled={pdfFixLoading || pdfAutoContinueRunning} className={'w-full px-3 py-2 bg-white border border-violet-600 rounded-xl text-xs font-bold text-violet-700 transition-all flex items-center gap-2 justify-center ' + ((pdfFixLoading || pdfAutoContinueRunning) ? 'opacity-40 cursor-not-allowed' : 'hover:bg-violet-100')} title={(pdfFixLoading || pdfAutoContinueRunning) ? (t('pdf_audit.whatnow.materials_running_title') || 'Remediation is still running — closing now would interrupt it. Click “Stop after this round” first.') : undefined}>
+                        }} disabled={_remediationBusy || pdfAutoContinueRunning} className={'w-full px-3 py-2 bg-white border border-violet-600 rounded-xl text-xs font-bold text-violet-700 transition-all flex items-center gap-2 justify-center ' + ((_remediationBusy || pdfAutoContinueRunning) ? 'opacity-40 cursor-not-allowed' : 'hover:bg-violet-100')} title={(_remediationBusy || pdfAutoContinueRunning) ? (t('pdf_audit.whatnow.materials_running_title') || 'Remediation is still running — closing now would interrupt it. Click “Stop after this round” first.') : undefined}>
                           ✨ Full Differentiation Pipeline
                         </button>
 

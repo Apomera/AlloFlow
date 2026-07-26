@@ -76,7 +76,11 @@ describe('view: the two racy results-panel buttons are disabled while a run is a
     expect(branch).toContain('pdfAutoContinueAbortRef.current = true'); // running branch = Stop
     expect(branch).toContain('startNewPdfAudit()');                     // idle branch = reset
     expect(branch).toContain('await askPdfConfirmation');               // safe-default destructive confirmation
-    expect(branch).toContain('disabled={pdfFixLoading}');               // reset still blocked during the initial fix
+    // Reset still blocked during the initial fix. Strengthened 2026-07-26: the gate is now
+    // _remediationBusy (pdfFixLoading OR the pipeline's own live-run lock), because the host flag
+    // alone was observed reading idle over a live run — which would have re-armed this very
+    // destructive control mid-remediation.
+    expect(branch).toContain('disabled={_remediationBusy}');
     expect(viewSrc).toContain("t('pdf_audit.start_new_running_title')"); // idle-branch loading title retained
   });
 
@@ -84,7 +88,8 @@ describe('view: the two racy results-panel buttons are disabled while a run is a
     expect(viewSrc).toContain("t('pdf_audit.whatnow.materials_running_title')");
     const idx = viewSrc.indexOf("t('pdf_audit.whatnow.materials_running_title')");
     const around = viewSrc.slice(idx - 400, idx);
-    expect(around).toContain('disabled={pdfFixLoading || pdfAutoContinueRunning}');
+    // 2026-07-26 (audit M1): strengthened to _remediationBusy — see the class-invariant test below.
+    expect(around).toContain('disabled={_remediationBusy || pdfAutoContinueRunning}');
   });
 
   it('EVERY "load doc as source then close modal" teardown button is run-guarded (class invariant)', () => {
@@ -94,7 +99,11 @@ describe('view: the two racy results-panel buttons are disabled while a run is a
     // gap the adversarial review caught at view_pdf_audit_source.jsx:8469). Lock the class: every
     // such button must carry the run-state disable guard within the same <button>.
     const sig = "setInputText(temp.textContent || temp.innerText || '');";
-    const guard = 'disabled={pdfFixLoading || pdfAutoContinueRunning}';
+    // 2026-07-26 (audit M1): the guard is now _remediationBusy, not bare pdfFixLoading. This pin
+    // hard-coded the old expression as a CLASS invariant, so it actively blocked upgrading these two
+    // teardown buttons — a test holding a known-weak guard in place. _remediationBusy is
+    // pdfFixLoading OR the pipeline's own live-run lock, so it is strictly stronger.
+    const guard = 'disabled={_remediationBusy || pdfAutoContinueRunning}';
     let from = 0, count = 0, idx;
     while ((idx = viewSrc.indexOf(sig, from)) !== -1) {
       count++;

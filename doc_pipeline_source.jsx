@@ -45,6 +45,21 @@ function _alloAiAuditHasFullCoverage(audit) {
     && Number.isSafeInteger(audited) && audited === requested
     && audit._partialAudit !== true;
 }
+// H8 (audit 2026-07-26): ONE definition of "did the model return usable content blocks?", shared by
+// the single-pass and the CHUNKED extraction paths. The single-pass path has had this guard since
+// 2026-07-02 (a refusal-shaped reply like {} or {"error":"..."} is valid JSON and used to sail
+// through, shipping an all-boilerplate document with a passing score). The chunked path — which is
+// what every document over 8 pages uses — only ever tested `Array.isArray(parsed)`, so a reply like
+// ["I'm sorry, I can't help with that"] rendered to nothing AND was recorded status:'success', so
+// none of the failed-chunk recovery ladders below it ever ran. Same question, same answer, one place.
+function _alloRenderableBlock(b) {
+  return !!(b && typeof b === 'object' && (b.type || b.tag || b.element || b.text || b.content || b.value || b.body || b.html || b.fixed_html || b.output_html || b.accessible_html || b.title || b.items || b.headers || b.description));
+}
+function _alloAsBlockArray(v) {
+  if (v && !Array.isArray(v) && typeof v === 'object' && Array.isArray(v.blocks)) v = v.blocks; // {"blocks":[...]} wrapper variant
+  if (v && !Array.isArray(v) && _alloRenderableBlock(v)) v = [v]; // bare single block
+  return (Array.isArray(v) && v.some(_alloRenderableBlock)) ? v : null;
+}
 function _alloUsableCompleteAiAudit(audit) {
   return !!(audit
     && Number.isFinite(audit.score)
@@ -7372,16 +7387,20 @@ var createDocPipeline = function(deps) {
       const replacement = await _reextractAsLegend(block, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn);
       if (replacement) { out.push(replacement); }
       else {
-        // Reflow the original block to a more honest representation: if it was a
-        // broken table, downgrade to an image with a description that explicitly
-        // names the failure mode so SR users hear something coherent.
+        // H10 (audit 2026-07-26): this used to REPLACE the table with an image stub whenever both
+        // re-extract calls returned null — DELETING every row the deterministic pass had already
+        // recovered. `null` here does not mean "the table is unreadable"; it is also what a Canvas
+        // throttle, an empty 200 body, or an abort returns. So a rate limit could silently turn a
+        // student's score table into "refer to the source PDF image", with the real data gone from
+        // the document and from every export built off it.
+        // Keep the rows. A table that survived extraction is evidence; a stub is not. If the
+        // caption genuinely needs the source image, the teacher can see that from the table itself.
         if (block.type === 'table') {
-          out.push({
-            type: 'image',
-            description: (block.caption || 'Figure legend') + '. Automatic extraction could not enumerate every entry; refer to the source PDF image for the full legend.',
-            alt: block.caption ? String(block.caption).slice(0, 120) : 'Figure legend (full content in source image)'
-          });
-          _legendDiag({ phase: 'fallback-table-to-image', pageRange });
+          const _rowCount = Array.isArray(block.rows) ? block.rows.length : 0;
+          out.push(block);
+          _legendDiag({ phase: 'fallback-kept-original-table', pageRange, rows: _rowCount });
+          warnLog('[Legend repair] re-extraction returned nothing for "' + String(block.caption || '(untitled)').slice(0, 60)
+            + '" — keeping the original ' + _rowCount + '-row table rather than replacing it with an image stub.');
         } else {
           out.push(block);
         }
@@ -22125,12 +22144,11 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           // loss). "Renderable" mirrors renderJsonToHtml's own normalization keys; real
           // arrays pass through UNTOUCHED (no filtering — the renderer already skips
           // junk entries), so the happy path is byte-identical.
-          const _renderableBlock = (b) => !!(b && typeof b === 'object' && (b.type || b.tag || b.element || b.text || b.content || b.value || b.body || b.html || b.fixed_html || b.output_html || b.accessible_html || b.title || b.items || b.headers || b.description));
-          const _asBlockArray = (v) => {
-            if (v && !Array.isArray(v) && typeof v === 'object' && Array.isArray(v.blocks)) v = v.blocks; // {"blocks":[...]} wrapper variant
-            if (v && !Array.isArray(v) && _renderableBlock(v)) v = [v]; // bare single block
-            return (Array.isArray(v) && v.some(_renderableBlock)) ? v : null;
-          };
+          // H8 (2026-07-26): hoisted to file scope as _alloRenderableBlock/_alloAsBlockArray so the
+          // CHUNKED path (which had no such guard at all) shares this exact predicate. Delegating
+          // rather than re-implementing is the whole point — two copies is how they drifted.
+          const _renderableBlock = _alloRenderableBlock;
+          const _asBlockArray = _alloAsBlockArray;
           // JSON self-repair for single-pass extraction
           const repairSingle = (raw) => {
             let s = raw.trim();
@@ -22268,8 +22286,15 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
                 return null; // truly unparseable
               };
 
-              let parsed = repairAndParseJson(cleaned);
-              if (parsed && Array.isArray(parsed)) {
+              // H8 (audit 2026-07-26): was `if (parsed && Array.isArray(parsed))`. ANY array passed
+              // — including a refusal like ["I'm sorry, I can't help with that"] or an array of bare
+              // strings — so the chunk rendered to nothing, was recorded status:'success' at the
+              // bottom of this loop, and none of the object-by-object / direct-HTML / heuristic
+              // recovery ladders below ever ran. Whole sections of a document vanished with a clean
+              // bill of health. Use the same renderable-block predicate the single-pass path uses;
+              // a null result now falls through to that recovery ladder, which is what it is for.
+              let parsed = _alloAsBlockArray(repairAndParseJson(cleaned));
+              if (parsed) {
                 // Legend re-extraction per chunk. The pageRange hint helps the
                 // second vision call zoom in on the right page (the full PDF
                 // is still passed; the prompt narrows attention).

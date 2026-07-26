@@ -46,7 +46,9 @@ describe('#1 view — the Start-New button is an actionable Stop while the loop 
     expect(branch).toContain('startNewPdfAudit()'); // the idle branch still resets
     expect(branch).toContain('await askPdfConfirmation'); // destructive reset uses the shared safe-default dialog
     // idle branch is only disabled by the initial-fix flag now, not the loop flag
-    expect(branch).toContain('disabled={pdfFixLoading}');
+    // 2026-07-26: now _remediationBusy (host flag OR pipeline live-run lock) — the destructive
+    // reset must stay blocked even when the one-shot flag write is lost.
+    expect(branch).toContain('disabled={_remediationBusy}');
     expect(branch).not.toContain('disabled={pdfFixLoading || pdfAutoContinueRunning}');
   });
 });
