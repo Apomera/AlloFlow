@@ -80,3 +80,37 @@ Document Builder HTML export in Chromium across:
 
 The gallery is intentionally artifact-only, so it is ignored by Git and can be
 refreshed whenever HTML export styling or resource rendering changes.
+
+## GL tools: testing the working tree, not the deploy
+
+`17-memory-palace-gl.spec.ts` is a different shape from the specs above and is
+worth copying for the other 3D tools.
+
+Everything else in this suite hits the deployed site. That is useless for
+verifying a change you have not shipped yet, and it cannot cover WebGL at all,
+because the jsdom unit tests have no GL context. So that spec:
+
+1. starts a plain Node static server on an ephemeral port serving the **working
+   tree**, so it tests the code you just edited;
+2. serves a tiny harness page that loads only the module under test and mounts
+   it into a sized container;
+3. drives the real scene in headless Chromium, which renders **WebGL 2.0 through
+   SwiftShader** — a software rasteriser, so it needs no GPU and is not affected
+   by this machine's flaky Adreno/ARM driver.
+
+```bash
+npm run test:e2e:gl        # just the palace GL suite
+```
+
+Two things to know before copying the pattern:
+
+- **Always destroy the scene in `afterEach`.** Chromium caps live WebGL contexts
+  per process and silently kills the oldest past that limit. Leaking them made
+  this suite 4x slower and intermittently failing, for reasons that had nothing
+  to do with the code under test.
+- **Raise the timeout** (`test.describe.configure({ timeout })`). SwiftShader
+  readback is slow — `canvas.screenshot()` logs "GPU stall due to ReadPixels" —
+  and a mount plus two screenshots will blow the default 30s budget.
+
+Comparing two `canvas.screenshot()` buffers from different camera positions is a
+cheap, decoder-free way to assert that the scene both renders and responds.
