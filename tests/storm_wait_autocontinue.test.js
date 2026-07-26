@@ -151,7 +151,18 @@ describe('pipeline behavior — source pins', () => {
     expect(dp).toContain('_pulsePipelineWatchdog(o.owner || null); // waiting IS pipeline activity');
   });
   it('a reduced cap alone is NOT storming — it recovers on successes, so waiting on it would deadlock', () => {
-    expect(dp).toContain('storming: cooldownRemainingMs > 0 || _geminiAuthStreak >= _GEMINI_STORM_TRIP || _geminiTransientStreak >= _GEMINI_TRANSIENT_TRIP');
+    // Pinned as the SHAPE of the expression rather than its exact text: audit finding M16 added a
+    // staleness term (a tripped streak with no failure behind it for 50s is not a live storm), and
+    // an exact-string pin would have failed on a change that strengthened the very invariant it
+    // guards. What must hold is that `storming` is built from the cooldown and the failure
+    // streaks, and never from `capped`.
+    const expr = dp.slice(dp.indexOf('storming: cooldownRemainingMs > 0'));
+    const stormingExpr = expr.slice(0, expr.indexOf('\n    };'));
+    expect(stormingExpr).toContain('cooldownRemainingMs > 0');
+    expect(stormingExpr).toContain('_geminiAuthStreak >= _GEMINI_STORM_TRIP');
+    expect(stormingExpr).toContain('_geminiTransientStreak >= _GEMINI_TRANSIENT_TRIP');
+    expect(stormingExpr).not.toContain('capped');
+    expect(stormingExpr).not.toContain('_geminiCap');
   });
 });
 

@@ -687,3 +687,249 @@ describe('M12 — the link net measures a baseline that exists for the input', (
     expect(iRecompute).toBeGreaterThan(0);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// H15 — throttle waits were never budgeted against the batch per-file wall.
+//
+// The pass loop reserved 90s at pass ENTRY and then handed control to machinery with no idea a
+// wall existed: aiFixChunked could spend 2x90s of calm waits plus 2x90s in the catch-up drain,
+// the drain re-fixed each deferred chunk serially at a 180s per-call timeout, and the loop's
+// verify wait added another 120s. A pass entered at deadline-91s could run minutes past the
+// wall — at which point _withTimeout rejected, the file was marked FAILED, and every completed
+// pass's keep-best HTML was discarded. Exactly what ending the loop early exists to prevent.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('H15 — a throttle wait must fit inside the batch file wall', () => {
+  let budget;
+  beforeAll(() => {
+    loadAlloModule('doc_pipeline_module.js');
+    budget = window.AlloModules.createDocPipeline({
+      callGemini: async () => 'OK', callGeminiVision: async () => '{}', callImagen: async () => null,
+      addToast: () => {}, t: (k) => k, isRtlLang: () => false,
+      updateExportPreview: () => {}, getDefaultTitle: () => 'Document', state: {},
+    }).calmBudgetMs;
+  });
+
+  it('an interactive run keeps the full wait — there is no wall to fit inside', () => {
+    expect(budget(120000, 0)).toBe(120000);
+    expect(budget(90000, null)).toBe(90000);
+  });
+
+  it('plenty of budget left → the full wait', () => {
+    expect(budget(90000, Date.now() + 10 * 60 * 1000)).toBe(90000);
+  });
+
+  it('the wait is trimmed to what is actually left, minus a finalize reserve', () => {
+    const left = budget(120000, Date.now() + 100000);
+    expect(left).toBeGreaterThan(60000);   // ~70s: 100s left minus the 30s reserve
+    expect(left).toBeLessThan(80000);
+  });
+
+  it('inside the reserve → no wait at all', () => {
+    // wait-not-stop: waitForGeminiCalm returns immediately and the run proceeds slower. Waiting
+    // here would blow the wall and discard finished work, which is strictly worse.
+    expect(budget(120000, Date.now() + 10000)).toBe(0);
+  });
+
+  it('past the wall → no wait', () => {
+    expect(budget(120000, Date.now() - 5000)).toBe(0);
+  });
+
+  it('every calm wait in the fix path is clamped — no bare constants left', () => {
+    expect(dp).not.toContain('waitForGeminiCalm({ maxWaitMs: 90000, shouldAbort: _control');
+    expect(dp).not.toContain('waitForGeminiCalm({ maxWaitMs: 120000, shouldAbort: _shouldAbort');
+    expect(dp).toContain('_alloCalmBudgetMs(90000, _control && _control.perFileDeadlineTs)');
+    expect(dp).toContain('_alloCalmBudgetMs(120000, loopCtx.perFileDeadlineTs)');
+  });
+
+  it('the wall is actually threaded into aiFixChunked', () => {
+    // The clamps above are no-ops unless the deadline reaches _control.
+    expect(dp).toContain('perFileDeadlineTs: loopCtx.perFileDeadlineTs || 0,');
+  });
+
+  it('the catch-up drain checks the wall per round AND between chunks', () => {
+    // Each revisit is a document-sized call with a 180s timeout, so a drain that fitted when it
+    // started may not fit by chunk 5.
+    expect(dp).toContain('const _drainOutOfTime = () => _drainWall > 0 && Date.now() > _drainWall - _DRAIN_RESERVE_MS;');
+    expect((dp.match(/if \(_drainOutOfTime\(\)\) \{/g) || []).length).toBe(2);
+  });
+
+  it('chunks the drain never reached are reported as still deferred, not as revisited', () => {
+    expect(dp).toContain('for (const _u of _unreached) if (_deferredIdx.indexOf(_u) === -1) _deferredIdx.push(_u);');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// H16 — a batch never took the single-file remediation lock.
+//
+// Only the EXPORT is wrapped; the batch runner resolves the closure-local fixAndVerifyPdf. So a
+// teacher could start a single-file "Fix & Verify" over a live batch, and the two runs shared
+// mutable state: _pipelineStats is a module-level global re-pointed at run entry and read at CALL
+// time, so the single-file run's calls, retries and every _pipeLog/watchdog heartbeat were
+// stamped with the batch file's runId — and the single-file watchdog drops heartbeats whose runId
+// does not match, so it can fire on a run that is demonstrably alive. The second run also
+// overwrites window.__alloPdfAbortSignal and aborts that controller in its finally, cancelling a
+// batch file's in-flight Gemini calls.
+//
+// The claim is MANAGED on purpose: a batch owns its own progress UI, so the busy probe must keep
+// reporting idle and the single-file controls must stay armed. The lock's only job is to reject a
+// concurrent START.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('H16 — a batch holds the remediation lock as a managed claim', () => {
+  it('the batch claims the lock before publishing any owner state', () => {
+    // A refused claim must leave nothing behind — no half-registered _activeBatchRun.
+    const iClaim = dp.indexOf('const _batchLockToken = _claimRemediationLockForBatch();');
+    const iOwnerPublish = dp.indexOf('_activeBatchRun = owner;');
+    expect(iClaim).toBeGreaterThan(0);
+    expect(iOwnerPublish).toBeGreaterThan(iClaim);
+  });
+
+  it('a concurrent start is refused with the same error shape the single-file lane uses', () => {
+    expect(dp).toContain("_busyError.name = 'RemediationAlreadyRunningError';");
+    expect(dp).toContain('_busyError.isAlreadyRunning = true;');
+  });
+
+  it('the claim is MANAGED, so the busy probe still reports idle during a batch', () => {
+    // _getActiveRemediationRun returns null whenever _activeRemediationManaged is true. If this
+    // flipped, every single-file control would grey out for the length of a batch.
+    const claim = dp.slice(dp.indexOf('var _claimRemediationLockForBatch = function()'), dp.indexOf('var _releaseRemediationLockForBatch'));
+    expect(claim).toContain('_activeRemediationManaged = true;');
+    expect(dp).toContain('if (!_activeSingleFixPromise || _activeRemediationManaged) return null;');
+  });
+
+  it('the lock is released on EVERY exit, and only by its own holder', () => {
+    // Token identity matters: a superseding batch takes the lock over, so the superseded run's
+    // finally must not then release the new owner's claim.
+    expect(dp).toContain('if (token && _activeSingleFixPromise === token) {');
+    expect(dp).toContain('_releaseRemediationLockForBatch(_batchLockToken); // H16: no-op if a superseding batch already took it');
+  });
+
+  it('a superseded batch hands the lock over instead of stranding it', () => {
+    // The old run was aborted but unwinds asynchronously, so without the handover the NEW batch
+    // would be refused a lock its own predecessor still nominally holds — a permanent deadlock
+    // until the page reloads.
+    expect(dp).toContain('_releaseRemediationLockForBatch(_activeBatchRun.lockToken);');
+    expect(dp).toContain('owner.lockToken = _batchLockToken;');
+  });
+
+  it('a stale single-file lock does not block a batch forever', () => {
+    const claim = dp.slice(dp.indexOf('var _claimRemediationLockForBatch = function()'), dp.indexOf('var _releaseRemediationLockForBatch'));
+    expect(claim).toContain('liveGeneration !== _activeSingleFixGeneration');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// M15 / M16 / L6 / L7 — the Gemini throttle gate.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('M15 — the breaker outcome is recorded before the slot is released', () => {
+  it('the slot hold waits for the outcome, not just the transport', () => {
+    // _geminiGate released the slot one `.then` off the transport hold and pumped the queue
+    // immediately, while the breaker note sat two-plus links downstream. On a fast-settling
+    // failure — an empty-200 body or a quick canvasTransientAuth rejection, which this file's own
+    // comments call the dominant Canvas throttle shape — the release always won, so _geminiPump
+    // admitted fresh document-sized calls under the PRE-TRIP cap with no cooldown: the exact
+    // re-fan-out the breaker exists to prevent.
+    expect(dp).toContain('var _slotUntil = Promise.all([_transportHold, _outcomeRecorded]);');
+    const iRecord = dp.indexOf('var _outcomeRecorded = _raced.then(');
+    const iSlot = dp.indexOf('var _slotUntil = Promise.all([_transportHold, _outcomeRecorded]);');
+    expect(iRecord).toBeGreaterThan(0);
+    expect(iSlot).toBeGreaterThan(iRecord);
+  });
+
+  it('there is ONE classifier, and the handlers call it rather than repeating it', () => {
+    // The alternative — classifying separately inside the gate body and in the handlers — is the
+    // two-lane drift this whole audit keeps finding. A once-flag makes the second call a no-op.
+    expect(dp).toContain('var _noteGeminiOutcome = function (res, err) {');
+    expect(dp).toContain('if (_outcomeNoted) return;');
+    expect((dp.match(/_noteGeminiOutcome\(/g) || []).length).toBeGreaterThanOrEqual(5);
+  });
+
+  it('an aborted or permanent failure still feeds the breaker nothing', () => {
+    const body = dp.slice(dp.indexOf('var _noteGeminiOutcome = function (res, err) {'));
+    const classifier = body.slice(0, body.indexOf('\n      };') + 1);
+    expect(classifier.length).toBeGreaterThan(0);
+    expect(classifier).toContain('if (_gateSignal && _gateSignal.aborted) return;');
+    expect(classifier).toContain('if (_perm) return;');
+  });
+});
+
+describe('M16 — a failure wave expires instead of pinning the gate for the whole run', () => {
+  it('failures are timestamped', () => {
+    expect(dp).toContain("at: ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0), // M16: waves expire");
+  });
+
+  it('a stale wave stops vetoing recovery', () => {
+    // The wave was only ever cleared by a representative success or by a run-entry reset, so a
+    // storm that tripped on the last whole-document Vision call could never be disproved: the
+    // rest of the run is text-only and `kind !== failure.kind` short-circuits every success.
+    expect(dp).toContain('if (_geminiWaveIsStale()) return true;');
+    expect(dp).toContain('var _GEMINI_WAVE_STALE_MS = 50000;');
+  });
+
+  it('the staleness bound is longer than the longest escalated cooldown', () => {
+    // Otherwise a wave could be declared stale while its own cooldown was still running.
+    const cooldownCap = 25000; // Math.min(25000, …) at both trip sites
+    expect(50000).toBeGreaterThan(cooldownCap);
+    expect(dp).toContain('Math.min(25000, _GEMINI_COOLDOWN_MS');
+  });
+
+  it('enough off-route successes clear the wave on their own', () => {
+    // A run that has moved on to a different route can never produce the failed route's evidence.
+    expect(dp).toContain('_geminiOffRouteOkStreak++;');
+    expect(dp).toContain('if (_geminiOffRouteOkStreak < _GEMINI_RECOVER_HITS) return;');
+  });
+
+  it('any real failure resets the off-route recovery run', () => {
+    expect(dp).toContain('_geminiOffRouteOkStreak = 0; // M16: a real failure invalidates any off-route recovery run');
+  });
+
+  it('storming ignores a stale streak but never a live cooldown', () => {
+    const info = dp.slice(dp.indexOf('var _geminiThrottleInfo = function ()'));
+    const body = info.slice(0, info.indexOf('return _r;'));
+    expect(body).toContain('storming: cooldownRemainingMs > 0');
+    expect(body).toContain('!_staleWave &&');
+  });
+});
+
+describe('L6 — recovery probes are visible to telemetry and to the teacher', () => {
+  it('probe calls, payload and latency are counted', () => {
+    // A run that paused for minutes waiting for probes to clear looked, from the Log panel, like
+    // a run doing nothing at all.
+    expect(dp).toContain('_probeStats.probeCalls = (_probeStats.probeCalls || 0) + 1;');
+    expect(dp).toContain('_probeStats.probeChars =');
+    expect(dp).toContain('_probeStats.probeMs =');
+  });
+
+  it('each probe writes one line to the log the teacher can read', () => {
+    expect(dp).toContain("_pipeLog('Throttle', 'Recovery probe '");
+  });
+
+  it('a CANCELLED run\'s probe is not counted — it is not evidence about the service', () => {
+    const probe = dp.slice(dp.indexOf('var _geminiProbe = function (opts)'));
+    const abortArm = probe.slice(probe.indexOf('if ((err && err.isAbort)'), probe.indexOf('_noteProbe(false, err);'));
+    expect(abortArm).not.toContain('_noteProbe(');
+  });
+});
+
+describe('L7 — only a RECENT throttle may be blamed for a coverage shortfall', () => {
+  it('the fact has one definition, on the gate snapshot', () => {
+    expect(dp).toContain('recentlyThrottled: cooldownRemainingMs > 0');
+    expect(dp).toContain('var _GEMINI_RECENT_THROTTLE_MS = 120000;');
+  });
+
+  it('a real breaker trip is timestamped at both trip sites', () => {
+    expect((dp.match(/_geminiLastStormTripAt = \(\(typeof Date/g) || []).length).toBe(2);
+  });
+
+  it('no site re-derives "a storm happened" by hand any more', () => {
+    // Four hand-rolled `cooldown || cap < ceiling` expressions were true for the WHOLE run once
+    // anything tripped, because recovery needs four consecutive representative successes and may
+    // never get them. So a final audit that came back partial on malformed JSON published "the
+    // rest were throttled by a temporary Canvas rate-limit" — the false attribution R3 wrote that
+    // branch to avoid — and the teacher re-ran a document whose bad section fails identically.
+    expect(dp).not.toContain('|| (_geminiCap < _geminiEffectiveMax); // R7');
+    expect(dp).toContain('const _throttleCaused = _finalAuditThrottled || _geminiThrottleInfo().recentlyThrottled;');
+    // The only two remaining cap-vs-ceiling comparisons are the gate's own recovery check and the
+    // `capped` field it publishes.
+    expect((dp.match(/_geminiCap < _geminiEffectiveMax/g) || []).length).toBe(2);
+  });
+});

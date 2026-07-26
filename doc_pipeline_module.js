@@ -4475,6 +4475,8 @@ var createDocPipeline = function(deps) {
   var _geminiAuthStreak = 0;        // consecutive canvas-auth failures
   var _geminiTransientStreak = 0;   // (2026-06-20) consecutive empty-body/timeout failures (the throttle manifestation that ISN'T a 401)
   var _geminiOkStreak = 0;          // consecutive successes (drives recovery)
+  var _geminiLastStormTripAt = 0;   // L7 (2026-07-26): when the breaker last actually tripped — see recentlyThrottled
+  var _geminiOffRouteOkStreak = 0;  // M16 (2026-07-26): consecutive successes on a DIFFERENT route than the one that failed — a run that has moved on can never produce the failed route's evidence, so enough of these clear the wave on their own
   var _geminiCooldownUntil = 0;     // epoch ms; no NEW call starts before this
   var _geminiCooldownTimer = null;
   var _geminiStormAnnounced = false; // user-facing "Canvas is rate-limiting" message emitted once per sustained storm
@@ -4576,6 +4578,7 @@ var createDocPipeline = function(deps) {
       var _cd = Math.min(25000, _GEMINI_COOLDOWN_MS * (_geminiAuthStreak - _GEMINI_STORM_TRIP + 1)); // cap 25s (was 90s) — with time-decay recovery + catch-up drain, a long serializing cooldown only stretches the run
       if (_geminiCap !== _GEMINI_STORM_MIN || _cd > _GEMINI_COOLDOWN_MS) warnLog('[GeminiGate] Canvas-auth storm (' + _geminiAuthStreak + ' in a row) — throttling to ' + _GEMINI_STORM_MIN + ' concurrent + ' + Math.round(_cd / 1000) + 's cooldown');
       _geminiCap = _GEMINI_STORM_MIN;
+      _geminiLastStormTripAt = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0); // L7 (2026-07-26): a REDUCED CAP alone is not a throttle claim — only a recent trip is
       _geminiCooldownUntil = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) + _cd;
       var _stats = stats || _pipelineStats;
       _stats.authThrottles = (_stats.authThrottles || 0) + 1;
@@ -4601,6 +4604,7 @@ var createDocPipeline = function(deps) {
       var _cd = Math.min(25000, _GEMINI_COOLDOWN_MS * (_geminiTransientStreak - _GEMINI_TRANSIENT_TRIP + 1)); // cap 25s (was 90s)
       if (_geminiCap !== _GEMINI_STORM_MIN || _cd > _GEMINI_COOLDOWN_MS) warnLog('[GeminiGate] Empty-body/timeout storm (' + _geminiTransientStreak + ' in a row) — throttling to ' + _GEMINI_STORM_MIN + ' concurrent + ' + Math.round(_cd / 1000) + 's cooldown (likely a Canvas rate-limit surfacing as empty responses)');
       _geminiCap = _GEMINI_STORM_MIN;
+      _geminiLastStormTripAt = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0); // L7 (2026-07-26): a REDUCED CAP alone is not a throttle claim — only a recent trip is
       _geminiCooldownUntil = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) + _cd;
       var _stats = stats || _pipelineStats;
       _stats.authThrottles = (_stats.authThrottles || 0) + 1;
@@ -4614,9 +4618,34 @@ var createDocPipeline = function(deps) {
   // route at a comparable payload volume. Otherwise a tiny caption/text request
   // could clear a document-sized or Vision throttle before the representative
   // wait-not-stop probes and the real failed route have recovered.
+  // M16 (audit 2026-07-26): the wave EXPIRES. Without this the veto was permanent — the profile
+  // was only ever cleared by a representative success or by _resetGeminiBreaker (run entry, and
+  // only when the gate is idle), so a wave that tripped on the last of Step 2's whole-document
+  // Vision calls could never be disproved: Steps 3 and 4 are text-only, and `kind !== failure.kind`
+  // short-circuits every one of them. On a perfectly healthy service the rest of the run then ran
+  // serialized at cap 1 (the auto-fix loop is the longest phase), every later transient text error
+  // was marked geminiStormDeferred and lost its inline retry, the final circle-back's
+  // stop-improving guard could never fire so a malformed-JSON partial ground to the 10-minute cap
+  // under a status line blaming a rate limit that had long since eased, and in a batch the pinned
+  // cap-1 run then blew the per-file wall.
+  //
+  // 50s is comfortably past the longest escalated cooldown (25s), so a wave can never be declared
+  // stale while its own cooldown is still running — and `storming` keys on the live cooldown
+  // independently, so an ACTIVE throttle is unaffected by this bound.
+  var _GEMINI_WAVE_STALE_MS = 50000;
+  var _GEMINI_RECENT_THROTTLE_MS = 120000; // L7: how long a real breaker trip may still be blamed for a coverage shortfall
+  var _geminiWaveIsStale = function () {
+    var f = _geminiLastFailureProfile;
+    if (!f || !f.at) return false;
+    var now = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
+    return (now - f.at) > _GEMINI_WAVE_STALE_MS;
+  };
   var _geminiSuccessRepresentsFailure = function(successProfile) {
     var failure = _geminiLastFailureProfile;
     if (!failure) return true;
+    // A route profile with no failure behind it for 50 seconds is evidence about a service state
+    // that no longer exists; it must not veto recovery forever.
+    if (_geminiWaveIsStale()) return true;
     if (!successProfile || successProfile.kind !== failure.kind) return false;
     var failedVolume = Math.max(0, Number(failure.promptChars) || 0)
       + Math.max(0, Number(failure.attachmentChars) || 0);
@@ -4626,7 +4655,18 @@ var createDocPipeline = function(deps) {
   };
   var _geminiNoteSuccess = function(requestProfile) {
     var _failureWaveActive = (_geminiAuthStreak > 0 || _geminiTransientStreak > 0) && !!_geminiLastFailureProfile;
-    if (_failureWaveActive && !_geminiSuccessRepresentsFailure(requestProfile)) return;
+    if (_failureWaveActive && !_geminiSuccessRepresentsFailure(requestProfile)) {
+      // M16: a run that has MOVED ON to a different route has no way to produce the old route's
+      // evidence, so "wait for a representative success" would wait forever. Count the
+      // non-representative ones instead: _GEMINI_RECOVER_HITS of them in a row is its own evidence
+      // that the service is answering. Any failure resets the counter (below), so this can only
+      // clear a wave that has genuinely stopped failing.
+      _geminiOffRouteOkStreak++;
+      if (_geminiOffRouteOkStreak < _GEMINI_RECOVER_HITS) return;
+      warnLog('[GeminiGate] ' + _geminiOffRouteOkStreak + ' consecutive successes on a different route — clearing the stale failure wave (the failed route is not being exercised again this run).');
+      _geminiOffRouteOkStreak = 0;
+    }
+    _geminiOffRouteOkStreak = 0;
     _geminiAuthStreak = 0;
     _geminiTransientStreak = 0;
     _geminiLastFailureProfile = null;
@@ -4712,21 +4752,42 @@ var createDocPipeline = function(deps) {
   var _geminiThrottleInfo = function () {
     var now = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
     var cooldownRemainingMs = Math.max(0, _geminiCooldownUntil - now);
+    // M16: a tripped streak with no failure behind it for 50s is not a live storm. An ACTIVE
+    // cooldown still reads as storming regardless — that is a real, time-bounded brake — so this
+    // only stops a stale streak from claiming a rate limit that has long since eased. Without it
+    // `storming` stayed true for the rest of the run: every later transient error lost its inline
+    // retry, the circle-back's stop-improving guard could never fire, and the teacher-facing
+    // status line kept blaming a throttle.
+    var _staleWave = _geminiWaveIsStale();
     var _r = {
       cooldownRemainingMs: cooldownRemainingMs,
       authStreak: _geminiAuthStreak,
       transientStreak: _geminiTransientStreak,
       capped: _geminiCap < _geminiEffectiveMax,
-      storming: cooldownRemainingMs > 0 || _geminiAuthStreak >= _GEMINI_STORM_TRIP || _geminiTransientStreak >= _GEMINI_TRANSIENT_TRIP,
+      storming: cooldownRemainingMs > 0
+        || (!_staleWave && (_geminiAuthStreak >= _GEMINI_STORM_TRIP || _geminiTransientStreak >= _GEMINI_TRANSIENT_TRIP)),
+      // L7 (audit 2026-07-26): "a throttle happened recently enough to still explain this run's
+      // shortfall". Four sites re-derived that fact by hand as `cooldown || cap < ceiling`, which
+      // is true for the WHOLE run once anything trips — recovery needs four consecutive
+      // representative successes and may never get them. So a final audit that came back partial
+      // because one section returned malformed JSON, with no throttle involved, published
+      // "the rest were throttled by a temporary Canvas rate-limit" — the exact false attribution
+      // R3 wrote that branch to avoid. The teacher then waits and re-runs a document whose
+      // malformed section will fail identically every time. Time-bounded, so it keeps the R7
+      // intent (a cap forced down right after a storm still counts) without the permanence.
+      recentlyThrottled: cooldownRemainingMs > 0
+        || (_geminiLastStormTripAt > 0 && (now - _geminiLastStormTripAt) < _GEMINI_RECENT_THROTTLE_MS),
     };
     return _r;
   };
   var _rememberGeminiFailure = function (profile) {
     if (!profile || (profile.kind !== 'text' && profile.kind !== 'vision')) return;
+    _geminiOffRouteOkStreak = 0; // M16: a real failure invalidates any off-route recovery run
     var next = {
       kind: profile.kind,
       promptChars: Math.max(0, Number(profile.promptChars) || 0),
       attachmentChars: Math.max(0, Number(profile.attachmentChars) || 0),
+      at: ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0), // M16: waves expire
     };
     // Preserve the most demanding route across one consecutive failure wave.
     // A text failure must not overwrite a Vision/PDF failure and let a text-only
@@ -4779,19 +4840,43 @@ var createDocPipeline = function(deps) {
     var _sig = o.signal || ((typeof window !== 'undefined' && window.__alloPdfAbortSignal) ? window.__alloPdfAbortSignal : null);
     var _prompt = _geminiProbePrompt(o.promptChars);
     var _timeoutMs = Math.max(1, Math.min(30000, Number(o.timeoutMs) || 30000));
+    // L6 (audit 2026-07-26): probe traffic goes straight to _rawCallGemini, so it bypassed
+    // callGemini's accounting entirely — its calls, its payload and its latency appeared in no run
+    // telemetry and in no log the teacher can read. A run that paused for minutes waiting for
+    // representative probes to clear looked, from the Log panel, like a run doing nothing at all.
+    // Accounting only: this stays OUT of _geminiNoteSuccess/_geminiNoteTransientFail, so the
+    // 2026-07-24 breaker-neutrality guarantee is untouched — probes must never rewrite the real
+    // auth/transient streaks.
+    var _probeStats = (o.owner && o.owner.stats) || _pipelineStats;
+    var _probeStartedAt = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0);
+    var _noteProbe = function (ok, err) {
+      try {
+        _probeStats.probeCalls = (_probeStats.probeCalls || 0) + 1;
+        _probeStats.probeChars = (_probeStats.probeChars || 0) + _prompt.length;
+        _probeStats.probeMs = (_probeStats.probeMs || 0)
+          + Math.max(0, (((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) - _probeStartedAt));
+      } catch (_) {}
+      try {
+        _pipeLog('Throttle', 'Recovery probe ' + (_probeStats.probeCalls || 1) + ' ('
+          + Math.max(1, Math.round(_prompt.length / 1024)) + 'KB) → ' + (ok ? 'service answered' : 'still throttled')
+          + (err && err.message ? ' (' + String(err.message).slice(0, 80) + ')' : ''), null, o.owner);
+      } catch (_) {}
+    };
     return _geminiGate(function () {
       var _u = Promise.resolve().then(function () { return _rawCallGemini(_prompt, false, false, null, null, _sig); });
       var _timed = _withTimeout(_u, _timeoutMs, 'gemini-probe');
       var _outcome = _timed.then(function (r) {
         if (_sig && _sig.aborted) throw _mkGateAbortErr('gemini-probe');
         var ok = /^OK[.!]?$/.test(String(r || '').trim().toUpperCase());
+        _noteProbe(ok, null);
         if (!ok && typeof o.onFailure === 'function') o.onFailure();
         return ok;
       }, function (err) {
         if ((err && err.isAbort) || (_sig && _sig.aborted)) {
           if (err && err.isAbort) throw err;
-          throw _mkGateAbortErr('gemini-probe');
+          throw _mkGateAbortErr('gemini-probe'); // a cancelled run's probe is not evidence about the service
         }
+        _noteProbe(false, err);
         if (typeof o.onFailure === 'function') o.onFailure(err);
         return false;
       });
@@ -4824,6 +4909,29 @@ var createDocPipeline = function(deps) {
   // turns true (user pressed Stop / the run generation went stale) the wait exits IMMEDIATELY with
   // {calm:false, aborted:true} instead of holding the caller for up to maxWaitMs. Without it a Stop
   // pressed during the wait was invisible until the wait's own bound expired.
+  // H15 (audit 2026-07-26): a throttle wait inside a BATCH file's fix pass has to fit inside that
+  // file's wall. The pass loop reserved 90s at pass ENTRY and then handed control to machinery
+  // that had no idea a wall existed: aiFixChunked could spend 2x90s of calm waits in the
+  // single-chunk path plus 2x90s in the catch-up drain, the drain then re-fixed each deferred
+  // chunk serially at a 180s per-call timeout, and the loop's verify wait added another 120s. One
+  // pass entered at deadline-91s could run minutes past the wall — at which point _withTimeout
+  // rejected, the file was marked FAILED, and every completed pass's keep-best HTML was discarded,
+  // defeating the whole point of ending the loop early. The retry then paid the full 8 minutes
+  // again against the same rate limit.
+  //
+  // Returns the wait budget actually available: the full default for an interactive run (no wall),
+  // otherwise whatever is left before the wall minus a reserve for the finalize tail. 0 means
+  // "there is no time to wait" — waitForGeminiCalm returns immediately and the caller proceeds
+  // slower rather than stopping, which is the gate's documented wait-not-stop stance.
+  var _CALM_WALL_RESERVE_MS = 30000;
+  var _alloCalmBudgetMs = function (defaultMs, deadlineTs, reserveMs) {
+    var d = Math.max(0, Number(defaultMs) || 0);
+    if (!deadlineTs) return d; // interactive run — no per-file wall to fit inside
+    var now = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0);
+    var left = deadlineTs - now - (Number(reserveMs) === 0 ? 0 : (Number(reserveMs) || _CALM_WALL_RESERVE_MS));
+    if (!(left > 0)) return 0;
+    return Math.min(d, left);
+  };
   var waitForGeminiCalm = async function (opts) {
     var o = opts || {};
     var maxWaitMs = (typeof o.maxWaitMs === 'number') ? Math.max(0, o.maxWaitMs) : 240000;
@@ -5006,6 +5114,48 @@ var createDocPipeline = function(deps) {
     var _attempt = function(n) {
       var timeoutMs = n === 0 ? initialMs : (retryMs || initialMs);
       var _attemptQueuedAt = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0);
+      // ── M15 (audit 2026-07-26): record the breaker outcome BEFORE the slot is released ──────
+      // _geminiGate released the slot one `.then` link off the transport hold and pumped the queue
+      // immediately, while the breaker note sat two-plus links further downstream in the handlers
+      // below. On a fast-settling failure — an empty-200 body or a quick canvasTransientAuth
+      // rejection, which this file's own comments call the dominant Canvas throttle shape — _free
+      // always won, so _geminiPump admitted fresh full-size calls under the PRE-TRIP cap with no
+      // cooldown: up to _geminiCap extra document-sized calls fired into a proxy that had just
+      // started refusing, which is the exact re-fan-out the breaker exists to prevent, and each one
+      // burns another 120-180s timeout out of a batch file's budget.
+      //
+      // The classification lives HERE, in one place, and the handlers below call the same function.
+      // A once-flag makes the second call a no-op, so there is no second lane to drift: whichever
+      // reaches it first records, and the slot release waits for it.
+      var _outcomeNoted = false;
+      var _noteGeminiOutcome = function (res, err) {
+        if (_outcomeNoted) return;
+        _outcomeNoted = true;
+        // An aborted run neither retries nor feeds the breaker — its failure IS the cancellation.
+        if (_gateSignal && _gateSignal.aborted) return;
+        if (err) {
+          if (err.isAbort || err.name === 'AbortError') return;
+          if (err.message && /RECITATION/i.test(err.message)) return; // deterministic content filter, not a rate limit
+          var _perm = !!(err.isAuth || err.isQuota || err.isConfig ||
+            (err.message && /API_(AUTH_FAILED|QUOTA_EXHAUSTED|MODEL_NOT_FOUND)/.test(err.message)));
+          var _canvasAuth = !!(err.canvasTransientAuth && !err.isQuota && !err.isConfig);
+          if (_perm && _isBurstQuotaErr(err)) { _perm = false; _canvasAuth = true; }
+          if (_perm) return; // real auth/quota/config: permanent, and never fed the breaker
+          _rememberGeminiFailure(requestProfile);
+          if (_canvasAuth) _geminiNoteAuthFail(_callStats, owner);
+          else _geminiNoteTransientFail(_callStats, owner);
+          return;
+        }
+        // Some Vision proxy paths resolve an empty 200 body instead of throwing. That is a
+        // throttle signal, not a success — counting it as one reset the live storm streak and
+        // prematurely reopened concurrency.
+        if (res == null || (typeof res === 'string' && !res.trim())) {
+          _rememberGeminiFailure(requestProfile);
+          _geminiNoteTransientFail(_callStats, owner);
+        } else {
+          _geminiNoteSuccess(requestProfile);
+        }
+      };
       return _geminiGate(function() {
         if (typeof onTransportStart === 'function') {
           try { onTransportStart({ attempt: n, queuedMs: Math.max(0, (((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) - _attemptQueuedAt)) }); } catch (_) {}
@@ -5015,12 +5165,21 @@ var createDocPipeline = function(deps) {
         // Hold the slot until the UNDERLYING call settles: when the timer wins the race the fetch
         // is still consuming a real connection. Ceiling: 45s past the timeout, so a wedged
         // transport cannot wedge the whole gate.
-        var _slotUntil = new Promise(function (resolveHold) {
+        var _transportHold = new Promise(function (resolveHold) {
           var _done = false, _capTimer = null;
           var _fin = function () { if (_done) return; _done = true; if (_capTimer) clearTimeout(_capTimer); resolveHold(); };
           _underlying.then(_fin, _fin);
           _raced.then(null, function () {}).then(function () { if (!_done && !_capTimer) _capTimer = setTimeout(_fin, 45000); });
         });
+        // M15: the slot is held until the transport has settled AND the outcome has been recorded,
+        // so _geminiPump can never admit a queued waiter under a cap the breaker is about to drop.
+        // Bounded by _raced, which the timeout already bounds — this cannot extend the hold past
+        // the existing 45s ceiling.
+        var _outcomeRecorded = _raced.then(
+          function (res) { _noteGeminiOutcome(res, null); },
+          function (err) { _noteGeminiOutcome(null, err); }
+        );
+        var _slotUntil = Promise.all([_transportHold, _outcomeRecorded]);
         return { result: _raced, slotUntil: _slotUntil };
       }, _gateSignal, label).then(function(res) {
         // A transport that ignores AbortSignal may still resolve after ownership was revoked.
@@ -5031,13 +5190,12 @@ var createDocPipeline = function(deps) {
         // recovery success: counting it as one reset the live storm streak and prematurely reopened
         // concurrency. Record the signal without adding another retry; callers retain their existing
         // empty-result fallback behavior.
-        if (res == null || (typeof res === 'string' && !res.trim())) {
-          _rememberGeminiFailure(requestProfile);
-          _geminiNoteTransientFail(_callStats, owner);
-        }
-        else {
+        // M15: normally already recorded inside the gate body (before the slot was released);
+        // this is the same call, and the once-flag makes it a no-op. Kept so the accounting still
+        // happens if the gate path is ever bypassed.
+        _noteGeminiOutcome(res, null);
+        if (!(res == null || (typeof res === 'string' && !res.trim()))) {
           if (n > 0) _callStats.recoveredRetries = (_callStats.recoveredRetries || 0) + 1;
-          _geminiNoteSuccess(requestProfile);
         }
         return res;
       }).catch(function(err) {
@@ -5062,8 +5220,7 @@ var createDocPipeline = function(deps) {
         if (isPermanent) { warnLog('[Retry] ' + (label || 'API call') + ' failed (' + (err.message || 'permanent error') + ') — skipping retry (auth/quota/config errors do not change between calls)'); throw err; }
         if (_canvasAuthRetry) {
           var _throttleKind = _burstQuota ? 'Rate-limit (429/quota burst)' : 'Canvas throttle';
-          _rememberGeminiFailure(requestProfile);
-          _geminiNoteAuthFail(_callStats, owner); // trip/escalate the breaker so this AND subsequent calls back off
+          _noteGeminiOutcome(null, err); // M15: same note, already made before the slot was released
           if (n >= _GEMINI_AUTH_RETRIES) { warnLog('[Retry] ' + (label || 'API call') + ' — ' + _throttleKind + ' persisted through ' + _GEMINI_AUTH_RETRIES + ' retries; giving up this call'); throw err; }
           // Jittered backoff (2026-06-21): ±30% randomization so a batch of calls that all 401 at once
           // don't retry in lockstep and re-storm the proxy on the same tick.
@@ -5075,8 +5232,9 @@ var createDocPipeline = function(deps) {
         }
         // Count EVERY failed transport immediately, including the first attempt. Previously a
         // 3-call wave could launch three retries before the breaker saw even one failure.
-        _rememberGeminiFailure(requestProfile);
-        _geminiNoteTransientFail(_callStats, owner);
+        // M15: this now normally happened before the slot was released; the once-flag keeps it
+        // from double-counting, and the call stays here so the accounting cannot be lost.
+        _noteGeminiOutcome(null, err);
         if (n >= 1) throw err;
         // (2026-07-24) During an ACTIVE storm the single inline retry just burns a SECOND full
         // transport timeout into a throttled window — doubling every call's dwell (the 3–6 min
@@ -6812,7 +6970,7 @@ var createDocPipeline = function(deps) {
           warnLog(`[aiFixChunked:${label}] single-chunk throttle deferred — recovery round ${_singleRecoveryRound}/2 after a quiet-window check`);
           _pulsePipelineWatchdog(_control && _control.owner);
           let calm = null;
-          try { calm = await waitForGeminiCalm({ maxWaitMs: 90000, shouldAbort: _control && _control.shouldAbort, signal: _control && _control.signal, owner: _control && _control.owner }); } catch (_) {}
+          try { calm = await waitForGeminiCalm({ maxWaitMs: _alloCalmBudgetMs(90000, _control && _control.perFileDeadlineTs), shouldAbort: _control && _control.shouldAbort, signal: _control && _control.signal, owner: _control && _control.owner }); } catch (_) {}
           if ((calm && calm.aborted) || _controlAborted()) _throwIfControlAborted(true);
           continue;
         }
@@ -6962,21 +7120,46 @@ var createDocPipeline = function(deps) {
     // handle it, don't spin).
     if (_deferredIdx.length) {
       let _todo = _deferredIdx.slice();
+      // H15: the drain is the single most expensive thing that can happen after the pass loop has
+      // already decided it has time for another pass — a calm wait plus one 180s-timeout call per
+      // deferred chunk, serially. Reserve enough of the file's wall to finish and SHIP: overshooting
+      // it means _withTimeout rejects and every completed pass's work is discarded, which is
+      // strictly worse than shipping these chunks as their originals (they are re-attempted next
+      // pass / on resume anyway).
+      const _drainWall = (_control && _control.perFileDeadlineTs) || 0;
+      const _DRAIN_RESERVE_MS = 60000;
+      const _drainOutOfTime = () => _drainWall > 0 && Date.now() > _drainWall - _DRAIN_RESERVE_MS;
       for (let _round = 0; _round < 2 && _todo.length; _round++) {
         _throwIfControlAborted();
+        if (_drainOutOfTime()) {
+          warnLog(`[aiFixChunked:${label}] catch-up skipped — the per-file batch wall is too close to revisit ${_todo.length} deferred chunk(s); shipping them as originals so the completed passes survive.`);
+          break;
+        }
         warnLog(`[aiFixChunked:${label}] catch-up round ${_round + 1}: revisiting ${_todo.length} throttle-deferred chunk(s) after a pause`);
         _pulsePipelineWatchdog(_control && _control.owner); // a deliberate catch-up pause is activity, not a stall
         // Do not guess that an 8-second sleep cleared a rolling quota. Wait through the live
         // cooldown and require two representative confirmations before revisiting document-sized prompts.
         let _calm = null;
-        try { _calm = await waitForGeminiCalm({ maxWaitMs: 90000, shouldAbort: _control && _control.shouldAbort, signal: _control && _control.signal, owner: _control && _control.owner }); } catch (_) {}
+        try { _calm = await waitForGeminiCalm({ maxWaitMs: _alloCalmBudgetMs(90000, _control && _control.perFileDeadlineTs), shouldAbort: _control && _control.shouldAbort, signal: _control && _control.signal, owner: _control && _control.owner }); } catch (_) {}
         if ((_calm && _calm.aborted) || _controlAborted()) _throwIfControlAborted(true);
         _deferredIdx.length = 0; // re-collect any chunk STILL throttled this round
         // Recovery stays serial even for the cloud backend. Parallel catch-up was the exact
         // re-fan-out visible in the throttled run (#17/#18, then #19/#20).
         let _again = [];
-        for (const ci of _todo) {
+        for (let _ti = 0; _ti < _todo.length; _ti++) {
+          const ci = _todo[_ti];
           _throwIfControlAborted();
+          // H15: re-check between chunks. Each revisit is a full document-sized call with a 180s
+          // timeout, so a drain that fitted when it started may not fit by chunk 5. Whatever has
+          // already been spliced back is kept; the chunks we never reached go back on the deferred
+          // list so the "still rate-limited" report below counts them honestly rather than
+          // implying they were revisited and found fine.
+          if (_drainOutOfTime()) {
+            const _unreached = _todo.slice(_ti);
+            for (const _u of _unreached) if (_deferredIdx.indexOf(_u) === -1) _deferredIdx.push(_u);
+            warnLog(`[aiFixChunked:${label}] catch-up stopped mid-round at the per-file batch wall — ${_unreached.length} chunk(s) shipped as originals.`);
+            break;
+          }
           if (_localTextMode) _emitLocalRemediationProgress(ci, chunks.length, `Retrying chunk ${ci + 1} of ${chunks.length}`, 'fix-retry');
           _again.push({ ci: ci, out: await _fixOneChunk(chunks[ci], ci) });
           _throwIfControlAborted();
@@ -14119,7 +14302,22 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
       }
       _activeBatchRun.invalidated = true;
       try { if (typeof window !== 'undefined' && window.__alloPdfBatchAbortCtrl) window.__alloPdfBatchAbortCtrl.abort(); } catch (_) {}
+      // H16: hand the remediation lock over with the batch. The superseded run has been aborted
+      // but unwinds asynchronously, so without this the NEW batch would be refused the lock its
+      // own predecessor still nominally holds.
+      try { _releaseRemediationLockForBatch(_activeBatchRun.lockToken); } catch (_) {}
       _activeBatchRun = null;
+    }
+    // H16: claim the single-file lock for the whole batch, before any owner state is published —
+    // a failed claim must leave nothing behind.
+    const _batchLockToken = _claimRemediationLockForBatch();
+    if (!_batchLockToken) {
+      const _busyError = new Error('A remediation run is already in progress.');
+      _busyError.name = 'RemediationAlreadyRunningError';
+      _busyError.isAlreadyRunning = true;
+      warnLog('[Batch] Start refused: a single-file remediation still owns the pipeline. Running both would cross-stamp their run identities and let either one abort the other\'s API calls.');
+      try { if (typeof addToast === 'function') addToast('A remediation is already running. Wait for it to finish before starting a batch.', 'info'); } catch (_) {}
+      throw _busyError;
     }
     const owner = {
       generation: ++_batchRunGeneration,
@@ -14137,8 +14335,10 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
       setPdfBatchCurrentIndex: (...args) => _batchPublish(owner, () => setPdfBatchCurrentIndex(...args)),
       addToast: (...args) => _batchPublish(owner, () => { if (typeof addToast === 'function') addToast(...args); }),
     };
+    owner.lockToken = _batchLockToken; // H16: so a superseding batch can take the lock over
     const raw = _runPdfBatchRemediationOwned(opts, owner, publishers);
     owner.promise = raw.finally(() => {
+      _releaseRemediationLockForBatch(_batchLockToken); // H16: no-op if a superseding batch already took it
       if (_activeBatchRun === owner) _activeBatchRun = null;
     });
     return owner.promise;
@@ -19927,6 +20127,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               shouldAbort: _shouldAbort,
               signal: _controlSignal,
               owner: _controlOwner,
+              // H15: the batch file's absolute wall. Without it aiFixChunked's throttle waits and
+              // catch-up drain are unbounded relative to the budget the caller is enforcing.
+              perFileDeadlineTs: loopCtx.perFileDeadlineTs || 0,
               onThrottleDeferred: () => { _fixThrottleDeferred = true; },
             });
             if (fixedHtml && fixedHtml !== accessibleHtml) {
@@ -19984,7 +20187,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               }
               warnLog(`[Auto-fix] Pass ${fixPass + 1}: unchanged because AI work was throttle-deferred — waiting and continuing without counting a semantic plateau.`);
               let _throttleCalm = null;
-              try { _throttleCalm = await waitForGeminiCalm({ maxWaitMs: 120000, shouldAbort: _shouldAbort, signal: _controlSignal, owner: _controlOwner }); } catch (_) {}
+              try { _throttleCalm = await waitForGeminiCalm({ maxWaitMs: _alloCalmBudgetMs(120000, loopCtx.perFileDeadlineTs), shouldAbort: _shouldAbort, signal: _controlSignal, owner: _controlOwner }); } catch (_) {}
               if ((_throttleCalm && _throttleCalm.aborted) || _shouldAbort()) break;
               _throttleRecoveryRetriesRemaining--;
               fixPass--;
@@ -20013,7 +20216,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // wave into that same storm; wait for representative recovery confirmation first.
           _throttleRecoveryRetriesRemaining = 2;
           let _verifyCalm = null;
-          try { _verifyCalm = await waitForGeminiCalm({ maxWaitMs: 120000, shouldAbort: _shouldAbort, signal: _controlSignal, owner: _controlOwner }); } catch (_) {}
+          try { _verifyCalm = await waitForGeminiCalm({ maxWaitMs: _alloCalmBudgetMs(120000, loopCtx.perFileDeadlineTs), shouldAbort: _shouldAbort, signal: _controlSignal, owner: _controlOwner }); } catch (_) {}
           if ((_verifyCalm && _verifyCalm.aborted) || _shouldAbort()) break;
           const [reVerify1, reAxe] = await Promise.all([
             auditOutputAccessibility(accessibleHtml, { signal: _controlSignal }),
@@ -20145,8 +20348,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // the axe-clean best now; the final audit + its deferred re-audit (fix B) complete the AI
           // coverage once the rate-limit eases. Exact no-op without a storm (_geminiCap ===
           // _geminiEffectiveMax and _geminiCooldownUntil 0), so the common path is unchanged.
-          const _stormActive = (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())
-            || (_geminiCap < _geminiEffectiveMax); // R7: cap forced BELOW the run ceiling = a storm (robust vs pacing-to-1)
+          const _stormActive = _geminiThrottleInfo().recentlyThrottled; // L7 (2026-07-26): ONE definition of "a throttle happened recently" (was a hand-rolled cooldown||cap that stayed true for the rest of the run)
           if (_stormActive && _reAxeUsable && newAxeViolations === 0 && _rePartial) {
             warnLog(`[Auto-fix] Pass ${fixPass + 1}: Canvas rate-limit storm active + axe clean + AI audit partial — the deterministic layer already governs the headline and more passes would only deepen the storm; stopping early (AI coverage completes in the final audit once the rate-limit eases).`);
             break;
@@ -24043,15 +24245,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           warnLog(`[PDF Fix] Final audit: score ${finalAudit.score}, ${(finalAudit.issues || []).length} remaining issues, ${(finalAudit.passes || []).length} passes` + (finalAudit._partialAudit ? ` — ⚠ PARTIAL (${finalAudit.chunksAudited}/${finalAudit.chunksRequested} sections audited under Canvas throttle; headline score covers audited content only — re-run for a full-coverage score)` : ''));
         } else {
           _finalAuditIncompleteReason = 'final-audit-empty';
-          _finalAuditThrottled = (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())
-            || (_geminiCap < _geminiEffectiveMax);
+          _finalAuditThrottled = _geminiThrottleInfo().recentlyThrottled; // L7
         }
       } catch(finalAuditErr) {
         if (_runGenStale() || (finalAuditErr && (finalAuditErr.name === 'AbortError' || finalAuditErr.isAbort))) _throwIfRunCancelled();
         warnLog('[PDF Fix] Final audit failed (using loop result):', finalAuditErr);
         _finalAuditIncompleteReason = 'final-audit-error';
-        _finalAuditThrottled = (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())
-          || (_geminiCap < _geminiEffectiveMax);
+        _finalAuditThrottled = _geminiThrottleInfo().recentlyThrottled; // L7
       }
       // ── B (throttle resilience 2026-07-03): cooldown-aware deferred final re-audit ──
       // The final audit can come back PARTIAL when a Canvas rate-limit storm is active — its 3-round
@@ -24074,9 +24274,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const _reAuditNeeded = (verification && verification._partialAudit)
         || (_finalAuditThrottled && !_finalAuditHadUsableScore);
       if (_reAuditNeeded) {
-        const _throttleCaused = _finalAuditThrottled
-          || (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())
-          || (_geminiCap < _geminiEffectiveMax); // R7: cap forced BELOW the run ceiling = a storm (robust vs pacing-to-1)
+        const _throttleCaused = _finalAuditThrottled || _geminiThrottleInfo().recentlyThrottled; // L7
         if (_throttleCaused) {
           _finalAuditThrottled = true;
           // R5 (2026-07-03): in BATCH mode fixAndVerifyPdf races an 8-min per-file wall (_withTimeout). The
@@ -38268,6 +38466,49 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     if (documentEpoch === undefined || documentEpoch === null) return true;
     return run.documentEpoch === null || run.documentEpoch === documentEpoch;
   };
+  // ── H16 (audit 2026-07-26): a batch must hold the single-file lock too ─────────────────────
+  // The batch runner resolves the closure-local `fixAndVerifyPdf` directly, so it never took
+  // _activeSingleFixPromise — only the EXPORT is wrapped. A teacher could therefore start a
+  // single-file "Fix & Verify" over a live batch (the button stays armed, correctly, because a
+  // managed batch owns its own progress UI), and the two runs then shared mutable state:
+  // _pipelineStats is a module-level global re-pointed at run entry and read at CALL time, so the
+  // single-file run's API calls, retries and every _pipeLog/watchdog heartbeat got stamped with
+  // the batch file's runId and documentEpoch — and the single-file watchdog drops heartbeats
+  // whose runId does not match, so it can fire on a run that is demonstrably alive. Worse, the
+  // second run overwrites window.__alloPdfAbortSignal and its finally aborts that controller, so
+  // a batch file's in-flight Gemini calls can be cancelled by an unrelated run.
+  //
+  // The claim is MANAGED: _getActiveRemediationRun keeps returning null for it, so the probe and
+  // the single-file controls behave exactly as before — the lock's only job here is to reject a
+  // concurrent start. (The deeper fix, a per-run stats object instead of the shared global,
+  // remains open; this closes the reachable path to it.)
+  var _claimRemediationLockForBatch = function() {
+    var liveGeneration = (typeof window !== 'undefined') ? (window.__alloPdfRunGen || 0) : 0;
+    // Same stale-lock release _wrapFixAndVerify performs: a single-file run whose generation was
+    // invalidated is not a live owner.
+    if (_activeSingleFixPromise && !_activeRemediationManaged && !_activeSingleFixStarting && liveGeneration !== _activeSingleFixGeneration) {
+      warnLog('[Batch] Releasing stale single-file run lock after generation invalidation.');
+      _activeSingleFixPromise = null;
+      _activeSingleFixGeneration = 0;
+      _activeRemediationManaged = false;
+      _activeSingleFixStarting = false;
+    }
+    if (_activeSingleFixPromise) return null;
+    var token = { batch: true };
+    _activeSingleFixPromise = token;
+    _activeSingleFixGeneration = liveGeneration;
+    _activeRemediationManaged = true;
+    _activeSingleFixStarting = false;
+    return token;
+  };
+  var _releaseRemediationLockForBatch = function(token) {
+    if (token && _activeSingleFixPromise === token) {
+      _activeSingleFixPromise = null;
+      _activeSingleFixGeneration = 0;
+      _activeRemediationManaged = false;
+      _activeSingleFixStarting = false;
+    }
+  };
   var _wrapFixAndVerify = function(fn) { return function() {
     _bindState();
     var self = this;
@@ -38347,6 +38588,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     // integrity sweep the main path runs (~17270/17290) over THIS run's output, instead of carrying the
     // prior run's fidelity state onto the panel/amber-asterisk. Pure functions, no state binding.
     computeStructuralFidelityNotes: _computeStructuralFidelityNotes,
+    calmBudgetMs: _alloCalmBudgetMs, // H15 (2026-07-26): throttle waits clamped to the batch per-file wall
     numericFidelityLosses: _numericFidelityLosses,
     // C1: re-fix lanes MUST merge through this instead of assigning their fresh notes over the
     // whole array — durable extraction-time disclosures are not theirs to drop.

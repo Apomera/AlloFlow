@@ -39,9 +39,14 @@ describe('recovery probe is BREAKER-NEUTRAL (a probe result cannot move the real
     const end = dp.indexOf('Wait-not-stop (2026-07-05', start);
     expect(start).toBeGreaterThan(-1);
     expect(end).toBeGreaterThan(start);
+    // Matched as CALLS, not as mentions: audit finding L6 added probe-only telemetry whose comment
+    // has to name these functions to explain what it deliberately does NOT do. A bare-identifier
+    // match would fail on documentation of the very guarantee it protects, while a call always
+    // carries its open paren.
     const probeBody = dp.slice(start, end);
-    expect(probeBody).not.toContain('_geminiNoteSuccess');
-    expect(probeBody).not.toContain('_geminiNoteTransientFail');
+    expect(probeBody).not.toContain('_geminiNoteSuccess(');
+    expect(probeBody).not.toContain('_geminiNoteTransientFail(');
+    expect(probeBody).not.toContain('_geminiNoteAuthFail(');
   });
 });
 
@@ -66,7 +71,11 @@ describe('the inline transient retry is SUPPRESSED during an active storm', () =
     expect(dp).toContain('shouldAbort: _shouldAbort, signal: _controlSignal, owner: _controlOwner');
     expect(dp).toContain('if ((_verifyCalm && _verifyCalm.aborted) || _shouldAbort()) break;');
     const exhausted = dp.indexOf('if (_throttleRecoveryRetriesRemaining <= 0)');
-    const calmWait = dp.indexOf('waitForGeminiCalm({ maxWaitMs: 120000', exhausted);
+    // The wait budget is no longer a bare constant: audit finding H15 clamps every calm wait in
+    // the fix path to the batch per-file wall, so this matches the CALL rather than its argument.
+    // What the assertion is actually about — the wait comes after the retries are exhausted — is
+    // unchanged.
+    const calmWait = dp.indexOf('waitForGeminiCalm({ maxWaitMs:', exhausted);
     expect(exhausted).toBeGreaterThan(-1);
     expect(calmWait).toBeGreaterThan(exhausted);
 
