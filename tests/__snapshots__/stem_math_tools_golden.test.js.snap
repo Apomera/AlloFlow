@@ -7,7 +7,7 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "inputs": 3,
   "lengthBucket": 100,
   "rects": 0,
-  "sha": "a0724ef26ff132a5",
+  "sha": "1f59e841779a0be9",
   "svgs": 0,
 }
 `;
@@ -19,7 +19,7 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "inputs": 1,
   "lengthBucket": 97,
   "rects": 0,
-  "sha": "7d2882404b1b9355",
+  "sha": "d54c61ef08c3bfc6",
   "svgs": 0,
 }
 `;
@@ -31,7 +31,7 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "inputs": 1,
   "lengthBucket": 66,
   "rects": 0,
-  "sha": "40a82a933143086e",
+  "sha": "04e84c546b2aeb57",
   "svgs": 1,
 }
 `;
@@ -43,7 +43,7 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "inputs": 2,
   "lengthBucket": 75,
   "rects": 0,
-  "sha": "9558ab0afdd95168",
+  "sha": "664d68116599618d",
   "svgs": 1,
 }
 `;
@@ -55,7 +55,7 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "inputs": 2,
   "lengthBucket": 75,
   "rects": 0,
-  "sha": "9558ab0afdd95168",
+  "sha": "664d68116599618d",
   "svgs": 1,
 }
 `;
@@ -65,9 +65,9 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "buttons": 29,
   "circles": 7,
   "inputs": 0,
-  "lengthBucket": 104,
+  "lengthBucket": 165,
   "rects": 9,
-  "sha": "d2d45e18e9e86039",
+  "sha": "09bf6f46e5463a8b",
   "svgs": 1,
 }
 `;
@@ -79,7 +79,7 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "inputs": 4,
   "lengthBucket": 161,
   "rects": 0,
-  "sha": "b7b64e598833f106",
+  "sha": "c8704385fee25398",
   "svgs": 0,
 }
 `;
@@ -103,7 +103,7 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "inputs": 4,
   "lengthBucket": 157,
   "rects": 0,
-  "sha": "8ac88f0ae453407a",
+  "sha": "b6523d4994552e0e",
   "svgs": 1,
 }
 `;
