@@ -144,7 +144,9 @@ describe('3D Volume Explorer — predictor commit-then-check', () => {
     expect(buttonByText(container, 'Lock prediction').disabled).toBe(false);
   });
 
-  it('bands on relative error, not an absolute cube count', async () => {
+  // The large-prism half of this renders several hundred cubes in jsdom, which
+  // can outrun the default 5s timeout when the suite runs alongside others.
+  it('bands on relative error, not an absolute cube count', { timeout: 30000 }, async () => {
     // 30 vs 24 is 25% off. The old absolute rule (|diff| < 8) called this a
     // ballpark hit; on a 24-cube prism that is a quarter of the whole solid.
     const small = await mountVolume({ mode: 'slider', dims: { l: 4, w: 3, h: 2 } });
@@ -154,11 +156,12 @@ describe('3D Volume Explorer — predictor commit-then-check', () => {
     expect(small.container.textContent).toContain('Far off');
     expect(small.container.textContent).toContain('25% off');
 
-    // 1005 vs 1000 is 0.5% off — excellent reasoning the old rule scored as a
-    // near-miss purely because the prism was big.
-    const large = await mountVolume({ mode: 'slider', dims: { l: 10, w: 10, h: 10 } });
+    // 515 vs 512 is 0.6% off — excellent reasoning that the old absolute rule
+    // (|diff| < 2 for "close") scored as a near-miss purely because the prism
+    // was big. Same discriminator as 1000 cubes, at half the render cost.
+    const large = await mountVolume({ mode: 'slider', dims: { l: 8, w: 8, h: 8 } });
     await React.act(async () => buttonByText(large.container, 'Start a prediction').click());
-    await typeGuess(large.container, '1005');
+    await typeGuess(large.container, '515');
     await React.act(async () => buttonByText(large.container, 'Lock prediction').click());
     expect(large.container.textContent).toContain('Spot on');
   });
