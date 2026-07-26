@@ -22,7 +22,15 @@
   function sfxRockCool() { rockTone(800, 0.06, 'sine', 0.04); setTimeout(function() { rockTone(600, 0.05, 'sine', 0.03); }, 40); }
   function sfxRockClick() { rockTone(600, 0.03, 'sine', 0.04); }
   function sfxRockCorrect() { rockTone(523, 0.08, 'sine', 0.07); setTimeout(function() { rockTone(659, 0.08, 'sine', 0.07); }, 70); setTimeout(function() { rockTone(784, 0.1, 'sine', 0.08); }, 140); }
-  if (!document.getElementById('rock-a11y')) { var _s = document.createElement('style'); _s.id = 'rock-a11y'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }'; document.head.appendChild(_s); }
+  // NOTE: this style block used to also carry an unscoped, app-wide colour
+  // override for the slate-600 text utility, shipped from this single tool file.
+  // It repainted EVERY such element in AlloFlow (not just this tool's) from
+  // #475569 down to #64748b, dropping that text from 7.58:1 to 4.76:1 on white
+  // and to 4.48:1 on the orange-50 panels used here — below the WCAG AA 4.5:1
+  // floor for normal text. Removed; the Tailwind utility already clears AA
+  // comfortably on its own. (Kept literal-free so the contrast test can assert
+  // the override is gone by string match.)
+  if (!document.getElementById('rock-a11y')) { var _s = document.createElement('style'); _s.id = 'rock-a11y'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }'; document.head.appendChild(_s); }
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
@@ -38,6 +46,83 @@
   })();
 
   if (!window.StemLab) { console.warn("StemLab registry not found"); return; }
+
+  // ── Shared challenge + vocabulary tables (module scope) ──
+  // These used to live INSIDE the `rocks` tool body. When `rockCycle` was split
+  // out into its own registerTool() block it kept referring to them, but they
+  // were out of scope there — every reference threw ReferenceError at runtime:
+  //   • ROCKS_VOCAB in rockCycle's quiz renders DURING render, so StemLab's
+  //     renderTool() try/catch swallowed it and returned null — the whole Rock
+  //     Cycle tool blanked out the moment a quiz answer was shown ("resetting").
+  //   • ROCKS_CHALLENGES in rockCycle's award paths threw inside event handlers.
+  // Hoisting to module scope gives both tools ONE definition (no drift) and
+  // keeps them in scope everywhere. `check` now takes its state explicitly —
+  // the old `s || d || {}` fallback closed over the rocks tool's `d`, which is
+  // exactly what could not be hoisted; the sole call site always passes state.
+  var ROCKS_CHALLENGES = [
+    { id: 'types_explored', name: 'Petrologist', desc: 'Examine all 3 rock types (Igneous, Sedimentary, Metamorphic)', icon: '⛰️', rp: 15, check: function(s) { var st = s || {}; return Object.keys(st.typesViewed || {}).length >= 3; } },
+    { id: 'specimens_examined', name: 'Rock Collector', desc: 'Examine 5+ rock specimens', icon: '🔍', rp: 15, check: function(s) { var st = s || {}; return Object.keys(st.rocksViewed || {}).length >= 5; } },
+    { id: 'quiz_ace', name: 'Earth Science Ace', desc: 'Correctly answer 3 questions in the quiz', icon: '🎓', rp: 20, check: function(s) { var st = s || {}; return (st.quizScore || 0) >= 3; } },
+    { id: 'vocab_studied', name: 'Vocabulary Master', desc: 'Study 3 key terminology definitions', icon: '📖', rp: 15, check: function(s) { var st = s || {}; return (st.vocabLookedUp || []).length >= 3; } },
+    { id: 'cycle_interact', name: 'Cycle Creator', desc: 'Perform 3 operations in the Rock Cycle simulator', icon: '🔄', rp: 20, check: function(s) { var st = s || {}; return (st.cycleInteractions || 0) >= 3; } }
+  ];
+
+  var ROCKS_VOCAB = {
+    'Igneous': 'Rock formed from the cooling and solidification of molten magma or lava.',
+    'Sedimentary': 'Rock formed by the accumulation, compaction, and cementation of mineral and organic particles over time.',
+    'Metamorphic': 'Rock formed when pre-existing rocks are altered by intense heat and pressure without melting.',
+    'Lithification': 'The process of turning loose sediment into solid rock through compaction and cementation.',
+    'Foliation': 'The layered or banded texture in metamorphic rocks caused by the alignment of minerals under heat and pressure.',
+    'Piezoelectric': 'The property of certain materials (like quartz) to generate an electrical charge when mechanically squeezed.',
+    'Evaporite': 'A chemical sedimentary rock formed by the precipitation of minerals as water evaporates from a shallow basin.',
+    'Crystallization': 'The process by which atoms arrange into a highly structured crystal lattice as magma cools.',
+    'Hardness': 'A measure of a mineral\'s resistance to scratching, rated from 1 to 10 on the Mohs scale.',
+    'Streak': 'The color of a mineral in powdered form, tested by rubbing it across an unglazed porcelain plate.',
+    'Luster': 'The way light reflects off a mineral\'s surface (metallic, vitreous, pearly, earthy, etc.).'
+  };
+
+  // ── Stable callback ref for the Rock Cycle canvas ──
+  // The canvas ref USED to be an inline `function (canvasEl) {...}` created fresh
+  // inside the tool body on every render. React compares callback-ref identity: a
+  // new function each commit means it calls the OLD ref with null (running the
+  // cleanup, clearing _rcInit) and the NEW ref with the element — so the canvas
+  // tore down and fully re-initialised on EVERY state update. tick reset to 0 and
+  // all 125 particles were re-randomised, so the cycle animation visibly snapped
+  // back to its start whenever anything changed: clicking a rock node, picking a
+  // process, and — worst — ten times a second while the transformation machine's
+  // progress timer ran. That is the "rock cycle keeps resetting" glitch.
+  //
+  // The draw loop was already written for a LONG-LIVED canvas: it reads the live
+  // selection from canvasEl.dataset.selectedRock rather than from a closure, and
+  // its click handler uses functional setState because "this listener's closure is
+  // bound once at canvas init". The inline ref was defeating that design.
+  //
+  // Fix: one module-level function whose identity never changes, delegating to a
+  // mutable box that each render refreshes. React sees the same ref every commit
+  // and leaves the canvas mounted; the box keeps the initialiser current. No hook
+  // is used — STEM tool bodies are inlined into the host bridge, so adding a hook
+  // in one tool would shift hook order when navigating between tools.
+  var _rcInitBox = { fn: null };
+  var _rcLastCanvas = null;
+  // Transformation-machine progress timer. Module-scoped so a run can always be
+  // cancelled — by a new run, or by the tool unmounting — instead of leaking an
+  // interval that keeps writing state into a tool nobody is looking at.
+  var _rcTransformTimer = null;
+  function rcStopTransformTimer() {
+    if (_rcTransformTimer) { clearInterval(_rcTransformTimer); _rcTransformTimer = null; }
+  }
+  function rockCycleCanvasRef(canvasEl) {
+    if (!canvasEl) {
+      // Real unmount: React passes null. Tear the animation down for good.
+      if (_rcLastCanvas && _rcLastCanvas._rcCleanup) { _rcLastCanvas._rcCleanup(); }
+      if (_rcLastCanvas) _rcLastCanvas._rcInit = false;
+      _rcLastCanvas = null;
+      return;
+    }
+    _rcLastCanvas = canvasEl;
+    if (canvasEl._rcInit) return;
+    if (_rcInitBox.fn) _rcInitBox.fn(canvasEl);
+  }
 
   // ═══ 🔬 rocks (rocks) ═══
   window.StemLab.registerTool('rocks', {
@@ -134,27 +219,8 @@ const d = labToolData.rocks || {};
             }
           }
 
-          var ROCKS_CHALLENGES = [
-            { id: 'types_explored', name: 'Petrologist', desc: 'Examine all 3 rock types (Igneous, Sedimentary, Metamorphic)', icon: '⛰️', rp: 15, check: function(s) { var st = s || d || {}; return Object.keys(st.typesViewed || {}).length >= 3; } },
-            { id: 'specimens_examined', name: 'Rock Collector', desc: 'Examine 5+ rock specimens', icon: '🔍', rp: 15, check: function(s) { var st = s || d || {}; return Object.keys(st.rocksViewed || {}).length >= 5; } },
-            { id: 'quiz_ace', name: 'Earth Science Ace', desc: 'Correctly answer 3 questions in the quiz', icon: '🎓', rp: 20, check: function(s) { var st = s || d || {}; return (st.quizScore || 0) >= 3; } },
-            { id: 'vocab_studied', name: 'Vocabulary Master', desc: 'Study 3 key terminology definitions', icon: '📖', rp: 15, check: function(s) { var st = s || d || {}; return (st.vocabLookedUp || []).length >= 3; } },
-            { id: 'cycle_interact', name: 'Cycle Creator', desc: 'Perform 3 operations in the Rock Cycle simulator', icon: '🔄', rp: 20, check: function(s) { var st = s || d || {}; return (st.cycleInteractions || 0) >= 3; } }
-          ];
-
-          var ROCKS_VOCAB = {
-            'Igneous': 'Rock formed from the cooling and solidification of molten magma or lava.',
-            'Sedimentary': 'Rock formed by the accumulation, compaction, and cementation of mineral and organic particles over time.',
-            'Metamorphic': 'Rock formed when pre-existing rocks are altered by intense heat and pressure without melting.',
-            'Lithification': 'The process of turning loose sediment into solid rock through compaction and cementation.',
-            'Foliation': 'The layered or banded texture in metamorphic rocks caused by the alignment of minerals under heat and pressure.',
-            'Piezoelectric': 'The property of certain materials (like quartz) to generate an electrical charge when mechanically squeezed.',
-            'Evaporite': 'A chemical sedimentary rock formed by the precipitation of minerals as water evaporates from a shallow basin.',
-            'Crystallization': 'The process by which atoms arrange into a highly structured crystal lattice as magma cools.',
-            'Hardness': 'A measure of a mineral\'s resistance to scratching, rated from 1 to 10 on the Mohs scale.',
-            'Streak': 'The color of a mineral in powdered form, tested by rubbing it across an unglazed porcelain plate.',
-            'Luster': 'The way light reflects off a mineral\'s surface (metallic, vitreous, pearly, earthy, etc.).'
-          };
+          // ROCKS_CHALLENGES / ROCKS_VOCAB now live at module scope (shared with
+          // the rockCycle tool, which referenced them out of scope).
 
           var checkRocksChallenges = function(customState) {
             var state = customState || d || {};
@@ -192,11 +258,9 @@ const d = labToolData.rocks || {};
                   var fc = window.StemLab && window.StemLab.findById ? window.StemLab.findById(ROCKS_CHALLENGES, finishedId) : null;
                   var name = fc ? fc.name : finishedId;
                   var rp = fc ? fc.rp : 0;
-                  addToast({
-                    type: 'success',
-                    title: 'Challenge Complete!',
-                    message: 'Unlocked: ' + name + ' (+' + rp + ' RP)'
-                  });
+                  // Host signature is addToast(message, type); the object form
+                  // that used to be here rendered as "[object Object]".
+                  addToast('🏆 Challenge complete: ' + name + ' (+' + rp + ' RP)', 'success');
                 }
               }
               if (typeof announceToSR === 'function') {
@@ -3490,7 +3554,7 @@ const d = labToolData.rocks || {};
                         updMulti({ vocabLookedUp: newList });
                         sfxRockClick();
                         if (typeof awardStemXP === 'function') awardStemXP(5, 'Concept studied: ' + concept);
-                        if (typeof addToast === 'function') addToast({ type: 'success', title: 'Concept Studied!', message: 'You studied ' + concept + ' (+5 RP)' });
+                        if (typeof addToast === 'function') addToast('📖 Concept studied: ' + concept + ' (+5 RP)', 'success');
                         var nextState = Object.assign({}, d, { vocabLookedUp: newList });
                         setTimeout(function() { checkRocksChallenges(nextState); }, 50);
                       },
@@ -3644,6 +3708,20 @@ const d = labToolData.rockCycle || {};
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, rockCycle: { ...prev.rockCycle, [key]: val } }));
 
+          // Batched sibling of `upd`. The transformation machine called this to
+          // finish a run, but it was only ever defined inside the `rocks` tool —
+          // so the call threw ReferenceError the instant the progress bar hit
+          // 100%, leaving transformationAnimActive stuck TRUE forever (button
+          // permanently disabled, result panel never rendered). That was the
+          // "transformation machine gets stuck" bug.
+          const updMulti = function(obj) {
+            setLabToolData(function(prev) {
+              var rc = Object.assign({}, (prev && prev.rockCycle) || {});
+              Object.assign(rc, obj);
+              return Object.assign({}, prev, { rockCycle: rc });
+            });
+          };
+
           const ROCKS = [
 
             {
@@ -3716,25 +3794,193 @@ const d = labToolData.rockCycle || {};
 
 
 
-          // ── Animated Canvas2D for Rock Cycle ──
+          // ══ Transformation Machine: petrology model ══
+          // The machine used to take a rock FAMILY and print one generic paragraph
+          // per agent, so "Igneous + Heat & Press" and "Sedimentary + Heat & Press"
+          // said nearly the same thing. It now takes a NAMED SPECIMEN and returns a
+          // named product with the real conditions, timescale, mineral change and
+          // field evidence for that specific pairing — the pairings students are
+          // actually asked to know (shale → slate, limestone → marble, sandstone →
+          // quartzite, granite → gneiss).
+          const RC_SPECIMENS = [
+            { id: 'granite',   label: 'Granite',   family: 'igneous',     texture: 'crystalline', note: 'Coarse interlocking quartz, feldspar and mica crystals.' },
+            { id: 'basalt',    label: 'Basalt',    family: 'igneous',     texture: 'finegrained', note: 'Dark, fine-grained; often pitted with gas vesicles.' },
+            { id: 'sandstone', label: 'Sandstone', family: 'sedimentary', texture: 'clastic',     note: 'Cemented quartz sand grains with visible bedding.' },
+            { id: 'limestone', label: 'Limestone', family: 'sedimentary', texture: 'bioclastic',  note: 'Calcite (CaCO₃); often fossil-rich; fizzes in acid.' },
+            { id: 'shale',     label: 'Shale',     family: 'sedimentary', texture: 'clastic',     note: 'Compacted clay; splits into thin sheets.' },
+            { id: 'slate',     label: 'Slate',     family: 'metamorphic', texture: 'foliated',    note: 'Low-grade; flat cleavage planes, dull sheen.' },
+            { id: 'marble',    label: 'Marble',    family: 'metamorphic', texture: 'nonfoliated', note: 'Recrystallized calcite; sugary, unlayered.' },
+            { id: 'gneiss',    label: 'Gneiss',    family: 'metamorphic', texture: 'banded',      note: 'High-grade; alternating light and dark mineral bands.' }
+          ];
 
-          var _lastRcCanvas = null;
+          const RC_AGENTS = [
+            { id: 'melting_cooling',    short: 'Melt & Cool',      icon: '🌋', produces: 'igneous',     verb: 'Melting and crystallization' },
+            { id: 'heat_pressure',      short: 'Heat & Press',     icon: '🔥', produces: 'metamorphic', verb: 'Metamorphism' },
+            { id: 'weathering_erosion', short: 'Weather & Erode',  icon: '🌧️', produces: 'sedimentary', verb: 'Weathering, transport and lithification' }
+          ];
 
-          const canvasRef = function (canvasEl) {
-
-            if (!canvasEl) {
-
-              if (_lastRcCanvas && _lastRcCanvas._rcCleanup) { _lastRcCanvas._rcCleanup(); _lastRcCanvas._rcInit = false; }
-
-              _lastRcCanvas = null;
-
-              return;
-
+          // [specimen][agent] → the specific, named outcome.
+          // `caveat` is only set where the tidy classroom rock cycle genuinely
+          // oversimplifies, so the tool teaches the model without asserting
+          // something a geologist would call wrong.
+          const RC_TRANSFORMS = {
+            granite: {
+              melting_cooling:    { product: 'Granite or Rhyolite', family: 'igneous', texture: 'crystalline', process: 'Partial melting, then crystallization', conditions: '650–750 °C (water-bearing), 15–30 km deep', time: '10,000s–millions of years', change: 'Quartz and feldspar melt into a sticky, silica-rich (felsic) magma. Cooling slowly at depth regrows large crystals — granite. Erupted and chilled, the same melt becomes fine-grained rhyolite.', evidence: 'Crystal size tells you the cooling rate: coarse = slow and deep, fine = fast and erupted.', stages: ['Heating toward the solidus', 'First melt on crystal edges', 'Felsic magma body forms', 'Crystals nucleate and grow'] },
+              heat_pressure:      { product: 'Gneiss', family: 'metamorphic', texture: 'banded', process: 'High-grade regional metamorphism', conditions: '600–700 °C, 20–30 km deep', time: 'Millions of years', change: 'Minerals recrystallize and segregate into alternating light (quartz/feldspar) and dark (biotite/amphibole) bands. Nothing melts — the rock stays solid throughout.', evidence: 'Look for gneissic banding: stripes that swirl around, not flat sedimentary layers.', stages: ['Burial and heating', 'Minerals begin to align', 'Light/dark segregation', 'Gneissic banding locked in'] },
+              weathering_erosion: { product: 'Sandstone and Shale', family: 'sedimentary', texture: 'clastic', process: 'Hydrolysis, transport, lithification', conditions: 'Surface temperatures and rainfall', time: '1,000s–millions of years', change: 'Feldspar reacts with weak acid in rainwater and breaks down to clay; quartz is too tough to dissolve and survives as sand. The two travel different distances and settle separately — sand near the source, clay far out in quiet water.', evidence: 'One granite yields TWO sedimentary rocks: quartz sand → sandstone, clay → shale.', stages: ['Rain and frost open cracks', 'Feldspar → clay, quartz freed', 'Rivers sort sand from clay', 'Burial, compaction, cementation'] }
+            },
+            basalt: {
+              melting_cooling:    { product: 'Basalt or Gabbro', family: 'igneous', texture: 'finegrained', process: 'Melting, then crystallization', conditions: '1000–1250 °C', time: 'Days (lava) to millions of years (pluton)', change: 'Basalt melts to a runny, iron- and magnesium-rich (mafic) magma. Erupted, it chills fast into fine-grained basalt; trapped at depth, the same melt cools slowly into coarse gabbro.', evidence: 'Same magma, two rocks — the only difference is cooling rate.', stages: ['Mafic rock reaches melting point', 'Low-viscosity magma pools', 'Ascent or ponding', 'Fast chill or slow crystal growth'] },
+              heat_pressure:      { product: 'Greenschist, then Amphibolite', family: 'metamorphic', texture: 'foliated', process: 'Prograde regional metamorphism', conditions: '400–600 °C, 10–25 km deep', time: 'Millions of years', change: 'New minerals grow that are stable at the higher temperature: chlorite and epidote give greenschist its green colour, and at higher grade hornblende takes over to form amphibolite.', evidence: 'The colour change is the data — green means chlorite, black-and-white speckle means hornblende + plagioclase.', stages: ['Burial in a subduction zone', 'Chlorite and epidote grow', 'Greenschist stage', 'Hornblende replaces chlorite'] },
+              weathering_erosion: { product: 'Mudstone (iron-rich)', family: 'sedimentary', texture: 'clastic', process: 'Chemical weathering, transport, lithification', conditions: 'Warm, wet surface conditions', time: '1,000s–millions of years', change: 'Olivine and pyroxene weather quickly to clay minerals, and the iron they release oxidizes to rust-red iron oxide. In the tropics this leaves deep red soils (laterite) that later harden into iron-rich mudstone.', evidence: 'The red colour is oxidized iron — direct evidence that oxygen and water did the work.', stages: ['Water attacks olivine', 'Clay forms, iron released', 'Iron oxidizes rust-red', 'Deposition and compaction'] }
+            },
+            sandstone: {
+              melting_cooling:    { product: 'Rhyolite or Granite', family: 'igneous', texture: 'crystalline', process: 'Crustal melting, then crystallization', conditions: '850–1100 °C, deep burial', time: 'Millions of years', change: 'A quartz-rich sandstone must be buried very deep before it melts. The result is a silica-rich melt that crystallizes into granite at depth or rhyolite if it erupts.', evidence: 'Quartz has a high melting point, so this route needs more heat than melting basalt does.', stages: ['Deep burial', 'Quartz cement breaks down', 'Silica-rich melt forms', 'Crystallization'] },
+              heat_pressure:      { product: 'Quartzite', family: 'metamorphic', texture: 'nonfoliated', process: 'Contact or regional metamorphism', conditions: '300–500 °C', time: '10,000s–millions of years', change: 'Quartz grains recrystallize and fuse together, sealing the pore space. Because quartz grains are blocky rather than flat, they cannot line up — so quartzite has no foliation.', evidence: 'Break it: sandstone fractures AROUND its grains, quartzite fractures straight THROUGH them.', stages: ['Heating of buried sand', 'Pore space closes', 'Grain boundaries fuse', 'Interlocking quartz mosaic'] },
+              weathering_erosion: { product: 'Sandstone (recycled)', family: 'sedimentary', texture: 'clastic', process: 'Erosion, transport, re-lithification', conditions: 'Surface conditions', time: '1,000s–millions of years', change: 'The cement dissolves and releases the sand grains, but quartz itself is chemically tough and physically hard, so the grains simply travel and are buried again. Each cycle rounds them a little more.', evidence: 'Well-rounded, highly sorted quartz grains have been recycled many times.', stages: ['Cement dissolves', 'Grains released', 'Rounded during transport', 'Re-cemented as new sandstone'] }
+            },
+            limestone: {
+              melting_cooling:    { product: 'Igneous rock (model outcome)', family: 'igneous', texture: 'crystalline', process: 'Melting, then crystallization', conditions: 'Above ~900 °C', time: 'Millions of years', change: 'In the standard rock cycle any rock can melt and re-crystallize as igneous rock, and that is the pathway shown here.', evidence: 'Use a silicate rock such as granite or basalt for a cleaner example of the melting pathway.', caveat: 'Real limestone is the awkward case: heated at shallow depth, calcite tends to break down and release CO₂ (decarbonation) rather than melt. Genuine carbonate magmas (carbonatites) exist but are rare and come from the mantle, not from melting a limestone bed.', stages: ['Strong heating', 'Calcite becomes unstable', 'Melt or CO₂ release', 'Crystallization'] },
+              heat_pressure:      { product: 'Marble', family: 'metamorphic', texture: 'nonfoliated', process: 'Contact or regional metamorphism', conditions: '300–600 °C', time: '10,000s–millions of years', change: 'Calcite crystals dissolve and regrow larger and interlocking. Fossils and bedding are erased in the process, which is why marble looks uniform and sugary.', evidence: 'Lost fossils are the tell — if you can still see shells, it is limestone, not marble.', stages: ['Burial or nearby intrusion', 'Calcite starts recrystallizing', 'Fossils and bedding erased', 'Interlocking calcite mosaic'] },
+              weathering_erosion: { product: 'Limestone or Travertine', family: 'sedimentary', texture: 'bioclastic', process: 'Carbonate dissolution and re-precipitation', conditions: 'Rainwater with dissolved CO₂', time: '1,000s–millions of years', change: 'Rain plus CO₂ makes weak carbonic acid, which dissolves calcite outright instead of grinding it into grains. The calcium is carried away in solution and re-precipitates elsewhere — as cave formations, travertine, or new marine limestone.', evidence: 'This is why limestone regions form caves, sinkholes and karst instead of sandy beaches.', stages: ['Acidic rainwater contact', 'Calcite dissolves', 'Ca²⁺ carried in solution', 'Re-precipitates as new carbonate'] }
+            },
+            shale: {
+              melting_cooling:    { product: 'Granite (S-type)', family: 'igneous', texture: 'crystalline', process: 'Melting of sedimentary crust', conditions: '650–800 °C, deep crust', time: 'Millions of years', change: 'Clay-rich rock buried into the deep crust melts to a silica- and aluminium-rich magma. Geologists call the granite it forms "S-type" because its source was Sedimentary.', evidence: 'S-type granites carry aluminium-rich minerals inherited from the original clay.', stages: ['Deep burial of clay beds', 'Water-bearing minerals break down', 'Aluminous melt forms', 'Crystallization as S-type granite'] },
+              heat_pressure:      { product: 'Slate → Phyllite → Schist → Gneiss', family: 'metamorphic', texture: 'foliated', process: 'Prograde regional metamorphism', conditions: '200 °C (slate) rising to 700 °C (gneiss)', time: 'Millions of years', change: 'This is the classic metamorphic series. Flat clay minerals rotate to sit perpendicular to the squeeze, then regrow larger at each step: slate (too small to see) → phyllite (silky sheen) → schist (visible mica flakes) → gneiss (segregated bands).', evidence: 'Grain size IS the thermometer — the coarser the mica, the higher the grade it reached.', stages: ['Clay flakes rotate — slate', 'Mica grows — phyllite sheen', 'Visible flakes — schist', 'Bands segregate — gneiss'] },
+              weathering_erosion: { product: 'Mudstone or Shale', family: 'sedimentary', texture: 'clastic', process: 'Erosion, transport, lithification', conditions: 'Surface conditions', time: '1,000s–millions of years', change: 'Clay is already the end product of chemical weathering, so it does not break down further — it just splits apart, washes into quiet water and settles again. Clay particles are so fine they only settle where currents are nearly still.', evidence: 'Shale means quiet water: deep sea floor, lake bottom, or floodplain.', stages: ['Layers split and flake', 'Clay suspended in water', 'Settles in still water', 'Compaction to new shale'] }
+            },
+            slate: {
+              melting_cooling:    { product: 'Granite (S-type)', family: 'igneous', texture: 'crystalline', process: 'Melting of metamorphosed mud', conditions: '650–800 °C, deep crust', time: 'Millions of years', change: 'Slate carries the same clay-derived chemistry as the shale it came from, so melting it yields the same aluminium-rich, S-type granitic magma.', evidence: 'The melt "forgets" the foliation entirely — igneous crystals grow in random orientations.', stages: ['Deep burial', 'Mica breaks down', 'Aluminous melt forms', 'Random crystal growth'] },
+              heat_pressure:      { product: 'Phyllite, then Schist', family: 'metamorphic', texture: 'foliated', process: 'Increasing metamorphic grade', conditions: '400–600 °C', time: 'Millions of years', change: 'Turning up heat and pressure on slate grows its microscopic micas into larger flakes. First they are just big enough to give a silky sheen (phyllite), then big enough to see and pick out individually (schist).', evidence: 'Run a finger over it: slate is dull and flat, phyllite is silky, schist sparkles.', stages: ['Grade increases', 'Micas coarsen — silky sheen', 'Phyllite stage', 'Visible mica flakes — schist'] },
+              weathering_erosion: { product: 'Shale or Mudstone', family: 'sedimentary', texture: 'clastic', process: 'Erosion, transport, lithification', conditions: 'Surface conditions', time: '1,000s–millions of years', change: 'Slate splits readily along its cleavage planes, so it breaks into flat chips. Those chips grind down to clay and silt and are deposited as mud once again.', evidence: 'Slate’s cleavage makes it weather into flat plates rather than round cobbles.', stages: ['Splits along cleavage', 'Chips ground to silt and clay', 'Transport and deposition', 'Compaction to mudstone'] }
+            },
+            marble: {
+              melting_cooling:    { product: 'Igneous rock (model outcome)', family: 'igneous', texture: 'crystalline', process: 'Melting, then crystallization', conditions: 'Above ~900 °C', time: 'Millions of years', change: 'In the standard rock cycle any rock can melt and re-crystallize as igneous rock, and that is the pathway shown here.', evidence: 'Granite, basalt or shale give cleaner examples of the melting pathway.', caveat: 'Marble is calcite, so like limestone it tends to release CO₂ (decarbonation) rather than melt cleanly at crustal depths. Carbonate magmas are real but rare and mantle-derived.', stages: ['Strong heating', 'Calcite becomes unstable', 'Melt or CO₂ release', 'Crystallization'] },
+              heat_pressure:      { product: 'Coarse Marble', family: 'metamorphic', texture: 'nonfoliated', process: 'Continued recrystallization', conditions: '500–700 °C', time: 'Millions of years', change: 'Marble is already calcite, so more heat does not create new minerals — it just lets existing crystals grow larger by consuming their neighbours. Calcite grains are blocky, so even under great pressure they cannot align into foliation.', evidence: 'Marble never develops banding no matter how high the grade — blocky minerals cannot line up.', stages: ['Reheating', 'Grain boundaries migrate', 'Small crystals absorbed', 'Coarse sugary texture'] },
+              weathering_erosion: { product: 'Limestone (re-precipitated)', family: 'sedimentary', texture: 'bioclastic', process: 'Carbonate dissolution and re-precipitation', conditions: 'Rainwater with dissolved CO₂', time: '1,000s–millions of years', change: 'Like limestone, marble dissolves in weak carbonic acid rather than crumbling into grains. The dissolved calcium is carried off and re-precipitated as new carbonate rock.', evidence: 'This is why marble statues and headstones lose their detail in acidic rain.', stages: ['Acid rain contact', 'Calcite dissolves', 'Carried in solution', 'Re-precipitated as carbonate'] }
+            },
+            gneiss: {
+              melting_cooling:    { product: 'Migmatite, then Granite', family: 'igneous', texture: 'crystalline', process: 'Partial melting (anatexis)', conditions: '700–800 °C — the top of the metamorphic range', time: 'Millions of years', change: 'Gneiss sits right at the boundary where metamorphism ends and melting begins. The light quartz-feldspar bands melt first while the dark bands stay solid, producing migmatite — literally a mixed rock, half metamorphic and half igneous.', evidence: 'Migmatite is the visible proof of where the rock cycle’s two branches meet.', stages: ['Temperature hits the solidus', 'Light bands begin to melt', 'Migmatite — part melt, part solid', 'Melt separates and crystallizes'] },
+              heat_pressure:      { product: 'Migmatite', family: 'metamorphic', texture: 'banded', process: 'Ultra-high-grade metamorphism', conditions: '700–800 °C', time: 'Millions of years', change: 'Gneiss is already the highest common grade, so pushing further starts partial melting instead of making a new solid rock. The result is migmatite, which marks the upper limit of metamorphism.', evidence: 'Wispy, folded light-coloured veins cutting through darker gneiss are frozen melt.', stages: ['Already high grade', 'Approaching the solidus', 'First melt in felsic bands', 'Migmatite forms'] },
+              weathering_erosion: { product: 'Sandstone and Shale', family: 'sedimentary', texture: 'clastic', process: 'Hydrolysis, transport, lithification', conditions: 'Surface conditions', time: '1,000s–millions of years', change: 'Gneiss weathers much like granite because it holds the same minerals: feldspar breaks down to clay while quartz survives as sand. The banding is destroyed entirely — sediment keeps no memory of it.', evidence: 'Sediment records the minerals of its parent rock, but not its texture.', stages: ['Bands split along weak micas', 'Feldspar → clay, quartz freed', 'Rivers sort the load', 'Burial and cementation'] }
             }
+          };
 
-            _lastRcCanvas = canvasEl;
+          const rcSpecimen = function (id) {
+            for (var i = 0; i < RC_SPECIMENS.length; i++) { if (RC_SPECIMENS[i].id === id) return RC_SPECIMENS[i]; }
+            return RC_SPECIMENS[0];
+          };
+          const rcAgent = function (id) {
+            for (var i = 0; i < RC_AGENTS.length; i++) { if (RC_AGENTS[i].id === id) return RC_AGENTS[i]; }
+            return null;
+          };
+          const rcLookup = function (specimenId, agentId) {
+            var row = RC_TRANSFORMS[specimenId];
+            return (row && row[agentId]) ? row[agentId] : null;
+          };
+
+          // Family palette. Literal hex only — SVG presentation attributes do not
+          // accept CSS var(), so a token here would silently render black.
+          const RC_FAMILY_COLORS = {
+            igneous:     { base: '#7f1d1d', mid: '#b91c1c', detail: '#fca5a5', ink: '#7f1d1d' },
+            sedimentary: { base: '#78350f', mid: '#b45309', detail: '#fde68a', ink: '#78350f' },
+            metamorphic: { base: '#4c1d95', mid: '#6d28d9', detail: '#c4b5fd', ink: '#4c1d95' }
+          };
+
+          // Draws one rock specimen as a textured SVG swatch. Texture is the whole
+          // point: a student should be able to SEE that quartzite is interlocking
+          // and shale is layered, not just read the words.
+          const rcSwatch = function (key, texture, family, x, y, w, hgt, opacity) {
+            var c = RC_FAMILY_COLORS[family] || RC_FAMILY_COLORS.igneous;
+            var kids = [];
+            var clipId = 'rcclip-' + key;
+            kids.push(h('defs', { key: 'defs' },
+              h('clipPath', { id: clipId }, h('rect', { x: x, y: y, width: w, height: hgt, rx: 7 }))));
+            kids.push(h('rect', { key: 'body', x: x, y: y, width: w, height: hgt, rx: 7, fill: c.mid, stroke: c.base, strokeWidth: 1.5 }));
+            var g = [];
+            var i;
+            if (texture === 'crystalline') {
+              // Interlocking coarse crystals.
+              var cry = [[0.12, 0.18, 0.26], [0.46, 0.12, 0.3], [0.75, 0.22, 0.22], [0.2, 0.6, 0.3], [0.55, 0.58, 0.26], [0.82, 0.66, 0.2]];
+              for (i = 0; i < cry.length; i++) {
+                var cx = x + cry[i][0] * w, cy = y + cry[i][1] * hgt, cs = cry[i][2] * Math.min(w, hgt);
+                g.push(h('polygon', { key: 'c' + i, points: [cx + ',' + (cy - cs / 2), (cx + cs / 2) + ',' + cy, cx + ',' + (cy + cs / 2), (cx - cs / 2) + ',' + cy].join(' '), fill: c.detail, opacity: 0.85, stroke: c.base, strokeWidth: 0.6 }));
+              }
+            } else if (texture === 'finegrained') {
+              // Fine matrix plus gas vesicles.
+              for (i = 0; i < 34; i++) {
+                g.push(h('circle', { key: 'f' + i, cx: x + ((i * 37) % 100) / 100 * w, cy: y + ((i * 61) % 100) / 100 * hgt, r: 0.9, fill: c.detail, opacity: 0.55 }));
+              }
+              var ves = [[0.24, 0.34, 3], [0.62, 0.26, 2.4], [0.44, 0.7, 2.8], [0.8, 0.6, 2.2]];
+              for (i = 0; i < ves.length; i++) {
+                g.push(h('circle', { key: 'v' + i, cx: x + ves[i][0] * w, cy: y + ves[i][1] * hgt, r: ves[i][2], fill: c.base, opacity: 0.6 }));
+              }
+            } else if (texture === 'clastic') {
+              // Flat bedding planes with grains between them.
+              for (i = 1; i < 6; i++) {
+                g.push(h('line', { key: 'l' + i, x1: x, y1: y + (i / 6) * hgt, x2: x + w, y2: y + (i / 6) * hgt, stroke: c.detail, strokeWidth: 1.6, opacity: 0.8 }));
+              }
+              for (i = 0; i < 18; i++) {
+                g.push(h('circle', { key: 'g' + i, cx: x + ((i * 43) % 100) / 100 * w, cy: y + ((i * 71) % 100) / 100 * hgt, r: 1.3, fill: c.detail, opacity: 0.45 }));
+              }
+            } else if (texture === 'bioclastic') {
+              // Bedding plus shell fragments.
+              for (i = 1; i < 4; i++) {
+                g.push(h('line', { key: 'l' + i, x1: x, y1: y + (i / 4) * hgt, x2: x + w, y2: y + (i / 4) * hgt, stroke: c.detail, strokeWidth: 1.3, opacity: 0.6 }));
+              }
+              var sh = [[0.2, 0.3], [0.55, 0.22], [0.35, 0.66], [0.72, 0.58], [0.84, 0.34]];
+              for (i = 0; i < sh.length; i++) {
+                var sx = x + sh[i][0] * w, sy = y + sh[i][1] * hgt;
+                g.push(h('path', { key: 's' + i, d: 'M' + (sx - 4) + ',' + sy + ' a4,4 0 0,1 8,0', fill: 'none', stroke: c.detail, strokeWidth: 1.6, opacity: 0.95 }));
+              }
+            } else if (texture === 'foliated') {
+              // Tightly spaced aligned mica planes.
+              for (i = 1; i < 11; i++) {
+                var fy = y + (i / 11) * hgt;
+                g.push(h('path', { key: 'p' + i, d: 'M' + x + ',' + fy + ' Q' + (x + w / 2) + ',' + (fy - 1.6) + ' ' + (x + w) + ',' + fy, fill: 'none', stroke: c.detail, strokeWidth: 1.1, opacity: 0.8 }));
+              }
+            } else if (texture === 'banded') {
+              // Segregated light/dark gneissic banding.
+              for (i = 0; i < 5; i++) {
+                var by = y + (i / 5) * hgt;
+                g.push(h('path', { key: 'b' + i, d: 'M' + x + ',' + (by + 3) + ' Q' + (x + w * 0.35) + ',' + (by - 2) + ' ' + (x + w * 0.7) + ',' + (by + 3) + ' T' + (x + w) + ',' + (by + 2), fill: 'none', stroke: i % 2 ? c.detail : c.base, strokeWidth: 3.4, opacity: 0.85 }));
+              }
+            } else { // nonfoliated — equant interlocking mosaic
+              var mo = [[0.2, 0.25], [0.5, 0.2], [0.78, 0.3], [0.3, 0.58], [0.62, 0.62], [0.85, 0.7], [0.14, 0.78]];
+              for (i = 0; i < mo.length; i++) {
+                g.push(h('polygon', { key: 'm' + i, points: (function (px, py, r) { var pts = []; for (var k = 0; k < 6; k++) { var a = k * Math.PI / 3 + (i * 0.4); pts.push((px + Math.cos(a) * r) + ',' + (py + Math.sin(a) * r)); } return pts.join(' '); })(x + mo[i][0] * w, y + mo[i][1] * hgt, Math.min(w, hgt) * 0.13), fill: c.detail, opacity: 0.7, stroke: c.base, strokeWidth: 0.5 }));
+              }
+            }
+            kids.push(h('g', { key: 'tex', clipPath: 'url(#' + clipId + ')' }, g));
+            return h('g', { key: key, opacity: opacity == null ? 1 : opacity }, kids);
+          };
+
+          // ── Animated Canvas2D for Rock Cycle ──
+          // This initialiser is re-created each render (it closes over the current
+          // upd/setLabToolData), but it is NOT handed to React as the ref. It is
+          // published into _rcInitBox and invoked by the identity-stable
+          // rockCycleCanvasRef, so the canvas mounts exactly once per visit.
+
+          const initRockCycleCanvas = function (canvasEl) {
+
+            if (!canvasEl) return;
 
             if (canvasEl._rcInit) return;
+
+            // Zero-size guard. We now initialise ONCE per mount, so a canvas
+            // measured at 0×0 (ref fired before layout, or mounted inside a
+            // hidden ancestor) would stay permanently blank — the old
+            // re-init-every-render behaviour used to paper over that by accident.
+            // Retry on the next frame instead of latching a dead canvas.
+            if (!canvasEl.offsetWidth || !canvasEl.offsetHeight) {
+              if (typeof requestAnimationFrame === 'function' && !canvasEl._rcSizeRetry) {
+                canvasEl._rcSizeRetry = requestAnimationFrame(function () {
+                  canvasEl._rcSizeRetry = null;
+                  if (canvasEl.isConnected) rockCycleCanvasRef(canvasEl);
+                });
+              }
+              return;
+            }
 
             canvasEl._rcInit = true;
 
@@ -3770,6 +4016,11 @@ const d = labToolData.rockCycle || {};
             function cleanupRockCycleCanvas() {
               rcAlive = false;
               cancelRockCycleFrame();
+              if (canvasEl._rcSizeRetry && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(canvasEl._rcSizeRetry);
+              canvasEl._rcSizeRetry = null;
+              // The canvas only unmounts when the whole tool does, so this is the
+              // one reliable place to stop an in-flight transformation run.
+              rcStopTransformTimer();
               canvasEl.removeEventListener('click', onRockCycleClick);
               if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onRockCycleVisibilityChange);
               canvasEl._rcCleanup = null;
@@ -4536,6 +4787,11 @@ const d = labToolData.rockCycle || {};
 
           };
 
+          // Publish the current initialiser for the stable ref to call. Assigning a
+          // property does NOT change rockCycleCanvasRef's identity, so React keeps
+          // the canvas mounted across re-renders.
+          _rcInitBox.fn = initRockCycleCanvas;
+
 
           var viewedFamilies = Object.keys(d.rcViewed || {}).length;
           var transformsRun = d.transformsRun || 0;
@@ -4552,7 +4808,7 @@ const d = labToolData.rockCycle || {};
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83E\uDEA8 " + __alloT('stem.rocks.rock_cycle_title', "Rock Cycle")),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-orange-100 text-orange-700 text-[11px] font-bold rounded-full" }, __alloT('stem.rocks.animated_badge', "ANIMATED"))
+              React.createElement("span", { className: "px-2 py-0.5 bg-orange-100 text-orange-800 text-[11px] font-bold rounded-full" }, __alloT('stem.rocks.animated_badge', "ANIMATED"))
 
             ),
 
@@ -4564,19 +4820,19 @@ const d = labToolData.rockCycle || {};
                   React.createElement("h2", { id: "rockcycle-command-title", className: "mt-2 text-xl sm:text-2xl font-black text-slate-900" }, nextMission.icon + " " + nextMission.title),
                   React.createElement("p", { className: "mt-1 text-xs sm:text-sm text-slate-600 leading-relaxed" }, nextMission.detail),
                   React.createElement("div", { className: "mt-4 grid grid-cols-3 gap-2", "aria-label": __alloT('stem.rocks.mission_progress_aria', "Rock cycle mission progress") },
-                    [[viewedFamilies + '/3', __alloT('stem.rocks.metric_families', 'Families')], [d.selectedProcess ? '1/1' : '0/1', __alloT('stem.rocks.metric_process', 'Process')], [transformsRun + '/3', __alloT('stem.rocks.metric_transforms', 'Transforms')]].map(function(metric) { return React.createElement("div", { key: metric[1], className: "rounded-xl border border-orange-100 bg-white/80 p-3 text-center" }, React.createElement("div", { className: "text-lg font-black text-slate-900" }, metric[0]), React.createElement("div", { className: "text-[10px] font-bold text-slate-500" }, metric[1])); })
+                    [[viewedFamilies + '/3', __alloT('stem.rocks.metric_families', 'Families')], [d.selectedProcess ? '1/1' : '0/1', __alloT('stem.rocks.metric_process', 'Process')], [transformsRun + '/3', __alloT('stem.rocks.metric_transforms', 'Transforms')]].map(function(metric) { return React.createElement("div", { key: metric[1], className: "rounded-xl border border-orange-100 bg-white/80 p-3 text-center" }, React.createElement("div", { className: "text-lg font-black text-slate-900" }, metric[0]), React.createElement("div", { className: "text-[10px] font-bold text-slate-600" }, metric[1])); })
                   )
                 ),
                 React.createElement("aside", { className: "rounded-xl border border-sky-200 bg-sky-50/70 p-4", "aria-label": __alloT('stem.rocks.evidence_route_aria', "Rock cycle evidence route") },
                   React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-sky-800" }, __alloT('stem.rocks.evidence_route', "Evidence route")),
-                  React.createElement("ol", { className: "mt-2 space-y-2 text-[11px] text-slate-700" }, [__alloT('stem.rocks.evidence_step_observe', 'Observe texture and composition'), __alloT('stem.rocks.evidence_step_connect', 'Connect process to energy and time'), __alloT('stem.rocks.evidence_step_explain', 'Explain more than one valid pathway')].map(function(step, i) { return React.createElement("li", { key: step, className: "flex gap-2" }, React.createElement("span", { className: "font-black text-orange-600" }, (i + 1) + '.'), React.createElement("span", null, step)); }))
+                  React.createElement("ol", { className: "mt-2 space-y-2 text-[11px] text-slate-700" }, [__alloT('stem.rocks.evidence_step_observe', 'Observe texture and composition'), __alloT('stem.rocks.evidence_step_connect', 'Connect process to energy and time'), __alloT('stem.rocks.evidence_step_explain', 'Explain more than one valid pathway')].map(function(step, i) { return React.createElement("li", { key: step, className: "flex gap-2" }, React.createElement("span", { className: "font-black text-orange-800" }, (i + 1) + '.'), React.createElement("span", null, step)); }))
                 )
               )
             ),
 
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-400 shadow-lg mb-3", style: { height: "420px" } },
 
-              React.createElement("canvas", { ref: canvasRef, role: "img", tabIndex: 0, "aria-label": __alloT('stem.rocks.rock_sample_closeup_a', "Rock sample close-up") + (d.selectedRock ? " of " + d.selectedRock : "") + __alloT('stem.rocks.rock_sample_closeup_b', " — click to inspect."), "data-selected-rock": d.selectedRock || '', style: { width: "100%", height: "100%", display: "block", cursor: "pointer" } })
+              React.createElement("canvas", { ref: rockCycleCanvasRef, role: "img", tabIndex: 0, "aria-label": __alloT('stem.rocks.rock_sample_closeup_a', "Rock sample close-up") + (d.selectedRock ? " of " + d.selectedRock : "") + __alloT('stem.rocks.rock_sample_closeup_b', " — click to inspect."), "data-selected-rock": d.selectedRock || '', style: { width: "100%", height: "100%", display: "block", cursor: "pointer" } })
 
             ),
 
@@ -4644,7 +4900,7 @@ const d = labToolData.rockCycle || {};
 
               React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200" },
 
-                React.createElement("p", { className: "text-xs text-amber-700 italic" }, "\uD83D\uDCA1 " + sel.funFact)
+                React.createElement("p", { className: "text-xs text-amber-800 italic" }, "\uD83D\uDCA1 " + sel.funFact)
 
               )
 
@@ -4704,174 +4960,345 @@ const d = labToolData.rockCycle || {};
               )
             ),
 
-            // Rock Transformation Machine
-            React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3" },
-              React.createElement("p", { className: "text-xs font-black text-orange-700 mb-1 flex items-center gap-1.5" },
-                React.createElement("span", null, "🔄"),
-                React.createElement("span", null, __alloT('stem.rocks.transformation_machine_title', "Rock Transformation Machine"))
-              ),
-              React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" },
-                __alloT('stem.rocks.transformation_machine_intro', "Select a starting rock type, pick a geological agent of change, and run the machine to witness its metamorphic, igneous, or sedimentary transformation!")
-              ),
-              React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
-                React.createElement("div", null,
-                  React.createElement("label", { className: "block text-[10px] font-bold text-slate-500 uppercase mb-1" }, __alloT('stem.rocks.starting_rock', "Starting Rock")),
-                  React.createElement("select", {
-                    value: d.startingRock || 'igneous',
-                    onChange: function(e) { upd("startingRock", e.target.value); },
-                    className: "w-full p-1.5 text-xs border rounded-lg bg-white font-bold"
-                  },
-                    [
-                      { id: 'igneous', label: __alloT('stem.rocks.igneous', 'Igneous') },
-                      { id: 'sedimentary', label: __alloT('stem.rocks.sedimentary', 'Sedimentary') },
-                      { id: 'metamorphic', label: __alloT('stem.rocks.metamorphic', 'Metamorphic') }
-                    ].map(function(r) {
-                      return React.createElement("option", { key: r.id, value: r.id }, r.label);
-                    })
-                  )
-                ),
-                React.createElement("div", { className: "col-span-1 md:col-span-2" },
-                  React.createElement("label", { className: "block text-[10px] font-bold text-slate-500 uppercase mb-1" }, __alloT('stem.rocks.geological_agent', "Geological Agent")),
-                  React.createElement("div", { className: "grid grid-cols-3 gap-1" },
-                    [
-                      { id: 'melting_cooling', label: '🌋 ' + __alloT('stem.rocks.agent_melt_cool', 'Melt & Cool') },
-                      { id: 'heat_pressure', label: '🔥 ' + __alloT('stem.rocks.agent_heat_press', 'Heat & Press') },
-                      { id: 'weathering_erosion', label: '🌧️ ' + __alloT('stem.rocks.agent_weather_erode', 'Weather & Erode') }
-                    ].map(function(agent) {
-                      var isSel = d.geologicalAgent === agent.id;
-                      return React.createElement("button", {
-                        key: agent.id,
-                        onClick: function() { upd("geologicalAgent", agent.id); sfxRockClick(); },
-                        className: "p-1 rounded text-[10px] font-black text-center border transition-all " +
-                          (isSel ? "bg-orange-100 border-orange-500 text-orange-800" : "transition-colors bg-slate-50 border-slate-200 text-slate-600 hover:border-orange-200")
-                      }, agent.label);
-                    })
-                  )
-                ),
-                React.createElement("div", { className: "flex items-end" },
-                  React.createElement("button", {
-                    disabled: d.transformationAnimActive || !d.geologicalAgent,
-                    onClick: function() {
-                      var agent = d.geologicalAgent;
-                      upd("transformationAnimActive", true);
-                      upd("transformationResult", null);
-                      upd("transformsRun", (d.transformsRun || 0) + 1);
+            // ══ Rock Transformation Machine ══
+            // Wrapped in an IIFE so the scene builder and the run handler can be
+            // plain statements instead of being inlined into an argument list.
+            (function () {
 
-                      if (agent === 'melting_cooling') {
-                        sfxRockMelt();
-                      } else if (agent === 'heat_pressure') {
-                        sfxRockCrack();
-                      } else {
-                        sfxRockCool();
-                      }
+              var mSpecId = d.startingRock || 'granite';
+              // Guard against state saved by the OLD machine, which stored a rock
+              // FAMILY ('igneous') where a named specimen id now belongs.
+              if (!RC_TRANSFORMS[mSpecId]) {
+                mSpecId = mSpecId === 'sedimentary' ? 'shale' : mSpecId === 'metamorphic' ? 'slate' : 'granite';
+              }
+              var mSpec = rcSpecimen(mSpecId);
+              var mAgent = rcAgent(d.geologicalAgent);
+              var mPreview = mAgent ? rcLookup(mSpecId, mAgent.id) : null;
+              var running = !!d.transformationAnimActive;
+              var prog = running ? (d.transformationProgress || 0) : (d.transformationResult ? 100 : 0);
+              // Tool data persists across sessions, so a student can arrive with a
+              // result saved by the OLD machine — shaped { id, desc } rather than
+              // { product, family, conditions, ... }. Rendering that would print
+              // "undefined" into the panel, so treat a shapeless result as absent.
+              var result = (d.transformationResult && d.transformationResult.product) ? d.transformationResult : null;
+              // While a run is in flight the scene shows the run's OWN pairing, not
+              // whatever the dropdown currently says — changing the select mid-run
+              // must not rewrite the animation under the student.
+              var liveRec = running ? (d.transformationRun || mPreview) : (result || mPreview);
+              var liveSpec = rcSpecimen((running && d.transformationRun ? d.transformationRun.fromId : null) || (result ? result.fromId : null) || mSpecId);
 
-                      var p = 0;
-                      var interval = setInterval(function() {
-                        p += 10;
-                        upd("transformationProgress", p);
-                        if (p >= 100) {
-                          clearInterval(interval);
-                          // The geological AGENT determines the result TYPE (any rock can melt →
-                          // igneous, be heated/pressed → metamorphic, or weather → sedimentary) —
-                          // but the chosen STARTING ROCK now names a real, specific transformation,
-                          // so the dropdown actually matters and teaches the named pairings.
-                          var startingRock = d.startingRock || 'igneous';
-                          var resultId = 'igneous';
-                          var description = '';
+              // ── Stage caption ──
+              var stageIdx = Math.min(3, Math.floor(prog / 25));
+              var stageText = (liveRec && liveRec.stages) ? liveRec.stages[stageIdx] : '';
 
-                          if (agent === 'melting_cooling') {
-                            resultId = 'igneous';
-                            var mEx = startingRock === 'sedimentary' ? 'sandstone' : startingRock === 'metamorphic' ? 'gneiss' : 'older igneous rock';
-                            description = "Extreme heat (>800°C) melted the " + startingRock + " rock (e.g. " + mEx + ") into magma, which cooled and crystallized into a new IGNEOUS rock such as granite or basalt. Any rock can melt, so the result is always igneous.";
-                          } else if (agent === 'heat_pressure') {
-                            resultId = 'metamorphic';
-                            var hEx = startingRock === 'sedimentary' ? 'limestone → marble, or shale → slate' : startingRock === 'igneous' ? 'granite → gneiss' : 'slate → schist → gneiss (a higher grade)';
-                            description = "Buried deep, intense heat and pressure recrystallized the " + startingRock + " rock WITHOUT melting it — " + hEx + " — forming METAMORPHIC rock. Any rock can be metamorphosed.";
-                          } else {
-                            resultId = 'sedimentary';
-                            var wEx = startingRock === 'igneous' ? 'granite → sand and clay' : startingRock === 'metamorphic' ? 'marble → sediment grains' : 'older sediment, broken down and re-deposited';
-                            description = "Weathering and erosion broke the " + startingRock + " rock into grains (" + wEx + "), which washed into a basin, then compacted and cemented into SEDIMENTARY rock. Any rock at the surface weathers into sediment.";
-                          }
+              // ── SVG scene: input specimen → process chamber → product ──
+              // Deterministic geometry only (index-driven, never Math.random), so a
+              // re-render at the same progress redraws exactly the same frame.
+              var rcScene = function () {
+                var W = 340, H = 124;
+                var inX = 6, outX = 248, swW = 86, swY = 26, swH = 70;
+                var agentId = mAgent ? mAgent.id : null;
+                var outFamily = liveRec ? liveRec.family : 'igneous';
+                var outTexture = liveRec ? liveRec.texture : 'crystalline';
+                var inOpacity = prog < 50 ? 1 : Math.max(0.18, 1 - (prog - 50) / 50);
+                var outOpacity = prog <= 50 ? 0 : (prog - 50) / 50;
+                var fx = [];
+                var i;
+                var midX = 104, midW = 132;
 
-                          updMulti({
-                            transformationAnimActive: false,
-                            transformationResult: { id: resultId, desc: description }
-                          });
+                // Chamber shell
+                fx.push(h('rect', { key: 'chamber', x: midX, y: swY - 6, width: midW, height: swH + 12, rx: 9, fill: '#0f172a', opacity: 0.06, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '4 3' }));
 
-                          setLabToolData(function(prev) {
-                            var r = Object.assign({}, (prev && prev.rocks) || {});
-                            var count = (r.cycleInteractions || 0) + 1;
-                            r.cycleInteractions = count;
+                if (agentId === 'melting_cooling') {
+                  // Rising melt: blobs climb and brighten with progress.
+                  for (i = 0; i < 9; i++) {
+                    var ph = ((prog * 1.6) + i * 34) % 100;
+                    var bx = midX + 14 + ((i * 29) % (midW - 28));
+                    var by = swY + swH - (ph / 100) * (swH - 6);
+                    fx.push(h('circle', { key: 'melt' + i, cx: bx, cy: by, r: 2.6 + (i % 3), fill: i % 2 ? '#f59e0b' : '#ef4444', opacity: 0.25 + 0.55 * (prog / 100) * (1 - ph / 140) }));
+                  }
+                  fx.push(h('rect', { key: 'pool', x: midX + 6, y: swY + swH - 12, width: midW - 12, height: 10, rx: 5, fill: '#dc2626', opacity: 0.15 + 0.5 * (prog / 100) }));
+                } else if (agentId === 'heat_pressure') {
+                  // Opposing squeeze: arrows converge as progress rises.
+                  var sq = (prog / 100) * 14;
+                  fx.push(h('path', { key: 'arrTop', d: 'M' + (midX + midW / 2) + ',' + (swY - 4 + sq) + ' l-9,-9 h5 v-7 h8 v7 h5 z', fill: '#b45309', opacity: 0.85, transform: 'rotate(180 ' + (midX + midW / 2) + ' ' + (swY - 4 + sq) + ')' }));
+                  fx.push(h('path', { key: 'arrBot', d: 'M' + (midX + midW / 2) + ',' + (swY + swH + 4 - sq) + ' l-9,-9 h5 v-7 h8 v7 h5 z', fill: '#b45309', opacity: 0.85 }));
+                  for (i = 0; i < 5; i++) {
+                    var wy = swY + 12 + i * ((swH - 24) / 4);
+                    fx.push(h('path', { key: 'sq' + i, d: 'M' + (midX + 14) + ',' + wy + ' Q' + (midX + midW / 2) + ',' + (wy - 4 - (prog / 100) * 5) + ' ' + (midX + midW - 14) + ',' + wy, fill: 'none', stroke: '#f97316', strokeWidth: 1.6, opacity: 0.3 + 0.5 * (prog / 100) }));
+                  }
+                } else if (agentId === 'weathering_erosion') {
+                  // Rain plus grains detaching and settling into a growing bed.
+                  for (i = 0; i < 10; i++) {
+                    var rp = ((prog * 2.1) + i * 27) % 100;
+                    var rx = midX + 12 + ((i * 31) % (midW - 24));
+                    fx.push(h('line', { key: 'rain' + i, x1: rx, y1: swY + (rp / 100) * (swH - 16), x2: rx - 2, y2: swY + (rp / 100) * (swH - 16) + 7, stroke: '#0ea5e9', strokeWidth: 1.4, opacity: 0.45 }));
+                  }
+                  for (i = 0; i < 12; i++) {
+                    var gp = ((prog * 1.4) + i * 23) % 100;
+                    fx.push(h('circle', { key: 'grain' + i, cx: midX + 16 + ((i * 37) % (midW - 32)), cy: swY + 6 + (gp / 100) * (swH - 18), r: 1.5, fill: '#a16207', opacity: 0.65 }));
+                  }
+                  fx.push(h('rect', { key: 'bed', x: midX + 8, y: swY + swH - 4 - (prog / 100) * 9, width: midW - 16, height: 4 + (prog / 100) * 9, rx: 2, fill: '#b45309', opacity: 0.5 }));
+                } else {
+                  fx.push(h('text', { key: 'hint', x: midX + midW / 2, y: swY + swH / 2 + 4, textAnchor: 'middle', fontSize: '10', fill: '#475569' }, __alloT('stem.rocks.machine_pick_agent', 'Pick an agent of change')));
+                }
 
-                            var completed = r.completedChallenges || [];
-                            var newlyCompleted = [];
-                            var pointsEarned = 0;
-                            
-                            var typesExploredCheck = Object.keys(r.typesViewed || {}).length >= 3;
-                            var specimensCheck = Object.keys(r.rocksViewed || {}).length >= 5;
-                            var quizCheck = (r.quizScore || 0) >= 3;
-                            var vocabCheck = (r.vocabLookedUp || []).length >= 3;
-                            var cycleCheck = count >= 3;
-
-                            var challengeChecks = {
-                              types_explored: typesExploredCheck,
-                              specimens_examined: specimensCheck,
-                              quiz_ace: quizCheck,
-                              vocab_studied: vocabCheck,
-                              cycle_interact: cycleCheck
-                            };
-
-                            Object.keys(challengeChecks).forEach(function(cid) {
-                              if (completed.indexOf(cid) === -1 && challengeChecks[cid]) {
-                                newlyCompleted.push(cid);
-                                // findById is null-safe — challenge id drift no
-                                // longer crashes the unlock event; renames just
-                                // silently skip the rp award for that challenge.
-                                var ch = window.StemLab && window.StemLab.findById ? window.StemLab.findById(ROCKS_CHALLENGES, cid) : null;
-                                pointsEarned += ch ? (ch.rp || 0) : 0;
-                              }
-                            });
-
-                            if (newlyCompleted.length > 0) {
-                              r.completedChallenges = completed.concat(newlyCompleted);
-                              r.researchPoints = (r.researchPoints || 0) + pointsEarned;
-                              r.totalRP = (r.totalRP || 0) + pointsEarned;
-                              sfxRockCorrect();
-                              if (typeof addToast === 'function') {
-                                newlyCompleted.forEach(function(finishedId) {
-                                  var fchRec = window.StemLab && window.StemLab.findById ? window.StemLab.findById(ROCKS_CHALLENGES, finishedId) : null;
-                                  var name = fchRec ? fchRec.name : 'a challenge';
-                                  var rp = fchRec ? fchRec.rp : 0;
-                                  addToast({ type: 'success', title: 'Challenge Complete!', message: 'Unlocked: ' + name + ' (+' + rp + ' RP)' });
-                                });
-                              }
-                            }
-                            return Object.assign({}, prev, { rocks: r });
-                          });
-                        }
-                      }, 100);
-                    },
-                    className: "w-full py-1.5 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded-lg text-xs transition-all disabled:opacity-50 active:scale-[0.97]"
-                  }, d.transformationAnimActive ? __alloT('stem.rocks.transforming_ellipsis', "Transforming...") : "⚡ " + __alloT('stem.rocks.transform_btn', "Transform!"))
-                )
-              ),
-              d.transformationAnimActive && React.createElement("div", { className: "w-full bg-slate-200 h-2.5 rounded-full overflow-hidden mb-2" },
-                React.createElement("div", {
-                  className: "bg-orange-600 h-full transition-all duration-75",
-                  style: { width: (d.transformationProgress || 0) + '%' }
-                })
-              ),
-              d.transformationResult && (function() {
-                var resEmoji = d.transformationResult.id === 'igneous' ? '🌋' : d.transformationResult.id === 'sedimentary' ? '🏖' : '💎';
-                return React.createElement("div", { className: "p-3 bg-orange-50 border border-orange-200 rounded-lg animate-in slide-in-from-bottom" },
-                  React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
-                    React.createElement("span", { className: "text-2xl" }, resEmoji),
-                    React.createElement("span", { className: "text-sm font-bold text-orange-800 capitalize" }, __alloT('stem.rocks.transformed_into', "Transformed into: ") + d.transformationResult.id + __alloT('stem.rocks.rock_suffix', " Rock"))
-                  ),
-                  React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, d.transformationResult.desc)
+                return h('svg', {
+                  viewBox: '0 0 ' + W + ' ' + H,
+                  width: '100%',
+                  role: 'img',
+                  'aria-label': (liveRec
+                    ? liveSpec.label + ' ' + (mAgent ? mAgent.verb.toLowerCase() : '') + ' produces ' + liveRec.product + '. ' + (stageText ? 'Stage: ' + stageText + '.' : '')
+                    : liveSpec.label + ' loaded. Choose an agent of change to begin.'),
+                  className: 'block w-full h-auto',
+                  style: { maxHeight: '190px' }
+                },
+                  // Input specimen
+                  rcSwatch('in', liveSpec.texture, liveSpec.family, inX + 4, swY, swW, swH, inOpacity),
+                  h('text', { key: 'inLbl', x: inX + 4 + swW / 2, y: swY + swH + 15, textAnchor: 'middle', fontSize: '10', fontWeight: '700', fill: '#334155' }, liveSpec.label),
+                  h('text', { key: 'inFam', x: inX + 4 + swW / 2, y: swY - 10, textAnchor: 'middle', fontSize: '8', fontWeight: '700', fill: '#475569' }, liveSpec.family.toUpperCase()),
+                  // Process chamber
+                  h('g', { key: 'fx' }, fx),
+                  h('text', { key: 'agLbl', x: 104 + 66, y: swY - 10, textAnchor: 'middle', fontSize: '8', fontWeight: '700', fill: '#475569' }, mAgent ? mAgent.short.toUpperCase() : ''),
+                  // Arrows
+                  h('path', { key: 'a1', d: 'M96,' + (swY + swH / 2) + ' l0,-5 l8,5 l-8,5 z', fill: '#78716c' }),
+                  h('path', { key: 'a2', d: 'M240,' + (swY + swH / 2) + ' l0,-5 l8,5 l-8,5 z', fill: '#78716c', opacity: prog > 50 ? 1 : 0.3 }),
+                  // Product
+                  outOpacity > 0 ? rcSwatch('out', outTexture, outFamily, outX, swY, swW, swH, outOpacity) : h('rect', { key: 'outGhost', x: outX, y: swY, width: swW, height: swH, rx: 7, fill: 'none', stroke: '#cbd5e1', strokeWidth: 1.5, strokeDasharray: '5 4' }),
+                  h('text', { key: 'outLbl', x: outX + swW / 2, y: swY + swH + 15, textAnchor: 'middle', fontSize: '10', fontWeight: '700', fill: outOpacity > 0.4 ? '#334155' : '#94a3b8' },
+                    outOpacity > 0.4 && liveRec ? liveRec.product.split(' → ')[0].split(' or ')[0] : '?'),
+                  h('text', { key: 'outFam', x: outX + swW / 2, y: swY - 10, textAnchor: 'middle', fontSize: '8', fontWeight: '700', fill: '#475569' }, outOpacity > 0.4 && liveRec ? liveRec.family.toUpperCase() : '')
                 );
-              })()
-            ),
+              };
+
+              // ── Run handler ──
+              var runMachine = function () {
+                if (d.transformationAnimActive) return;
+                if (!mAgent) return;
+                var rec = rcLookup(mSpecId, mAgent.id);
+                if (!rec) return;
+
+                rcStopTransformTimer();
+
+                if (mAgent.id === 'melting_cooling') sfxRockMelt();
+                else if (mAgent.id === 'heat_pressure') sfxRockCrack();
+                else sfxRockCool();
+
+                var runRec = Object.assign({}, rec, { fromId: mSpecId, fromLabel: mSpec.label, agentId: mAgent.id, agentShort: mAgent.short });
+
+                // Every completion path routes through here, and the whole body is
+                // guarded — a throw inside the award logic must never be able to
+                // leave transformationAnimActive stuck TRUE again (that is exactly
+                // how the old machine wedged: an unguarded ReferenceError at 100%
+                // left the button permanently disabled).
+                var finish = function () {
+                  try {
+                    // Functional update: `d` here is the click-time snapshot, so
+                    // reading the run counter off it would drop concurrent writes.
+                    setLabToolData(function (prev) {
+                      var rc = Object.assign({}, (prev && prev.rockCycle) || {});
+                      rc.transformationAnimActive = false;
+                      rc.transformationProgress = 100;
+                      rc.transformationResult = runRec;
+                      rc.transformationRun = null;
+                      rc.transformsRun = (rc.transformsRun || 0) + 1;
+                      return Object.assign({}, prev, { rockCycle: rc });
+                    });
+                  } catch (e) {
+                    try { upd('transformationAnimActive', false); } catch (e2) {}
+                  }
+                  try { awardCycleInteraction(); } catch (e) { console.error('[rockCycle] challenge award failed', e); }
+                  try {
+                    if (typeof announceToSR === 'function') {
+                      announceToSR(mSpec.label + ' ' + mAgent.verb.toLowerCase() + ' produced ' + rec.product + '. ' + rec.change);
+                    }
+                  } catch (e) {}
+                };
+
+                var reduced = false;
+                try { reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+                updMulti({
+                  transformationAnimActive: !reduced,
+                  transformationProgress: reduced ? 100 : 0,
+                  transformationResult: null,
+                  transformationRun: reduced ? null : runRec
+                });
+
+                // WCAG 2.3.3 — honour reduced motion by jumping straight to the result.
+                if (reduced) { finish(); return; }
+
+                var p = 0;
+                _rcTransformTimer = setInterval(function () {
+                  p += 5;
+                  if (p >= 100) {
+                    rcStopTransformTimer();
+                    finish();
+                  } else {
+                    upd('transformationProgress', p);
+                  }
+                }, 100);
+              };
+
+              // Cross-tool challenge credit for using the cycle simulator. Kept in a
+              // named function so runMachine's happy path stays readable, and so a
+              // failure here cannot strand the machine.
+              var awardCycleInteraction = function () {
+                setLabToolData(function (prev) {
+                  var r = Object.assign({}, (prev && prev.rocks) || {});
+                  r.cycleInteractions = (r.cycleInteractions || 0) + 1;
+
+                  var completed = r.completedChallenges || [];
+                  var newlyCompleted = [];
+                  var pointsEarned = 0;
+
+                  for (var ci = 0; ci < ROCKS_CHALLENGES.length; ci++) {
+                    var ch = ROCKS_CHALLENGES[ci];
+                    if (completed.indexOf(ch.id) === -1 && ch.check(r)) {
+                      newlyCompleted.push(ch);
+                      pointsEarned += (ch.rp || 0);
+                    }
+                  }
+
+                  if (newlyCompleted.length > 0) {
+                    r.completedChallenges = completed.concat(newlyCompleted.map(function (c) { return c.id; }));
+                    r.researchPoints = (r.researchPoints || 0) + pointsEarned;
+                    r.totalRP = (r.totalRP || 0) + pointsEarned;
+                    sfxRockCorrect();
+                    if (typeof addToast === 'function') {
+                      newlyCompleted.forEach(function (c) {
+                        // addToast is (message, type) — the object form used here
+                        // before rendered as "[object Object]" in the toast.
+                        addToast('🏆 Challenge complete: ' + c.name + ' (+' + c.rp + ' RP)', 'success');
+                      });
+                    }
+                  }
+                  return Object.assign({}, prev, { rocks: r });
+                });
+              };
+
+              var chip = function (key, label, value) {
+                return h('div', { key: key, className: 'rounded-lg bg-white border border-orange-200 px-2.5 py-1.5' },
+                  h('div', { className: 'text-[9px] font-black uppercase tracking-wide text-orange-800' }, label),
+                  h('div', { className: 'text-[11px] font-semibold text-slate-800 leading-snug' }, value)
+                );
+              };
+
+              return React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3" },
+                React.createElement("p", { className: "text-xs font-black text-orange-800 mb-1 flex items-center gap-1.5" },
+                  React.createElement("span", { "aria-hidden": true }, "🔄"),
+                  React.createElement("span", null, __alloT('stem.rocks.transformation_machine_title', "Rock Transformation Machine"))
+                ),
+                React.createElement("p", { className: "text-[11px] text-slate-700 mb-3" },
+                  __alloT('stem.rocks.transformation_machine_intro2', "Load a named rock specimen, choose an agent of change, and run the machine. Each pairing produces a specific named product with its real conditions, timescale and field evidence.")
+                ),
+
+                // ── Controls ──
+                React.createElement("div", { className: "grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] mb-3" },
+                  React.createElement("div", null,
+                    React.createElement("label", { htmlFor: "rc-machine-specimen", className: "block text-[10px] font-bold text-slate-700 uppercase mb-1" }, __alloT('stem.rocks.starting_specimen', "Starting specimen")),
+                    React.createElement("select", {
+                      id: "rc-machine-specimen",
+                      value: mSpecId,
+                      disabled: running,
+                      onChange: function (e) { upd("startingRock", e.target.value); sfxRockClick(); },
+                      className: "w-full p-1.5 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-800 disabled:opacity-60"
+                    },
+                      RC_SPECIMENS.map(function (s) {
+                        return React.createElement("option", { key: s.id, value: s.id }, s.label + ' (' + s.family + ')');
+                      })
+                    )
+                  ),
+                  React.createElement("div", null,
+                    React.createElement("span", { id: "rc-agent-label", className: "block text-[10px] font-bold text-slate-700 uppercase mb-1" }, __alloT('stem.rocks.geological_agent', "Geological Agent")),
+                    React.createElement("div", { className: "grid grid-cols-3 gap-1", role: "group", "aria-labelledby": "rc-agent-label" },
+                      RC_AGENTS.map(function (agent) {
+                        var isSel = d.geologicalAgent === agent.id;
+                        return React.createElement("button", {
+                          key: agent.id,
+                          type: "button",
+                          disabled: running,
+                          "aria-pressed": isSel,
+                          onClick: function () { upd("geologicalAgent", agent.id); sfxRockClick(); },
+                          className: "px-1 py-1.5 rounded text-[10px] font-black text-center border transition-colors disabled:opacity-60 " +
+                            (isSel ? "bg-orange-700 border-orange-800 text-white" : "bg-white border-slate-300 text-slate-700 hover:border-orange-500 hover:bg-orange-50")
+                        }, agent.icon + ' ' + agent.short);
+                      })
+                    )
+                  ),
+                  React.createElement("div", { className: "flex items-end gap-1" },
+                    React.createElement("button", {
+                      type: "button",
+                      disabled: running || !mAgent,
+                      onClick: runMachine,
+                      className: "flex-1 px-3 py-1.5 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded-lg text-xs transition-colors disabled:opacity-50 active:scale-[0.97]"
+                    }, running ? __alloT('stem.rocks.transforming_ellipsis', "Transforming...") : "⚡ " + __alloT('stem.rocks.transform_btn', "Transform!")),
+                    (result || running) && React.createElement("button", {
+                      type: "button",
+                      title: __alloT('stem.rocks.machine_reset', "Reset machine"),
+                      "aria-label": __alloT('stem.rocks.machine_reset', "Reset machine"),
+                      onClick: function () {
+                        rcStopTransformTimer();
+                        updMulti({ transformationAnimActive: false, transformationProgress: 0, transformationResult: null, transformationRun: null });
+                        sfxRockClick();
+                      },
+                      className: "px-2 py-1.5 rounded-lg text-xs font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 transition-colors"
+                    }, "↺")
+                  )
+                ),
+
+                // ── Pairing preview (before the run, so the choice is legible) ──
+                mPreview && !result && !running && React.createElement("p", { className: "text-[11px] text-slate-700 mb-2" },
+                  React.createElement("span", { className: "font-bold text-slate-900" }, mSpec.label),
+                  " + " + (mAgent ? mAgent.short : '') + " → ",
+                  React.createElement("span", { className: "font-bold text-orange-800" }, mPreview.product)
+                ),
+
+                // ── Visual scene ──
+                React.createElement("div", { className: "rounded-xl border border-slate-300 bg-slate-50 p-2 mb-2" }, rcScene()),
+
+                // ── Progress + stage caption ──
+                (running || result) && React.createElement("div", { className: "mb-2" },
+                  React.createElement("div", {
+                    className: "w-full bg-slate-200 h-2.5 rounded-full overflow-hidden",
+                    role: "progressbar",
+                    "aria-valuenow": Math.round(prog),
+                    "aria-valuemin": 0,
+                    "aria-valuemax": 100,
+                    "aria-label": __alloT('stem.rocks.transformation_progress_aria', "Transformation progress")
+                  },
+                    React.createElement("div", { className: "bg-orange-700 h-full transition-all duration-100", style: { width: prog + '%' } })
+                  ),
+                  stageText && React.createElement("p", { className: "mt-1 text-[11px] font-semibold text-slate-700" },
+                    React.createElement("span", { className: "text-orange-800 font-black" }, (stageIdx + 1) + '/4 '), stageText)
+                ),
+
+                // ── Result ──
+                result && React.createElement("div", { className: "p-3 bg-orange-50 border border-orange-300 rounded-lg animate-in slide-in-from-bottom" },
+                  React.createElement("div", { className: "flex items-start gap-2 mb-2" },
+                    React.createElement("span", { className: "text-2xl leading-none", "aria-hidden": true }, result.family === 'igneous' ? '🌋' : result.family === 'sedimentary' ? '🏖' : '💎'),
+                    React.createElement("div", null,
+                      React.createElement("p", { className: "text-sm font-black text-orange-900" }, (result.fromLabel || mSpec.label) + " → " + result.product),
+                      React.createElement("p", { className: "text-[11px] font-bold text-slate-700" }, result.process)
+                    )
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2" },
+                    chip('cond', __alloT('stem.rocks.machine_conditions', "Conditions"), result.conditions),
+                    chip('time', __alloT('stem.rocks.machine_timescale', "Timescale"), result.time)
+                  ),
+                  React.createElement("p", { className: "text-xs text-slate-800 leading-relaxed mb-2" },
+                    React.createElement("span", { className: "font-black text-orange-900" }, __alloT('stem.rocks.machine_what_changes', "What changes: ")), result.change),
+                  React.createElement("p", { className: "text-xs text-slate-800 leading-relaxed" },
+                    React.createElement("span", { className: "font-black text-orange-900" }, __alloT('stem.rocks.machine_how_you_know', "How you'd know: ")), result.evidence),
+                  result.caveat && React.createElement("p", { className: "mt-2 text-[11px] text-slate-800 leading-relaxed bg-white border border-slate-300 rounded-lg p-2" },
+                    React.createElement("span", { className: "font-black text-slate-900" }, __alloT('stem.rocks.machine_model_limit', "Model limit: ")), result.caveat)
+                ),
+
+                // Specimen note keeps the dropdown meaningful even before a run.
+                !result && React.createElement("p", { className: "text-[11px] text-slate-700" },
+                  React.createElement("span", { className: "font-bold text-slate-900" }, mSpec.label + ': '), mSpec.note)
+              );
+            })(),
 
             React.createElement("div", { className: "border-t border-slate-200 pt-3 mt-3" },
               React.createElement("button", { "aria-label": __alloT('stem.rocks.start_rock_cycle_quiz_aria', "Start rock cycle quiz"),
@@ -4994,7 +5421,7 @@ const d = labToolData.rockCycle || {};
                 }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.rcQuiz ? 'bg-orange-100 text-orange-700' : 'bg-orange-700 text-white') + " transition-all"
               }, d.rcQuiz ? "🔄 " + __alloT('stem.rocks.next_question', "Next Question") : "🧠 " + __alloT('stem.rocks.quiz_mode', "Quiz Mode")),
 
-              d.rcQuiz && d.rcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "⭐ " + d.rcQuiz.score + " " + __alloT('stem.rocks.correct_count_suffix', "correct")),
+              d.rcQuiz && d.rcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-800" }, "⭐ " + d.rcQuiz.score + " " + __alloT('stem.rocks.correct_count_suffix', "correct")),
 
               d.rcQuiz && React.createElement("div", { className: "mt-2 bg-orange-50 rounded-lg p-3 border border-orange-200" },
                 React.createElement("p", { className: "text-sm font-bold text-orange-800 mb-2" }, d.rcQuiz.q),
@@ -5079,7 +5506,7 @@ const d = labToolData.rockCycle || {};
                           });
                           sfxRockClick();
                           if (typeof awardStemXP === 'function') awardStemXP(5, 'Concept studied: ' + d.rcQuiz.concept);
-                          if (typeof addToast === 'function') addToast({ type: 'success', title: 'Concept Studied!', message: 'You studied ' + d.rcQuiz.concept + ' (+5 RP)' });
+                          if (typeof addToast === 'function') addToast('📖 Concept studied: ' + d.rcQuiz.concept + ' (+5 RP)', 'success');
                         },
                         className: "px-2 py-1 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]"
                       }, "📖 " + __alloT('stem.rocks.study_term', "Study Term (+5 RP)"))
