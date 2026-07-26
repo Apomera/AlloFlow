@@ -1735,7 +1735,7 @@
   function generateWorksheetHTML(lesson) {
     var npcsWithQ = (lesson.npcs || []).filter(function(n) { return n.question; });
     var allNpcs = lesson.npcs || [];
-    var h = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + (lesson.title || 'Geometry World') + ' — Worksheet</title>'
+    var h = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + escapeReportHtml(lesson.title || 'Geometry World') + ' — Worksheet</title>'
       + '<style>'
       + 'body{font-family:Arial,sans-serif;max-width:750px;margin:0 auto;padding:24px;color:#1a1a1a;font-size:13px;line-height:1.6}'
       + 'h1{font-size:20px;border-bottom:2px solid #7c3aed;padding-bottom:6px;color:#4c1d95}'
@@ -1760,7 +1760,7 @@
       + '</style></head><body>';
 
     // Header
-    h += '<h1>\uD83E\uDDF1 ' + (lesson.title || 'Geometry World Worksheet') + '</h1>';
+    h += '<h1>\uD83E\uDDF1 ' + escapeReportHtml(lesson.title || 'Geometry World Worksheet') + '</h1>';
     h += '<div class="header">';
     h += '<div><label for="gw-ws-name">Name:</label> <input id="gw-ws-name" type="text" placeholder="" aria-label="Name"></div>';
     h += '<div><label for="gw-ws-date">Date:</label> <input id="gw-ws-date" type="text" placeholder="" aria-label="Date"></div>';
@@ -1769,7 +1769,7 @@
 
     // Description
     if (lesson.description) {
-      h += '<p><b>Introduction:</b> ' + lesson.description + '</p>';
+      h += '<p><b>Introduction:</b> ' + escapeReportHtml(lesson.description) + '</p>';
     }
 
     // Formula reference
@@ -1783,12 +1783,19 @@
     // Objectives
     if (lesson.objectives && lesson.objectives.length) {
       h += '<div class="objectives"><b>\uD83D\uDCCB Objectives:</b><ul>';
-      lesson.objectives.forEach(function(obj) { h += '<li>\u2610 ' + obj + '</li>'; });
+      lesson.objectives.forEach(function(obj) { h += '<li>\u2610 ' + escapeReportHtml(obj) + '</li>'; });
       h += '</ul></div>';
     }
 
-    // Detect if this is the Geometry Garden (exploration mode) or a standard lesson
-    var isGarden = !npcsWithQ.length || (lesson.title && lesson.title.indexOf('Garden') >= 0);
+    // Detect if this is the Geometry Garden (exploration mode) or a standard lesson.
+    //
+    // This used to also treat ANY question-less lesson as the Garden. The Garden branch
+    // emits eight hardcoded stations ("The Single Cube", "the gold structures", "The
+    // Hidden Garden"), so a teacher-authored or AI-generated exploration lesson — the
+    // AI prompt explicitly allows question: null — printed a worksheet about a
+    // completely different world. The standard branch already handles question-less
+    // NPCs with a Notes / Observations box, so let those fall through to it.
+    var isGarden = !!(lesson.title && lesson.title.indexOf('Garden') >= 0);
 
     if (isGarden) {
       // ── Field Journal for the Geometry Garden ──
@@ -1848,14 +1855,30 @@
 
     } else {
       // ── Standard lesson worksheet ──
+      // A lesson with no NPCs at all would otherwise print nothing but the
+      // reflection box, so give it something to observe.
+      if (!allNpcs.length) {
+        h += '<div class="problem">';
+        h += '<div class="problem-title">Explore the World</div>';
+        h += '<p>Walk through the structures. Measure each one and record its dimensions.</p>';
+        h += '<div class="dim-line">';
+        h += '<label>Length: <span class="blank">&nbsp;</span> blocks</label>';
+        h += '<label>Width: <span class="blank">&nbsp;</span> blocks</label>';
+        h += '<label>Height: <span class="blank">&nbsp;</span> blocks</label>';
+        h += '</div>';
+        h += '<div class="eq-line">___ × ___ × ___ = ___ cubic units</div>';
+        h += '<div class="work-label">Notes / Observations</div>';
+        h += '<div class="work-box"></div>';
+        h += '</div>';
+      }
       var problemNum = 1;
       allNpcs.forEach(function(npc, idx) {
         h += '<div class="problem">';
-        h += '<div class="problem-title">Activity #' + problemNum + ': ' + npc.name + '</div>';
-        h += '<p>' + npc.dialogue + '</p>';
+        h += '<div class="problem-title">Activity #' + problemNum + ': ' + escapeReportHtml(npc.name) + '</div>';
+        h += '<p>' + escapeReportHtml(npc.dialogue) + '</p>';
 
         if (npc.question) {
-          h += '<p><b>Question:</b> ' + npc.question.text + '</p>';
+          h += '<p><b>Question:</b> ' + escapeReportHtml(npc.question.text) + '</p>';
           h += '<div class="dim-line">';
           h += '<label>Length: <span class="blank">&nbsp;</span> blocks</label>';
           h += '<label>Width: <span class="blank">&nbsp;</span> blocks</label>';
@@ -1914,7 +1937,7 @@
       + '@media print{body{margin:0}.card{border:2px solid #000;box-shadow:none}}'
       + '</style></head><body><div class="card">';
     h += '<h1>\uD83E\uDDF1 Build This!</h1>';
-    h += '<div class="subtitle">Physical Manipulative Challenge \u2014 ' + (lessonTitle || 'Geometry World') + '</div>';
+    h += '<div class="subtitle">Physical Manipulative Challenge \u2014 ' + escapeReportHtml(lessonTitle || 'Geometry World') + '</div>';
 
     // Isometric-style ASCII diagram showing dimensions
     h += '<div class="diagram">';
@@ -2355,15 +2378,19 @@
                 (blockData.blocks || []).forEach(function(b) {
                   var key = b.x + ',' + b.y + ',' + b.z;
                   if (!eng.blocks[key]) {
-                    eng.placeBlock(b.x, b.y, b.z, b.type || 'stone');
+                    eng.placeBlock(b.x, b.y, b.z, b.type || 'stone', b.shape, b.rotation);
                   }
                 });
-                // Remove blocks that are no longer in the shared state
+                // Remove student blocks that are no longer in the shared state.
+                // This used to sweep every non-grass block, so it called removeBlock on
+                // the lesson structure too — which is protected, so nothing was deleted,
+                // but each protected block flashed red and fired a haptic bump on every
+                // single peer update.
                 var sharedKeys = {};
                 (blockData.blocks || []).forEach(function(b) { sharedKeys[b.x + ',' + b.y + ',' + b.z] = true; });
                 Object.keys(eng.blocks).forEach(function(key) {
                   var m = eng.blocks[key];
-                  if (m && m.userData && m.userData.blockType !== 'grass' && !sharedKeys[key]) {
+                  if (m && m.userData && !m.userData._lessonBlock && !sharedKeys[key]) {
                     var p = key.split(',');
                     eng.removeBlock(parseInt(p[0]), parseInt(p[1]), parseInt(p[2]));
                   }
@@ -2406,8 +2433,18 @@
         var blocks = [];
         Object.keys(eng.blocks).forEach(function(key) {
           var m = eng.blocks[key];
-          if (m && m.userData && m.userData.gridPos && m.userData.blockType !== 'grass') {
-            blocks.push({ x: m.userData.gridPos.x, y: m.userData.gridPos.y, z: m.userData.gridPos.z, type: m.userData.blockType });
+          // Only STUDENT blocks travel. Lesson structures used to be included (the
+          // filter excluded just 'grass'), which shipped hundreds of blocks both peers
+          // already have and made the peer's removal sweep act on protected blocks.
+          // shape + rotation now ride along, or a partner's wedges and slabs arrived
+          // as plain cubes.
+          if (m && m.userData && m.userData.gridPos && !m.userData._lessonBlock) {
+            blocks.push({
+              x: m.userData.gridPos.x, y: m.userData.gridPos.y, z: m.userData.gridPos.z,
+              type: m.userData.blockType,
+              shape: m.userData.shape || 'cube',
+              rotation: m.userData.rotation || 0
+            });
           }
         });
         fb.updateDoc(ref, {
@@ -2830,7 +2867,7 @@
             }
           } else if (a.action === 'remove') {
             // Undo a removal = re-place the block
-            engine.placeBlock(a.x, a.y, a.z, a.type, a.shape);
+            engine.placeBlock(a.x, a.y, a.z, a.type, a.shape, a.rotation);
             // Pop the undo entry that placeBlock just added (avoid double-entry)
             engine._undoStack.pop();
           }
@@ -2840,7 +2877,7 @@
           if (engine._redoStack.length === 0) return;
           var a = engine._redoStack.pop();
           if (a.action === 'place') {
-            engine.placeBlock(a.x, a.y, a.z, a.type, a.shape);
+            engine.placeBlock(a.x, a.y, a.z, a.type, a.shape, a.rotation);
             // Pop the undo that placeBlock added (we manage it ourselves)
             engine._undoStack.pop();
           } else if (a.action === 'remove') {
@@ -2885,7 +2922,7 @@
           engine.scene.add(mesh);
           engine.blocks[key] = mesh;
           engine._blocksDirty = true; // invalidate cached blocks array so raycasters rebuild
-          pushUndo({ action: 'place', x: x, y: y, z: z, type: type, shape: shapeId });
+          pushUndo({ action: 'place', x: x, y: y, z: z, type: type, shape: shapeId, rotation: rot });
           // Torch blocks emit a point light
           if (type === 'torch') {
             var tLight = new THREE.PointLight(0xFFAB00, 1.2, 8, 1.5);
@@ -2913,6 +2950,9 @@
             // Record type/shape for undo before destroying
             var removedType = mesh.userData.blockType || 'stone';
             var removedShape = mesh.userData.shape || 'cube';
+            // Rotation was not captured, so undoing a break restored a rotated wedge
+            // at its default orientation.
+            var removedRotation = mesh.userData.rotation || 0;
             // Clean up torch light
             if (mesh.userData._torchLight) { engine.scene.remove(mesh.userData._torchLight); mesh.userData._torchLight.dispose(); }
             // Spawn break particles
@@ -2924,7 +2964,7 @@
             mesh.geometry.dispose(); mesh.material.dispose();
             delete engine.blocks[key];
             engine._blocksDirty = true; // invalidate cached blocks array
-            pushUndo({ action: 'remove', x: x, y: y, z: z, type: removedType, shape: removedShape });
+            pushUndo({ action: 'remove', x: x, y: y, z: z, type: removedType, shape: removedShape, rotation: removedRotation });
           }
         };
 
@@ -4810,16 +4850,39 @@
         };
         engine.logEvent('session_start', { lesson: 'volumeExplorer' });
 
-        // Patch placeBlock and removeBlock to log
+        // Patch placeBlock and removeBlock to log.
+        //
+        // These wrappers used to redeclare a SHORTER signature — placeBlock(x,y,z,type)
+        // over the real placeBlock(x,y,z,type,shape,rotation), and removeBlock(x,y,z)
+        // over removeBlock(x,y,z,forceRemove) — and forwarded only the arguments they
+        // named. Because they are installed after the originals, they won, and every
+        // caller's extra arguments were silently discarded. That killed the entire
+        // shape system: Q (cycle cube / slab / wedge / quarter) and R (rotate 90°) are
+        // documented in the controls panel, but every block placed as a default cube.
+        // Forward via `arguments` so the wrapper can never drift from the signature
+        // again.
+        //
+        // They also logged unconditionally, so a bounced placement (cell occupied) or a
+        // refused break (indestructible lesson block) still wrote a block_place /
+        // block_remove event. Those feed the session CSV and the MTSS progress report,
+        // so only log when the block map actually changed.
         var origPlace = engine.placeBlock;
-        engine.placeBlock = function(x, y, z, type) {
-          origPlace(x, y, z, type);
-          engine.logEvent('block_place', { x: x, y: y, z: z, type: type });
+        engine.placeBlock = function(x, y, z, type, shape, rotation) {
+          var key = x + ',' + y + ',' + z;
+          var had = !!engine.blocks[key];
+          origPlace.apply(engine, arguments);
+          if (!had && engine.blocks[key]) {
+            engine.logEvent('block_place', { x: x, y: y, z: z, type: type, shape: shape || 'cube', rotation: rotation || 0 });
+          }
         };
         var origRemove = engine.removeBlock;
-        engine.removeBlock = function(x, y, z) {
-          origRemove(x, y, z);
-          engine.logEvent('block_remove', { x: x, y: y, z: z });
+        engine.removeBlock = function(x, y, z, forceRemove) {
+          var key = x + ',' + y + ',' + z;
+          var had = !!engine.blocks[key];
+          origRemove.apply(engine, arguments);
+          if (had && !engine.blocks[key]) {
+            engine.logEvent('block_remove', { x: x, y: y, z: z });
+          }
         };
 
         // Export session data as CSV for research
@@ -5491,7 +5554,26 @@
       };
 
       var engine = window[engineKey];
-      var currentLesson = SAMPLE_LESSONS[activeLesson] || SAMPLE_LESSONS.volumeExplorer;
+      // AI-generated lessons are keyed 'ai_<timestamp>' (saved to My Lessons) or the
+      // transient 'ai_generated'. Neither is a SAMPLE_LESSONS key, so this used to be a
+      // bare `SAMPLE_LESSONS[activeLesson] || SAMPLE_LESSONS.volumeExplorer` and every
+      // AI world silently resolved to volumeExplorer. currentLesson feeds ~30 sites —
+      // the intro title/description/objectives, the completion overlay, the world's
+      // aria-label, the printable worksheet, and the lesson name recorded on reflection
+      // events — so a student's generated world showed, printed, and logged the wrong
+      // lesson throughout.
+      //
+      // Resolved by KEY rather than from engine._currentLesson because the intro screen
+      // must preview a newly picked lesson that has not been loaded into the engine yet.
+      var currentLesson = (function () {
+        if (SAMPLE_LESSONS[activeLesson]) return SAMPLE_LESSONS[activeLesson];
+        if (activeLesson && activeLesson.indexOf('ai_') === 0) {
+          var saved = getMyLessons().filter(function (l) { return l && l._id === activeLesson; })[0];
+          if (saved) return saved;
+          if (lastGeneratedLesson) return lastGeneratedLesson;
+        }
+        return (engine && engine._currentLesson) || SAMPLE_LESSONS.volumeExplorer;
+      })();
 
       // Expose current React state to the engine so the compass rAF loop reads live data
       if (engine) {
@@ -6084,7 +6166,7 @@
                       } else if (worldData.blocks) {
                         eng.clearWorld();
                         eng.scene.background.setRGB(0.53, 0.81, 0.92);
-                        worldData.blocks.forEach(function(b) { eng.placeBlock(b.x, b.y, b.z, b.type || 'stone'); });
+                        worldData.blocks.forEach(function(b) { eng.placeBlock(b.x, b.y, b.z, b.type || 'stone', b.shape, b.rotation); });
                         if (addToast) addToast('\uD83C\uDF0D Loaded ' + worldData.blocks.length + ' blocks', 'success');
                       }
                       if (eng.logEvent) eng.logEvent('world_import', { title: worldData.title || 'imported', blockCount: (worldData.blocks || []).length });
@@ -6137,7 +6219,14 @@
               Object.keys(eng.blocks).forEach(function(key) {
                 var m = eng.blocks[key];
                 if (m && m.userData.gridPos && m.userData.blockType !== 'grass') {
-                  worldData.blocks.push({ x: m.userData.gridPos.x, y: m.userData.gridPos.y, z: m.userData.gridPos.z, type: m.userData.blockType });
+                  // shape + rotation were omitted, so a shared build made of wedges and
+                  // slabs rebuilt as a wall of plain cubes on the recipient's screen.
+                  worldData.blocks.push({
+                    x: m.userData.gridPos.x, y: m.userData.gridPos.y, z: m.userData.gridPos.z,
+                    type: m.userData.blockType,
+                    shape: m.userData.shape || 'cube',
+                    rotation: m.userData.rotation || 0
+                  });
                 }
               });
               // Include NPC data if in creator mode
@@ -7758,7 +7847,11 @@
                     callGemini(npcPrompt, true).then(function(r) {
                       var uh = Object.assign({}, npcChatHistory); uh[dialogNpcIdx] = history.concat([{ role: 'npc', text: r }]);
                       upd({ npcChatHistory: uh, npcChatLoading: false });
-                      try { sessionStorage.setItem('gw_chat_' + activeLesson, JSON.stringify(uh)); } catch(e) {}
+                      // Must use gwChatKey — loadLesson READS with it. Writing with the
+                      // raw activeLesson stored a freshly generated world's chat under
+                      // 'ai_generated' while the read looked under the lesson's _id, so
+                      // AI-lesson chat history never came back.
+                      try { sessionStorage.setItem('gw_chat_' + gwChatKey(currentLesson), JSON.stringify(uh)); } catch(e) {}
                     }).catch(function() { upd('npcChatLoading', false); });
                   },
                   disabled: npcChatLoading || !npcChatInput.trim(),
@@ -7842,7 +7935,7 @@
                       } else if (wd.blocks) {
                         eng.clearWorld();
                         eng.scene.background.setRGB(0.53, 0.81, 0.92);
-                        wd.blocks.forEach(function(b) { eng.placeBlock(b.x, b.y, b.z, b.type || 'stone'); });
+                        wd.blocks.forEach(function(b) { eng.placeBlock(b.x, b.y, b.z, b.type || 'stone', b.shape, b.rotation); });
                         if (wd.npcs) wd.npcs.forEach(function(n) { eng.createNPC(n); });
                       }
                       upd('showPeerWorlds', false);
