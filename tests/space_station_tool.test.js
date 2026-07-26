@@ -175,6 +175,13 @@ describe('space station tool', () => {
       // Sun-glint decomposes one quaternion per wing, not per panel.
       expect(source).toContain('wingPanelMats');
       expect(source).not.toContain('panelMats[pi].wing');
+      // Canadarm2's booms must grow from a SHARED elbow. They previously had
+      // independently-set centres, so their ends never met and the arm drew as
+      // two disconnected sticks. Pin the derivation, and that the old
+      // free-floating literal position is gone.
+      expect(source).toContain('arm1.position.copy(armBase.clone().add(armAxis1');
+      expect(source).toContain('arm2.position.copy(armElbow.clone().add(armAxis2');
+      expect(source).not.toContain('arm2.position.set(1.7, 1.25');
     });
   });
 
