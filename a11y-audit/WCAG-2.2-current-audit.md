@@ -225,6 +225,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Added an equivalent keyboard and nonvisual response mode to solo Concept Pictionary: students can describe a concept without naming it, and the description follows the same option pool, AI parser, scoring, and round flow as a drawing. The freehand canvas is explicitly named and described with fallback content, the pointer requirement points to the text alternative, stroke changes now rerender Ask AI readiness, Minutes is associated with its select, AI results are announced, and primary mode/action controls provide 44 CSS-pixel targets with strong forced-colors-aware focus (WCAG 1.1.1, 1.3.1, 2.1.1, 2.4.6, 2.4.7, 2.5.7, 2.5.8, 3.3.2, 4.1.2, 4.1.3).
 
+- Tightened the WCAG 2.2.1 static timer heuristic so background registry polling, autosave, presence refresh, and retry intervals are not misclassified as user deadlines. TIMER-001 now requires both an observed clock and explicit countdown/deadline state, while still reporting real unadjustable countdowns and accepting pause or extension mechanisms. Focused regression fixtures cover polling, autosave, failing countdown, pause, and extension cases.
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

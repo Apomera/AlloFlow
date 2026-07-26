@@ -258,11 +258,16 @@ const CHECKS = [
     severity: 'critical',
     description: 'Countdown timer with no documented pause/extend capability',
     testFile(content, filePath) {
-      // Look for countdown timer patterns
-      const hasTimer = /setInterval|countdown|timeRemaining|timerActive|timeLeft/.test(content);
-      if (!hasTimer) return false;
-      // Check for pause mechanism
-      const hasPause = /pause|pauseTimer|isPaused|togglePause|pauseProbe/.test(content);
+      // A setInterval alone is not a user time limit: modules also poll for
+      // registries, autosave drafts, refresh presence, and retry connections.
+      // Require both an observed clock and explicit deadline/countdown state
+      // before applying WCAG 2.2.1.
+      const observesClock = /setInterval\s*\(|Date\.now\s*\(|performance\.now\s*\(/.test(content);
+      const hasUserTimeLimit = /\b(?:countdown|timeRemaining|remainingTime|timeLeft|secondsRemaining|remainingSeconds|timerActive|deadline|roundEndsAt|expiresAt)\b/i.test(content)
+        || /\b\d+\s*(?:seconds?|minutes?)\s+(?:left|remaining)\b/i.test(content);
+      if (!observesClock || !hasUserTimeLimit) return false;
+      // Check for a documented adjustment mechanism.
+      const hasPause = /\b(?:pause|pauseTimer|isPaused|timerPaused|togglePause|pauseProbe|extendTimer|addTime)\b/i.test(content);
       return !hasPause;
     },
     fix: 'Add Pause/Resume button and teacher-configurable extended time option.',
