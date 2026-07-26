@@ -1718,6 +1718,47 @@
   }
   var MEASUREMENT_BLOCK_LIMIT = MAX_BLOCKS;
 
+  // ── Non-visual wayfinding ──
+  // The compass strip and the minimap are the only way to tell where the characters
+  // are and which ones still owe you a question, and both are canvases — invisible
+  // to a screen reader. The student who most needs "who have I missed, and which way
+  // is it" is exactly the one who cannot see the pips. These two turn the same data
+  // into a sentence; L speaks it on demand (a live region would be unbearable at
+  // frame rate).
+  //
+  // Kept pure and at module scope so the left/right convention is unit-tested —
+  // telling a blind student "left" when the character is on their right is worse
+  // than saying nothing.
+  //
+  // bearingDeg is measured against the player's own facing: 0 = straight ahead,
+  // positive = toward the player's RIGHT.
+  function describeBearing(deg) {
+    var a = ((deg % 360) + 540) % 360 - 180;
+    var abs = Math.abs(a);
+    if (abs <= 22.5) return 'straight ahead';
+    if (abs >= 157.5) return 'behind you';
+    var side = a > 0 ? 'right' : 'left';
+    if (abs <= 67.5) return 'ahead and to your ' + side;
+    if (abs <= 112.5) return 'to your ' + side;
+    return 'behind you to the ' + side;
+  }
+
+  function summarizeNearbyNpcs(entries, maxCount) {
+    var list = (entries || []).filter(Boolean).slice().sort(function (a, b) { return a.distance - b.distance; });
+    if (!list.length) return 'There are no characters in this world.';
+    var pending = list.filter(function (e) { return e.hasQuestion && !e.answered; });
+    var head = pending.length
+      ? pending.length + ' character' + (pending.length === 1 ? '' : 's') + ' still ' + (pending.length === 1 ? 'has' : 'have') + ' a question. '
+      : 'Every question here is answered. ';
+    var spoken = list.slice(0, maxCount || 4).map(function (e) {
+      var steps = Math.max(1, Math.round(e.distance));
+      return e.name + ' is ' + steps + ' step' + (steps === 1 ? '' : 's') + ' ' + describeBearing(e.bearingDeg)
+        + (e.hasQuestion ? (e.answered ? ', already answered' : ', still has a question') : '');
+    });
+    var more = list.length > (maxCount || 4) ? ' And ' + (list.length - (maxCount || 4)) + ' further away.' : '';
+    return head + spoken.join('. ') + '.' + more;
+  }
+
   // Stable chat-key derivation — used by both the read site in engine.loadLesson
   // and the write site in the NPC chat callback. Returning the same key from both
   // is what makes chat history actually persist across loadLesson cycles.
@@ -3484,6 +3525,34 @@
         // keyboard-only path — the wrapper is tabIndex=0). Anywhere else the arrows
         // belong to the page: scrolling, and the lesson-picker <select>.
         function keyLookAllowed() { return engine.isInputActive(); }
+
+        // Speak the compass/minimap contents. The player's RIGHT vector is taken the
+        // same way the movement code takes it (fwd x up, the vector moveState.right
+        // adds), so "your right" here is by construction the direction D walks you —
+        // there is no second convention to get backwards.
+        function announceNearbyNpcs() {
+          var THREE = window.THREE;
+          if (!THREE || !engine.camera || !engine.npcs) return;
+          var fwd = new THREE.Vector3();
+          engine.camera.getWorldDirection(fwd); fwd.y = 0; fwd.normalize();
+          var right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
+          var answered = engine._answeredRef || {};
+          var cam = engine.camera.position;
+          var entries = engine.npcs.map(function (npc, i) {
+            var p = npc.body.position;
+            var dx = p.x - cam.x, dz = p.z - cam.z;
+            var dist = Math.sqrt(dx * dx + dz * dz) || 0.001;
+            var ux = dx / dist, uz = dz / dist;
+            return {
+              name: (npc.data && npc.data.name) || 'Character',
+              distance: dist,
+              bearingDeg: Math.atan2(ux * right.x + uz * right.z, ux * fwd.x + uz * fwd.z) * 180 / Math.PI,
+              hasQuestion: !!(npc.data && npc.data.question),
+              answered: !!answered[i]
+            };
+          });
+          announceToSR(summarizeNearbyNpcs(entries, 4));
+        }
         document.addEventListener('mousemove', _docH.mousemove = function(ev) {
           if (!engine.isLocked) return;
           engine.euler.setFromQuaternion(engine.camera.quaternion);
@@ -3606,6 +3675,10 @@
               break;
             case 'Digit0':
               if (BLOCK_TYPES.length >= 10) upd('selectedBlock', 9);
+              break;
+            case 'KeyL': // Locate: speak where the characters are
+              ev.preventDefault();
+              announceNearbyNpcs();
               break;
             // ── Build without a mouse ──
             // Breaking and placing were reachable only through mouse buttons under
@@ -6603,6 +6676,10 @@
         // Pips colored green (answered) or red (unanswered) help students locate NPCs they've missed.
         // Self-contained: canvas ref boots a rAF loop that reads engine.camera + engine.npcs each frame.
         worldActive && openModals.length === 0 && engine && engine.npcs && engine.npcs.length > 0 && el('canvas', {
+          // Decorative: an unlabelled canvas is noise in the accessibility tree, and
+          // everything it encodes (who is where, who still owes a question) is now
+          // spoken by L via summarizeNearbyNpcs.
+          'aria-hidden': 'true',
           ref: function(cv) {
             if (!cv) return;
             if (cv._compassStarted) return; // guard against React re-render re-initialization
@@ -6759,6 +6836,7 @@
             el('span', { style: { color: '#34d399', fontWeight: 600 } }, 'N'), 'Net unfolding (surface area)',
             el('span', { style: { color: '#67e8f9', fontWeight: 600 } }, 'C'), 'Toggle coord SR announcements',
             el('span', { style: { color: '#93c5fd', fontWeight: 600 } }, 'H'), 'Return to spawn',
+            el('span', { style: { color: '#67e8f9', fontWeight: 600 } }, 'L'), 'Say where characters are',
             el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, 'Esc'), 'Close open overlay',
             el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, 'Shift+Esc'), 'Close ALL overlays'
           ),
@@ -7017,6 +7095,7 @@
         ),
         // ── Minimap — top-down view showing player + NPC positions ──
         engine && el('canvas', {
+          'aria-hidden': 'true',
           ref: function(canvasNode) {
             if (!canvasNode || !engine) return;
             var ctx = canvasNode.getContext('2d');
@@ -8281,7 +8360,7 @@
               el('div', {
                 id: 'geoworld-instructions',
                 style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0, whiteSpace: 'nowrap' }
-              }, 'Interactive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. B builds a block where you are facing and X breaks one. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, Q changes block shape, R rotates it, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.'),
+              }, 'Interactive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. B builds a block where you are facing and X breaks one. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, Q changes block shape, R rotates it, L says where the characters are and who still has a question, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.'),
               // Fullscreen toggle (top-right). React will mount this as a
               // child of the engine container; the engine's renderer DOM
               // element is appended later via initEngine, so the button

@@ -149,6 +149,31 @@ const HARNESS = `<!doctype html>
     return true;
   };
 
+  window.__liveRegion = function () {
+    var el = document.getElementById('allo-live-geometryworld');
+    return el ? el.textContent : null;
+  };
+
+  window.__placeNpc = function (idx, x, y, z) {
+    var en = window.__geoWorldEngine;
+    if (!en || !en.npcs[idx]) return null;
+    en.npcs[idx].body.position.set(x, y, z);
+    return en.npcs[idx].data.name;
+  };
+
+  window.__camPos = function () {
+    var en = window.__geoWorldEngine;
+    return en ? { x: en.camera.position.x, y: en.camera.position.y, z: en.camera.position.z } : null;
+  };
+
+  window.__setCam = function (x, y, z) {
+    var en = window.__geoWorldEngine;
+    if (!en) return false;
+    en.camera.position.set(x, y, z);
+    en.velocity.set(0, 0, 0);
+    return true;
+  };
+
   window.__destroy = function () {
     try { if (window.__root) window.__root.unmount(); } catch (err) {}
   };
@@ -367,6 +392,50 @@ test.describe('Geometry World — real WebGL', () => {
 
     const moved = Math.hypot(after.x - before.x, after.z - before.z);
     expect(moved).toBeGreaterThan(0.3);
+  });
+
+  test('L says "right" for a character that is actually to the player\'s right', async ({ page }) => {
+    // The pure helper's left/right convention is unit-tested, but that proves
+    // nothing about the bearing the ENGINE computes. This ties the spoken word to
+    // the physical meaning of right — the direction D actually strafes you — so it
+    // cannot be circular. Telling a blind student "left" for something on their
+    // right is worse than saying nothing.
+    await mount(page, { _introShownOnce: true });
+    await focusWorld(page);
+
+    const start = await page.evaluate(() => (window as any).__camPos());
+
+    // Measure which way "right" physically is, by strafing.
+    await page.keyboard.down('KeyD');
+    await page.waitForTimeout(500);
+    await page.keyboard.up('KeyD');
+    await page.waitForTimeout(250);
+    const after = await page.evaluate(() => (window as any).__camPos());
+
+    const dx = after.x - start.x, dz = after.z - start.z;
+    const len = Math.hypot(dx, dz);
+    expect(len).toBeGreaterThan(0.2);            // it really did strafe
+
+    // Put a character 6 units along that same physical direction, from where the
+    // player started, and put the player back there.
+    const npcName = await page.evaluate(([sx, sy, sz, ux, uz]) => {
+      (window as any).__setCam(sx, sy, sz);
+      return (window as any).__placeNpc(0, sx + ux * 6, sy - 1, sz + uz * 6);
+    }, [start.x, start.y, start.z, dx / len, dz / len] as number[]);
+    expect(npcName).toBeTruthy();
+
+    await page.waitForTimeout(150);
+    await page.keyboard.press('KeyL');
+    await page.waitForTimeout(300);              // announceToSR swaps text on a 30ms tick
+
+    const spoken = await page.evaluate(() => (window as any).__liveRegion());
+    expect(spoken).toBeTruthy();
+    expect(spoken).toContain(npcName);
+    // The nearest character is the one we just placed, so the first bearing spoken
+    // is its own.
+    const firstClause = spoken.slice(spoken.indexOf(npcName));
+    expect(firstClause).toMatch(/right/);
+    expect(firstClause.slice(0, firstClause.indexOf('.'))).not.toMatch(/left/);
   });
 
   test('tears the engine down cleanly on unmount', async ({ page }) => {
