@@ -11,24 +11,68 @@
 //   L6 — the content-integrity toast says "% of source characters present", not "% coverage verified".
 // These live inside fixAndVerifyPdf / the batch runner / the report generators (need axe/EA/pdf), so this
 // pins the control flow + mirrors the pure decisions (the documented harness boundary).
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { loadAlloModule } from './setup.js';
 
 const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 
-describe('M4 — success toast + chord gate on !needsExpertReview', () => {
-  it('the >=80 "remediated!" + sessionComplete branch requires !needsExpertReview', () => {
-    expect(dp).toContain('finalAfterScore !== null && finalAfterScore >= 80 && !needsExpertReview');
+describe('M4/H3 — the "fully verified!" claim gates on !needsExpertReview', () => {
+  let selectToast;
+  beforeAll(() => {
+    loadAlloModule('doc_pipeline_module.js');
+    selectToast = window.AlloModules.createDocPipeline.selectCompletionToast;
   });
-  it('a high score WITH needsExpertReview routes to the neutral toast + non-triumphant sound', () => {
-    expect(dp).toContain('finalAfterScore !== null && finalAfterScore >= 80 && needsExpertReview');
+
+  // These used to be source-substring pins plus a hand-written MIRROR of the branch logic. Audit
+  // finding H3 (2026-07-26) found the guarding pin had been dead for some time — it asserted a
+  // string that no longer appeared anywhere in the file — and the mirror exercised a local arrow
+  // function, so it passed no matter what the pipeline did. Meanwhile the real ladder HAD lost the
+  // gate: a document that lost a hyperlink or a table, or whose alt text is information-free, sets
+  // needsExpertReview WITHOUT setting integrityWarning, so the structural audits come back clean,
+  // the score clears target, and it played "PDF remediated and fully verified!" plus the victory
+  // chord over known fidelity damage.
+  //
+  // The ladder is a pure selector now, so these drive the REAL decision.
+  const shape = (over) => Object.assign({
+    outcomeState: 'success', integrityWarning: null, aiVerificationIncomplete: false,
+    slicedAudit: false, needsExpertReview: false, finalAfterScore: 95,
+  }, over || {});
+
+  it('a clean success is still the triumphant branch', () => {
+    expect(selectToast(shape())).toBe('success');
+  });
+
+  it('a high score WITH needsExpertReview is NOT — the defect H3 found', () => {
+    expect(selectToast(shape({ needsExpertReview: true }))).toBe('expert-review');
+  });
+
+  it('the expert-review branch survives an outcome the policy layer calls a success', () => {
+    // _alloRemediationOutcome never reads needsExpertReview or the fidelity notes — it is fed only
+    // ai/axe/EqualAccess evidence — so 'success' and 'needs a human' genuinely co-occur.
+    expect(selectToast(shape({ needsExpertReview: true, finalAfterScore: 99 }))).not.toBe('success');
+  });
+
+  it('the earlier, louder disclosures still win over both', () => {
+    expect(selectToast(shape({ integrityWarning: 'text may be missing', needsExpertReview: true }))).toBe('integrity');
+    expect(selectToast(shape({ aiVerificationIncomplete: true }))).toBe('ai-incomplete');
+    expect(selectToast(shape({ slicedAudit: true }))).toBe('sliced-baseline');
+  });
+
+  it('a non-success with a score falls to the neutral "improved" toast', () => {
+    expect(selectToast(shape({ outcomeState: 'partial', finalAfterScore: 72 }))).toBe('improved');
+  });
+
+  it('no score at all falls to the plain transformed message', () => {
+    expect(selectToast(shape({ outcomeState: 'partial', finalAfterScore: null }))).toBe('transformed');
+    expect(selectToast(shape({ outcomeState: 'partial', finalAfterScore: undefined }))).toBe('transformed');
+  });
+
+  it('the ladder in the pipeline really is driven by this selector', () => {
+    expect(dp).toContain('const _toastBranch = _alloSelectCompletionToast({');
+    expect(dp).toContain("} else if (_toastBranch === 'expert-review') {");
     expect(dp).toContain('needs an expert review before distributing');
-  });
-  it('mirror: score 90 + needsExpertReview is NOT the triumphant branch', () => {
-    const successBranch = (score, needsExpert) => score !== null && score >= 80 && !needsExpert;
-    expect(successBranch(90, true)).toBe(false);
-    expect(successBranch(90, false)).toBe(true);
   });
 });
 
@@ -58,12 +102,23 @@ describe('M5 — report surfaces fidelity concerns; no "Full text preserved." ov
 });
 
 describe('M6 — aborted batch is not a completion', () => {
+  // Re-pinned 2026-07-26: both source pins here had gone stale — the flag was renamed and the
+  // chord guard gained a third term — so they were red for reasons that had nothing to do with the
+  // behaviour they guard. Pinned to the DECISION now, not to one spelling of it.
   it('detects a user abort and reports "Batch stopped" instead of "Batch complete"', () => {
-    expect(dp).toContain('const _aborted = !!(_batchAbortCtrl && _batchAbortCtrl.signal && _batchAbortCtrl.signal.aborted)');
+    expect(dp).toContain('_batchAbortCtrl.signal.aborted');
     expect(dp).toContain('Batch stopped:'); // emoji prefix stored as a \uXXXX escape (codebase convention)
+    const iStopped = dp.indexOf('Batch stopped:');
+    const iComplete = dp.indexOf('Batch complete:');
+    expect(iStopped).toBeGreaterThan(0);
+    expect(iComplete).toBeGreaterThan(iStopped); // the abort branch is reached FIRST
   });
   it('gates the triumphant chord on a genuine full completion', () => {
-    expect(dp).toContain('if (!_quotaStopped && !_aborted) {');
+    const tail = dp.slice(dp.indexOf('// Audio: triumphant chord ONLY on a genuine full completion'));
+    const guard = tail.slice(0, tail.indexOf('sessionComplete()'));
+    expect(guard).toContain('!_quotaStopped');
+    expect(guard).toContain('!_aborted');
+    expect(guard).toContain('!_batchHandoffStopped'); // added after this pin was written
   });
   it('mirror: abort → not "complete"; chord skipped', () => {
     const branch = (quotaStopped, aborted) => quotaStopped ? 'paused' : aborted ? 'stopped' : 'complete';

@@ -933,3 +933,37 @@ describe('L7 — only a RECENT throttle may be blamed for a coverage shortfall',
     expect((dp.match(/_geminiCap < _geminiEffectiveMax/g) || []).length).toBe(2);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// L9 / L3 — view-side lifecycle leaks.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('L9/L3 — the re-OCR flag and the re-audit abort signal', () => {
+  const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+
+  it('L9: the force-OCR flag is released even when the launch is REJECTED', () => {
+    // Two of the three early bails cleared it; the rejection path did not. A click landing during
+    // a managed batch is rejected with RemediationAlreadyRunningError, the .catch swallows it, and
+    // __alloForceOcr stays set to 'all' — so the NEXT run re-OCRs the whole PDF, ignoring a good
+    // embedded text layer, with no dialog and nothing tying it to the earlier click.
+    expect(view).toContain('try { if (window.__alloForceOcr === force) window.__alloForceOcr = null; } catch (_) {}');
+    expect(view).toContain('await fixAndVerifyPdf(_launchArgs);');
+    // Released only if it is still OURS — a later run may legitimately have armed its own.
+    expect(view).not.toMatch(/finally \{\s*try \{ window\.__alloForceOcr = null;/);
+  });
+
+  it('L9: both Re-OCR buttons are gated like Fix & Verify, not on bare pdfFixLoading', () => {
+    // _reRun starts the same pipeline call, so it needs the same guard — pdfFixLoading is false
+    // for the whole of a managed batch.
+    expect(view).toContain("onClick={() => _reRun('all')} disabled={_remediationBusy || pdfAutoContinueRunning}");
+    expect(view).toContain('onClick={() => _reRun({ pages: _lowPages })} disabled={_remediationBusy || pdfAutoContinueRunning}');
+    expect(view).not.toContain("_reRun('all')} disabled={pdfFixLoading}");
+  });
+
+  it('L3: the re-audit signal reaches auditOutputAccessibility as its options argument', () => {
+    // It was the THIRD argument to a two-parameter function, so it was dropped and the audit fell
+    // back to the global signal — a superseded operation kept burning the most expensive call in
+    // the flow to completion.
+    expect(view).toContain('auditOutputAccessibility(newHtml, { signal: _reauditSignal })');
+    expect(view).not.toContain('auditOutputAccessibility(newHtml, undefined,');
+  });
+});

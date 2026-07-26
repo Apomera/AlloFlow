@@ -1982,6 +1982,36 @@ function readingOrderSequenceRatio(textA, textB) {
   return _r;
 }
 
+// ── Completion-toast selection (audit finding H3, 2026-07-26) ───────────────
+// The last toast a teacher sees is the one they act on, so this ladder is a disclosure, not
+// cosmetics. It used to be an inline if/else chain whose only test was a hand-written mirror of
+// itself in tests/honesty_disclosure_gating.test.js — and the pin that was supposed to guard the
+// victory branch asserted a string (`finalAfterScore >= 80 && !needsExpertReview`) that no longer
+// appears anywhere in this file, so it had been dead for some time.
+//
+// The bug it stopped catching: `_alloRemediationOutcome` never reads needsExpertReview or the
+// fidelity notes — it is fed only ai/axe/EqualAccess evidence. So a document that lost a hyperlink
+// or a table, or whose alt text is information-free, or that originally carried embedded
+// JavaScript, sets needsExpertReview WITHOUT setting integrityWarning; the structural audits are
+// clean, the score clears target, and the ladder played "✅ PDF remediated and fully verified!"
+// plus the victory chord over known fidelity damage. The branch written for exactly that case sat
+// one rung BELOW the success branch and was unreachable.
+//
+// Pure (state in → branch key out) so the six shapes can be tested against the real selector
+// instead of a mirror.
+function _alloSelectCompletionToast(state) {
+  var s = state || {};
+  var scored = s.finalAfterScore !== null && s.finalAfterScore !== undefined && Number.isFinite(Number(s.finalAfterScore));
+  if (s.integrityWarning && scored) return 'integrity';
+  if (s.aiVerificationIncomplete && scored) return 'ai-incomplete';
+  if (s.slicedAudit && scored) return 'sliced-baseline';
+  // H3: a document needing expert review is never "fully verified", whatever the score says.
+  if (s.outcomeState === 'success' && !s.needsExpertReview) return 'success';
+  if (scored && Number(s.finalAfterScore) >= 80 && s.needsExpertReview) return 'expert-review';
+  if (scored) return 'improved';
+  return 'transformed';
+}
+
 // ── Extraction page-count resolution (audit finding M13, 2026-07-26) ────────
 // The Vision extraction fan-out is sized from a page count that may be a pure GUESS: when pdf.js
 // cannot open a file (encrypted, corrupt), the pipeline keeps a "~3KB base64 per page" estimate,
@@ -25481,14 +25511,24 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const gainNote = Number.isFinite(scoreGain) ? ` (+${scoreGain})` : '';
       const beforeDisplay = Number.isFinite(beforeScore) ? beforeScore : 'not measured';
       const fixNote = autoFixPasses > 0 ? ` (${autoFixPasses} auto-fix pass${autoFixPasses > 1 ? 'es' : ''})` : '';
-      if (integrityWarning && finalAfterScore !== null) {
+      // H3 (audit 2026-07-26): the branch is chosen by the pure selector above, so the six
+      // shapes can be tested against the real decision instead of a mirror of it.
+      const _toastBranch = _alloSelectCompletionToast({
+        outcomeState: _remediationOutcome.state,
+        integrityWarning: integrityWarning,
+        aiVerificationIncomplete: _aiVerificationIncomplete,
+        slicedAudit: !!(_auditResult && _auditResult._slicedAudit),
+        needsExpertReview: needsExpertReview,
+        finalAfterScore: finalAfterScore,
+      });
+      if (_toastBranch === 'integrity') {
         // The content-integrity gate flagged missing source text — NEVER show a green
         // "remediated" headline that contradicts the red integrity error + the failure sound
         // (the audio already distinguishes this case; the visible toast must too). This is the
         // literal "doesn't work every time" trap: the teacher acts on the last/loudest message.
         addToast(`⚠️ Score ${beforeScore} → ${finalAfterScore}${fixNote}, but some source text may be missing — review the Diff before distributing.`, 'warning');
         try { window.remediationAudio && window.remediationAudio.error(); } catch(e) {}
-      } else if (_aiVerificationIncomplete && finalAfterScore !== null) {
+      } else if (_toastBranch === 'ai-incomplete') {
         // The AI semantic audit was throttle-degraded → finalAfterScore is a deterministic structural-only
         // number, not a verified content score, and beforeScore (a blend) vs finalAfterScore
         // (deterministic-only) is not the same methodology, so the +gain is not meaningful. Mirror the
@@ -25496,24 +25536,24 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         const _estNote = Number.isFinite(_estimatedMinimumScore) ? ` Estimated minimum from the last successful AI audit: ${_estimatedMinimumScore}/100.` : '';
         addToast(`⚠️ Structural/automated checks: ${finalAfterScore}/100 — but the AI semantic audit was throttled and didn't finish${fixNote}.${_estNote} Re-run for a full verified score.`, 'warning');
         try { window.remediationAudio && window.remediationAudio.refixSuccess(); } catch(e) {}
-      } else if (_auditResult && _auditResult._slicedAudit && finalAfterScore !== null) {
+      } else if (_toastBranch === 'sliced-baseline') {
         // The BEFORE audit was a page-slice approximation (the whole-document audit failed), so
         // beforeScore and the whole-document finalAfterScore are NOT the same methodology — the
         // +gain is not a clean apples-to-apples delta. Report it neutrally; no "remediated!" claim
         // and no success chord. (sliced-baseline-delta, 2026-06-29)
         addToast(`PDF processed: ${beforeScore} → ${finalAfterScore}${fixNote}. The 'before' score was a page-slice approximation, so this change is approximate — review the Diff before distributing.`, 'info');
         try { window.remediationAudio && window.remediationAudio.refixSuccess(); } catch(e) {}
-      } else if (_remediationOutcome.state === 'success') {
+      } else if (_toastBranch === 'success') {
         addToast(`✅ PDF remediated and fully verified! Score: ${beforeDisplay} → ${finalAfterScore}${gainNote}${fixNote}`, 'success');
         try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {}
-      } else if (finalAfterScore !== null && finalAfterScore >= 80 && needsExpertReview) {
+      } else if (_toastBranch === 'expert-review') {
         // M4 (2026-07-03): score is high but a fidelity concern (garbled OCR, low alt quality, a dropped
         // link/table, a changed number) set needsExpertReview WITHOUT an integrityWarning, so the branches
         // above missed it. Don't play the victory chord or a green "remediated!" the teacher acts on as
         // done — route to the neutral/actionable toast + non-triumphant sound, like the integrity branch.
         addToast(`Score ${beforeScore} → ${finalAfterScore}${fixNote} — but this document needs an expert review before distributing (see the fidelity notes).`, 'warning');
         try { window.remediationAudio && window.remediationAudio.refixSuccess(); } catch(e) {}
-      } else if (finalAfterScore !== null) {
+      } else if (_toastBranch === 'improved') {
         addToast(`⚠️ PDF improved: ${beforeScore} → ${finalAfterScore}${fixNote}. Some issues may need manual review.`, 'info');
         // Audio: partial-success plays the complete chord (the integrityWarning case is handled
         // by the first branch above, so this path is always the clean one).
@@ -38738,6 +38778,7 @@ window.AlloModules.createDocPipeline.scanActiveContent = _alloScanActiveContent;
 window.AlloModules.createDocPipeline.latexToSpeakable = _alloLatexToSpeakable; // static: LaTeX→spoken English (2026-07-02, Item E), unit-tested
 window.AlloModules.createDocPipeline.orderTextItems = _alloOrderTextItems; // static: H12 (2026-07-26) — column + RTL reading-order repair; pure, so the direction fix is unit-testable without pdf.js
 window.AlloModules.createDocPipeline.resolveExtractionPageCount = _alloResolveExtractionPageCount; // static: M13 (2026-07-26) — guessed-page-count precedence + cap for the Vision fan-out
+window.AlloModules.createDocPipeline.selectCompletionToast = _alloSelectCompletionToast; // static: H3 (2026-07-26) — the completion-toast ladder, testable against the real decision
 window.AlloModules.createDocPipeline.cleanScannedOcrText = _cleanScannedOcrText; // static: P2-a folio-strip + hyphen-rejoin (2026-07-03), unit-tested
 window.AlloModules.createDocPipeline.stripRestoreMarkdown = _stripRestoreMarkdown; // static: P2-b restore markdown-strip (2026-07-03), unit-tested
 window.AlloModules.createDocPipeline.stripPageEdgeArtifacts = _stripPageEdgeArtifacts; // static: #F page-edge running-head/folio strip (2026-07-05), unit-tested

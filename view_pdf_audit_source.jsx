@@ -5131,7 +5131,14 @@ function PdfAuditView(props) {
       if (onActivity && _reauditIsCurrent()) onActivity({ text: 'Re-auditing to refresh verification evidence...', type: 'audit', time: new Date().toLocaleTimeString() });
       const _safeAudit = (run) => Promise.resolve().then(run).catch(() => null);
       const [_wv, _wa, _wea] = await Promise.all([
-        _safeAudit(() => auditOutputAccessibility(newHtml, undefined, { signal: _reauditSignal })),
+        // L3 (audit 2026-07-26): auditOutputAccessibility is (htmlContent, options) — the signal was
+        // being passed as a THIRD argument and silently dropped, so the audit fell back to the
+        // global window.__alloPdfAbortSignal, which during a canonical re-audit / Additional Sweep /
+        // Fix Remaining is not this operation's controller. A superseded operation's result was
+        // correctly discarded, but the full chunked Gemini audit — the most expensive call in the
+        // flow, up to 3 self-heal rounds per chunk — kept running to completion against the quota,
+        // and under an active throttle kept feeding the storm the rest of the pipeline was waiting out.
+        _safeAudit(() => auditOutputAccessibility(newHtml, { signal: _reauditSignal })),
         _safeAudit(() => runAxeAudit(newHtml, { signal: _reauditSignal })),
         (_docPipeline && typeof _docPipeline.runEqualAccessAudit === 'function')
           ? _safeAudit(() => _docPipeline.runEqualAccessAudit(newHtml, { signal: _reauditSignal })) : Promise.resolve(null),
@@ -13711,18 +13718,39 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           const fb = await ensurePdfBase64();
                           if (!fb) { try { window.__alloForceOcr = null; } catch (_) {} return; } // user cancelled re-attach
                           if (typeof isPdfDocumentIntakeCurrent === 'function' && !isPdfDocumentIntakeCurrent(_rescanDocumentEpoch)) { try { window.__alloForceOcr = null; } catch (_) {} return; }
-                          if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) fixAndVerifyPdf({ documentEpoch: _rescanDocumentEpoch, pageRange: [pdfPageRange.start, pdfPageRange.end], base64: fb, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2
-                          else fixAndVerifyPdf({ documentEpoch: _rescanDocumentEpoch, base64: fb, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2
+                          // L9 (audit 2026-07-26): the force-OCR flag belongs to THIS attempt, not to the
+                          // window. Two of the three early bails cleared it; the REJECTION path did not. A
+                          // click that lands during a managed batch (which never sets pdfFixLoading, and for
+                          // which isRemediationRunning deliberately reports false) is rejected with
+                          // RemediationAlreadyRunningError, the .catch swallows it, and the teacher sees only
+                          // "the duplicate start was ignored" — while __alloForceOcr stays set to 'all'. The
+                          // NEXT run then consumes it and re-OCRs the whole PDF, ignoring a perfectly good
+                          // embedded text layer: many minutes of Tesseract + Vision quota, and per this
+                          // button's own confirm copy it "REPLACES your current results" — with no dialog,
+                          // and nothing to connect it to a click made earlier.
+                          const _launchArgs = (pdfPageRange && pdfPageRange.start && pdfPageRange.end)
+                            ? { documentEpoch: _rescanDocumentEpoch, pageRange: [pdfPageRange.start, pdfPageRange.end], base64: fb, fileName: pendingPdfFile?.name }
+                            : { documentEpoch: _rescanDocumentEpoch, base64: fb, fileName: pendingPdfFile?.name }; // finding 2
+                          try {
+                            await fixAndVerifyPdf(_launchArgs);
+                          } catch (_) {
+                            // Swallowed as before — the pipeline has already toasted whatever the teacher
+                            // needs to know — but the flag is released below either way.
+                          } finally {
+                            // Only if it is still OURS: the pipeline clears it when it actually consumes it,
+                            // and a later run may legitimately have armed its own.
+                            try { if (window.__alloForceOcr === force) window.__alloForceOcr = null; } catch (_) {}
+                          }
                         };
                         return (
                           <div className="mb-2">
                             {_lowPages.length > 0 && (
                               <div className="mb-1.5 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-800 flex items-center gap-2 flex-wrap">
                                 <span>⚠ {t('pdf_audit.low_conf_ocr') || 'Low OCR confidence on'} page{_lowPages.length === 1 ? '' : 's'} {_lowPages.slice(0, 8).join(', ')}{_lowPages.length > 8 ? '…' : ''}. {t('pdf_audit.low_conf_ocr_hint') || 'The text may be misread.'}</span>
-                                <button onClick={() => _reRun({ pages: _lowPages })} disabled={pdfFixLoading} className="ml-auto px-2 py-0.5 bg-white border border-amber-400 text-amber-800 rounded-full font-bold hover:bg-amber-100 disabled:opacity-40 shrink-0">🔄 Re-OCR {_lowPages.length} {_lowPages.length === 1 ? (t('pdf_audit.page') || 'page') : (t('pdf_audit.pages') || 'pages')}</button>
+                                <button onClick={() => _reRun({ pages: _lowPages })} disabled={_remediationBusy || pdfAutoContinueRunning} className="ml-auto px-2 py-0.5 bg-white border border-amber-400 text-amber-800 rounded-full font-bold hover:bg-amber-100 disabled:opacity-40 shrink-0">🔄 Re-OCR {_lowPages.length} {_lowPages.length === 1 ? (t('pdf_audit.page') || 'page') : (t('pdf_audit.pages') || 'pages')}</button>
                               </div>
                             )}
-                            <button onClick={() => _reRun('all')} disabled={pdfFixLoading} title={t('pdf_audit.rescan_ocr_tooltip') || 'Re-run OCR on the whole document, ignoring the embedded text layer and any saved text. Use this if the extracted text looks garbled.'} className="w-full px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40">
+                            <button onClick={() => _reRun('all')} disabled={_remediationBusy || pdfAutoContinueRunning} title={t('pdf_audit.rescan_ocr_tooltip') || 'Re-run OCR on the whole document, ignoring the embedded text layer and any saved text. Use this if the extracted text looks garbled.'} className="w-full px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40">
                               🔄 {t('pdf_audit.rescan_ocr') || 'Re-scan with OCR (text looks wrong?)'}
                             </button>
                           </div>

@@ -49,7 +49,6 @@ tests/expert_direct_edit.test.js  # 1 failing · anti-drift: the mini-audit is s
 tests/final_audit_estimated_minimum.test.js  # 1 failing · final audit estimated minimum score pipeline treats a missing final audit score as incomplete and carries esti
 tests/gemini_error_taxonomy_contract.test.js  # 0 failing · (suite failed to load)
 tests/h1_l3_hardening.test.js  # 1 failing · H1 — STEM image intel runs AFTER the token restore (real images) the classifier call now lives after the token
-tests/honesty_disclosure_gating.test.js  # 3 failing · M4 — success toast + chord gate on !needsExpertReview the >=80 "remediated!" + sessionComplete branch requires
 tests/hub_modals_a11y.test.js  # 2 failing · Learning Hub launcher grid accessibility uses visible naming, explicit controls, decorative icons, and reduced
 tests/individual_remediation_polish.test.js  # 4 failing · remediation outcome is separate from verification completeness calls a target-reaching, axe-clean, AI-complete
 tests/issue_locator_resolver.test.js  # 1 failing · anti-drift: wired into both audit paths + verbatim prompt both audit paths normalize ONCE then attach iss.loca
