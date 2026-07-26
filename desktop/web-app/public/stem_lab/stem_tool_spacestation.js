@@ -202,7 +202,11 @@
     { y: '2011', e: 'Leonardo becomes a permanent storage module; the Space Shuttle retires with assembly essentially complete.' },
     { y: '2020', e: 'SpaceX Crew Dragon restores U.S. crew launches — the first commercial crew vehicle.' },
     { y: '2021-2023', e: 'Nauka + Prichal join; roll-out iROSA arrays boost the aging power system.' },
-    { y: '2026 (now)', e: 'More than 280 people from over 20 countries have visited. The station is in its final operational decade.' },
+    // Derived, not hardcoded: this entry is the "you are here" marker on the
+    // assembly slider, so a frozen literal would quietly tell students the
+    // wrong year every January. The surrounding claims are deliberately
+    // open-ended ("more than", "final operational decade") so they stay true.
+    { y: String(new Date().getFullYear()) + ' (now)', e: 'More than 280 people from over 20 countries have visited. The station is in its final operational decade.' },
     { y: '~2030-31', e: 'Planned retirement: a SpaceX-built U.S. Deorbit Vehicle is slated to steer the station to a controlled breakup over the remote South Pacific. Commercial stations and China’s Tiangong continue low-Earth-orbit research.' }
   ];
 
@@ -316,7 +320,7 @@
           '.iss-interior-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:14px}.iss-scene-frame{box-shadow:0 18px 38px rgba(2,6,23,.3),inset 0 0 0 1px rgba(255,255,255,.04)}.iss-scene-frame:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(125,211,252,.1),transparent 10%,transparent 90%,rgba(125,211,252,.08)),repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.012) 3px 4px)}.iss-scene-frame>button{z-index:2}' +
           '.iss-station-stage{position:relative;border-radius:18px!important;border-color:rgba(125,211,252,.35)!important;box-shadow:0 18px 45px rgba(2,6,23,.42),inset 0 0 45px rgba(14,165,233,.08)}.iss-stage-hud{position:absolute;inset:12px 12px auto;display:flex;justify-content:space-between;gap:8px;pointer-events:none}.iss-hud-chip{padding:6px 9px;border:1px solid rgba(125,211,252,.25);border-radius:8px;background:rgba(2,6,23,.62);backdrop-filter:blur(8px);color:#bae6fd;font:800 9px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.7px}.iss-stage-help{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);padding:6px 10px;border:1px solid rgba(148,163,184,.22);border-radius:20px;background:rgba(2,6,23,.64);backdrop-filter:blur(8px);color:#cbd5e1;font-size:9.5px;font-weight:700;pointer-events:none;white-space:nowrap}.iss-module-picker{padding:8px;border:1px solid var(--iss-line);border-radius:12px;background:rgba(2,6,23,.34)}.iss-module-marker{position:absolute;z-index:3;display:flex;align-items:center;gap:5px;transform:translate(-50%,-135%);pointer-events:none;transition:left .08s linear,top .08s linear,opacity .16s ease}.iss-module-marker i{display:block;width:18px;height:18px;border-left:1px solid #fbbf24;border-top:1px solid #fbbf24;transform:translate(9px,9px) rotate(-45deg)}.iss-module-marker span{padding:4px 7px;border:1px solid rgba(251,191,36,.5);border-radius:6px;background:rgba(2,6,23,.76);color:#fef3c7;font:850 8px ui-monospace,monospace;letter-spacing:.7px;box-shadow:0 0 16px rgba(251,191,36,.16)}.iss-hud-chip[data-phase="sunlight"]{color:#fde68a;border-color:rgba(251,191,36,.38)}.iss-hud-chip[data-phase="eclipse"]{color:#c7d2fe;border-color:rgba(129,140,248,.42)}' +
           '.iss-learning-visual{position:relative;overflow:hidden;margin:0 0 12px;border:1px solid rgba(125,211,252,.25);border-radius:14px;background:radial-gradient(circle at 50% 100%,rgba(14,165,233,.12),transparent 56%),rgba(2,6,23,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 12px 25px rgba(2,6,23,.2)}.iss-learning-visual svg{display:block;width:100%;height:auto}.iss-visual-caption{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;border-top:1px solid rgba(148,163,184,.14);color:#94a3b8;font-size:9.5px;letter-spacing:.35px}.iss-flow-path{stroke-dasharray:7 7;animation:iss-flow 7s linear infinite}.iss-orbit-station{animation:iss-orbit-breathe 2.6s ease-in-out infinite}.iss-system-tabs{padding:7px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.34)}.iss-system-tab[aria-pressed="true"]{box-shadow:inset 0 -2px 0 currentColor,0 7px 18px rgba(2,6,23,.2)}.iss-dock-canvas{box-shadow:0 16px 36px rgba(2,6,23,.34),inset 0 0 35px rgba(14,165,233,.08)}.iss-timeline{position:relative;padding-left:19px}.iss-timeline:before{content:"";position:absolute;left:5px;top:5px;bottom:5px;width:2px;background:linear-gradient(#38bdf8,#818cf8,#22c55e);box-shadow:0 0 12px rgba(56,189,248,.35)}.iss-timeline-item{position:relative}.iss-timeline-item-button{width:100%;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.iss-timeline-item-button:hover{background:linear-gradient(90deg,rgba(56,189,248,.08),transparent)}.iss-timeline-item:before{content:"";position:absolute;left:-18px;top:12px;width:9px;height:9px;border:2px solid #7dd3fc;border-radius:50%;background:#07101d;box-shadow:0 0 10px rgba(56,189,248,.55)}.iss-day-strip{padding:7px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.32)}.iss-day-chip[aria-pressed="true"]{box-shadow:inset 0 -2px 0 #e879f9,0 7px 18px rgba(232,121,249,.12)}' +
-          '@keyframes iss-flow{to{stroke-dashoffset:-70}}@keyframes iss-orbit-breathe{50%{filter:drop-shadow(0 0 8px #7dd3fc)}}' +          '.iss-orbit-environment{margin:-4px 0 12px;background:rgba(2,6,23,.28)}.iss-orbit-environment svg{display:block;width:100%;height:auto}.iss-orbit-environment .iss-visual-caption{border-top:1px solid rgba(148,163,184,.14)}.iss-blueprint{margin:0 0 11px}.iss-blueprint-grid{opacity:.2}.iss-eva-visual{margin:0 0 10px}.iss-eva-astronaut{animation:iss-eva-hover 2.8s ease-in-out infinite}.iss-eva-tether-a{stroke:#38bdf8}.iss-eva-tether-b{stroke:#fbbf24}.iss-day-orbit{margin:0 0 10px}.iss-crew-day-timeline{border-top:1px solid rgba(148,163,184,.14);background:rgba(2,6,23,.28)}.iss-crew-day-timeline svg{display:block;width:100%;height:auto}.iss-day-timeline-marker{filter:drop-shadow(0 0 5px rgba(251,191,36,.42))}.iss-day-marker{animation:iss-orbit-breathe 2.6s ease-in-out infinite}.iss-quiz-console{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-bottom:12px;padding:10px 12px;border:1px solid var(--iss-line);border-radius:13px;background:linear-gradient(135deg,rgba(14,165,233,.11),rgba(99,102,241,.08))}.iss-quiz-number{display:grid;place-items:center;width:45px;height:45px;border:1px solid #38bdf8;border-radius:50%;background:rgba(14,165,233,.12);color:#bae6fd;font:900 13px ui-monospace,monospace;box-shadow:inset 0 0 18px rgba(56,189,248,.12)}.iss-quiz-track{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}.iss-quiz-segment{height:7px;border-radius:5px;background:#263449;border:1px solid rgba(148,163,184,.18)}.iss-quiz-segment.is-complete{background:#38bdf8;border-color:#7dd3fc;box-shadow:0 0 9px rgba(56,189,248,.35)}.iss-quiz-score{text-align:right;color:#94a3b8;font-size:9px;text-transform:uppercase;letter-spacing:.8px}.iss-quiz-score strong{display:block;color:#e0f2fe;font-size:15px;letter-spacing:0}.iss-fact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:7px}.iss-fact-item{position:relative;overflow:hidden;min-height:64px;padding:10px!important;background:linear-gradient(145deg,rgba(2,6,23,.52),rgba(30,41,59,.48))!important;transition:transform .18s ease,border-color .18s ease}.iss-fact-item:after{content:"";position:absolute;right:-18px;bottom:-24px;width:54px;height:54px;border-radius:50%;background:#818cf8;opacity:.06}.iss-fact-item:hover{transform:translateY(-2px);border-color:#64748b!important}@keyframes iss-eva-hover{50%{transform:translateY(-3px)}}' +
+          '@keyframes iss-flow{to{stroke-dashoffset:-70}}@keyframes iss-orbit-breathe{50%{filter:drop-shadow(0 0 8px #7dd3fc)}}' +          '.iss-orbit-environment{margin:-4px 0 12px;background:rgba(2,6,23,.28)}.iss-orbit-environment svg{display:block;width:100%;height:auto}.iss-orbit-environment .iss-visual-caption{border-top:1px solid rgba(148,163,184,.14)}.iss-blueprint{margin:0 0 11px}.iss-blueprint-grid{opacity:.2}.iss-eva-visual{margin:0 0 10px}.iss-eva-astronaut{animation:iss-eva-hover 2.8s ease-in-out infinite}.iss-eva-tether-a{stroke:#38bdf8}.iss-eva-tether-b{stroke:#fbbf24}.iss-day-orbit{margin:0 0 10px}.iss-crew-day-timeline{border-top:1px solid rgba(148,163,184,.14);background:rgba(2,6,23,.28)}.iss-crew-day-timeline svg{display:block;width:100%;height:auto}.iss-day-timeline-marker{filter:drop-shadow(0 0 5px rgba(251,191,36,.42))}.iss-day-marker{animation:iss-orbit-breathe 2.6s ease-in-out infinite}.iss-quiz-console{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-bottom:12px;padding:10px 12px;border:1px solid var(--iss-line);border-radius:13px;background:linear-gradient(135deg,rgba(14,165,233,.11),rgba(99,102,241,.08))}.iss-quiz-number{display:grid;place-items:center;width:45px;height:45px;border:1px solid #38bdf8;border-radius:50%;background:rgba(14,165,233,.12);color:#bae6fd;font:900 13px ui-monospace,monospace;box-shadow:inset 0 0 18px rgba(56,189,248,.12)}.iss-quiz-track{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}.iss-quiz-segment{height:7px;border-radius:5px;background:#263449;border:1px solid rgba(148,163,184,.18)}.iss-quiz-segment.is-complete{background:#38bdf8;border-color:#7dd3fc;box-shadow:0 0 9px rgba(56,189,248,.35)}.iss-quiz-score{text-align:right;color:#94a3b8;font-size:9px;text-transform:uppercase;letter-spacing:.8px}.iss-quiz-score strong{display:block;color:#e0f2fe;font-size:15px;letter-spacing:0}.iss-fact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:7px}.iss-fact-item{position:relative;overflow:hidden;min-height:64px;padding:10px!important;background:linear-gradient(145deg,rgba(2,6,23,.52),rgba(30,41,59,.48))!important;transition:transform .18s ease,border-color .18s ease}.iss-fact-item:after{content:"";position:absolute;right:-18px;bottom:-24px;width:54px;height:54px;border-radius:50%;background:#818cf8;opacity:.06}.iss-fact-item:hover{transform:translateY(-2px);border-color:#64748b!important}@keyframes iss-eva-hover{50%{transform:translateY(-3px)}}.iss-cabin-airflow{stroke-dasharray:4 3;animation:iss-flow 3.4s linear infinite}.iss-aurora-curtain{animation:iss-aurora-sway 7s ease-in-out infinite}.iss-aurora-curtain:nth-of-type(2){animation-delay:-2.3s}.iss-aurora-curtain:nth-of-type(3){animation-delay:-4.6s}@keyframes iss-aurora-sway{50%{transform:translateX(4px)}}' +
           '@media (max-width:520px){.iss-quiz-console{grid-template-columns:auto 1fr}.iss-quiz-score{grid-column:1/-1;text-align:left;display:flex;gap:6px;align-items:baseline}.iss-quiz-score strong{display:inline}.iss-visual-caption{flex-direction:column;gap:2px}}' +          '.iss-ops-hero{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:14px;margin-bottom:12px;border:1px solid rgba(74,222,128,.25);border-radius:15px;background:radial-gradient(circle at 88% 18%,rgba(74,222,128,.12),transparent 30%),linear-gradient(135deg,rgba(14,165,233,.12),rgba(15,23,42,.66));box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.iss-ops-health{display:grid;place-items:center;width:76px;height:76px;border-radius:50%;border:5px solid currentColor;background:rgba(2,6,23,.52);font:900 17px ui-monospace,monospace;box-shadow:inset 0 0 22px rgba(2,6,23,.5),0 0 22px currentColor}.iss-ops-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-bottom:12px}.iss-ops-metric{min-width:0;overflow:hidden;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.42)}.iss-ops-metric button{display:block;width:100%;padding:9px;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.iss-ops-metric button:hover{background:rgba(56,189,248,.07)}.iss-ops-metric button:focus-visible{outline:2px solid #7dd3fc;outline-offset:-3px}.iss-ops-metric-label{display:block;overflow:hidden;color:#94a3b8;font-size:8px;font-weight:850;letter-spacing:.7px;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.iss-ops-metric-value{display:block;margin-top:3px;color:#e0f2fe;font:850 13px ui-monospace,monospace}.iss-ops-metric small{display:block;margin-top:4px;color:#64748b;font:750 7.5px ui-monospace,monospace;letter-spacing:.3px}.iss-rule-heading{display:flex;align-items:center;justify-content:space-between;gap:6px}.iss-rule-light{width:7px;height:7px;flex:0 0 auto;border-radius:50%;background:#fbbf24;box-shadow:0 0 9px #fbbf24}.iss-rule-light.is-go{background:#4ade80;box-shadow:0 0 9px #4ade80}.iss-rule-light.is-hold{background:#f87171;box-shadow:0 0 9px #f87171}.iss-ops-presets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:10px}.iss-ops-presets button{min-width:0;display:flex;align-items:center;gap:7px;padding:8px;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.38);color:#cbd5e1;text-align:left;cursor:pointer}.iss-ops-presets button[aria-pressed="true"]{border-color:#7dd3fc;background:linear-gradient(135deg,rgba(14,165,233,.2),rgba(99,102,241,.15));box-shadow:inset 0 -2px 0 #38bdf8}.iss-ops-presets strong,.iss-ops-presets small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.iss-ops-presets strong{font-size:9.5px}.iss-ops-presets small{margin-top:2px;color:#7f91a8;font-size:7.5px}.iss-preset-icon{display:grid;place-items:center;width:24px;height:24px;flex:0 0 auto;border:1px solid #475569;border-radius:50%;color:#7dd3fc;font:900 9px ui-monospace,monospace}.iss-custom-badge{grid-column:1/-1;padding:3px 7px;color:#fbbf24;font:800 8px ui-monospace,monospace;letter-spacing:.6px}.iss-ops-modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:6px;padding:7px;margin-bottom:12px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.36)}.iss-ops-mode{min-height:39px;padding:7px!important}.iss-ops-mode[aria-pressed="true"]{background:linear-gradient(135deg,rgba(14,165,233,.3),rgba(99,102,241,.22))!important;border-color:#38bdf8!important;color:#e0f2fe!important;box-shadow:inset 0 -2px 0 #38bdf8}.iss-ops-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.iss-ops-control{padding:10px;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.38)}.iss-ops-control label{display:flex;justify-content:space-between;gap:8px;color:#cbd5e1;font-size:10.5px;font-weight:800}.iss-ops-control input[type="range"]{width:100%;margin:9px 0 4px}.iss-meter{height:8px;overflow:hidden;margin-top:7px;border:1px solid #475569;border-radius:6px;background:#101827}.iss-meter>span{display:block;height:100%;border-radius:5px;transition:width .25s ease}.iss-spark{margin-top:7px;border-top:1px solid rgba(148,163,184,.12)}.iss-spark svg{display:block;width:100%;height:42px}.iss-forecast-legend{display:flex;flex-wrap:wrap;gap:7px 14px;padding:7px 10px;border-top:1px solid rgba(148,163,184,.14);color:#94a3b8;font-size:9px}.iss-forecast-legend span{display:flex;align-items:center;gap:5px}.iss-forecast-legend i{width:13px;height:3px;border-radius:3px}.iss-orbit-scrubber{padding:9px 10px 10px;border-top:1px solid rgba(148,163,184,.14);background:rgba(2,6,23,.24)}.iss-orbit-scrubber label{display:flex;justify-content:space-between;gap:8px;color:#cbd5e1;font-size:9.5px;font-weight:800}.iss-orbit-scrubber input{width:100%;margin:8px 0 7px}.iss-orbit-readout{display:flex;flex-wrap:wrap;gap:5px 13px;color:#94a3b8;font:750 8.5px ui-monospace,monospace}.iss-forecast-cursor{filter:drop-shadow(0 0 4px currentColor)}.iss-rule-status{display:grid;grid-template-columns:auto 1fr auto;gap:9px;align-items:center;margin:-2px 0 12px;padding:9px 10px;border:1px solid rgba(74,222,128,.28);border-radius:11px;background:rgba(34,197,94,.07)}.iss-rule-status.is-check{border-color:rgba(248,113,113,.38);background:rgba(239,68,68,.08)}.iss-rule-status-icon{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#14532d;color:#bbf7d0;font-weight:900}.iss-rule-status.is-check .iss-rule-status-icon{background:#7f1d1d;color:#fecaca}.iss-rule-status strong{display:block;color:#bbf7d0;font:850 9px ui-monospace,monospace;letter-spacing:.7px}.iss-rule-status.is-check strong{color:#fecaca}.iss-rule-status p{margin:2px 0 0;color:#94a3b8;font-size:9.5px;line-height:1.35}.iss-rule-status button{padding:6px 9px;border:1px solid #64748b;border-radius:8px;background:rgba(2,6,23,.36);color:#e2e8f0;font-size:9px;font-weight:800;cursor:pointer}.iss-ops-schematic{margin-bottom:10px}.iss-ops-debrief{margin-top:12px;padding:12px;border:1px solid rgba(125,211,252,.22);border-radius:13px;background:rgba(2,6,23,.4)}.iss-ops-log{display:grid;gap:4px;margin-top:8px;color:#94a3b8;font:700 9.5px ui-monospace,monospace}.iss-emergency-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.iss-emergency-choice{text-align:left;padding:10px!important}.iss-assembly-stage{position:relative;overflow:hidden;margin-bottom:10px;border:1px solid rgba(125,211,252,.25);border-radius:14px;background:#050b18}.iss-assembly-stage svg{display:block;width:100%;height:auto}.iss-location-strip{display:flex;align-items:center;gap:4px;margin:0 0 10px;padding:7px 9px;overflow-x:auto;border:1px solid var(--iss-line);border-radius:12px;background:rgba(2,6,23,.35)}.iss-location-node{flex:0 0 auto;display:flex;align-items:center;gap:4px;color:#64748b;font-size:9px;font-weight:800}.iss-location-node.is-current{color:#7dd3fc}.iss-location-dot{width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 9px currentColor}.iss-location-link{width:18px;height:1px;background:#334155}.iss-network-focus{display:flex;flex-wrap:wrap;gap:5px;padding:8px 10px;border-top:1px solid rgba(148,163,184,.14)}.iss-network-focus button{min-height:32px;padding:5px 9px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.34);color:#cbd5e1;font-size:10px;font-weight:800;cursor:pointer}.iss-network-focus button[aria-pressed="true"]{border-color:#38bdf8;background:rgba(14,165,233,.18);color:#bae6fd;box-shadow:inset 0 -2px 0 #38bdf8}.iss-network-detail{padding:0 10px 9px;color:#a9b8cb;font-size:10.5px;line-height:1.45}.iss-reference-key i{height:0!important;background:transparent!important;border-top:2px dashed #94a3b8}.iss-mission-replay{margin-top:10px;padding:10px;border:1px solid rgba(129,140,248,.24);border-radius:12px;background:rgba(30,27,75,.18)}.iss-replay-heading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;margin-bottom:9px}.iss-replay-heading strong{color:#c7d2fe;font:850 10px ui-monospace,monospace;letter-spacing:.7px}.iss-replay-heading span{color:#94a3b8;font-size:10px}.iss-replay-lane{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.iss-replay-lane:before{content:"";position:absolute;left:8%;right:8%;top:13px;height:2px;background:linear-gradient(90deg,#fbbf24,#fde68a,#818cf8,#38bdf8)}.iss-replay-lane button{position:relative;z-index:1;display:grid;justify-items:center;gap:2px;padding:3px 4px 6px;border:0;background:transparent;color:#cbd5e1;cursor:pointer}.iss-replay-lane button i{width:10px;height:10px;border:2px solid #818cf8;border-radius:50%;background:#0b1026;box-shadow:0 0 8px rgba(129,140,248,.5)}.iss-replay-lane button[aria-pressed="true"] i{background:#7dd3fc;border-color:#e0f2fe;box-shadow:0 0 11px #38bdf8}.iss-replay-lane strong{font:850 9.5px ui-monospace,monospace}.iss-replay-lane span{font-size:9.5px;font-weight:800;text-align:center}.iss-replay-lane small{color:#7f91a8;font-size:9px;text-align:center}.iss-map-controls{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.iss-map-controls button{min-height:36px;padding:6px 9px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.42);color:#cbd5e1;font-size:10.5px;font-weight:800;cursor:pointer}.iss-map-controls button[aria-pressed="true"]{border-color:#38bdf8;background:rgba(14,165,233,.16);color:#bae6fd;box-shadow:inset 0 -2px 0 #38bdf8}.iss-hud-selection{color:#fef3c7;border-color:rgba(251,191,36,.35)}.iss-orientation-cue{flex:0 0 auto;padding:2px 4px;color:#fbbf24;font:850 8px ui-monospace,monospace;letter-spacing:.6px}.iss-hatch-enter{animation:iss-hatch-enter .34s ease-out}.iss-assembly-new{animation:iss-install-pulse 1.8s ease-in-out infinite}.iss-assembly-controls{padding:0 12px 12px}.iss-assembly-controls label{display:flex;justify-content:space-between;color:#cbd5e1;font-size:11px;font-weight:800}.iss-assembly-controls label strong{color:#7dd3fc}.iss-assembly-controls input{width:100%;margin:8px 0;accent-color:#38bdf8}.iss-assembly-stepper{display:grid;grid-template-columns:1fr auto 1fr;gap:7px;align-items:center}.iss-assembly-stepper button{min-height:34px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.36);color:#cbd5e1;font-size:10.5px;font-weight:800;cursor:pointer}.iss-assembly-stepper button:disabled{opacity:.42;cursor:not-allowed}.iss-assembly-stepper span{color:#94a3b8;font:800 10px ui-monospace,monospace}.iss-timeline-item.is-active{margin-left:-8px;padding-left:8px!important;border-left:3px solid #38bdf8;background:linear-gradient(90deg,rgba(14,165,233,.12),transparent)}.iss-ops-presets small,.iss-ops-metric small,.iss-ops-metric-label,.iss-orbit-readout{font-size:9.5px}@keyframes iss-hatch-enter{from{opacity:.25;transform:scale(.94);filter:brightness(.55)}to{opacity:1;transform:scale(1);filter:brightness(1)}}@keyframes iss-install-pulse{50%{filter:drop-shadow(0 0 7px #7dd3fc)}}' +
           '@media (max-width:760px){.iss-ops-presets{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-ops-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-ops-modes{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-ops-grid{grid-template-columns:1fr}.iss-ops-hero{grid-template-columns:1fr}.iss-ops-health{display:none}}@media (max-width:520px){.iss-rule-status{grid-template-columns:auto 1fr}.iss-rule-status button{grid-column:1/-1;width:100%}.iss-replay-lane{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-replay-lane:before{display:none}.iss-hud-selection{display:none}}@media (max-width:420px){.iss-emergency-grid{grid-template-columns:1fr}.iss-orbit-readout{gap:4px 8px}}' +          '.iss-float{animation:iss-drift 4s ease-in-out infinite alternate}@keyframes iss-drift{from{transform:translate(0,-3px) rotate(-1deg)}to{transform:translate(7px,4px) rotate(2deg)}}@keyframes iss-pulse{50%{opacity:.48;box-shadow:0 0 0 7px rgba(74,222,128,0),0 0 22px #4ade80}}.iss-live-dot{animation:iss-pulse 2.4s ease-in-out infinite}' +
           '@media (max-width:760px){.iss-root{padding:12px;border-radius:18px}.iss-hero{grid-template-columns:1fr}.iss-orbit-mark{display:none}.iss-status-strip{grid-template-columns:1fr 1fr}.iss-tablist{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-interior-layout{grid-template-columns:1fr}.iss-panel{padding:11px}.iss-hud-chip:nth-child(2){display:none}}@media (max-width:420px){.iss-status-value{font-size:10.5px}.iss-tab{font-size:10.5px!important;min-height:40px}.iss-stage-help{white-space:normal;width:calc(100% - 24px);text-align:center}.iss-route{grid-template-columns:1fr 1fr!important}}' +
@@ -357,14 +361,22 @@
           var rim = new THREE.DirectionalLight(0x38bdf8, 0.8);
           rim.position.set(-8, -2, -9); scene.add(rim);
           // Earth below (big soft sphere, out of frame mostly)
-          var earth = new THREE.Mesh(new THREE.SphereGeometry(30, 64, 40), new THREE.MeshPhongMaterial({ color: 0x185a92, emissive: 0x061a38, specular: 0x7dd3fc, shininess: 16 }));
+          // Tighter specular highlight = the ocean sun-glint that shows up in
+          // almost every real Cupola photograph (shininess 16 smeared it flat).
+          var earth = new THREE.Mesh(new THREE.SphereGeometry(30, 64, 40), new THREE.MeshPhongMaterial({ color: 0x185a92, emissive: 0x061a38, specular: 0xa8e4ff, shininess: 46 }));
           earth.position.set(0, -34.5, 0); earth.receiveShadow = true;
           scene.add(earth);
           var cloudShell = new THREE.Mesh(new THREE.SphereGeometry(30.18, 64, 40), new THREE.MeshPhongMaterial({ color: 0xdff4ff, transparent: true, opacity: 0.055, depthWrite: false, shininess: 4 }));
           cloudShell.position.copy(earth.position); scene.add(cloudShell);
-          var atmo = new THREE.Mesh(new THREE.SphereGeometry(30.65, 64, 40), new THREE.MeshBasicMaterial({ color: 0x67c8ff, transparent: true, opacity: 0.16, side: THREE.BackSide, depthWrite: false }));
+          // Two additive back-side shells give the limb the "thin blue line":
+          // a wide outer scatter halo plus a tight, brighter airglow band right
+          // at the top of the atmosphere. Additive so the bloom pass finds them.
+          var atmo = new THREE.Mesh(new THREE.SphereGeometry(30.65, 64, 40), new THREE.MeshBasicMaterial({ color: 0x67c8ff, transparent: true, opacity: 0.15, side: THREE.BackSide, depthWrite: false, blending: THREE.AdditiveBlending }));
           atmo.position.copy(earth.position);
           scene.add(atmo);
+          var airglow = new THREE.Mesh(new THREE.SphereGeometry(30.3, 64, 40), new THREE.MeshBasicMaterial({ color: 0xbfeeff, transparent: true, opacity: 0.3, side: THREE.BackSide, depthWrite: false, blending: THREE.AdditiveBlending }));
+          airglow.position.copy(earth.position);
+          scene.add(airglow);
           // Stars
           var starGeo = new THREE.BufferGeometry();
           var starPos = new Float32Array(620 * 3);
@@ -373,13 +385,18 @@
             starPos[si * 3] = sv.x; starPos[si * 3 + 1] = sv.y; starPos[si * 3 + 2] = sv.z;
           }
           starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-          scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xdbeafe, size: 0.3, transparent: true, opacity: 0.88, depthWrite: false, sizeAttenuation: true })));
+          scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xdbeafe, size: 0.3, transparent: true, opacity: 0.8, depthWrite: false, sizeAttenuation: true, blending: THREE.AdditiveBlending })));
 
           var station = new THREE.Group();
           station.rotation.z = -0.055;
           scene.add(station);
           var clickable = [];
           var moduleDetails = [];
+          var viewportMats = [];    // lit windows — brightened during orbital night
+          // Solar-cell materials grouped BY WING (parallel to `wings`). Both panels
+          // on a wing share its orientation, so the glint pass decomposes one world
+          // quaternion per wing instead of one per panel.
+          var wingPanelMats = [];
           MODULES.forEach(function (m) {
             var len = m.size[1], rad = m.size[0];
             var geo, mesh;
@@ -425,6 +442,7 @@
               var viewport = new THREE.Mesh(new THREE.SphereGeometry(0.075, 10, 8), new THREE.MeshBasicMaterial({ color: 0x8ee7ff }));
               viewport.position.set(m.pos[0], m.pos[1] + rad * 0.78, m.pos[2]);
               viewport._issParentId = m.id; station.add(viewport); moduleDetails.push(viewport);
+              viewportMats.push(viewport.material);
             }
           });
           // Solar array wings: 4 pairs along truss (gold panels) — these rotate to track the Sun
@@ -432,10 +450,12 @@
           [-5.0, -3.6, 3.6, 5.0].forEach(function (tx, wi) {
             var wingGroup = new THREE.Group();
             wingGroup.position.set(tx, 0.35, -1.6);
+            var thisWingMats = [];
             [1, -1].forEach(function (side) {
               var panel = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.026, 3.4), new THREE.MeshStandardMaterial({ color: 0xb77918, roughness: 0.32, metalness: 0.68, emissive: 0x2f2005 }));
               panel.position.set(0, 0, side * 2.0); panel.castShadow = true;
               wingGroup.add(panel);
+              thisWingMats.push(panel.material);
               var cellMat = new THREE.MeshBasicMaterial({ color: 0xf8c85d, transparent: true, opacity: 0.68 });
               for (var gridRow = -2; gridRow <= 2; gridRow++) {
                 var rowLine = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.032, 0.018), cellMat);
@@ -453,6 +473,7 @@
             wingGroup.rotation.z = 0.25 + wi * 0.08;
             station.add(wingGroup);
             wings.push(wingGroup);
+            wingPanelMats.push(thisWingMats);
           });
           // Radiators (white panels, perpendicular-ish to arrays)
           [-2.4, 2.4].forEach(function (tx) {
@@ -473,16 +494,40 @@
             brace.rotation.z = Math.PI / 4 * (Math.round((braceX + 5) * 2) % 2 ? 1 : -1);
             station.add(brace);
           }
-          // Canadarm2 — simple two-segment arm on the truss
+          // Canadarm2 — two-segment arm on the truss. The segments are placed
+          // from a shared elbow so the arm reads as one jointed limb: the boom
+          // ends were previously set independently and did not meet, which drew
+          // two disconnected sticks. A cylinder's axis for rotation.z = a is
+          // (-sin a, cos a), so each segment's centre sits half a length along
+          // that axis from the joint it grows out of.
           var armMat = new THREE.MeshStandardMaterial({ color: 0xd9d2c0, roughness: 0.5 });
-          var arm1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.4, 8), armMat);
-          arm1.position.set(0.8, 0.85, -1.6); arm1.rotation.z = 0.7;
-          var arm2 = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 1.2, 8), armMat);
-          arm2.position.set(1.7, 1.25, -1.6); arm2.rotation.z = -0.6;
+          var armJointMat = new THREE.MeshStandardMaterial({ color: 0xb9b3a2, roughness: 0.35, metalness: 0.6 });
+          var armBase = new THREE.Vector3(1.251, 0.315, -1.6);   // latched to the truss
+          var armAngle1 = 0.7, armLen1 = 1.4, armAngle2 = -1.2, armLen2 = 1.2;
+          var armAxis1 = new THREE.Vector3(-Math.sin(armAngle1), Math.cos(armAngle1), 0);
+          var armAxis2 = new THREE.Vector3(-Math.sin(armAngle2), Math.cos(armAngle2), 0);
+          var armElbow = armBase.clone().add(armAxis1.clone().multiplyScalar(armLen1));
+          var armTip = armElbow.clone().add(armAxis2.clone().multiplyScalar(armLen2));
+          var arm1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, armLen1, 8), armMat);
+          arm1.position.copy(armBase.clone().add(armAxis1.clone().multiplyScalar(armLen1 / 2))); arm1.rotation.z = armAngle1;
+          var arm2 = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, armLen2, 8), armMat);
+          arm2.position.copy(armElbow.clone().add(armAxis2.clone().multiplyScalar(armLen2 / 2))); arm2.rotation.z = armAngle2;
+          arm1.castShadow = true; arm2.castShadow = true;
           station.add(arm1); station.add(arm2);
+          [[armBase, 0.075], [armElbow, 0.07]].forEach(function (joint) {
+            var knuckle = new THREE.Mesh(new THREE.SphereGeometry(joint[1], 12, 10), armJointMat);
+            knuckle.position.copy(joint[0]); knuckle.castShadow = true; station.add(knuckle);
+          });
+          // Latching end effector — the business end that grapples visiting cargo.
+          var armHand = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.055, 0.16, 10), armJointMat);
+          armHand.position.copy(armTip); armHand.rotation.z = armAngle2; armHand.castShadow = true;
+          station.add(armHand);
 
           // Selection highlight
-          var selRing = new THREE.Mesh(new THREE.TorusGeometry(0.9, 0.035, 8, 40), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
+          // Brightened past the bloom threshold so the ring reads as a glowing
+          // halo. Kept on normal blending, not additive: additive would wash the
+          // ring out against the white radiators and lose the selection cue.
+          var selRing = new THREE.Mesh(new THREE.TorusGeometry(0.9, 0.035, 8, 40), new THREE.MeshBasicMaterial({ color: 0x9beeff }));
           selRing.visible = false;
           scene.add(selRing);
 
@@ -506,6 +551,14 @@
           }
           cv.addEventListener('click', pick);
           cv.style.cursor = 'pointer';
+          // Without this, a touch drag on the canvas is claimed by the browser
+          // for page scrolling: the pointer stream is cancelled and the station
+          // never rotates, so drag-to-rotate was dead on touchscreen
+          // Chromebooks and tablets. The thruster buttons in this same tool
+          // already set it. Trade-off accepted: the page no longer scrolls from
+          // ON the canvas (there is ample surface around it), and rotating the
+          // 3-D map is this surface's whole point.
+          cv.style.touchAction = 'none';
 
           // Simple orbit-drag controls (pointer drag rotates the whole station group)
           var dragging = false, px0 = 0, py0 = 0, cameraTween = null, cameraFocusId = null;
@@ -533,6 +586,11 @@
           cv.addEventListener('keydown', onKey);
           window.addEventListener('pointermove', onMove);
           window.addEventListener('pointerup', onUp);
+          // pointercancel fires instead of pointerup when a gesture is taken over
+          // (or a touch is interrupted). Without it `dragging` sticks true, which
+          // also permanently freezes the idle auto-rotation, since that is gated
+          // on !dragging.
+          window.addEventListener('pointercancel', onUp);
           cv._issSetView = function (name) {
             cameraFocusId = null;
             var views = {
@@ -575,9 +633,58 @@
             Wc = nextW; Hc = nextH;
             camera.aspect = Wc / Math.max(1, Hc); camera.updateProjectionMatrix();
             renderer.setSize(Wc, Hc, false);
+            if (composer) { try { composer.setSize(Math.max(1, Math.round(Wc * bloomRes)), Math.max(1, Math.round(Hc * bloomRes))); } catch (e) {} }
           }
           if (window.ResizeObserver) { resizeObserver = new window.ResizeObserver(resizeScene); resizeObserver.observe(cv); }
           else { window.addEventListener('resize', resizeScene); }
+
+          // ── Post-FX bloom (guarded; same graceful pattern as solarsystem/moonmission) ──
+          // Orbit is the darkest scene in the Lab, so the sunlit arrays, the lit
+          // viewports, the atmospheric limb and the selection ring all want a real
+          // glow. Plain render until the r128 addons load; every step try/caught so
+          // a CDN miss can never blank the station. Kill-switch + low-power tier.
+          var composer = null, bloomRes = 1;
+          (function setupBloom() {
+            if (window.AlloPostFXEnabled === false) return;
+            var ensure = function (cb) {
+              if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+              var urls = [
+                'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
+                'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
+                'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
+                'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
+                'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
+                'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+              ];
+              var i = 0;
+              (function nextScript() {
+                if (i >= urls.length) { cb(); return; }
+                var s = document.createElement('script');
+                s.src = urls[i]; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
+                document.head.appendChild(s);
+              })();
+            };
+            ensure(function () {
+              try {
+                var T = window.THREE;
+                if (!T || !T.EffectComposer || !T.RenderPass || !T.UnrealBloomPass || !cv.isConnected) return;
+                var lowPower = _prefersReducedMotion || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+                bloomRes = lowPower ? 0.5 : 1;
+                var c = new T.EffectComposer(renderer);
+                c.addPass(new T.RenderPass(scene, camera));
+                // Threshold 0.82: high enough that the white radiators and hull
+                // labels stay crisp, low enough that the lit viewports and the
+                // array glint (both pushed above it deliberately) actually bloom.
+                c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(Wc * bloomRes)), Math.max(1, Math.round(Hc * bloomRes))), lowPower ? 0.62 : 0.85, 0.4, 0.82));
+                composer = c;
+                renderer._alloComposer = c;
+              } catch (e) { composer = null; }
+            });
+          })();
+
+          // Reusable temporaries for the per-frame lighting pass (no per-frame allocation).
+          var _sunDir = new THREE.Vector3(), _wingQ = new THREE.Quaternion(), _wingNormal = new THREE.Vector3();
+          var _lastFrameSig = '';
 
           var tick = 0, rafId = 0;
           function animate() {
@@ -598,6 +705,27 @@
               var sa = tick * 0.002;
               sun.position.set(Math.cos(sa) * 10, 6, Math.sin(sa) * 10); // day/night lighting sweep
               sun.intensity = 0.55 + 0.7 * Math.max(0, Math.cos(sa));    // orbital "night" dims the station
+            }
+            // Sunlit-vs-eclipsed drives two real, teachable details: an array only
+            // flashes when its tracking joint has brought it face-on to the Sun
+            // (that is WHY the alpha joints rotate), and the station's lit windows
+            // only stand out once the Sun has set. Both go quiet during eclipse,
+            // because in eclipse there is no sunlight to reflect.
+            var daylight01 = Math.max(0, Math.min(1, (sun.intensity - 0.55) / 0.7));
+            _sunDir.copy(sun.position).normalize();
+            for (var wi2 = 0; wi2 < wings.length; wi2++) {
+              wings[wi2].getWorldQuaternion(_wingQ);
+              _wingNormal.set(0, 1, 0).applyQuaternion(_wingQ);
+              var incidence = Math.abs(_wingNormal.dot(_sunDir));
+              var glint = daylight01 * Math.pow(incidence, 3);
+              var wingMats = wingPanelMats[wi2] || [];
+              for (var pi = 0; pi < wingMats.length; pi++) {
+                wingMats[pi].emissive.setRGB(0.18 + 0.77 * glint, 0.12 + 0.6 * glint, 0.02 + 0.26 * glint);
+              }
+            }
+            var lampOn = 1 - daylight01;
+            for (var vi = 0; vi < viewportMats.length; vi++) {
+              viewportMats[vi].color.setRGB(0.42 + 0.32 * lampOn, 0.62 + 0.33 * lampOn, 0.72 + 0.28 * lampOn);
             }
             // keep the highlight on the selected module
             var curSel = null;
@@ -639,7 +767,26 @@
               phaseChip.textContent = daylight ? '☀ SUNLIGHT' : '◐ ECLIPSE';
               phaseChip.setAttribute('data-phase', daylight ? 'sunlight' : 'eclipse');
             }
-            renderer.render(scene, camera);
+            // Under reduced motion nothing in this scene moves on its own, so a
+            // full WebGL pass plus three bloom passes every frame would burn a
+            // classroom Chromebook's battery redrawing an identical image. Keep
+            // the rAF loop ALIVE (the safe pattern — no re-arm wiring to get
+            // wrong) and skip only redundant draws, with a forced repaint about
+            // twice a second so a discarded drawing buffer can never strand a
+            // blank canvas. The composer flag is in the signature because bloom
+            // loads asynchronously and must trigger one repaint when it lands.
+            if (_prefersReducedMotion) {
+              var q = camera.quaternion;
+              var frameSig = wantId + '|' + (cutaway ? 1 : 0) +
+                '|' + camera.position.x.toFixed(3) + ',' + camera.position.y.toFixed(3) + ',' + camera.position.z.toFixed(3) +
+                '|' + q.x.toFixed(4) + ',' + q.y.toFixed(4) + ',' + q.z.toFixed(4) + ',' + q.w.toFixed(4) +
+                '|' + station.rotation.x.toFixed(4) + ',' + station.rotation.y.toFixed(4) +
+                '|' + Wc + 'x' + Hc + '|' + (composer ? 1 : 0);
+              if (frameSig === _lastFrameSig && tick % 120 !== 0) { rafId = requestAnimationFrame(animate); return; }
+              _lastFrameSig = frameSig;
+            }
+            if (composer) { try { composer.render(); } catch (e) { composer = null; renderer.render(scene, camera); } }
+            else renderer.render(scene, camera);
             rafId = requestAnimationFrame(animate);
           }
           function cleanup() {
@@ -649,7 +796,11 @@
             cv.removeEventListener('keydown', onKey);
             window.removeEventListener('pointermove', onMove);
             window.removeEventListener('pointerup', onUp);
+            window.removeEventListener('pointercancel', onUp);
             if (resizeObserver) resizeObserver.disconnect(); else window.removeEventListener('resize', resizeScene);
+            try { if (composer && typeof composer.dispose === 'function') composer.dispose(); } catch (e) {}
+            try { renderer._alloComposer = null; } catch (e) {}
+            composer = null;
             try { renderer.dispose(); } catch (e) {}
             cv._issInit = false;
           }
@@ -707,6 +858,7 @@
         function endRun(result, msg) {
           if (st.over) return;
           st.over = true; st.msg = msg;
+          st.overAt = frame; st.overResult = result;   // drives the one-shot capture bloom
           var wins = (d.dockWins || 0) + (result === 'docked' ? 1 : 0);
           upd({ dockResult: result, dockMsg: msg, dockWins: wins, dockRuns: (d.dockRuns || 0) + 1 });
           if (result === 'docked') {
@@ -813,11 +965,20 @@
           var capsuleGradient = ctx2.createLinearGradient(-10, -8, 11, 8); capsuleGradient.addColorStop(0, '#64748b'); capsuleGradient.addColorStop(.45, '#f8fafc'); capsuleGradient.addColorStop(1, '#94a3b8');
           ctx2.fillStyle = capsuleGradient; ctx2.beginPath(); ctx2.moveTo(11, 0); ctx2.lineTo(-7, -7); ctx2.lineTo(-10, -5); ctx2.lineTo(-10, 5); ctx2.lineTo(-7, 7); ctx2.closePath(); ctx2.fill(); ctx2.shadowBlur = 0;
           ctx2.fillStyle = '#0ea5e9'; ctx2.beginPath(); ctx2.arc(4, 0, 2.4, 0, Math.PI * 2); ctx2.fill();
-          ctx2.strokeStyle = 'rgba(253,224,71,.95)'; ctx2.lineWidth = 2.4;
-          if (st.thrust.fwd && st.fuel > 0) { ctx2.beginPath(); ctx2.moveTo(-11, -2); ctx2.lineTo(-18, 0); ctx2.lineTo(-11, 2); ctx2.stroke(); }
-          if (st.thrust.back && st.fuel > 0) { ctx2.beginPath(); ctx2.moveTo(12, -2); ctx2.lineTo(18, 0); ctx2.lineTo(12, 2); ctx2.stroke(); }
-          if (st.thrust.up && st.fuel > 0) { ctx2.beginPath(); ctx2.moveTo(-2, 8); ctx2.lineTo(0, 15); ctx2.lineTo(2, 8); ctx2.stroke(); }
-          if (st.thrust.down && st.fuel > 0) { ctx2.beginPath(); ctx2.moveTo(-2, -8); ctx2.lineTo(0, -15); ctx2.lineTo(2, -8); ctx2.stroke(); }
+          // RCS plumes: a wide hot glow under a bright core. These are the only
+          // feedback that a control input did anything, so they should read
+          // instantly. Steady brightness — no flicker (photosensitivity).
+          ctx2.shadowColor = 'rgba(253,224,71,.9)'; ctx2.shadowBlur = 9;
+          ctx2.lineCap = 'round';
+          [['fwd', [-11, -2, -18, 0, -11, 2]], ['back', [12, -2, 18, 0, 12, 2]], ['up', [-2, 8, 0, 15, 2, 8]], ['down', [-2, -8, 0, -15, 2, -8]]].forEach(function (jet) {
+            if (!st.thrust[jet[0]] || st.fuel <= 0) return;
+            var p = jet[1];
+            ctx2.strokeStyle = 'rgba(251,146,60,.55)'; ctx2.lineWidth = 5;
+            ctx2.beginPath(); ctx2.moveTo(p[0], p[1]); ctx2.lineTo(p[2], p[3]); ctx2.lineTo(p[4], p[5]); ctx2.stroke();
+            ctx2.strokeStyle = 'rgba(255,251,235,.98)'; ctx2.lineWidth = 2;
+            ctx2.beginPath(); ctx2.moveTo(p[0], p[1]); ctx2.lineTo(p[2], p[3]); ctx2.lineTo(p[4], p[5]); ctx2.stroke();
+          });
+          ctx2.shadowBlur = 0; ctx2.lineCap = 'butt';
           ctx2.restore();
           // Velocity vector and arrival reticle.
           var vectorX = px + st.vy * sc * 13, vectorY = py - st.vx * sc * 13;
@@ -834,6 +995,22 @@
           ctx2.fillStyle = 'rgba(2,6,23,.66)'; ctx2.fillRect(10, Hc - 31, realMode ? 147 : 220, 21); ctx2.fillStyle = realMode ? '#7dd3fc' : '#fde68a'; ctx2.font = '800 9px ui-monospace, monospace'; ctx2.fillText(realMode ? 'ORBITAL PHYSICS // ON' : 'VIDEO-GAME PHYSICS // ON', 18, Hc - 17);
           if (st.over) {
             ctx2.fillStyle = 'rgba(2,6,23,0.84)'; ctx2.fillRect(0, 0, Wc, Hc);
+            // Soft-capture bloom at the port. One shot: it expands, fades, and
+            // stops — it never loops, so nothing here strobes. Under reduced
+            // motion it is a single static ring instead of an expanding one.
+            if (st.overResult === 'docked') {
+              var since = Math.max(0, frame - (st.overAt || 0));
+              if (_prefersReducedMotion || since < 48) {
+                var ringFade = _prefersReducedMotion ? 0.75 : 1 - since / 48;
+                var ringR = _prefersReducedMotion ? 34 : 10 + since * 1.7;
+                ctx2.save();
+                ctx2.globalAlpha = Math.max(0, ringFade) * 0.92;
+                ctx2.strokeStyle = '#4ade80'; ctx2.lineWidth = 3;
+                ctx2.shadowColor = '#4ade80'; ctx2.shadowBlur = 18;
+                ctx2.beginPath(); ctx2.arc(ox - 6, oy, ringR, 0, Math.PI * 2); ctx2.stroke();
+                ctx2.restore();
+              }
+            }
             ctx2.fillStyle = st.msg.indexOf('capture') >= 0 || st.msg.indexOf('Soft') >= 0 ? '#4ade80' : '#fbbf24';
             ctx2.font = 'bold 15px system-ui'; ctx2.textAlign = 'center';
             var words = st.msg.split(' '); var line = ''; var ly = Hc / 2 - 12;
@@ -873,7 +1050,7 @@
         cv._dockSetThrust = setThrust;
         cv._dockReset = function (mode) {
           realMode = mode !== false; cv._dockRealMode = realMode;
-          st.x = 26; st.y = -190; st.vx = 0; st.vy = 1.0; st.fuel = 100; st.t = 0; st.over = false; st.msg = ''; st.trail = []; st.lastTrail = 0;
+          st.x = 26; st.y = -190; st.vx = 0; st.vy = 1.0; st.fuel = 100; st.t = 0; st.over = false; st.msg = ''; st.trail = []; st.lastTrail = 0; st.overResult = null;
           st.thrust = { up: false, down: false, fwd: false, back: false };
           if (cv._dockResetMilestones) cv._dockResetMilestones();
           announceToSR(__alloT('stem.spacestation.dock_start_sr', 'New approach started: 190 meters from the docking port, closing at 1 meter per second.'));
@@ -958,10 +1135,17 @@
         var tetherStatus = tetherSpan > 1 ? 'LOAD HIGH' : moveSecured ? 'NEXT MOVE SECURED' : 'CLIP AHEAD FIRST';
         return h('div', { className: 'iss-learning-visual iss-eva-visual' },
           h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': 'Spacewalk route. Astronaut at ' + EVA_RAILS[position] + '. Tether A at ' + EVA_RAILS[evaS.tetherA || 0] + '. Tether B at ' + EVA_RAILS[evaS.tetherB || 0] + '. Suit consumables ' + oxygen + ' percent. Projected at worksite ' + projectedOxygen + ' percent. ' + tetherStatus + '.' },
-            h('defs', null, h('linearGradient', { id: 'iss-eva-bg', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#020611' }), h('stop', { offset: '100%', stopColor: '#09213a' }))),
+            h('defs', null, h('linearGradient', { id: 'iss-eva-bg', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#020611' }), h('stop', { offset: '100%', stopColor: '#09213a' })),
+              // Matches the gradient Earths already used by the orbit/ops/day
+              // surfaces — this one was the odd flat disc out.
+              h('radialGradient', { id: 'iss-eva-earth', cx: '48%', cy: '6%', r: '74%' },
+                h('stop', { offset: '0%', stopColor: '#8ed2f7' }), h('stop', { offset: '30%', stopColor: '#2c7fc0' }), h('stop', { offset: '100%', stopColor: '#0a3160' })),
+              h('filter', { id: 'iss-eva-limb', x: '-25%', y: '-25%', width: '150%', height: '150%' }, h('feGaussianBlur', { stdDeviation: 6 }))),
             h('rect', { width: 640, height: 190, fill: 'url(#iss-eva-bg)' }),
             [[27,27],[91,46],[165,21],[274,39],[368,19],[458,44],[537,25],[609,55]].map(function (s, i) { return h('circle', { key: 'e' + i, cx: s[0], cy: s[1], r: i % 3 ? .8 : 1.3, fill: i % 2 ? '#94a3b8' : '#e0f2fe' }); }),
-            h('circle', { cx: 320, cy: 360, r: 212, fill: '#17629c', stroke: '#7dd3fc', strokeWidth: 3, opacity: .8 }),
+            h('circle', { cx: 320, cy: 360, r: 217, fill: 'none', stroke: '#7dd3fc', strokeWidth: 7, opacity: .45, filter: 'url(#iss-eva-limb)' }),
+            h('circle', { cx: 320, cy: 360, r: 212, fill: 'url(#iss-eva-earth)', stroke: '#a5e2ff', strokeWidth: 2.5, opacity: .95 }),
+            h('g', { opacity: .3 }, h('ellipse', { cx: 168, cy: 168, rx: 44, ry: 7, fill: '#f8fafc' }), h('ellipse', { cx: 402, cy: 176, rx: 58, ry: 8, fill: '#f8fafc' }), h('ellipse', { cx: 556, cy: 166, rx: 30, ry: 6, fill: '#f8fafc' })),
             h('path', { d: 'M30 110 L610 110', stroke: '#94a3b8', strokeWidth: 8, opacity: .75 }),
             h('path', { d: 'M30 110 L610 110', stroke: '#e2e8f0', strokeWidth: 1, strokeDasharray: '11 9', opacity: .65 }),
             [170, 470].map(function (x, i) { return h('g', { key: 'panel' + i }, h('rect', { x: x - 28, y: 118, width: 56, height: 28, rx: 3, fill: '#a86e16', stroke: '#fbbf24' }), [1,2,3].map(function (line) { return h('line', { key: line, x1: x - 28, y1: 118 + line * 7, x2: x + 28, y2: 118 + line * 7, stroke: '#fde68a', strokeWidth: .6 }); })); }),
@@ -973,7 +1157,7 @@
             h('path', { className: 'iss-eva-tether-b', d: 'M' + astroX + ' ' + astroY + ' Q' + ((astroX + tetherBX) / 2) + ' ' + (Math.min(astroY, tetherBY) - 10) + ' ' + tetherBX + ' ' + tetherBY, fill: 'none', strokeWidth: 2 }),
             position < routeX.length - 1 ? h('line', { x1: routeX[position], y1: routeY[position], x2: routeX[nextPosition], y2: routeY[nextPosition], stroke: moveSecured ? '#4ade80' : '#fbbf24', strokeWidth: 5, strokeDasharray: moveSecured ? 'none' : '6 5', opacity: .65 }) : null,
             routeX.map(function (x, i) { var reached = i <= position; return h('g', { key: labels[i] }, h('circle', { cx: x, cy: routeY[i], r: 7, fill: reached ? '#0ea5e9' : '#172033', stroke: reached ? '#7dd3fc' : '#64748b', strokeWidth: 2 }), h('text', { x: x, y: 163, textAnchor: 'middle', fill: i === position ? '#7dd3fc' : '#94a3b8', fontSize: 8, fontWeight: i === position ? 900 : 700 }, labels[i])); }),
-            h('g', { className: 'iss-eva-astronaut', transform: 'translate(' + astroX + ',' + astroY + ')' }, h('circle', { cx: 0, cy: -6, r: 9, fill: '#f8fafc', stroke: '#7dd3fc', strokeWidth: 2 }), h('rect', { x: -10, y: 4, width: 20, height: 24, rx: 8, fill: '#e2e8f0', stroke: '#94a3b8' }), h('rect', { x: -15, y: 7, width: 6, height: 17, rx: 3, fill: '#cbd5e1' }), h('line', { x1: -9, y1: 12, x2: -20, y2: 23, stroke: '#e2e8f0', strokeWidth: 4, strokeLinecap: 'round' }), h('line', { x1: 9, y1: 12, x2: 20, y2: 21, stroke: '#e2e8f0', strokeWidth: 4, strokeLinecap: 'round' })),
+            h('g', { className: 'iss-eva-astronaut', transform: 'translate(' + astroX + ',' + astroY + ')' }, h('circle', { cx: 0, cy: -6, r: 9, fill: '#f8fafc', stroke: '#7dd3fc', strokeWidth: 2 }), h('ellipse', { cx: 0, cy: -6.4, rx: 6.2, ry: 5.2, fill: '#c98f1c', stroke: '#f6d67a', strokeWidth: .8, opacity: .93 }), h('ellipse', { cx: -2.1, cy: -8.2, rx: 2.2, ry: 1.3, fill: '#fff7e0', opacity: .55 }), h('rect', { x: -10, y: 4, width: 20, height: 24, rx: 8, fill: '#e2e8f0', stroke: '#94a3b8' }), h('rect', { x: -15, y: 7, width: 6, height: 17, rx: 3, fill: '#cbd5e1' }), h('line', { x1: -9, y1: 12, x2: -20, y2: 23, stroke: '#e2e8f0', strokeWidth: 4, strokeLinecap: 'round' }), h('line', { x1: 9, y1: 12, x2: 20, y2: 21, stroke: '#e2e8f0', strokeWidth: 4, strokeLinecap: 'round' })),
             h('rect', { x: 274, y: 16, width: 170, height: 25, rx: 8, fill: 'rgba(2,6,23,.72)', stroke: moveSecured ? 'rgba(74,222,128,.45)' : 'rgba(251,191,36,.45)' }),
             h('text', { x: 286, y: 27, fill: moveSecured ? '#86efac' : '#fde68a', fontSize: 7.5, fontWeight: 850 }, tetherStatus),
             h('text', { x: 286, y: 37, fill: '#cbd5e1', fontSize: 7.5 }, 'PROJECTED AT WORKSITE ' + projectedOxygen.toFixed(0) + '%'),
@@ -989,14 +1173,16 @@
         var scene = d.cupolaScene || 'day';
         var shut = !!d.cupolaShut;
         var SCENES = {
-          day: { fill: '#2f6fab', label: __alloT('stem.spacestation.scene_day', '☀️ Daylit Pacific'), note: 'Cloud spirals and ocean glint — crews say the blue is beyond any photograph.' },
-          night: { fill: '#0b1026', label: __alloT('stem.spacestation.scene_night', '🌃 Night — city lights'), note: 'Cities web the darkness in gold; lightning storms flicker hundreds of km wide.' },
-          aurora: { fill: '#123a2e', label: __alloT('stem.spacestation.scene_aurora', '🟢 Aurora pass'), note: 'The station flies THROUGH the upper fringes of aurora — green curtains below and beside you.' }
+          day: { fill: '#2f6fab', grad: 'iss-cup-day', label: __alloT('stem.spacestation.scene_day', '☀️ Daylit Pacific'), note: 'Cloud spirals and ocean glint — crews say the blue is beyond any photograph.' },
+          night: { fill: '#0b1026', grad: 'iss-cup-night', label: __alloT('stem.spacestation.scene_night', '🌃 Night — city lights'), note: 'Cities web the darkness in gold; lightning storms flicker hundreds of km wide.' },
+          aurora: { fill: '#123a2e', grad: 'iss-cup-aurora', label: __alloT('stem.spacestation.scene_aurora', '🟢 Aurora pass'), note: 'The station flies THROUGH the upper fringes of aurora — green curtains below and beside you.' }
         };
         var sc = SCENES[scene] || SCENES.day;
         function windowPane(x, y, w, hgt, key) {
           return h('g', { key: key },
-            h('rect', { x: x, y: y, width: w, height: hgt, rx: 6, fill: shut ? '#39424f' : sc.fill, stroke: '#94a3b8', strokeWidth: 2 }),
+            h('rect', { x: x, y: y, width: w, height: hgt, rx: 6, fill: shut ? '#39424f' : 'url(#' + sc.grad + ')', stroke: '#94a3b8', strokeWidth: 2 }),
+            // Thick fused-silica panes catch the dome's interior lighting.
+            !shut ? h('path', { d: 'M ' + (x + 5) + ' ' + (y + hgt - 7) + ' L ' + (x + w * 0.46) + ' ' + (y + 4), stroke: 'rgba(255,255,255,.18)', strokeWidth: 2.5, fill: 'none', strokeLinecap: 'round' }) : null,
             shut ? h('line', { x1: x + 4, y1: y + hgt / 2, x2: x + w - 4, y2: y + hgt / 2, stroke: '#556072', strokeWidth: 3 }) :
               scene === 'aurora' ? h('path', { d: 'M ' + (x + 4) + ' ' + (y + hgt - 8) + ' Q ' + (x + w / 2) + ' ' + (y + 4) + ' ' + (x + w - 4) + ' ' + (y + hgt - 10), fill: 'none', stroke: '#4ade80', strokeWidth: 3, opacity: 0.8 }) :
               scene === 'night' ? h('g', null, [0, 1, 2, 3].map(function (i) { return h('circle', { key: i, cx: x + 6 + ((i * 37) % (w - 10)), cy: y + 8 + ((i * 23) % (hgt - 14)), r: 1.5, fill: '#fde68a' }); })) :
@@ -1006,9 +1192,40 @@
         return card('🔭 ' + __alloT('stem.spacestation.inside_cupola', 'Inside the Cupola'),
           h('div', null,
             h('svg', { viewBox: '0 0 360 180', role: 'img', 'aria-label': __alloT('stem.spacestation.cupola_aria', 'View from inside the Cupola dome: six angled windows around a large round center window, looking down at Earth. Scene: ') + sc.label, style: { width: '100%', maxWidth: 480, display: 'block', margin: '0 auto', background: '#101725', borderRadius: 12, border: '1px solid #334155' } },
+              h('defs', null,
+                h('radialGradient', { id: 'iss-cup-day', cx: '38%', cy: '28%', r: '96%' },
+                  h('stop', { offset: '0%', stopColor: '#a6dcf8' }), h('stop', { offset: '36%', stopColor: '#3f86c4' }), h('stop', { offset: '100%', stopColor: '#123f6b' })),
+                h('radialGradient', { id: 'iss-cup-night', cx: '46%', cy: '64%', r: '96%' },
+                  h('stop', { offset: '0%', stopColor: '#1c2552' }), h('stop', { offset: '55%', stopColor: '#0b1026' }), h('stop', { offset: '100%', stopColor: '#04060f' })),
+                h('radialGradient', { id: 'iss-cup-aurora', cx: '50%', cy: '80%', r: '112%' },
+                  h('stop', { offset: '0%', stopColor: '#2f9670' }), h('stop', { offset: '46%', stopColor: '#123a2e' }), h('stop', { offset: '100%', stopColor: '#061a18' })),
+                h('clipPath', { id: 'iss-cup-center' }, h('circle', { cx: 180, cy: 96, r: 34 })),
+                h('filter', { id: 'iss-cup-glow', x: '-45%', y: '-45%', width: '190%', height: '190%' },
+                  h('feGaussianBlur', { stdDeviation: 2.2, result: 'cupGlow' }),
+                  h('feMerge', null, h('feMergeNode', { in: 'cupGlow' }), h('feMergeNode', { in: 'SourceGraphic' })))),
+              // Earth-light floods the whole dome interior — the reason crews say
+              // the Cupola "glows blue" even with the cabin lights off.
+              !shut ? h('rect', { x: 0, y: 0, width: 360, height: 180, fill: sc.fill, opacity: 0.22 }) : null,
               windowPane(12, 62, 70, 56, 'w1'), windowPane(88, 30, 70, 44, 'w2'), windowPane(202, 30, 70, 44, 'w3'), windowPane(278, 62, 70, 56, 'w4'),
               windowPane(88, 118, 70, 44, 'w5'), windowPane(202, 118, 70, 44, 'w6'),
-              h('circle', { cx: 180, cy: 96, r: 34, fill: shut ? '#39424f' : sc.fill, stroke: '#94a3b8', strokeWidth: 3 }),
+              h('circle', { cx: 180, cy: 96, r: 34, fill: shut ? '#39424f' : 'url(#' + sc.grad + ')', stroke: '#94a3b8', strokeWidth: 3 }),
+              // What the notes already promise, finally drawn: cloud spirals and
+              // ocean glint by day, a gold city web and a lightning cell at night,
+              // green curtains on an auroral pass. Clipped to the center pane.
+              !shut && scene === 'day' ? h('g', { clipPath: 'url(#iss-cup-center)' },
+                h('path', { d: 'M 152 104 Q 168 87 186 96 Q 201 103 196 113', fill: 'none', stroke: '#f2fbff', strokeWidth: 5, opacity: 0.5, strokeLinecap: 'round' }),
+                h('path', { d: 'M 156 78 Q 176 71 198 79', fill: 'none', stroke: '#ffffff', strokeWidth: 4, opacity: 0.34, strokeLinecap: 'round' }),
+                h('ellipse', { cx: 197, cy: 84, rx: 8, ry: 4.5, fill: '#ffffff', opacity: 0.42 })) : null,
+              !shut && scene === 'night' ? h('g', { clipPath: 'url(#iss-cup-center)' },
+                h('path', { d: 'M 158 104 L 176 96 L 188 92 M 176 96 L 172 111 L 185 117 M 188 92 L 197 105', stroke: '#fbbf24', strokeWidth: 0.8, fill: 'none', opacity: 0.42 }),
+                [[164, 90], [176, 96], [188, 92], [197, 105], [172, 111], [185, 117], [158, 104], [203, 94]].map(function (p, i) {
+                  return h('circle', { key: i, cx: p[0], cy: p[1], r: i % 3 === 0 ? 2 : 1.3, fill: '#fde68a', opacity: 0.95, filter: 'url(#iss-cup-glow)' });
+                }),
+                h('circle', { cx: 206, cy: 118, r: 6.5, fill: '#e0f2fe', opacity: 0.48, filter: 'url(#iss-cup-glow)' })) : null,
+              !shut && scene === 'aurora' ? h('g', { clipPath: 'url(#iss-cup-center)' },
+                h('path', { className: 'iss-aurora-curtain', d: 'M 150 125 Q 164 97 172 74', fill: 'none', stroke: '#4ade80', strokeWidth: 7, opacity: 0.52, strokeLinecap: 'round', filter: 'url(#iss-cup-glow)' }),
+                h('path', { className: 'iss-aurora-curtain', d: 'M 168 128 Q 182 101 188 78', fill: 'none', stroke: '#86efac', strokeWidth: 5, opacity: 0.46, strokeLinecap: 'round' }),
+                h('path', { className: 'iss-aurora-curtain', d: 'M 189 126 Q 200 105 206 86', fill: 'none', stroke: '#22d3ee', strokeWidth: 4, opacity: 0.34, strokeLinecap: 'round' })) : null,
               !shut ? h('ellipse', { cx: 180, cy: 112, rx: 26, ry: 8, fill: scene === 'day' ? '#e8f4ff' : scene === 'aurora' ? '#4ade80' : '#fde68a', opacity: 0.45 }) : null,
               h('text', { x: 180, y: 14, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, '80 cm center window — the largest ever flown in space')
             ),
@@ -1033,16 +1250,58 @@
         var sp = SPOTS[spot] || SPOTS.bag;
         return card('😴 ' + __alloT('stem.spacestation.inside_cabin', 'Inside a crew sleep cabin (Harmony)'),
           h('div', null,
-            h('svg', { viewBox: '0 0 200 160', role: 'img', 'aria-label': __alloT('stem.spacestation.cabin_aria', 'Cutaway of a crew sleep cabin, about the size of a phone booth. Tap the hotspot buttons to inspect items.'), style: { width: '100%', maxWidth: 380, display: 'block', margin: '0 auto', background: '#101725', borderRadius: 12, border: '1px solid #334155' } },
-              h('rect', { x: 14, y: 10, width: 172, height: 140, rx: 10, fill: '#1c2434', stroke: '#475569', strokeWidth: 2 }),
-              h('rect', { x: 80, y: 26, width: 34, height: 118, rx: 12, fill: '#334a66', stroke: '#64748b' }),
-              h('circle', { cx: 97, cy: 40, r: 9, fill: '#e8d8c3' }),
-              h('rect', { x: 30, y: 40, width: 26, height: 18, rx: 3, fill: '#0f172a', stroke: '#64748b' }),
+            h('svg', { viewBox: '0 0 200 160', role: 'img', 'aria-label': __alloT('stem.spacestation.cabin_aria', 'Cutaway of a crew sleep cabin, about the size of a phone booth. Tap the hotspot buttons to inspect items.') + ' ' + sp.label + '.', style: { width: '100%', maxWidth: 380, display: 'block', margin: '0 auto', background: '#101725', borderRadius: 12, border: '1px solid #334155' } },
+              h('defs', null,
+                h('linearGradient', { id: 'iss-cabin-wall', x1: '0', y1: '0', x2: '0', y2: '1' },
+                  h('stop', { offset: '0%', stopColor: '#28344a' }), h('stop', { offset: '58%', stopColor: '#1c2434' }), h('stop', { offset: '100%', stopColor: '#111925' })),
+                h('linearGradient', { id: 'iss-cabin-bag', x1: '0', y1: '0', x2: '1', y2: '0' },
+                  h('stop', { offset: '0%', stopColor: '#24374f' }), h('stop', { offset: '46%', stopColor: '#3f5c80' }), h('stop', { offset: '100%', stopColor: '#1d2c40' })),
+                h('radialGradient', { id: 'iss-cabin-lamp', cx: '50%', cy: '0%', r: '100%' },
+                  h('stop', { offset: '0%', stopColor: '#fff8e6', stopOpacity: 0.3 }), h('stop', { offset: '100%', stopColor: '#fff8e6', stopOpacity: 0 })),
+                h('filter', { id: 'iss-cabin-glow', x: '-60%', y: '-60%', width: '220%', height: '220%' },
+                  h('feGaussianBlur', { stdDeviation: 2.4, result: 'cabGlow' }),
+                  h('feMerge', null, h('feMergeNode', { in: 'cabGlow' }), h('feMergeNode', { in: 'SourceGraphic' })))),
+              h('rect', { x: 14, y: 10, width: 172, height: 140, rx: 10, fill: 'url(#iss-cabin-wall)', stroke: '#475569', strokeWidth: 2 }),
+              // Quilted acoustic padding — the cabin walls really are soft-lined,
+              // which is part of why crews describe it as a phone-booth-sized den.
+              h('g', { opacity: 0.16 },
+                [0, 1, 2, 3, 4, 5].map(function (i) { return h('line', { key: 'qv' + i, x1: 22 + i * 28, y1: 14, x2: 22 + i * 28, y2: 146, stroke: '#cbd5e1', strokeWidth: 0.6 }); }),
+                [0, 1, 2, 3, 4].map(function (i) { return h('line', { key: 'qh' + i, x1: 18, y1: 30 + i * 27, x2: 182, y2: 30 + i * 27, stroke: '#cbd5e1', strokeWidth: 0.6 }); })),
+              // Overhead cabin light — the only light source in here.
+              h('ellipse', { cx: 100, cy: 12, rx: 76, ry: 34, fill: 'url(#iss-cabin-lamp)' }),
+              h('rect', { x: 84, y: 11, width: 32, height: 3, rx: 1.5, fill: '#fff8e6', opacity: 0.8, filter: 'url(#iss-cabin-glow)' }),
+              // Air vent + the airflow itself. Drawing the flow matters: the note
+              // teaches that without it exhaled CO2 pools around a sleeper's face.
               h('rect', { x: 138, y: 18, width: 24, height: 12, rx: 3, fill: '#0f172a', stroke: '#64748b' }),
               [0, 1, 2].map(function (i) { return h('line', { key: i, x1: 141 + i * 7, y1: 20, x2: 141 + i * 7, y2: 28, stroke: '#475569' }); }),
+              h('g', { opacity: 0.62 }, [0, 1, 2].map(function (i) {
+                return h('path', { key: 'flow' + i, className: 'iss-cabin-airflow', d: 'M ' + (146 + i * 6) + ' 32 Q ' + (132 - i * 10) + ' ' + (52 + i * 12) + ' ' + (116 + i * 2) + ' ' + (66 + i * 16), fill: 'none', stroke: '#7dd3fc', strokeWidth: 1.3, strokeDasharray: '4 3', strokeLinecap: 'round' });
+              })),
+              // Sleeping bag: strapped upright, zipper down the middle.
+              h('rect', { x: 80, y: 26, width: 34, height: 118, rx: 12, fill: 'url(#iss-cabin-bag)', stroke: '#64748b' }),
+              h('line', { x1: 97, y1: 52, x2: 97, y2: 138, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3 2', opacity: 0.75 }),
+              [66, 92, 118].map(function (y) { return h('rect', { key: 'strap' + y, x: 76, y: y, width: 42, height: 5, rx: 2, fill: '#64748b', opacity: 0.85 }); }),
+              h('circle', { cx: 97, cy: 40, r: 9, fill: '#e8d8c3' }),
+              h('path', { d: 'M 89 37 Q 97 31 105 37', fill: 'none', stroke: '#a8927a', strokeWidth: 1.2, opacity: 0.7 }),
+              // Laptop — a real light source in a dark cabin, so the screen glows.
+              h('rect', { x: 30, y: 40, width: 26, height: 18, rx: 3, fill: '#0f172a', stroke: '#64748b' }),
+              h('rect', { x: 32.5, y: 42.5, width: 21, height: 13, rx: 1.5, fill: '#38bdf8', opacity: 0.72, filter: 'url(#iss-cabin-glow)' }),
+              h('rect', { x: 28, y: 58, width: 30, height: 3, rx: 1.5, fill: '#475569' }),
+              // Personal kit: eye mask + earplugs (the 60-70 dB hum, 92-minute sunrise).
               h('rect', { x: 138, y: 108, width: 26, height: 24, rx: 4, fill: '#243146', stroke: '#64748b' }),
-              h('rect', { x: 30, y: 112, width: 22, height: 16, rx: 2, fill: '#3b2f3f', stroke: '#a78bfa' }),
-              h('circle', { cx: sp.x, cy: sp.y, r: 8, fill: 'none', stroke: '#38bdf8', strokeWidth: 2.5 })
+              h('path', { d: 'M 142 116 Q 151 111 160 116 Q 151 122 142 116 Z', fill: '#1e293b', stroke: '#94a3b8', strokeWidth: 0.8 }),
+              h('circle', { cx: 145, cy: 126, r: 2, fill: '#fbbf24', opacity: 0.85 }),
+              h('circle', { cx: 152, cy: 127, r: 2, fill: '#fbbf24', opacity: 0.85 }),
+              // Family photos, taped up at angles — crews decorate these like dorm rooms.
+              h('g', null,
+                h('rect', { x: 29, y: 112, width: 15, height: 12, rx: 1, fill: '#e2e8f0', stroke: '#a78bfa', strokeWidth: 0.9, transform: 'rotate(-7 36 118)' }),
+                h('rect', { x: 38, y: 116, width: 14, height: 11, rx: 1, fill: '#cbd5e1', stroke: '#a78bfa', strokeWidth: 0.9, transform: 'rotate(6 45 121)' }),
+                h('rect', { x: 33, y: 126, width: 13, height: 10, rx: 1, fill: '#dbe3ee', stroke: '#a78bfa', strokeWidth: 0.9, transform: 'rotate(-3 39 131)' })),
+              // Velcro patches — "the real space program runs on Velcro."
+              h('g', { opacity: 0.5 }, [[124, 46], [128, 132], [66, 30]].map(function (p, i) {
+                return h('rect', { key: 'vel' + i, x: p[0], y: p[1], width: 7, height: 7, rx: 1, fill: 'none', stroke: '#94a3b8', strokeWidth: 0.8, strokeDasharray: '1.5 1.5' });
+              })),
+              h('circle', { cx: sp.x, cy: sp.y, r: 8, fill: 'none', stroke: '#38bdf8', strokeWidth: 2.5, filter: 'url(#iss-cabin-glow)' })
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
               Object.keys(SPOTS).map(function (k) {
@@ -1179,13 +1438,16 @@
             room.id === 'destiny' ? h('g', { className: 'iss-float' }, h('rect', { x: 312, y: 98, width: 100, height: 65, rx: 8, fill: '#172554', stroke: '#7dd3fc', strokeWidth: 3 }), h('path', { d: 'M362 98 C340 76 344 55 362 67 C379 49 387 76 362 98', fill: '#4ade80' }), h('circle', { cx: 382, cy: 120, r: 10, fill: '#38bdf8', opacity: 0.85 })) :
             room.id === 'tranquility' ? h('g', null, h('rect', { x: 304, y: 72, width: 116, height: 120, rx: 8, fill: '#292524', stroke: '#fbbf24', strokeWidth: 3 }), h('circle', { cx: 362, cy: 124, r: 34, fill: '#111827', stroke: '#94a3b8', strokeWidth: 6 }), [0, 1, 2, 3, 4, 5].map(function (i) { var a = i * Math.PI / 3; return h('line', { key: i, x1: 362, y1: 124, x2: 362 + Math.cos(a) * 27, y2: 124 + Math.sin(a) * 27, stroke: '#64748b', strokeWidth: 5 }); }), h('text', { x: 362, y: 178, textAnchor: 'middle', fill: '#fbbf24', fontSize: 12 }, 'AIRFLOW LOW')) :
             room.id === 'unity' ? h('g', { className: 'iss-float' }, h('rect', { x: 330, y: 93, width: 70, height: 58, rx: 8, fill: '#8b5e3c', stroke: '#fde68a', strokeWidth: 3 }), h('path', { d: 'M340 93 Q365 70 390 93', fill: 'none', stroke: '#fde68a', strokeWidth: 4 }), h('text', { x: 365, y: 128, textAnchor: 'middle', fill: '#fff7ed', fontSize: 13 }, 'CARGO')) :
-            h('g', null, h('circle', { cx: 362, cy: 124, r: 75, fill: '#2563a8', stroke: '#cbd5e1', strokeWidth: 8 }), h('path', { d: 'M300 132 Q350 82 424 112 Q398 180 320 181 Z', fill: '#e7f5ff', opacity: 0.72 }), h('path', { d: 'M314 145 Q358 105 414 122', fill: 'none', stroke: '#4ade80', strokeWidth: 9, opacity: 0.65 }));
+            h('g', null, h('circle', { cx: 362, cy: 124, r: 75, fill: 'url(#iss-window-earth)', stroke: '#cbd5e1', strokeWidth: 8 }), h('circle', { cx: 362, cy: 124, r: 70, fill: 'none', stroke: '#bfeeff', strokeWidth: 3, opacity: 0.5 }), h('path', { d: 'M300 132 Q350 82 424 112 Q398 180 320 181 Z', fill: '#e7f5ff', opacity: 0.72 }), h('path', { d: 'M314 145 Q358 105 414 122', fill: 'none', stroke: '#4ade80', strokeWidth: 9, opacity: 0.65 }), h('ellipse', { cx: 336, cy: 100, rx: 13, ry: 7, fill: '#ffffff', opacity: 0.42 }));
           return h('svg', { viewBox: '0 0 724 260', role: 'img', 'aria-label': 'Interior view of ' + room.name + '. ' + room.scene, style: { width: '100%', display: 'block', background: '#060b18' } },
             h('defs', null,
               h('linearGradient', { id: 'iss-tunnel-ceiling', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#f8fafc' }), h('stop', { offset: '65%', stopColor: '#9aa8ba' }), h('stop', { offset: '100%', stopColor: '#536173' })),
               h('linearGradient', { id: 'iss-tunnel-floor', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#536173' }), h('stop', { offset: '100%', stopColor: '#172033' })),
               h('linearGradient', { id: 'iss-tunnel-side', x1: '0', y1: '0', x2: '1', y2: '0' }, h('stop', { offset: '0%', stopColor: '#425066' }), h('stop', { offset: '50%', stopColor: '#9aa7b8' }), h('stop', { offset: '100%', stopColor: '#3e4a5d' })),
               h('radialGradient', { id: 'iss-cabin-depth', cx: '50%', cy: '48%' }, h('stop', { offset: '0%', stopColor: '#1a3658' }), h('stop', { offset: '55%', stopColor: '#0b1729' }), h('stop', { offset: '100%', stopColor: '#030712' })),
+              // Last of the flat Earth discs: the porthole view at the end of the
+              // tunnel. Same sun-from-upper-left shading as iss-orbit-earth.
+              h('radialGradient', { id: 'iss-window-earth', cx: '35%', cy: '28%' }, h('stop', { offset: '0%', stopColor: '#8ed2f7' }), h('stop', { offset: '52%', stopColor: '#2470ad' }), h('stop', { offset: '100%', stopColor: '#0a2c52' })),
               h('filter', { id: 'iss-light-glow', x: '-30%', y: '-100%', width: '160%', height: '300%' }, h('feGaussianBlur', { stdDeviation: 5, result: 'glow' }), h('feMerge', null, h('feMergeNode', { in: 'glow' }), h('feMergeNode', { in: 'SourceGraphic' })))),
             h('rect', { x: 0, y: 0, width: 724, height: 260, fill: 'url(#iss-cabin-depth)' }),
             h('polygon', { points: '0,18 724,18 610,88 114,88', fill: 'url(#iss-tunnel-ceiling)', stroke: room.color, strokeWidth: 2 }),
@@ -1639,7 +1901,7 @@
         function renderAttitude() {
           var wheelColor = nextCmg < 80 ? '#a78bfa' : '#f87171';
           return h('div', null,
-            h('div', { className: 'iss-learning-visual' }, h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': 'Control Moment Gyroscope cluster, projected saturation ' + nextCmg.toFixed(0) + ' percent.' }, h('rect', { width: 640, height: 190, fill: '#050b18' }), [220,290,360,430].map(function (x,i) { return h('g', { key:i, transform:'translate('+x+',96) rotate('+(i%2?18:-18)+')' }, h('circle',{r:42,fill:'#111827',stroke:wheelColor,strokeWidth:3}),h('circle',{r:26,fill:'none',stroke:'#64748b',strokeWidth:8}),h('path',{d:'M-18 0A18 18 0 0 1 18 0',fill:'none',stroke:wheelColor,strokeWidth:4}),h('text',{y:4,textAnchor:'middle',fill:'#e9d5ff',fontSize:10,fontWeight:900},'CMG '+(i+1))); }), h('text',{x:20,y:24,fill:'#c4b5fd',fontSize:10,fontWeight:850,letterSpacing:1.4},'ATTITUDE CONTROL // MOMENTUM STORAGE'))),
+            h('div', { className: 'iss-learning-visual' }, h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': 'Control Moment Gyroscope cluster, projected saturation ' + nextCmg.toFixed(0) + ' percent.' }, h('rect', { width: 640, height: 190, fill: '#050b18' }), [220,290,360,430].map(function (x,i) { return h('g', { key:i, transform:'translate('+x+',96) rotate('+(i%2?18:-18)+')' }, h('circle',{r:42,fill:'#111827',stroke:wheelColor,strokeWidth:3}),h('circle',{r:34,fill:'none',stroke:'#1e1b4b',strokeWidth:5}),h('circle',{r:34,fill:'none',stroke:wheelColor,strokeWidth:5,strokeLinecap:'round',strokeDasharray:(nextCmg/100*213.6).toFixed(1)+' 213.6',transform:'rotate(-90)'}),h('circle',{r:26,fill:'none',stroke:'#64748b',strokeWidth:8}),h('path',{d:'M-18 0A18 18 0 0 1 18 0',fill:'none',stroke:wheelColor,strokeWidth:4}),h('text',{y:4,textAnchor:'middle',fill:'#e9d5ff',fontSize:10,fontWeight:900},'CMG '+(i+1))); }), h('text',{x:20,y:24,fill:'#c4b5fd',fontSize:10,fontWeight:850,letterSpacing:1.4},'ATTITUDE CONTROL // MOMENTUM STORAGE'))),
             h('div', { className: 'iss-ops-grid' }, opsControl('iss-cmg-load','Current CMG saturation',cmg,0,100,1,'%','#a78bfa','opsCmg'), opsControl('iss-cmg-research','Disturbance / operations load',research,0,100,5,'%','#38bdf8','opsResearch'), opsControl('iss-cmg-angle','Array tracking demand',arrayAngle,0,90,1,'°','#fbbf24','opsArrayAngle'), statusBox('Next-orbit saturation',nextCmg.toFixed(0) + '%','Above 80%: plan a propulsive desaturation.',wheelColor)),
             opsMeter('Momentum storage',nextCmg,wheelColor,'CMGs save fuel until their stored momentum must be dumped'),
             h('button',{type:'button',onClick:function(){opsLogEntry('CMG desaturation burn completed; momentum reset to 8%.',{opsCmg:8,opsRuns:(d.opsRuns||0)+1});},style:{marginTop:9,padding:'8px 12px',borderRadius:9,border:'1px solid #a78bfa',background:'rgba(167,139,250,.14)',color:'#ddd6fe',fontWeight:850,cursor:'pointer'}},'🔥 Perform thruster desaturation'));
@@ -1647,7 +1909,11 @@
         function renderDebris() {
           var survives = impactKj <= shieldCapacity;
           return h('div', null,
-            h('div', { className: 'iss-learning-visual' }, h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': 'Debris impact test. Particle ' + debrisSize.toFixed(1) + ' millimeters at ' + debrisSpeed.toFixed(1) + ' kilometers per second. ' + (survives ? 'Shield disperses impact.' : 'Pressure wall at risk.') }, h('rect',{width:640,height:190,fill:'#050b18'}),h('line',{x1:110,y1:95,x2:268,y2:95,stroke:'#f87171',strokeWidth:3,strokeDasharray:'8 6'}),h('circle',{cx:96,cy:95,r:Math.max(3,debrisSize),fill:'#f87171'}),h('rect',{x:286,y:34,width:8,height:122,fill:'#cbd5e1'}),h('text',{x:290,y:172,textAnchor:'middle',fill:'#94a3b8',fontSize:8},'BUMPER'),h('path',{d:'M294 95 L390 50 M294 95 L390 72 M294 95 L390 95 M294 95 L390 118 M294 95 L390 140',stroke:survives?'#fbbf24':'#f87171',strokeWidth:2,opacity:.7}),h('rect',{x:410,y:26,width:20,height:138,rx:5,fill:survives?'#475569':'#7f1d1d',stroke:survives?'#94a3b8':'#f87171',strokeWidth:3}),h('line',{x1:294,y1:25,x2:410,y2:25,stroke:'#38bdf8',strokeWidth:1.5}),h('text',{x:352,y:18,textAnchor:'middle',fill:'#7dd3fc',fontSize:9,fontWeight:850},shieldGap.toFixed(0)+' cm STANDOFF'),h('text',{x:20,y:24,fill:'#fca5a5',fontSize:10,fontWeight:850,letterSpacing:1.4},'HYPERVELOCITY TEST // WHIPPLE SHIELD'),h('text',{x:520,y:95,textAnchor:'middle',fill:survives?'#4ade80':'#f87171',fontSize:13,fontWeight:900},survives?'DISPERSED':'WALL AT RISK'))),
+            h('div', { className: 'iss-learning-visual' }, h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': 'Debris impact test. Particle ' + debrisSize.toFixed(1) + ' millimeters at ' + debrisSpeed.toFixed(1) + ' kilometers per second. ' + (survives ? 'Shield disperses impact.' : 'Pressure wall at risk.') }, h('defs',null,h('filter',{id:'iss-debris-flash',x:'-140%',y:'-140%',width:'380%',height:'380%'},h('feGaussianBlur',{stdDeviation:7,result:'db'}),h('feMerge',null,h('feMergeNode',{in:'db'}),h('feMergeNode',{in:'SourceGraphic'}))),h('radialGradient',{id:'iss-debris-burst'},h('stop',{offset:'0%',stopColor:survives?'#fef3c7':'#fecaca',stopOpacity:.95}),h('stop',{offset:'100%',stopColor:survives?'#f59e0b':'#ef4444',stopOpacity:0}))),h('rect',{width:640,height:190,fill:'#050b18'}),h('line',{x1:110,y1:95,x2:268,y2:95,stroke:'#f87171',strokeWidth:3,strokeDasharray:'8 6'}),h('circle',{cx:96,cy:95,r:Math.max(3,debrisSize),fill:'#f87171',filter:'url(#iss-debris-flash)'}),h('rect',{x:286,y:34,width:8,height:122,fill:'#cbd5e1'}),h('text',{x:290,y:172,textAnchor:'middle',fill:'#94a3b8',fontSize:8},'BUMPER'),
+              // The bumper impact is where the whole Whipple idea happens: the
+              // particle vaporizes into a spreading cloud instead of a slug.
+              h('circle',{cx:294,cy:95,r:26,fill:'url(#iss-debris-burst)'}),
+              h('path',{d:'M294 95 L390 50 M294 95 L390 72 M294 95 L390 95 M294 95 L390 118 M294 95 L390 140',stroke:survives?'#fbbf24':'#f87171',strokeWidth:2,opacity:.7,filter:'url(#iss-debris-flash)'}),h('rect',{x:410,y:26,width:20,height:138,rx:5,fill:survives?'#475569':'#7f1d1d',stroke:survives?'#94a3b8':'#f87171',strokeWidth:3}),h('line',{x1:294,y1:25,x2:410,y2:25,stroke:'#38bdf8',strokeWidth:1.5}),h('text',{x:352,y:18,textAnchor:'middle',fill:'#7dd3fc',fontSize:9,fontWeight:850},shieldGap.toFixed(0)+' cm STANDOFF'),h('text',{x:20,y:24,fill:'#fca5a5',fontSize:10,fontWeight:850,letterSpacing:1.4},'HYPERVELOCITY TEST // WHIPPLE SHIELD'),h('text',{x:520,y:95,textAnchor:'middle',fill:survives?'#4ade80':'#f87171',fontSize:13,fontWeight:900},survives?'DISPERSED':'WALL AT RISK'))),
             h('div', { className: 'iss-ops-grid' }, opsControl('iss-debris-size','Particle diameter',debrisSize,.2,12,.2,' mm','#f87171','opsDebrisSize'), opsControl('iss-debris-speed','Relative speed',debrisSpeed,7,15,.5,' km/s','#fbbf24','opsDebrisSpeed'), opsControl('iss-shield-gap','Shield standoff',shieldGap,2,20,1,' cm','#38bdf8','opsShieldGap'), statusBox('Impact energy',impactKj < 1 ? impactKj.toFixed(3)+' kJ' : impactKj.toFixed(1)+' kJ','Energy rises with the square of velocity.','#f87171'), statusBox('Shield capacity model',shieldCapacity.toFixed(1)+' kJ','Spacing lets the debris cloud spread.','#38bdf8'), statusBox('Engineering decision',survives?'BUMPER WORKS':debrisSize>=10?'TRACK + MANEUVER':'REDESIGN SHIELD','Large objects are avoided; small ones are armored against.',survives?'#4ade80':'#fbbf24')));
         }
         function renderHuman() {
@@ -1779,7 +2045,23 @@
         return h('div', { className: 'iss-crew-day-timeline', 'data-iss-crew-day-timeline': slot.h },
           h('svg', { viewBox: '0 0 640 108', role: 'img', 'aria-label': 'Twenty-four hour GMT crew timeline. Selected event ' + slot.label + ' at ' + slot.h + '. Work, exercise, meals, personal time, and scheduled sleep are shown on one time axis.' },
             h('text', { x: 20, y: 16, fill: '#94a3b8', fontSize: 8.5, fontWeight: 850, letterSpacing: 1.2 }, '24-HOUR CREW TIMELINE // GMT'),
-            phases.map(function (phase, phaseIndex) { var x = 40 + phase.start / 1440 * 560, width = (phase.end - phase.start) / 1440 * 560; return h('g', { key: phaseIndex }, h('rect', { x: x, y: 31, width: width, height: 24, fill: phase.color, opacity: .64 }), width > 58 ? h('text', { x: x + width / 2, y: 46, textAnchor: 'middle', fill: '#f8fafc', fontSize: 7.5, fontWeight: 850 }, phase.label) : null); }),
+            phases.map(function (phase, phaseIndex) {
+              var x = 40 + phase.start / 1440 * 560, width = (phase.end - phase.start) / 1440 * 560;
+              var isSleep = phase.label === 'SLEEP';
+              return h('g', { key: phaseIndex },
+                h('rect', { x: x, y: 31, width: width, height: 24, rx: 3, fill: phase.color, opacity: .68 }),
+                // Glass sheen on the upper half + a shaded base: enough relief to
+                // read the band as a solid block rather than a flat swatch.
+                h('rect', { x: x, y: 31, width: width, height: 10, rx: 3, fill: '#ffffff', opacity: .12 }),
+                h('rect', { x: x, y: 50, width: width, height: 5, fill: '#020617', opacity: .18 }),
+                // The two sleep blocks get a few stars — scheduled sleep is the
+                // only part of the GMT day the crew is meant to be in the dark.
+                isSleep ? h('g', { opacity: .6 }, [0, 1, 2].map(function (s) {
+                  var starX = x + (width * (0.24 + s * 0.26));
+                  return starX < x + width - 4 ? h('circle', { key: 's' + s, cx: starX, cy: 37 + (s % 2) * 9, r: .9, fill: '#e0e7ff' }) : null;
+                })) : null,
+                width > 58 ? h('text', { x: x + width / 2, y: 46, textAnchor: 'middle', fill: '#f8fafc', fontSize: 7.5, fontWeight: 850 }, phase.label) : null);
+            }),
             DAY_SCHEDULE.map(function (event, eventIndex) { var eventX = 40 + minuteOf(event.h) / 1440 * 560; var selected = eventIndex === index; return h('g', { key: eventIndex, opacity: selected ? 1 : .68 }, h('line', { x1: eventX, y1: 55, x2: eventX, y2: selected ? 72 : 64, stroke: selected ? '#fbbf24' : '#cbd5e1', strokeWidth: selected ? 2 : 1 }), h('circle', { cx: eventX, cy: 55, r: selected ? 4.5 : 2.5, fill: selected ? '#fbbf24' : '#e2e8f0', stroke: '#07101d', strokeWidth: 1 })); }),
             [0,360,720,1080,1440].map(function (minute, tickIndex) { var x = 40 + minute / 1440 * 560; return h('g', { key: tickIndex }, h('line', { x1: x, y1: 73, x2: x, y2: 78, stroke: '#64748b' }), h('text', { x: x, y: 91, textAnchor: tickIndex === 0 ? 'start' : tickIndex === 4 ? 'end' : 'middle', fill: '#94a3b8', fontSize: 8 }, tickIndex === 4 ? '24:00' : String(Math.floor(minute / 60)).padStart(2, '0') + ':00')); }),
             h('g', { className: 'iss-day-timeline-marker' }, h('line', { x1: selectedX, y1: 21, x2: selectedX, y2: 73, stroke: '#fbbf24', strokeWidth: 1.5, strokeDasharray: '3 3' }), h('rect', { x: labelX - 72, y: 2, width: 144, height: 18, rx: 8, fill: '#2b1d0d', stroke: '#fbbf24' }), h('text', { x: labelX, y: 14, textAnchor: 'middle', fill: '#fef3c7', fontSize: 8.5, fontWeight: 850 }, slot.h + '  ' + slot.label.toUpperCase()))));
@@ -2026,12 +2308,29 @@
         var volumeStage = Math.round(visible.filter(function (m) { return m.id !== 'truss'; }).length / 12 * 916);
         return h('div', { className: 'iss-assembly-stage' },
           h('svg', { viewBox: '0 0 640 245', role: 'img', 'aria-label': 'Station assembly visualization at ' + TIMELINE[step].y + '. ' + visible.length + ' major elements shown.' },
-            h('defs', null, h('pattern', { id: 'iss-assembly-grid', width: 24, height: 24, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M24 0H0V24', fill: 'none', stroke: '#38bdf8', strokeWidth: .45, opacity: .15 })), h('marker', { id: 'iss-deorbit-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, h('path', { d: 'M0 0 L10 5 L0 10z', fill: '#fb7185' }))),
+            h('defs', null, h('pattern', { id: 'iss-assembly-grid', width: 24, height: 24, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M24 0H0V24', fill: 'none', stroke: '#38bdf8', strokeWidth: .45, opacity: .15 })), h('marker', { id: 'iss-deorbit-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, h('path', { d: 'M0 0 L10 5 L0 10z', fill: '#fb7185' })),
+              h('radialGradient', { id: 'iss-assembly-earth', cx: '46%', cy: '7%', r: '74%' },
+                h('stop', { offset: '0%', stopColor: '#8ed2f7' }), h('stop', { offset: '32%', stopColor: '#2470ad' }), h('stop', { offset: '100%', stopColor: '#08284f' })),
+              h('filter', { id: 'iss-assembly-limb', x: '-25%', y: '-25%', width: '150%', height: '150%' }, h('feGaussianBlur', { stdDeviation: 6 }))),
             h('rect', { width: 640, height: 245, fill: '#040a16' }), h('rect', { width: 640, height: 245, fill: 'url(#iss-assembly-grid)' }),
-            h('circle', { cx: 320, cy: 360, r: 170, fill: '#155b91', opacity: .65, stroke: '#7dd3fc', strokeWidth: 2 }),
+            h('circle', { cx: 320, cy: 360, r: 175, fill: 'none', stroke: '#7dd3fc', strokeWidth: 7, opacity: .35, filter: 'url(#iss-assembly-limb)' }),
+            h('circle', { cx: 320, cy: 360, r: 170, fill: 'url(#iss-assembly-earth)', opacity: .92, stroke: '#a5e2ff', strokeWidth: 2 }),
             step === TIMELINE.length - 1 ? h('g', null, h('path', { className: 'iss-deorbit-path', d: 'M550 54 Q490 116 386 177', fill: 'none', stroke: '#fb7185', strokeWidth: 2.4, strokeDasharray: '7 6', markerEnd: 'url(#iss-deorbit-arrow)' }), h('text', { x: 548, y: 42, textAnchor: 'end', fill: '#fecdd3', fontSize: 9, fontWeight: 850, letterSpacing: 1 }, 'CONTROLLED REENTRY')) : null,
             step >= 3 ? h('g', { opacity: step === TIMELINE.length - 1 ? .42 : 1 }, h('rect', { x: 110, y: 100, width: 420, height: 8, rx: 4, fill: '#94a3b8' }), [150,220,420,490].map(function (x, i) { return h('g', { key: i }, h('rect', { x: x - 24, y: i % 2 ? 116 : 58, width: 48, height: 34, rx: 2, fill: '#a86e16', stroke: '#fbbf24' }), [1,2,3].map(function (line) { return h('line', { key: line, x1: x - 24, y1: (i % 2 ? 116 : 58) + line * 8.5, x2: x + 24, y2: (i % 2 ? 116 : 58) + line * 8.5, stroke: '#fde68a', strokeWidth: .5 }); })); })) : null,
-            visible.filter(function (m) { return m.id !== 'truss'; }).map(function (m) { var x = 320 + m.pos[0] * 34, y = 106 + m.pos[2] * 12; var color = '#' + Number(m.color).toString(16).padStart(6, '0'); var isNew = (thresholds[m.id] == null ? 6 : thresholds[m.id]) === step; return h('g', { key: m.id, className: isNew ? 'iss-assembly-new' : '', opacity: step === TIMELINE.length - 1 ? .42 : 1, transform: 'translate(' + x + ',' + y + ')' }, h('rect', { x: m.axis === 'x' ? -26 : -10, y: m.axis === 'z' ? -21 : -10, width: m.axis === 'x' ? 52 : 20, height: m.axis === 'z' ? 42 : 20, rx: 9, fill: color, stroke: '#e2e8f0', strokeWidth: 1.3 }), h('circle', { r: 3, fill: '#38bdf8' })); }),
+            visible.filter(function (m) { return m.id !== 'truss'; }).map(function (m) {
+              var x = 320 + m.pos[0] * 34, y = 106 + m.pos[2] * 12;
+              var color = '#' + Number(m.color).toString(16).padStart(6, '0');
+              var isNew = (thresholds[m.id] == null ? 6 : thresholds[m.id]) === step;
+              var bx = m.axis === 'x' ? -26 : -10, by = m.axis === 'z' ? -21 : -10;
+              var bw = m.axis === 'x' ? 52 : 20, bh = m.axis === 'z' ? 42 : 20;
+              return h('g', { key: m.id, className: isNew ? 'iss-assembly-new' : '', opacity: step === TIMELINE.length - 1 ? .42 : 1, transform: 'translate(' + x + ',' + y + ')' },
+                h('rect', { x: bx, y: by, width: bw, height: bh, rx: 9, fill: color, stroke: '#e2e8f0', strokeWidth: 1.3 }),
+                // Same sheen-over-solid treatment as the crew-day bands, so the
+                // hulls read as cylinders rather than flat colour chips. The
+                // module colours themselves are untouched (they carry meaning).
+                h('rect', { x: bx, y: by, width: bw, height: bh * 0.42, rx: 9, fill: '#ffffff', opacity: 0.15 }),
+                h('circle', { r: 3, fill: '#38bdf8' }));
+            }),
             h('text', { x: 20, y: 25, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.4 }, 'ORBITAL ASSEMBLY // ' + TIMELINE[step].y),
             h('text', { x: 20, y: 43, fill: '#cbd5e1', fontSize: 9 }, TIMELINE[step].e.length > 86 ? TIMELINE[step].e.slice(0, 86) + '…' : TIMELINE[step].e),
             h('g', { transform: 'translate(20,185)' }, [['MAJOR ELEMENTS', visible.length], ['PRESSURIZED VOLUME', volumeStage + ' m³'], ['AVAILABLE POWER', powerStage + ' kW']].map(function (metric, i) { return h('g', { key: i, transform: 'translate(' + (i * 200) + ',0)' }, h('text', { fill: '#94a3b8', fontSize: 8, fontWeight: 800, letterSpacing: .8 }, metric[0]), h('text', { y: 22, fill: i === 0 ? '#7dd3fc' : i === 1 ? '#34d399' : '#fbbf24', fontSize: 15, fontWeight: 900 }, String(metric[1]))); }))),

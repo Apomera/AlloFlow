@@ -139,12 +139,42 @@ describe('space station tool', () => {
       expect(source).toContain('cv._issFocusModule');
       expect(source).toContain('focusDistance');
       expect(source).toContain("cv.addEventListener('keydown', onKey)");
+      // Touch parity: without touchAction the browser steals the drag for page
+      // scrolling and drag-to-rotate is dead on touchscreen Chromebooks. And
+      // pointercancel must clear `dragging`, or the idle auto-rotation (gated on
+      // !dragging) freezes for the rest of the session.
+      expect(source).toContain("cv.style.touchAction = 'none'");
+      expect(source).toContain("window.addEventListener('pointercancel', onUp)");
+      expect(source).toContain("window.removeEventListener('pointercancel', onUp)");
       expect(source).toContain('moduleDetails');
       expect(source).toContain('trussBraceMat');
       expect(source).toContain('if (!cv.isConnected) { cleanup(); return; }');
       // Module inspection works without the canvas (keyboard/AT path)
       expect(source).toContain("'aria-pressed': on");
       expect(source).toContain("role: 'tablist'");
+    });
+  });
+
+  // jsdom has no WebGL, so the render pipeline can only be pinned at the source
+  // level — the same way the canvas contract above is pinned. These guard the
+  // three things a future edit could silently drop with no test going red.
+  it('keeps the 3-D render pipeline guarded, kill-switchable, and idle-cheap', () => {
+    TOOL_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      // Bloom rides the renderer and stays opt-out-able platform-wide.
+      expect(source).toContain('renderer._alloComposer');
+      expect(source).toContain('window.AlloPostFXEnabled === false');
+      // Never let a post-FX failure blank the station.
+      expect(source).toContain('else renderer.render(scene, camera);');
+      // Composer must track canvas resizes or bloom detaches from the viewport.
+      expect(source).toContain('composer.setSize(');
+      // Reduced motion must not redraw an identical frame forever.
+      expect(source).toContain('_lastFrameSig');
+      expect(source).toContain('tick % 120 !== 0');
+      // Sun-glint decomposes one quaternion per wing, not per panel.
+      expect(source).toContain('wingPanelMats');
+      expect(source).not.toContain('panelMats[pi].wing');
     });
   });
 
@@ -369,7 +399,11 @@ describe('space station tool', () => {
       } finally {
         live.cleanup();
       }
-    });
+      // axe.run over a tool this dense lands near the 5s default once the
+      // preceding mounts have loaded jsdom; an aborted run also skips the
+      // cleanup above and cascades into the next test. Same explicit budget
+      // the repo already gives its other axe suites.
+    }, 20000);
     it('renders learned feedback and a completed interior shift log', () => {
       const html = mountWithSeed({
         ...BASE, tab: 'interior', interiorRoom: 'cupola',
@@ -522,7 +556,7 @@ describe('space station tool', () => {
       } finally {
         live.cleanup();
       }
-    });
+    }, 20000);
     it('runs an orbit simulation and an emergency procedure', () => {
       const live = mountLiveWithSeed({ ...BASE, tab: 'operations' });
       try {
@@ -604,7 +638,9 @@ describe('space station tool', () => {
       expect(history).toContain('iss-assembly-new');
       expect(history).toContain('data-iss-assembly-milestone');
       expect(history).toContain('2002-2006');
-      expect(history).toContain('2026 (now)');
+      // Derived the same way the tool derives it, so this assertion keeps
+      // testing that the "you are here" marker renders without going stale.
+      expect(history).toContain(`${new Date().getFullYear()} (now)`);
       expect(history).toContain('Spot the Station');
       const retirement = mountWithSeed({ ...BASE, tab: 'history', assemblyIdx: 12 });
       expect(retirement).toContain('CONTROLLED REENTRY');
