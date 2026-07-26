@@ -2524,6 +2524,60 @@ describe('Weather Systems immersive 3D scene', () => {
   });
 });
 
+describe('Weather Systems map readiness detection', () => {
+  const { readFileSync } = require('node:fs');
+  const { resolve } = require('node:path');
+  const source = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weathersystems.js'), 'utf8');
+
+  it('judges readiness by data arriving, not by a flat deadline', () => {
+    const text = source();
+    // Every map event counts as progress; a filtered network produces none of them.
+    ["map.on('dataloading', noteMapProgress)", "map.on('data', noteMapProgress)", "map.on('sourcedata', noteMapProgress)"].forEach((hook) => {
+      expect(text).toContain(hook);
+    });
+    expect(text).toContain('var sinceProgress = Date.now() - lastMapProgressAt');
+    expect(text).toContain('var stalled = sinceProgress >= WEATHER_MAP_STALL_MS');
+    // The old flat 30s deadline is gone.
+    expect(text).not.toContain('WEATHER_MAP_READY_TIMEOUT_MS');
+    expect(text).not.toContain('did not become ready within 30 seconds');
+  });
+
+  it('does not condemn a slow link for going quiet mid-download', () => {
+    const text = source();
+    // Silence alone must not fail the map: a throttled connection can exceed the stall
+    // window inside one tile download. A blocked host also reports errors, and it is that
+    // pairing which separates the two. Verified against a throttled link (succeeds at ~47s)
+    // and a blocked tile host (fails at ~21s).
+    expect(text).toContain('&& mapResourceErrors > 0');
+    expect(text).toContain('mapResourceErrors += 1');
+    expect(text).toContain('lastMapErrorAt = Date.now()');
+  });
+
+  it('tells the learner what to do when the map really is unreachable', () => {
+    expect(source()).toContain('Retry, or switch to Conceptual 3D to keep working.');
+  });
+
+  it('still fails fast when nothing arrives, and cannot spin forever', () => {
+    const text = source();
+    // A stall is caught well before the old deadline would have fired.
+    const stall = Number((text.match(/var WEATHER_MAP_STALL_MS = (\d+);/) || [])[1]);
+    const ceiling = Number((text.match(/var WEATHER_MAP_MAX_WAIT_MS = (\d+);/) || [])[1]);
+    const notice = Number((text.match(/var WEATHER_MAP_SLOW_NOTICE_MS = (\d+);/) || [])[1]);
+    expect(stall).toBeLessThan(30000);
+    expect(notice).toBeGreaterThan(stall);
+    expect(ceiling).toBeGreaterThan(notice);
+    expect(text).toContain("elapsed >= WEATHER_MAP_MAX_WAIT_MS");
+  });
+
+  it('tells the learner it is slow rather than claiming it failed', () => {
+    const text = source();
+    expect(text).toContain('The base map is still loading. Tiles are arriving slowly on this connection or device.');
+    // The slow notice is a status, never an error.
+    expect(text).toContain("update({ geographicMapStatus: slowMessage })");
+    expect(text).toContain('if (!mapSlowNoticeSent && elapsed >= WEATHER_MAP_SLOW_NOTICE_MS)');
+  });
+});
+
 describe('Weather Systems teacher guide', () => {
   const { readFileSync } = require('node:fs');
   const { resolve } = require('node:path');
@@ -2669,11 +2723,12 @@ describe('Weather Systems geographic map loader resilience', () => {
 
   it('treats early resource errors as recoverable and times out a truly stalled base map', () => {
     const source = readFileSync(resolve(process.cwd(), PATHS[0]), 'utf8');
-    expect(source).toContain('WEATHER_MAP_READY_TIMEOUT_MS = 30000');
+    expect(source).toContain('WEATHER_MAP_STALL_MS = 15000');
     expect(source).toContain('mapLoadWarning = event && event.error');
     expect(source).toContain("geographicMapStatus: 'Geographic layers are still loading. ' + mapLoadWarning");
-    expect(source).toContain('The geographic base map did not become ready within 30 seconds.');
-    expect(source).toContain('if (mapLoadTimer) window.clearTimeout(mapLoadTimer)');
+    // Readiness is judged by whether data is still arriving, not by a flat deadline.
+    expect(source).toContain('The geographic base map stopped receiving data after ');
+    expect(source).toContain('if (mapLoadTimer) window.clearInterval(mapLoadTimer)');
     expect(source).toContain('geographicTerrainAvailable: terrainAvailable');
   });
 

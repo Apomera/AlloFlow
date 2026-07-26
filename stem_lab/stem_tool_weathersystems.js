@@ -1281,7 +1281,14 @@ var GEOGRAPHY_PROFILES = {
     { script: 'https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.js', css: 'https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.css' }
   ];
   var WEATHER_MAPLIBRE_TIMEOUT_MS = 20000;
-  var WEATHER_MAP_READY_TIMEOUT_MS = 30000;
+  // A flat 30-second deadline mistook "slow" for "blocked": on a modest school device the
+  // base map can still be arriving normally at 30s and the learner was told it had failed.
+  // Readiness is now judged by whether the map is still receiving data, not by the clock
+  // alone — a filtered network produces no map events at all and still fails quickly.
+  var WEATHER_MAP_STALL_MS = 15000;
+  var WEATHER_MAP_SLOW_NOTICE_MS = 20000;
+  var WEATHER_MAP_MAX_WAIT_MS = 120000;
+  var WEATHER_MAP_POLL_MS = 2000;
 
   function ensureWeatherMapLibre() {
     if (window.maplibregl && window.maplibregl.Map) return Promise.resolve(window.maplibregl);
@@ -3905,6 +3912,11 @@ var geographyGroup = new THREE.Group();
         var mapReady = false;
         var mapLoadTimer = null;
         var mapLoadWarning = '';
+        var mapStartedAt = Date.now();
+        var lastMapProgressAt = mapStartedAt;
+        var mapSlowNoticeSent = false;
+        var mapResourceErrors = 0;
+        var lastMapErrorAt = 0;
         var resizeObserver = null;
         var terrainExaggeration = clamp(d.geographicTerrainExaggeration != null ? Number(d.geographicTerrainExaggeration) : 1.35, 1, 2);
         var studyRadius = clamp(d.geographicStudyRadius != null ? Number(d.geographicStudyRadius) : 10, 2, 50);
@@ -3933,12 +3945,45 @@ var geographyGroup = new THREE.Group();
             canvasContextAttributes: { antialias: true }
           });
           geographicRuntimeRef.current = { map: map, maplibregl: maplibregl };
-          mapLoadTimer = window.setTimeout(function () {
-            if (cancelled || mapReady) return;
-            var timeoutMessage = 'The geographic base map did not become ready within 30 seconds.' + (mapLoadWarning ? ' Last map message: ' + mapLoadWarning : ' School network filters may be blocking map tiles.');
-            update({ geographicMapLoading: false, geographicMapReady: false, geographicMapError: timeoutMessage, geographicMapStatus: '' });
-            if (announce) announce(timeoutMessage);
-          }, WEATHER_MAP_READY_TIMEOUT_MS);
+          // Every map event counts as progress; a blocked network produces none of them.
+          function noteMapProgress() { lastMapProgressAt = Date.now(); }
+          map.on('dataloading', noteMapProgress);
+          map.on('data', noteMapProgress);
+          map.on('styledata', noteMapProgress);
+          map.on('sourcedata', noteMapProgress);
+          mapLoadTimer = window.setInterval(function () {
+            if (cancelled || mapReady) {
+              if (mapLoadTimer) { window.clearInterval(mapLoadTimer); mapLoadTimer = null; }
+              return;
+            }
+            var sinceProgress = Date.now() - lastMapProgressAt;
+            var elapsed = Date.now() - mapStartedAt;
+            // Quiet and slow is not the same as broken. A throttled link can spend longer
+            // than the stall window inside a single tile download without emitting an event,
+            // so silence alone must not condemn it — a blocked host also reports errors, and
+            // that pairing is what actually distinguishes the two.
+            var stalled = sinceProgress >= WEATHER_MAP_STALL_MS
+              && mapResourceErrors > 0
+              && (Date.now() - lastMapErrorAt) <= WEATHER_MAP_MAX_WAIT_MS;
+            if (stalled || elapsed >= WEATHER_MAP_MAX_WAIT_MS) {
+              if (mapLoadTimer) { window.clearInterval(mapLoadTimer); mapLoadTimer = null; }
+              var timeoutMessage = (stalled
+                ? 'The geographic base map stopped receiving data after ' + Math.round(elapsed / 1000) + ' seconds.'
+                : 'The geographic base map did not finish loading within ' + Math.round(WEATHER_MAP_MAX_WAIT_MS / 1000) + ' seconds.')
+                + (mapLoadWarning ? ' Last map message: ' + mapLoadWarning : ' School network filters may be blocking map tiles.')
+                + ' Retry, or switch to Conceptual 3D to keep working.';
+              update({ geographicMapLoading: false, geographicMapReady: false, geographicMapError: timeoutMessage, geographicMapStatus: '' });
+              if (announce) announce(timeoutMessage);
+              return;
+            }
+            // Still arriving, just slowly. Say so instead of claiming a failure.
+            if (!mapSlowNoticeSent && elapsed >= WEATHER_MAP_SLOW_NOTICE_MS) {
+              mapSlowNoticeSent = true;
+              var slowMessage = 'The base map is still loading. Tiles are arriving slowly on this connection or device.';
+              update({ geographicMapStatus: slowMessage });
+              if (announce) announce(slowMessage);
+            }
+          }, WEATHER_MAP_POLL_MS);
           map.addControl(new maplibregl.NavigationControl({ visualizePitch: true, showCompass: true, showZoom: true }), 'top-right');
           if (maplibregl.FullscreenControl) map.addControl(new maplibregl.FullscreenControl({ container: container.parentElement || container }), 'top-right');
           if (maplibregl.ScaleControl) map.addControl(new maplibregl.ScaleControl({ maxWidth: 120, unit: 'metric' }), 'bottom-right');
@@ -3956,7 +4001,7 @@ var geographyGroup = new THREE.Group();
           map.on('load', function () {
             if (cancelled) return;
             mapReady = true;
-            if (mapLoadTimer) { window.clearTimeout(mapLoadTimer); mapLoadTimer = null; }
+            if (mapLoadTimer) { window.clearInterval(mapLoadTimer); mapLoadTimer = null; }
             try {
               var styleLayers = (map.getStyle() && map.getStyle().layers) || [];
               var firstLabel = styleLayers.filter(function (layer) { return layer.type === 'symbol' && layer.layout && layer.layout['text-field']; })[0];
@@ -4261,6 +4306,8 @@ var geographyGroup = new THREE.Group();
           });
           map.on('error', function (event) {
             if (cancelled || mapReady) return;
+            mapResourceErrors += 1;
+            lastMapErrorAt = Date.now();
             mapLoadWarning = event && event.error && event.error.message ? event.error.message : 'A geographic resource reported a loading error.';
             update({ geographicMapStatus: 'Geographic layers are still loading. ' + mapLoadWarning });
           });
@@ -4269,7 +4316,7 @@ var geographyGroup = new THREE.Group();
             resizeObserver.observe(geographicMapRef.current);
           }
         }).catch(function (error) {
-          if (mapLoadTimer) { window.clearTimeout(mapLoadTimer); mapLoadTimer = null; }
+          if (mapLoadTimer) { window.clearInterval(mapLoadTimer); mapLoadTimer = null; }
           if (cancelled) return;
           var message = error && error.message ? error.message : 'The open geographic map could not be loaded.';
           update({ geographicMapLoading: false, geographicMapReady: false, geographicMapError: message, geographicMapStatus: '' });
@@ -4278,7 +4325,7 @@ var geographyGroup = new THREE.Group();
 
         return function () {
           cancelled = true;
-          if (mapLoadTimer) window.clearTimeout(mapLoadTimer);
+          if (mapLoadTimer) window.clearInterval(mapLoadTimer);
           if (resizeObserver) resizeObserver.disconnect();
           if (map && map.remove) map.remove();
           geographicRuntimeRef.current = null;
