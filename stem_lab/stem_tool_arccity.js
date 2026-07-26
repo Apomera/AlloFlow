@@ -2468,7 +2468,12 @@
         // visible (respects the hidden-preview anti-fishing gate). All aria-hidden.
         var mathEls = [];
         var _mhalo = THEME === 'dark' ? 'rgba(2,8,6,0.55)' : 'rgba(255,255,255,0.7)';
-        if (level.family === 'line' && P.b >= wy0 - 0.5 && P.b <= wy1 + 0.5) {
+        // The intercept dot is a point ON the curve, so it now respects the same
+        // hidden-preview gate as the curve itself — previously it drew (0, b) on the
+        // independent tier, handing back one sampled point of a curve the tier is
+        // meant to keep hidden until Fire (§2.4). On the practice tier, where it is a
+        // genuine scaffold, nothing changes.
+        if (showPreview && level.family === 'line' && P.b >= wy0 - 0.5 && P.b <= wy1 + 0.5) {
           var _byPx = sy(P.b);
           mathEls.push(h('circle', { key: 'bdot', cx: sx(0), cy: _byPx, r: 4.5, fill: BEAM, stroke: '#06262b', strokeWidth: 1.5, 'aria-hidden': 'true' }));
           mathEls.push(h('text', { key: 'blabel', x: sx(0) + 8, y: _byPx - 6, fill: BEAM, fontSize: 11, fontWeight: 800, style: { paintOrder: 'stroke', stroke: _mhalo, strokeWidth: 2.6 }, 'aria-hidden': 'true' }, 'b = ' + fmtVal(P.b, level.params.b.step)));
@@ -2482,11 +2487,103 @@
           }
         }
 
+        // ── STRUCTURE LAYER: draw the mathematical object the level is actually about.
+        //
+        // Every level teaches one feature of its family — the parabola's axis of
+        // symmetry, the sine's midline, the exponential's floor, the cubic's two
+        // turning points — and until now none of them existed on the board. The
+        // student read the word "midline" in a slider label and saw nothing. Each guide
+        // is drawn from the SAME params the beam is sampled from, so it can never
+        // disagree with the curve.
+        //
+        // All of it is gated on showPreview: these are curve-derived, so on the
+        // hidden-preview tiers they would leak exactly what §2.4 hides. All aria-hidden
+        // — describeEquation already narrates every one of these in words.
+        // Family guides sit UNDER the obstacles and the beam (structureEls, drawn early);
+        // post-shot analysis sits OVER them (analysisEls, drawn after the beam) — a
+        // measurement of the shot must never be hidden by the shot.
+        var structureEls = [], analysisEls = [];
+        function guideLine(into, key, opts) {
+          into.push(h('line', Object.assign({
+            key: key, stroke: INK, strokeWidth: 1.5, strokeDasharray: '7 5', opacity: 0.5, 'aria-hidden': 'true'
+          }, opts)));
+        }
+        function guideLabel(into, key, x, y, text, anchor, color) {
+          into.push(h('text', {
+            key: key, x: x, y: y, textAnchor: anchor || 'start', fill: color || INK, fontSize: 10, fontWeight: 700,
+            style: { paintOrder: 'stroke', stroke: _mhalo, strokeWidth: 2.6 }, 'aria-hidden': 'true'
+          }, text));
+        }
+        function inWorldY(y) { return isFinite(y) && y >= wy0 && y <= wy1; }
+        if (showPreview && !(gauntlet && gauntlet.empty)) {
+          var fam = level.family;
+          if ((fam === 'parabola' || fam === 'absval') && P.h >= wx0 && P.h <= wx1) {
+            // axis of symmetry x = h — the line the whole shape folds across
+            guideLine(structureEls, 'axis-sym', { x1: sx(P.h), y1: sy(wy0), x2: sx(P.h), y2: sy(wy1) });
+            guideLabel(structureEls, 'axis-sym-lbl', sx(P.h) + 5, sy(wy1) + 13, 'x = ' + fmtVal(P.h, level.params.h.step));
+            if (tier !== 'practice' && inWorldY(P.k)) {   // practice tier already has a labelled vertex handle
+              structureEls.push(h('circle', { key: 'vertex-dot', cx: sx(P.h), cy: sy(P.k), r: 4, fill: 'none', stroke: BEAM, strokeWidth: 2, 'aria-hidden': 'true' }));
+              guideLabel(structureEls, 'vertex-lbl', sx(P.h) + 8, sy(P.k) - 7, t('arccity.guide_vertex', 'vertex'), 'start', BEAM);
+            }
+          } else if (fam === 'sine' && inWorldY(P.k)) {
+            // midline y = k — the vertical centre the wave oscillates about
+            guideLine(structureEls, 'midline', { x1: sx(wx0), y1: sy(P.k), x2: sx(wx1), y2: sy(P.k) });
+            guideLabel(structureEls, 'midline-lbl', sx(wx1) - 5, sy(P.k) - 6, t('arccity.guide_midline', 'midline') + ' y = ' + fmtVal(P.k, level.params.k.step), 'end');
+            // amplitude: how far the crest reaches above that centre
+            if (inWorldY(P.k + P.a)) {
+              guideLine(structureEls, 'amp', { x1: sx(wx0) + 32, y1: sy(P.k), x2: sx(wx0) + 32, y2: sy(P.k + P.a), stroke: BEAM, strokeDasharray: '3 3', opacity: 0.75 });
+              guideLabel(structureEls, 'amp-lbl', sx(wx0) + 37, (sy(P.k) + sy(P.k + P.a)) / 2 + 3, 'a = ' + fmtVal(P.a, level.params.a.step), 'start', BEAM);
+            }
+          } else if (fam === 'exp' && inWorldY(P.k)) {
+            // the floor/ceiling it approaches and never crosses — the whole point of L7
+            guideLine(structureEls, 'asymptote', { x1: sx(wx0), y1: sy(P.k), x2: sx(wx1), y2: sy(P.k), stroke: PAL.warn, opacity: 0.8 });
+            guideLabel(structureEls, 'asymptote-lbl', sx(wx1) - 5, sy(P.k) - 6, (P.a < 0 ? t('arccity.guide_ceiling', 'ceiling') : t('arccity.guide_floor', 'floor')) + ' y = ' + fmtVal(P.k, level.params.k.step) + ' — ' + t('arccity.guide_never_crossed', 'never crossed'), 'end', PAL.warn);
+          } else if (fam === 'poly') {
+            // the two turning points the player authored, where they landed
+            [['p', P.p, t('arccity.guide_crest', 'crest')], ['q', P.q, t('arccity.guide_dip', 'dip')]].forEach(function (tp, ti) {
+              var tx = tp[1], ty = fnY(fam, P, tx);
+              if (tx < wx0 || tx > wx1 || !inWorldY(ty)) return;
+              guideLine(structureEls, 'turn-' + tp[0], { x1: sx(tx), y1: sy(ty), x2: sx(tx), y2: sy(wy0), strokeDasharray: '3 4', opacity: 0.45 });
+              structureEls.push(h('circle', { key: 'turndot-' + tp[0], cx: sx(tx), cy: sy(ty), r: 4, fill: BEAM, stroke: INK, strokeWidth: 1.5, 'aria-hidden': 'true' }));
+              guideLabel(structureEls, 'turnlbl-' + tp[0], sx(tx), sy(ty) - 9 - (ti * 12), tp[2] + ' ' + tp[0] + '=' + fmtVal(tx, level.params[tp[0]].step), 'middle', BEAM);
+            });
+          }
+        }
+
+        // ── Slope gates: show the angle you ARRIVED at next to the angle demanded.
+        // The gate already draws its required tangent; a rejected shot only said the
+        // numbers in a sentence. Drawing the beam's own tangent at the same point makes
+        // "flat, and it needs climbing" a picture — and it is the SAME analytic f'(x)
+        // the gate checked (§3.2), not a re-derived approximation.
+        if (S.fired && res.result === 'slope' && res.obstacle && res.obstacle.slope) {
+          var gx2 = res.at, gy2 = res.yAt, gsd = 0.9, act = res.slopeAt;
+          if (isFinite(gy2) && isFinite(act)) {
+            analysisEls.push(h('line', {
+              key: 'actual-slope', x1: sx(gx2 - gsd), y1: sy(gy2 - act * gsd), x2: sx(gx2 + gsd), y2: sy(gy2 + act * gsd),
+              stroke: PAL.danger, strokeWidth: 2.5, strokeLinecap: 'round', 'aria-hidden': 'true'
+            }));
+            guideLabel(analysisEls, 'actual-slope-lbl', sx(gx2) + 12, sy(gy2) + 16, t('arccity.guide_yours', 'yours') + ' ' + round1(act), 'start', PAL.danger);
+            guideLabel(analysisEls, 'need-slope-lbl', sx(gx2) + 12, sy(gy2) - 10, t('arccity.guide_needs', 'needs') + ' ' + res.obstacle.slope.value, 'start', PAL.warn);
+          }
+        }
+
+        // ── Match levels: point at the WORST disagreement. classifyMatch already knows
+        // exactly where the two curves are furthest apart and by how much; that was
+        // reported only as a sentence. Drawn, it turns "not matched yet" into a place
+        // on the board to go and fix.
+        if (isMatch && S.fired && res.result === 'miss' && isFinite(res.matchWorstX) && isFinite(res.playerYAtWorst) && isFinite(res.ghostYAtWorst)) {
+          var mwx = sx(res.matchWorstX), mpy = sy(res.playerYAtWorst), mgy = sy(res.ghostYAtWorst);
+          analysisEls.push(h('line', { key: 'matchgap', x1: mwx, y1: mpy, x2: mwx, y2: mgy, stroke: PAL.warn, strokeWidth: 2.5, strokeLinecap: 'round', 'aria-hidden': 'true' }));
+          analysisEls.push(h('circle', { key: 'matchgap-you', cx: mwx, cy: mpy, r: 4, fill: PAL.warn, 'aria-hidden': 'true' }));
+          analysisEls.push(h('circle', { key: 'matchgap-ghost', cx: mwx, cy: mgy, r: 4, fill: 'none', stroke: PAL.warn, strokeWidth: 2, 'aria-hidden': 'true' }));
+          guideLabel(analysisEls, 'matchgap-lbl', mwx + 8, (mpy + mgy) / 2 + 3, t('arccity.guide_off_by', 'off by') + ' ' + round1(res.matchErr), 'start', PAL.warn);
+        }
+
         var svg = (gauntlet && gauntlet.empty) ? null : h('svg', {
           key: 'svg', viewBox: '0 0 ' + W + ' ' + H, width: '100%',
           role: 'img', 'aria-label': describeBoard(level),
           style: { display: 'block', maxHeight: '58vh', background: 'transparent', borderRadius: 12, border: '1px solid ' + GRID, overflow: 'hidden', touchAction: 'none' }
-        }, [].concat([defs], backdropEls, gridEls, axisEls, obstacleEls, ghostEls, ghostCurveEls, trailEls, previewEls, overlay, mathEls, nodeGlowEls, (nodeEl ? [nodeEl] : []), nodeBurstEls, handleEls));
+        }, [].concat([defs], backdropEls, gridEls, axisEls, structureEls, obstacleEls, ghostEls, ghostCurveEls, trailEls, previewEls, overlay, analysisEls, mathEls, nodeGlowEls, (nodeEl ? [nodeEl] : []), nodeBurstEls, handleEls));
 
         // ── Level progression bar ──
         // Literal t() keys (never a computed key, so the translation-key checker can
@@ -2998,9 +3095,26 @@
           return out.trim();
         }
         var battleSvgEls = [];
+        // ── BUG FIX: this board referenced url(#arc-glow) seven times (the authored
+        // preview, the replay trail, and all six relay targets) while defining no
+        // filters at all — the play view owns `defs`, and the play view is not mounted
+        // in this mode. An unresolvable filter IRI means the element is NOT RENDERED,
+        // so Circuit Clash was dropping the player's own curve and every relay node.
+        // The same defs the play board builds are emitted here.
+        battleSvgEls.push(defs);
         battleSvgEls.push(h('rect', { key: 'bg', x: 0, y: 0, width: BW, height: BH, fill: THEME === 'light' ? '#f8fafc' : '#070b18' }));
         for (var bgx = 0; bgx <= 10; bgx++) battleSvgEls.push(h('line', { key: 'bgx' + bgx, x1: bsx(bgx), y1: 0, x2: bsx(bgx), y2: BH, stroke: GRID, strokeWidth: 0.6, opacity: 0.35 }));
         for (var bgy = 0; bgy <= 8; bgy++) battleSvgEls.push(h('line', { key: 'bgy' + bgy, x1: 0, y1: bsy(bgy), x2: BW, y2: bsy(bgy), stroke: GRID, strokeWidth: 0.6, opacity: 0.35 }));
+        // Coordinate ticks — the play board got these long ago; without them a player
+        // authoring y = m·x + b here is counting unlabelled gridlines. Decorative: the
+        // board's aria-label already states every position in words.
+        var _bhalo = THEME === 'light' ? 'rgba(255,255,255,0.7)' : 'rgba(2,8,6,0.55)';
+        var _btick = { paintOrder: 'stroke', stroke: _bhalo, strokeWidth: 2.5 };
+        for (var btx = 1; btx <= 9; btx++) battleSvgEls.push(h('text', { key: 'btx' + btx, x: bsx(btx), y: BH - 5, textAnchor: 'middle', fill: INK, fontSize: 10, fontWeight: 600, opacity: 0.85, style: _btick, 'aria-hidden': 'true' }, String(btx)));
+        for (var bty = 1; bty <= 7; bty++) battleSvgEls.push(h('text', { key: 'bty' + bty, x: 5, y: bsy(bty) + 3, textAnchor: 'start', fill: INK, fontSize: 10, fontWeight: 600, opacity: 0.85, style: _btick, 'aria-hidden': 'true' }, String(bty)));
+        // Halfway line: this board is two mirrored halves and nothing said where they
+        // met, so "whose side is that trail on?" had no visual answer.
+        battleSvgEls.push(h('line', { key: 'bmid', x1: bsx(5), y1: 0, x2: bsx(5), y2: BH, stroke: INK, strokeWidth: 1.5, strokeDasharray: '6 6', opacity: 0.35, 'aria-hidden': 'true' }));
         battleSvgEls.push(h('text', { key: 'p1label', x: 10, y: 20, fill: INK, fontSize: 12, fontWeight: 800 }, 'PLAYER 1'));
         battleSvgEls.push(h('text', { key: 'p2label', x: BW - 10, y: 20, fill: INK, fontSize: 12, fontWeight: 800, textAnchor: 'end' }, battle.mode === 'cpu' ? 'CPU' : 'PLAYER 2'));
         // Draw previous shots as bounded Tron-like light trails.
@@ -3039,11 +3153,18 @@
         (battleLevel.walls || []).forEach(function (wall, wi) {
           var wx = battleGlobalX(wall.x, battleSeat);
           battleSvgEls.push(h('rect', { key: 'bwall' + wi, x: bsx(wx) - 5, y: bsy(wall.height), width: 10, height: bsy(0) - bsy(wall.height), fill: WALL, rx: 2 }));
+          battleSvgEls.push(h('line', { key: 'bwallcap' + wi, x1: bsx(wx) - 11, y1: bsy(wall.height), x2: bsx(wx) + 11, y2: bsy(wall.height), stroke: WALL, strokeWidth: 3, strokeLinecap: 'round', 'aria-hidden': 'true' }));
         });
         (battleLevel.gates || []).forEach(function (gate, gi2) {
           var gx2 = battleGlobalX(gate.x, battleSeat);
           battleSvgEls.push(h('rect', { key: 'bglo' + gi2, x: bsx(gx2) - 5, y: bsy(gate.lo), width: 10, height: bsy(0) - bsy(gate.lo), fill: GATE, opacity: 0.82, rx: 2 }));
           battleSvgEls.push(h('rect', { key: 'bghi' + gi2, x: bsx(gx2) - 5, y: 0, width: 10, height: bsy(gate.hi), fill: GATE, opacity: 0.82, rx: 2 }));
+          // Same aperture treatment as the play board: the opening is the target, so it
+          // is drawn as an object rather than left as the gap between two bars.
+          battleSvgEls.push(h('rect', { key: 'bgslot' + gi2, x: bsx(gx2) - 7, y: bsy(gate.hi), width: 14, height: Math.max(0, bsy(gate.lo) - bsy(gate.hi)), fill: GATE, opacity: 0.16, rx: 2, 'aria-hidden': 'true' }));
+          [gate.lo, gate.hi].forEach(function (edge, ei2) {
+            battleSvgEls.push(h('line', { key: 'bglip' + gi2 + ei2, x1: bsx(gx2) - 13, y1: bsy(edge), x2: bsx(gx2) + 13, y2: bsy(edge), stroke: GATE, strokeWidth: 2, strokeLinecap: 'round', opacity: 0.75, 'aria-hidden': 'true' }));
+          });
         });
         // Current authored function preview.
         if (battlePreviewVisible) {
