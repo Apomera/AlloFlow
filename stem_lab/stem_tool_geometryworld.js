@@ -2032,6 +2032,26 @@
         try { if (navigator.xr && navigator.xr.addEventListener) navigator.xr.addEventListener('devicechange', dc); } catch(e){}
         return function() { alive = false; try { if (navigator.xr && navigator.xr.removeEventListener) navigator.xr.removeEventListener('devicechange', dc); } catch(e){} };
       }, []);
+      // ── Stable container ref for the 3D engine ──
+      // The world container used to take an INLINE callback ref. React hands a new
+      // function identity to every commit, so each re-render fired ref(null) →
+      // destroyEngine() then ref(node) → initEngine(). Clicking "Start Lesson" calls
+      // upd(), so the freshly-loaded lesson was torn down on the very next render and
+      // rebuilt with the default world — and because the dead canvas was never removed
+      // from the container, the new canvas stacked below the fold and the viewport
+      // looked blank. Keeping the callback identity stable (useCallback with no deps,
+      // reading live values off gwRuntimeRef) means it only fires on real mount/unmount.
+      var gwRuntimeRef = React.useRef({});
+      var gwContainerRef = React.useCallback(function (node) {
+        var rt = gwRuntimeRef.current || {};
+        if (node) {
+          if (!window[engineKey] && rt.threeReady && typeof rt.initEngine === 'function') {
+            setTimeout(function () { if (!window[engineKey]) gwRuntimeRef.current.initEngine(node); }, 100);
+          }
+        } else if (window[engineKey] && typeof rt.destroyEngine === 'function') {
+          rt.destroyEngine();
+        }
+      }, []);
       var upd = function (key, val) {
         if (typeof key === 'object') { ctx.updateMulti('geometryWorld', key); }
         else { ctx.update('geometryWorld', key, val); }
@@ -2063,6 +2083,11 @@
         } catch (e) {}
       }
       var threeReady = ctx.toolData && ctx.toolData._threeLoaded;
+      // Refresh the bridge the stable container ref reads from. initEngine /
+      // destroyEngine are hoisted function declarations, so they are already bound here.
+      gwRuntimeRef.current.threeReady = threeReady;
+      gwRuntimeRef.current.initEngine = initEngine;
+      gwRuntimeRef.current.destroyEngine = destroyEngine;
 
       // ── State from toolData ──
       var worldActive = d.worldActive || false;
@@ -3901,7 +3926,8 @@
           if (npcHits.length > 0 && npcHits[0].distance < 5) {
             var npcIdx = npcHits[0].object.userData.npcIndex;
             var npcData = engine.npcs[npcIdx] && engine.npcs[npcIdx].data;
-            engine._crosshairTarget = (npcData && npcData.question && !answeredNpcs[npcIdx]) ? 'npc_question' : 'npc';
+            var _answered = engine._answeredRef || answeredNpcs;
+            engine._crosshairTarget = (npcData && npcData.question && !_answered[npcIdx]) ? 'npc_question' : 'npc';
           } else {
             engine._crosshairTarget = 'none';
           }
@@ -4340,7 +4366,9 @@
             }
             // ── Floating question mark: bob + spin, hide when answered ──
             if (npc.qMark) {
-              var isNpcAnswered = answeredNpcs[i];
+              // engine._answeredRef is refreshed every React render; the closure copy is
+              // frozen at initEngine time now that the engine outlives re-renders.
+              var isNpcAnswered = (engine._answeredRef || answeredNpcs)[i];
               if (isNpcAnswered) {
                 // Hide question mark when answered (fade out)
                 if (npc.qMark.material.opacity > 0.01) {
@@ -4367,7 +4395,7 @@
             }
 
             // ── Answered NPC green tint + checkmark glow ──
-            if (answeredNpcs[i] && npc.data.question) {
+            if ((engine._answeredRef || answeredNpcs)[i] && npc.data.question) {
               // Green emissive tint on body
               if (!npc._answeredTinted) {
                 npc._answeredTinted = true;
@@ -4443,7 +4471,7 @@
           if (engine._npcProxTimer > 3.0 && engine.camera) {
             engine._npcProxTimer = 0;
             engine.npcs.forEach(function(npc, ni) {
-              if (!npc.data.question || answeredNpcs[ni]) return;
+              if (!npc.data.question || (engine._answeredRef || answeredNpcs)[ni]) return;
               var pDist = engine.camera.position.distanceTo(npc.body.position);
               if (pDist < 4.5 && pDist > 1.5) {
                 // Soft proximity chime (quieter than interaction chime)
@@ -4485,7 +4513,7 @@
             });
             // Remove avatars for disconnected players
             Object.keys(engine._peerAvatars).forEach(function(key) {
-              if (!collabPlayers[key]) {
+              if (!_collabPlayers[key]) { // was the stale closure copy, unlike the add path above
                 engine.scene.remove(engine._peerAvatars[key].body);
                 engine.scene.remove(engine._peerAvatars[key].head);
                 delete engine._peerAvatars[key];
@@ -5060,7 +5088,16 @@
           // Dispose material cache
           if (engine._matCache) Object.values(engine._matCache).forEach(function(m) { if (m.dispose) m.dispose(); });
           if (engine.composer) { try { (engine.composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {} engine.composer = null; }
-          if (engine.renderer) { engine.renderer.dispose(); }
+          if (engine.renderer) {
+            engine.renderer.dispose();
+            // Detach the WebGL canvas. initEngine creates + appends a fresh canvas every
+            // time, so leaving the disposed one behind stacked a blank surface over the
+            // live world (both are 100%-height block elements in the same container).
+            try {
+              var _dead = engine.renderer.domElement;
+              if (_dead && _dead.parentNode) _dead.parentNode.removeChild(_dead);
+            } catch (e) {}
+          }
           delete window[engineKey];
         }
       }
@@ -5181,8 +5218,19 @@
 
       // ── Multi-pass AI generation handler ──
       // ── Load a lesson by key (used from intro screen, dropdown, Next Lesson) ──
-      function loadLessonByKey(lessonKey) {
+      function loadLessonByKey(lessonKey, _attempt) {
         var eng = window[engineKey];
+        // The engine is created ~100ms after the container mounts, so an eager click on
+        // "Start Lesson" can land before it exists. Previously that dismissed the intro
+        // and loaded nothing, leaving the student in an empty default world. Retry
+        // briefly instead, and only dismiss the intro once the lesson is actually in.
+        if (!eng && !window[engineKey + '_failed']) {
+          var attempt = _attempt || 0;
+          if (attempt < 20) { // ~2s of retries
+            setTimeout(function() { loadLessonByKey(lessonKey, attempt + 1); }, 100);
+            return;
+          }
+        }
         if (eng && SAMPLE_LESSONS[lessonKey]) {
           eng.loadLesson(SAMPLE_LESSONS[lessonKey]);
         } else if (lessonKey && lessonKey.indexOf('ai_') === 0) {
@@ -7820,15 +7868,11 @@
               )
             )
           : el('div', {
-              ref: function(node) {
-                if (node && !window[engineKey] && threeReady) {
-                  setTimeout(function() { initEngine(node); }, 100);
-                } else if (!node && window[engineKey]) {
-                  // Memory-leak fix: tear the engine down on unmount. Without this
-                  // branch the destroyEngine function defined below is never called.
-                  destroyEngine();
-                }
-              },
+              // Stable ref (see gwContainerRef above). Must NOT be an inline function:
+              // a fresh identity each render made React tear the engine down and rebuild
+              // it on every state update, which blanked the world right after a lesson
+              // loaded. gwContainerRef still tears the engine down on real unmount.
+              ref: gwContainerRef,
               id: 'geoworld-fs-wrap',
               role: 'img',
               'aria-label': 'Interactive 3D world view. Click to enter. ' + (currentLesson.title || 'Geometry World') + '. ' + score + ' of ' + totalQ + ' questions answered.',
