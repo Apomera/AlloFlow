@@ -1,7 +1,9 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`layer 1 — Hub render across prop matrix > renders identically: default — Canvas iframe, no student, no teacher mode (snapshot) 1`] = `
-"<div class="fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300">
+"<div class="fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300" role="dialog" aria-modal="true" aria-labelledby="behavior-lens-dialog-title" aria-describedby="behavior-lens-dialog-subtitle" tabindex="-1">
+<div id="behavior-lens-live-status" role="status" aria-live="polite" aria-atomic="true" class="bl-sr-only">
+</div>
 <div class="bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10">
 <div class="px-6 py-4 flex items-center justify-between">
 <div class="flex items-center gap-3">
@@ -10,15 +12,15 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: defaul
 </span>
 </div>
 <div>
-<h2 class="text-xl font-black text-slate-800">BehaviorLens</h2>
-<p class="text-xs text-slate-600">Behavioral Observation &amp; Analysis</p>
+<h2 id="behavior-lens-dialog-title" class="text-xl font-black text-slate-800">BehaviorLens</h2>
+<p id="behavior-lens-dialog-subtitle" class="text-xs text-slate-600">Behavioral Observation &amp; Analysis</p>
 </div>
 </div>
 <div class="flex items-center gap-2">
 <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border bg-slate-50 border-slate-200 text-slate-600" title="Canvas environment — local storage only">💾 Local only</div>
 <button aria-label="AI is off — click to enable" aria-pressed="false" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100" title="AI OFF — no student data leaves this browser. Click to enable.">🤖 AI: OFF</button>
 <button aria-label="Toggle is parent mode" class="px-3 py-1.5 rounded-full text-xs font-bold transition-all border bg-white text-slate-600 border-slate-200 hover:border-blue-600 hover:text-blue-500">👨‍👩‍👧 Family</button>
-<button aria-label="On Close" class="p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
+<button aria-label="Close BehaviorLens" class="p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
 <span class="lucide-icon" data-icon="X">
 </span>
 </button>
@@ -196,9 +198,9 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: defaul
 <div class="flex flex-wrap items-center gap-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
 <button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
-<input type="file" accept=".json" class="hidden"/>
+<input type="file" accept=".json" aria-label="Load BehaviorLens workspace JSON file" class="hidden"/>
 </div>
-<div aria-expanded="false" class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300">
+<div class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300">
 <button aria-expanded="false" aria-label="Toggle is expanded" class="w-full flex items-center justify-between px-4 py-3 text-start hover:bg-teal-100/50 transition-colors">
 <div class="flex items-center gap-2">
 <span class="text-lg">👤</span>
@@ -1498,8 +1500,8 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: defaul
 <div class="flex flex-wrap items-center gap-2 pt-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
 <button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
-<input type="file" accept=".json" class="hidden"/>
-<input type="file" accept=".json" multiple="" class="hidden"/>
+<input type="file" accept=".json" aria-label="Load BehaviorLens workspace JSON file" class="hidden"/>
+<input type="file" accept=".json" multiple="" aria-label="Load BehaviorLens workspaces for comparison" class="hidden"/>
 </div>
 </div>
 <div class="mt-6 text-center py-8 bg-amber-50 rounded-xl border border-amber-200">
@@ -1512,7 +1514,9 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: defaul
 `;
 
 exports[`layer 1 — Hub render across prop matrix > renders identically: standalone (non-Canvas) — cloud-sync path enabled (snapshot) 1`] = `
-"<div class="fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300">
+"<div class="fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300" role="dialog" aria-modal="true" aria-labelledby="behavior-lens-dialog-title" aria-describedby="behavior-lens-dialog-subtitle" tabindex="-1">
+<div id="behavior-lens-live-status" role="status" aria-live="polite" aria-atomic="true" class="bl-sr-only">
+</div>
 <div class="bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10">
 <div class="px-6 py-4 flex items-center justify-between">
 <div class="flex items-center gap-3">
@@ -1521,15 +1525,15 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: standa
 </span>
 </div>
 <div>
-<h2 class="text-xl font-black text-slate-800">BehaviorLens</h2>
-<p class="text-xs text-slate-600">Behavioral Observation &amp; Analysis</p>
+<h2 id="behavior-lens-dialog-title" class="text-xl font-black text-slate-800">BehaviorLens</h2>
+<p id="behavior-lens-dialog-subtitle" class="text-xs text-slate-600">Behavioral Observation &amp; Analysis</p>
 </div>
 </div>
 <div class="flex items-center gap-2">
 <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all bg-slate-50 border-slate-200 text-slate-600" title="Cloud sync idle">💾 Local</div>
 <button aria-label="AI is off — click to enable" aria-pressed="false" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100" title="AI OFF — no student data leaves this browser. Click to enable.">🤖 AI: OFF</button>
 <button aria-label="Toggle is parent mode" class="px-3 py-1.5 rounded-full text-xs font-bold transition-all border bg-white text-slate-600 border-slate-200 hover:border-blue-600 hover:text-blue-500">👨‍👩‍👧 Family</button>
-<button aria-label="On Close" class="p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
+<button aria-label="Close BehaviorLens" class="p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
 <span class="lucide-icon" data-icon="X">
 </span>
 </button>
@@ -1707,9 +1711,9 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: standa
 <div class="flex flex-wrap items-center gap-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
 <button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
-<input type="file" accept=".json" class="hidden"/>
+<input type="file" accept=".json" aria-label="Load BehaviorLens workspace JSON file" class="hidden"/>
 </div>
-<div aria-expanded="false" class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300">
+<div class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300">
 <button aria-expanded="false" aria-label="Toggle is expanded" class="w-full flex items-center justify-between px-4 py-3 text-start hover:bg-teal-100/50 transition-colors">
 <div class="flex items-center gap-2">
 <span class="text-lg">👤</span>
@@ -3009,8 +3013,8 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: standa
 <div class="flex flex-wrap items-center gap-2 pt-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
 <button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
-<input type="file" accept=".json" class="hidden"/>
-<input type="file" accept=".json" multiple="" class="hidden"/>
+<input type="file" accept=".json" aria-label="Load BehaviorLens workspace JSON file" class="hidden"/>
+<input type="file" accept=".json" multiple="" aria-label="Load BehaviorLens workspaces for comparison" class="hidden"/>
 </div>
 </div>
 <div class="mt-6 text-center py-8 bg-amber-50 rounded-xl border border-amber-200">
@@ -3023,7 +3027,9 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: standa
 `;
 
 exports[`layer 1 — Hub render across prop matrix > renders identically: teacher mode + standalone + named student (snapshot) 1`] = `
-"<div class="fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300">
+"<div class="fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300" role="dialog" aria-modal="true" aria-labelledby="behavior-lens-dialog-title" aria-describedby="behavior-lens-dialog-subtitle" tabindex="-1">
+<div id="behavior-lens-live-status" role="status" aria-live="polite" aria-atomic="true" class="bl-sr-only">
+</div>
 <div class="bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10">
 <div class="px-6 py-4 flex items-center justify-between">
 <div class="flex items-center gap-3">
@@ -3032,15 +3038,15 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 </span>
 </div>
 <div>
-<h2 class="text-xl font-black text-slate-800">BehaviorLens</h2>
-<p class="text-xs text-slate-600">Behavioral Observation &amp; Analysis</p>
+<h2 id="behavior-lens-dialog-title" class="text-xl font-black text-slate-800">BehaviorLens</h2>
+<p id="behavior-lens-dialog-subtitle" class="text-xs text-slate-600">Behavioral Observation &amp; Analysis</p>
 </div>
 </div>
 <div class="flex items-center gap-2">
 <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all bg-slate-50 border-slate-200 text-slate-600" title="Cloud sync idle">💾 Local</div>
 <button aria-label="AI is off — click to enable" aria-pressed="false" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100" title="AI OFF — no student data leaves this browser. Click to enable.">🤖 AI: OFF</button>
 <button aria-label="Toggle is parent mode" class="px-3 py-1.5 rounded-full text-xs font-bold transition-all border bg-white text-slate-600 border-slate-200 hover:border-blue-600 hover:text-blue-500">👨‍👩‍👧 Family</button>
-<button aria-label="On Close" class="p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
+<button aria-label="Close BehaviorLens" class="p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
 <span class="lucide-icon" data-icon="X">
 </span>
 </button>
@@ -3218,9 +3224,9 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 <div class="flex flex-wrap items-center gap-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
 <button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
-<input type="file" accept=".json" class="hidden"/>
+<input type="file" accept=".json" aria-label="Load BehaviorLens workspace JSON file" class="hidden"/>
 </div>
-<div aria-expanded="false" class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300">
+<div class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300">
 <button aria-expanded="false" aria-label="Toggle is expanded" class="w-full flex items-center justify-between px-4 py-3 text-start hover:bg-teal-100/50 transition-colors">
 <div class="flex items-center gap-2">
 <span class="text-lg">👤</span>
@@ -4544,8 +4550,8 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 <div class="flex flex-wrap items-center gap-2 pt-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
 <button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
-<input type="file" accept=".json" class="hidden"/>
-<input type="file" accept=".json" multiple="" class="hidden"/>
+<input type="file" accept=".json" aria-label="Load BehaviorLens workspace JSON file" class="hidden"/>
+<input type="file" accept=".json" multiple="" aria-label="Load BehaviorLens workspaces for comparison" class="hidden"/>
 </div>
 </div>
 </div>
@@ -4554,7 +4560,9 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 `;
 
 exports[`layer 1 — Hub render across prop matrix > renders identically: teacher mode in Canvas iframe (snapshot) 1`] = `
-"<div class="fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300">
+"<div class="fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300" role="dialog" aria-modal="true" aria-labelledby="behavior-lens-dialog-title" aria-describedby="behavior-lens-dialog-subtitle" tabindex="-1">
+<div id="behavior-lens-live-status" role="status" aria-live="polite" aria-atomic="true" class="bl-sr-only">
+</div>
 <div class="bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10">
 <div class="px-6 py-4 flex items-center justify-between">
 <div class="flex items-center gap-3">
@@ -4563,15 +4571,15 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 </span>
 </div>
 <div>
-<h2 class="text-xl font-black text-slate-800">BehaviorLens</h2>
-<p class="text-xs text-slate-600">Behavioral Observation &amp; Analysis</p>
+<h2 id="behavior-lens-dialog-title" class="text-xl font-black text-slate-800">BehaviorLens</h2>
+<p id="behavior-lens-dialog-subtitle" class="text-xs text-slate-600">Behavioral Observation &amp; Analysis</p>
 </div>
 </div>
 <div class="flex items-center gap-2">
 <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border bg-slate-50 border-slate-200 text-slate-600" title="Canvas environment — local storage only">💾 Local only</div>
 <button aria-label="AI is off — click to enable" aria-pressed="false" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100" title="AI OFF — no student data leaves this browser. Click to enable.">🤖 AI: OFF</button>
 <button aria-label="Toggle is parent mode" class="px-3 py-1.5 rounded-full text-xs font-bold transition-all border bg-white text-slate-600 border-slate-200 hover:border-blue-600 hover:text-blue-500">👨‍👩‍👧 Family</button>
-<button aria-label="On Close" class="p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
+<button aria-label="Close BehaviorLens" class="p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
 <span class="lucide-icon" data-icon="X">
 </span>
 </button>
@@ -4749,9 +4757,9 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 <div class="flex flex-wrap items-center gap-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
 <button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
-<input type="file" accept=".json" class="hidden"/>
+<input type="file" accept=".json" aria-label="Load BehaviorLens workspace JSON file" class="hidden"/>
 </div>
-<div aria-expanded="false" class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300">
+<div class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300">
 <button aria-expanded="false" aria-label="Toggle is expanded" class="w-full flex items-center justify-between px-4 py-3 text-start hover:bg-teal-100/50 transition-colors">
 <div class="flex items-center gap-2">
 <span class="text-lg">👤</span>
@@ -6051,8 +6059,8 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 <div class="flex flex-wrap items-center gap-2 pt-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
 <button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
-<input type="file" accept=".json" class="hidden"/>
-<input type="file" accept=".json" multiple="" class="hidden"/>
+<input type="file" accept=".json" aria-label="Load BehaviorLens workspace JSON file" class="hidden"/>
+<input type="file" accept=".json" multiple="" aria-label="Load BehaviorLens workspaces for comparison" class="hidden"/>
 </div>
 </div>
 <div class="mt-6 text-center py-8 bg-amber-50 rounded-xl border border-amber-200">
@@ -6065,7 +6073,9 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 `;
 
 exports[`layer 1 — Hub render across prop matrix > renders identically: with dashboardData populated (snapshot) 1`] = `
-"<div class="fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300">
+"<div class="fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300" role="dialog" aria-modal="true" aria-labelledby="behavior-lens-dialog-title" aria-describedby="behavior-lens-dialog-subtitle" tabindex="-1">
+<div id="behavior-lens-live-status" role="status" aria-live="polite" aria-atomic="true" class="bl-sr-only">
+</div>
 <div class="bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10">
 <div class="px-6 py-4 flex items-center justify-between">
 <div class="flex items-center gap-3">
@@ -6074,15 +6084,15 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with d
 </span>
 </div>
 <div>
-<h2 class="text-xl font-black text-slate-800">BehaviorLens</h2>
-<p class="text-xs text-slate-600">Behavioral Observation &amp; Analysis</p>
+<h2 id="behavior-lens-dialog-title" class="text-xl font-black text-slate-800">BehaviorLens</h2>
+<p id="behavior-lens-dialog-subtitle" class="text-xs text-slate-600">Behavioral Observation &amp; Analysis</p>
 </div>
 </div>
 <div class="flex items-center gap-2">
 <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border bg-slate-50 border-slate-200 text-slate-600" title="Canvas environment — local storage only">💾 Local only</div>
 <button aria-label="AI is off — click to enable" aria-pressed="false" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100" title="AI OFF — no student data leaves this browser. Click to enable.">🤖 AI: OFF</button>
 <button aria-label="Toggle is parent mode" class="px-3 py-1.5 rounded-full text-xs font-bold transition-all border bg-white text-slate-600 border-slate-200 hover:border-blue-600 hover:text-blue-500">👨‍👩‍👧 Family</button>
-<button aria-label="On Close" class="p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
+<button aria-label="Close BehaviorLens" class="p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
 <span class="lucide-icon" data-icon="X">
 </span>
 </button>
@@ -6260,9 +6270,9 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with d
 <div class="flex flex-wrap items-center gap-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
 <button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
-<input type="file" accept=".json" class="hidden"/>
+<input type="file" accept=".json" aria-label="Load BehaviorLens workspace JSON file" class="hidden"/>
 </div>
-<div aria-expanded="false" class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300">
+<div class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300">
 <button aria-expanded="false" aria-label="Toggle is expanded" class="w-full flex items-center justify-between px-4 py-3 text-start hover:bg-teal-100/50 transition-colors">
 <div class="flex items-center gap-2">
 <span class="text-lg">👤</span>
@@ -7562,8 +7572,8 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with d
 <div class="flex flex-wrap items-center gap-2 pt-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
 <button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
-<input type="file" accept=".json" class="hidden"/>
-<input type="file" accept=".json" multiple="" class="hidden"/>
+<input type="file" accept=".json" aria-label="Load BehaviorLens workspace JSON file" class="hidden"/>
+<input type="file" accept=".json" multiple="" aria-label="Load BehaviorLens workspaces for comparison" class="hidden"/>
 </div>
 </div>
 <div class="mt-6 text-center py-8 bg-amber-50 rounded-xl border border-amber-200">
@@ -7576,7 +7586,9 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with d
 `;
 
 exports[`layer 1 — Hub render across prop matrix > renders identically: with studentNickname set (snapshot) 1`] = `
-"<div class="fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300">
+"<div class="fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300" role="dialog" aria-modal="true" aria-labelledby="behavior-lens-dialog-title" aria-describedby="behavior-lens-dialog-subtitle" tabindex="-1">
+<div id="behavior-lens-live-status" role="status" aria-live="polite" aria-atomic="true" class="bl-sr-only">
+</div>
 <div class="bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10">
 <div class="px-6 py-4 flex items-center justify-between">
 <div class="flex items-center gap-3">
@@ -7585,15 +7597,15 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with s
 </span>
 </div>
 <div>
-<h2 class="text-xl font-black text-slate-800">BehaviorLens</h2>
-<p class="text-xs text-slate-600">Behavioral Observation &amp; Analysis</p>
+<h2 id="behavior-lens-dialog-title" class="text-xl font-black text-slate-800">BehaviorLens</h2>
+<p id="behavior-lens-dialog-subtitle" class="text-xs text-slate-600">Behavioral Observation &amp; Analysis</p>
 </div>
 </div>
 <div class="flex items-center gap-2">
 <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border bg-slate-50 border-slate-200 text-slate-600" title="Canvas environment — local storage only">💾 Local only</div>
 <button aria-label="AI is off — click to enable" aria-pressed="false" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100" title="AI OFF — no student data leaves this browser. Click to enable.">🤖 AI: OFF</button>
 <button aria-label="Toggle is parent mode" class="px-3 py-1.5 rounded-full text-xs font-bold transition-all border bg-white text-slate-600 border-slate-200 hover:border-blue-600 hover:text-blue-500">👨‍👩‍👧 Family</button>
-<button aria-label="On Close" class="p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
+<button aria-label="Close BehaviorLens" class="p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors">
 <span class="lucide-icon" data-icon="X">
 </span>
 </button>
@@ -7771,9 +7783,9 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with s
 <div class="flex flex-wrap items-center gap-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
 <button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
-<input type="file" accept=".json" class="hidden"/>
+<input type="file" accept=".json" aria-label="Load BehaviorLens workspace JSON file" class="hidden"/>
 </div>
-<div aria-expanded="false" class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300">
+<div class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300">
 <button aria-expanded="false" aria-label="Toggle is expanded" class="w-full flex items-center justify-between px-4 py-3 text-start hover:bg-teal-100/50 transition-colors">
 <div class="flex items-center gap-2">
 <span class="text-lg">👤</span>
@@ -9097,8 +9109,8 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with s
 <div class="flex flex-wrap items-center gap-2 pt-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
 <button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
-<input type="file" accept=".json" class="hidden"/>
-<input type="file" accept=".json" multiple="" class="hidden"/>
+<input type="file" accept=".json" aria-label="Load BehaviorLens workspace JSON file" class="hidden"/>
+<input type="file" accept=".json" multiple="" aria-label="Load BehaviorLens workspaces for comparison" class="hidden"/>
 </div>
 </div>
 </div>

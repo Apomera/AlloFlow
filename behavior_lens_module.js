@@ -22,21 +22,6 @@
         } catch (e) { return null; }
     }
 
-    // ─── Live region (WCAG 4.1.3) ───────────────────────────────────────
-    // Source-level so it exists from module load, not just after the first
-    // 2-second a11y-fixer tick. Same id used by the fixer's check, so the
-    // fixer (line 200+) sees this and skips the modal-level duplicate.
-    if (!document.getElementById('bl-a11y-live')) {
-        var blLive = document.createElement('div');
-        blLive.id = 'bl-a11y-live';
-        blLive.setAttribute('aria-live', 'polite');
-        blLive.setAttribute('aria-atomic', 'true');
-        blLive.setAttribute('role', 'status');
-        blLive.className = 'bl-sr-only';
-        blLive.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
-        document.body.appendChild(blLive);
-    }
-
     // ─── Mobile Responsiveness CSS ──────────────────────────────────────
     // Inject once — provides @media overrides for iPad & phone layouts
     var behaviorLensConfirmSequence = 0;
@@ -172,7 +157,7 @@
         document.head.appendChild(styleEl);
     }
 
-    // ─── WCAG 2.1 AA: Accessibility CSS Injection ────────────────────
+    // ─── WCAG 2.2 AA: Accessibility CSS Injection ────────────────────
     if (!document.getElementById('bl-a11y-css')) {
         const a11yStyle = document.createElement('style');
         a11yStyle.id = 'bl-a11y-css';
@@ -193,11 +178,23 @@
             .fixed.inset-0 textarea:focus-visible,
             .fixed.inset-0 [tabindex]:focus-visible,
             .fixed.inset-0 [role="button"]:focus-visible {
-                outline: 2px solid #6366f1 !important;
-                outline-offset: 2px !important;
+                outline: 3px solid #4338ca !important;
+                outline-offset: 3px !important;
+                box-shadow: 0 0 0 2px #ffffff !important;
                 border-radius: 4px;
             }
             .fixed.inset-0 :focus:not(:focus-visible) { outline: none !important; }
+            @media (forced-colors: active) {
+                .fixed.inset-0 button:focus-visible,
+                .fixed.inset-0 input:focus-visible,
+                .fixed.inset-0 select:focus-visible,
+                .fixed.inset-0 textarea:focus-visible,
+                .fixed.inset-0 [tabindex]:focus-visible,
+                .fixed.inset-0 [role="button"]:focus-visible {
+                    outline-color: CanvasText !important;
+                    box-shadow: none !important;
+                }
+            }
             /* WCAG 1.4.3: Contrast fixes for low-contrast text classes */
             .fixed.inset-0 .text-slate-600 { color: #64748b !important; }
             .fixed.inset-0 .text-gray-400 { color: #6b7280 !important; }
@@ -209,104 +206,6 @@
             .bl-sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0; }
         `;
         document.head.appendChild(a11yStyle);
-    }
-
-    // ─── WCAG 2.1 AA: Runtime Auto-Fixer ────────────────────────────
-    // Runs every 2s to catch unlabeled interactive elements.
-    // Key fix: strips bogus role="button" from non-interactive containers
-    // that were incorrectly labeled during a prior accessibility pass.
-    if (!window._blA11yFixerActive) {
-        window._blA11yFixerActive = true;
-        setInterval(function() {
-            try {
-                var modal = document.querySelector('.fixed.inset-0');
-                if (!modal) return;
-
-                // 1. Strip bogus role="button" from non-interactive containers
-                //    Test: if the div has role="button" but contains <button> or <input> children
-                //    AND has no meaningful click action itself, it's a false positive.
-                var roleButtons = modal.querySelectorAll('div[role="button"], span[role="button"]');
-                roleButtons.forEach(function(el) {
-                    // Skip if it has a direct onclick attribute (rare in React but possible)
-                    if (el.getAttribute('onclick')) return;
-                    // Check if it contains interactive children — if so, the role is on the wrong element
-                    var hasInteractiveChildren = el.querySelector('button, input, select, textarea, a[href]');
-                    // Check text length — genuine buttons are short; containers have lots of text
-                    var textLen = (el.textContent || '').trim().length;
-                    if (hasInteractiveChildren && textLen > 100) {
-                        // This is a container, not a button — strip the bogus role
-                        el.removeAttribute('role');
-                        el.removeAttribute('tabindex');
-                        // Note: can't easily remove onKeyDown in React, but removing role/tabindex
-                        // prevents screen readers from announcing it as a button
-                    } else if (!el.getAttribute('aria-label')) {
-                        // It's a legitimate interactive element — auto-label it
-                        var text = (el.textContent || '').trim().substring(0, 60);
-                        if (text) el.setAttribute('aria-label', text);
-                    }
-                });
-
-                // 2. Auto-label unlabeled <button> elements
-                var btns = modal.querySelectorAll('button:not([aria-label])');
-                btns.forEach(function(el) {
-                    var text = (el.textContent || '').trim();
-                    if (text === '\u00d7' || text === 'X' || text === '\u2715') {
-                        el.setAttribute('aria-label', 'Close');
-                    } else if (text && text.length <= 80) {
-                        el.setAttribute('aria-label', text);
-                    }
-                });
-
-                // 3. Auto-label unlabeled <canvas> elements
-                var canvases = modal.querySelectorAll('canvas:not([aria-label])');
-                canvases.forEach(function(el) {
-                    el.setAttribute('role', 'img');
-                    el.setAttribute('aria-label', 'Data visualization chart. Use the data table below for accessible values.');
-                    if (!el.getAttribute('tabindex')) el.setAttribute('tabindex', '0');
-                });
-
-                // 4. Auto-label unlabeled <select> elements
-                var selects = modal.querySelectorAll('select:not([aria-label]):not([aria-labelledby])');
-                selects.forEach(function(el) {
-                    var prev = el.previousElementSibling;
-                    if (prev && prev.textContent) {
-                        el.setAttribute('aria-label', prev.textContent.trim().substring(0, 50));
-                    } else {
-                        el.setAttribute('aria-label', 'Selection menu');
-                    }
-                });
-
-                // 5. Auto-label unlabeled <input> elements from placeholder
-                var inputs = modal.querySelectorAll('input:not([aria-label]):not([aria-labelledby]):not([id])');
-                inputs.forEach(function(el) {
-                    var ph = el.getAttribute('placeholder');
-                    if (ph) el.setAttribute('aria-label', ph);
-                });
-
-                // 6. Ensure all images have alt text
-                var imgs = modal.querySelectorAll('img:not([alt])');
-                imgs.forEach(function(el) { el.setAttribute('alt', 'Illustration'); });
-
-                // 7. Hide decorative SVG icons from screen readers
-                var svgs = modal.querySelectorAll('svg:not([aria-label]):not([role])');
-                svgs.forEach(function(el) {
-                    if (!el.closest('button') && !el.closest('[role="button"]')) {
-                        el.setAttribute('aria-hidden', 'true');
-                    }
-                });
-
-                // 8. Ensure aria-live region exists for dynamic announcements
-                if (!document.getElementById('bl-a11y-live')) {
-                    var liveDiv = document.createElement('div');
-                    liveDiv.id = 'bl-a11y-live';
-                    liveDiv.setAttribute('aria-live', 'polite');
-                    liveDiv.setAttribute('aria-atomic', 'true');
-                    liveDiv.setAttribute('role', 'status');
-                    liveDiv.className = 'bl-sr-only';
-                    modal.appendChild(liveDiv);
-                }
-            } catch(e) { /* safety net — never crash the app */ }
-        }, 2000);
     }
 
     const h = React.createElement;
@@ -885,7 +784,7 @@ Return ONLY valid JSON:
                 'aria-modal': 'true',
                 'aria-label': (entry ? 'Edit ABC entry' : 'New ABC entry'),
                 tabIndex: -1,
-                className: 'bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto mx-4 animate-in zoom-in-95 duration-200 focus:outline-none'
+                className: 'bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto mx-4 animate-in zoom-in-95 duration-200'
             },
                 // Header
                 h('div', { className: 'sticky top-0 bg-white/90 backdrop-blur-md border-b border-slate-100 px-6 py-4 rounded-t-2xl z-10 flex justify-between items-center' },
@@ -1530,7 +1429,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                             h('button', { "aria-label": "Toggle restorative id", onClick: () => setRestorativeId(null), className: 'text-purple-700 hover:text-purple-600 text-xs' }, tt('behavior_lens.close', '✕ Close'))
                                                         ),
                                                         restorativeLoading
-                                                            ? h('div', { className: 'text-xs text-purple-500 animate-pulse' }, tt('behavior_lens.generating_questions', '⏳ Generating context-specific questions...'))
+                                                            ? h('div', { className: 'text-xs text-purple-500 animate-pulse motion-reduce:animate-none' }, tt('behavior_lens.generating_questions', '⏳ Generating context-specific questions...'))
                                                             : h('div', { className: 'text-xs text-purple-800 whitespace-pre-wrap leading-relaxed' }, restorativeText)
                                                     )
                                                 )
@@ -1639,11 +1538,11 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             onClose();
         };
 
-        return h('div', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': (tt('behavior_lens.obs.title', 'Live Observation')) + (studentName ? ' — ' + studentName : ''), tabIndex: -1, className: 'fixed inset-0 z-[400] bg-slate-900 flex flex-col text-white animate-in fade-in duration-300 focus:outline-none' },
+        return h('div', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': (tt('behavior_lens.obs.title', 'Live Observation')) + (studentName ? ' — ' + studentName : ''), tabIndex: -1, className: 'fixed inset-0 z-[400] bg-slate-900 flex flex-col text-white animate-in fade-in duration-300' },
             // Top bar
             h('div', { className: 'flex items-center justify-between px-6 py-4 bg-black/30' },
                 h('div', { className: 'flex items-center gap-3' },
-                    h('div', { className: 'w-3 h-3 rounded-full animate-pulse', role: 'status', 'aria-label': isRunning ? 'Recording' : 'Paused', style: { background: isRunning ? '#ef4444' : '#64748b' } }),
+                    h('div', { className: 'w-3 h-3 rounded-full animate-pulse motion-reduce:animate-none', role: 'status', 'aria-label': isRunning ? 'Recording' : 'Paused', style: { background: isRunning ? '#ef4444' : '#64748b' } }),
                     h('h2', { className: 'text-lg font-black' },
                         '🔍 ', tt('behavior_lens.obs.title', 'Live Observation')
                     ),
@@ -1731,7 +1630,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                             }
                         },
                         disabled: !isRunning,
-                        className: `w-20 h-20 rounded-full text-lg font-black shadow-lg transition-all active:scale-90 disabled:opacity-40 ${durationStart ? 'bg-red-600 hover:bg-red-700 animate-pulse' : 'bg-indigo-600 hover:bg-indigo-700'
+                        className: `w-20 h-20 rounded-full text-lg font-black shadow-lg transition-all active:scale-90 disabled:opacity-40 ${durationStart ? 'bg-red-600 hover:bg-red-700 animate-pulse motion-reduce:animate-none' : 'bg-indigo-600 hover:bg-indigo-700'
                             }`
                     }, durationStart ? '⏹' : '▶'),
                     durations.length > 0 && h('div', { className: 'text-xs text-slate-300' },
@@ -2262,7 +2161,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             onClose();
         };
 
-        return h('div', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': (tt('behavior_lens.freq.title', 'Frequency Counter')) + (studentName ? ' — ' + studentName : ''), tabIndex: -1, className: 'fixed inset-0 z-[250] bg-slate-900 flex flex-col items-center justify-center text-white focus:outline-none' },
+        return h('div', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': (tt('behavior_lens.freq.title', 'Frequency Counter')) + (studentName ? ' — ' + studentName : ''), tabIndex: -1, className: 'fixed inset-0 z-[250] bg-slate-900 flex flex-col items-center justify-center text-white' },
             // Top bar
             h('div', { className: 'absolute top-0 left-0 right-0 flex items-center justify-between p-4' },
                 h('button', { onClick: onClose, 'aria-label': 'Close', className: 'p-2 rounded-full hover:bg-white/10 transition-colors' },
@@ -2443,7 +2342,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             momentary: { label: tt('behavior_lens.obs_momentary', 'Momentary'), desc: 'Mark only if behavior at the EXACT moment' }
         };
 
-        return h('div', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': (tt('behavior_lens.interval.title', 'Interval Recording')) + (studentName ? ' — ' + studentName : ''), tabIndex: -1, className: 'fixed inset-0 z-[250] bg-slate-900/95 flex flex-col focus:outline-none' },
+        return h('div', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': (tt('behavior_lens.interval.title', 'Interval Recording')) + (studentName ? ' — ' + studentName : ''), tabIndex: -1, className: 'fixed inset-0 z-[250] bg-slate-900/95 flex flex-col' },
             // Top bar
             h('div', { className: 'p-4 flex items-center justify-between border-b border-slate-700' },
                 h('div', { className: 'flex items-center gap-3' },
@@ -2510,7 +2409,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         const isCurrent = i === currentInterval && running;
                         const occurred = grid[i] === true;
                         let bg = 'bg-slate-700';
-                        if (isCurrent) bg = 'bg-indigo-500 ring-2 ring-indigo-300 animate-pulse';
+                        if (isCurrent) bg = 'bg-indigo-500 ring-2 ring-indigo-300 animate-pulse motion-reduce:animate-none';
                         else if (isComplete && occurred) bg = 'bg-red-500';
                         else if (isComplete && !occurred) bg = 'bg-emerald-500';
                         const statusLabel = isCurrent ? 'current' : isComplete ? (occurred ? 'occurred' : 'not occurred') : 'not yet recorded';
@@ -2910,9 +2809,9 @@ Return ONLY valid JSON:
                 className: 'w-full py-2.5 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
             }, aiSuggestLoading ? '⏳ Thinking...' : '🧠 AI Suggest Setup'),
             // Interval timer (for FI/VI)
-            (scheduleType === 'FI' || scheduleType === 'VI') && h('div', { className: `rounded-xl border-2 p-4 text-center transition-all ${intervalReady ? 'border-green-400 bg-green-50 animate-pulse' : 'border-slate-200 bg-white'}` },
+            (scheduleType === 'FI' || scheduleType === 'VI') && h('div', { className: `rounded-xl border-2 p-4 text-center transition-all ${intervalReady ? 'border-green-400 bg-green-50 animate-pulse motion-reduce:animate-none' : 'border-slate-200 bg-white'}` },
                 h('div', { className: 'text-3xl font-black text-slate-800 mb-2' }, fmtTimer(timerSeconds)),
-                intervalReady && h('div', { className: 'text-lg font-black text-green-600 mb-2 animate-bounce' }, '✅ INTERVAL READY — Reinforce next behavior!'),
+                intervalReady && h('div', { className: 'text-lg font-black text-green-600 mb-2 animate-bounce motion-reduce:animate-none' }, '✅ INTERVAL READY — Reinforce next behavior!'),
                 h('div', { 'aria-expanded': String(timerActive), className: 'flex gap-2 justify-center' },
                     h('button', { 'aria-expanded': String(timerActive), "aria-label": "Toggle timer active",
                         onClick: () => setTimerActive(!timerActive),
@@ -2925,10 +2824,10 @@ Return ONLY valid JSON:
                 )
             ),
             // Response counter + Reinforce button (for ratio/interval schedules)
-            scheduleType !== 'token' && h('div', { className: `rounded-xl border-2 p-5 text-center transition-all ${reinforceNow ? 'border-amber-400 bg-amber-50 animate-pulse shadow-lg shadow-amber-200/50' : 'border-slate-200 bg-white'}` },
+            scheduleType !== 'token' && h('div', { className: `rounded-xl border-2 p-5 text-center transition-all ${reinforceNow ? 'border-amber-400 bg-amber-50 animate-pulse motion-reduce:animate-none shadow-lg shadow-amber-200/50' : 'border-slate-200 bg-white'}` },
                 h('div', { className: 'text-xs font-bold text-slate-600 uppercase mb-1' }, tt('behavior_lens.responses_recorded', 'Responses Recorded')),
                 h('div', { className: 'text-4xl font-black text-slate-800 mb-3' }, responseCount),
-                reinforceNow && h('div', { className: 'text-xl font-black text-amber-600 mb-3 animate-bounce' }, '🎉 REINFORCE NOW!'),
+                reinforceNow && h('div', { className: 'text-xl font-black text-amber-600 mb-3 animate-bounce motion-reduce:animate-none' }, '🎉 REINFORCE NOW!'),
                 (scheduleType === 'FR' || scheduleType === 'VR') && nextReinforceAt && !reinforceNow &&
                 h('div', { className: 'text-xs text-slate-600 mb-3' }, `Next reinforcement at response #${nextReinforceAt}`),
                 h('button', { "aria-label": "Record Behavior",
@@ -2937,7 +2836,7 @@ Return ONLY valid JSON:
                 }, '✋ Record Behavior')
             ),
             // Token Board Display
-            h('div', { className: `bg-gradient-to-b from-rose-50 to-amber-50 rounded-2xl border-2 border-rose-200 p-8 shadow-lg relative overflow-hidden ${showConfetti ? 'animate-pulse' : ''}` },
+            h('div', { className: `bg-gradient-to-b from-rose-50 to-amber-50 rounded-2xl border-2 border-rose-200 p-8 shadow-lg relative overflow-hidden ${showConfetti ? 'animate-pulse motion-reduce:animate-none' : ''}` },
                 h('div', { className: 'text-center mb-6' },
                     h('div', { className: 'text-xs font-bold text-rose-500 uppercase mb-1' }, studentName || ''),
                     targetBehavior && h('div', { className: 'text-lg font-black text-slate-800' }, targetBehavior),
@@ -2970,7 +2869,7 @@ Return ONLY valid JSON:
                 ),
                 showConfetti && h('div', { className: 'absolute inset-0 flex items-center justify-center bg-white/60 rounded-2xl' },
                     h('div', { className: 'text-center' },
-                        h('div', { className: 'text-6xl mb-2 animate-bounce' }, '🎉'),
+                        h('div', { className: 'text-6xl mb-2 animate-bounce motion-reduce:animate-none' }, '🎉'),
                         h('div', { className: 'text-2xl font-black text-rose-600' }, tt('behavior_lens.token.success', 'Great Job!')),
                         reward && h('div', { className: 'text-lg text-amber-600 font-bold mt-1' }, `🎁 ${reward}`)
                     )
@@ -4045,7 +3944,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
             const lastScore = pts[pts.length - 1].score;
             const firstScore = pts[0].score;
             const trend = lastScore >= firstScore ? '#10b981' : '#f87171';
-            return h('svg', { width: w, height: hh + 4, className: 'inline-block' },
+            return h('svg', { role: 'img', 'aria-label': `Goal progress scores: ${pts.map(p => p.score).join(', ')}. ${lastScore >= firstScore ? 'Stable or improving' : 'Decreasing'} trend.`, width: w, height: hh + 4, className: 'inline-block' },
                 h('path', {
                     d: pathParts.join(' '),
                     fill: 'none',
@@ -4908,12 +4807,12 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                         h('div', { className: 'text-xs font-black text-white/60 uppercase tracking-widest mb-2' }, tt('behavior_lens.first_label', 'FIRST')),
                         h('span', { className: 'text-6xl md:text-8xl mb-4 drop-shadow-lg' }, firstItem.emoji),
                         h('span', { className: 'text-xl md:text-2xl font-black text-white drop-shadow-md text-center px-4' }, firstItem.label),
-                        firstDone && h('div', { className: 'mt-4 text-white text-4xl animate-bounce' }, '✅')
+                        firstDone && h('div', { className: 'mt-4 text-white text-4xl animate-bounce motion-reduce:animate-none' }, '✅')
                     ),
                     // THEN panel
                     h('div', {
                         className: `rounded-3xl flex flex-col items-center justify-center shadow-2xl transition-all duration-500 ${firstDone
-                            ? 'bg-gradient-to-br from-amber-400 to-orange-500 scale-[1.05] ring-4 ring-amber-300/50 animate-pulse'
+                            ? 'bg-gradient-to-br from-amber-400 to-orange-500 scale-[1.05] ring-4 ring-amber-300/50 animate-pulse motion-reduce:animate-none'
                             : 'bg-gradient-to-br from-slate-600 to-slate-800 opacity-50 grayscale'
                             } `
                     },
@@ -4953,7 +4852,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                     },
                         h('span', { className: `${choices.length <= 4 ? 'text-6xl md:text-8xl' : 'text-4xl md:text-6xl'} mb-4 drop-shadow-lg` }, c.emoji),
                         h('span', { className: `${choices.length <= 4 ? 'text-xl md:text-3xl' : 'text-lg md:text-xl'} font-black text-white drop-shadow-md` }, c.label),
-                        selected === i && h('div', { className: 'mt-3 text-white/80 text-lg font-bold animate-bounce' }, '✓ Selected!')
+                        selected === i && h('div', { className: 'mt-3 text-white/80 text-lg font-bold animate-bounce motion-reduce:animate-none' }, '✓ Selected!')
                     )
                 )
             )
@@ -5584,6 +5483,7 @@ Create student-friendly language and return ONLY valid JSON:
                         const html = clone.outerHTML;
                         const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" aria-hidden="true"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="font-family:system-ui,sans-serif;padding:16px;background:white">${html}</div></foreignObject></svg>`;
                         const canvas = document.createElement('canvas');
+                        canvas.setAttribute('aria-hidden', 'true');
                         canvas.width = 1200; canvas.height = 1600;
                         const ctx = canvas.getContext('2d');
                         const img = new Image();
@@ -6436,13 +6336,38 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
             { id: 'mistakes', label: '⚠️ Common Mistakes', icon: '⚠️' },
         ];
 
+        const focusGuideTab = (index) => {
+            const normalizedIndex = (index + tabs.length) % tabs.length;
+            const nextTab = tabs[normalizedIndex];
+            setActiveTab(nextTab.id);
+            window.requestAnimationFrame(() => {
+                const tabButton = document.getElementById(`bl-guide-tab-${nextTab.id}`);
+                if (tabButton && typeof tabButton.focus === 'function') tabButton.focus();
+            });
+        };
+        const handleGuideTabKeyDown = (event, index) => {
+            let nextIndex = null;
+            if (event.key === 'ArrowRight') nextIndex = index + 1;
+            else if (event.key === 'ArrowLeft') nextIndex = index - 1;
+            else if (event.key === 'Home') nextIndex = 0;
+            else if (event.key === 'End') nextIndex = tabs.length - 1;
+            if (nextIndex === null) return;
+            event.preventDefault();
+            focusGuideTab(nextIndex);
+        };
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             // Tab bar
-            h('div', { className: 'flex gap-2 bg-white rounded-xl border border-slate-400 p-2 shadow-sm' },
-                tabs.map(tab =>
-                    h('button', { "aria-label": "Toggle active tab",
+            h('div', { role: 'tablist', 'aria-label': 'ABA Quick Guide sections', className: 'flex gap-2 bg-white rounded-xl border border-slate-400 p-2 shadow-sm' },
+                tabs.map((tab, index) =>
+                    h('button', {
+                        id: `bl-guide-tab-${tab.id}`,
+                        role: 'tab',
+                        'aria-selected': activeTab === tab.id,
+                        'aria-controls': `bl-guide-panel-${tab.id}`,
+                        tabIndex: activeTab === tab.id ? 0 : -1,
                         key: tab.id,
                         onClick: () => setActiveTab(tab.id),
+                        onKeyDown: (event) => handleGuideTabKeyDown(event, index),
                         className: `flex-1 py-2.5 px-3 rounded-lg text-sm font-bold transition-all ${activeTab === tab.id
                             ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md'
                             : 'text-slate-600 hover:bg-slate-100'}`
@@ -6451,7 +6376,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
             ),
 
             // GLOSSARY TAB
-            activeTab === 'glossary' && h('div', { className: 'space-y-4' },
+            activeTab === 'glossary' && h('div', { id: 'bl-guide-panel-glossary', role: 'tabpanel', 'aria-labelledby': 'bl-guide-tab-glossary', tabIndex: 0, className: 'space-y-4' },
                 h('input', {
                     value: searchTerm,
                     onChange: (e) => setSearchTerm(e.target.value),
@@ -6486,7 +6411,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
             ),
 
             // SCHEDULES TAB
-            activeTab === 'schedules' && h('div', { className: 'space-y-3' },
+            activeTab === 'schedules' && h('div', { id: 'bl-guide-panel-schedules', role: 'tabpanel', 'aria-labelledby': 'bl-guide-tab-schedules', tabIndex: 0, className: 'space-y-3' },
                 h('div', { className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-4' },
                     h('h3', { className: 'text-sm font-black text-indigo-800 mb-1' }, '📋 Reinforcement Schedules Explained'),
                     h('p', { className: 'text-xs text-indigo-600' }, tt('behavior_lens.ui.how_often_and_when_to_deliver_reinforcement_use_th', 'How often and when to deliver reinforcement. Use the Token Board tool to implement these schedules in practice.'))
@@ -6514,7 +6439,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
             ),
 
             // DECISION TREE TAB
-            activeTab === 'decision' && h('div', { className: 'space-y-3' },
+            activeTab === 'decision' && h('div', { id: 'bl-guide-panel-decision', role: 'tabpanel', 'aria-labelledby': 'bl-guide-tab-decision', tabIndex: 0, className: 'space-y-3' },
                 h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-4' },
                     h('h3', { className: 'text-sm font-black text-emerald-800 mb-1' }, '🌲 Function Identification Decision Tree'),
                     h('p', { className: 'text-xs text-emerald-600' }, tt('behavior_lens.ui.use_this_flow_to_hypothesize_the_function_of_a_cha', 'Use this flow to hypothesize the function of a challenging behavior.'))
@@ -6544,7 +6469,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
             ),
 
             // COMMON MISTAKES TAB
-            activeTab === 'mistakes' && h('div', { className: 'space-y-3' },
+            activeTab === 'mistakes' && h('div', { id: 'bl-guide-panel-mistakes', role: 'tabpanel', 'aria-labelledby': 'bl-guide-tab-mistakes', tabIndex: 0, className: 'space-y-3' },
                 h('div', { className: 'bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-200 p-4' },
                     h('h3', { className: 'text-sm font-black text-red-800 mb-1' }, '⚠️ Common ABA Implementation Mistakes'),
                     h('p', { id: 'err-behavior_lens_module-5831', role: 'alert', className: 'text-xs text-red-600' }, tt('behavior_lens.ui.avoid_these_frequently_seen_errors_to_improve_beha', 'Avoid these frequently seen errors to improve behavioral outcomes.'))
@@ -7220,7 +7145,7 @@ Respond only with the student's words:`;
                 ),
                 // AI Feedback Scorecard
                 feedbackLoading && h('div', { className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-6 text-center' },
-                    h('div', { className: 'animate-pulse' },
+                    h('div', { className: 'animate-pulse motion-reduce:animate-none' },
                         h('div', { className: 'text-2xl mb-2' }, '🧠'),
                         h('div', { className: 'text-sm font-bold text-indigo-700' }, 'AI Clinical Supervisor is analyzing your session...'),
                         h('div', { className: 'text-[11px] text-indigo-400 mt-1' }, 'Evaluating empathy, active listening, de-escalation, and rapport')
@@ -7400,7 +7325,7 @@ Respond only with the student's words:`;
                 sending && h('div', { className: 'flex justify-start' },
                     h('div', { className: 'bg-slate-100 border border-slate-400 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm' },
                         h('div', { className: 'text-[11px] font-bold mb-1 text-slate-600' }, `🧒 ${studentName || 'Student'}`),
-                        h('div', { className: 'text-sm text-slate-600 animate-pulse' }, '● ● ●')
+                        h('div', { className: 'text-sm text-slate-600 animate-pulse motion-reduce:animate-none' }, '● ● ●')
                     )
                 ),
                 h('div', { ref: messagesEndRef })
@@ -9444,7 +9369,7 @@ Rules:
             return '#ef4444'; // red-500
         };
 
-        const cellSize = mini ? 16 : 28;
+        const cellSize = mini ? 24 : 28;
         const gap = mini ? 2 : 4;
         const labelW = mini ? 24 : 36;
         const svgW = labelW + (cellSize + gap) * 5;
@@ -9466,7 +9391,7 @@ Rules:
             ),
             // SVG Grid
             h('div', { className: 'flex justify-center relative' },
-                h('svg', { width: svgW, height: svgH, className: 'select-none' },
+                h('svg', { role: 'group', 'aria-label': `Behavior incident heatmap for the past ${weeks} school weeks. ${cells.reduce((sum, cell) => sum + cell.count, 0)} total incidents.`, width: svgW, height: svgH, className: 'select-none' },
                     // Day labels
                     !mini && dayNames.map((name, i) =>
                         h('text', {
@@ -9491,9 +9416,23 @@ Rules:
                                 stroke: hoveredCell === i ? '#6366f1' : '#e2e8f0',
                                 strokeWidth: hoveredCell === i ? 2 : 1,
                                 style: { cursor: cell.count > 0 ? 'pointer' : 'default', transition: 'all 0.15s' },
+                                role: cell.count > 0 && onOpenTool ? 'button' : undefined,
+                                tabIndex: cell.count > 0 && onOpenTool ? 0 : undefined,
+                                focusable: cell.count > 0 && onOpenTool ? 'true' : 'false',
+                                'aria-label': cell.count > 0 && onOpenTool
+                                    ? `${cell.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}: ${cell.count} incident${cell.count !== 1 ? 's' : ''}${Object.keys(cell.functions).length ? `. ${Object.entries(cell.functions).map(([fn, count]) => `${count} ${fn}`).join(', ')}` : ''}. Open scatterplot.`
+                                    : undefined,
                                 onMouseEnter: () => setHoveredCell(i),
                                 onMouseLeave: () => setHoveredCell(null),
-                                onClick: () => { if (cell.count > 0 && onOpenTool) onOpenTool('scatterplot'); }
+                                onFocus: () => setHoveredCell(i),
+                                onBlur: () => setHoveredCell(null),
+                                onKeyDown: cell.count > 0 && onOpenTool ? (event) => {
+                                    if (event.key === 'Enter' || event.key === ' ') {
+                                        event.preventDefault();
+                                        onOpenTool('scatterplot');
+                                    }
+                                } : undefined,
+                                onClick: cell.count > 0 && onOpenTool ? () => onOpenTool('scatterplot') : undefined
                             }),
                             !mini && cell.count > 0 && h('text', {
                                 x: x + cellSize / 2,
@@ -10541,7 +10480,7 @@ Keep it concise and encouraging. Use plain language.`;
                         cy: H - pad - (d.y / maxY) * (H - pad * 2)
                     }));
                     const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.cx} ${p.cy}`).join(' ');
-                    return h('svg', { viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { maxHeight: '220px' } },
+                    return h('svg', { role: 'img', 'aria-label': `Behavior intensity over time. ${intensityData.length} observations: ${intensityData.map(d => `${d.label}, intensity ${d.y}`).join('; ')}.`, viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { maxHeight: '220px' } },
                         // Grid lines
                         ...[1, 2, 3, 4, 5].map(v => {
                             const y = H - pad - (v / maxY) * (H - pad * 2);
@@ -13557,7 +13496,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                         h('button', { "aria-label": "Listening... speak now",
                             onClick: isListening ? stopMic : startMic,
                             className: `w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all ${isListening
-                                ? 'bg-red-700 text-white animate-pulse shadow-lg shadow-red-200'
+                                ? 'bg-red-700 text-white animate-pulse motion-reduce:animate-none shadow-lg shadow-red-200'
                                 : 'bg-teal-100 text-teal-600 hover:bg-teal-200'
                                 }`,
                             title: isListening ? 'Stop listening' : 'Start dictation'
@@ -13570,7 +13509,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                     )
                 ),
                 isListening && h('div', { className: 'mt-2 flex items-center gap-2 text-xs text-red-500 font-bold', role: 'status', 'aria-live': 'polite' },
-                    h('div', { className: 'w-2 h-2 rounded-full bg-red-500 animate-pulse', 'aria-hidden': 'true' }),
+                    h('div', { className: 'w-2 h-2 rounded-full bg-red-500 animate-pulse motion-reduce:animate-none', 'aria-hidden': 'true' }),
                     'Listening... speak now'
                 )
             ),
@@ -14231,7 +14170,7 @@ Respond helpfully and concisely as AlloBot:`;
                 isSending && h('div', { className: 'flex justify-start' },
                     h('div', { className: 'bg-white border border-slate-400 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm flex items-center gap-2' },
                         h('span', { className: 'text-xs font-black text-indigo-500' }, '🤖 AlloBot'),
-                        h('span', { className: 'text-sm text-slate-600 animate-pulse' }, tt('behavior_lens.thinking', 'Thinking...'))
+                        h('span', { className: 'text-sm text-slate-600 animate-pulse motion-reduce:animate-none' }, tt('behavior_lens.thinking', 'Thinking...'))
                     )
                 ),
                 h('div', { ref: chatEndRef })
@@ -14270,7 +14209,7 @@ Respond helpfully and concisely as AlloBot:`;
         ];
         const filledCount = Object.values(profile).filter(v => v?.trim()).length;
 
-        return h('div', { 'aria-expanded': String(isExpanded), className: 'bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300' },
+        return h('div', { className: 'bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300' },
             // Collapsed header
             h('button', { 'aria-expanded': String(isExpanded), "aria-label": "Toggle is expanded",
                 onClick: () => setIsExpanded(!isExpanded),
@@ -14299,6 +14238,7 @@ Respond helpfully and concisely as AlloBot:`;
                         h('textarea', {
                             value: profile[f.key] || '',
                             onChange: (e) => onChange({ ...profile, [f.key]: e.target.value }),
+                            'aria-label': f.label,
                             placeholder: f.placeholder,
                             rows: 2,
                             className: 'w-full text-xs border border-teal-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-400 resize-none bg-white/80'
@@ -14719,7 +14659,7 @@ Format as a professional, structured report with clear sections and headers. Kee
                 h('h2', { className: 'text-lg font-black text-slate-800' }, isBCBA ? 'BCBA Analytics Dashboard' : 'BCBA Consultation & Handoff'),
                 h('p', { className: 'text-xs text-slate-600 mt-1' }, isBCBA ? 'Professional-level view of collected behavioral data' : 'Prepare data for BCBA, school psych, or behavioral specialist consultation')
             ),
-            !isBCBA && needsConsultation && h('div', { className: 'bg-amber-50 rounded-xl border-2 border-amber-300 p-4 animate-pulse' },
+            !isBCBA && needsConsultation && h('div', { className: 'bg-amber-50 rounded-xl border-2 border-amber-300 p-4 animate-pulse motion-reduce:animate-none' },
                 h('div', { className: 'flex items-center gap-2' },
                     h('span', { className: 'text-xl' }, '⚠️'),
                     h('div', null,
@@ -15112,7 +15052,7 @@ Fill in clinically appropriate values. The replacement behavior should serve the
             const arrow = (x1, y1, x2, y2, color) =>
                 h('line', { key: `a-${x1}-${y1}-${x2}-${y2}`, x1, y1, x2, y2, stroke: color, strokeWidth: 2, markerEnd: 'url(#arrowhead)' });
             const cx = w / 2 - nodeW / 2;
-            return h('svg', { viewBox: `0 0 ${w} 340`, className: 'w-full', style: { maxHeight: 340 } },
+            return h('svg', { role: 'img', 'aria-label': `Competing behavior pathways. Setting event: ${model.settingEvent || 'not specified'}. Antecedent: ${model.antecedent || 'not specified'}. Desired pathway: ${model.replacementBehavior || 'replacement behavior not specified'}, then ${model.desiredConsequence || 'desired consequence not specified'}. Problem pathway: ${model.targetBehavior || 'target behavior not specified'}, then ${model.consequence || 'maintaining consequence not specified'}. Competing pathway: ${model.competingBehavior || 'not specified'}, then ${model.competingConsequence || 'not specified'}.`, viewBox: `0 0 ${w} 340`, className: 'w-full', style: { maxHeight: 340 } },
                 h('defs', null,
                     h('marker', { id: 'arrowhead', markerWidth: 10, markerHeight: 7, refX: 10, refY: 3.5, orient: 'auto' },
                         h('polygon', { points: '0 0, 10 3.5, 0 7', fill: '#64748b' })
@@ -15446,6 +15386,7 @@ Return ONLY a JSON object (no markdown, no explanation) with these exact keys:
                                 type: 'text',
                                 value: dimensions[d.key],
                                 onChange: (e) => updateDim(d.key, e.target.value),
+                                'aria-label': d.label,
                                 placeholder: d.placeholder,
                                 className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-400 outline-none'
                             })
@@ -15652,7 +15593,7 @@ Provide a brief (3-4 sentences) clinical interpretation with 2-3 specific interv
             const barW = 60, gap = 30, chartH = 120, padL = 30, padB = 30;
             const w = padL + conditions.length * (barW + gap) + gap;
             const h2 = chartH + padB + 20;
-            return h('svg', { viewBox: `0 0 ${w} ${h2}`, className: 'w-full', style: { maxHeight: 180 } },
+            return h('svg', { role: 'img', 'aria-label': `Probe results. Baseline ${pct('baseline')} percent; with support ${pct('withSupport')} percent; with motivation ${pct('withMotivation')} percent; with both ${pct('withBoth')} percent.`, viewBox: `0 0 ${w} ${h2}`, className: 'w-full', style: { maxHeight: 180 } },
                 // Y axis labels
                 [0, 25, 50, 75, 100].map(v => [
                     h('text', { key: `yl-${v}`, x: padL - 4, y: 10 + chartH - (v / 100) * chartH + 3, textAnchor: 'end', fontSize: 8, fill: '#94a3b8' }, `${v}`),
@@ -16479,12 +16420,12 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                 tgt.type === 'duration' ? h('div', { className: 'flex items-center gap-4' },
                                     h('button', { "aria-label": "Toggle Duration",
                                         onClick: () => toggleDuration(tgt.id),
-                                        className: `w-20 h-20 rounded-2xl text-white text-lg font-black shadow-lg hover:scale-105 active:scale-95 transition-transform ${isDurationActive ? 'bg-gradient-to-br from-red-500 to-orange-600 animate-pulse' : 'bg-gradient-to-br from-amber-500 to-orange-600'}`
+                                        className: `w-20 h-20 rounded-2xl text-white text-lg font-black shadow-lg hover:scale-105 active:scale-95 transition-transform ${isDurationActive ? 'bg-gradient-to-br from-red-500 to-orange-600 animate-pulse motion-reduce:animate-none' : 'bg-gradient-to-br from-amber-500 to-orange-600'}`
                                     }, isDurationActive ? '⏹ Stop' : '▶ Start'),
                                     h('div', null,
                                         h('p', { className: 'text-xs text-slate-600' }, `Episodes: ${tgt.count}`),
                                         tgt.durations?.length > 0 && h('p', { className: 'text-xs text-emerald-600 font-bold' }, `Avg: ${Math.round(tgt.durations.reduce((a, b) => a + b, 0) / tgt.durations.length)}s`),
-                                        isDurationActive && h('p', { className: 'text-xs text-red-600 font-bold animate-pulse' }, tt('behavior_lens.ui.recording', 'Recording...'))
+                                        isDurationActive && h('p', { className: 'text-xs text-red-600 font-bold animate-pulse motion-reduce:animate-none' }, tt('behavior_lens.ui.recording', 'Recording...'))
                                     )
                                 ) :
                                     tgt.type === 'interval' ? h('div', { className: 'space-y-2' },
@@ -16947,7 +16888,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 ),
                 // Stacked SVG
                 mbTierData.some(t => t.data.length > 0) && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm overflow-x-auto' },
-                    h('svg', { id: 'aba-graph-svg', viewBox: `0 0 ${MB_W} ${MB_TOTAL_H}`, className: 'w-full', style: { minWidth: '500px', fontFamily: 'Arial, sans-serif' } },
+                    h('svg', { id: 'aba-graph-svg', role: 'img', 'aria-label': `Multiple baseline graph. ${mbTierData.map(tier => `${tier.label || tier.name}: ${tier.data.map(point => `session ${point.session}, ${point.value}`).join(', ') || 'no data'}`).join('; ')}.`, viewBox: `0 0 ${MB_W} ${MB_TOTAL_H}`, className: 'w-full', style: { minWidth: '500px', fontFamily: 'Arial, sans-serif' } },
                         h('rect', { x: 0, y: 0, width: MB_W, height: MB_TOTAL_H, fill: 'white' }),
                         // Title
                         mbTitle && h('text', { x: MB_W / 2, y: 18, textAnchor: 'middle', fontSize: 14, fontWeight: 'bold', fill: '#1e293b' }, mbTitle),
@@ -17076,7 +17017,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 ),
                 // SVG Graph
                 allAtData.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm overflow-x-auto' },
-                    h('svg', { id: 'aba-graph-svg', viewBox: `0 0 ${AT_W} ${AT_H}`, className: 'w-full', style: { minWidth: '500px', maxHeight: '400px', fontFamily: 'Arial, sans-serif' } },
+                    h('svg', { id: 'aba-graph-svg', role: 'img', 'aria-label': `Alternating treatments graph. ${atConditions.map(condition => `${condition.name}: ${condition.data.map(point => `session ${point.session}, ${point.value}`).join(', ') || 'no data'}`).join('; ')}.`, viewBox: `0 0 ${AT_W} ${AT_H}`, className: 'w-full', style: { minWidth: '500px', maxHeight: '400px', fontFamily: 'Arial, sans-serif' } },
                         h('rect', { x: 0, y: 0, width: AT_W, height: AT_H, fill: 'white' }),
                         // Title
                         atTitle && h('text', { x: AT_W / 2, y: 18, textAnchor: 'middle', fontSize: 14, fontWeight: 'bold', fill: '#1e293b' }, atTitle),
@@ -17329,7 +17270,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     h('button', { onClick: confirmSvgEdit, className: 'px-2 py-0.5 bg-yellow-700 text-white rounded text-[11px] font-bold hover:bg-yellow-600' }, '✓ Save'),
                     h('button', { "aria-label": "Cancel", onClick: () => setEditingPoint(null), className: 'px-2 py-0.5 bg-slate-200 text-slate-600 rounded text-[11px] font-bold hover:bg-slate-300' }, '✕ Cancel')
                 ),
-                h('svg', { id: 'aba-graph-svg', viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { minWidth: '500px', maxHeight: '350px', fontFamily: 'Arial, sans-serif' } },
+                h('svg', { id: 'aba-graph-svg', role: 'img', 'aria-label': `${graphTitle || 'Behavior graph'}. ${dataSeries.map(point => `session ${point.session}, ${point.value}`).join('; ')}.`, viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { minWidth: '500px', maxHeight: '350px', fontFamily: 'Arial, sans-serif' } },
                     // White background for print
                     h('rect', { x: 0, y: 0, width: W, height: H, fill: 'white' }),
                     // Title
@@ -20402,6 +20343,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             if (!svgEl) return;
             const svgData = new XMLSerializer().serializeToString(svgEl);
             const canvas = document.createElement('canvas');
+            canvas.setAttribute('aria-hidden', 'true');
             canvas.width = W * 2; canvas.height = H * 2;
             const ctx = canvas.getContext('2d');
             const img = new Image();
@@ -20438,7 +20380,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             !waitingForResponse ?
                 h('button', { "aria-label": "Present Stimulus", onClick: presentStimulus, className: 'w-full py-6 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-black text-lg hover:from-blue-600 hover:to-indigo-700 shadow-lg transition-all hover:scale-[1.02] active:scale-95' }, '📢 Present Stimulus') :
                 h('div', { className: 'space-y-3' },
-                    h('div', { className: 'bg-amber-50 rounded-xl p-6 border-2 border-amber-300 text-center animate-pulse' },
+                    h('div', { className: 'bg-amber-50 rounded-xl p-6 border-2 border-amber-300 text-center animate-pulse motion-reduce:animate-none' },
                         h('p', { className: 'text-lg font-black text-amber-800' }, '⏳ Waiting for response...')
                     ),
                     h('div', { className: 'grid grid-cols-2 gap-3' },
@@ -20457,7 +20399,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                     h('div', { className: 'bg-amber-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[11px] text-amber-600' }, 'SD'), h('p', { className: 'text-lg font-black text-amber-800' }, `${sdVal.toFixed(2)}s`))
                 ),
                 // SVG Trial Graph
-                h('svg', { ref: svgRef, viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { maxHeight: '230px', fontFamily: 'Arial, sans-serif' } },
+                h('svg', { ref: svgRef, role: 'img', 'aria-label': `Latency across ${trials.length} trials for ${behaviorName || 'untitled behavior'}. Mean ${mean} seconds; median ${median} seconds; range ${range}.`, viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { maxHeight: '230px', fontFamily: 'Arial, sans-serif' } },
                     h('rect', { x: 0, y: 0, width: W, height: H, fill: 'white' }),
                     h('text', { x: W / 2, y: 14, textAnchor: 'middle', fontSize: 10, fontWeight: 'bold', fill: '#1e293b' }, `Latency Across Trials — ${behaviorName || 'Untitled'}`),
                     h('text', { x: 10, y: H / 2, textAnchor: 'middle', fontSize: 9, fill: '#64748b', transform: `rotate(-90, 10, ${H / 2})` }, 'Latency (s)'),
@@ -20876,7 +20818,7 @@ Keep the language professional but accessible.`;
             const pathD = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
             const lastPt = pts[pts.length - 1];
             const trendUp = recent.length >= 3 && recent[recent.length - 1].pct >= recent[0].pct;
-            return h('svg', { viewBox: `0 0 ${w} ${ht}`, className: 'w-28 h-8', style: { display: 'inline-block' } },
+            return h('svg', { role: 'img', 'aria-label': `Maintenance probe percentages: ${recent.map(probe => probe.pct).join(', ')}.`, viewBox: `0 0 ${w} ${ht}`, className: 'w-28 h-8', style: { display: 'inline-block' } },
                 // 80% mastery threshold line
                 h('line', { x1: pad, y1: pad + plotH - ((80 - minV) / range) * plotH, x2: w - pad, y2: pad + plotH - ((80 - minV) / range) * plotH, stroke: '#10b981', strokeWidth: 0.5, strokeDasharray: '2,2', opacity: 0.5 }),
                 h('path', { d: pathD, fill: 'none', stroke: trendUp ? '#10b981' : '#f43f5e', strokeWidth: 1.5, strokeLinejoin: 'round' }),
@@ -20933,7 +20875,7 @@ Keep the language professional but accessible.`;
                         h('h2', { className: 'text-lg font-black text-slate-800' }, skill.name),
                         h('div', { className: 'flex items-center gap-2' },
                             h('span', { className: `text-[11px] px-2 py-0.5 rounded-full font-bold ${skill.status === 'maintained' ? 'bg-green-100 text-green-700' : skill.status === 'regression' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}` }, skill.status.toUpperCase()),
-                            od.isOverdue && h('span', { className: 'text-[11px] px-2 py-0.5 rounded-full font-bold bg-red-100 text-red-700 animate-pulse' }, `⚠ OVERDUE ${od.overdueDays}d`)
+                            od.isOverdue && h('span', { className: 'text-[11px] px-2 py-0.5 rounded-full font-bold bg-red-100 text-red-700 animate-pulse motion-reduce:animate-none' }, `⚠ OVERDUE ${od.overdueDays}d`)
                         )
                     ),
                     h('div', { className: 'flex gap-4 text-[11px] text-slate-600' },
@@ -21142,6 +21084,7 @@ Keep the language professional but accessible.`;
             if (!svgEl) return;
             const svgData = new XMLSerializer().serializeToString(svgEl);
             const canvas = document.createElement('canvas');
+            canvas.setAttribute('aria-hidden', 'true');
             canvas.width = W * 2; canvas.height = H * 2;
             const ctx = canvas.getContext('2d');
             const img = new Image();
@@ -21177,7 +21120,7 @@ Keep the language professional but accessible.`;
                     showManual && h('input', { value: manualData, onChange: e => setManualData(e.target.value), 'aria-label': 'Counts per session 3, 5, 2, 8, 4', placeholder: tt('behavior_lens.ph.counts_per_session_3_5_2_8_4', 'Counts per session: 3, 5, 2, 8, 4...'), className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5' })
                 ),
                 // SVG Graph
-                dataPoints.length > 0 ? h('svg', { ref: svgRef, viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { maxHeight: '320px', fontFamily: 'Arial, sans-serif' } },
+                dataPoints.length > 0 ? h('svg', { ref: svgRef, role: 'img', 'aria-label': `Cumulative record${behaviorName ? ` for ${behaviorName}` : ''}. ${dataPoints.map(point => `session ${point.session}, count ${point.count}, cumulative ${point.cumulative}`).join('; ')}.`, viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { maxHeight: '320px', fontFamily: 'Arial, sans-serif' } },
                     h('rect', { x: 0, y: 0, width: W, height: H, fill: 'white' }),
                     h('text', { x: W / 2, y: 16, textAnchor: 'middle', fontSize: 12, fontWeight: 'bold', fill: '#1e293b' }, (tt('behavior_lens.raw.cumulative_record', 'Cumulative Record'))),
                     h('text', { x: 12, y: H / 2, textAnchor: 'middle', fontSize: 10, fill: '#64748b', transform: `rotate(-90, 12, ${H / 2})` }, (tt('behavior_lens.raw.cumulative_responses', 'Cumulative Responses'))),
@@ -21884,7 +21827,7 @@ Keep the language professional but accessible.`;
 
                 h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' }, goalTypes.map(gt => h('button', { "aria-label": "Toggle goal type", key: gt.id, onClick: () => setGoalType(gt.id), className: 'p-3 rounded-lg border-2 text-start transition-all ' + (goalType === gt.id ? 'border-blue-400 bg-blue-50' : 'border-slate-200 hover:border-slate-300') }, h('div', { className: 'text-sm font-bold' }, gt.label), h('div', { className: 'text-[11px] text-slate-600' }, gt.desc)))),
 
-                h('textarea', { value: customContext, onChange: (e) => setCustomContext(e.target.value), placeholder: (tt('behavior_lens.raw.additional_context', 'Additional context...')), className: 'w-full p-2 border border-slate-400 rounded-lg text-xs resize-none', rows: 3 }),
+                h('textarea', { value: customContext, onChange: (e) => setCustomContext(e.target.value), 'aria-label': 'Additional context', placeholder: (tt('behavior_lens.raw.additional_context', 'Additional context...')), className: 'w-full p-2 border border-slate-400 rounded-lg text-xs resize-none', rows: 3 }),
 
                 h('div', { className: 'flex items-center justify-between bg-slate-50 rounded-lg p-3' },
 
@@ -22602,7 +22545,7 @@ Keep the language professional but accessible.`;
             const max = Math.max(...vals, 1);
             const w = 60, ht = 18, pad = 1;
             const points = vals.map((v, i) => `${pad + i * ((w - 2 * pad) / (vals.length - 1))},${ht - pad - (v / max) * (ht - 2 * pad)}`).join(' ');
-            return h('svg', { width: w, height: ht, viewBox: `0 0 ${w} ${ht}`, className: 'inline-block' },
+            return h('svg', { role: 'img', 'aria-label': `Session count trend: ${vals.join(', ')}.`, width: w, height: ht, viewBox: `0 0 ${w} ${ht}`, className: 'inline-block' },
                 h('polyline', { points, fill: 'none', stroke: '#8b5cf6', strokeWidth: 1.5, strokeLinejoin: 'round', strokeLinecap: 'round' })
             );
         };
@@ -22685,7 +22628,7 @@ Keep the language professional but accessible.`;
                     onClick: () => compareFileInputRef.current?.click(),
                     className: 'flex items-center gap-1.5 px-4 py-2 bg-violet-600 text-white font-bold rounded-xl text-xs hover:bg-violet-700 transition-all shadow-sm'
                 }, '📂 Load Student Workspaces'),
-                h('input', { ref: compareFileInputRef, type: 'file', accept: '.json', multiple: true, onChange: handleLoadComparisonFiles, className: 'hidden' }),
+                h('input', { ref: compareFileInputRef, type: 'file', accept: '.json', multiple: true, onChange: handleLoadComparisonFiles, 'aria-label': 'Load BehaviorLens workspaces for comparison', className: 'hidden' }),
                 h('span', { className: 'text-xs text-slate-600' }, comparisonWorkspaces.length + ' student(s) loaded'),
                 comparisonWorkspaces.length > 0 && h('button', { "aria-label": "Clear All", onClick: () => setComparisonWorkspaces([]), className: 'text-[11px] text-red-600 hover:text-red-600 ms-auto' }, '✕ Clear All')
             ),
@@ -22991,7 +22934,7 @@ Keep the language professional but accessible.`;
             // Data points polyline
             const dataPoints = dailyData.map((d, i) => `${xScale(i)},${yScale(d.count)}`).join(' ');
 
-            return h('svg', { viewBox: `0 0 ${W} ${H}`, className: 'w-full bg-white rounded-xl border border-slate-400', style: { maxHeight: '350px' } },
+            return h('svg', { role: 'img', 'aria-label': `Behavior frequency over time. ${dailyData.map(day => `${day.date}: ${day.count}`).join('; ')}.`, viewBox: `0 0 ${W} ${H}`, className: 'w-full bg-white rounded-xl border border-slate-400', style: { maxHeight: '350px' } },
                 // Grid lines
                 ...[0, 0.25, 0.5, 0.75, 1].map(pct => h('line', { key: 'g' + pct, x1: PAD, x2: W - PAD, y1: yScale(pct * maxCount), y2: yScale(pct * maxCount), stroke: '#e2e8f0', strokeWidth: 1 })),
                 // Y-axis labels
@@ -23200,10 +23143,10 @@ Keep the language professional but accessible.`;
             supported && h('div', { className: 'flex items-center gap-3' },
                 h('button', { "aria-label": "Toggle transcript",
                     onClick: isRecording ? stopRecording : startRecording,
-                    className: `flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-md ${isRecording ? 'bg-red-700 text-white hover:bg-red-600 animate-pulse' : 'bg-rose-600 text-white hover:bg-rose-700'}`
+                    className: `flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-md ${isRecording ? 'bg-red-700 text-white hover:bg-red-600 animate-pulse motion-reduce:animate-none' : 'bg-rose-600 text-white hover:bg-rose-700'}`
                 }, isRecording ? '⏹️ Stop Recording' : '🎙️ Start Recording'),
                 isRecording && h('div', { className: 'flex items-center gap-2' },
-                    h('div', { className: 'w-3 h-3 bg-red-500 rounded-full animate-pulse' }),
+                    h('div', { className: 'w-3 h-3 bg-red-500 rounded-full animate-pulse motion-reduce:animate-none' }),
                     h('span', { className: 'text-xs text-red-600 font-bold' }, tt('behavior_lens.ui.recording', 'Recording...'))
                 )
             ),
@@ -23224,7 +23167,7 @@ Keep the language professional but accessible.`;
                 className: 'px-4 py-2 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold rounded-xl text-xs hover:from-rose-700 hover:to-pink-700 disabled:opacity-40 transition-all shadow-sm'
             }, '🤖 Parse ABC Entries from Transcript'),
             parsing && h('div', { className: 'text-center py-4' },
-                h('div', { className: 'text-lg animate-spin inline-block' }, '⏳'),
+                h('div', { className: 'text-lg animate-spin motion-reduce:animate-none inline-block' }, '⏳'),
                 h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.ai_is_analyzing_your_transcript', 'AI is analyzing your transcript...'))
             ),
             // Parsed entries for review
@@ -23376,7 +23319,7 @@ Keep the language professional but accessible.`;
                     h('input', { type: 'text', value: importCode, onChange: e => setImportCode(e.target.value), 'aria-label': 'Paste share code here', placeholder: tt('behavior_lens.ph.paste_share_code_here', 'Paste share code here...'), className: 'flex-1 px-3 py-2 border border-slate-400 rounded-lg text-xs' }),
                     h('button', { onClick: handleImportCode, disabled: !importCode.trim(), className: 'px-3 py-2 bg-emerald-700 text-white font-bold rounded-lg text-xs hover:bg-emerald-700 disabled:opacity-40 transition-all' }, '📋 Load'),
                     h('button', { "aria-label": "File", onClick: () => importFileRef.current?.click(), className: 'px-3 py-2 bg-white border border-slate-400 text-slate-600 font-bold rounded-lg text-xs hover:bg-slate-50 transition-all' }, '📁 File'),
-                    h('input', { ref: importFileRef, type: 'file', accept: '.json', onChange: handleImportFile, className: 'hidden' })
+                    h('input', { ref: importFileRef, type: 'file', accept: '.json', onChange: handleImportFile, 'aria-label': 'Import shared BehaviorLens workspace JSON file', className: 'hidden' })
                 )
             ),
             // Imported data preview
@@ -24242,7 +24185,7 @@ IMPORTANT rules for expert keys:
                             onClick: generateAiScenario,
                             disabled: generatingAi,
                             className: 'px-4 py-2 bg-purple-600 text-white rounded-lg text-[11px] font-bold hover:bg-purple-700 disabled:opacity-50 transition-all whitespace-nowrap flex items-center gap-1'
-                        }, generatingAi ? h('span', { className: 'animate-spin inline-block' }, '⏳') : '✿', generatingAi ? ' Generating...' : ' Generate')
+                        }, generatingAi ? h('span', { className: 'animate-spin motion-reduce:animate-none inline-block' }, '⏳') : '✿', generatingAi ? ' Generating...' : ' Generate')
                     ),
                     aiScenarios.length > 0 && h('p', { className: 'text-[11px] text-purple-700 mt-2' }, `${aiScenarios.length} AI scenario${aiScenarios.length > 1 ? 's' : ''} generated this session`)
                 ),
@@ -24306,7 +24249,7 @@ IMPORTANT rules for expert keys:
                         )
                     ),
                     isWaiting && h('div', { className: 'text-center py-3' },
-                        h('div', { className: 'text-4xl font-black text-indigo-600 animate-pulse' }, countdown),
+                        h('div', { className: 'text-4xl font-black text-indigo-600 animate-pulse motion-reduce:animate-none' }, countdown),
                         h('p', { className: 'text-[11px] text-slate-600 mt-1' }, 'Read the observation above...')
                     )
                 ),
@@ -24650,6 +24593,57 @@ IMPORTANT rules for expert keys:
         const cloudSync = { saveToCloud: _saveToCloud, loadFromCloud: _loadFromCloud, syncStatus: _syncStatus, setSyncStatus: _setSyncStatus, userId: _cloudUserId };
         const [activePanel, setActivePanel] = useState('hub');
         const [selectedStudent, setSelectedStudent] = useState(studentNickname || '');
+        const behaviorLensDialogRef = useRef(null);
+        const behaviorLensCloseRef = useRef(null);
+        const behaviorLensOpenerRef = useRef(null);
+        useEffect(() => {
+            if (typeof document === 'undefined') return undefined;
+            behaviorLensOpenerRef.current = document.activeElement;
+            const focusInitial = window.setTimeout(() => {
+                const initial = behaviorLensCloseRef.current || behaviorLensDialogRef.current;
+                if (initial && typeof initial.focus === 'function') initial.focus();
+            }, 0);
+            return () => {
+                window.clearTimeout(focusInitial);
+                const opener = behaviorLensOpenerRef.current;
+                if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus();
+            };
+        }, []);
+        const handleBehaviorLensDialogKeyDown = useCallback((event) => {
+            const dialog = behaviorLensDialogRef.current;
+            if (!dialog) return;
+            const closestDialog = event.target && typeof event.target.closest === 'function'
+                ? event.target.closest('[role="dialog"], [role="alertdialog"]')
+                : null;
+            if (closestDialog && closestDialog !== dialog) return;
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                event.stopPropagation();
+                onClose();
+                return;
+            }
+            if (event.key !== 'Tab') return;
+            const selector = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+            const focusable = Array.from(dialog.querySelectorAll(selector)).filter((element) =>
+                !element.classList.contains('hidden') &&
+                element.getAttribute('aria-hidden') !== 'true' &&
+                element.closest('[role="dialog"], [role="alertdialog"]') === dialog
+            );
+            if (!focusable.length) {
+                event.preventDefault();
+                dialog.focus();
+                return;
+            }
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+                event.preventDefault();
+                first.focus();
+            }
+        }, [onClose]);
 
         // ─── AI consent gate (FERPA-adjacent: student data → third-party LLM) ──
         // Privacy-first default: AI features are OFF until the teacher
@@ -24742,10 +24736,14 @@ IMPORTANT rules for expert keys:
 
         // ─── WCAG: Screen reader announcements ─────────────────────────
         const [_blAnnouncement, _setBlAnnouncement] = useState('');
+        const blAnnouncementTimerRef = useRef(null);
         const blAnnounceToSR = useCallback((msg) => {
             _setBlAnnouncement(msg);
-            try { var liveEl = document.getElementById('bl-a11y-live'); if (liveEl) liveEl.textContent = msg; } catch(e) {}
-            setTimeout(() => { _setBlAnnouncement(''); try { var liveEl = document.getElementById('bl-a11y-live'); if (liveEl) liveEl.textContent = ''; } catch(e) {} }, 3000);
+            if (blAnnouncementTimerRef.current) window.clearTimeout(blAnnouncementTimerRef.current);
+            blAnnouncementTimerRef.current = window.setTimeout(() => _setBlAnnouncement(''), 3000);
+        }, []);
+        useEffect(() => () => {
+            if (blAnnouncementTimerRef.current) window.clearTimeout(blAnnouncementTimerRef.current);
         }, []);
         const [searchQuery, setSearchQuery] = useState('');
         // Derive parent mode from role
@@ -25731,6 +25729,7 @@ Analyze this data and return ONLY valid JSON:
             if (!svgEl) { if (addToast) addToast(tt('behavior_lens.toast.no_graph_found_to_export', 'No graph found to export'), 'error'); return; }
             const svgData = new XMLSerializer().serializeToString(svgEl);
             const canvas = document.createElement('canvas');
+            canvas.setAttribute('aria-hidden', 'true');
             const ctx = canvas.getContext('2d');
             const img = new Image();
             img.onload = () => {
@@ -27182,13 +27181,13 @@ Analyze this data and return ONLY valid JSON:
                         // ── Workspace Save/Load (Top) ──
                         h('div', { className: 'flex flex-wrap items-center gap-2' },
                             h('button', { onClick: handleSaveWorkspace,
-                                className: `flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${dataChangedSinceSave ? 'bg-amber-50 border-2 border-amber-600 text-amber-700 hover:bg-amber-100 animate-pulse' : 'bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100'}`
+                                className: `flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${dataChangedSinceSave ? 'bg-amber-50 border-2 border-amber-600 text-amber-700 hover:bg-amber-100 animate-pulse motion-reduce:animate-none' : 'bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100'}`
                             }, dataChangedSinceSave ? '🔴 ' : '💾 ', tt('behavior_lens.hub.save_workspace', 'Save Workspace')),
                             h('button', { "aria-label": "Load workspace from file",
                                 onClick: () => fileInputRef.current?.click(),
                                 className: 'flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all'
                             }, '📂 ', tt('behavior_lens.hub.load_workspace', 'Load Workspace')),
-                            h('input', { ref: fileInputRef, type: 'file', accept: '.json', onChange: handleLoadWorkspace, className: 'hidden' }),
+                            h('input', { ref: fileInputRef, type: 'file', accept: '.json', onChange: handleLoadWorkspace, 'aria-label': 'Load BehaviorLens workspace JSON file', className: 'hidden' }),
                             lastSavedAt && h('span', { className: 'text-[11px] text-slate-600 italic' }, `Last saved: ${new Date(lastSavedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`)
                         ),
 
@@ -27310,14 +27309,14 @@ Analyze this data and return ONLY valid JSON:
                         // ── Workspace Save/Load (Bottom) ──
                         h('div', { className: 'flex flex-wrap items-center gap-2 pt-2' },
                             h('button', { onClick: handleSaveWorkspace,
-                                className: `flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${dataChangedSinceSave ? 'bg-amber-50 border-2 border-amber-600 text-amber-700 hover:bg-amber-100 animate-pulse' : 'bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100'}`
+                                className: `flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${dataChangedSinceSave ? 'bg-amber-50 border-2 border-amber-600 text-amber-700 hover:bg-amber-100 animate-pulse motion-reduce:animate-none' : 'bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100'}`
                             }, dataChangedSinceSave ? '🔴 ' : '💾 ', tt('behavior_lens.hub.save_workspace', 'Save Workspace')),
                             h('button', { "aria-label": "Load workspace from file",
                                 onClick: () => fileInputRef.current?.click(),
                                 className: 'flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all'
                             }, '📂 ', tt('behavior_lens.hub.load_workspace', 'Load Workspace')),
-                            h('input', { ref: fileInputRef, type: 'file', accept: '.json', onChange: handleLoadWorkspace, className: 'hidden' }),
-                            h('input', { ref: compareFileInputRef, type: 'file', accept: '.json', multiple: true, onChange: handleLoadComparisonFiles, className: 'hidden' }),
+                            h('input', { ref: fileInputRef, type: 'file', accept: '.json', onChange: handleLoadWorkspace, 'aria-label': 'Load BehaviorLens workspace JSON file', className: 'hidden' }),
+                            h('input', { ref: compareFileInputRef, type: 'file', accept: '.json', multiple: true, onChange: handleLoadComparisonFiles, 'aria-label': 'Load BehaviorLens workspaces for comparison', className: 'hidden' }),
                             lastSavedAt && h('span', { className: 'text-[11px] text-slate-600 italic' }, `Last saved: ${new Date(lastSavedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`)
                         )
                     );
@@ -27424,8 +27423,16 @@ Analyze this data and return ONLY valid JSON:
 
         // ─── Main Render ──────────────────────────────────────────────
         return h('div', {
-            className: 'fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300'
+            className: 'fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300',
+            ref: behaviorLensDialogRef,
+            role: 'dialog',
+            'aria-modal': 'true',
+            'aria-labelledby': 'behavior-lens-dialog-title',
+            'aria-describedby': 'behavior-lens-dialog-subtitle',
+            tabIndex: -1,
+            onKeyDown: handleBehaviorLensDialogKeyDown
         },
+            h('div', { id: 'behavior-lens-live-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'bl-sr-only' }, _blAnnouncement),
             // Top bar
             h('div', { className: 'bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10' },
                 h('div', { className: 'px-6 py-4 flex items-center justify-between' },
@@ -27438,10 +27445,10 @@ Analyze this data and return ONLY valid JSON:
                             h(Eye, { size: 22 })
                         ),
                         h('div', null,
-                            h('h2', { className: 'text-xl font-black text-slate-800' },
+                            h('h2', { id: 'behavior-lens-dialog-title', className: 'text-xl font-black text-slate-800' },
                                 tt('behavior_lens.title', 'BehaviorLens')
                             ),
-                            h('p', { className: 'text-xs text-slate-600' },
+                            h('p', { id: 'behavior-lens-dialog-subtitle', className: 'text-xs text-slate-600' },
                                 ({
                                     hub: tt('behavior_lens.subtitle', 'Behavioral Observation & Analysis'),
                                     abc: DualLabel(tt('behavior_lens.abc.title', 'ABC Data Collection')),
@@ -27509,7 +27516,7 @@ Analyze this data and return ONLY valid JSON:
                         !isCanvasEnv && h('div', {
                             className: `flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all ${
                                 cloudSync.syncStatus === 'synced' ? 'bg-sky-50 border-sky-200 text-sky-700' :
-                                cloudSync.syncStatus === 'syncing' ? 'bg-amber-50 border-amber-200 text-amber-700 animate-pulse' :
+                                cloudSync.syncStatus === 'syncing' ? 'bg-amber-50 border-amber-200 text-amber-700 animate-pulse motion-reduce:animate-none' :
                                 cloudSync.syncStatus === 'offline' ? 'bg-red-50 border-red-200 text-red-600' :
                                 'bg-slate-50 border-slate-200 text-slate-600'
                             }`,
@@ -27577,10 +27584,12 @@ Analyze this data and return ONLY valid JSON:
                                 }, '🖼️ Export as PNG')
                             )
                         ),
-                        h('button', { "aria-label": "On Close",
+                        h('button', {
+                            ref: behaviorLensCloseRef,
+                            'aria-label': 'Close BehaviorLens',
                             onClick: onClose,
                             className: 'p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors'
-                        }, h(X, { size: 24 }))
+                        }, h(X, { size: 24, 'aria-hidden': 'true' }))
                     )
                 )
             ),
@@ -28905,7 +28914,7 @@ Analyze this data and return ONLY valid JSON:
                     'aria-labelledby': 'bl-ai-consent-title',
                     'aria-describedby': 'bl-ai-consent-description',
                     tabIndex: -1,
-                    className: 'bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto focus:outline-none'
+                    className: 'bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto'
                 },
                     h('div', { className: 'p-6 border-b border-slate-200' },
                         h('h2', { id: 'bl-ai-consent-title', className: 'text-xl font-black text-slate-800 flex items-center gap-2' },
