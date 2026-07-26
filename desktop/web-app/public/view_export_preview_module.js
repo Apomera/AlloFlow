@@ -788,7 +788,7 @@ function ExportPreviewView(props) {
           if (e.target === e.currentTarget) closeImageDialog();
         }
       },
-      /* @__PURE__ */ React.createElement("div", { ref: imageDialogRef, tabIndex: -1, className: "w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl focus:outline-none", role: "dialog", "aria-modal": "true", "aria-labelledby": "image-description-title", "aria-describedby": "image-description-help" }, /* @__PURE__ */ React.createElement("h3", { id: "image-description-title", className: "text-lg font-black text-slate-900" }, "Describe this image"), /* @__PURE__ */ React.createElement("p", { id: "image-description-help", className: "mt-1 text-sm text-slate-700" }, "Alternative text should communicate the image\u2019s purpose to someone who cannot see it."), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs font-medium text-slate-600 truncate", title: pendingImageFile.name }, pendingImageFile.name), /* @__PURE__ */ React.createElement("label", { htmlFor: "builder-image-alt", className: "mt-4 block text-sm font-bold text-slate-800" }, "Alternative text"), /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { ref: imageDialogRef, tabIndex: -1, className: "w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2", role: "dialog", "aria-modal": "true", "aria-labelledby": "image-description-title", "aria-describedby": "image-description-help" }, /* @__PURE__ */ React.createElement("h3", { id: "image-description-title", className: "text-lg font-black text-slate-900" }, "Describe this image"), /* @__PURE__ */ React.createElement("p", { id: "image-description-help", className: "mt-1 text-sm text-slate-700" }, "Alternative text should communicate the image\u2019s purpose to someone who cannot see it."), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs font-medium text-slate-600 truncate", title: pendingImageFile.name }, pendingImageFile.name), /* @__PURE__ */ React.createElement("label", { htmlFor: "builder-image-alt", className: "mt-4 block text-sm font-bold text-slate-800" }, "Alternative text"), /* @__PURE__ */ React.createElement(
         "textarea",
         {
           id: "builder-image-alt",
@@ -809,7 +809,7 @@ function ExportPreviewView(props) {
         setImageAltError("");
       } }), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, "Decorative image"), " \u2014 it adds no information and should be skipped by screen readers.")), /* @__PURE__ */ React.createElement("p", { id: "builder-image-alt-error", className: "mt-2 min-h-5 text-sm font-bold text-red-700", role: "alert" }, imageAltError), /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex justify-end gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeImageDialog, className: "min-h-11 rounded-lg border border-slate-400 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: insertPendingImage, disabled: imageInsertBusy, "aria-busy": imageInsertBusy, className: "min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:cursor-wait disabled:opacity-60" }, imageInsertBusy ? "Inserting image..." : "Insert image")))
     ),
-    /* @__PURE__ */ React.createElement("div", { ref: exportDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "document-builder-title", className: "bg-white rounded-2xl shadow-2xl flex flex-col lg:flex-row w-full max-w-[95vw] max-h-[95vh] overflow-y-auto lg:overflow-hidden focus:outline-none", inert: pendingImageFile ? true : void 0, "aria-hidden": pendingImageFile ? "true" : void 0, onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "w-full lg:w-72 shrink-0 bg-gradient-to-b from-slate-50 to-white border-b lg:border-b-0 lg:border-r border-slate-200 overflow-visible lg:overflow-y-auto p-4 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("h2", { id: "document-builder-title", className: "text-sm font-black text-slate-800 flex items-center gap-2" }, "\u{1F6E0}\uFE0F Document Builder"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    /* @__PURE__ */ React.createElement("div", { ref: exportDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "document-builder-title", className: "bg-white rounded-2xl shadow-2xl flex flex-col lg:flex-row w-full max-w-[95vw] max-h-[95vh] overflow-y-auto lg:overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2", inert: pendingImageFile ? true : void 0, "aria-hidden": pendingImageFile ? "true" : void 0, onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "w-full lg:w-72 shrink-0 bg-gradient-to-b from-slate-50 to-white border-b lg:border-b-0 lg:border-r border-slate-200 overflow-visible lg:overflow-y-auto p-4 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("h2", { id: "document-builder-title", className: "text-sm font-black text-slate-800 flex items-center gap-2" }, "\u{1F6E0}\uFE0F Document Builder"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
       if (typeof window.AlloToggleTheme === "function") window.AlloToggleTheme();
     }, className: "p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm", "aria-label": t("a11y.toggle_theme") || "Toggle color theme", title: theme === "contrast" ? t("theme.high_contrast") || "High Contrast" : theme === "dark" ? t("theme.dark") || "Dark Mode" : t("theme.light") || "Light Mode" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, theme === "contrast" ? "\u{1F441}" : theme === "dark" ? "\u{1F319}" : "\u2600\uFE0F")), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowExportPreview(false), className: "p-2 ml-1 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors", "data-help-key": "doc_builder_close_btn", "aria-label": t("a11y.close_doc_builder") }, /* @__PURE__ */ React.createElement(X, { size: 20 })))), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-controls": "document-builder-preview", onClick: () => exportPreviewRef.current?.focus(), className: "sr-only focus:not-sr-only focus:relative focus:z-10 focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:text-sm focus:font-bold focus:text-white" }, "Skip to editable preview"), exportPreviewSource === "remediation" && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-300 rounded-lg px-2.5 py-1.5 text-[11px] text-emerald-800", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u267F ", t("export_preview.remediation_banner_title") || "Editing the remediated document."), " ", t("export_preview.remediation_banner_body") || "Your edits here are saved back into it when you close the builder, so the Tagged PDF / Word / PowerPoint downloads include them."), /* @__PURE__ */ React.createElement("h3", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Quick Start", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Presets"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, Object.entries(BUILT_IN_PRESETS).map(([key, preset]) => /* @__PURE__ */ React.createElement(
       "button",
@@ -1485,7 +1485,7 @@ function ExportPreviewView(props) {
         "aria-busy": exportAuditLoading,
         className: "w-full px-3 py-2 bg-violet-100 text-violet-700 rounded-lg text-xs font-bold hover:bg-violet-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
       },
-      exportAuditLoading ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin", "aria-hidden": "true" }), " Auditing...") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u267F"), " Run WCAG Audit")
+      exportAuditLoading ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), " Auditing...") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u267F"), " Run WCAG Audit")
     ), exportAuditResult && exportAuditResult.score < 0 && /* @__PURE__ */ React.createElement("div", { role: "alert", "aria-live": "assertive", className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[11px] font-bold text-amber-900" }, exportAuditResult.summary), exportAuditResult && exportAuditResult.score >= 0 && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: `text-center p-3 rounded-xl ${exportAuditResult.score >= 80 ? "bg-green-50 border border-green-200" : exportAuditResult.score >= 60 ? "bg-amber-50 border border-amber-200" : "bg-red-50 border border-red-200"}` }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${exportAuditResult.score >= 80 ? "text-green-700" : exportAuditResult.score >= 60 ? "text-amber-700" : "text-red-700"}` }, exportAuditResult.score, "/100"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Accessibility Automated Score")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, exportAuditResult.summary), exportAuditResult.axeViolations != null && exportAuditResult.eaViolations != null && /* @__PURE__ */ React.createElement("div", { className: `rounded-lg border p-2 text-[11px] ${exportAuditResult.deterministicConsensus === "clean" ? "bg-green-50 border-green-200 text-green-800" : "bg-amber-50 border-amber-200 text-amber-800"}` }, exportAuditResult.deterministicConsensus === "clean" ? "\u2713 Two independent rule engines agree (axe-core + IBM Equal Access): 0 violations." : `Rule engines \u2014 axe-core: ${exportAuditResult.axeViolations}, IBM Equal Access: ${exportAuditResult.eaViolations} violation(s).`, exportAuditResult.eaPotential > 0 && /* @__PURE__ */ React.createElement("span", { className: "block mt-1 text-slate-500" }, "IBM Equal Access also flags ", exportAuditResult.eaPotential, " item(s) for human review.")), exportAuditResult.eaViolations == null && exportAuditResult.axeViolations != null && /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 italic" }, "Second deterministic engine (IBM Equal Access) unavailable \u2014 showing axe-core only."), exportAuditResult.issues?.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-red-600 uppercase mb-1" }, "Issues (", exportAuditResult.issues.length, ")"), exportAuditResult.issues.slice(0, 5).map((issue, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-slate-600 mb-1 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-red-600 shrink-0" }, "\u25CF"), /* @__PURE__ */ React.createElement("span", null, typeof issue === "string" ? issue : issue.issue, issue.wcag ? ` (${issue.wcag})` : ""))), exportAuditResult.issues.length > 5 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic" }, "+", exportAuditResult.issues.length - 5, " more")), exportAuditResult.passes?.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-green-700 uppercase mb-1" }, "Passes (", exportAuditResult.passes.length, ")"), exportAuditResult.passes.slice(0, 3).map((pass, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-green-700 mb-0.5 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-green-500" }, "\u2713"), " ", pass))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-700 italic" }, "Use the A11y Inspect toggle above to see and fix issues visually, then re-audit."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic" }, "Automated checks (axe-core + IBM Equal Access) find many problems but can\u2019t confirm full WCAG 2.2 AA conformance \u2014 a manual screen-reader, keyboard, zoom/reflow, and forced-colors pass is still needed. The score above includes an AI review and is a guide, not a certification.")))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col min-w-0 min-h-[60vh] lg:min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3 border-b border-slate-200 bg-white shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700" }, "Live Preview"), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-indigo-700 font-medium" }, "Focus the preview and edit text directly")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement(
       "input",
       {
@@ -2305,7 +2305,7 @@ function ExportPreviewView(props) {
       /* @__PURE__ */ React.createElement("option", { value: "#991b1b" }, "\u{1F7E5} Red"),
       /* @__PURE__ */ React.createElement("option", { value: "#166534" }, "\u{1F7E9} Green"),
       /* @__PURE__ */ React.createElement("option", { value: "#7c3aed" }, "\u{1F7EA} Purple")
-    )), /* @__PURE__ */ React.createElement("details", { open: true, className: "bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-600 group" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer px-2 py-1.5 flex items-center gap-2 list-none select-none hover:bg-slate-800/50" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block transition-transform group-open:rotate-90 text-slate-300 text-[10px]" }, "\u25B8"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-purple-200 font-bold shrink-0" }, isAgentRunning ? "\u{1F916} Agent" : "\u2328\uFE0F Expert"), isAgentRunning && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-amber-300 animate-pulse" }, "Running..."), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[10px] text-slate-300" }, agentActivityLog.length > 0 ? `${agentActivityLog.length} event${agentActivityLog.length === 1 ? "" : "s"}` : "idle")), /* @__PURE__ */ React.createElement("div", { className: "px-2 pb-1.5" }, /* @__PURE__ */ React.createElement("form", { className: "flex-1 flex gap-1", onSubmit: async (e) => {
+    )), /* @__PURE__ */ React.createElement("details", { open: true, className: "bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-600 group" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer px-2 py-1.5 flex items-center gap-2 list-none select-none hover:bg-slate-800/50" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block transition-transform group-open:rotate-90 text-slate-300 text-[10px]" }, "\u25B8"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-purple-200 font-bold shrink-0" }, isAgentRunning ? "\u{1F916} Agent" : "\u2328\uFE0F Expert"), isAgentRunning && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-amber-300 animate-pulse motion-reduce:animate-none" }, "Running..."), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[10px] text-slate-300" }, agentActivityLog.length > 0 ? `${agentActivityLog.length} event${agentActivityLog.length === 1 ? "" : "s"}` : "idle")), /* @__PURE__ */ React.createElement("div", { className: "px-2 pb-1.5" }, /* @__PURE__ */ React.createElement("form", { className: "flex-1 flex gap-1", onSubmit: async (e) => {
       e.preventDefault();
       if (!expertCommandInput.trim() || isAgentRunning) return;
       const cmd = expertCommandInput.trim();
@@ -2384,7 +2384,8 @@ function ExportPreviewView(props) {
         "aria-label": "Execute command"
       },
       isAgentRunning ? "\u23F3" : "\u25B6"
-    )))), agentActivityLog.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 border-b border-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: (agentLogFullView ? "max-h-64" : "max-h-24") + " overflow-y-auto px-2 py-1 space-y-0.5 text-[11px] font-mono", "aria-live": "polite", "aria-label": "Agent activity log" }, (agentLogFullView ? agentActivityLog : agentActivityLog.slice(-8)).map((entry, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-start gap-1 " + (entry.type === "error" ? "text-red-400" : entry.type === "score" ? "text-cyan-300" : entry.type === "success" || entry.type === "complete" ? "text-green-400" : entry.type === "tool" ? "text-amber-300" : entry.type === "command" ? "text-purple-300" : "text-slate-400") }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-400 shrink-0" }, entry.time), /* @__PURE__ */ React.createElement("span", null, entry.text))), isAgentRunning && /* @__PURE__ */ React.createElement("div", { className: "text-purple-400 animate-pulse" }, "\u23F3 Processing...")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 px-2 py-1 border-t border-slate-800" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setAgentLogFullView((v) => !v), className: "text-[10px] text-purple-300 hover:text-purple-200 underline" }, agentLogFullView ? "Show recent only" : `Show full log (${agentActivityLog.length})`), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: async () => {
+    )))), agentActivityLog.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 border-b border-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: (agentLogFullView ? "max-h-64" : "max-h-24") + " overflow-y-auto px-2 py-1 space-y-0.5 text-[11px] font-mono", "aria-live": "polite", "aria-label": "Agent activity log" }, (agentLogFullView ? agentActivityLog : agentActivityLog.slice(-8)).map((entry, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-start gap-1 " + (entry.type === "error" ? "text-red-400" : entry.type === "score" ? "text-cyan-300" : entry.type === "success" || entry.type === "complete" ? "text-green-400" : entry.type === "tool" ? "text-amber-300" : entry.type === "command" ? "text-purple-300" : "text-slate-400") }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-400 shrink-0" }, entry.time), /* @__PURE__ */ React.createElement("span", null, entry.text))), isAgentRunning && /* @__PURE__ */ React.createElement("div", { className: "text-purple-400 animate-pulse motion-reduce:animate-none" }, "\u23F3 Processing...")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 px-2 py-1 border-t border-slate-800" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setAgentLogFullView((v) => !v), className: "text-[10px] text-purple-300 hover:text-purple-200 underline" }, agentLogFullView ? "Show recent only" : `Show full log (${agentActivityLog.length})`), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: async (event) => {
+      const trigger = event.currentTarget;
       const text = agentActivityLog.map((e) => (e && e.time ? e.time + " " : "") + (e && e.text || "")).join("\n");
       let ok = false;
       try {
@@ -2396,18 +2397,23 @@ function ExportPreviewView(props) {
         ok = false;
       }
       if (!ok) {
+        let ta = null;
         try {
-          const ta = document.createElement("textarea");
+          ta = document.createElement("textarea");
           ta.value = text;
-          ta.style.position = "fixed";
-          ta.style.opacity = "0";
+          ta.readOnly = true;
+          ta.tabIndex = -1;
+          ta.setAttribute("aria-label", "Temporary clipboard helper");
+          ta.style.cssText = "position:fixed;left:-10000px;top:0;width:1px;height:1px;opacity:0";
           document.body.appendChild(ta);
           ta.focus();
           ta.select();
           ok = document.execCommand("copy");
-          document.body.removeChild(ta);
         } catch (_) {
           ok = false;
+        } finally {
+          if (ta) ta.remove();
+          if (trigger && trigger.isConnected) trigger.focus();
         }
       }
       addToast(ok ? "\u{1F4CB} Log copied (" + agentActivityLog.length + " events)" : "Could not copy \u2014 select the log text manually.", ok ? "success" : "error");
@@ -2498,7 +2504,7 @@ function ExportPreviewView(props) {
     ))))
   );
 }
-function updateExportPreview(deps) {
+async function updateExportPreview(deps) {
   const {
     exportPreviewRef,
     _exportPreviewErrorRef,
@@ -2515,16 +2521,47 @@ function updateExportPreview(deps) {
   const iframe = exportPreviewRef.current;
   const doc = iframe.contentDocument || iframe.contentWindow?.document;
   if (!doc) return;
+  const _refreshRequest = (iframe.__alloPreviewRefreshRequest || 0) + 1;
+  iframe.__alloPreviewRefreshRequest = _refreshRequest;
   try {
     if (doc.body && doc.body.getAttribute && doc.body.getAttribute("data-allo-user-edited") === "1") {
-      const _canAsk = typeof window !== "undefined" && typeof window.confirm === "function";
-      const _proceed = _canAsk ? window.confirm(t("export_preview.rerender_confirm") || "Re-rendering the preview will replace your manual edits with freshly generated content.\n\nContinue and discard the edits? (Cancel keeps them - export or close the builder to save first.)") : false;
+      let _confirmation = iframe.__alloPreviewConfirmation;
+      if (!_confirmation) {
+        const _uxConfirm = typeof window !== "undefined" && window.AlloFlowUX && window.AlloFlowUX.confirm;
+        const _dialogModule = typeof window !== "undefined" && window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
+        if (typeof _uxConfirm !== "function" || typeof _dialogModule !== "function") {
+          addToast && addToast(t("toasts.builder_confirmation_unavailable") || "Kept your manual edits because the confirmation dialog is not ready. Try again in a moment.", "info");
+          return;
+        }
+        let _requestedConfirmation = false;
+        try {
+          _requestedConfirmation = _uxConfirm.call(
+            window.AlloFlowUX,
+            t("export_preview.rerender_confirm") || "Re-rendering the preview will replace your manual edits with freshly generated content.",
+            {
+              title: t("export_preview.rerender_confirm_title") || "Discard manual edits?",
+              detail: t("export_preview.rerender_confirm_detail") || "Cancel keeps your edits. Export or close the builder to save them before changing settings.",
+              confirmText: t("export_preview.rerender_confirm_action") || "Discard edits and re-render",
+              cancelText: t("export_preview.rerender_cancel_action") || "Keep edits",
+              tone: "danger"
+            }
+          );
+        } catch (_) {
+        }
+        _confirmation = Promise.resolve(_requestedConfirmation).then(Boolean, () => false);
+        iframe.__alloPreviewConfirmation = _confirmation;
+      }
+      const _proceed = await _confirmation;
+      if (iframe.__alloPreviewConfirmation === _confirmation) iframe.__alloPreviewConfirmation = null;
+      if (exportPreviewRef.current !== iframe || iframe.__alloPreviewRefreshRequest !== _refreshRequest) return;
       if (!_proceed) {
         addToast && addToast(t("toasts.builder_edits_preserved") || "Kept your manual edits - the preview was not re-rendered. Export or close the builder to save them, then change settings.", "info");
         return;
       }
     }
   } catch (_) {
+    addToast && addToast(t("toasts.builder_edits_preserved") || "Kept your manual edits because confirmation could not be completed.", "info");
+    return;
   }
   let html;
   try {
@@ -2826,6 +2863,7 @@ function updateExportPreview(deps) {
           return;
         }
         const c = doc.createElement("canvas");
+        c.setAttribute("aria-hidden", "true");
         c.width = Math.round(sw);
         c.height = Math.round(sh);
         let out;

@@ -62,4 +62,16 @@ describe('static audit UI heuristics', () => {
     ].join('\n'));
     expect(report).toContain('INPUT-001');
   });
+  it('does not treat array.push("svg") as a rendered SVG element', () => {
+    const report = scanFixture([
+      "if (documentClone.querySelector('svg')) contentProperties.push('svg');",
+      "if (documentClone.querySelector('math')) contentProperties.push('mathml');",
+    ].join('\n'));
+    expect(report).not.toContain('SVG-001');
+  });
+
+  it('still reports an unnamed SVG created by the renderer helper', () => {
+    const report = scanFixture("const icon = h('svg', { viewBox: '0 0 20 20' });");
+    expect(report).toContain('SVG-001');
+  });
 });

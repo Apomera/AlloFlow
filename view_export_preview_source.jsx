@@ -685,7 +685,7 @@ function ExportPreviewView(props) {
               <div className="allo-docsuite fixed inset-0 z-[210] bg-black/70 flex items-center justify-center p-4" role="presentation"
                 onClick={(e) => { if (e.target === e.currentTarget) closeImageDialog(); }}
                 >
-                <div ref={imageDialogRef} tabIndex={-1} className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="image-description-title" aria-describedby="image-description-help">
+                <div ref={imageDialogRef} tabIndex={-1} className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2" role="dialog" aria-modal="true" aria-labelledby="image-description-title" aria-describedby="image-description-help">
                   <h3 id="image-description-title" className="text-lg font-black text-slate-900">Describe this image</h3>
                   <p id="image-description-help" className="mt-1 text-sm text-slate-700">Alternative text should communicate the image’s purpose to someone who cannot see it.</p>
                   <p className="mt-2 text-xs font-medium text-slate-600 truncate" title={pendingImageFile.name}>{pendingImageFile.name}</p>
@@ -707,7 +707,7 @@ function ExportPreviewView(props) {
                 </div>
               </div>
             )}
-            <div ref={exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="document-builder-title" className="bg-white rounded-2xl shadow-2xl flex flex-col lg:flex-row w-full max-w-[95vw] max-h-[95vh] overflow-y-auto lg:overflow-hidden focus:outline-none" inert={pendingImageFile ? true : undefined} aria-hidden={pendingImageFile ? 'true' : undefined} onClick={(e) => e.stopPropagation()}>
+            <div ref={exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="document-builder-title" className="bg-white rounded-2xl shadow-2xl flex flex-col lg:flex-row w-full max-w-[95vw] max-h-[95vh] overflow-y-auto lg:overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2" inert={pendingImageFile ? true : undefined} aria-hidden={pendingImageFile ? 'true' : undefined} onClick={(e) => e.stopPropagation()}>
               {/* Left Panel — Settings */}
               <div className="w-full lg:w-72 shrink-0 bg-gradient-to-b from-slate-50 to-white border-b lg:border-b-0 lg:border-r border-slate-200 overflow-visible lg:overflow-y-auto p-4 space-y-3">
                 <div className="flex items-center justify-between mb-1">
@@ -1529,7 +1529,7 @@ function ExportPreviewView(props) {
                     aria-busy={exportAuditLoading}
                     className="w-full px-3 py-2 bg-violet-100 text-violet-700 rounded-lg text-xs font-bold hover:bg-violet-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
                   >
-                    {exportAuditLoading ? <><RefreshCw size={12} className="animate-spin" aria-hidden="true" /> Auditing...</> : <><span aria-hidden="true">♿</span> Run WCAG Audit</>}
+                    {exportAuditLoading ? <><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> Auditing...</> : <><span aria-hidden="true">♿</span> Run WCAG Audit</>}
                   </button>
                   {exportAuditResult && exportAuditResult.score < 0 && (
                     <div role="alert" aria-live="assertive" className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[11px] font-bold text-amber-900">{exportAuditResult.summary}</div>
@@ -2301,7 +2301,7 @@ const _downloadBRF = (brf) => {
                   <summary className="cursor-pointer px-2 py-1.5 flex items-center gap-2 list-none select-none hover:bg-slate-800/50">
                     <span className="inline-block transition-transform group-open:rotate-90 text-slate-300 text-[10px]">▸</span>
                     <span className="text-[11px] text-purple-200 font-bold shrink-0">{isAgentRunning ? '🤖 Agent' : '⌨️ Expert'}</span>
-                    {isAgentRunning && <span className="text-[11px] text-amber-300 animate-pulse">Running...</span>}
+                    {isAgentRunning && <span className="text-[11px] text-amber-300 animate-pulse motion-reduce:animate-none">Running...</span>}
                     <span className="ml-auto text-[10px] text-slate-300">{agentActivityLog.length > 0 ? `${agentActivityLog.length} event${agentActivityLog.length === 1 ? '' : 's'}` : 'idle'}</span>
                   </summary>
                   <div className="px-2 pb-1.5">
@@ -2387,17 +2387,36 @@ const _downloadBRF = (brf) => {
                           <span>{entry.text}</span>
                         </div>
                       ))}
-                      {isAgentRunning && <div className="text-purple-400 animate-pulse">⏳ Processing...</div>}
+                      {isAgentRunning && <div className="text-purple-400 animate-pulse motion-reduce:animate-none">⏳ Processing...</div>}
                     </div>
                     <div className="flex items-center gap-3 px-2 py-1 border-t border-slate-800">
                       <button type="button" onClick={() => setAgentLogFullView(v => !v)} className="text-[10px] text-purple-300 hover:text-purple-200 underline">
                         {agentLogFullView ? 'Show recent only' : `Show full log (${agentActivityLog.length})`}
                       </button>
-                      <button type="button" onClick={async () => {
+                      <button type="button" onClick={async (event) => {
+                        const trigger = event.currentTarget;
                         const text = agentActivityLog.map(e => ((e && e.time ? e.time + ' ' : '') + ((e && e.text) || ''))).join('\n');
                         let ok = false;
                         try { if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(text); ok = true; } } catch (_) { ok = false; }
-                        if (!ok) { try { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.focus(); ta.select(); ok = document.execCommand('copy'); document.body.removeChild(ta); } catch (_) { ok = false; } }
+                        if (!ok) {
+                          let ta = null;
+                          try {
+                            ta = document.createElement('textarea');
+                            ta.value = text;
+                            ta.readOnly = true;
+                            ta.tabIndex = -1;
+                            ta.setAttribute('aria-label', 'Temporary clipboard helper');
+                            ta.style.cssText = 'position:fixed;left:-10000px;top:0;width:1px;height:1px;opacity:0';
+                            document.body.appendChild(ta);
+                            ta.focus();
+                            ta.select();
+                            ok = document.execCommand('copy');
+                          } catch (_) { ok = false; }
+                          finally {
+                            if (ta) ta.remove();
+                            if (trigger && trigger.isConnected) trigger.focus();
+                          }
+                        }
                         addToast(ok ? ('📋 Log copied (' + agentActivityLog.length + ' events)') : 'Could not copy — select the log text manually.', ok ? 'success' : 'error');
                       }} className="text-[10px] text-cyan-300 hover:text-cyan-200 underline" title="Copy the full agent/pipeline log to the clipboard">📋 Copy log</button>
                       <button type="button" onClick={() => { setAgentActivityLog([]); console.info('[ExpertWorkbench] log cleared'); }} className="text-[10px] text-slate-300 hover:text-white underline ml-auto">Clear</button>
@@ -2494,7 +2513,7 @@ const _downloadBRF = (brf) => {
 // preview iframe, arms designMode editing with the edit-loss guard, wires
 // builder image-crop affordances, and applies the a11y inspector. Pure DOM —
 // every host binding arrives via deps (contract-gated wrapper in the host).
-function updateExportPreview(deps) {
+async function updateExportPreview(deps) {
   const {
     exportPreviewRef, _exportPreviewErrorRef, _builderRecoverySaveTimerRef,
     getExportPreviewHTML, t, addToast, warnLog, setCanvasRecoveryRevision,
@@ -2507,18 +2526,50 @@ function updateExportPreview(deps) {
     if (!doc) return;
     // Check the live dirty flag BEFORE generating replacement HTML. This avoids
     // expensive duplicate generation and ensures a cancelled refresh consumes no draft.
+    // Multiple rapid setting changes share one confirmation; only the newest
+    // request may render after it resolves.
+    const _refreshRequest = (iframe.__alloPreviewRefreshRequest || 0) + 1;
+    iframe.__alloPreviewRefreshRequest = _refreshRequest;
     try {
       if (doc.body && doc.body.getAttribute && doc.body.getAttribute('data-allo-user-edited') === '1') {
-        const _canAsk = typeof window !== 'undefined' && typeof window.confirm === 'function';
-        const _proceed = _canAsk
-          ? window.confirm(t('export_preview.rerender_confirm') || 'Re-rendering the preview will replace your manual edits with freshly generated content.\n\nContinue and discard the edits? (Cancel keeps them - export or close the builder to save first.)')
-          : false;
+        let _confirmation = iframe.__alloPreviewConfirmation;
+        if (!_confirmation) {
+          const _uxConfirm = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+          const _dialogModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
+          if (typeof _uxConfirm !== 'function' || typeof _dialogModule !== 'function') {
+            addToast && addToast(t('toasts.builder_confirmation_unavailable') || 'Kept your manual edits because the confirmation dialog is not ready. Try again in a moment.', 'info');
+            return;
+          }
+
+          let _requestedConfirmation = false;
+          try {
+            _requestedConfirmation = _uxConfirm.call(
+              window.AlloFlowUX,
+              t('export_preview.rerender_confirm') || 'Re-rendering the preview will replace your manual edits with freshly generated content.',
+              {
+                title: t('export_preview.rerender_confirm_title') || 'Discard manual edits?',
+                detail: t('export_preview.rerender_confirm_detail') || 'Cancel keeps your edits. Export or close the builder to save them before changing settings.',
+                confirmText: t('export_preview.rerender_confirm_action') || 'Discard edits and re-render',
+                cancelText: t('export_preview.rerender_cancel_action') || 'Keep edits',
+                tone: 'danger',
+              }
+            );
+          } catch (_) {}
+          _confirmation = Promise.resolve(_requestedConfirmation).then(Boolean, () => false);
+          iframe.__alloPreviewConfirmation = _confirmation;
+        }
+        const _proceed = await _confirmation;
+        if (iframe.__alloPreviewConfirmation === _confirmation) iframe.__alloPreviewConfirmation = null;
+        if (exportPreviewRef.current !== iframe || iframe.__alloPreviewRefreshRequest !== _refreshRequest) return;
         if (!_proceed) {
           addToast && addToast(t('toasts.builder_edits_preserved') || 'Kept your manual edits - the preview was not re-rendered. Export or close the builder to save them, then change settings.', 'info');
           return;
         }
       }
-    } catch (_) {}
+    } catch (_) {
+      addToast && addToast(t('toasts.builder_edits_preserved') || 'Kept your manual edits because confirmation could not be completed.', 'info');
+      return;
+    }
     let html;
     try {
       html = getExportPreviewHTML();
@@ -2764,6 +2815,7 @@ function updateExportPreview(deps) {
           sw = Math.min(sw, pic.naturalWidth - sx); sh = Math.min(sh, pic.naturalHeight - sy);
           if (sw < 8 || sh < 8) { _status(t('export_preview.crop_too_small') || 'That selection is too small — drag a larger area.'); return; }
           const c = doc.createElement('canvas');
+          c.setAttribute('aria-hidden', 'true'); // internal crop buffer; never inserted into the document
           c.width = Math.round(sw); c.height = Math.round(sh);
           let out;
           try {

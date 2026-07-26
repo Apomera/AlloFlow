@@ -137,7 +137,9 @@ const CHECKS = [
     severity: 'major',
     description: 'SVG element lacks role="img" and aria-label',
     test(line, lineNum, lines) {
-      const isSvg = /h\(\s*['"]svg['"]/.test(line) || /createElement\(\s*['"]svg['"]/.test(line);
+      // Match the renderer helper as a standalone identifier. Without the
+      // boundary, ordinary calls such as array.push('svg') are false positives.
+      const isSvg = /(?:^|[^\w$])h\(\s*['"]svg['"]/.test(line) || /createElement\(\s*['"]svg['"]/.test(line);
       if (!isSvg) return false;
       const context = lines.slice(lineNum - 1, lineNum + 4).join(' ');
       if (/aria-label/.test(context)) return false;

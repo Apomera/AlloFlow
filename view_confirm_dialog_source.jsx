@@ -50,12 +50,30 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
     setConfirmDialog(null);
   }, [confirmDialog, setConfirmDialog]);
 
+  const backdropRef = React.useRef(null);
   const dialogRef = React.useRef(null);
   const cancelBtnRef = React.useRef(null);
   React.useEffect(() => {
     const dialog = dialogRef.current;
-    if (!dialog) return undefined;
+    const backdrop = backdropRef.current;
+    if (!dialog || !backdrop) return undefined;
     const previousFocus = document.activeElement;
+    // Keep the accessibility tree modal as well as the keyboard interaction:
+    // sibling app surfaces are inert while this top-level alertdialog is open.
+    const backgroundState = [];
+    const backgroundParent = backdrop.parentElement;
+    if (backgroundParent) {
+      Array.from(backgroundParent.children).forEach((node) => {
+        if (node === backdrop) return;
+        backgroundState.push({
+          node,
+          hadInert: node.hasAttribute('inert'),
+          ariaHidden: node.getAttribute('aria-hidden'),
+        });
+        node.setAttribute('inert', '');
+        node.setAttribute('aria-hidden', 'true');
+      });
+    }
     // Register on the shared trap stack so a useFocusTrap-owned parent modal
     // (e.g. the Class Mailbox panel) defers while this dialog is on top —
     // otherwise its document-level handler yanks Tab focus back and its
@@ -80,12 +98,19 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
       dialog.removeEventListener('keydown', onKeyDown);
       const trapIndex = trapStack.indexOf(trap);
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
-      if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+      backgroundState.forEach(({ node, hadInert, ariaHidden }) => {
+        if (!node || !node.isConnected) return;
+        if (!hadInert) node.removeAttribute('inert');
+        if (ariaHidden == null) node.removeAttribute('aria-hidden');
+        else node.setAttribute('aria-hidden', ariaHidden);
+      });
+      if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
     };
   }, [handleCancel]);
 
   return (
     <div
+      ref={backdropRef}
       role="presentation"
       className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none"
       onClick={(e) => { if (e.target === e.currentTarget) handleCancel(); }}

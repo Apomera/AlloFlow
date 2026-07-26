@@ -16,7 +16,7 @@ describe('Shared confirmation dialog accessibility', () => {
     expect(source).toContain('(cancelBtnRef.current || dialog).focus()');
     expect(source).toContain('ref={cancelBtnRef}');
     expect(source).not.toContain('confirmBtnRef');
-    expect(source).toContain("if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus()");
+    expect(source).toContain("if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus()");
   });
 
   it('contains Tab navigation and does not globally map Enter to confirmation', () => {
@@ -24,6 +24,14 @@ describe('Shared confirmation dialog accessibility', () => {
     expect(source).toContain("if (event.key !== 'Tab') return");
     expect(source).not.toContain("else if (e.key === 'Enter')");
     expect(source).not.toContain("window.addEventListener('keydown'");
+  });
+  it('makes sibling application surfaces inert while the alert dialog is open', () => {
+    expect(source).toContain('const backdropRef = React.useRef(null)');
+    expect(source).toContain('ref={backdropRef}');
+    expect(source).toContain("node.setAttribute('inert', '')");
+    expect(source).toContain("node.setAttribute('aria-hidden', 'true')");
+    expect(source).toContain("if (!hadInert) node.removeAttribute('inert')");
+    expect(source).toContain("if (ariaHidden == null) node.removeAttribute('aria-hidden')");
   });
 
   it('supports reduced motion, reflow, and high-contrast focus indicators', () => {
