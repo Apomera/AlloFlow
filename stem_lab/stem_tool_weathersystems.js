@@ -4235,6 +4235,19 @@ var geographyGroup = new THREE.Group();
       }, [d.playing]);
 
       var rootClass = 'min-h-screen overflow-hidden rounded-xl antialiased ' + (dark ? 'bg-slate-950 text-slate-100' : 'bg-sky-50 text-slate-900');
+      // One hue per measure, shared by every chart in the tool, so a learner who works out
+      // "orange is temperature" on the meteogram carries that reading into the evidence lens.
+      // Validated as a set (adjacent-pair CVD and normal-vision floors, contrast) against
+      // both real panel surfaces before use.
+      var seriesColor = dark
+        ? { temperature: '#d95926', dewPoint: '#199e70', seaLevelPressure: '#9085e9', windSpeed: '#008300', precipPotential: '#3987e5', cloudCover: '#d55181' }
+        : { temperature: '#eb6834', dewPoint: '#1baf7a', seaLevelPressure: '#4a3aa7', windSpeed: '#008300', precipPotential: '#2a78d6', cloudCover: '#e87ba4' };
+      var chartInk = dark ? '#e2e8f0' : '#0f172a';
+      var chartMutedInk = dark ? '#94a3b8' : '#64748b';
+      var chartGrid = dark ? '#1e293b' : '#e2e8f0';
+      var chartBaseline = dark ? '#334155' : '#cbd5e1';
+      var chartSurface = dark ? '#0f172a' : '#ffffff';
+
       var panelClass = 'rounded-xl border shadow-sm ' + (dark ? 'bg-slate-900/80 border-slate-700' : 'bg-white border-sky-200');
       var mutedClass = dark ? 'text-slate-300' : 'text-slate-600';
       var skyAccentClass = dark ? 'text-sky-300' : 'text-sky-700';
@@ -4775,16 +4788,11 @@ var geographyGroup = new THREE.Group();
           );
         }
 
-        // Categorical hues validated against both panel surfaces (adjacent-pair CVD and
-        // normal-vision floors) before use; the order is the safety mechanism, not decoration.
-        var seriesColor = dark
-          ? { temperature: '#d95926', dewPoint: '#199e70', seaLevelPressure: '#9085e9', windSpeed: '#008300', precipPotential: '#3987e5', cloudCover: '#d55181' }
-          : { temperature: '#eb6834', dewPoint: '#1baf7a', seaLevelPressure: '#4a3aa7', windSpeed: '#008300', precipPotential: '#2a78d6', cloudCover: '#e87ba4' };
-        var textColor = dark ? '#e2e8f0' : '#0f172a';
-        var mutedColor = dark ? '#94a3b8' : '#64748b';
-        var gridColor = dark ? '#1e293b' : '#e2e8f0';
-        var baselineColor = dark ? '#334155' : '#cbd5e1';
-        var surfaceColor = dark ? '#0f172a' : '#ffffff';
+        var textColor = chartInk;
+        var mutedColor = chartMutedInk;
+        var gridColor = chartGrid;
+        var baselineColor = chartBaseline;
+        var surfaceColor = chartSurface;
         var laneWash = dark ? 'rgba(148,163,184,.06)' : 'rgba(15,23,42,.03)';
 
         var VIEW_W = 800;
@@ -5187,30 +5195,25 @@ var geographyGroup = new THREE.Group();
         function signedValue(value, unit) {
           return (value > 0 ? '+' : '') + value + unit;
         }
+        // Hues come from the shared per-measure palette, so these cards match the meteogram
+        // lines they summarise. The previous cyan/sky pair measured ΔE 6.4 for normal vision —
+        // wind and precipitation were genuinely hard to tell apart.
         var metrics = [
           {
-            id: 'temperature', icon: '🌡️', label: 'Temperature',
-            start: start.temperature, end: end.temperature, delta: round(end.temperature - start.temperature, 1), unit: '°C', threshold: 0.4, scale: 8, evidenceId: 'tempDew',
-            card: dark ? 'border-orange-400/25 bg-orange-400/10' : 'border-orange-200 bg-orange-50',
-            accent: dark ? 'text-orange-300' : 'text-orange-800', bar: 'bg-orange-500'
+            id: 'temperature', icon: '🌡️', label: 'Temperature', color: seriesColor.temperature,
+            start: start.temperature, end: end.temperature, delta: round(end.temperature - start.temperature, 1), unit: '°C', threshold: 0.4, scale: 8, evidenceId: 'tempDew'
           },
           {
-            id: 'pressure', icon: '◎', label: 'Pressure',
-            start: start.pressure, end: end.pressure, delta: pressureDelta, unit: ' hPa', threshold: 0.5, scale: 8, evidenceId: 'pressure',
-            card: dark ? 'border-violet-400/25 bg-violet-400/10' : 'border-violet-200 bg-violet-50',
-            accent: dark ? 'text-violet-300' : 'text-violet-800', bar: 'bg-violet-500'
+            id: 'pressure', icon: '◎', label: 'Pressure', color: seriesColor.seaLevelPressure,
+            start: start.pressure, end: end.pressure, delta: pressureDelta, unit: ' hPa', threshold: 0.5, scale: 8, evidenceId: 'pressure'
           },
           {
-            id: 'wind', icon: '💨', label: 'Wind speed',
-            start: start.windSpeed, end: end.windSpeed, delta: end.windSpeed - start.windSpeed, unit: ' km/h', threshold: 2, scale: 24, evidenceId: 'windShift',
-            card: dark ? 'border-cyan-400/25 bg-cyan-400/10' : 'border-cyan-200 bg-cyan-50',
-            accent: dark ? 'text-cyan-300' : 'text-cyan-800', bar: 'bg-cyan-500'
+            id: 'wind', icon: '💨', label: 'Wind speed', color: seriesColor.windSpeed,
+            start: start.windSpeed, end: end.windSpeed, delta: end.windSpeed - start.windSpeed, unit: ' km/h', threshold: 2, scale: 24, evidenceId: 'windShift'
           },
           {
-            id: 'precipitation', icon: '🌧️', label: 'Precipitation',
-            start: start.precipPotential, end: end.precipPotential, delta: precipDelta, unit: ' points', threshold: 4, scale: 45, evidenceId: 'clouds',
-            card: dark ? 'border-sky-400/25 bg-sky-400/10' : 'border-sky-200 bg-sky-50',
-            accent: dark ? 'text-sky-300' : 'text-sky-800', bar: 'bg-sky-500'
+            id: 'precipitation', icon: '🌧️', label: 'Precipitation', color: seriesColor.precipPotential,
+            start: start.precipPotential, end: end.precipPotential, delta: precipDelta, unit: ' points', threshold: 4, scale: 45, evidenceId: 'clouds'
           }
         ];
         var signalTitle = 'Gradual evolution';
@@ -5296,26 +5299,47 @@ var geographyGroup = new THREE.Group();
             h('p', { className: 'mb-3 text-xs font-bold ' + mutedClass, role: 'status', 'aria-live': 'polite' }, selectedLensEvidence.length ? selectedLensEvidence.length + ' evidence card' + (selectedLensEvidence.length === 1 ? '' : 's') + ' selected' : 'Choose one or more evidence cards to build your forecast trail.'),
             h('div', { className: 'grid grid-cols-2 gap-3 lg:grid-cols-4' }, metrics.map(function (metric) {
               var trend = direction(metric.delta, metric.threshold);
-              var strength = Math.round(clamp(Math.abs(metric.delta) / metric.scale * 100, 8, 100));
               var lensSelected = selectedLensEvidence.indexOf(metric.evidenceId) !== -1;
+              // The bar reads from a centre line: a rise fills right, a fall fills left. The
+              // old meter used |delta| only, so a 6-degree drop and a 6-degree rise drew
+              // identically — the most prominent mark on the card was direction-blind.
+              var magnitude = clamp(Math.abs(metric.delta) / metric.scale, 0, 1) * 50;
+              var rising = metric.delta > 0;
+              var flat = Math.abs(metric.delta) < metric.threshold;
               return h('button', {
                 key: metric.id,
                 type: 'button',
                 onClick: function () { toggleLensEvidence(metric.evidenceId); },
                 'aria-pressed': lensSelected,
-                className: 'min-h-32 w-full rounded-xl border p-3 text-left transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 ' + metric.card + (lensSelected ? ' ring-2 ring-indigo-400' : '')
+                className: 'min-h-32 w-full rounded-xl border p-3 text-left transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400' + (lensSelected ? ' ring-2 ring-indigo-400' : ''),
+                style: { borderColor: mixColor(metric.color, chartSurface, dark ? 0.55 : 0.6), backgroundColor: mixColor(metric.color, metric.color, 0, dark ? 0.1 : 0.07) }
               },
                 h('div', { className: 'flex items-start justify-between gap-2' },
                   h('div', null,
-                    h('p', { className: 'text-xs font-black ' + metric.accent }, metric.icon + ' ' + metric.label),
-                    h('p', { className: 'mt-1 text-sm font-black' }, metric.start + (metric.id === 'precipitation' ? '%' : metric.unit) + ' → ' + metric.end + (metric.id === 'precipitation' ? '%' : metric.unit))
+                    // Identity rides on the mark beside the label, never on coloured text.
+                    h('p', { className: 'flex items-center gap-1.5 text-xs font-black' },
+                      h('span', { className: 'inline-block h-2.5 w-2.5 shrink-0 rounded-full', style: { backgroundColor: metric.color }, 'aria-hidden': 'true' }),
+                      h('span', { 'aria-hidden': 'true' }, metric.icon),
+                      metric.label
+                    ),
+                    h('p', { className: 'mt-1 text-sm font-black tabular-nums' }, metric.start + (metric.id === 'precipitation' ? '%' : metric.unit) + ' → ' + metric.end + (metric.id === 'precipitation' ? '%' : metric.unit))
                   ),
-                  h('span', { className: 'rounded-full px-2 py-1 text-xs font-black ' + metric.accent }, lensSelected ? 'Selected' : trend.icon + ' ' + trend.label)
+                  h('span', { className: 'rounded-full px-2 py-1 text-xs font-black' }, lensSelected ? 'Selected' : trend.icon + ' ' + trend.label)
                 ),
-                h('div', { className: 'mt-3 h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-white'), 'aria-hidden': true },
-                  h('div', { className: 'h-full rounded-full ' + metric.bar, style: { width: strength + '%' } })
+                h('div', { className: 'relative mt-3 h-2 rounded-full ' + (dark ? 'bg-slate-800' : 'bg-white'), 'aria-hidden': 'true' },
+                  h('span', { className: 'absolute inset-y-0 left-1/2 w-px -translate-x-1/2', style: { backgroundColor: chartBaseline } }),
+                  !flat && h('span', {
+                    className: 'absolute inset-y-0 rounded-full',
+                    style: rising
+                      ? { left: '50%', width: magnitude + '%', backgroundColor: metric.color }
+                      : { right: '50%', width: magnitude + '%', backgroundColor: metric.color }
+                  })
                 ),
-                h('p', { className: 'mt-2 text-xs font-bold ' + mutedClass }, 'Change: ' + signedValue(metric.delta, metric.unit))
+                h('div', { className: 'mt-1 flex justify-between text-[10px] font-bold ' + mutedClass, 'aria-hidden': 'true' },
+                  h('span', null, 'falling'),
+                  h('span', null, 'rising')
+                ),
+                h('p', { className: 'mt-1 text-xs font-bold tabular-nums ' + mutedClass }, 'Change: ' + signedValue(metric.delta, metric.unit))
               );
             })),
             h('div', { className: 'mt-4 flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center ' + (dark ? 'border-indigo-400/25 bg-indigo-400/10' : 'border-indigo-200 bg-indigo-50') },

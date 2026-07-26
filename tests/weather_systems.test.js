@@ -2243,6 +2243,60 @@ describe('Weather Systems station-network and experiment charts', () => {
   });
 });
 
+describe('Weather Systems evidence-lens change bars', () => {
+  function lensCards(html) {
+    const section = (html.match(/data-weather-change-lens[\s\S]*?Dominant evidence signal/) || [''])[0];
+    return section;
+  }
+
+  it('fills the bar from a centre line so direction is not lost', () => {
+    // Ahead of the front: pressure falling, precipitation rising.
+    const html = renderTool('weatherSystems', { weatherSystems: { tab: 'map', scenario: 'coldFront', simHour: 2 } }, { gradeLevel: '8th Grade' });
+    const lens = lensCards(html);
+    // A rise anchors at the centre and grows right; a fall anchors and grows left.
+    expect(lens).toMatch(/left:50%/);
+    expect(lens).toMatch(/right:50%/);
+    // The centre line and its two ends are labelled, so the scale explains itself.
+    expect(lens).toContain('falling');
+    expect(lens).toContain('rising');
+  });
+
+  it('flips a bar when that measure reverses direction', () => {
+    // Isolate one card so the assertion is about that measure, not a card tally.
+    const card = (html, label) => lensCards(html).split('<button').filter((chunk) => chunk.includes(label))[0] || '';
+    const strengthening = renderTool('weatherSystems', { weatherSystems: { tab: 'map', scenario: 'coldFront', simHour: 2 } }, { gradeLevel: '8th Grade' });
+    const clearing = renderTool('weatherSystems', { weatherSystems: { tab: 'map', scenario: 'coldFront', simHour: 9 } }, { gradeLevel: '8th Grade' });
+    expect(lensCards(strengthening)).toContain('System strengthening');
+    expect(lensCards(clearing)).toContain('Clearing signal');
+
+    // Pressure is the measure that reverses across a front passage, and it is the one
+    // the two signal narratives disagree about.
+    const pressureAhead = card(strengthening, 'Pressure');
+    const pressureBehind = card(clearing, 'Pressure');
+    expect(pressureAhead).toContain('right:50%');   // falling ahead of the front
+    expect(pressureAhead).not.toContain('left:50%');
+    expect(pressureBehind).toContain('left:50%');   // rising behind it
+    expect(pressureBehind).not.toContain('right:50%');
+    // Precipitation moves the opposite way in each case.
+    expect(card(strengthening, 'Precipitation')).toContain('left:50%');
+    expect(card(clearing, 'Precipitation')).toContain('right:50%');
+  });
+
+  it('reuses one hue per measure across the meteogram and the lens', () => {
+    const html = renderTool('weatherSystems', { weatherSystems: { tab: 'map', scenario: 'coldFront', simHour: 4 } }, { gradeLevel: '8th Grade' });
+    // Temperature, pressure, wind and precipitation each appear in both panels in one hue.
+    ['#eb6834', '#4a3aa7', '#008300', '#2a78d6'].forEach((hex) => {
+      const uses = (html.match(new RegExp(hex.replace('#', '#'), 'gi')) || []).length;
+      expect(uses, hex + ' should appear in both the chart and the lens').toBeGreaterThan(1);
+    });
+    // The failing cyan/sky pair (normal-vision ΔE 6.4) is gone from the lens.
+    const lens = lensCards(html);
+    expect(lens).not.toContain('bg-cyan-500');
+    expect(lens).not.toContain('bg-sky-500');
+    expect(lens).not.toContain('text-cyan-800');
+  });
+});
+
 describe('Weather Systems geographic map loader resilience', () => {
   const { readFileSync } = require('node:fs');
   const { resolve } = require('node:path');
