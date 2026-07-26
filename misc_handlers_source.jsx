@@ -1511,6 +1511,24 @@ async function runAutoFixLoop(maxRounds, deps) {
         setPdfFixStep('');
       } else if (_staleAtExit) {
         warnLog('[AutoContinue] Stale loop exiting (gen bump) — leaving the fresh run\'s UI untouched.');
+      } else {
+        // H18/M7 (audit 2026-07-26): the third case, which used to fall through and clear nothing.
+        // The 12-min auto-continue watchdog NULLS pdfAutoContinueAbortCtrlRef, so _ownsExit becomes
+        // false — and unlike the 8-min switch it does not bump __alloPdfRunGen, so _staleAtExit is
+        // false too. This loop had written setPdfFixLoading(true) on every round, so it left the
+        // flag true with nobody to clear it: a permanent spinner over a finished result, with every
+        // control in the modal disabled.
+        //
+        // A vacant slot is not a newer owner. Clear only when nothing else has claimed it, so a run
+        // that started in the meantime keeps its own spinner.
+        const _slotVacant = !pdfAutoContinueAbortCtrlRef.current;
+        if (_slotVacant) {
+          warnLog('[AutoContinue] Loop exiting with a vacant controller slot (watchdog reset) — clearing the loading flag it would otherwise strand.');
+          setPdfFixLoading(false);
+          setPdfFixStep('');
+        } else {
+          warnLog('[AutoContinue] Loop exiting; a newer continuation owns the controller slot — leaving its UI untouched.');
+        }
       }
       if (_ownsExit) {
         setPdfAutoContinueRunning(false);

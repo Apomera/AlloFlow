@@ -18730,16 +18730,42 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       const liveOwner = (typeof window !== 'undefined' && window.__alloActivePdfRemediation) || null;
       const liveAbortOwner = (typeof window !== 'undefined' && window.__alloPdfFixAbortOwner) || null;
       const liveAbortCtrl = (typeof window !== 'undefined' && window.__alloPdfFixAbortCtrl) || null;
-      const superseded = pdfDocumentSelectionEpochRef.current !== watchdogEpoch
-        || !watchdogRunId
-        || !liveOwner
-        || liveOwner.documentEpoch !== watchdogEpoch
-        || liveOwner.runId !== watchdogRunId
-        || (liveAbortOwner && (liveAbortOwner.documentEpoch !== watchdogEpoch || liveAbortOwner.runId !== watchdogRunId))
-        || (initialWatchdogAbortCtrl && liveAbortCtrl !== initialWatchdogAbortCtrl);
-      if (superseded) {
+      // M7 (audit 2026-07-26): "no live owner" is NOT the same as "somebody else owns the host",
+      // and conflating them made this dead-man switch unable to do the one job it was written for.
+      // window.__alloActivePdfRemediation is written only by fixAndVerifyPdf and nulled in its
+      // finally. So after a primary run finishes and the auto-continue loop strands pdfFixLoading
+      // (see H18), there is no live owner at all — and treating that as "superseded" made fire()
+      // log one line and return WITHOUT clearing and WITHOUT re-arming (arm() is only reached from
+      // onActivity, which needs a pipeline heartbeat that is never coming). The modal then showed a
+      // permanent "Fixing..." spinner over a finished result, with Fix & Verify, Fix Remaining,
+      // Additional Sweep, Re-OCR and Start New Audit all disabled. The only escape was closing it.
+      const _staleDocument = pdfDocumentSelectionEpochRef.current !== watchdogEpoch;
+      const _otherRunOwnsHost = !!liveOwner
+        && (liveOwner.documentEpoch !== watchdogEpoch || (watchdogRunId && liveOwner.runId !== watchdogRunId));
+      const _otherAbortOwner = !!(liveAbortOwner && (liveAbortOwner.documentEpoch !== watchdogEpoch || (watchdogRunId && liveAbortOwner.runId !== watchdogRunId)))
+        || !!(initialWatchdogAbortCtrl && liveAbortCtrl !== initialWatchdogAbortCtrl);
+      if (_staleDocument || _otherRunOwnsHost || _otherAbortOwner) {
         warnLog('[PdfFix] Ignoring superseded remediation watchdog timeout; a newer document or run owns the host.');
+        try { if (typeof _docPipeline?.logHostDiagnostic === 'function') _docPipeline.logHostDiagnostic('Watchdog', 'Idle timeout ignored — a newer document or run owns the host.', { runId: watchdogRunId, documentEpoch: watchdogEpoch }); } catch (_) {}
+        arm(); // re-check rather than dying: the newer run may finish and strand the flag in turn
         return;
+      }
+      if (!liveOwner) {
+        // The STRANDED-FLAG case. Nothing owns the host, yet pdfFixLoading is still true — there is
+        // no run to invalidate, so clear the UI and stop. Deliberately does NOT bump __alloPdfRunGen
+        // or abort shared controllers: there is nothing running to cancel, and doing so could
+        // invalidate a run that starts in the same tick.
+        warnLog('[PdfFix] Dead-man switch: pdfFixLoading has been true for ' + (IDLE_LIMIT / 60000) + 'min with no pipeline run owning the host — clearing the stranded flag.');
+        try { if (typeof _docPipeline?.logHostDiagnostic === 'function') _docPipeline.logHostDiagnostic('Watchdog', 'Cleared a stranded pdfFixLoading flag: no run owned the host for ' + (IDLE_LIMIT / 60000) + 'min.', { runId: watchdogRunId, documentEpoch: watchdogEpoch }); } catch (_) {}
+        setPdfFixLoading(false);
+        setPdfFixStep('');
+        return;
+      }
+      if (!watchdogRunId) {
+        // We never saw a heartbeat to adopt a runId from, but a live owner exists — adopt ITS id
+        // rather than bailing forever (M20: several entry paths never emit an identified heartbeat).
+        watchdogRunId = liveOwner.runId || null;
+        if (!watchdogRunId) { arm(); return; }
       }
       warnLog('[PdfFix] Dead-man switch fired: no pipeline activity for ' + (IDLE_LIMIT / 60000) + 'min on "' + stepAtStart + '" — clearing.');
       // (2026-06-20) Don't just clear the UI — INVALIDATE the stalled run so its late-resolving promise
@@ -19770,6 +19796,17 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         try { watchdogAbortCtrl.abort(); } catch (_) {}
         if (pdfAutoContinueAbortCtrlRef.current === watchdogAbortCtrl) pdfAutoContinueAbortCtrlRef.current = null;
         setPdfAutoContinueRunning(false);
+        // H18 (audit 2026-07-26): clear what this watchdog actually STRANDS. The auto-continue loop
+        // sets setPdfFixLoading(true) on every round, but nulling pdfAutoContinueAbortCtrlRef above
+        // makes the loop's own finally compute _ownsExit === false; _staleAtExit is also false
+        // (unlike the 8-min switch, this one does not bump __alloPdfRunGen), so the loop took
+        // NEITHER branch and never called setPdfFixLoading(false). The teacher was told
+        // "auto-continue was reset — your latest result is kept" while _remediationBusy stayed true
+        // forever, disabling Fix & Verify, Fix Remaining, Additional Sweep, Re-OCR and
+        // "Complete final audit", with a fake progress bar over a stale step string.
+        setPdfFixLoading(false);
+        setPdfFixStep('');
+        try { if (typeof _docPipeline?.logHostDiagnostic === 'function') _docPipeline.logHostDiagnostic('Watchdog', 'Auto-continue reset after 12min idle; cleared pdfFixLoading + step so the modal controls re-enable.', { runId: watchdogRunId, documentEpoch: watchdogEpoch }); } catch (_) {}
         if (typeof addToast === 'function') addToast(t('toasts.pdf_fix_appears_stuck_reset') || 'Auto-continue appeared stuck and was reset — your latest result is kept.', 'warning');
       }
     };

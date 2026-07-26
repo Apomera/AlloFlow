@@ -1040,3 +1040,60 @@ describe('L5 — the reading-order claim is backed by a reading-order measuremen
     expect(dp).toContain('if (kinds.sourceReadingOrder) review.push(');
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// H18 / M7 — the stranded pdfFixLoading flag.
+//
+// The auto-continue loop sets setPdfFixLoading(true) on every round. When the 12-minute
+// auto-continue watchdog fires it NULLS pdfAutoContinueAbortCtrlRef, so the loop's finally computes
+// _ownsExit === false — and unlike the 8-minute switch this watchdog does not bump __alloPdfRunGen,
+// so _staleAtExit is false too. The loop therefore took NEITHER branch and never cleared the flag.
+// The 8-minute dead-man switch could not rescue it either: it treated "no live owner" as
+// "superseded", logged one line, returned without clearing AND without re-arming. The result was a
+// permanent spinner over a finished result, with Fix & Verify, Fix Remaining, Additional Sweep,
+// Re-OCR, "Complete final audit" and Start New Audit all disabled — escapable only by closing the
+// modal.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('H18/M7 — a stranded loading flag always gets cleared', () => {
+  const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+  const misc = readFileSync(resolve(process.cwd(), 'misc_handlers_source.jsx'), 'utf8');
+
+  it('M7: "no live owner" is handled as a stranded flag, not as a supersession', () => {
+    expect(anti).toContain('if (!liveOwner) {');
+    expect(anti).toContain('no pipeline run owning the host — clearing the stranded flag.');
+  });
+
+  it('M7: the genuine supersession branch RE-ARMS instead of dying', () => {
+    // arm() was only otherwise reachable from onActivity, which needs a pipeline heartbeat that is
+    // never coming once the run has ended.
+    const fire = anti.slice(anti.indexOf('Ignoring superseded remediation watchdog timeout'));
+    expect(fire.slice(0, 400)).toContain('arm();');
+  });
+
+  it('M7: a missing runId is adopted from the live owner rather than disarming forever', () => {
+    expect(anti).toContain('watchdogRunId = liveOwner.runId || null;');
+  });
+
+  it('H18: the auto-continue watchdog clears what it strands', () => {
+    const fire = anti.slice(anti.indexOf('pdfAutoContinueRunning stuck on'));
+    const body = fire.slice(0, 2000);
+    expect(body).toContain('setPdfAutoContinueRunning(false);');
+    expect(body).toContain('setPdfFixLoading(false);');
+    expect(body).toContain("setPdfFixStep('');");
+  });
+
+  it('H18: the loop\'s finally has a third branch for a vacant controller slot', () => {
+    expect(misc).toContain('const _slotVacant = !pdfAutoContinueAbortCtrlRef.current;');
+    expect(misc).toContain('clearing the loading flag it would otherwise strand.');
+  });
+
+  it('H18: it still refuses to clear a NEWER continuation\'s UI', () => {
+    // The M9 guarantee this sits next to: a stale loop's exit must not wipe a live run's spinner.
+    const tail = misc.slice(misc.indexOf('const _slotVacant = !pdfAutoContinueAbortCtrlRef.current;'));
+    expect(tail.slice(0, 700)).toContain('a newer continuation owns the controller slot');
+  });
+
+  it('both watchdogs write to the log the teacher can actually copy', () => {
+    expect((anti.match(/logHostDiagnostic\('Watchdog'/g) || []).length).toBeGreaterThanOrEqual(3);
+  });
+});
