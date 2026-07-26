@@ -233,6 +233,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Remediated Seating Chart's interactive SVG map: removed the overbroad application role, exposed the seat collection as a named and described group, and supplied mode-specific nonvisual instructions for assignment, recognition, and keyboard room editing. Every focusable seat and furniture item now retains browser focus and receives a three-pixel non-scaling high-contrast SVG indicator with a forced-colors override; the existing arrow-key and Shift-modified movement alternative remains available without dragging (WCAG 1.3.1, 2.1.1, 2.4.6, 2.4.7, 2.5.7, 4.1.2).
 
+- Remediated Story Stage/LitLab as a named and described focus-managed dialog on a presentation-only backdrop. The workshop now focuses Close initially, contains Tab and Shift+Tab, closes with Escape or the backdrop, and restores the exact launcher even when its story textarea requests autofocus. All form controls and actions retain a three-pixel dual-color focus indicator, forced-colors support, reduced-motion behavior, and at least 24 CSS-pixel targets; the decorative theatre icon is hidden and the transient story-upload picker is explicitly named. The focused static audit now reports no findings in the module (WCAG 1.1.1, 2.1.1, 2.1.2, 2.3.3, 2.4.3, 2.4.7, 2.5.8, 3.3.2, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

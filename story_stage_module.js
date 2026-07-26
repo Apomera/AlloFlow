@@ -26,6 +26,19 @@
     lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(lr);
   })();
+  (function() {
+    if (document.getElementById('litlab-a11y-styles')) return;
+    var style = document.createElement('style');
+    style.id = 'litlab-a11y-styles';
+    style.textContent = [
+      '.litlab-dialog button,.litlab-dialog input,.litlab-dialog select,.litlab-dialog textarea{min-height:24px}',
+      '.litlab-dialog button{min-width:24px}',
+      '.litlab-dialog :where(button,input,select,textarea,[tabindex]):focus-visible{outline:3px solid #0f172a;outline-offset:3px;box-shadow:0 0 0 2px #fff}',
+      '@media (forced-colors:active){.litlab-dialog :where(button,input,select,textarea,[tabindex]):focus-visible{outline-color:Highlight;box-shadow:none}}',
+      '@media (prefers-reduced-motion:reduce){.litlab-dialog,.litlab-dialog *,.litlab-dialog *::before,.litlab-dialog *::after{animation:none!important;scroll-behavior:auto!important;transition:none!important}}'
+    ].join('');
+    document.head.appendChild(style);
+  })();
 
   // Helper to announce dynamic state changes to SR users.
   function announceLitLab(msg) {
@@ -33,6 +46,60 @@
       var lr = document.getElementById('allo-live-litlab');
       if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 50); }
     } catch (e) {}
+  }
+
+  function useLitLabDialogFocus(dialogRef, initialFocusRef, onEscapeRef, returnFocusRef) {
+    React.useEffect(function () {
+      var dialog = dialogRef.current;
+      if (!dialog || typeof document === 'undefined') return undefined;
+      var previous = returnFocusRef.current || document.activeElement;
+      var stack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+      var trap = { root: dialog };
+      stack.push(trap);
+      function focusable() {
+        return Array.prototype.slice.call(dialog.querySelectorAll(
+          'button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+        )).filter(function (node) {
+          return !node.hidden && node.getAttribute('aria-hidden') !== 'true';
+        });
+      }
+      var initial = initialFocusRef.current || focusable()[0] || dialog;
+      if (initial && typeof initial.focus === 'function') initial.focus();
+      function onKeyDown(event) {
+        if (stack[stack.length - 1] !== trap) return;
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          if (onEscapeRef.current) onEscapeRef.current();
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var items = focusable();
+        if (!items.length) {
+          event.preventDefault();
+          dialog.focus();
+          return;
+        }
+        var first = items[0];
+        var last = items[items.length - 1];
+        if (!dialog.contains(document.activeElement)) {
+          event.preventDefault();
+          (event.shiftKey ? last : first).focus();
+        } else if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+      document.addEventListener('keydown', onKeyDown);
+      return function () {
+        document.removeEventListener('keydown', onKeyDown);
+        var index = stack.indexOf(trap);
+        if (index !== -1) stack.splice(index, 1);
+        if (previous && previous.isConnected && typeof previous.focus === 'function') previous.focus();
+      };
+    }, []);
   }
 
   var warnLog = function () { console.warn.apply(console, ['[LitLab]'].concat(Array.prototype.slice.call(arguments))); };
@@ -127,6 +194,12 @@
     var useState = React.useState;
     var useCallback = React.useCallback;
     var useRef = React.useRef;
+    var dialogRef = useRef(null);
+    var closeButtonRef = useRef(null);
+    var onCloseRef = useRef(onClose);
+    var returnFocusRef = useRef(typeof document !== 'undefined' ? document.activeElement : null);
+    React.useEffect(function () { onCloseRef.current = onClose; }, [onClose]);
+    useLitLabDialogFocus(dialogRef, closeButtonRef, onCloseRef, returnFocusRef);
 
     // ── UI localization (student's interface language, runtime-translated) ──
     var langCtx = React.useContext(LANG_CTX);
@@ -1183,7 +1256,7 @@
       body: { flex: 1, overflowY: 'auto', padding: '20px' },
       btn: function (bg, fg, dis) { return { padding: '8px 16px', background: dis ? '#e5e7eb' : bg, color: dis ? '#9ca3af' : fg, border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: dis ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }; },
       card: { background: '#f9fafb', borderRadius: '12px', padding: '16px', border: '1px solid #e5e7eb', marginBottom: '12px' },
-      input: { width: '100%', padding: '8px 12px', border: '1px solid #94a3b8', borderRadius: '8px', fontSize: '13px', outline: 'none' },
+      input: { width: '100%', padding: '8px 12px', border: '1px solid #94a3b8', borderRadius: '8px', fontSize: '13px' },
     };
 
     // ═══════════════════════════════════════════════════════════════════
@@ -1191,22 +1264,28 @@
     // ═══════════════════════════════════════════════════════════════════
 
     return e('div', {
-      role: 'dialog', 'aria-modal': 'true', 'aria-label': 'LitLab — story performance workshop',
-      // ESC closes the modal so keyboard users aren't trapped (WCAG 2.1.2).
-      // tabIndex=-1 so the wrapper is focusable for the keydown handler but not in the tab order.
-      tabIndex: -1,
-      onKeyDown: function (ev) { if (ev.key === 'Escape') { ev.preventDefault(); onClose(); } },
+      role: 'presentation',
       style: S.modal,
       onClick: function (ev) { if (ev.target === ev.currentTarget) onClose(); }
     },
-      e('div', { style: S.container, onClick: function (ev) { ev.stopPropagation(); } },
+      e('div', {
+        ref: dialogRef,
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'litlab-dialog-title',
+        'aria-describedby': 'litlab-dialog-description',
+        tabIndex: -1,
+        className: 'litlab-dialog',
+        style: S.container,
+        onClick: function (ev) { ev.stopPropagation(); }
+      },
         // Header
         e('div', { style: S.header },
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
-            e('span', { style: { fontSize: '24px' } }, '🎭'),
+            e('span', { 'aria-hidden': 'true', style: { fontSize: '24px' } }, '🎭'),
             e('div', null,
-              e('h2', { style: { fontWeight: 900, fontSize: '18px', margin: 0 } }, 'LitLab'),
-              e('p', { style: { fontSize: '11px', opacity: 0.8, margin: 0 } }, storyTitle || tr('Bring stories to life'))
+              e('h2', { id: 'litlab-dialog-title', style: { fontWeight: 900, fontSize: '18px', margin: 0 } }, 'LitLab'),
+              e('p', { id: 'litlab-dialog-description', style: { fontSize: '11px', opacity: 0.8, margin: 0 } }, storyTitle || tr('Bring stories to life'))
             )
           ),
           e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
@@ -1215,7 +1294,7 @@
               else if (phase === 'perform') { stopPlayback(); setPhase('assign'); }
               else if (phase === 'analyze') setPhase('perform');
             }, style: S.btn('rgba(255,255,255,0.2)', '#fff', false), 'aria-label': tr('Back') }, tr('← Back')),
-            e('button', { onClick: onClose, style: { color: '#fff', background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '6px', padding: '5px 11px', cursor: 'pointer', fontSize: '20px', lineHeight: 1 }, 'aria-label': tr('Close') }, '×')
+            e('button', { ref: closeButtonRef, type: 'button', onClick: onClose, style: { color: '#fff', background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '6px', padding: '5px 11px', cursor: 'pointer', fontSize: '20px', lineHeight: 1 }, 'aria-label': tr('Close') }, '×')
           )
         ),
         // Body
@@ -1340,6 +1419,7 @@
                 // File upload
                 e('button', { onClick: function () {
                   var input = document.createElement('input');
+                  input.setAttribute('aria-label', tr('Upload story source file'));
                   input.type = 'file';
                   input.accept = 'image/*,.txt,.md,.pdf';
                   input.onchange = async function (ev) {
