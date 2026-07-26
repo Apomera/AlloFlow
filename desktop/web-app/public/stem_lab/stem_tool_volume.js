@@ -915,6 +915,15 @@ window.StemLab = window.StemLab || {
       var surfaceArea = isDisplacement ? 0 : (isSlider
         ? 2 * (dims.l * dims.w + dims.l * dims.h + dims.w * dims.h)
         : getSA(posSet));
+      // ── Volume predictor: commit-then-check state ──
+      // Three phases. 'idle' is the default and changes nothing, so the normal
+      // "watch it grow" readout stays untouched for anyone not mid-prediction.
+      // 'armed' masks every volume readout — visual AND screen-reader — so the
+      // learner commits before seeing the answer. 'locked' reveals and freezes.
+      var volPred = _v._volPred || {};
+      var volPredPhase = (volPred.phase === 'armed' || volPred.phase === 'locked') ? volPred.phase : 'idle';
+      var volPredArmed = !isDisplacement && volPredPhase === 'armed';
+
       var cubeUnit = isSlider
         ? Math.max(18, Math.min(36, 240 / Math.max(dims.l, dims.w, dims.h)))
         : 30;
@@ -2713,11 +2722,16 @@ window.StemLab = window.StemLab || {
                   // Debounced SR announcement so we don't spam during rapid slider drags
                   if (window._volSrTimer) clearTimeout(window._volSrTimer);
                   window._volSrTimer = setTimeout(function() {
-                    announceToSR(label + ' ' + nd[dim] + '. Volume now ' + (Math.round(newVol * 100) / 100) + ' cubic units.');
+                    // While a prediction is armed the volume is masked visually, so it
+                    // must be masked here too or the announcement leaks the answer.
+                    announceToSR(volPredArmed
+                      ? label + ' ' + nd[dim] + '. Volume hidden until you lock your prediction.'
+                      : label + ' ' + nd[dim] + '. Volume now ' + (Math.round(newVol * 100) / 100) + ' cubic units.');
                   }, 350);
                   if (nd.l === 10 && nd.w === 10 && nd.h === 10) checkBadges({ dimensionKing: true });
                 },
-                'aria-label': label + ' slider, currently ' + dims[dim] + ', volume ' + volume + ' cubic units',
+                'aria-label': label + ' slider, currently ' + dims[dim] +
+                  (volPredArmed ? ', volume hidden until you lock your prediction' : ', volume ' + volume + ' cubic units'),
                 'aria-valuenow': dims[dim],
                 'aria-valuemin': _v.allowFractional ? 0.5 : 1,
                 'aria-valuemax': 10,
@@ -2939,7 +2953,7 @@ window.StemLab = window.StemLab || {
               }, s.icon + ' ' + s.label);
             })
           ),
-          shape !== 'prism' && h('p', { className: 'mt-1.5 text-[10px] text-emerald-600 italic' },
+          shape !== 'prism' && !volPredArmed && h('p', { className: 'mt-1.5 text-[10px] text-emerald-600 italic' },
             __alloT('stem.volume.visual_is_a_voxel_approximation_built_', '⚠ Visual is a voxel approximation (built from unit cubes). The formula '),
             h('span', { className: 'font-mono font-bold text-emerald-800' }, (SHAPES_META.find(function(m) { return m.id === shape; }) || {}).formula),
             __alloT('stem.volume.gives_the_exact_analytic_volume', ' gives the exact analytic volume = '),
@@ -2982,7 +2996,9 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-emerald-600' }, '→ '),
               h('span', { className: 'text-emerald-800' }, stepStr),
               h('span', { className: 'text-emerald-600 mx-1' }, '='),
-              h('span', { className: 'font-extrabold text-emerald-900' }, resultStr),
+              // The substituted dimensions stay visible (they are on the sliders anyway);
+              // only the evaluated result is masked while a prediction is armed.
+              h('span', { className: 'font-extrabold text-emerald-900' }, volPredArmed ? '?' : resultStr),
               h('span', { className: 'text-emerald-700 ml-1 not-italic' }, __alloT('stem.volume.cubic_units', ' cubic units'))
             );
           })()
@@ -3071,6 +3087,9 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-white rounded-xl p-3 border border-emerald-100 text-center flex flex-col items-center justify-center' },
             h('div', { className: 'text-xs font-bold text-emerald-600 uppercase mb-1' }, __alloT('stem.volume.volume', 'Volume')),
             h('div', { className: 'text-xl font-bold text-emerald-800' },
+              // Armed predictions mask the whole breakdown, not just the total \u2014 the
+              // "Area of Base x Height" line reconstructs the answer on its own.
+              volPredArmed ? h('span', null, h('span', { className: 'text-2xl text-emerald-600' }, '?')) :
               isSlider && !challenge ? h('div', { className: 'flex flex-col items-center gap-1' },
                 h('div', { className: 'text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200' },
                   'Area of Base ('+dims.l+'\u00d7'+dims.w+') = ' + (dims.l * dims.w)),
@@ -3082,6 +3101,8 @@ window.StemLab = window.StemLab || {
                   (isSlider && challenge && !feedback) ? '?' :
                   (isFreeform && builderChallenge && builderChallenge.type === 'volume') ? '?' : volume))
             ),
+            volPredArmed ? h('div', { className: 'text-xs text-slate-600 italic' },
+              __alloT('stem.volume.hidden_until_you_lock', 'hidden until you lock your prediction')) :
             (isSlider && challenge && !feedback) ? null :
             (isFreeform && builderChallenge && builderChallenge.type === 'volume') ? null :
             h('div', { className: 'text-xs text-slate-600' }, volume + ' unit cube' + (volume !== 1 ? 's' : ''))
@@ -3099,37 +3120,112 @@ window.StemLab = window.StemLab || {
 
         // === H7b'' inquiry widget: volume predictor ===
         !isDisplacement && (function() {
-          var iq = _v._volPred || { lpred: 3, wpred: 3, hpred: 3, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          var iq = _v._volPred || {};
           function setIQ(patch) { upd({ _volPred: Object.assign({}, iq, patch) }); }
-          var predicted = iq.lpred * iq.wpred * iq.hpred;
-          var actual = (dims.l || 1) * (dims.w || 1) * (dims.h || 1);
-          var diff = Math.abs(predicted - actual);
-          var state = diff < 2 ? 'close' : (diff < 8 ? 'mid' : 'far');
+          var vpPhase = volPredPhase;
+          // Truth is captured at LOCK time, not read live. Reading it live would let a
+          // dimension slider dragged after locking silently rewrite what you were graded on.
+          var vpLocked = iq.locked || null;
+          var guessRaw = iq.guess == null ? '' : iq.guess;
+          var guessNum = parseFloat(guessRaw);
+          var guessValid = isFinite(guessNum) && guessNum > 0;
+
+          // Relative bands. The old absolute thresholds (within 2 = "close") made an
+          // 8-cube prism nearly free and a 500-cube prism impossible to hit.
+          function bandFor(g, a) {
+            if (!(a > 0)) return 'far';
+            var rel = Math.abs(g - a) / a;
+            return rel <= 0.05 ? 'close' : (rel <= 0.20 ? 'mid' : 'far');
+          }
           var sm = {
-            close: { label: __alloT('stem.volume.close_match', '🎯 Close match'), color: '#059669', bg: '#ecfdf5', border: '#86efac' },
-            mid:   { label: __alloT('stem.volume.in_the_ballpark', '🟡 In the ballpark'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
-            far:   { label: __alloT('stem.volume.far_off', '🔴 Far off'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
-          }[state];
+            close: { label: __alloT('stem.volume.spot_on', '🎯 Spot on — within 5%'), color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+            mid:   { label: __alloT('stem.volume.in_the_ballpark', '🟡 In the ballpark — within 20%'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+            far:   { label: __alloT('stem.volume.far_off', '🔴 Far off — more than 20%'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
+          };
+
+          function lockPrediction() {
+            if (!guessValid) return;
+            var a = volume;
+            var st = bandFor(guessNum, a);
+            var pct = a > 0 ? Math.round(Math.abs(guessNum - a) / a * 100) : null;
+            setIQ({
+              phase: 'locked',
+              locked: { g: guessNum, a: a, pct: pct, st: st },
+              // Every locked attempt logs automatically. The old manual Log button let a
+              // student record only their hits, which made the log useless as evidence.
+              log: (iq.log || []).concat([{ g: guessNum, a: a, pct: pct, st: st }]).slice(-8)
+            });
+            announceToSR(sm[st].label + '. You predicted ' + guessNum + ' cubic units. Actual volume ' +
+              a + ' cubic units' + (pct === null ? '.' : ', ' + pct + ' percent off.'));
+          }
+
           return h('div', { className: 'mt-3 mb-3 p-3 rounded-xl bg-white border border-indigo-200' },
-            h('h4', { className: 'text-sm font-black text-indigo-700 mb-1' }, __alloT('stem.volume.volume_predictor_sense_check', '📊 Volume predictor — sense-check')),
-            h('p', { className: 'text-[11px] text-slate-700 mb-2 leading-relaxed' }, __alloT('stem.volume.adjust_your_predicted_dimensions_compa', 'Adjust your PREDICTED dimensions, compare to actual prism. Discrete outcome: close/mid/far. No score, no reveal.')),
-            h('div', { className: 'mb-2 p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
-              h('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label),
-              h('div', { className: 'text-[10px] text-slate-700 font-mono mt-1' }, 'Pred: ' + iq.lpred + '×' + iq.wpred + '×' + iq.hpred + ' = ' + predicted + '   |   Actual: ' + actual)
+            h('h4', { className: 'text-sm font-black text-indigo-700 mb-1' }, __alloT('stem.volume.volume_predictor_sense_check', '📊 Volume predictor — predict, then check')),
+            h('p', { className: 'text-[11px] text-slate-700 mb-2 leading-relaxed' }, __alloT('stem.volume.predictor_intro', 'Work out the volume from the dimensions and commit to a number. The volume readouts stay hidden until you lock it in. No score.')),
+
+            vpPhase === 'idle' && h('button', {
+              onClick: function() {
+                setIQ({ phase: 'armed', guess: '', locked: null });
+                announceToSR('Prediction started. Volume readouts are now hidden. Enter your predicted volume, then lock it in.');
+              },
+              className: 'px-3 py-1.5 rounded-lg bg-indigo-700 text-white text-[11px] font-bold hover:bg-indigo-600 mb-2'
+            }, __alloT('stem.volume.start_a_prediction', '▶ Start a prediction')),
+
+            vpPhase === 'armed' && h('div', null,
+              h('div', { className: 'mb-2 p-2 rounded text-center', style: { background: '#eef2ff', border: '1px solid #c7d2fe' } },
+                h('div', { className: 'text-[11px] font-black text-indigo-800' }, __alloT('stem.volume.readouts_hidden', '🙈 Volume readouts hidden — commit your number')),
+                h('div', { className: 'text-[10px] text-slate-600 mt-0.5' }, __alloT('stem.volume.dims_still_visible', 'The dimensions are still on the sliders above. Use them.'))
+              ),
+              h('div', { className: 'flex gap-2 items-end flex-wrap mb-2' },
+                h('div', null,
+                  h('label', { htmlFor: 'vp-guess', className: 'block text-[10px] font-bold text-slate-700 mb-0.5' },
+                    __alloT('stem.volume.predicted_volume', 'Predicted volume (cubic units)')),
+                  h('input', { id: 'vp-guess', type: 'number', min: 1, step: 'any', value: guessRaw,
+                    onChange: function(e) { setIQ({ guess: e.target.value }); },
+                    onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); lockPrediction(); } },
+                    className: 'w-28 px-2 py-1 border-2 border-indigo-300 rounded text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-400',
+                    'aria-label': 'Predicted volume in cubic units' })
+                ),
+                h('button', { onClick: lockPrediction, disabled: !guessValid,
+                  className: 'px-3 py-1.5 rounded-lg bg-indigo-700 text-white text-[11px] font-bold hover:bg-indigo-600 disabled:opacity-40'
+                }, __alloT('stem.volume.lock_prediction', '🔒 Lock prediction')),
+                h('button', {
+                  onClick: function() {
+                    setIQ({ phase: 'idle', guess: '', locked: null });
+                    announceToSR('Prediction cancelled. Volume readouts restored.');
+                  },
+                  className: 'px-2 py-1 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300'
+                }, __alloT('stem.volume.cancel', '✖ Cancel'))
+              )
             ),
-            h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
-              [{ k: 'lpred', l: 'L pred' }, { k: 'wpred', l: 'W pred' }, { k: 'hpred', l: 'H pred' }].map(function(s) {
-                return h('div', { key: s.k },
-                  h('label', { htmlFor: 'vp-' + s.k, className: 'block text-[10px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-indigo-700' }, iq[s.k])),
-                  h('input', { id: 'vp-' + s.k, type: 'range', min: 1, max: 10, step: 1, value: iq[s.k],
-                    onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                    className: 'w-full', 'aria-label': s.l }));
-              })
+
+            vpPhase === 'locked' && vpLocked && h('div', null,
+              h('div', { className: 'mb-2 p-2 rounded text-center', role: 'status', 'aria-live': 'polite',
+                style: { background: sm[vpLocked.st].bg, border: '1px solid ' + sm[vpLocked.st].border } },
+                h('div', { className: 'text-sm font-black', style: { color: sm[vpLocked.st].color } }, sm[vpLocked.st].label),
+                h('div', { className: 'text-[10px] text-slate-700 font-mono mt-1' },
+                  'You said ' + vpLocked.g + '   |   Actual ' + vpLocked.a +
+                  (vpLocked.pct === null ? '' : '   |   ' + vpLocked.pct + '% off'))
+              ),
+              h('button', {
+                onClick: function() {
+                  setIQ({ phase: 'armed', guess: '', locked: null });
+                  announceToSR('New prediction started. Volume readouts hidden again.');
+                },
+                className: 'px-3 py-1.5 rounded-lg bg-indigo-700 text-white text-[11px] font-bold hover:bg-indigo-600 mb-2'
+              }, __alloT('stem.volume.new_prediction', '🔄 New prediction'))
             ),
-            h('div', { className: 'flex gap-2 items-center flex-wrap mb-2' },
-              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: predicted, a: actual, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.volume.log', '📋 Log')),
-              h('button', { onClick: function() { setIQ({ lpred: 3, wpred: 3, hpred: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.volume.reset_3', '↺ Reset')),
-              (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+
+            (iq.log || []).length > 0 && h('div', { className: 'mb-2' },
+              h('div', { className: 'text-[10px] font-bold text-slate-600 mb-0.5' }, __alloT('stem.volume.your_attempts', 'Your attempts (newest last)')),
+              h('ul', { className: 'text-[10px] font-mono text-slate-600 space-y-0.5' },
+                (iq.log || []).map(function(entry, i) {
+                  return h('li', { key: i }, '· ' + entry.g + ' vs ' + entry.a + (entry.pct === null ? '' : '  (' + entry.pct + '% off)'));
+                })
+              ),
+              h('button', { onClick: function() { setIQ({ log: [] }); },
+                className: 'mt-1 px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300'
+              }, __alloT('stem.volume.clear_attempts', '↺ Clear attempts'))
             ),
             h('textarea', { id: 'volume-predictor-hypothesis', 'aria-label': 'Volume prediction hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.volume.hypothesis_how_do_you_build_intuition_', 'Hypothesis: How do you build intuition for predicting volume?'),
               className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug mb-2', rows: 2 }),
@@ -3144,7 +3240,7 @@ window.StemLab = window.StemLab || {
               __alloT('stem.volume.i_understand_explain_in_own_words', 'I understand — explain in own words')),
             iq.understood && h('textarea', { id: 'volume-predictor-explanation', 'aria-label': 'Explain how each dimension contributes to total volume', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.volume.explain_how_each_dimension_contributes', 'Explain how each dimension contributes to total volume.'),
               className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-            h('div', { className: 'mt-2 text-[10px] italic text-slate-500' }, __alloT('stem.volume.design_note_discrete_3_state_outcome_n', 'Design note: discrete 3-state outcome; no exact-volume score; no reveal — by design.'))
+            h('div', { className: 'mt-2 text-[10px] italic text-slate-500' }, __alloT('stem.volume.design_note_discrete_3_state_outcome_n', 'Design note: commit-then-check. Volume readouts are masked while a prediction is armed, so the outcome reflects reasoning rather than reading. Discrete 3-band outcome on relative error; no score.'))
           );
         })(),
 
