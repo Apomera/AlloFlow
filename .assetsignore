@@ -13,3 +13,10 @@
 node_modules/
 desktop/web-app/
 desktop/
+
+# Development, test, and alternate-deployment trees remain in Git/Codeberg but
+# are not runtime assets for alloflow-cdn. Keeping them out of the Workers/Pages
+# upload leaves ample room under Cloudflare's per-version static-file limit.
+dev-tools/
+prismflow-deploy/
+tests/
