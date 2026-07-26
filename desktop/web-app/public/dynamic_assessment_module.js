@@ -277,7 +277,7 @@
       ".da-root { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; line-height: 1.55; color: var(--da-ink); }",
       // WCAG 2.4.7/1.4.11 — visible, ≥3:1 focus indicator on EVERY focusable,
       // not just buttons. Token flips per theme so it stays ≥3:1 on all surfaces.
-      ".da-root button:focus-visible, .da-root a:focus-visible, .da-root input:focus-visible, .da-root select:focus-visible, .da-root textarea:focus-visible, .da-root summary:focus-visible, .da-root [tabindex]:focus-visible { outline: 3px solid var(--da-focus); outline-offset: 2px; }",
+      ".da-shell:focus-visible, .da-root button:focus-visible, .da-root a:focus-visible, .da-root input:focus-visible, .da-root select:focus-visible, .da-root textarea:focus-visible, .da-root summary:focus-visible, .da-root [tabindex]:focus-visible { outline: 3px solid var(--da-focus); outline-offset: 2px; }",
       // WCAG 2.5.8 — minimum target size for the small icon/chip buttons.
       ".da-root button { min-height: 24px; min-width: 24px; }",
       ".da-card { background: var(--da-surface); border: 1px solid var(--da-border); border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(15,23,42,0.06); }",
@@ -289,7 +289,7 @@
       "@media (forced-colors: active) {",
       "  .da-card, .da-ladder-step { border: 1px solid CanvasText; }",
       "  .da-root button { border: 1px solid ButtonText; }",
-      "  .da-root button:focus-visible, .da-root a:focus-visible, .da-root input:focus-visible, .da-root select:focus-visible, .da-root textarea:focus-visible, .da-root summary:focus-visible, .da-root [tabindex]:focus-visible { outline: 3px solid Highlight; }",
+      "  .da-shell:focus-visible, .da-root button:focus-visible, .da-root a:focus-visible, .da-root input:focus-visible, .da-root select:focus-visible, .da-root textarea:focus-visible, .da-root summary:focus-visible, .da-root [tabindex]:focus-visible { outline: 3px solid Highlight; }",
       "}",
       // Phase E — Print packet styles
       ".da-print-packet { display: none; }",
@@ -6558,16 +6558,28 @@
           return navigator.clipboard.writeText(text).then(function () { addToast("Copied to clipboard."); });
         }
       } catch (e) {}
-      // Fallback for older browsers
+      // Fallback for older browsers. Keep the temporary control named, read-only,
+      // off-screen, and restore the invoking control after copying.
+      var ta = null;
+      var previousFocus = document.activeElement;
       try {
-        var ta = document.createElement("textarea");
+        ta = document.createElement("textarea");
         ta.value = text;
-        ta.style.position = "fixed"; ta.style.opacity = "0";
+        ta.readOnly = true;
+        ta.tabIndex = -1;
+        ta.setAttribute("aria-label", "Temporary clipboard text");
+        ta.style.position = "fixed"; ta.style.left = "-10000px"; ta.style.top = "0"; ta.style.width = "1px"; ta.style.height = "1px"; ta.style.opacity = "0";
         document.body.appendChild(ta); ta.select();
         document.execCommand("copy");
-        document.body.removeChild(ta);
         addToast("Copied to clipboard.");
-      } catch (e) { addToast("Copy failed — select + copy manually."); }
+      } catch (e) {
+        addToast("Copy failed - select + copy manually.");
+      } finally {
+        if (ta && ta.parentNode) ta.parentNode.removeChild(ta);
+        if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === "function") {
+          try { previousFocus.focus(); } catch (_) {}
+        }
+      }
     }
 
     // ── Phase Q — Accommodations generation ──
@@ -7427,8 +7439,7 @@
         "aria-modal": typeof props.onClose === "function" ? "true" : undefined,
         "aria-label": "Dynamic Assessment Studio",
         tabIndex: -1,
-        onKeyDown: daTrapTab,
-        style: { outline: "none" }
+        onKeyDown: daTrapTab
       }, view, renderDaConfirm());
     }
     // Phase U: if activeSession is paused, route to the start screen with
@@ -7564,6 +7575,7 @@
           }, "Student codename (optional)"),
           h("input", {
             id: "da-nickname", type: "text", value: nicknameDraft, maxLength: 30,
+            "aria-label": "Student codename (optional)",
             onChange: function (e) { setNicknameDraft(e.target.value); },
             placeholder: "e.g., AmberSparrow",
             style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 14, boxSizing: "border-box", marginBottom: 12 }
@@ -9285,6 +9297,7 @@
         allSessions.length > 0 ? h("div", { className: "da-card", style: { marginBottom: 14, padding: 10 } },
           h("input", {
             type: "text", value: sessionFilter,
+            "aria-label": "Filter saved sessions by student codename or domain",
             onChange: function (e) { setSessionFilter(e.target.value); },
             placeholder: "Filter by student codename or domain…",
             style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
@@ -9873,6 +9886,8 @@
         var input = document.createElement("input");
         input.type = "file";
         input.accept = "application/json,.json";
+        input.tabIndex = -1;
+        input.setAttribute("aria-label", "Restore sessions from a JSON backup file");
         input.onchange = function (ev) {
           var file = ev.target && ev.target.files && ev.target.files[0];
           if (!file) return;
@@ -10019,6 +10034,7 @@
             h("label", { style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 } }, "Domain"),
             h("select", {
               value: customForm.domain,
+              "aria-label": "Domain",
               onChange: function (e) { setField("domain", e.target.value); },
               style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
             },
@@ -10034,6 +10050,7 @@
             h("label", { style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 } }, "Grade band"),
             h("input", {
               type: "text", value: customForm.gradeBand,
+              "aria-label": "Grade band",
               onChange: function (e) { setField("gradeBand", e.target.value); },
               placeholder: "e.g., 4-5, end of 7th, K-1",
               style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
@@ -10044,6 +10061,7 @@
             h("label", { style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 } }, "Target construct *"),
             h("input", {
               type: "text", value: customForm.construct, maxLength: 240,
+              "aria-label": "Target construct",
               onChange: function (e) { setField("construct", e.target.value); },
               placeholder: "e.g., multi-step word problems with mixed operations",
               style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
@@ -10055,6 +10073,7 @@
             h("label", { style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 } }, "Suspected bottleneck (optional)"),
             h("input", {
               type: "text", value: customForm.bottleneck, maxLength: 160,
+              "aria-label": "Suspected bottleneck (optional)",
               onChange: function (e) { setField("bottleneck", e.target.value); },
               placeholder: "e.g., working memory, operation selection, inference, vocabulary",
               style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
@@ -10066,6 +10085,7 @@
             h("label", { style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 } }, "Number of items"),
             h("select", {
               value: String(customForm.itemCount),
+              "aria-label": "Number of items",
               onChange: function (e) { setField("itemCount", parseInt(e.target.value, 10) || 3); },
               style: { width: 200, padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
             },
@@ -10081,6 +10101,7 @@
             h("label", { style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 } }, "Additional clinical context (optional, PII auto-stripped)"),
             h("textarea", {
               rows: 2, value: customForm.context, maxLength: 800,
+              "aria-label": "Additional clinical context (optional, PII auto-stripped)",
               onChange: function (e) { setField("context", e.target.value); },
               placeholder: "Construct-focused only. e.g., 'comfortable with concrete representations; struggles with abstract symbol manipulation'",
               style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 12, boxSizing: "border-box", resize: "vertical" }
@@ -10208,6 +10229,7 @@
           h("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
             h("input", {
               id: "da-save-template", type: "checkbox", checked: saveTemplate,
+              "aria-label": "Save to my probe library for reuse",
               onChange: function (e) { setSaveTemplate(!!e.target.checked); }
             }),
             h("label", { htmlFor: "da-save-template", style: { fontSize: 13, color: "var(--da-ink)", fontWeight: 700 } },
@@ -10216,6 +10238,7 @@
           saveTemplate ? h("div", { style: { marginTop: 10 } },
             h("input", {
               type: "text", value: templateName,
+              "aria-label": "Template name (optional)",
               onChange: function (e) { setTemplateName(e.target.value); },
               placeholder: "Template name (optional — auto-named if blank)",
               maxLength: 80,
@@ -10862,12 +10885,13 @@
           h("label", { style: labelStyle }, "Seed terms (comma-separated, 1-6)"),
           h("input", {
             type: "text", value: termsStr,
+            "aria-label": "Glossary seed terms (comma-separated, 1-6)",
             onChange: function (e) { ed({ seedTerms: e.target.value.split(",").map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean).slice(0, 6) }); },
             style: inputStyle
           }),
           h("label", { style: Object.assign({}, labelStyle, { marginTop: 6 }) }, "Title (optional)"),
           h("input", {
-            type: "text", value: draft.title || "", maxLength: 80,
+            type: "text", value: draft.title || "", maxLength: 80, "aria-label": "Resource title (optional)",
             onChange: function (e) { ed({ title: e.target.value }); },
             style: inputStyle
           }),
@@ -10889,15 +10913,15 @@
             h("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 } },
               h("div", null,
                 h("label", { style: labelStyle }, "Range min"),
-                h("input", { type: "number", value: r.min, onChange: function (e) { ed({ preset: Object.assign({}, preset, { range: Object.assign({}, r, { min: parseInt(e.target.value, 10) }) }) }); }, style: inputStyle })
+                h("input", { type: "number", value: r.min, "aria-label": "Number line range minimum", onChange: function (e) { ed({ preset: Object.assign({}, preset, { range: Object.assign({}, r, { min: parseInt(e.target.value, 10) }) }) }); }, style: inputStyle })
               ),
               h("div", null,
                 h("label", { style: labelStyle }, "Range max"),
-                h("input", { type: "number", value: r.max, onChange: function (e) { ed({ preset: Object.assign({}, preset, { range: Object.assign({}, r, { max: parseInt(e.target.value, 10) }) }) }); }, style: inputStyle })
+                h("input", { type: "number", value: r.max, "aria-label": "Number line range maximum", onChange: function (e) { ed({ preset: Object.assign({}, preset, { range: Object.assign({}, r, { max: parseInt(e.target.value, 10) }) }) }); }, style: inputStyle })
               )
             ),
             h("label", { style: Object.assign({}, labelStyle, { marginTop: 6 }) }, "Tab"),
-            h("select", { value: preset.tab || "explore", onChange: function (e) { ed({ preset: Object.assign({}, preset, { tab: e.target.value }) }); }, style: inputStyle },
+            h("select", { value: preset.tab || "explore", "aria-label": "Number line tab", onChange: function (e) { ed({ preset: Object.assign({}, preset, { tab: e.target.value }) }); }, style: inputStyle },
               h("option", { value: "explore" }, "explore"),
               h("option", { value: "skipCount" }, "skipCount"),
               h("option", { value: "fracDec" }, "fracDec")
@@ -10905,6 +10929,7 @@
             h("label", { style: Object.assign({}, labelStyle, { marginTop: 6 }) }, "Markers (value:label, comma-separated — e.g., 7:start, 12:end)"),
             h("input", {
               type: "text",
+              "aria-label": "Number line markers (value and label pairs)",
               value: (preset.markers || []).map(function (m) { return m.value + (m.label ? ":" + m.label : ""); }).join(", "),
               onChange: function (e) {
                 var newMarkers = e.target.value.split(",").map(function (chunk) {
@@ -10922,15 +10947,15 @@
           toolForm = h("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 } },
             h("div", null,
               h("label", { style: labelStyle }, "Numerator"),
-              h("input", { type: "number", value: preset.numerator || 1, onChange: function (e) { ed({ preset: Object.assign({}, preset, { numerator: parseInt(e.target.value, 10) }) }); }, style: inputStyle })
+              h("input", { type: "number", value: preset.numerator || 1, "aria-label": "Fractions numerator", onChange: function (e) { ed({ preset: Object.assign({}, preset, { numerator: parseInt(e.target.value, 10) }) }); }, style: inputStyle })
             ),
             h("div", null,
               h("label", { style: labelStyle }, "Denominator"),
-              h("input", { type: "number", value: preset.denominator || 2, onChange: function (e) { ed({ preset: Object.assign({}, preset, { denominator: parseInt(e.target.value, 10) }) }); }, style: inputStyle })
+              h("input", { type: "number", value: preset.denominator || 2, "aria-label": "Fractions denominator", onChange: function (e) { ed({ preset: Object.assign({}, preset, { denominator: parseInt(e.target.value, 10) }) }); }, style: inputStyle })
             ),
             h("div", null,
               h("label", { style: labelStyle }, "Tab"),
-              h("select", { value: preset.tab || "practice", onChange: function (e) { ed({ preset: Object.assign({}, preset, { tab: e.target.value }) }); }, style: inputStyle },
+              h("select", { value: preset.tab || "practice", "aria-label": "Fractions tab", onChange: function (e) { ed({ preset: Object.assign({}, preset, { tab: e.target.value }) }); }, style: inputStyle },
                 h("option", { value: "practice" }, "practice"),
                 h("option", { value: "compare" }, "compare"),
                 h("option", { value: "wall" }, "wall")
@@ -10941,18 +10966,18 @@
           toolForm = h("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 } },
             h("div", null,
               h("label", { style: labelStyle }, "Rows"),
-              h("input", { type: "number", value: preset.rows || 3, onChange: function (e) { ed({ preset: Object.assign({}, preset, { rows: parseInt(e.target.value, 10) }) }); }, style: inputStyle })
+              h("input", { type: "number", value: preset.rows || 3, "aria-label": "Area model rows", onChange: function (e) { ed({ preset: Object.assign({}, preset, { rows: parseInt(e.target.value, 10) }) }); }, style: inputStyle })
             ),
             h("div", null,
               h("label", { style: labelStyle }, "Cols"),
-              h("input", { type: "number", value: preset.cols || 4, onChange: function (e) { ed({ preset: Object.assign({}, preset, { cols: parseInt(e.target.value, 10) }) }); }, style: inputStyle })
+              h("input", { type: "number", value: preset.cols || 4, "aria-label": "Cols for area model", onChange: function (e) { ed({ preset: Object.assign({}, preset, { cols: parseInt(e.target.value, 10) }) }); }, style: inputStyle })
             )
           );
         }
         return h("div", { style: commonBox },
           toolForm,
           h("label", { style: Object.assign({}, labelStyle, { marginTop: 6 }) }, "Title (optional)"),
-          h("input", { type: "text", value: draft.title || "", maxLength: 80, onChange: function (e) { ed({ title: e.target.value }); }, style: inputStyle }),
+          h("input", { type: "text", value: draft.title || "", maxLength: 80, "aria-label": "Resource title (optional)", onChange: function (e) { ed({ title: e.target.value }); }, style: inputStyle }),
           h("div", { style: { marginTop: 8, fontSize: 10, color: "var(--da-amber-text-2)", fontStyle: "italic", lineHeight: 1.4 } },
             "Saving updates this manipulative in place — same resource id, same history entry, no re-render of student devices needed."),
           h("div", { style: { marginTop: 6 } },
@@ -10966,7 +10991,7 @@
         var wordsStr = (draft.words || []).join(", ");
         return h("div", { style: commonBox },
           h("label", { style: labelStyle }, "Activity"),
-          h("select", { value: draft.activity || "segmentation", onChange: function (e) { ed({ activity: e.target.value }); }, style: inputStyle },
+          h("select", { value: draft.activity || "segmentation", "aria-label": "Word Sounds activity", onChange: function (e) { ed({ activity: e.target.value }); }, style: inputStyle },
             h("option", { value: "counting" }, "counting"),
             h("option", { value: "segmentation" }, "segmentation"),
             h("option", { value: "blending" }, "blending"),
@@ -10979,11 +11004,12 @@
           h("label", { style: Object.assign({}, labelStyle, { marginTop: 6 }) }, "Words (comma-separated, 3-12)"),
           h("input", {
             type: "text", value: wordsStr,
+            "aria-label": "Word Sounds words (comma-separated, 3-12)",
             onChange: function (e) { ed({ words: e.target.value.split(",").map(function (w) { return w.trim().toLowerCase(); }).filter(Boolean).slice(0, 12) }); },
             style: inputStyle
           }),
           h("label", { style: Object.assign({}, labelStyle, { marginTop: 6 }) }, "Title (optional)"),
-          h("input", { type: "text", value: draft.title || "", maxLength: 80, onChange: function (e) { ed({ title: e.target.value }); }, style: inputStyle }),
+          h("input", { type: "text", value: draft.title || "", maxLength: 80, "aria-label": "Resource title (optional)", onChange: function (e) { ed({ title: e.target.value }); }, style: inputStyle }),
           h("div", { style: { marginTop: 8, fontSize: 10, color: "var(--da-amber-text-2)", fontStyle: "italic", lineHeight: 1.4 } },
             "Saving updates this probe in place — same resource id."),
           h("div", { style: { marginTop: 6 } },
@@ -11077,6 +11103,7 @@
           }, renderTextWithResourceLinks(item.prompt, "rev-prompt-" + idx)) : null,
           h("textarea", {
             rows: 2, value: item.prompt,
+            "aria-label": "Prompt for generated item " + (idx + 1),
             onChange: function (e) {
               var v = e.target.value;
               editGeneratedItem(idx, function (i) { return Object.assign({}, i, { prompt: v }); });
@@ -11192,6 +11219,7 @@
                       // Rung selector (changes anchor on the fly). For chips with status=generated only.
                       canDetach ? h("select", {
                         value: String(sr.anchorRung || 1),
+                        "aria-label": "Scaffold rung for " + (sr.title || "resource support"),
                         onChange: function (e) { moveChipRung(idx, sr, parseInt(e.target.value, 10)); },
                         title: "Move this support to a different scaffold rung",
                         style: { padding: "0 4px", borderRadius: 4, border: "1px solid var(--da-indigo-border)", background: "var(--da-surface)", color: "var(--da-indigo-text)", fontSize: 10, fontWeight: 700, fontFamily: "inherit", cursor: "pointer" }
@@ -11231,6 +11259,7 @@
             h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 } }, "Correct"),
             h("input", {
               type: "text", value: item.correctAnswer,
+              "aria-label": "Correct answer for generated item " + (idx + 1),
               onChange: function (e) {
                 var v = e.target.value;
                 editGeneratedItem(idx, function (i) { return Object.assign({}, i, { correctAnswer: v }); });
@@ -11242,6 +11271,7 @@
             h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 } }, "Acceptable variants (comma-separated)"),
             h("input", {
               type: "text", value: (item.acceptableAnswers || []).join(", "),
+              "aria-label": "Acceptable answer variants for generated item " + (idx + 1),
               onChange: function (e) {
                 var v = e.target.value.split(",").map(function (a) { return a.trim(); }).filter(function (a) { return a.length > 0; });
                 editGeneratedItem(idx, function (i) { return Object.assign({}, i, { acceptableAnswers: v }); });
@@ -11286,6 +11316,7 @@
                 }, renderTextWithResourceLinks(step.text, "rev-step-" + idx + "-" + li)) : null,
                 h("textarea", {
                   rows: 2, value: step.text,
+                  "aria-label": (labels[step.type] || ("L" + step.level)) + " text for generated item " + (idx + 1),
                   onChange: function (e) {
                     var v = e.target.value;
                     editGeneratedItem(idx, function (i) {
@@ -11639,6 +11670,7 @@
           }, "Examiner observation (local only — not synced)"),
           h("textarea", {
             id: "da-observation", rows: 2, value: observationDraft,
+            "aria-label": "Examiner observation (local only - not synced)",
             onChange: function (e) { setObservationDraft(e.target.value); },
             placeholder: "Strategy used, hesitation, affect, anything notable…",
             style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box", resize: "vertical" }
@@ -12003,6 +12035,7 @@
           }, "Examiner observation (local only — appended to AI notes)"),
           h("textarea", {
             id: "da-ai-obs", rows: 2, value: observationDraft,
+            "aria-label": "Examiner observation (local only - appended to AI notes)",
             onChange: function (e) { setObservationDraft(e.target.value); },
             placeholder: "Strategy, hesitation, affect, anything notable…",
             style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box", resize: "vertical" }
@@ -12320,10 +12353,10 @@
             h("h2", null, "Learning-Zone Snapshot (Descriptive)"),
             h("table", { className: "da-print-table" },
               h("thead", null, h("tr", null,
-                h("th", null, "Band"),
-                h("th", null, "Items"),
-                h("th", null, "Constructs"),
-                h("th", null, "Instructional read")
+                h("th", { scope: "col" }, "Band"),
+                h("th", { scope: "col" }, "Items"),
+                h("th", { scope: "col" }, "Constructs"),
+                h("th", { scope: "col" }, "Instructional read")
               )),
               h("tbody", null,
                 zpdRow("Independent (solved unprompted at pretest)",
@@ -12349,8 +12382,8 @@
             h("h2", null, "Observed Patterns"),
             h("table", { className: "da-print-table" },
               h("thead", null, h("tr", null,
-                h("th", null, "Pattern"),
-                h("th", null, "Items")
+                h("th", { scope: "col" }, "Pattern"),
+                h("th", { scope: "col" }, "Items")
               )),
               h("tbody", null,
                 tagAgg.map(function (t, ri) {
@@ -12367,9 +12400,9 @@
           h("h2", null, "Scaffold Usage During Mediation"),
           h("table", { className: "da-print-table" },
             h("thead", null, h("tr", null,
-              h("th", null, "Scaffold Level"),
-              h("th", null, "Type"),
-              h("th", null, "Items")
+              h("th", { scope: "col" }, "Scaffold Level"),
+              h("th", { scope: "col" }, "Type"),
+              h("th", { scope: "col" }, "Items")
             )),
             h("tbody", null,
               [
@@ -12393,11 +12426,11 @@
           h("h2", null, "Per-Item Results"),
           h("table", { className: "da-print-table" },
             h("thead", null, h("tr", null,
-              h("th", null, "Item"),
-              h("th", null, "Phase"),
-              h("th", null, "Scaffold L"),
-              h("th", null, "Score"),
-              h("th", null, "Observation")
+              h("th", { scope: "col" }, "Item"),
+              h("th", { scope: "col" }, "Phase"),
+              h("th", { scope: "col" }, "Scaffold L"),
+              h("th", { scope: "col" }, "Score"),
+              h("th", { scope: "col" }, "Observation")
             )),
             h("tbody", null,
               (s.itemResults || []).map(function (r, ri) {
@@ -13954,6 +13987,7 @@
                   h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 } }, "Annual goal"),
                   h("textarea", {
                     value: g.annualGoal,
+                    "aria-label": "Annual goal " + (gi + 1),
                     onChange: function (e) { updateIepGoalField(gi, "annualGoal", e.target.value); },
                     rows: 3,
                     style: { width: "100%", padding: "6px 8px", border: "1px solid var(--da-border-2)", borderRadius: 6, fontFamily: "inherit", fontSize: 12.5, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box", marginBottom: 8 }
@@ -13969,6 +14003,7 @@
                       h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 } }, "Criterion"),
                       h("input", {
                         type: "text", value: g.measurementCriterion,
+                        "aria-label": "Criterion for goal " + (gi + 1),
                         onChange: function (e) { updateIepGoalField(gi, "measurementCriterion", e.target.value); },
                         style: { width: "100%", padding: "5px 8px", border: "1px solid var(--da-border-2)", borderRadius: 6, fontFamily: "inherit", fontSize: 12, boxSizing: "border-box" }
                       })
@@ -13977,6 +14012,7 @@
                       h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 } }, "Evaluation method"),
                       h("input", {
                         type: "text", value: g.evaluationMethod,
+                        "aria-label": "Evaluation method for goal " + (gi + 1),
                         onChange: function (e) { updateIepGoalField(gi, "evaluationMethod", e.target.value); },
                         style: { width: "100%", padding: "5px 8px", border: "1px solid var(--da-border-2)", borderRadius: 6, fontFamily: "inherit", fontSize: 12, boxSizing: "border-box" }
                       })
@@ -13990,6 +14026,7 @@
                         h("div", { style: { fontSize: 11, color: "var(--da-amber-text-2)", fontWeight: 800, paddingTop: 6, minWidth: 16 } }, (stoIdx + 1) + "."),
                         h("textarea", {
                           value: sto,
+                          "aria-label": "Short-term objective " + (stoIdx + 1) + " for goal " + (gi + 1),
                           onChange: function (e) { updateIepShortTermObjective(gi, stoIdx, e.target.value); },
                           rows: 2,
                           style: { flex: 1, padding: "5px 8px", border: "1px solid var(--da-border)", borderRadius: 6, fontFamily: "inherit", fontSize: 12, lineHeight: 1.5, resize: "vertical", boxSizing: "border-box" }
